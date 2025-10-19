@@ -1,5 +1,25 @@
 # Log
 
+## v0.1.61 - 2025-10-19 19:50 BRT
+- Substitui o botão de concordância legal por uma caixa de seleção direta no formulário de cadastro.
+- Integra o link "Saiba mais" ao texto de consentimento para facilitar o acesso aos documentos legais.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.60 - 2025-10-19 19:30 BRT
+- Adiciona controle de concordância com os termos legais antes de concluir o cadastro.
+- Disponibiliza link direto para a documentação legal a partir do painel de cadastro compacto.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.59 - 2025-10-19 19:05 BRT
+- Simplifica o painel de cadastro para solicitar apenas telefone e senha antes de criar a conta.
+- Ajusta o layout do formulário de cadastro para acomodar o fluxo compacto em diferentes larguras de tela.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.58 - 2025-10-19 18:40 BRT
+- Reduz os espaçamentos verticais do cartão de cadastro ajustando padding interno e distância entre seções.
+- Compacta o formulário de cadastro para aproximar os campos e diminuir deslocamentos na rolagem.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.57 - 2025-10-19 18:20 BRT
 - Reestrutura o rodapé em telas móveis para distribuir marca e ações em múltiplas linhas com mais espaçamento.
 - Permite que o texto institucional quebre em múltiplas linhas e aumenta a legibilidade dos controles na base.
