@@ -4,14 +4,6 @@ import { collectDeviceInfo } from './shared/device-info.js';
 
 const BASE_CLASSES = 'card view view--login';
 
-function dispatchNavigation(viewName) {
-  document.dispatchEvent(
-    new CustomEvent('app:navigate', {
-      detail: { view: viewName },
-    })
-  );
-}
-
 export function renderLoginPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -27,20 +19,12 @@ export function renderLoginPanel(viewRoot) {
   const intro = document.createElement('p');
   intro.className = 'login-panel__intro';
   intro.textContent =
-    'Informe seu nome, telefone e senha para gerar seu acesso e acompanhar os cadastros.';
+    'Informe seu telefone e senha para acessar rapidamente o painel e acompanhar seus cadastros.';
 
   const form = document.createElement('form');
   form.className = 'login-panel__form user-form';
   form.autocomplete = 'on';
   form.noValidate = true;
-
-  const nameField = createInputField({
-    id: 'login-name',
-    label: 'Nome completo',
-    type: 'text',
-    placeholder: 'Digite seu nome completo',
-    autocomplete: 'name',
-  });
 
   const phoneField = createInputField({
     id: 'login-phone',
@@ -59,14 +43,13 @@ export function renderLoginPanel(viewRoot) {
     autocomplete: 'current-password',
   });
 
-  const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
   submitButton.className = 'user-form__submit login-panel__submit';
-  submitButton.textContent = 'Cadastrar';
+  submitButton.textContent = 'Entrar';
 
   const feedback = document.createElement('p');
   feedback.className = 'user-form__feedback login-panel__feedback';
@@ -96,19 +79,18 @@ export function renderLoginPanel(viewRoot) {
     event.preventDefault();
     resetFeedback();
 
-    if (!nameInput || !phoneInput || !passwordInput) {
+    if (!phoneInput || !passwordInput) {
       showFeedback('Não foi possível carregar os campos de login. Atualize e tente novamente.', {
         isError: true,
       });
       return;
     }
 
-    const nameValue = nameInput.value.trim();
     const phoneValue = phoneInput.value.trim();
     const passwordValue = passwordInput.value;
 
-    if (!nameValue || !phoneValue || !passwordValue) {
-      showFeedback('Preencha nome, telefone e senha para concluir o acesso.', { isError: true });
+    if (!phoneValue || !passwordValue) {
+      showFeedback('Preencha telefone e senha para entrar.', { isError: true });
       return;
     }
 
@@ -116,12 +98,12 @@ export function renderLoginPanel(viewRoot) {
       submitButton.disabled = true;
       submitButton.setAttribute('aria-busy', 'true');
 
-      await addUser({ name: nameValue, phone: phoneValue, password: passwordValue, device: collectDeviceInfo() });
+      await addUser({ phone: phoneValue, password: passwordValue, device: collectDeviceInfo() });
       form.reset();
-      showFeedback('Acesso cadastrado com sucesso! Você já pode gerenciar os dados no painel do usuário.', {
+      showFeedback('Login realizado com sucesso! Você já pode gerenciar os dados no painel do usuário.', {
         isError: false,
       });
-      nameInput.focus();
+      phoneInput.focus();
     } catch (error) {
       console.error('Erro ao cadastrar acesso pelo painel de login.', error);
       const errorMessage = error instanceof Error ? error.message : '';
@@ -142,20 +124,7 @@ export function renderLoginPanel(viewRoot) {
     submitButton.removeAttribute('aria-busy');
   });
 
-  form.append(nameField, phoneField, passwordField, submitButton, feedback);
+  form.append(phoneField, passwordField, submitButton, feedback);
 
-  const actions = document.createElement('div');
-  actions.className = 'login-panel__actions';
-
-  const manageButton = document.createElement('button');
-  manageButton.type = 'button';
-  manageButton.className = 'login-panel__manage-button';
-  manageButton.textContent = 'Acompanhar painel do usuário';
-  manageButton.addEventListener('click', () => {
-    dispatchNavigation('user');
-  });
-
-  actions.append(manageButton);
-
-  viewRoot.replaceChildren(heading, intro, form, actions);
+  viewRoot.replaceChildren(heading, intro, form);
 }

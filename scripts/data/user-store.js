@@ -162,8 +162,8 @@ export async function addUser({ name, phone, password, device, profile }) {
   const sanitizedDevice = typeof device === 'string' ? device.trim().slice(0, 512) : '';
   const sanitizedProfile = normalizeProfile(profile);
 
-  if (!sanitizedName || !sanitizedPhone || !sanitizedPassword) {
-    throw new Error('Nome, telefone e senha são obrigatórios para cadastrar um usuário.');
+  if (!sanitizedPhone || !sanitizedPassword) {
+    throw new Error('Telefone e senha são obrigatórios para acessar o painel.');
   }
 
   await initializationPromise?.catch(() => {});
