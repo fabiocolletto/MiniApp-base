@@ -1,5 +1,21 @@
 # Log
 
+## v0.1.47 - 2025-10-19 16:45 BRT
+- Ajusta o grid do painel do usuário para que seus blocos ocupem toda a altura disponível, mantendo a proporção do painel administrativo.
+- Valida visualmente o painel do usuário e o menu dedicado em múltiplas larguras, garantindo que a experiência permaneça consistente.
+- Atualiza o rodapé para exibir a nova versão do aplicativo.
+
+## v0.1.46 - 2025-10-19 16:15 BRT
+- Estende o contêiner principal do painel do usuário para ocupar toda a altura útil assim como o painel administrativo.
+- Ajusta o grid interno do painel do usuário para distribuir melhor o espaço vertical entre formulário, cadastros e detalhes.
+- Atualiza o rodapé para exibir a nova versão do aplicativo.
+
+## v0.1.45 - 2025-10-19 15:45 BRT
+- Amplia o painel do usuário para ocupar toda a área disponível com o mesmo tamanho do painel administrativo.
+- Reorganiza o formulário, lista de cadastros e detalhes em seções estruturadas com layout em colunas responsivas.
+- Ajusta estilos do painel do usuário para alinhar textos, melhorar feedbacks e reforçar a leitura dos conteúdos.
+- Atualiza o rodapé para exibir a nova versão do aplicativo.
+
 ## v0.1.44 - 2025-10-19 15:15 BRT
 - Transforma a ação de edição do painel administrativo em atualização inline com botões dedicados de salvar e cancelar na própria linha.
 - Bloqueia interações concorrentes enquanto uma linha está em edição e mantém o foco dos campos ao alternar estados.

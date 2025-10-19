@@ -48,7 +48,11 @@ export function renderView(name) {
     return;
   }
 
-  mainElement?.classList.toggle('main--admin', name === 'admin');
+  const isAdminView = name === 'admin';
+  const isUserView = name === 'user';
+
+  mainElement?.classList.toggle('main--admin', isAdminView);
+  mainElement?.classList.toggle('main--user', isUserView);
 
   const view = views[name];
 
