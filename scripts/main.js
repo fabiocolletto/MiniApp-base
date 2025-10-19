@@ -4,6 +4,7 @@ import { renderLog } from './views/log.js';
 import { renderHome } from './views/home.js';
 import { renderNotFound } from './views/not-found.js';
 import { renderUserPanel } from './views/user.js';
+import { renderLoginPanel } from './views/login.js';
 import { renderLegal } from './views/legal.js';
 import { runViewCleanup } from './view-cleanup.js';
 
@@ -21,6 +22,7 @@ const views = {
   log: renderLog,
   home: renderHome,
   user: renderUserPanel,
+  login: renderLoginPanel,
   legal: renderLegal,
 };
 
@@ -50,9 +52,11 @@ export function renderView(name) {
 
   const isAdminView = name === 'admin';
   const isUserView = name === 'user';
+  const isLoginView = name === 'login';
 
   mainElement?.classList.toggle('main--admin', isAdminView);
   mainElement?.classList.toggle('main--user', isUserView);
+  mainElement?.classList.toggle('main--login', isLoginView);
 
   const view = views[name];
 
@@ -73,7 +77,14 @@ export function renderView(name) {
 logo?.addEventListener('click', () => renderView('admin'));
 versionButton?.addEventListener('click', () => renderView('log'));
 headerTitle?.addEventListener('click', () => renderView('home'));
-userButton?.addEventListener('click', () => renderView('user'));
+userButton?.addEventListener('click', () => renderView('login'));
 legalButton?.addEventListener('click', () => renderView('legal'));
+
+document.addEventListener('app:navigate', (event) => {
+  const viewName = event?.detail?.view;
+  if (typeof viewName === 'string') {
+    renderView(viewName);
+  }
+});
 
 renderView('greeting');

@@ -21,8 +21,8 @@
       <button
         type="button"
         class="header-user-button"
-        aria-label="Abrir painel do usuário"
-        title="Acessar painel do usuário"
+        aria-label="Abrir painel de login"
+        title="Acessar painel de login"
       >
         <svg
           class="header-user-button__icon"
@@ -52,7 +52,6 @@
       </div>
     </main>
     <footer aria-live="polite">
-      <span class="footer-spacer" aria-hidden="true"></span>
       <div class="footer-brand">
         <img
           class="footer-brand__icon"
@@ -63,17 +62,30 @@
           loading="lazy"
           decoding="async"
         />
-        <span class="footer-brand__text">© 2025 5Horas. Todos os direitos reservados.</span>
+        <span
+          class="footer-brand__text"
+          title="© 2025 5Horas. Todos os direitos reservados."
+          >© 2025 5Horas. Todos os direitos reservados.</span
+        >
       </div>
-      <button
-        type="button"
-        class="footer-legal"
-        aria-label="Abrir documentos legais"
-        title="Exibir documentos legais"
-      >
-        Termos legais
-      </button>
-      <button type="button" class="footer-version">Versão v0.1.47</button>
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="footer-legal"
+          aria-label="Abrir documentos legais"
+          title="Exibir documentos legais"
+        >
+          Termos legais
+        </button>
+        <button
+          type="button"
+          class="footer-version"
+          aria-label="Abrir registro de alterações da versão v0.1.53"
+          title="Exibir mudanças da versão v0.1.53"
+        >
+          Versão v0.1.53
+        </button>
+      </div>
     </footer>
     <script type="module" src="./scripts/main.js"></script>
   </body>

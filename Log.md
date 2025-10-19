@@ -1,5 +1,35 @@
 # Log
 
+## v0.1.53 - 2025-10-19 16:06 BRT
+- Alinha o processo de revisão para que cada nova release incremente apenas uma unidade em relação à versão exibida.
+- Atualiza o rodapé para mostrar a versão v0.1.53 conforme a regra revisada.
+- Recalibra o horário da release v0.1.52 para refletir corretamente o registro em BRT.
+
+## v0.1.52 - 2025-10-19 16:00 BRT
+- Ajusta a formatação dos campos dos formulários para impedir sobreposição entre rótulos e entradas.
+- Garante que os contêineres de formulário usem toda a largura disponível com alinhamento consistente nos painéis de login e usuário.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.51 - 2025-10-19 15:49 BRT
+- Adiciona dica de ferramenta ao texto institucional do rodapé para preservar a leitura completa mesmo com elipse.
+- Atualiza o botão de versão com rótulos acessíveis descrevendo a navegação e a versão exibida.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.50 - 2025-10-19 18:15 BRT
+- Reorganiza a marca, termos legais e versão do rodapé em uma única linha sem quebras extras.
+- Atualiza o layout e estilos para evitar múltiplas colunas e garantir alinhamento contínuo em qualquer largura.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.49 - 2025-10-19 17:45 BRT
+- Harmoniza a largura e a altura dos painéis de login e usuário com o padrão estabelecido no painel administrativo.
+- Reduz os tamanhos de fonte dos títulos, textos e controles dos painéis para se aproximar da tipografia do cabeçalho e do rodapé.
+- Atualiza estilos relacionados aos botões e textos para manter a leitura consistente após o ajuste tipográfico.
+
+## v0.1.48 - 2025-10-19 17:15 BRT
+- Cria um painel de login dedicado com formulário de acesso e atalho para abrir o painel do usuário.
+- Transfere o formulário de cadastro do painel do usuário para o novo fluxo de login, ajustando o layout de gerenciamento.
+- Atualiza estilos, roteamento e rodapé para refletir o novo painel e a versão mais recente do aplicativo.
+
 ## v0.1.47 - 2025-10-19 16:45 BRT
 - Ajusta o grid do painel do usuário para que seus blocos ocupem toda a altura disponível, mantendo a proporção do painel administrativo.
 - Valida visualmente o painel do usuário e o menu dedicado em múltiplas larguras, garantindo que a experiência permaneça consistente.
