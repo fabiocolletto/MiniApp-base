@@ -1,5 +1,24 @@
 # Log
 
+## v0.1.18 - 2025-10-19 09:00 BRT
+- Recalibração das variáveis de altura do cabeçalho e rodapé para manter ambos rente às bordas em retrato e paisagem.
+- Redução do preenchimento, sombra e contraste do rodapé para deixá-lo mais discreto nas telas largas.
+- Verificação visual das views de saudação, administração e log garantindo que o conteúdo não fique encoberto.
+
+## v0.1.17 - 2025-10-19 08:40 BRT
+- Ajuste da altura mínima e do preenchimento do rodapé para mantê-lo rente à borda inferior em orientação paisagem.
+- Redução do espaçamento interno e da sombra do rodapé para deixá-lo visualmente mais discreto nas telas largas.
+
+## v0.1.16 - 2025-10-19 08:25 BRT
+- Refinamento dos cálculos de altura do cabeçalho e rodapé para manter o contato direto com as bordas e respeitar as áreas seguras dos tablets.
+- Ajuste dos espaçamentos internos dos elementos fixos para evitar folgas visuais sem encobrir o conteúdo principal.
+- Inclusão de orientação no `AGENTS.md` exigindo a leitura do README e do Log antes de qualquer planejamento ou execução.
+
+## v0.1.15 - 2025-10-19 08:10 BRT
+- Fixação do cabeçalho e rodapé nas bordas da viewport utilizando posicionamento `fixed` com suporte a áreas seguras.
+- Ajuste do preenchimento do conteúdo principal para evitar sobreposição pelos elementos fixos em qualquer orientação.
+- Atualização da versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.14 - 2025-10-19 08:00 BRT
 - Implementação de view de contingência para telas desconhecidas garantindo feedback ao usuário.
 - Registro do identificador da view ativa no `#view-root` para facilitar depuração e testes.

@@ -2,6 +2,7 @@
 
 ## Instruções Gerais
 - Leia este arquivo antes de executar qualquer solicitação.
+- Antes de qualquer planejamento ou ação, consulte o `README.md` para instruções e o `Log.md` para contexto atualizado.
 - Siga as demandas do usuário de forma literal e priorize respostas objetivas.
 - Cada alteração no repositório deve ser registrada em `Log.md` com um novo número de versão sequencial.
 - Mantenha o README atualizado apenas com informações aprovadas pelo usuário.
