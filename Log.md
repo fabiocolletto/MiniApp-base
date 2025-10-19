@@ -1,5 +1,26 @@
 # Log
 
+## v0.1.38 - 2025-10-19 13:03 BRT
+- Ajusta o contêiner principal para deixar o painel administrativo fixo, sem folgas verticais extras entre cabeçalho e rodapé.
+- Recalcula a altura disponível quando o painel administrativo está ativo para que o cartão use 100% do espaço e mantenha sua própria rolagem.
+- Atualiza a versão exibida no rodapé e valida visualmente o painel administrativo com o novo layout.
+
+## v0.1.37 - 2025-10-19 12:56 BRT
+- Ajusta o painel administrativo para ocupar toda a altura disponível do espaço central com dimensões fixas.
+- Garante que o painel administrativo gerencie sua própria rolagem quando o conteúdo ultrapassar o espaço visível.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.36 - 2025-10-19 12:55 BRT
+- Reconfigura o painel administrativo para ocupar toda a área central com largura total e preenchimento expandido.
+- Ajusta alinhamentos e espaçamentos do painel para aproveitar melhor o espaço disponível, mantendo responsividade.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.35 - 2025-10-19 12:41 BRT
+- Implementa armazenamento centralizado para cadastros de usuários com notificação de assinantes das views.
+- Exibe no painel administrativo a lista atualizada de usuários com máscara de senha e ordenação por data de criação.
+- Permite registrar novos usuários pelo painel do usuário com feedback imediato ao concluir ou falhar no cadastro.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.34 - 2025-10-19 11:05 BRT
 - Adiciona botão dedicado aos termos legais no rodapé conectando o painel interativo existente.
 - Ajusta a tipografia e o foco do novo atalho para manter acessibilidade e alinhamento com os demais itens do rodapé.

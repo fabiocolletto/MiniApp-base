@@ -14,6 +14,10 @@
   --footer-total-size: calc(
     var(--footer-base-size) + var(--footer-padding-block) + var(--footer-padding-block-end)
   );
+  --view-max-block-size: calc(
+    100dvh - var(--header-total-size) - var(--footer-total-size) -
+      (var(--content-padding-block-start) + var(--content-padding-block-end))
+  );
   --content-padding-block-start: clamp(4.75rem, 11vh, 6.5rem);
   --content-padding-block-end: clamp(4.75rem, 11vh, 6.5rem);
   --content-padding-inline: 1.5rem;
@@ -48,6 +52,15 @@ main {
   box-sizing: border-box;
 }
 
+.main--admin {
+  padding-block-start: var(--header-total-size);
+  padding-block-end: var(--footer-total-size);
+  place-items: stretch;
+  align-content: stretch;
+  justify-items: stretch;
+  --view-max-block-size: calc(100dvh - var(--header-total-size) - var(--footer-total-size));
+}
+
 .card {
   width: min(90vw, 40rem);
   background-color: transparent;
@@ -67,6 +80,14 @@ h1 {
   overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw + 0.75rem, 2.2rem);
+  color: #5e4b23;
+  text-transform: uppercase;
+  letter-spacing: clamp(0.08rem, 0.35vw, 0.18rem);
 }
 
 p {
@@ -299,10 +320,7 @@ footer {
 
 .view {
   outline: none;
-  max-height: calc(
-    100dvh - var(--header-total-size) - var(--footer-total-size) -
-      (var(--content-padding-block-start) + var(--content-padding-block-end))
-  );
+  max-height: var(--view-max-block-size);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
@@ -329,9 +347,80 @@ footer {
   background: transparent;
 }
 
+.card.view--admin {
+  width: 100%;
+  max-width: none;
+  padding: clamp(1.75rem, 4vw, 2.65rem);
+  box-sizing: border-box;
+  justify-self: stretch;
+  align-self: stretch;
+  min-height: var(--view-max-block-size);
+  max-height: var(--view-max-block-size);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 240, 210, 0.86));
+}
+
 .view--admin {
   display: grid;
-  gap: 1.5rem;
+  gap: clamp(1.35rem, 3vw, 2.1rem);
+  align-content: start;
+  justify-items: stretch;
+  text-align: left;
+  min-height: 100%;
+}
+
+.admin-user-section {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.6rem);
+  width: 100%;
+  justify-self: stretch;
+}
+
+.admin-user-section__description {
+  font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.25rem);
+  color: rgba(94, 75, 35, 0.82);
+}
+
+.admin-user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(0.8rem, 2.5vw, 1.4rem);
+}
+
+.admin-user-list__item {
+  display: grid;
+  gap: 0.45rem;
+  padding: clamp(0.9rem, 2.8vw, 1.35rem);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.75rem 2rem rgba(94, 75, 35, 0.18);
+  color: #3d2a12;
+  text-align: left;
+}
+
+.admin-user-list__phone {
+  font-weight: 700;
+  font-size: clamp(1.1rem, 1.8vw + 0.75rem, 1.55rem);
+}
+
+.admin-user-list__password {
+  font-size: clamp(0.95rem, 1.3vw + 0.6rem, 1.25rem);
+  color: rgba(61, 42, 18, 0.75);
+}
+
+.admin-user-list__timestamp {
+  font-size: clamp(0.85rem, 1vw + 0.6rem, 1.1rem);
+  color: rgba(61, 42, 18, 0.6);
+}
+
+.admin-user-list__empty {
+  padding: clamp(0.9rem, 2.5vw, 1.3rem);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(61, 42, 18, 0.7);
+  text-align: center;
+  font-size: clamp(0.95rem, 1.3vw + 0.6rem, 1.25rem);
 }
 
 .view--user {
@@ -391,8 +480,38 @@ footer {
   outline: none;
 }
 
-.view--admin p {
+.user-form__feedback {
+  font-size: clamp(0.9rem, 1.2vw + 0.55rem, 1.15rem);
+  font-weight: 600;
   text-align: center;
+  color: rgba(61, 42, 18, 0.8);
+  margin: 0;
+}
+
+.user-form__feedback[hidden] {
+  display: none !important;
+}
+
+.user-form__feedback--success {
+  color: #2f6b2c;
+}
+
+.user-form__feedback--error {
+  color: #b34828;
+}
+
+.view--admin p {
+  text-align: left;
+}
+
+@media (min-width: 62rem) {
+  .card.view--admin {
+    padding: clamp(2rem, 3vw, 3rem);
+  }
+
+  .admin-user-section {
+    gap: clamp(1.2rem, 2vw, 1.9rem);
+  }
 }
 
 .view--log {
