@@ -7,11 +7,12 @@
   --footer-base-size: clamp(1.85rem, 3.6vw, 2.35rem);
   --header-padding-block: clamp(0.65rem, 1.4vw, 0.95rem);
   --footer-padding-block: clamp(0.3rem, 0.9vw, 0.5rem);
+  --footer-padding-block-end: max(var(--footer-padding-block), var(--safe-area-inset-bottom));
   --header-total-size: calc(
     var(--header-base-size) + (var(--header-padding-block) * 2) + var(--safe-area-inset-top)
   );
   --footer-total-size: calc(
-    var(--footer-base-size) + (var(--footer-padding-block) * 2) + var(--safe-area-inset-bottom)
+    var(--footer-base-size) + var(--footer-padding-block) + var(--footer-padding-block-end)
   );
   --content-padding-block-start: clamp(4.75rem, 11vh, 6.5rem);
   --content-padding-block-end: clamp(4.75rem, 11vh, 6.5rem);
@@ -158,8 +159,8 @@ header {
 footer {
   inset-block-end: 0;
   padding-block-start: var(--footer-padding-block);
-  padding-block-end: calc(var(--footer-padding-block) + var(--safe-area-inset-bottom));
-  min-block-size: calc(var(--footer-base-size) + var(--safe-area-inset-bottom));
+  padding-block-end: var(--footer-padding-block-end);
+  min-block-size: var(--footer-base-size);
   z-index: 9;
 }
 
@@ -179,6 +180,17 @@ footer {
 
 .view {
   outline: none;
+  max-height: calc(
+    100dvh - var(--header-total-size) - var(--footer-total-size) -
+      (var(--content-padding-block-start) + var(--content-padding-block-end))
+  );
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.view::-webkit-scrollbar {
+  display: none;
 }
 
 .view--admin {
@@ -194,6 +206,7 @@ footer {
   text-align: left;
   display: grid;
   gap: 1.5rem;
+  width: min(95vw, 52rem);
 }
 
 .view--log h1 {
@@ -221,6 +234,9 @@ footer {
   background-color: rgba(255, 255, 255, 0.65);
   border: 1px solid rgba(94, 75, 35, 0.15);
   box-shadow: inset 0 0.35rem 1.2rem rgba(0, 0, 0, 0.08);
+  color: #5e4b23;
+  font-family: inherit;
+  line-height: 1.5;
 }
 
 @media (max-width: 600px) {
