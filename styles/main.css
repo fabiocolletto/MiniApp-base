@@ -1,7 +1,31 @@
 :root {
   color-scheme: light dark;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --header-base-size: clamp(2.75rem, 5vw, 3.4rem);
+  --footer-base-size: clamp(1.85rem, 3.6vw, 2.35rem);
+  --header-padding-block: clamp(0.65rem, 1.4vw, 0.95rem);
+  --footer-padding-block: clamp(0.3rem, 0.9vw, 0.5rem);
+  --header-total-size: calc(
+    var(--header-base-size) + (var(--header-padding-block) * 2) + var(--safe-area-inset-top)
+  );
+  --footer-total-size: calc(
+    var(--footer-base-size) + (var(--footer-padding-block) * 2) + var(--safe-area-inset-bottom)
+  );
+  --content-padding-block-start: clamp(4.75rem, 11vh, 6.5rem);
+  --content-padding-block-end: clamp(4.75rem, 11vh, 6.5rem);
+  --content-padding-inline: 1.5rem;
 }
+@media (orientation: landscape) {
+  :root {
+    --header-base-size: clamp(2.55rem, 4.5vw, 3.05rem);
+    --header-padding-block: clamp(0.55rem, 1vw, 0.75rem);
+    --footer-base-size: clamp(1.65rem, 2.6vw, 1.95rem);
+    --footer-padding-block: clamp(0.2rem, 0.6vw, 0.35rem);
+  }
+}
+
 
 body {
   margin: 0;
@@ -15,8 +39,12 @@ main {
   flex: 1;
   display: grid;
   place-items: center;
-  padding: clamp(5rem, 12vh, 7rem) 1.5rem;
+  padding-block-start: calc(var(--content-padding-block-start) + var(--header-total-size));
+  padding-block-end: calc(var(--content-padding-block-end) + var(--footer-total-size));
+  padding-inline: var(--content-padding-inline);
   width: 100%;
+  min-height: calc(100dvh - var(--header-total-size) - var(--footer-total-size));
+  box-sizing: border-box;
 }
 
 .card {
@@ -90,22 +118,27 @@ p {
 
 header,
 footer {
+  position: fixed;
+  inset-inline: 0;
   width: 100%;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  color: #5e4b23;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(6px);
-  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
-  box-shadow: 0 0.75rem 1.5rem rgba(94, 75, 35, 0.08);
-}
-
-header {
-  position: sticky;
-  top: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-inline: 1rem;
+  text-align: center;
+  color: #5e4b23;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(5px);
+  font-size: clamp(0.78rem, 1.45vw, 0.92rem);
+  box-shadow: 0 0.25rem 0.45rem rgba(94, 75, 35, 0.04);
+}
+
+header {
+  inset-block-start: 0;
+  padding-block-start: calc(var(--header-padding-block) + var(--safe-area-inset-top));
+  padding-block-end: var(--header-padding-block);
+  min-block-size: calc(var(--header-base-size) + var(--safe-area-inset-top));
   z-index: 10;
 }
 
@@ -123,7 +156,11 @@ header {
 }
 
 footer {
-  align-self: stretch;
+  inset-block-end: 0;
+  padding-block-start: var(--footer-padding-block);
+  padding-block-end: calc(var(--footer-padding-block) + var(--safe-area-inset-bottom));
+  min-block-size: calc(var(--footer-base-size) + var(--safe-area-inset-bottom));
+  z-index: 9;
 }
 
 .footer-version {
@@ -187,8 +224,10 @@ footer {
 }
 
 @media (max-width: 600px) {
-  main {
-    padding: 4.5rem 1rem 4rem;
+  :root {
+    --content-padding-block-start: 4.5rem;
+    --content-padding-block-end: 4rem;
+    --content-padding-inline: 1rem;
   }
 
   .card {
