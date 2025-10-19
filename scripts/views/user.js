@@ -112,7 +112,24 @@ export function renderUserPanel(viewRoot) {
   viewRoot.dataset.view = 'user';
 
   const heading = document.createElement('h1');
+  heading.className = 'user-panel__title';
   heading.textContent = 'Painel do Usuário';
+
+  const intro = document.createElement('p');
+  intro.className = 'user-panel__intro';
+  intro.textContent =
+    'Gerencie seus cadastros pessoais e acompanhe as atualizações em um único lugar.';
+
+  const formSection = document.createElement('section');
+  formSection.className = 'user-panel__section user-panel__section--form';
+
+  const formHeading = document.createElement('h2');
+  formHeading.className = 'user-panel__section-title';
+  formHeading.textContent = 'Faça um novo cadastro';
+
+  const formDescription = document.createElement('p');
+  formDescription.className = 'user-panel__section-description';
+  formDescription.textContent = 'Preencha os campos abaixo para registrar um novo usuário.';
 
   const form = document.createElement('form');
   form.className = 'user-form';
@@ -178,7 +195,8 @@ export function renderUserPanel(viewRoot) {
   }
 
   const registrationsSection = document.createElement('section');
-  registrationsSection.className = 'user-registrations';
+  registrationsSection.className =
+    'user-panel__section user-panel__section--registrations user-registrations';
 
   const registrationsHeading = document.createElement('h2');
   registrationsHeading.className = 'user-registrations__title';
@@ -195,7 +213,7 @@ export function renderUserPanel(viewRoot) {
   registrationsSection.append(registrationsHeading, registrationsDescription, registrationsList);
 
   const detailsSection = document.createElement('section');
-  detailsSection.className = 'user-details';
+  detailsSection.className = 'user-panel__section user-panel__section--details user-details';
 
   const detailsHeading = document.createElement('h2');
   detailsHeading.className = 'user-details__title';
@@ -379,6 +397,10 @@ export function renderUserPanel(viewRoot) {
   );
 
   detailsSection.append(detailsHeading, detailsDescription, selectionInfo, primaryForm, profileForm);
+
+  const columnsWrapper = document.createElement('div');
+  columnsWrapper.className = 'user-panel__columns';
+  columnsWrapper.append(registrationsSection, detailsSection);
 
   let lastRegisteredUserId = null;
   let usersSnapshot = [];
@@ -753,6 +775,11 @@ export function renderUserPanel(viewRoot) {
   });
 
   form.append(nameField, phoneField, passwordField, submitButton, feedback);
+  formSection.append(formHeading, formDescription, form);
+
+  const layout = document.createElement('div');
+  layout.className = 'user-panel__layout';
+  layout.append(formSection, columnsWrapper);
 
   const unsubscribe = subscribeUsers((users) => {
     usersSnapshot = Array.isArray(users) ? users.slice() : [];
@@ -783,7 +810,7 @@ export function renderUserPanel(viewRoot) {
     unsubscribe();
   });
 
-  viewRoot.replaceChildren(heading, form, registrationsSection, detailsSection);
+  viewRoot.replaceChildren(heading, intro, layout);
 }
 
 function collectDeviceInfo() {

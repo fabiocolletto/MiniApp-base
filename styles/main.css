@@ -52,7 +52,8 @@ main {
   box-sizing: border-box;
 }
 
-.main--admin {
+.main--admin,
+.main--user {
   padding-block-start: var(--header-total-size);
   padding-block-end: var(--footer-total-size);
   place-items: stretch;
@@ -347,6 +348,7 @@ footer {
   background: transparent;
 }
 
+
 .card.view--admin {
   width: 100%;
   max-width: none;
@@ -357,6 +359,18 @@ footer {
   min-height: var(--view-max-block-size);
   max-height: var(--view-max-block-size);
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 240, 210, 0.86));
+}
+
+.card.view--user {
+  width: 100%;
+  max-width: none;
+  padding: clamp(1.75rem, 4vw, 2.65rem);
+  box-sizing: border-box;
+  justify-self: stretch;
+  align-self: stretch;
+  min-height: var(--view-max-block-size);
+  max-height: var(--view-max-block-size);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 240, 210, 0.88));
 }
 
 .view--admin {
@@ -660,12 +674,105 @@ footer {
 .view--user {
   display: grid;
   gap: clamp(1.5rem, 4vw, 2rem);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: start;
+  align-items: stretch;
+  justify-items: stretch;
+  text-align: left;
+  min-height: 100%;
+}
+
+.user-panel__title {
+  text-align: center;
+}
+
+.user-panel__intro {
+  margin: 0 auto;
+  max-width: 40rem;
+  font-size: clamp(1rem, 1.25vw + 0.85rem, 1.35rem);
+  color: rgba(61, 42, 18, 0.78);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.user-panel__layout {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.25rem);
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  align-content: stretch;
+}
+
+.user-panel__columns {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  width: 100%;
+  min-height: 0;
+  align-content: start;
+  align-items: stretch;
+}
+
+.user-panel__section {
+  display: grid;
+  gap: clamp(0.9rem, 2vw, 1.45rem);
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1rem 2.2rem rgba(61, 44, 16, 0.14);
+  color: #3d2a12;
+  min-height: 0;
+}
+
+.user-panel__section-title {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw + 0.9rem, 1.7rem);
+  color: #5e4b23;
+  text-transform: uppercase;
+  letter-spacing: clamp(0.05rem, 0.2vw, 0.11rem);
+}
+
+.user-panel__section-description {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  color: rgba(61, 42, 18, 0.7);
+  line-height: 1.5;
+}
+
+.user-panel__section--form .user-form {
+  max-width: 36rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.user-panel__section--registrations {
+  align-self: stretch;
+}
+
+.user-panel__section--details {
+  align-self: stretch;
+}
+
+@media (min-width: 60rem) {
+  .user-panel__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: 100%;
+    align-content: stretch;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .user-panel__section--registrations,
+  .user-panel__section--details {
+    height: 100%;
+  }
 }
 
 .user-form {
   display: grid;
   gap: clamp(1rem, 3vw, 1.5rem);
-  text-align: center;
+  text-align: left;
+  justify-items: stretch;
 }
 
 .user-form__field {
@@ -734,7 +841,7 @@ footer {
 .user-form__feedback {
   font-size: clamp(0.9rem, 1.2vw + 0.55rem, 1.15rem);
   font-weight: 600;
-  text-align: center;
+  text-align: left;
   color: rgba(61, 42, 18, 0.8);
   margin: 0;
 }
@@ -755,6 +862,7 @@ footer {
   display: grid;
   gap: clamp(1rem, 3vw, 1.75rem);
   text-align: left;
+  align-content: start;
 }
 
 .user-registrations__title {
@@ -849,6 +957,7 @@ footer {
   display: grid;
   gap: clamp(1.1rem, 3vw, 1.9rem);
   text-align: left;
+  align-content: start;
 }
 
 .user-details__title {
