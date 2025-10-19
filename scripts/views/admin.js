@@ -31,12 +31,22 @@ function createUserListItem(user) {
   password.className = 'admin-user-list__password';
   password.textContent = maskPassword(user.password);
 
+  const device = document.createElement('span');
+  device.className = 'admin-user-list__device';
+  const deviceLabel = typeof user.device === 'string' && user.device.trim()
+    ? user.device.trim()
+    : 'não identificado';
+  device.textContent = `Dispositivo: ${deviceLabel}`;
+  if (deviceLabel && deviceLabel !== 'não identificado') {
+    device.title = deviceLabel;
+  }
+
   const createdAt = document.createElement('time');
   createdAt.className = 'admin-user-list__timestamp';
   createdAt.dateTime = user.createdAt.toISOString();
   createdAt.textContent = dateFormatter.format(user.createdAt);
 
-  item.append(phone, password, createdAt);
+  item.append(phone, password, device, createdAt);
 
   return item;
 }

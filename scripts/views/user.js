@@ -60,8 +60,12 @@ export function renderUserPanel(viewRoot) {
     }
   }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    feedback.hidden = true;
+    feedback.textContent = '';
+    feedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+    feedback.removeAttribute('role');
 
     if (!phoneInput || !passwordInput) {
       showFeedback('Não foi possível processar o cadastro. Atualize a página e tente novamente.', {
@@ -79,7 +83,11 @@ export function renderUserPanel(viewRoot) {
     }
 
     try {
-      addUser({ phone, password });
+      feedback.hidden = true;
+      submitButton.disabled = true;
+      submitButton.setAttribute('aria-busy', 'true');
+
+      await addUser({ phone, password, device: collectDeviceInfo() });
       form.reset();
       showFeedback('Usuário cadastrado com sucesso! Confira o painel administrativo.', {
         isError: false,
@@ -87,13 +95,41 @@ export function renderUserPanel(viewRoot) {
       phoneInput.focus();
     } catch (error) {
       console.error('Erro ao cadastrar usuário.', error);
-      showFeedback('Não foi possível cadastrar o usuário. Tente novamente.', { isError: true });
+      const errorMessage = error instanceof Error ? error.message : '';
+      const isStorageIssue =
+        typeof errorMessage === 'string' &&
+        (errorMessage.includes('Armazenamento local indisponível') ||
+          errorMessage.includes('armazenamento local'));
+
+      showFeedback(
+        isStorageIssue
+          ? 'Não foi possível cadastrar o usuário porque o armazenamento local está indisponível neste dispositivo.'
+          : 'Não foi possível cadastrar o usuário. Tente novamente.',
+        { isError: true }
+      );
     }
+    submitButton.disabled = false;
+    submitButton.removeAttribute('aria-busy');
   });
 
   form.append(phoneField, passwordField, submitButton, feedback);
 
   viewRoot.replaceChildren(heading, form);
+}
+
+function collectDeviceInfo() {
+  if (typeof navigator === 'undefined') {
+    return 'Desconhecido';
+  }
+
+  const platform = typeof navigator.platform === 'string' ? navigator.platform.trim() : '';
+  const language = typeof navigator.language === 'string' ? navigator.language.trim() : '';
+  const userAgent = typeof navigator.userAgent === 'string' ? navigator.userAgent.trim() : '';
+
+  const parts = [platform, language, userAgent].filter(Boolean);
+  const summary = parts.join(' | ');
+
+  return summary.slice(0, 512) || 'Desconhecido';
 }
 
 function createField({ id, label, type, placeholder, autocomplete, inputMode }) {

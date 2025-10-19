@@ -409,6 +409,12 @@ footer {
   color: rgba(61, 42, 18, 0.75);
 }
 
+.admin-user-list__device {
+  font-size: clamp(0.85rem, 1.1vw + 0.55rem, 1.15rem);
+  color: rgba(61, 42, 18, 0.68);
+  word-break: break-word;
+}
+
 .admin-user-list__timestamp {
   font-size: clamp(0.85rem, 1vw + 0.6rem, 1.1rem);
   color: rgba(61, 42, 18, 0.6);
