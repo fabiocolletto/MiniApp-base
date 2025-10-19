@@ -230,6 +230,7 @@ footer {
 }
 
 .footer-brand__text,
+.footer-legal,
 .footer-version {
   font-size: clamp(0.68rem, 1.25vw, 0.95rem);
   font-weight: 500;
@@ -241,14 +242,31 @@ footer {
   display: inline-block;
 }
 
+.footer-legal,
 .footer-version {
   background: none;
   border: none;
   padding: 0;
   font: inherit;
   cursor: pointer;
-  justify-self: end;
   white-space: nowrap;
+}
+
+.footer-legal {
+  justify-self: center;
+  color: rgba(94, 75, 35, 0.82);
+  text-decoration: underline;
+  text-decoration-thickness: 0.05em;
+  text-decoration-color: rgba(94, 75, 35, 0.45);
+}
+
+.footer-legal:hover,
+.footer-legal:focus-visible {
+  text-decoration-color: rgba(94, 75, 35, 0.75);
+}
+
+.footer-version {
+  justify-self: end;
 }
 
 @media (max-width: 370px) {
@@ -266,12 +284,14 @@ footer {
   }
 
   .footer-brand__text,
+  .footer-legal,
   .footer-version {
     font-size: 0.62rem;
     letter-spacing: 0.01em;
   }
 }
 
+.footer-legal:focus-visible,
 .footer-version:focus-visible {
   outline: 0.15rem solid rgba(94, 75, 35, 0.6);
   outline-offset: 0.2rem;

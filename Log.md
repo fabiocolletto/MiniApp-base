@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.34 - 2025-10-19 11:05 BRT
+- Adiciona botão dedicado aos termos legais no rodapé conectando o painel interativo existente.
+- Ajusta a tipografia e o foco do novo atalho para manter acessibilidade e alinhamento com os demais itens do rodapé.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.33 - 2025-10-19 10:59 BRT
 - Ajusta espaçamentos, tipografia e colunas do rodapé para evitar cortes em telas móveis estreitas mantendo tudo em linha única.
 - Aplica regras específicas para dispositivos até 370px garantindo alinhamento uniforme sem quebrar os termos legais nem o rótulo de versão.
