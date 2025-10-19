@@ -1,5 +1,17 @@
 # Log
 
+## v0.1.21 - 2025-10-19 09:50 BRT
+- Corrige o posicionamento do rodapé para permanecer rente à borda inferior em dispositivos com área segura.
+- Ajusta o cálculo das alturas do layout para refletir a nova base do rodapé.
+
+## v0.1.20 - 2025-10-19 09:35 BRT
+- Garante que o conteúdo do Log seja exibido com legibilidade reforçada no painel.
+- Amplia a largura do painel de histórico para facilitar a leitura das entradas.
+
+## v0.1.19 - 2025-10-19 09:15 BRT
+- Permite rolagem vertical no painel central respeitando o espaço entre cabeçalho e rodapé.
+- Oculta a barra de rolagem para manter a experiência visual limpa em qualquer navegador.
+
 ## v0.1.18 - 2025-10-19 09:00 BRT
 - Recalibração das variáveis de altura do cabeçalho e rodapé para manter ambos rente às bordas em retrato e paisagem.
 - Redução do preenchimento, sombra e contraste do rodapé para deixá-lo mais discreto nas telas largas.
