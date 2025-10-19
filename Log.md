@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.25 - 2025-10-19 11:00 BRT
+- Ajusta o painel central para exibir barras de rolagem finas e consistentes em tablets e celulares.
+- Prevê navegadores sem suporte a `preventScroll` ao focar as views, garantindo troca de telas estável no tablet.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.24 - 2025-10-19 10:40 BRT
 - Criação do painel do usuário com formulário inicial solicitando telefone e senha.
 - Inclusão do botão de acesso à conta no cabeçalho para abrir rapidamente o novo painel.

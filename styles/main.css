@@ -217,12 +217,23 @@ footer {
       (var(--content-padding-block-start) + var(--content-padding-block-end))
   );
   overflow-y: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(94, 75, 35, 0.35) transparent;
 }
 
 .view::-webkit-scrollbar {
-  display: none;
+  width: 0.45rem;
+}
+
+.view::-webkit-scrollbar-thumb {
+  background-color: rgba(94, 75, 35, 0.35);
+  border-radius: 999px;
+}
+
+.view::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .view--admin {
