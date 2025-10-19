@@ -18,37 +18,20 @@ export function renderRegisterPanel(viewRoot) {
 
   const intro = document.createElement('p');
   intro.className = 'register-panel__intro';
-  intro.textContent =
-    'Preencha os campos abaixo para liberar o acesso e acompanhar as informações cadastradas em tempo real.';
+  intro.textContent = 'Informe seu telefone e defina uma senha para liberar o acesso imediato.';
 
   const form = document.createElement('form');
   form.className = 'register-panel__form user-form';
   form.autocomplete = 'on';
   form.noValidate = true;
 
-  const nameField = createInputField({
-    id: 'register-name',
-    label: 'Nome completo',
-    type: 'text',
-    placeholder: 'Digite seu nome completo',
-    autocomplete: 'name',
-  });
-
   const phoneField = createInputField({
     id: 'register-phone',
-    label: 'Número de telefone',
+    label: 'Telefone de contato',
     type: 'tel',
     placeholder: '(00) 00000-0000',
     autocomplete: 'tel',
     inputMode: 'tel',
-  });
-
-  const emailField = createInputField({
-    id: 'register-email',
-    label: 'E-mail (opcional)',
-    type: 'email',
-    placeholder: 'nome@empresa.com',
-    autocomplete: 'email',
   });
 
   const passwordField = createInputField({
@@ -59,19 +42,36 @@ export function renderRegisterPanel(viewRoot) {
     autocomplete: 'new-password',
   });
 
-  const confirmPasswordField = createInputField({
-    id: 'register-confirm-password',
-    label: 'Confirme a senha',
-    type: 'password',
-    placeholder: 'Repita a senha criada',
-    autocomplete: 'new-password',
-  });
-
-  const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
-  const emailInput = emailField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
-  const confirmPasswordInput = confirmPasswordField.querySelector('input');
+
+  const legalSection = document.createElement('div');
+  legalSection.className = 'register-panel__legal';
+
+  const legalOption = document.createElement('label');
+  legalOption.className = 'register-panel__legal-option';
+  legalOption.htmlFor = 'register-legal-consent';
+
+  const legalCheckbox = document.createElement('input');
+  legalCheckbox.type = 'checkbox';
+  legalCheckbox.id = 'register-legal-consent';
+  legalCheckbox.name = 'register-legal-consent';
+  legalCheckbox.className = 'register-panel__legal-checkbox';
+
+  const legalText = document.createElement('span');
+  legalText.className = 'register-panel__legal-text';
+  legalText.append('Li e concordo com os termos legais. ');
+
+  const legalLink = document.createElement('a');
+  legalLink.className = 'register-panel__legal-link';
+  legalLink.href = 'https://5horas.com.br/home/pagina-legal/docs-legais/';
+  legalLink.target = '_blank';
+  legalLink.rel = 'noopener noreferrer';
+  legalLink.textContent = 'Saiba mais';
+
+  legalText.append(legalLink);
+  legalOption.append(legalCheckbox, legalText);
+  legalSection.append(legalOption);
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
@@ -102,51 +102,74 @@ export function renderRegisterPanel(viewRoot) {
     }
   }
 
+  let hasAcceptedTerms = false;
+  let isSubmitting = false;
+
+  function updateLegalControls() {
+    hasAcceptedTerms = legalCheckbox.checked;
+    legalCheckbox.disabled = isSubmitting;
+    legalOption.classList.toggle('register-panel__legal-option--accepted', hasAcceptedTerms);
+    submitButton.disabled = !hasAcceptedTerms || isSubmitting;
+    if (submitButton.disabled) {
+      submitButton.setAttribute('aria-disabled', 'true');
+    } else {
+      submitButton.removeAttribute('aria-disabled');
+    }
+  }
+
+  legalCheckbox.addEventListener('change', () => {
+    resetFeedback();
+    updateLegalControls();
+  });
+
+  updateLegalControls();
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     resetFeedback();
 
-    if (!nameInput || !phoneInput || !passwordInput || !confirmPasswordInput) {
+    if (!phoneInput || !passwordInput) {
       showFeedback('Não foi possível carregar o formulário de cadastro. Atualize a página e tente novamente.', {
         isError: true,
       });
       return;
     }
 
-    const nameValue = nameInput.value.trim();
     const phoneValue = phoneInput.value.trim();
-    const emailValue = emailInput?.value.trim() ?? '';
     const passwordValue = passwordInput.value;
-    const confirmPasswordValue = confirmPasswordInput.value;
 
-    if (!nameValue || !phoneValue || !passwordValue || !confirmPasswordValue) {
-      showFeedback('Preencha nome, telefone e senha para concluir o cadastro.', { isError: true });
+    if (!hasAcceptedTerms) {
+      showFeedback('Para criar sua conta, concorde com os termos legais antes de prosseguir.', {
+        isError: true,
+      });
+      legalCheckbox.focus();
       return;
     }
 
-    if (passwordValue !== confirmPasswordValue) {
-      showFeedback('As senhas informadas não coincidem. Verifique e tente novamente.', { isError: true });
-      confirmPasswordInput.focus();
+    if (!phoneValue || !passwordValue) {
+      showFeedback('Informe telefone e senha para concluir o cadastro.', { isError: true });
       return;
     }
 
     try {
-      submitButton.disabled = true;
+      isSubmitting = true;
+      updateLegalControls();
       submitButton.setAttribute('aria-busy', 'true');
 
       await addUser({
-        name: nameValue,
         phone: phoneValue,
         password: passwordValue,
         device: collectDeviceInfo(),
-        profile: { email: emailValue },
       });
 
       form.reset();
+      hasAcceptedTerms = false;
+      legalCheckbox.checked = false;
+      updateLegalControls();
       showFeedback('Cadastro criado com sucesso! Você já pode acessar o painel de login para entrar.', {
         isError: false,
       });
-      nameInput.focus();
+      phoneInput.focus();
     } catch (error) {
       console.error('Erro ao criar cadastro pelo painel dedicado.', error);
       const errorMessage = error instanceof Error ? error.message : '';
@@ -162,11 +185,12 @@ export function renderRegisterPanel(viewRoot) {
       );
     }
 
-    submitButton.disabled = false;
+    isSubmitting = false;
     submitButton.removeAttribute('aria-busy');
+    updateLegalControls();
   });
 
-  form.append(nameField, phoneField, emailField, passwordField, confirmPasswordField, submitButton, feedback);
+  form.append(phoneField, passwordField, legalSection, submitButton, feedback);
 
   viewRoot.replaceChildren(heading, intro, form);
 }
