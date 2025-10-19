@@ -46,6 +46,7 @@ function createDetailsRow(user, isExpanded) {
   const cell = document.createElement('td');
   cell.colSpan = 5;
   cell.className = 'admin-user-table__details-cell';
+  cell.dataset.label = 'Detalhes do usuário';
 
   const container = document.createElement('div');
   container.className = 'admin-user-table__details';
@@ -106,6 +107,7 @@ function renderUserTableBody(
     const emptyCell = document.createElement('td');
     emptyCell.colSpan = 5;
     emptyCell.className = 'admin-user-table__empty-cell';
+    emptyCell.dataset.label = 'Usuários';
     emptyCell.textContent = 'Nenhum usuário cadastrado até o momento.';
 
     emptyRow.append(emptyCell);
@@ -129,11 +131,13 @@ function renderUserTableBody(
 
       const nameCell = document.createElement('td');
       nameCell.className = 'admin-user-table__cell admin-user-table__cell--name';
+      nameCell.dataset.label = 'Nome';
       if (isEditing) {
         const nameInput = createInput(editingState.name ?? user.name ?? '', {
           name: 'admin-user-name',
           maxLength: 120,
         });
+        nameInput.setAttribute('aria-label', 'Nome do usuário');
         if (editingState?.isSaving) {
           nameInput.disabled = true;
         }
@@ -145,11 +149,13 @@ function renderUserTableBody(
 
       const phoneCell = document.createElement('td');
       phoneCell.className = 'admin-user-table__cell admin-user-table__cell--phone';
+      phoneCell.dataset.label = 'Telefone';
       if (isEditing) {
         const phoneInput = createInput(editingState.phone ?? user.phone ?? '', {
           name: 'admin-user-phone',
           maxLength: 32,
         });
+        phoneInput.setAttribute('aria-label', 'Telefone do usuário');
         if (editingState?.isSaving) {
           phoneInput.disabled = true;
         }
@@ -161,6 +167,7 @@ function renderUserTableBody(
 
       const createdAtCell = document.createElement('td');
       createdAtCell.className = 'admin-user-table__cell admin-user-table__cell--created-at';
+      createdAtCell.dataset.label = 'Criado em';
       const createdAtTime = document.createElement('time');
       createdAtTime.dateTime = user.createdAt.toISOString();
       createdAtTime.textContent = dateFormatter.format(user.createdAt);
@@ -168,6 +175,7 @@ function renderUserTableBody(
 
       const updatedAtCell = document.createElement('td');
       updatedAtCell.className = 'admin-user-table__cell admin-user-table__cell--updated-at';
+      updatedAtCell.dataset.label = 'Atualizado em';
       const updatedAtTime = document.createElement('time');
       updatedAtTime.dateTime = user.updatedAt.toISOString();
       updatedAtTime.textContent = dateFormatter.format(user.updatedAt);
@@ -175,6 +183,7 @@ function renderUserTableBody(
 
       const actionsCell = document.createElement('td');
       actionsCell.className = 'admin-user-table__cell admin-user-table__cell--actions';
+      actionsCell.dataset.label = 'Ações';
 
       if (isEditing) {
         const saveButton = document.createElement('button');
@@ -241,9 +250,6 @@ export function renderAdmin(viewRoot) {
 
   const heading = document.createElement('h1');
   heading.textContent = 'Painel Administrativo';
-
-  const message = document.createElement('p');
-  message.textContent = 'Área reservada para ferramentas internas.';
 
   const listHeading = document.createElement('h2');
   listHeading.className = 'admin-user-section__title';
@@ -485,5 +491,5 @@ export function renderAdmin(viewRoot) {
     unsubscribe();
   });
 
-  viewRoot.replaceChildren(heading, message, listSection);
+  viewRoot.replaceChildren(heading, listSection);
 }
