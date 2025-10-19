@@ -444,11 +444,24 @@ footer {
   background: rgba(242, 206, 136, 0.25);
 }
 
+.admin-user-table__row--editing {
+  background: rgba(116, 183, 116, 0.12);
+  box-shadow: inset 0 0 0 0.12rem rgba(53, 121, 53, 0.25);
+}
+
+.admin-user-table__row--editing + .admin-user-table__details-row {
+  box-shadow: inset 0 0 0 0 rgba(0, 0, 0, 0);
+}
+
 .admin-user-table__cell {
   padding: clamp(0.75rem, 2vw, 1.1rem) clamp(1.15rem, 2.5vw, 1.7rem);
   font-size: clamp(0.9rem, 1.1vw + 0.55rem, 1.15rem);
   border-bottom: 0.08rem solid rgba(61, 44, 16, 0.08);
   vertical-align: middle;
+}
+
+.admin-user-table__row--editing .admin-user-table__cell {
+  border-bottom-color: rgba(53, 121, 53, 0.3);
 }
 
 .admin-user-table__cell--name {
@@ -475,6 +488,30 @@ footer {
   justify-content: flex-start;
 }
 
+.admin-user-table__input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.7rem;
+  border: 0.1rem solid rgba(53, 121, 53, 0.35);
+  font: inherit;
+  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  background: rgba(255, 255, 255, 0.9);
+  color: #2f452f;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-user-table__input:focus-visible {
+  outline: none;
+  border-color: rgba(53, 121, 53, 0.7);
+  box-shadow: 0 0 0 0.16rem rgba(116, 183, 116, 0.25);
+}
+
+.admin-user-table__input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .admin-user-table__action {
   border: 0.1rem solid rgba(61, 44, 16, 0.35);
   background: rgba(255, 255, 255, 0.95);
@@ -499,6 +536,17 @@ footer {
   border-color: rgba(53, 121, 53, 0.45);
 }
 
+.admin-user-table__action--save {
+  background: rgba(53, 121, 53, 0.2);
+  border-color: rgba(53, 121, 53, 0.55);
+  color: #1f361f;
+}
+
+.admin-user-table__action--cancel {
+  background: rgba(191, 121, 27, 0.18);
+  border-color: rgba(191, 121, 27, 0.45);
+}
+
 .admin-user-table__action--details {
   background: rgba(242, 188, 97, 0.18);
   border-color: rgba(191, 121, 27, 0.4);
@@ -507,6 +555,13 @@ footer {
 .admin-user-table__action--delete {
   background: rgba(214, 93, 93, 0.18);
   border-color: rgba(166, 52, 52, 0.45);
+}
+
+.admin-user-table__action[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .admin-user-table__action--details:hover,
@@ -522,6 +577,17 @@ footer {
 .admin-user-table__action--edit:hover,
 .admin-user-table__action--edit:focus-visible {
   background: rgba(116, 183, 116, 0.35);
+}
+
+.admin-user-table__action--save:hover,
+.admin-user-table__action--save:focus-visible {
+  background: rgba(53, 121, 53, 0.3);
+  color: #132513;
+}
+
+.admin-user-table__action--cancel:hover,
+.admin-user-table__action--cancel:focus-visible {
+  background: rgba(191, 121, 27, 0.3);
 }
 
 .admin-user-table__empty-cell {

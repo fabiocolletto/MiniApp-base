@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.44 - 2025-10-19 15:15 BRT
+- Transforma a ação de edição do painel administrativo em atualização inline com botões dedicados de salvar e cancelar na própria linha.
+- Bloqueia interações concorrentes enquanto uma linha está em edição e mantém o foco dos campos ao alternar estados.
+- Ajusta os estilos da tabela para destacar o modo de edição e aplica aparência específica aos novos controles.
+- Atualiza o rodapé para exibir a nova versão do aplicativo.
+
 ## v0.1.43 - 2025-10-19 14:45 BRT
 - Permite que o usuário selecione um cadastro para revisar telefone e senha, além de complementar o perfil com e-mail, endereço e observações.
 - Sincroniza os novos dados extras com o armazenamento e exibe os campos atualizados no painel administrativo.

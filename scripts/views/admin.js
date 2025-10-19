@@ -77,7 +77,26 @@ function createDetailsRow(user, isExpanded) {
   return row;
 }
 
-function renderUserTableBody(bodyElement, users, expandedUserIds = new Set()) {
+function createInput(value, { name, type = 'text', maxLength } = {}) {
+  const input = document.createElement('input');
+  input.className = 'admin-user-table__input';
+  input.type = type;
+  input.name = name || '';
+  input.value = value ?? '';
+
+  if (typeof maxLength === 'number') {
+    input.maxLength = maxLength;
+  }
+
+  return input;
+}
+
+function renderUserTableBody(
+  bodyElement,
+  users,
+  expandedUserIds = new Set(),
+  editingState = null,
+) {
   bodyElement.innerHTML = '';
 
   if (!Array.isArray(users) || users.length === 0) {
@@ -102,14 +121,43 @@ function renderUserTableBody(bodyElement, users, expandedUserIds = new Set()) {
       row.className = 'admin-user-table__row';
       row.dataset.userId = String(user.id);
       const isExpanded = expandedUserIds.has(user.id);
+      const isEditing = editingState?.userId === user.id;
+
+      if (isEditing) {
+        row.classList.add('admin-user-table__row--editing');
+      }
 
       const nameCell = document.createElement('td');
       nameCell.className = 'admin-user-table__cell admin-user-table__cell--name';
-      nameCell.textContent = user.name || 'Nome não informado';
+      if (isEditing) {
+        const nameInput = createInput(editingState.name ?? user.name ?? '', {
+          name: 'admin-user-name',
+          maxLength: 120,
+        });
+        if (editingState?.isSaving) {
+          nameInput.disabled = true;
+        }
+
+        nameCell.append(nameInput);
+      } else {
+        nameCell.textContent = user.name || 'Nome não informado';
+      }
 
       const phoneCell = document.createElement('td');
       phoneCell.className = 'admin-user-table__cell admin-user-table__cell--phone';
-      phoneCell.textContent = user.phone;
+      if (isEditing) {
+        const phoneInput = createInput(editingState.phone ?? user.phone ?? '', {
+          name: 'admin-user-phone',
+          maxLength: 32,
+        });
+        if (editingState?.isSaving) {
+          phoneInput.disabled = true;
+        }
+
+        phoneCell.append(phoneInput);
+      } else {
+        phoneCell.textContent = user.phone;
+      }
 
       const createdAtCell = document.createElement('td');
       createdAtCell.className = 'admin-user-table__cell admin-user-table__cell--created-at';
@@ -128,29 +176,56 @@ function renderUserTableBody(bodyElement, users, expandedUserIds = new Set()) {
       const actionsCell = document.createElement('td');
       actionsCell.className = 'admin-user-table__cell admin-user-table__cell--actions';
 
-      const detailsButton = document.createElement('button');
-      detailsButton.type = 'button';
-      detailsButton.className = 'admin-user-table__action admin-user-table__action--details';
-      detailsButton.dataset.action = 'details';
-      detailsButton.textContent = isExpanded ? 'Ocultar detalhes' : 'Detalhes';
-      detailsButton.setAttribute('aria-expanded', String(isExpanded));
+      if (isEditing) {
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'admin-user-table__action admin-user-table__action--save';
+        saveButton.dataset.action = 'save-edit';
+        saveButton.textContent = 'Salvar';
+        saveButton.disabled = Boolean(editingState?.isSaving);
 
-      const editButton = document.createElement('button');
-      editButton.type = 'button';
-      editButton.className = 'admin-user-table__action admin-user-table__action--edit';
-      editButton.dataset.action = 'edit';
-      editButton.textContent = 'Editar';
+        const cancelButton = document.createElement('button');
+        cancelButton.type = 'button';
+        cancelButton.className = 'admin-user-table__action admin-user-table__action--cancel';
+        cancelButton.dataset.action = 'cancel-edit';
+        cancelButton.textContent = 'Cancelar';
+        cancelButton.disabled = Boolean(editingState?.isSaving);
 
-      const deleteButton = document.createElement('button');
-      deleteButton.type = 'button';
-      deleteButton.className = 'admin-user-table__action admin-user-table__action--delete';
-      deleteButton.dataset.action = 'delete';
-      deleteButton.textContent = 'Excluir';
+        actionsCell.append(saveButton, cancelButton);
+      } else {
+        const detailsButton = document.createElement('button');
+        detailsButton.type = 'button';
+        detailsButton.className = 'admin-user-table__action admin-user-table__action--details';
+        detailsButton.dataset.action = 'details';
+        detailsButton.textContent = isExpanded ? 'Ocultar detalhes' : 'Detalhes';
+        detailsButton.setAttribute('aria-expanded', String(isExpanded));
 
-      actionsCell.append(detailsButton, editButton, deleteButton);
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'admin-user-table__action admin-user-table__action--edit';
+        editButton.dataset.action = 'edit';
+        editButton.textContent = 'Editar';
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'admin-user-table__action admin-user-table__action--delete';
+        deleteButton.dataset.action = 'delete';
+        deleteButton.textContent = 'Excluir';
+
+        if (editingState) {
+          detailsButton.disabled = true;
+          detailsButton.setAttribute('aria-disabled', 'true');
+          editButton.disabled = true;
+          editButton.setAttribute('aria-disabled', 'true');
+          deleteButton.disabled = true;
+          deleteButton.setAttribute('aria-disabled', 'true');
+        }
+
+        actionsCell.append(detailsButton, editButton, deleteButton);
+      }
 
       row.append(nameCell, phoneCell, createdAtCell, updatedAtCell, actionsCell);
-      const detailsRow = createDetailsRow(user, isExpanded);
+      const detailsRow = createDetailsRow(user, isExpanded && !isEditing);
 
       bodyElement.append(row, detailsRow);
     });
@@ -208,6 +283,7 @@ export function renderAdmin(viewRoot) {
 
   let usersSnapshot = [];
   const expandedUserIds = new Set();
+  let editingState = null;
 
   tableBody.addEventListener('click', async (event) => {
     const target = event.target;
@@ -234,6 +310,10 @@ export function renderAdmin(viewRoot) {
       return;
     }
 
+    if (editingState?.isSaving) {
+      return;
+    }
+
     if (action === 'details') {
       if (expandedUserIds.has(userId)) {
         expandedUserIds.delete(userId);
@@ -241,7 +321,7 @@ export function renderAdmin(viewRoot) {
         expandedUserIds.add(userId);
       }
 
-      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds);
+      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
 
       const focusSelector = `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--details`;
       requestAnimationFrame(() => {
@@ -255,31 +335,107 @@ export function renderAdmin(viewRoot) {
     }
 
     if (action === 'edit') {
-      const name = window.prompt('Atualize o nome do usuário:', user.name || '');
-      if (name == null) {
+      if (editingState && editingState.userId !== userId) {
+        window.alert('Conclua a edição em andamento antes de editar outro usuário.');
         return;
       }
 
-      const phone = window.prompt('Atualize o telefone do usuário:', user.phone || '');
-      if (phone == null) {
+      editingState = {
+        userId,
+        name: user.name || '',
+        phone: user.phone || '',
+        isSaving: false,
+      };
+
+      if (expandedUserIds.has(userId)) {
+        expandedUserIds.delete(userId);
+      }
+
+      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
+
+      requestAnimationFrame(() => {
+        const input = tableBody.querySelector(
+          `.admin-user-table__row[data-user-id="${userId}"] input[name="admin-user-name"]`,
+        );
+        if (input instanceof HTMLInputElement) {
+          input.focus();
+          input.select();
+        }
+      });
+
+      return;
+    }
+
+    if (action === 'cancel-edit') {
+      editingState = null;
+      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
+
+      requestAnimationFrame(() => {
+        const button = tableBody.querySelector(
+          `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
+        );
+        if (button instanceof HTMLButtonElement) {
+          button.focus();
+        }
+      });
+
+      return;
+    }
+
+    if (action === 'save-edit') {
+      const nameInput = row.querySelector('input[name="admin-user-name"]');
+      const phoneInput = row.querySelector('input[name="admin-user-phone"]');
+
+      if (!(nameInput instanceof HTMLInputElement) || !(phoneInput instanceof HTMLInputElement)) {
+        window.alert('Não foi possível identificar os campos de edição.');
         return;
       }
 
-      const trimmedName = name.trim();
-      const trimmedPhone = phone.trim();
+      const trimmedName = nameInput.value.trim();
+      const trimmedPhone = phoneInput.value.trim();
 
       if (!trimmedName || !trimmedPhone) {
         window.alert('Nome e telefone são obrigatórios para atualizar o cadastro.');
         return;
       }
 
+      editingState = {
+        userId,
+        name: trimmedName,
+        phone: trimmedPhone,
+        isSaving: true,
+      };
+
+      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
+
       try {
         await updateUser(userId, { name: trimmedName, phone: trimmedPhone });
         window.alert('Usuário atualizado com sucesso.');
+        editingState = null;
       } catch (error) {
         console.error('Erro ao atualizar usuário pelo painel administrativo.', error);
         window.alert('Não foi possível atualizar o usuário. Tente novamente.');
+        editingState = {
+          userId,
+          name: trimmedName,
+          phone: trimmedPhone,
+          isSaving: false,
+        };
       }
+
+      renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
+
+      if (!editingState) {
+        requestAnimationFrame(() => {
+          const button = tableBody.querySelector(
+            `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
+          );
+          if (button instanceof HTMLButtonElement) {
+            button.focus();
+          }
+        });
+      }
+
       return;
     }
 
@@ -309,7 +465,20 @@ export function renderAdmin(viewRoot) {
       }
     });
 
-    renderUserTableBody(tableBody, usersSnapshot, expandedUserIds);
+    if (editingState) {
+      const matchingUser = usersSnapshot.find((user) => user.id === editingState.userId);
+      if (!matchingUser) {
+        editingState = null;
+      } else if (!editingState.isSaving) {
+        editingState = {
+          ...editingState,
+          name: editingState.name ?? matchingUser.name ?? '',
+          phone: editingState.phone ?? matchingUser.phone ?? '',
+        };
+      }
+    }
+
+    renderUserTableBody(tableBody, usersSnapshot, expandedUserIds, editingState);
   });
 
   registerViewCleanup(viewRoot, () => {
