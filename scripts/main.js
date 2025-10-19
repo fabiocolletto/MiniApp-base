@@ -5,8 +5,10 @@ import { renderHome } from './views/home.js';
 import { renderNotFound } from './views/not-found.js';
 import { renderUserPanel } from './views/user.js';
 import { renderLegal } from './views/legal.js';
+import { runViewCleanup } from './view-cleanup.js';
 
 const viewRoot = document.getElementById('view-root');
+const mainElement = document.querySelector('main');
 const logo = document.querySelector('.header-logo');
 const headerTitle = document.querySelector('.header-title');
 const versionButton = document.querySelector('.footer-version');
@@ -46,7 +48,11 @@ export function renderView(name) {
     return;
   }
 
+  mainElement?.classList.toggle('main--admin', name === 'admin');
+
   const view = views[name];
+
+  runViewCleanup(viewRoot);
 
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);

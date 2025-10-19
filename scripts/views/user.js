@@ -1,3 +1,5 @@
+import { addUser } from '../data/user-store.js';
+
 const BASE_CLASSES = 'card view view--user';
 
 export function renderUserPanel(viewRoot) {
@@ -15,9 +17,6 @@ export function renderUserPanel(viewRoot) {
   form.className = 'user-form';
   form.autocomplete = 'on';
   form.noValidate = true;
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-  });
 
   const phoneField = createField({
     id: 'user-phone',
@@ -36,12 +35,63 @@ export function renderUserPanel(viewRoot) {
     autocomplete: 'current-password',
   });
 
+  const phoneInput = phoneField.querySelector('input');
+  const passwordInput = passwordField.querySelector('input');
+
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
   submitButton.className = 'user-form__submit';
-  submitButton.textContent = 'Entrar';
+  submitButton.textContent = 'Cadastrar';
 
-  form.append(phoneField, passwordField, submitButton);
+  const feedback = document.createElement('p');
+  feedback.className = 'user-form__feedback';
+  feedback.setAttribute('aria-live', 'polite');
+  feedback.hidden = true;
+
+  function showFeedback(message, { isError = false } = {}) {
+    feedback.textContent = message;
+    feedback.hidden = false;
+    feedback.classList.toggle('user-form__feedback--error', isError);
+    feedback.classList.toggle('user-form__feedback--success', !isError);
+    if (isError) {
+      feedback.setAttribute('role', 'alert');
+    } else {
+      feedback.removeAttribute('role');
+    }
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!phoneInput || !passwordInput) {
+      showFeedback('Não foi possível processar o cadastro. Atualize a página e tente novamente.', {
+        isError: true,
+      });
+      return;
+    }
+
+    const phone = phoneInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!phone || !password) {
+      showFeedback('Informe o telefone e a senha para concluir o cadastro.', { isError: true });
+      return;
+    }
+
+    try {
+      addUser({ phone, password });
+      form.reset();
+      showFeedback('Usuário cadastrado com sucesso! Confira o painel administrativo.', {
+        isError: false,
+      });
+      phoneInput.focus();
+    } catch (error) {
+      console.error('Erro ao cadastrar usuário.', error);
+      showFeedback('Não foi possível cadastrar o usuário. Tente novamente.', { isError: true });
+    }
+  });
+
+  form.append(phoneField, passwordField, submitButton, feedback);
 
   viewRoot.replaceChildren(heading, form);
 }
