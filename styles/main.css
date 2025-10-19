@@ -50,10 +50,9 @@ main {
 
 .card {
   width: min(90vw, 40rem);
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: transparent;
   border-radius: 1.5rem;
   box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.2);
-  padding: clamp(2.25rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 4rem);
   text-align: center;
 }
 
@@ -132,12 +131,11 @@ footer {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: clamp(0.5rem, 1.5vw, 1rem);
-  padding-inline: 1rem;
+  gap: clamp(0.3rem, 1vw, 0.75rem);
+  padding-inline: clamp(0.5rem, 3vw, 1rem);
   text-align: center;
   color: #5e4b23;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(5px);
+  background-color: #f4d3a1;
   font-size: clamp(0.78rem, 1.45vw, 0.92rem);
   box-shadow: 0 0.25rem 0.45rem rgba(94, 75, 35, 0.04);
 }
@@ -197,10 +195,50 @@ header {
 
 footer {
   inset-block-end: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  justify-items: center;
+  column-gap: clamp(0.3rem, 0.9vw, 0.65rem);
   padding-block-start: var(--footer-padding-block);
   padding-block-end: var(--footer-padding-block-end);
   min-block-size: var(--footer-base-size);
   z-index: 9;
+}
+
+.footer-spacer {
+  width: 100%;
+  height: 0;
+}
+
+.footer-brand {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.25rem, 0.85vw, 0.6rem);
+  justify-self: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.footer-brand__icon {
+  width: clamp(1.75rem, 4vw, 2.25rem);
+  height: clamp(1.75rem, 4vw, 2.25rem);
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+.footer-brand__text,
+.footer-version {
+  font-size: clamp(0.68rem, 1.25vw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(94, 75, 35, 0.75);
+}
+
+.footer-brand__text {
+  display: inline-block;
 }
 
 .footer-version {
@@ -208,43 +246,35 @@ footer {
   border: none;
   padding: 0;
   font: inherit;
-  color: inherit;
   cursor: pointer;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+@media (max-width: 370px) {
+  header,
+  footer {
+    gap: 0.25rem;
+  }
+
+  footer {
+    padding-inline: clamp(0.35rem, 4vw, 0.75rem);
+  }
+
+  .footer-brand {
+    gap: 0.2rem;
+  }
+
+  .footer-brand__text,
+  .footer-version {
+    font-size: 0.62rem;
+    letter-spacing: 0.01em;
+  }
 }
 
 .footer-version:focus-visible {
   outline: 0.15rem solid rgba(94, 75, 35, 0.6);
   outline-offset: 0.2rem;
-}
-
-.footer-legal {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(0.45rem, 1.2vw, 0.75rem);
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-}
-
-.footer-legal:focus-visible {
-  outline: 0.15rem solid rgba(94, 75, 35, 0.6);
-  outline-offset: 0.2rem;
-}
-
-.footer-legal__icon {
-  width: clamp(1.75rem, 4vw, 2.25rem);
-  height: clamp(1.75rem, 4vw, 2.25rem);
-  border-radius: 0.5rem;
-  object-fit: contain;
-}
-
-.footer-legal__text {
-  font-size: clamp(0.78rem, 1.35vw, 0.95rem);
-  font-weight: 500;
 }
 
 .view {
@@ -258,6 +288,12 @@ footer {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(94, 75, 35, 0.35) transparent;
+  padding: 5%;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  gap: clamp(1rem, 3vw, 1.75rem);
+  text-align: center;
 }
 
 .view::-webkit-scrollbar {
@@ -286,7 +322,7 @@ footer {
 .user-form {
   display: grid;
   gap: clamp(1rem, 3vw, 1.5rem);
-  text-align: left;
+  text-align: center;
 }
 
 .user-form__field {
@@ -340,23 +376,25 @@ footer {
 }
 
 .view--log {
-  text-align: left;
+  text-align: center;
   display: grid;
   gap: 1.25rem;
   width: min(92vw, 50rem);
   margin-inline: auto;
-  align-items: start;
-  justify-items: stretch;
+  align-items: center;
+  justify-items: center;
   color: #3d2a12;
 }
 
 .view--legal {
-  text-align: left;
+  text-align: center;
   display: grid;
   gap: clamp(1rem, 3vw, 1.75rem);
   width: min(92vw, 56rem);
   margin-inline: auto;
   color: #3d2a12;
+  justify-items: center;
+  align-items: center;
 }
 
 .legal-description {
