@@ -438,15 +438,16 @@ footer {
 }
 
 .card.view--register {
-  width: 100%;
-  max-width: none;
-  padding: clamp(1.75rem, 4vw, 2.65rem);
+  width: min(92vw, 42rem);
+  padding: clamp(1.75rem, 3.2vw, 2.6rem);
   box-sizing: border-box;
-  justify-self: stretch;
-  align-self: stretch;
-  min-height: var(--view-max-block-size);
-  max-height: var(--view-max-block-size);
+  justify-self: center;
+  align-self: center;
   background: #fff;
+  max-height: var(--view-max-block-size);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
 }
 
 .view--admin {
@@ -790,11 +791,17 @@ footer {
 .view--login,
 .view--register {
   display: grid;
-  gap: clamp(1.4rem, 4vw, 2rem);
+  gap: clamp(1rem, 3vw, 1.6rem);
   align-content: start;
   min-height: 100%;
   justify-items: stretch;
   text-align: center;
+}
+
+.view--register {
+  padding: clamp(1.25rem, 3.5vw, 2.1rem);
+  justify-items: center;
+  grid-template-rows: auto auto minmax(0, 1fr);
 }
 
 .view--admin > h1,
@@ -856,36 +863,45 @@ footer {
   text-align: left;
 }
 
+.register-panel__form {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 56rem) {
+  .card.view--register {
+    width: min(88vw, 48rem);
+  }
+
+  .register-panel__form {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2vw, 1.6rem);
+    row-gap: clamp(0.85rem, 1.8vw, 1.4rem);
+  }
+
+  .register-panel__intro {
+    max-width: 38rem;
+  }
+
+  .register-panel__form .user-form__field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .register-panel__form .user-form__field,
+  .register-panel__form .user-form__submit,
+  .register-panel__form .register-panel__feedback {
+    width: 100%;
+  }
+
+  .register-panel__form .user-form__submit,
+  .register-panel__form .register-panel__feedback {
+    grid-column: 1 / -1;
+  }
+}
+
 .register-panel__feedback {
   text-align: center;
-}
-
-.register-panel__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(0.4rem, 1.1vw, 0.8rem);
-  margin-top: clamp(0.8rem, 2.5vw, 1.4rem);
-}
-
-.register-panel__back-button {
-  padding: 0.75rem 1.8rem;
-  border-radius: 2rem;
-  border: 0.12rem solid rgba(94, 75, 35, 0.35);
-  background: #fff;
-  color: rgba(61, 42, 18, 0.9);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.register-panel__back-button:hover,
-.register-panel__back-button:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(94, 75, 35, 0.55);
-  box-shadow: 0 0.35rem 0.9rem rgba(94, 75, 35, 0.18);
-  outline: none;
 }
 
 .login-panel__manage-button {
