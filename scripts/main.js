@@ -19,10 +19,23 @@ const views = {
   user: renderUserPanel,
 };
 
+let allowPreventScrollOption = true;
+
 function focusViewRoot() {
-  if (viewRoot instanceof HTMLElement) {
-    viewRoot.focus({ preventScroll: true });
+  if (!(viewRoot instanceof HTMLElement)) {
+    return;
   }
+
+  if (allowPreventScrollOption) {
+    try {
+      viewRoot.focus({ preventScroll: true });
+      return;
+    } catch (error) {
+      allowPreventScrollOption = false;
+    }
+  }
+
+  viewRoot.focus();
 }
 
 export function renderView(name) {
