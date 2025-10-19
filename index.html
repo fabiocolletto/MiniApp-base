@@ -16,6 +16,7 @@
         display: grid;
         place-items: center;
         background: radial-gradient(circle at top, #fef7d1, #f4d799 55%, #f1b46c);
+        padding: 4rem 0;
       }
 
       main {
@@ -85,13 +86,37 @@
           transform: rotate(360deg);
         }
       }
+
+      header,
+      footer {
+        position: fixed;
+        left: 0;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        text-align: center;
+        color: #5e4b23;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(6px);
+        font-size: 0.9rem;
+        z-index: 10;
+      }
+
+      header {
+        top: 0;
+      }
+
+      footer {
+        bottom: 0;
+      }
     </style>
   </head>
   <body>
+    <header>MiniApp</header>
     <main>
       <div class="sun" role="presentation"></div>
       <h1>Bom dia!</h1>
       <p>Que o seu dia seja cheio de energia positiva e boas conquistas.</p>
     </main>
+    <footer aria-live="polite">Versão v0.1.0</footer>
   </body>
 </html>

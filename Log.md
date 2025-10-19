@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.2 - 2025-10-20
+- Inclusão de header fixo no topo seguindo o estilo do rodapé para destacar o nome do aplicativo.
+
+## v0.1.1 - 2025-10-20
+- Adição de rodapé fixo exibindo a versão do aplicativo e ajuste de espaçamento para não sobrepor o conteúdo.
+
 ## v0.1.0 - 2025-10-19
 - Atualização do README para anunciar o início do novo projeto colaborativo.
 - Criação do `AGENTS.md` com as diretrizes que devem ser seguidas antes de cada tarefa.
