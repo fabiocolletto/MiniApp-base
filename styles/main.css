@@ -58,11 +58,16 @@ main {
 }
 
 h1 {
-  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  font-size: clamp(2.1rem, 3vw + 1.2rem, 3.6rem);
   margin: 0 0 1rem;
   color: #f29f05;
   text-transform: uppercase;
-  letter-spacing: 0.3rem;
+  letter-spacing: clamp(0.12rem, 0.5vw, 0.28rem);
+  line-height: 1.1;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 p {

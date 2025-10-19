@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.26 - 2025-10-19 11:30 BRT
+- Ajusta o espaçamento e a quebra automática dos títulos para impedir cortes do texto em celulares.
+- Valida visualmente as telas de Log, Painel Administrativo, Painel Inicial e Painel do Usuário em smartphones e tablet comuns.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.25 - 2025-10-19 11:00 BRT
 - Ajusta o painel central para exibir barras de rolagem finas e consistentes em tablets e celulares.
 - Prevê navegadores sem suporte a `preventScroll` ao focar as views, garantindo troca de telas estável no tablet.
