@@ -1,16 +1,22 @@
 import { renderGreeting } from './views/greeting.js';
 import { renderAdmin } from './views/admin.js';
 import { renderLog } from './views/log.js';
+import { renderHome } from './views/home.js';
 import { renderNotFound } from './views/not-found.js';
+import { renderUserPanel } from './views/user.js';
 
 const viewRoot = document.getElementById('view-root');
 const logo = document.querySelector('.header-logo');
+const headerTitle = document.querySelector('.header-title');
 const versionButton = document.querySelector('.footer-version');
+const userButton = document.querySelector('.header-user-button');
 
 const views = {
   greeting: renderGreeting,
   admin: renderAdmin,
   log: renderLog,
+  home: renderHome,
+  user: renderUserPanel,
 };
 
 function focusViewRoot() {
@@ -40,5 +46,7 @@ export function renderView(name) {
 
 logo?.addEventListener('click', () => renderView('admin'));
 versionButton?.addEventListener('click', () => renderView('log'));
+headerTitle?.addEventListener('click', () => renderView('home'));
+userButton?.addEventListener('click', () => renderView('user'));
 
 renderView('greeting');

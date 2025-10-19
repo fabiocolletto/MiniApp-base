@@ -156,6 +156,38 @@ header {
   font-weight: 600;
 }
 
+.header-user-button {
+  position: absolute;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2.4rem, 4vw, 2.9rem);
+  height: clamp(2.4rem, 4vw, 2.9rem);
+  border-radius: 50%;
+  border: 0.12rem solid rgba(94, 75, 35, 0.35);
+  background: rgba(255, 255, 255, 0.85);
+  color: #5e4b23;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-user-button:hover,
+.header-user-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 0.4rem 1rem rgba(94, 75, 35, 0.18);
+  outline: none;
+}
+
+.header-user-button:focus-visible {
+  border-color: rgba(94, 75, 35, 0.6);
+}
+
+.header-user-button__icon {
+  width: 60%;
+  height: 60%;
+}
+
 footer {
   inset-block-end: 0;
   padding-block-start: var(--footer-padding-block);
@@ -196,6 +228,63 @@ footer {
 .view--admin {
   display: grid;
   gap: 1.5rem;
+}
+
+.view--user {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2rem);
+}
+
+.user-form {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  text-align: left;
+}
+
+.user-form__field {
+  display: grid;
+  gap: 0.35rem;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  color: #5e4b23;
+}
+
+.user-form__label {
+  font-weight: 600;
+}
+
+.user-form__field input {
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  border: 0.1rem solid rgba(94, 75, 35, 0.35);
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.92);
+  box-sizing: border-box;
+}
+
+.user-form__field input:focus {
+  outline: 0.15rem solid rgba(242, 159, 5, 0.5);
+  outline-offset: 0.1rem;
+}
+
+.user-form__submit {
+  justify-self: center;
+  padding: 0.85rem 2.5rem;
+  border-radius: 2rem;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #f29f05, #f28705);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-form__submit:hover,
+.user-form__submit:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 0.8rem 1.6rem rgba(242, 135, 5, 0.35);
+  outline: none;
 }
 
 .view--admin p {
