@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.2 - 2025-10-21
+- Criação de cabeçalho fixo no topo com visual alinhado ao rodapé e ajuste do espaçamento da página.
+
 ## v0.1.1 - 2025-10-20
 - Adição de rodapé fixo exibindo a versão do aplicativo e ajuste de espaçamento para não sobrepor o conteúdo.
 

@@ -16,7 +16,7 @@
         display: grid;
         place-items: center;
         background: radial-gradient(circle at top, #fef7d1, #f4d799 55%, #f1b46c);
-        padding-bottom: 4rem;
+        padding: 4rem 0;
       }
 
       main {
@@ -87,9 +87,9 @@
         }
       }
 
+      header,
       footer {
         position: fixed;
-        bottom: 0;
         left: 0;
         width: 100%;
         padding: 0.75rem 1rem;
@@ -99,9 +99,18 @@
         backdrop-filter: blur(6px);
         font-size: 0.9rem;
       }
+
+      header {
+        top: 0;
+      }
+
+      footer {
+        bottom: 0;
+      }
     </style>
   </head>
   <body>
+    <header aria-label="Topo da aplicação">MiniApp Base</header>
     <main>
       <div class="sun" role="presentation"></div>
       <h1>Bom dia!</h1>
