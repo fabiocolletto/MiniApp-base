@@ -18,25 +18,24 @@
         loading="lazy"
       />
       <span class="header-title">MiniApp Base</span>
-      <button
-        type="button"
-        class="header-user-button"
-        aria-label="Abrir painel de login"
-        title="Acessar painel de login"
-      >
-        <svg
-          class="header-user-button__icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
+      <nav class="header-actions" aria-label="Ações de acesso">
+        <a
+          class="header-action header-action--register header-register-link"
+          href="#register"
+          aria-label="Ir para o painel de cadastro"
+          title="Criar uma nova conta"
         >
-          <path
-            d="M12 2.75a4.25 4.25 0 1 1 0 8.5 4.25 4.25 0 0 1 0-8.5Zm0 9.5c3.24 0 7.25 1.63 7.25 4.87v1.63c0 .69-.56 1.25-1.25 1.25H6c-.69 0-1.25-.56-1.25-1.25v-1.63c0-3.24 4.01-4.87 7.25-4.87Z"
-            fill="currentColor"
-          />
-        </svg>
-      </button>
+          Cadastro
+        </a>
+        <a
+          class="header-action header-action--login header-login-link"
+          href="#login"
+          aria-label="Ir para o painel de login"
+          title="Acessar painel de login"
+        >
+          Login
+        </a>
+      </nav>
     </header>
     <main>
       <div
@@ -80,10 +79,10 @@
         <button
           type="button"
           class="footer-version"
-          aria-label="Abrir registro de alterações da versão v0.1.53"
-          title="Exibir mudanças da versão v0.1.53"
+          aria-label="Abrir registro de alterações da versão v0.1.54 das 17h01"
+          title="Exibir mudanças da versão v0.1.54 das 17h01"
         >
-          Versão v0.1.53
+          Versão v0.1.54 · 17h01
         </button>
       </div>
     </footer>

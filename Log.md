@@ -1,5 +1,29 @@
 # Log
 
+## v0.1.54 - 2025-10-19 17:01 BRT
+- Adiciona link textual de login no cabeçalho apontando para o painel de login existente.
+- Atualiza os estilos do cabeçalho para destacar o novo link no canto superior direito.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+- Adiciona botão de "Cadastro" no cabeçalho que abre o novo painel dedicado para criação de contas.
+- Implementa painel de cadastro com formulário completo, validação de senha e registro opcional de e-mail.
+- Ajusta estilos responsivos do cabeçalho e dos painéis de acesso para acomodar os novos atalhos.
+- Reduz o tamanho das fontes dos dados exibidos na tabela administrativa para facilitar a leitura de grandes volumes.
+- Mantém o destaque das informações principais do usuário com hierarquia tipográfica ajustada.
+- Atualiza a versão apresentada no rodapé para refletir a nova release.
+- Reorganiza o painel administrativo em cartões responsivos para tablets em orientação retrato e paisagem.
+- Exibe rótulos de contexto em cada célula para manter a leitura da tabela sem cabeçalhos fixos em telas estreitas.
+- Atualiza a versão apresentada no rodapé para refletir a nova release.
+- Remove o bloco reservado às ferramentas internas do painel administrativo para liberar o espaço de conteúdo.
+- Ajusta os estilos do painel administrativo para manter os parágrafos alinhados sem a área extra.
+- Atualiza a versão apresentada no rodapé para refletir a nova release.
+- Converte todos os fundos da interface (exceto cabeçalho e rodapé) para branco ou transparente, mantendo os demais destaques com bordas e sombras.
+- Ajusta botões e cartões para preservar contraste sem recorrer a fundos coloridos.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+- Reduz os espaçamentos verticais do painel administrativo em tablets na orientação vertical.
+- Alinha os cartões e conteúdos do painel administrativo ao topo e à lateral esquerda para evitar áreas vazias.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+- Ajusta o histórico e o rodapé para publicar a release consolidada.
+
 ## v0.1.53 - 2025-10-19 16:06 BRT
 - Alinha o processo de revisão para que cada nova release incremente apenas uma unidade em relação à versão exibida.
 - Atualiza o rodapé para mostrar a versão v0.1.53 conforme a regra revisada.
