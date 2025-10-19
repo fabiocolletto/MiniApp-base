@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bom dia</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at top, #fef7d1, #f4d799 55%, #f1b46c);
+      }
+
+      main {
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 1.5rem;
+        box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.2);
+        padding: 3rem 4rem;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+        margin: 0 0 1rem;
+        color: #f29f05;
+        text-transform: uppercase;
+        letter-spacing: 0.3rem;
+      }
+
+      p {
+        margin: 0;
+        font-size: clamp(1.1rem, 1.5vw + 1rem, 1.6rem);
+        color: #5e4b23;
+      }
+
+      .sun {
+        width: clamp(6rem, 12vw, 10rem);
+        height: clamp(6rem, 12vw, 10rem);
+        margin: 0 auto 1.5rem;
+        background: radial-gradient(circle, #fff5ba 35%, #ffd166 70%, #f29f05);
+        border-radius: 50%;
+        position: relative;
+        box-shadow: 0 0 2rem rgba(242, 159, 5, 0.6);
+        animation: pulse 4s ease-in-out infinite;
+      }
+
+      .sun::before,
+      .sun::after {
+        content: "";
+        position: absolute;
+        inset: -15%;
+        border-radius: 50%;
+        border: 0.5rem solid rgba(255, 209, 102, 0.4);
+        animation: rays 8s linear infinite;
+      }
+
+      .sun::after {
+        inset: -30%;
+        border-width: 0.25rem;
+        animation-duration: 12s;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes rays {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="sun" role="presentation"></div>
+      <h1>Bom dia!</h1>
+      <p>Que o seu dia seja cheio de energia positiva e boas conquistas.</p>
+    </main>
+  </body>
+</html>
