@@ -4,14 +4,6 @@ import { collectDeviceInfo } from './shared/device-info.js';
 
 const BASE_CLASSES = 'card view view--register';
 
-function dispatchNavigation(viewName) {
-  document.dispatchEvent(
-    new CustomEvent('app:navigate', {
-      detail: { view: viewName },
-    })
-  );
-}
-
 export function renderRegisterPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -176,26 +168,5 @@ export function renderRegisterPanel(viewRoot) {
 
   form.append(nameField, phoneField, emailField, passwordField, confirmPasswordField, submitButton, feedback);
 
-  const actions = document.createElement('div');
-  actions.className = 'register-panel__actions';
-
-  const backToLoginButton = document.createElement('button');
-  backToLoginButton.type = 'button';
-  backToLoginButton.className = 'register-panel__back-button';
-  backToLoginButton.textContent = 'Já tenho conta';
-  backToLoginButton.addEventListener('click', () => {
-    dispatchNavigation('login');
-  });
-
-  const goToUserButton = document.createElement('button');
-  goToUserButton.type = 'button';
-  goToUserButton.className = 'login-panel__manage-button';
-  goToUserButton.textContent = 'Acompanhar painel do usuário';
-  goToUserButton.addEventListener('click', () => {
-    dispatchNavigation('user');
-  });
-
-  actions.append(backToLoginButton, goToUserButton);
-
-  viewRoot.replaceChildren(heading, intro, form, actions);
+  viewRoot.replaceChildren(heading, intro, form);
 }

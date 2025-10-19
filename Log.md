@@ -1,5 +1,20 @@
 # Log
 
+## v0.1.57 - 2025-10-19 20:20 BRT
+- Permite que o cartão do painel de cadastro role de forma independente quando o conteúdo excede a altura disponível no desktop.
+- Ajusta a largura máxima e o layout do formulário para exibir campos em duas colunas em telas largas sem cortar informações.
+- Atualiza a versão mostrada no rodapé para refletir a nova release.
+
+## v0.1.56 - 2025-10-19 19:30 BRT
+- Reposiciona o cartão do painel de cadastro para centralizar o widget e limitar a largura com espaçamento interno compacto.
+- Ajusta o grid da view de cadastro para reduzir as margens internas e alinhar os elementos ao centro visual.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.55 - 2025-10-19 18:55 BRT
+- Remove os botões extras do painel de cadastro para manter o widget focado no formulário principal.
+- Reduz o padding e o espaçamento interno do painel de cadastro para aproximar a borda dos elementos e reforçar o formato de widget.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.54 - 2025-10-19 17:01 BRT
 - Adiciona link textual de login no cabeçalho apontando para o painel de login existente.
 - Atualiza os estilos do cabeçalho para destacar o novo link no canto superior direito.
