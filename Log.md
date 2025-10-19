@@ -1,5 +1,26 @@
 # Log
 
+## v0.1.43 - 2025-10-19 14:45 BRT
+- Permite que o usuário selecione um cadastro para revisar telefone e senha, além de complementar o perfil com e-mail, endereço e observações.
+- Sincroniza os novos dados extras com o armazenamento e exibe os campos atualizados no painel administrativo.
+- Acrescenta ao painel administrativo um botão de detalhes que expande cada linha para mostrar o cadastro completo.
+
+## v0.1.42 - 2025-10-19 14:05 BRT
+- Amplia o cadastro do usuário para exigir nome completo e registrar data da última atualização.
+- Exibe os usuários no painel administrativo em tabela com colunas de nome, telefone, registro, última alteração e ações.
+- Disponibiliza botões de edição e exclusão com atualização imediata das informações armazenadas.
+- Atualiza a versão mostrada no rodapé para refletir a nova release.
+
+## v0.1.41 - 2025-10-19 13:47 BRT
+- Exibe no painel do usuário a lista dos cadastros realizados com destaque para o envio mais recente.
+- Ajusta os estilos do painel para apresentar os dados cadastrados de forma clara e responsiva.
+- Valida visualmente o fluxo de cadastro confirmando atualização automática dos painéis do usuário e administrativo.
+
+## v0.1.40 - 2025-10-19 13:25 BRT
+- Exibe mensagem de confirmação acessível após concluir o cadastro no painel do usuário.
+- Refatora o formulário para reutilizar a rotina de limpeza do feedback antes de cada envio.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.39 - 2025-10-19 13:15 BRT
 - Implementa persistência dos cadastros de usuários no IndexedDB com sincronização automática dos painéis.
 - Registra e preserva o identificador do dispositivo ao cadastrar usuários, exibindo o dado na lista administrativa.

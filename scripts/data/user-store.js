@@ -2,6 +2,8 @@ import {
   loadUsers as loadUsersFromIndexedDb,
   saveUser as saveUserToIndexedDb,
   watchUsers as watchUsersFromIndexedDb,
+  updateUser as updateUserInIndexedDb,
+  deleteUser as deleteUserFromIndexedDb,
 } from './indexed-user-store.js';
 
 const listeners = new Set();
@@ -11,26 +13,96 @@ let hasInitialized = false;
 let storageError = null;
 let unsubscribeFromIndexedDb = () => {};
 
+const PROFILE_FIELDS = ['email', 'secondaryPhone', 'document', 'address', 'notes'];
+
+function createEmptyProfile() {
+  return PROFILE_FIELDS.reduce((accumulator, field) => {
+    accumulator[field] = '';
+    return accumulator;
+  }, {});
+}
+
+function cloneProfile(profile) {
+  return normalizeProfile(profile);
+}
+
+function normalizeProfile(profile) {
+  const normalized = createEmptyProfile();
+
+  if (!profile || typeof profile !== 'object') {
+    return normalized;
+  }
+
+  PROFILE_FIELDS.forEach((field) => {
+    const value = profile[field];
+
+    if (typeof value === 'string') {
+      normalized[field] = value.trim().slice(0, 240);
+      return;
+    }
+
+    if (value == null) {
+      normalized[field] = '';
+    }
+  });
+
+  return normalized;
+}
+
+function sanitizeProfileUpdates(updates = {}) {
+  if (!updates || typeof updates !== 'object') {
+    return {};
+  }
+
+  const sanitized = {};
+
+  PROFILE_FIELDS.forEach((field) => {
+    if (!Object.prototype.hasOwnProperty.call(updates, field)) {
+      return;
+    }
+
+    const value = updates[field];
+
+    if (typeof value === 'string') {
+      sanitized[field] = value.trim().slice(0, 240);
+      return;
+    }
+
+    if (value == null) {
+      sanitized[field] = '';
+    }
+  });
+
+  return sanitized;
+}
+
 function cloneUser(user) {
   return {
     id: user.id,
+    name: user.name,
     phone: user.phone,
     password: user.password,
     device: user.device,
     createdAt: new Date(user.createdAt),
+    updatedAt: new Date(user.updatedAt),
+    profile: cloneProfile(user.profile),
   };
 }
 
 function normalizeUser(user) {
   const createdAtValue = user?.createdAt instanceof Date ? user.createdAt : new Date(user?.createdAt);
+  const updatedAtValue = user?.updatedAt instanceof Date ? user.updatedAt : new Date(user?.updatedAt);
   const sanitizedDevice = typeof user?.device === 'string' ? user.device.trim() : '';
 
   return {
     id: Number(user?.id),
+    name: typeof user?.name === 'string' ? user.name.trim() : '',
     phone: typeof user?.phone === 'string' ? user.phone : '',
     password: typeof user?.password === 'string' ? user.password : '',
     device: sanitizedDevice,
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
+    updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
+    profile: normalizeProfile(user?.profile),
   };
 }
 
@@ -83,13 +155,15 @@ export function getUsers() {
   return users.map(cloneUser);
 }
 
-export async function addUser({ phone, password, device }) {
+export async function addUser({ name, phone, password, device, profile }) {
+  const sanitizedName = typeof name === 'string' ? name.trim().slice(0, 120) : '';
   const sanitizedPhone = typeof phone === 'string' ? phone.trim() : '';
   const sanitizedPassword = typeof password === 'string' ? password : '';
   const sanitizedDevice = typeof device === 'string' ? device.trim().slice(0, 512) : '';
+  const sanitizedProfile = normalizeProfile(profile);
 
-  if (!sanitizedPhone || !sanitizedPassword) {
-    throw new Error('Telefone e senha são obrigatórios para cadastrar um usuário.');
+  if (!sanitizedName || !sanitizedPhone || !sanitizedPassword) {
+    throw new Error('Nome, telefone e senha são obrigatórios para cadastrar um usuário.');
   }
 
   await initializationPromise?.catch(() => {});
@@ -100,9 +174,11 @@ export async function addUser({ phone, password, device }) {
 
   try {
     const savedUser = await saveUserToIndexedDb({
+      name: sanitizedName,
       phone: sanitizedPhone,
       password: sanitizedPassword,
       device: sanitizedDevice,
+      profile: sanitizedProfile,
     });
 
     const normalized = normalizeUser(savedUser);
@@ -119,6 +195,84 @@ export async function addUser({ phone, password, device }) {
   } catch (error) {
     console.error('Erro ao salvar usuário no IndexedDB.', error);
     throw new Error('Não foi possível salvar o cadastro no armazenamento local. Tente novamente.');
+  }
+}
+
+export async function updateUser(id, updates = {}) {
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
+    throw new Error('Identificador de usuário inválido.');
+  }
+
+  const sanitizedUpdates = {};
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'name')) {
+    sanitizedUpdates.name = typeof updates.name === 'string' ? updates.name.trim().slice(0, 120) : '';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'phone')) {
+    sanitizedUpdates.phone = typeof updates.phone === 'string' ? updates.phone.trim() : '';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'password')) {
+    sanitizedUpdates.password = typeof updates.password === 'string' ? updates.password : '';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'device')) {
+    sanitizedUpdates.device = typeof updates.device === 'string' ? updates.device.trim().slice(0, 512) : '';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'profile')) {
+    const profileUpdates = sanitizeProfileUpdates(updates.profile);
+    if (Object.keys(profileUpdates).length > 0) {
+      sanitizedUpdates.profile = profileUpdates;
+    }
+  }
+
+  await initializationPromise?.catch(() => {});
+
+  if (storageError) {
+    throw new Error('Armazenamento local indisponível. Verifique o suporte ao IndexedDB e tente novamente.');
+  }
+
+  try {
+    const updatedUser = await updateUserInIndexedDb(numericId, sanitizedUpdates);
+    const normalized = normalizeUser(updatedUser);
+    const existingIndex = users.findIndex((user) => user.id === normalized.id);
+
+    if (existingIndex >= 0) {
+      users[existingIndex] = normalized;
+    } else {
+      users.push(normalized);
+    }
+
+    notify();
+    return cloneUser(normalized);
+  } catch (error) {
+    console.error('Erro ao atualizar usuário no IndexedDB.', error);
+    throw new Error('Não foi possível atualizar o usuário. Tente novamente.');
+  }
+}
+
+export async function deleteUser(id) {
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
+    throw new Error('Identificador de usuário inválido.');
+  }
+
+  await initializationPromise?.catch(() => {});
+
+  if (storageError) {
+    throw new Error('Armazenamento local indisponível. Verifique o suporte ao IndexedDB e tente novamente.');
+  }
+
+  try {
+    await deleteUserFromIndexedDb(numericId);
+    users = users.filter((user) => user.id !== numericId);
+    notify();
+  } catch (error) {
+    console.error('Erro ao remover usuário do IndexedDB.', error);
+    throw new Error('Não foi possível remover o usuário. Tente novamente.');
   }
 }
 
