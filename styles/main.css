@@ -205,13 +205,28 @@ footer {
 .view--log {
   text-align: left;
   display: grid;
-  gap: 1.5rem;
-  width: min(95vw, 52rem);
+  gap: 1.25rem;
+  width: min(92vw, 50rem);
+  margin-inline: auto;
+  align-items: start;
+  justify-items: stretch;
+  color: #3d2a12;
 }
 
 .view--log h1 {
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  color: #5e4b23;
+  letter-spacing: 0.2rem;
+}
+
+.log-description {
+  margin: 0 auto;
+  max-width: 42rem;
+  text-align: center;
+  color: #6f5630;
+  font-size: clamp(1rem, 1.1vw + 0.95rem, 1.25rem);
+  line-height: 1.6;
 }
 
 .view--error {
@@ -227,16 +242,51 @@ footer {
   text-align: left;
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: clamp(20rem, 55vh, 26rem);
+  max-height: clamp(20rem, 55vh, 28rem);
   overflow-y: auto;
-  padding: 1rem;
-  border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(94, 75, 35, 0.15);
-  box-shadow: inset 0 0.35rem 1.2rem rgba(0, 0, 0, 0.08);
-  color: #5e4b23;
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 245, 221, 0.92)
+  );
+  border: 1px solid rgba(94, 75, 35, 0.18);
+  box-shadow: 0 1.15rem 2.6rem rgba(61, 44, 16, 0.16);
+  color: #3d2a12;
   font-family: inherit;
-  line-height: 1.5;
+  font-size: clamp(0.95rem, 1vw + 0.85rem, 1.15rem);
+  line-height: 1.65;
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.log-content:hover {
+  transform: translateY(-0.15rem);
+  box-shadow: 0 1.4rem 3rem rgba(61, 44, 16, 0.18);
+}
+
+.log-content:focus-visible {
+  outline: 0.15rem solid rgba(242, 159, 5, 0.45);
+  outline-offset: 0.25rem;
+}
+
+.log-content[data-state='loading'] {
+  color: rgba(61, 42, 18, 0.65);
+  font-style: italic;
+}
+
+.log-content[data-state='error'] {
+  color: #8b2f2f;
+}
+
+@media (min-width: 900px) {
+  .view--log {
+    width: min(85vw, 54rem);
+  }
+
+  .log-content {
+    max-height: clamp(24rem, 60vh, 32rem);
+  }
 }
 
 @media (max-width: 600px) {
@@ -249,6 +299,10 @@ footer {
   .card {
     width: 100%;
     padding: 2.25rem 1.5rem;
+  }
+
+  .log-description {
+    font-size: 1rem;
   }
 
   h1 {

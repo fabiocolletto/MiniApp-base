@@ -13,14 +13,19 @@ export function renderLog(viewRoot) {
   heading.textContent = 'Log do Projeto';
 
   const description = document.createElement('p');
+  description.className = 'log-description';
   description.textContent = 'Acompanhe o histórico de versões do MiniApp.';
 
   const logContent = document.createElement('pre');
   logContent.className = 'log-content';
   logContent.setAttribute('role', 'region');
   logContent.setAttribute('aria-live', 'polite');
-  logContent.textContent = 'Carregando Log.md...';
+  logContent.setAttribute('aria-label', 'Histórico de versões do projeto');
+  logContent.setAttribute('tabindex', '0');
+  logContent.dataset.state = 'loading';
+  logContent.textContent = 'Carregando histórico do projeto…';
 
+  viewRoot.setAttribute('aria-busy', 'true');
   viewRoot.replaceChildren(heading, description, logContent);
 
   (async () => {
@@ -32,11 +37,15 @@ export function renderLog(viewRoot) {
       }
 
       const text = await response.text();
+      logContent.dataset.state = 'ready';
       logContent.textContent = text;
     } catch (error) {
+      logContent.dataset.state = 'error';
       logContent.textContent =
-        'Não foi possível carregar o Log.md no momento.';
+        'Não foi possível carregar o Log.md no momento. Atualize a página ou tente novamente.';
       console.error(error);
+    } finally {
+      viewRoot.removeAttribute('aria-busy');
     }
   })();
 }
