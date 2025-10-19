@@ -1,5 +1,16 @@
 # Log
 
+## v0.1.57 - 2025-10-19 18:20 BRT
+- Reestrutura o rodapé em telas móveis para distribuir marca e ações em múltiplas linhas com mais espaçamento.
+- Permite que o texto institucional quebre em múltiplas linhas e aumenta a legibilidade dos controles na base.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.56 - 2025-10-19 17:54 BRT
+- Simplifica o painel de login para solicitar apenas telefone e senha com o botão "Entrar".
+- Ajusta o armazenamento local para aceitar logins sem nome cadastrado.
+- Reduz o padding interno do painel de login para aproximar o formulário das bordas do cartão.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.55 - 2025-10-19 17:40 BRT
 - Remove o contêiner de ações e os botões extras do painel de cadastro para manter o foco no formulário principal.
 - Reposiciona o cartão do painel de cadastro, reduzindo padding e centralizando o widget com largura limitada e espaçamento compacto.
