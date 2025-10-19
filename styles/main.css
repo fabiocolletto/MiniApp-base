@@ -21,6 +21,10 @@
   --content-padding-block-start: clamp(4.75rem, 11vh, 6.5rem);
   --content-padding-block-end: clamp(4.75rem, 11vh, 6.5rem);
   --content-padding-inline: 1.5rem;
+  --panel-font-size-base: clamp(0.78rem, 0.9vw + 0.58rem, 0.95rem);
+  --panel-font-size-strong: clamp(0.84rem, 0.95vw + 0.6rem, 1rem);
+  --panel-font-size-title: clamp(0.95rem, 1vw + 0.66rem, 1.12rem);
+  --panel-font-size-heading: clamp(1.05rem, 1.1vw + 0.7rem, 1.25rem);
 }
 @media (orientation: landscape) {
   :root {
@@ -217,31 +221,24 @@ header {
 
 footer {
   inset-block-end: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  justify-items: center;
-  column-gap: clamp(0.3rem, 0.9vw, 0.65rem);
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  column-gap: clamp(0.5rem, 1.5vw, 1.25rem);
   padding-block-start: var(--footer-padding-block);
   padding-block-end: var(--footer-padding-block-end);
   min-block-size: var(--footer-base-size);
   z-index: 9;
 }
 
-.footer-spacer {
-  width: 100%;
-  height: 0;
-}
-
 .footer-brand {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: clamp(0.25rem, 0.85vw, 0.6rem);
-  justify-self: center;
-  text-align: center;
-  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
 }
 
 .footer-brand__icon {
@@ -262,6 +259,16 @@ footer {
 
 .footer-brand__text {
   display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.4rem, 1.1vw, 0.85rem);
+  flex: 0 0 auto;
 }
 
 .footer-legal,
@@ -275,7 +282,6 @@ footer {
 }
 
 .footer-legal {
-  justify-self: center;
   color: rgba(94, 75, 35, 0.82);
   text-decoration: underline;
   text-decoration-thickness: 0.05em;
@@ -287,9 +293,7 @@ footer {
   text-decoration-color: rgba(94, 75, 35, 0.75);
 }
 
-.footer-version {
-  justify-self: end;
-}
+
 
 @media (max-width: 370px) {
   header,
@@ -373,6 +377,18 @@ footer {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 240, 210, 0.88));
 }
 
+.card.view--login {
+  width: 100%;
+  max-width: none;
+  padding: clamp(1.75rem, 4vw, 2.65rem);
+  box-sizing: border-box;
+  justify-self: stretch;
+  align-self: stretch;
+  min-height: var(--view-max-block-size);
+  max-height: var(--view-max-block-size);
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.96), rgba(255, 238, 210, 0.88));
+}
+
 .view--admin {
   display: grid;
   gap: clamp(1.35rem, 3vw, 2.1rem);
@@ -390,8 +406,16 @@ footer {
   overflow-x: auto;
 }
 
+.admin-user-section__title {
+  margin: 0;
+  font-size: var(--panel-font-size-heading);
+  color: #5e4b23;
+  text-transform: uppercase;
+  letter-spacing: clamp(0.05rem, 0.2vw, 0.11rem);
+}
+
 .admin-user-section__description {
-  font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.25rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(94, 75, 35, 0.82);
 }
 
@@ -423,7 +447,7 @@ footer {
 .admin-user-table caption {
   padding: clamp(0.8rem, 2vw, 1.2rem) clamp(1.2rem, 2.5vw, 1.8rem) 0;
   font-weight: 600;
-  font-size: clamp(1rem, 1.4vw + 0.65rem, 1.3rem);
+  font-size: var(--panel-font-size-heading);
   color: rgba(61, 42, 18, 0.8);
   text-align: left;
 }
@@ -440,7 +464,7 @@ footer {
   padding: clamp(0.75rem, 2vw, 1.15rem) clamp(1.15rem, 2.5vw, 1.7rem);
   text-align: left;
   font-weight: 700;
-  font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.2rem);
+  font-size: var(--panel-font-size-strong);
   letter-spacing: 0.015em;
   color: #4a3518;
   border-bottom: 0.1rem solid rgba(61, 44, 16, 0.1);
@@ -469,7 +493,7 @@ footer {
 
 .admin-user-table__cell {
   padding: clamp(0.75rem, 2vw, 1.1rem) clamp(1.15rem, 2.5vw, 1.7rem);
-  font-size: clamp(0.9rem, 1.1vw + 0.55rem, 1.15rem);
+  font-size: var(--panel-font-size-base);
   border-bottom: 0.08rem solid rgba(61, 44, 16, 0.08);
   vertical-align: middle;
 }
@@ -480,7 +504,7 @@ footer {
 
 .admin-user-table__cell--name {
   font-weight: 700;
-  font-size: clamp(1.05rem, 1.4vw + 0.75rem, 1.35rem);
+  font-size: var(--panel-font-size-heading);
 }
 
 .admin-user-table__cell--phone {
@@ -492,7 +516,7 @@ footer {
 .admin-user-table__cell--updated-at time {
   display: block;
   color: rgba(61, 42, 18, 0.7);
-  font-size: clamp(0.85rem, 1vw + 0.6rem, 1.05rem);
+  font-size: var(--panel-font-size-strong);
 }
 
 .admin-user-table__cell--actions {
@@ -508,7 +532,7 @@ footer {
   border-radius: 0.7rem;
   border: 0.1rem solid rgba(53, 121, 53, 0.35);
   font: inherit;
-  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  font-size: var(--panel-font-size-strong);
   background: rgba(255, 255, 255, 0.9);
   color: #2f452f;
   box-sizing: border-box;
@@ -608,7 +632,7 @@ footer {
   padding: clamp(1rem, 2.5vw, 1.6rem);
   text-align: center;
   color: rgba(61, 42, 18, 0.7);
-  font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.25rem);
+  font-size: var(--panel-font-size-base);
 }
 
 .admin-user-table__body tr:last-of-type .admin-user-table__cell {
@@ -645,13 +669,13 @@ footer {
 
 .admin-user-table__details-term {
   font-weight: 700;
-  font-size: clamp(0.9rem, 1.1vw + 0.55rem, 1.05rem);
+  font-size: var(--panel-font-size-strong);
   color: #5e4b23;
 }
 
 .admin-user-table__details-value {
   margin: 0;
-  font-size: clamp(0.85rem, 1vw + 0.5rem, 1rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.78);
   word-break: break-word;
 }
@@ -682,6 +706,75 @@ footer {
   min-height: 100%;
 }
 
+.view--login {
+  display: grid;
+  gap: clamp(1.4rem, 4vw, 2rem);
+  align-content: start;
+  min-height: 100%;
+  justify-items: stretch;
+  text-align: center;
+}
+
+.view--admin > h1,
+.view--login > h1,
+.view--user > h1 {
+  margin: 0;
+  font-size: var(--panel-font-size-heading);
+  color: #5e4b23;
+  text-transform: uppercase;
+  letter-spacing: clamp(0.05rem, 0.2vw, 0.11rem);
+}
+
+.login-panel__title {
+  text-align: center;
+}
+
+.login-panel__intro {
+  margin: 0 auto;
+  max-width: 28rem;
+  font-size: var(--panel-font-size-base);
+  color: rgba(61, 42, 18, 0.78);
+  line-height: 1.6;
+}
+
+.login-panel__form {
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.login-panel__feedback {
+  text-align: center;
+}
+
+.login-panel__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(0.8rem, 2.5vw, 1.4rem);
+}
+
+.login-panel__manage-button {
+  padding: 0.75rem 1.8rem;
+  border-radius: 2rem;
+  border: 0.12rem solid rgba(94, 75, 35, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  color: #5e4b23;
+  font: inherit;
+  font-size: var(--panel-font-size-strong);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.login-panel__manage-button:hover,
+.login-panel__manage-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 0.8rem 1.6rem rgba(94, 75, 35, 0.2);
+  border-color: rgba(94, 75, 35, 0.55);
+  outline: none;
+}
+
 .user-panel__title {
   text-align: center;
 }
@@ -689,7 +782,7 @@ footer {
 .user-panel__intro {
   margin: 0 auto;
   max-width: 40rem;
-  font-size: clamp(1rem, 1.25vw + 0.85rem, 1.35rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.78);
   text-align: center;
   line-height: 1.6;
@@ -698,7 +791,7 @@ footer {
 .user-panel__layout {
   display: grid;
   gap: clamp(1.5rem, 4vw, 2.25rem);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -727,7 +820,7 @@ footer {
 
 .user-panel__section-title {
   margin: 0;
-  font-size: clamp(1.15rem, 2vw + 0.9rem, 1.7rem);
+  font-size: var(--panel-font-size-heading);
   color: #5e4b23;
   text-transform: uppercase;
   letter-spacing: clamp(0.05rem, 0.2vw, 0.11rem);
@@ -735,7 +828,7 @@ footer {
 
 .user-panel__section-description {
   margin: 0;
-  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.7);
   line-height: 1.5;
 }
@@ -773,13 +866,22 @@ footer {
   gap: clamp(1rem, 3vw, 1.5rem);
   text-align: left;
   justify-items: stretch;
+  align-content: start;
+  width: 100%;
 }
 
 .user-form__field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
-  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  font-size: var(--panel-font-size-base);
   color: #5e4b23;
+  width: 100%;
+  align-items: stretch;
+}
+
+.user-form__field > * {
+  min-width: 0;
 }
 
 .user-form__label {
@@ -794,6 +896,7 @@ footer {
   color: inherit;
   background: rgba(255, 255, 255, 0.92);
   box-sizing: border-box;
+  width: 100%;
 }
 
 .user-form__field input:focus {
@@ -811,6 +914,7 @@ footer {
   box-sizing: border-box;
   resize: vertical;
   min-height: 6.5rem;
+  width: 100%;
 }
 
 .user-form__field--textarea textarea:focus {
@@ -839,7 +943,7 @@ footer {
 }
 
 .user-form__feedback {
-  font-size: clamp(0.9rem, 1.2vw + 0.55rem, 1.15rem);
+  font-size: var(--panel-font-size-strong);
   font-weight: 600;
   text-align: left;
   color: rgba(61, 42, 18, 0.8);
@@ -867,7 +971,7 @@ footer {
 
 .user-registrations__title {
   margin: 0;
-  font-size: clamp(1.1rem, 1.9vw + 0.9rem, 1.6rem);
+  font-size: var(--panel-font-size-heading);
   color: #5e4b23;
   text-align: center;
 }
@@ -876,7 +980,7 @@ footer {
   margin: 0 auto;
   max-width: 26rem;
   color: rgba(61, 42, 18, 0.75);
-  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  font-size: var(--panel-font-size-base);
   text-align: center;
 }
 
@@ -920,23 +1024,23 @@ footer {
 
 .user-registrations__name {
   font-weight: 700;
-  font-size: clamp(1.05rem, 1.6vw + 0.8rem, 1.45rem);
+  font-size: var(--panel-font-size-heading);
 }
 
 .user-registrations__phone {
   font-weight: 600;
-  font-size: clamp(1rem, 1.3vw + 0.75rem, 1.3rem);
+  font-size: var(--panel-font-size-title);
 }
 
 .user-registrations__timestamp {
   display: block;
-  font-size: clamp(0.85rem, 1vw + 0.6rem, 1.05rem);
+  font-size: var(--panel-font-size-strong);
   color: rgba(61, 42, 18, 0.65);
 }
 
 .user-registrations__password,
 .user-registrations__device {
-  font-size: clamp(0.9rem, 1.2vw + 0.55rem, 1.15rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.75);
 }
 
@@ -950,7 +1054,7 @@ footer {
   background: rgba(255, 255, 255, 0.78);
   color: rgba(61, 42, 18, 0.7);
   text-align: center;
-  font-size: clamp(0.95rem, 1.3vw + 0.6rem, 1.25rem);
+  font-size: var(--panel-font-size-base);
 }
 
 .user-details {
@@ -962,7 +1066,7 @@ footer {
 
 .user-details__title {
   text-align: center;
-  font-size: clamp(1.15rem, 2vw + 0.9rem, 1.7rem);
+  font-size: var(--panel-font-size-heading);
   color: #5e4b23;
 }
 
@@ -971,13 +1075,13 @@ footer {
   max-width: 28rem;
   text-align: center;
   color: rgba(61, 42, 18, 0.72);
-  font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.2rem);
+  font-size: var(--panel-font-size-base);
 }
 
 .user-details__selected {
   margin: 0 auto;
   max-width: 28rem;
-  font-size: clamp(0.9rem, 1.1vw + 0.55rem, 1.1rem);
+  font-size: var(--panel-font-size-strong);
   color: rgba(61, 42, 18, 0.65);
   text-align: center;
   font-style: italic;
@@ -991,11 +1095,14 @@ footer {
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 1rem 2.2rem rgba(61, 44, 16, 0.14);
   color: #3d2a12;
+  width: 100%;
+  align-content: start;
+  justify-items: stretch;
 }
 
 .user-details__form-title {
   margin: 0;
-  font-size: clamp(1.05rem, 1.7vw + 0.75rem, 1.5rem);
+  font-size: var(--panel-font-size-heading);
   color: #5e4b23;
   text-transform: uppercase;
   letter-spacing: clamp(0.05rem, 0.2vw, 0.1rem);
@@ -1003,7 +1110,7 @@ footer {
 
 .user-details__form-description {
   margin: 0;
-  font-size: clamp(0.9rem, 1.1vw + 0.55rem, 1.1rem);
+  font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.7);
 }
 
@@ -1028,7 +1135,7 @@ footer {
   background: transparent;
   color: #b56a1b;
   font-weight: 600;
-  font-size: clamp(0.75rem, 1vw + 0.55rem, 0.95rem);
+  font-size: var(--panel-font-size-strong);
   cursor: pointer;
   padding: 0.25rem 0.35rem;
 }
@@ -1050,6 +1157,7 @@ footer {
   border-radius: 2rem;
   border: none;
   font: inherit;
+  font-size: var(--panel-font-size-strong);
   font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, #f29f05, #f28705);
@@ -1070,7 +1178,7 @@ footer {
 }
 
 .user-details__feedback {
-  font-size: clamp(0.85rem, 1vw + 0.55rem, 1.05rem);
+  font-size: var(--panel-font-size-strong);
   font-weight: 600;
   color: rgba(61, 42, 18, 0.78);
   margin: 0;
@@ -1102,6 +1210,13 @@ footer {
 }
 .view--admin p {
   text-align: left;
+}
+
+.view--admin > p {
+  margin: 0;
+  text-align: center;
+  font-size: var(--panel-font-size-base);
+  color: rgba(61, 42, 18, 0.72);
 }
 
 @media (min-width: 62rem) {

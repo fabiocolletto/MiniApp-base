@@ -1,5 +1,6 @@
-import { addUser, subscribeUsers, updateUser } from '../data/user-store.js';
+import { subscribeUsers, updateUser } from '../data/user-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
+import { createInputField, createTextareaField } from './shared/form-fields.js';
 
 const BASE_CLASSES = 'card view view--user';
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -120,80 +121,6 @@ export function renderUserPanel(viewRoot) {
   intro.textContent =
     'Gerencie seus cadastros pessoais e acompanhe as atualizações em um único lugar.';
 
-  const formSection = document.createElement('section');
-  formSection.className = 'user-panel__section user-panel__section--form';
-
-  const formHeading = document.createElement('h2');
-  formHeading.className = 'user-panel__section-title';
-  formHeading.textContent = 'Faça um novo cadastro';
-
-  const formDescription = document.createElement('p');
-  formDescription.className = 'user-panel__section-description';
-  formDescription.textContent = 'Preencha os campos abaixo para registrar um novo usuário.';
-
-  const form = document.createElement('form');
-  form.className = 'user-form';
-  form.autocomplete = 'on';
-  form.noValidate = true;
-
-  const nameField = createField({
-    id: 'user-name',
-    label: 'Nome completo',
-    type: 'text',
-    placeholder: 'Digite seu nome completo',
-    autocomplete: 'name',
-  });
-
-  const phoneField = createField({
-    id: 'user-phone',
-    label: 'Número de telefone',
-    type: 'tel',
-    placeholder: '(00) 00000-0000',
-    autocomplete: 'tel',
-    inputMode: 'tel',
-  });
-
-  const passwordField = createField({
-    id: 'user-password',
-    label: 'Senha',
-    type: 'password',
-    placeholder: 'Digite sua senha',
-    autocomplete: 'current-password',
-  });
-
-  const nameInput = nameField.querySelector('input');
-  const phoneInput = phoneField.querySelector('input');
-  const passwordInput = passwordField.querySelector('input');
-
-  const submitButton = document.createElement('button');
-  submitButton.type = 'submit';
-  submitButton.className = 'user-form__submit';
-  submitButton.textContent = 'Cadastrar';
-
-  const feedback = document.createElement('p');
-  feedback.className = 'user-form__feedback';
-  feedback.setAttribute('aria-live', 'polite');
-  feedback.hidden = true;
-
-  function resetFeedback() {
-    feedback.hidden = true;
-    feedback.textContent = '';
-    feedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
-    feedback.removeAttribute('role');
-  }
-
-  function showFeedback(message, { isError = false } = {}) {
-    feedback.textContent = message;
-    feedback.hidden = false;
-    feedback.classList.toggle('user-form__feedback--error', isError);
-    feedback.classList.toggle('user-form__feedback--success', !isError);
-    if (isError) {
-      feedback.setAttribute('role', 'alert');
-    } else {
-      feedback.removeAttribute('role');
-    }
-  }
-
   const registrationsSection = document.createElement('section');
   registrationsSection.className =
     'user-panel__section user-panel__section--registrations user-registrations';
@@ -275,7 +202,7 @@ export function renderUserPanel(viewRoot) {
   primaryIntro.className = 'user-details__form-description';
   primaryIntro.textContent = 'Atualize o telefone e a senha informados inicialmente.';
 
-  const primaryPhoneField = createField({
+  const primaryPhoneField = createInputField({
     id: 'user-details-phone',
     label: 'Telefone cadastrado',
     type: 'tel',
@@ -285,7 +212,7 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
-  const primaryPasswordField = createField({
+  const primaryPasswordField = createInputField({
     id: 'user-details-password',
     label: 'Senha cadastrada',
     type: 'password',
@@ -323,7 +250,7 @@ export function renderUserPanel(viewRoot) {
   profileIntro.className = 'user-details__form-description';
   profileIntro.textContent = 'Inclua ou revise informações adicionais para deixar o cadastro completo.';
 
-  const profileNameField = createField({
+  const profileNameField = createInputField({
     id: 'user-details-name',
     label: 'Nome completo',
     type: 'text',
@@ -332,7 +259,7 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
-  const profileEmailField = createField({
+  const profileEmailField = createInputField({
     id: 'user-details-email',
     label: 'E-mail',
     type: 'email',
@@ -341,7 +268,7 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
-  const profileSecondaryPhoneField = createField({
+  const profileSecondaryPhoneField = createInputField({
     id: 'user-details-secondary-phone',
     label: 'Telefone adicional',
     type: 'tel',
@@ -351,7 +278,7 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
-  const profileDocumentField = createField({
+  const profileDocumentField = createInputField({
     id: 'user-details-document',
     label: 'Documento de identificação',
     type: 'text',
@@ -360,7 +287,7 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
-  const profileAddressField = createField({
+  const profileAddressField = createInputField({
     id: 'user-details-address',
     label: 'Endereço completo',
     type: 'text',
@@ -571,61 +498,6 @@ export function renderUserPanel(viewRoot) {
   updateFormsState();
   refreshRegistrationList();
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    resetFeedback();
-
-    if (!nameInput || !phoneInput || !passwordInput) {
-      showFeedback('Não foi possível processar o cadastro. Atualize a página e tente novamente.', {
-        isError: true,
-      });
-      return;
-    }
-
-    const name = nameInput.value.trim();
-    const phone = phoneInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!name || !phone || !password) {
-      showFeedback('Informe o nome, telefone e a senha para concluir o cadastro.', { isError: true });
-      return;
-    }
-
-    try {
-      feedback.hidden = true;
-      submitButton.disabled = true;
-      submitButton.setAttribute('aria-busy', 'true');
-
-      const savedUser = await addUser({ name, phone, password, device: collectDeviceInfo() });
-      lastRegisteredUserId = savedUser?.id ?? null;
-      selectedUserId = savedUser?.id ?? selectedUserId;
-      isPasswordVisible = false;
-      resetDetailsFeedback(primaryFeedback);
-      resetDetailsFeedback(profileFeedback);
-      form.reset();
-      showFeedback('Usuário cadastrado com sucesso! Confira o painel administrativo.', {
-        isError: false,
-      });
-      nameInput.focus();
-    } catch (error) {
-      console.error('Erro ao cadastrar usuário.', error);
-      const errorMessage = error instanceof Error ? error.message : '';
-      const isStorageIssue =
-        typeof errorMessage === 'string' &&
-        (errorMessage.includes('Armazenamento local indisponível') ||
-          errorMessage.includes('armazenamento local'));
-
-      showFeedback(
-        isStorageIssue
-          ? 'Não foi possível cadastrar o usuário porque o armazenamento local está indisponível neste dispositivo.'
-          : 'Não foi possível cadastrar o usuário. Tente novamente.',
-        { isError: true }
-      );
-    }
-    submitButton.disabled = false;
-    submitButton.removeAttribute('aria-busy');
-  });
-
   primaryForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     resetDetailsFeedback(primaryFeedback);
@@ -774,20 +646,30 @@ export function renderUserPanel(viewRoot) {
     profileSubmit.removeAttribute('aria-busy');
   });
 
-  form.append(nameField, phoneField, passwordField, submitButton, feedback);
-  formSection.append(formHeading, formDescription, form);
-
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout';
-  layout.append(formSection, columnsWrapper);
+  layout.append(columnsWrapper);
 
   const unsubscribe = subscribeUsers((users) => {
+    const previousUsers = Array.isArray(usersSnapshot) ? usersSnapshot.slice() : [];
+    const previousIds = new Set(previousUsers.map((user) => user.id));
+
     usersSnapshot = Array.isArray(users) ? users.slice() : [];
 
     if (usersSnapshot.length === 0) {
       selectedUserId = null;
       isPasswordVisible = false;
+      lastRegisteredUserId = null;
     } else {
+      const newEntries = usersSnapshot.filter((user) => !previousIds.has(user.id));
+
+      if (newEntries.length > 0) {
+        newEntries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        lastRegisteredUserId = newEntries[0]?.id ?? lastRegisteredUserId;
+      } else if (!usersSnapshot.some((user) => user.id === lastRegisteredUserId)) {
+        lastRegisteredUserId = usersSnapshot[0]?.id ?? null;
+      }
+
       const hasSelectedUser = usersSnapshot.some((user) => user.id === selectedUserId);
       if (!hasSelectedUser) {
         const fallbackUser =
@@ -813,64 +695,3 @@ export function renderUserPanel(viewRoot) {
   viewRoot.replaceChildren(heading, intro, layout);
 }
 
-function collectDeviceInfo() {
-  if (typeof navigator === 'undefined') {
-    return 'Desconhecido';
-  }
-
-  const platform = typeof navigator.platform === 'string' ? navigator.platform.trim() : '';
-  const language = typeof navigator.language === 'string' ? navigator.language.trim() : '';
-  const userAgent = typeof navigator.userAgent === 'string' ? navigator.userAgent.trim() : '';
-
-  const parts = [platform, language, userAgent].filter(Boolean);
-  const summary = parts.join(' | ');
-
-  return summary.slice(0, 512) || 'Desconhecido';
-}
-
-function createField({ id, label, type, placeholder, autocomplete, inputMode, required = true }) {
-  const fieldWrapper = document.createElement('label');
-  fieldWrapper.className = 'user-form__field';
-  fieldWrapper.setAttribute('for', id);
-
-  const fieldLabel = document.createElement('span');
-  fieldLabel.className = 'user-form__label';
-  fieldLabel.textContent = label;
-
-  const input = document.createElement('input');
-  input.id = id;
-  input.name = id;
-  input.type = type;
-  input.placeholder = placeholder;
-  if (autocomplete) {
-    input.autocomplete = autocomplete;
-  }
-  if (inputMode) {
-    input.inputMode = inputMode;
-  }
-  input.required = Boolean(required);
-
-  fieldWrapper.append(fieldLabel, input);
-
-  return fieldWrapper;
-}
-
-function createTextareaField({ id, label, placeholder, rows = 4 }) {
-  const fieldWrapper = document.createElement('label');
-  fieldWrapper.className = 'user-form__field user-form__field--textarea';
-  fieldWrapper.setAttribute('for', id);
-
-  const fieldLabel = document.createElement('span');
-  fieldLabel.className = 'user-form__label';
-  fieldLabel.textContent = label;
-
-  const textarea = document.createElement('textarea');
-  textarea.id = id;
-  textarea.name = id;
-  textarea.placeholder = placeholder;
-  textarea.rows = rows;
-
-  fieldWrapper.append(fieldLabel, textarea);
-
-  return fieldWrapper;
-}
