@@ -1,5 +1,16 @@
 # Log
 
+## v0.1.28 - 2025-10-19 12:20 BRT
+- Remove o título textual da view de documentos legais para manter o painel apenas com o conteúdo solicitado.
+- Ajusta o contêiner da view legal para anunciar o contexto aos leitores de tela sem exibir o texto visível.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.27 - 2025-10-19 12:00 BRT
+- Adiciona no rodapé o ícone corporativo com a mensagem de Copyright e atalho para abrir os documentos legais no painel central.
+- Cria a nova view de documentos legais carregando a página oficial em um iframe com alternativa acessível.
+- Ajusta os estilos do rodapé e do novo painel para manter a experiência responsiva e alinhada ao visual atual.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.26 - 2025-10-19 11:30 BRT
 - Ajusta o espaçamento e a quebra automática dos títulos para impedir cortes do texto em celulares.
 - Valida visualmente as telas de Log, Painel Administrativo, Painel Inicial e Painel do Usuário em smartphones e tablet comuns.

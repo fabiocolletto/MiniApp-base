@@ -131,6 +131,8 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
   padding-inline: 1rem;
   text-align: center;
   color: #5e4b23;
@@ -213,6 +215,36 @@ footer {
 .footer-version:focus-visible {
   outline: 0.15rem solid rgba(94, 75, 35, 0.6);
   outline-offset: 0.2rem;
+}
+
+.footer-legal {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.45rem, 1.2vw, 0.75rem);
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.footer-legal:focus-visible {
+  outline: 0.15rem solid rgba(94, 75, 35, 0.6);
+  outline-offset: 0.2rem;
+}
+
+.footer-legal__icon {
+  width: clamp(1.75rem, 4vw, 2.25rem);
+  height: clamp(1.75rem, 4vw, 2.25rem);
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+.footer-legal__text {
+  font-size: clamp(0.78rem, 1.35vw, 0.95rem);
+  font-weight: 500;
 }
 
 .view {
@@ -316,6 +348,55 @@ footer {
   align-items: start;
   justify-items: stretch;
   color: #3d2a12;
+}
+
+.view--legal {
+  text-align: left;
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.75rem);
+  width: min(92vw, 56rem);
+  margin-inline: auto;
+  color: #3d2a12;
+}
+
+.legal-description {
+  margin: 0 auto;
+  max-width: 44rem;
+  text-align: center;
+  color: #6f5630;
+  font-size: clamp(1rem, 1.1vw + 0.95rem, 1.25rem);
+  line-height: 1.6;
+}
+
+.legal-frame-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: clamp(18rem, 60vh, 30rem);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 240, 210, 0.9));
+  border: 1px solid rgba(94, 75, 35, 0.18);
+  box-shadow: 0 1.15rem 2.6rem rgba(61, 44, 16, 0.16);
+}
+
+.legal-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
+.legal-fallback {
+  font-size: clamp(0.95rem, 1vw + 0.85rem, 1.1rem);
+  color: #b05d00;
+  text-align: center;
+  text-decoration: none;
+}
+
+.legal-fallback:hover,
+.legal-fallback:focus-visible {
+  text-decoration: underline;
+  outline: none;
 }
 
 .view--log h1 {

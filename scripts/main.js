@@ -4,12 +4,14 @@ import { renderLog } from './views/log.js';
 import { renderHome } from './views/home.js';
 import { renderNotFound } from './views/not-found.js';
 import { renderUserPanel } from './views/user.js';
+import { renderLegal } from './views/legal.js';
 
 const viewRoot = document.getElementById('view-root');
 const logo = document.querySelector('.header-logo');
 const headerTitle = document.querySelector('.header-title');
 const versionButton = document.querySelector('.footer-version');
 const userButton = document.querySelector('.header-user-button');
+const legalButton = document.querySelector('.footer-legal');
 
 const views = {
   greeting: renderGreeting,
@@ -17,6 +19,7 @@ const views = {
   log: renderLog,
   home: renderHome,
   user: renderUserPanel,
+  legal: renderLegal,
 };
 
 let allowPreventScrollOption = true;
@@ -61,5 +64,6 @@ logo?.addEventListener('click', () => renderView('admin'));
 versionButton?.addEventListener('click', () => renderView('log'));
 headerTitle?.addEventListener('click', () => renderView('home'));
 userButton?.addEventListener('click', () => renderView('user'));
+legalButton?.addEventListener('click', () => renderView('legal'));
 
 renderView('greeting');
