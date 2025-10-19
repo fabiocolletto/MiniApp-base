@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.24 - 2025-10-19 10:40 BRT
+- Criação do painel do usuário com formulário inicial solicitando telefone e senha.
+- Inclusão do botão de acesso à conta no cabeçalho para abrir rapidamente o novo painel.
+- Atualização da versão exibida no rodapé para refletir a nova release.
+
+## v0.1.23 - 2025-10-19 10:20 BRT
+- Cria o painel inicial acessível ao clicar no título do cabeçalho, exibindo temporariamente apenas o título.
+- Registra a nova view no roteador central para suportar o painel inicial.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.22 - 2025-10-19 10:05 BRT
 - Aprimora a renderização do Log com novos estilos que aumentam o contraste do texto, ajustam a largura do painel e refinam o cartão para leitura confortável.
 - Adiciona feedback visual e acessível ao carregamento do `Log.md`, com estados de carregamento, foco e erro mais claros.
