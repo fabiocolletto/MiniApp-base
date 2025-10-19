@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.39 - 2025-10-19 13:15 BRT
+- Implementa persistência dos cadastros de usuários no IndexedDB com sincronização automática dos painéis.
+- Registra e preserva o identificador do dispositivo ao cadastrar usuários, exibindo o dado na lista administrativa.
+- Adiciona tratamento de erros e feedback específico no painel do usuário quando o armazenamento local falha.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.38 - 2025-10-19 13:03 BRT
 - Ajusta o contêiner principal para deixar o painel administrativo fixo, sem folgas verticais extras entre cabeçalho e rodapé.
 - Recalcula a altura disponível quando o painel administrativo está ativo para que o cartão use 100% do espaço e mantenha sua própria rolagem.
