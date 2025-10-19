@@ -1,5 +1,25 @@
 # Log
 
+## v0.1.14 - 2025-10-19 08:00 BRT
+- Implementação de view de contingência para telas desconhecidas garantindo feedback ao usuário.
+- Registro do identificador da view ativa no `#view-root` para facilitar depuração e testes.
+- Ajuste visual para mensagens de erro no painel central modularizado.
+
+## v0.1.13 - 2025-10-19 07:55 BRT
+- Externalização dos estilos para `styles/main.css`, mantendo o layout responsivo do painel central.
+- Inclusão do link para a folha de estilos no `index.html` e atualização da versão exibida no rodapé.
+- Preparação dos módulos de view para reutilizarem as classes de estilo compartilhadas.
+
+## v0.1.12 - 2025-10-19 07:45 BRT
+- Modularização das telas em módulos ES6 com a função central `renderView`.
+- Criação das views de saudação, administrativo e log renderizando o contêiner dinâmico.
+- Carregamento assíncrono do `Log.md` ao acessar a view de histórico.
+
+## v0.1.11 - 2025-10-19 07:35 BRT
+- Substituição dos painéis estáticos por um único contêiner dinâmico `#view-root` no painel central.
+- Preparação dos estilos para as futuras views moduladas mantendo as classes `.view--*`.
+- Ajuste temporário do script para direcionar o foco ao novo contêiner enquanto a modularização é concluída.
+
 ## v0.1.10 - 2025-10-19 07:04 BRT
 - Ajuste das datas e horários do histórico para refletir o horário atual de Brasília.
 - Manutenção do padrão de registro em BRT garantindo consistência cronológica.

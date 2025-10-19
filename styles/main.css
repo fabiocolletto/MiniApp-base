@@ -1,0 +1,202 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at top, #fef7d1, #f4d799 55%, #f1b46c);
+}
+
+main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: clamp(5rem, 12vh, 7rem) 1.5rem;
+  width: 100%;
+}
+
+.card {
+  width: min(90vw, 40rem);
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 1.5rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.2);
+  padding: clamp(2.25rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 4rem);
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  margin: 0 0 1rem;
+  color: #f29f05;
+  text-transform: uppercase;
+  letter-spacing: 0.3rem;
+}
+
+p {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.5vw + 1rem, 1.6rem);
+  color: #5e4b23;
+}
+
+.sun {
+  width: clamp(6rem, 12vw, 10rem);
+  height: clamp(6rem, 12vw, 10rem);
+  margin: 0 auto 1.5rem;
+  background: radial-gradient(circle, #fff5ba 35%, #ffd166 70%, #f29f05);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 2rem rgba(242, 159, 5, 0.6);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.sun::before,
+.sun::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  border: 0.5rem solid rgba(255, 209, 102, 0.4);
+  animation: rays 8s linear infinite;
+}
+
+.sun::after {
+  inset: -30%;
+  border-width: 0.25rem;
+  animation-duration: 12s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes rays {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+header,
+footer {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: #5e4b23;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(6px);
+  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+  box-shadow: 0 0.75rem 1.5rem rgba(94, 75, 35, 0.08);
+}
+
+header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.header-logo {
+  position: absolute;
+  left: 1rem;
+  height: clamp(1.75rem, 3vw, 2.25rem);
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.header-title {
+  font-weight: 600;
+}
+
+footer {
+  align-self: stretch;
+}
+
+.footer-version {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.footer-version:focus-visible {
+  outline: 0.15rem solid rgba(94, 75, 35, 0.6);
+  outline-offset: 0.2rem;
+}
+
+.view {
+  outline: none;
+}
+
+.view--admin {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.view--admin p {
+  text-align: center;
+}
+
+.view--log {
+  text-align: left;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.view--log h1 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.view--error {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.view--error p {
+  margin: 0;
+}
+
+.log-content {
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: clamp(20rem, 55vh, 26rem);
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(94, 75, 35, 0.15);
+  box-shadow: inset 0 0.35rem 1.2rem rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: 4.5rem 1rem 4rem;
+  }
+
+  .card {
+    width: 100%;
+    padding: 2.25rem 1.5rem;
+  }
+
+  h1 {
+    letter-spacing: 0.2rem;
+  }
+}
