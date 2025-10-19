@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.22 - 2025-10-19 10:05 BRT
+- Aprimora a renderização do Log com novos estilos que aumentam o contraste do texto, ajustam a largura do painel e refinam o cartão para leitura confortável.
+- Adiciona feedback visual e acessível ao carregamento do `Log.md`, com estados de carregamento, foco e erro mais claros.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.21 - 2025-10-19 09:50 BRT
 - Corrige o posicionamento do rodapé para permanecer rente à borda inferior em dispositivos com área segura.
 - Ajusta o cálculo das alturas do layout para refletir a nova base do rodapé.
