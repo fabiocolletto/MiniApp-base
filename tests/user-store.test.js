@@ -99,6 +99,11 @@ test('atualiza dados e perfil do usuário existente', { concurrency: false }, as
   assert.equal(users[0].name, 'Usuário Atualizado');
   assert.equal(users[0].profile.notes, 'anotação importante');
   assert.equal(users[0].userType, 'colaborador');
+
+  const status = getStorageStatus();
+  assert.equal(status.state, 'ready');
+  assert.equal(status.message, 'Memória atualizada');
+  assert.match(status.details, /Dados sincronizados com sucesso/i);
 });
 
 test('remove usuário cadastrado', { concurrency: false }, async () => {

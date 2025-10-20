@@ -13,6 +13,47 @@ const memoryState = {
   session: {},
 };
 
+function normalizeAccountInput(account) {
+  const rawId = account?.id;
+  const id =
+    typeof rawId === 'string'
+      ? rawId.trim()
+      : typeof rawId === 'number' && Number.isFinite(rawId)
+        ? String(rawId)
+        : rawId != null
+          ? String(rawId).trim()
+          : '';
+
+  if (!id) {
+    return null;
+  }
+
+  const normalized = { id };
+
+  if (typeof account?.label === 'string') {
+    const trimmedLabel = account.label.trim();
+    if (trimmedLabel) {
+      normalized.label = trimmedLabel.slice(0, 120);
+    }
+  }
+
+  if (typeof account?.kind === 'string') {
+    const trimmedKind = account.kind.trim();
+    if (trimmedKind) {
+      normalized.kind = trimmedKind.slice(0, 80);
+    }
+  }
+
+  if (typeof account?.createdAt === 'string') {
+    const trimmedCreatedAt = account.createdAt.trim();
+    if (trimmedCreatedAt) {
+      normalized.createdAt = trimmedCreatedAt;
+    }
+  }
+
+  return normalized;
+}
+
 let openPromise;
 
 function ensureObjectStore(db, name, options) {
@@ -156,6 +197,116 @@ export async function getSession() {
   } catch (error) {
     logError('account-store.session.fallback', 'Erro inesperado ao carregar sessão.', error);
     return {};
+  }
+}
+
+export async function replaceAccounts(accounts) {
+  const normalized = accounts
+    .map((account) => normalizeAccountInput(account))
+    .filter((account) => account !== null);
+
+  if (useMemoryStore) {
+    memoryState.accounts = normalized.map((account) => ({ ...account }));
+    return;
+  }
+
+  try {
+    const db = await openGlobalDB();
+
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(ACCOUNTS_STORE, 'readwrite');
+      const store = transaction.objectStore(ACCOUNTS_STORE);
+      let settled = false;
+
+      const finalize = (error) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      };
+
+      transaction.oncomplete = () => finalize();
+      transaction.onabort = () => finalize(transaction.error || new Error('Transação abortada ao sincronizar cadastros.'));
+      transaction.onerror = () => finalize(transaction.error || new Error('Erro ao sincronizar cadastros.'));
+
+      const clearRequest = store.clear();
+      clearRequest.onerror = () => {
+        finalize(clearRequest.error || new Error('Erro ao limpar cadastros anteriores.'));
+      };
+
+      clearRequest.onsuccess = () => {
+        normalized.forEach((account) => {
+          const putRequest = store.put(account);
+          putRequest.onerror = () => {
+            finalize(putRequest.error || new Error('Erro ao registrar cadastro global.'));
+          };
+        });
+      };
+    });
+  } catch (error) {
+    logError('account-store.accounts.sync', 'Falha ao sincronizar cadastros globais.', error);
+    throw error;
+  }
+}
+
+export async function setSessionState(session) {
+  const activeAccountId =
+    typeof session?.activeAccountId === 'string' && session.activeAccountId.trim()
+      ? session.activeAccountId.trim()
+      : '';
+
+  if (useMemoryStore) {
+    memoryState.session = activeAccountId ? { activeAccountId } : {};
+    return;
+  }
+
+  try {
+    const db = await openGlobalDB();
+
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(SESSION_STORE, 'readwrite');
+      const store = transaction.objectStore(SESSION_STORE);
+      let settled = false;
+
+      const finalize = (error) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      };
+
+      transaction.oncomplete = () => finalize();
+      transaction.onabort = () => finalize(transaction.error || new Error('Transação abortada ao sincronizar sessão.'));
+      transaction.onerror = () => finalize(transaction.error || new Error('Erro ao sincronizar sessão.'));
+
+      if (activeAccountId) {
+        const putRequest = store.put({ id: SESSION_KEY, activeAccountId });
+        putRequest.onerror = () => {
+          finalize(putRequest.error || new Error('Erro ao registrar sessão ativa.'));
+        };
+        return;
+      }
+
+      const deleteRequest = store.delete(SESSION_KEY);
+      deleteRequest.onerror = () => {
+        finalize(deleteRequest.error || new Error('Erro ao limpar sessão ativa.'));
+      };
+    });
+  } catch (error) {
+    logError('account-store.session.sync', 'Falha ao sincronizar sessão global.', error);
+    throw error;
   }
 }
 

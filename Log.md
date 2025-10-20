@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.91 - 2025-10-20 17:45 BRT
+- Sincroniza o IndexedDB global com a lista de cadastros locais ao adicionar, atualizar, remover ou carregar usuários.
+- Persiste o identificador da sessão ativa no armazenamento global ao autenticar ou encerrar usuários, permitindo abrir o painel inicial automaticamente.
+- Mantém o painel do usuário ativo após salvar edições nos dados pessoais e exibe no rodapé a mensagem positiva de que a memória foi atualizada.
+- Atualiza o rodapé para refletir a versão v0.1.91 com horário correspondente.
+
 ## v0.1.90 - 2025-10-20 18:00 BRT
 - Reestrutura o painel administrativo para que o contêiner do widget mantenha apenas o título e a tabela, replicando o ajuste de largura aplicado ao painel de login.
 - Ajusta a linha de corte entre mobile e desktop do painel administrativo para manter o layout de tabela em tablets na vertical e horizontal.
