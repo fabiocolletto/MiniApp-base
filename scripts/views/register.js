@@ -196,16 +196,11 @@ export function renderRegisterPanel(viewRoot) {
     id: 'register-password',
     label: 'Crie uma senha',
     type: 'password',
-    placeholder: 'A senha deve ter oito caracteres entre letras e números.',
+    placeholder: 'Mínimo 8 dígitos',
     autocomplete: 'new-password',
   });
 
   const passwordInput = passwordField.querySelector('input');
-
-  const passwordHint = document.createElement('p');
-  passwordHint.className = 'user-form__hint register-panel__hint';
-  passwordHint.textContent = 'A senha deve ter oito caracteres entre letras e números, podendo incluir símbolo.';
-  passwordField.append(passwordHint);
 
   const legalSection = document.createElement('div');
   legalSection.className = 'register-panel__legal';
@@ -237,6 +232,25 @@ export function renderRegisterPanel(viewRoot) {
   feedback.className = 'user-form__feedback register-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
+
+  const loginRedirect = document.createElement('p');
+  loginRedirect.className = 'register-panel__redirect';
+
+  const loginRedirectText = document.createElement('span');
+  loginRedirectText.className = 'register-panel__redirect-text';
+  loginRedirectText.textContent = 'Já possui cadastro?';
+
+  const loginLink = document.createElement('a');
+  loginLink.className = 'register-panel__redirect-link';
+  loginLink.href = '#login';
+  loginLink.title = 'Acessar o painel de login';
+  loginLink.textContent = 'Acesse o painel de login';
+  loginLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    eventBus.emit('app:navigate', { view: 'login' });
+  });
+
+  loginRedirect.append(loginRedirectText, ' ', loginLink, '.');
 
   function resetFeedback() {
     feedback.hidden = true;
@@ -377,7 +391,7 @@ export function renderRegisterPanel(viewRoot) {
     updateLegalControls();
   });
 
-  form.append(phoneField, passwordField, legalSection, submitButton, feedback);
+  form.append(phoneField, passwordField, legalSection, submitButton, feedback, loginRedirect);
 
   viewRoot.replaceChildren(heading, form);
 }
