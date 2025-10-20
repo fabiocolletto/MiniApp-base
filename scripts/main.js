@@ -146,7 +146,7 @@ function updateMemoryStatus(status) {
   const message =
     typeof status?.message === 'string' && status.message.trim()
       ? status.message.trim()
-      : 'Memória · carregando';
+      : 'Memória carregando';
   const details =
     typeof status?.details === 'string' && status.details.trim() ? status.details.trim() : '';
 
