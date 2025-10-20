@@ -61,10 +61,19 @@ function markStorageLoading() {
 
 function markStorageReady() {
   storageError = null;
+  const totalUsers = Array.isArray(users) ? users.length : 0;
+  const hasUsers = totalUsers > 0;
+
+  const details = hasUsers
+    ? totalUsers === 1
+      ? 'Armazenamento local sincronizado com 1 cadastro.'
+      : `Armazenamento local sincronizado com ${totalUsers} cadastros.`
+    : 'Armazenamento local ativo, nenhum cadastro armazenado.';
+
   setStorageStatus({
-    state: 'ready',
-    message: 'Memória ativa',
-    details: 'Armazenamento local conectado e sincronizado.',
+    state: hasUsers ? 'ready' : 'empty',
+    message: hasUsers ? 'Memória ativa' : 'Memória ativa (vazia)',
+    details,
   });
 }
 
@@ -467,7 +476,6 @@ export function subscribeUsers(listener) {
 export function teardownUserStore() {
   unsubscribeFromIndexedDb();
   unsubscribeFromIndexedDb = () => {};
-  listeners.clear();
   users = [];
   hasInitialized = false;
   storageError = null;

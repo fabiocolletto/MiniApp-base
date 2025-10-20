@@ -40,6 +40,8 @@ test('adiciona usuário e retorna dados sanitizados', { concurrency: false }, as
 
   const status = getStorageStatus();
   assert.equal(status.state, 'ready');
+  assert.equal(status.message, 'Memória ativa');
+  assert.equal(status.details, 'Armazenamento local sincronizado com 1 cadastro.');
 });
 
 test('exige telefone e senha ao adicionar usuário', { concurrency: false }, async () => {
@@ -101,4 +103,9 @@ test('remove usuário cadastrado', { concurrency: false }, async () => {
 
   const users = getUsers();
   assert.equal(users.length, 0);
+
+  const status = getStorageStatus();
+  assert.equal(status.state, 'empty');
+  assert.equal(status.message, 'Memória ativa (vazia)');
+  assert.match(status.details, /nenhum cadastro armazenado/i);
 });
