@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.73 - 2025-10-20 07:40 BRT
+- Simplifica o indicador de versão no rodapé para exibir apenas o código curto alinhado ao estilo do estado da memória.
+- Atualiza os textos auxiliares para refletirem a release v0.1.73.
+
 ## v0.1.72 - 2025-10-20 07:29 BRT
 - Corrige a restauração da sessão persistida ao aguardar a sincronização dos usuários antes de limpar o login.
 - Mantém a versão exibida no rodapé alinhada à release publicada.

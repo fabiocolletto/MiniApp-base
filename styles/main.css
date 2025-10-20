@@ -299,8 +299,7 @@ footer {
 }
 
 .footer-brand__text,
-.footer-legal,
-.footer-version {
+.footer-legal {
   font-size: clamp(0.68rem, 1.25vw, 0.95rem);
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -337,6 +336,45 @@ footer {
   white-space: nowrap;
   min-width: 0;
   transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.footer-version {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 0.9vw, 0.55rem);
+  padding-inline: clamp(0.45rem, 1.4vw, 0.85rem);
+  padding-block: clamp(0.15rem, 0.6vw, 0.35rem);
+  border-radius: 999px;
+  background: rgba(94, 75, 35, 0.14);
+  font-size: clamp(0.64rem, 1.1vw, 0.85rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(94, 75, 35, 0.78);
+  white-space: nowrap;
+  min-width: 0;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.footer-version:hover,
+.footer-version:focus-visible {
+  background: rgba(94, 75, 35, 0.22);
+  color: rgba(94, 75, 35, 0.9);
+  box-shadow: 0 0.25rem 0.65rem rgba(94, 75, 35, 0.18);
+}
+
+.footer-version__dot {
+  width: clamp(0.35rem, 0.9vw, 0.45rem);
+  height: clamp(0.35rem, 0.9vw, 0.45rem);
+  border-radius: 50%;
+  background: rgba(94, 75, 35, 0.78);
+  box-shadow: 0 0 0 0.18rem rgba(94, 75, 35, 0.18);
+}
+
+.footer-version__text {
+  display: inline-block;
 }
 
 .footer-memory__dot {
@@ -401,8 +439,7 @@ footer {
   }
 }
 
-.footer-legal,
-.footer-version {
+.footer-legal {
   background: none;
   border: none;
   padding: 0;
@@ -440,8 +477,7 @@ footer {
   }
 
   .footer-brand__text,
-  .footer-legal,
-  .footer-version {
+  .footer-legal {
     font-size: clamp(0.64rem, 1.8vw, 0.72rem);
     letter-spacing: 0.01em;
   }
@@ -482,8 +518,7 @@ footer {
     justify-content: center;
   }
 
-  .footer-legal,
-  .footer-version {
+  .footer-legal {
     padding: clamp(0.25rem, 1vw, 0.45rem) clamp(0.6rem, 3vw, 1rem);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.65);
