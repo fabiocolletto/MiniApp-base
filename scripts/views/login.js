@@ -1,4 +1,5 @@
 import { addUser } from '../data/user-store.js';
+import { setActiveUser } from '../data/session-store.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 
@@ -98,12 +99,20 @@ export function renderLoginPanel(viewRoot) {
       submitButton.disabled = true;
       submitButton.setAttribute('aria-busy', 'true');
 
-      await addUser({ phone: phoneValue, password: passwordValue, device: collectDeviceInfo() });
-      form.reset();
-      showFeedback('Login realizado com sucesso! Você já pode gerenciar os dados no painel do usuário.', {
-        isError: false,
+      const savedUser = await addUser({
+        phone: phoneValue,
+        password: passwordValue,
+        device: collectDeviceInfo(),
       });
-      phoneInput.focus();
+      setActiveUser(savedUser?.id);
+      submitButton.disabled = false;
+      submitButton.removeAttribute('aria-busy');
+      document.dispatchEvent(
+        new CustomEvent('app:navigate', {
+          detail: { view: 'user' },
+        })
+      );
+      return;
     } catch (error) {
       console.error('Erro ao cadastrar acesso pelo painel de login.', error);
       const errorMessage = error instanceof Error ? error.message : '';
