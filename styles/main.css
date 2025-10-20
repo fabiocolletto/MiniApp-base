@@ -298,8 +298,7 @@ footer {
   object-fit: contain;
 }
 
-.footer-brand__text,
-.footer-legal {
+.footer-brand__text {
   font-size: clamp(0.68rem, 1.25vw, 0.95rem);
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -439,29 +438,6 @@ footer {
   }
 }
 
-.footer-legal {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.footer-legal {
-  color: rgba(94, 75, 35, 0.82);
-  text-decoration: underline;
-  text-decoration-thickness: 0.05em;
-  text-decoration-color: rgba(94, 75, 35, 0.45);
-}
-
-.footer-legal:hover,
-.footer-legal:focus-visible {
-  text-decoration-color: rgba(94, 75, 35, 0.75);
-}
-
-
-
 @media (max-width: 370px) {
   header,
   footer {
@@ -476,8 +452,7 @@ footer {
     gap: 0.2rem;
   }
 
-  .footer-brand__text,
-  .footer-legal {
+  .footer-brand__text {
     font-size: clamp(0.64rem, 1.8vw, 0.72rem);
     letter-spacing: 0.01em;
   }
@@ -517,12 +492,6 @@ footer {
     width: 100%;
     justify-content: center;
   }
-
-  .footer-legal {
-    padding: clamp(0.25rem, 1vw, 0.45rem) clamp(0.6rem, 3vw, 1rem);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.65);
-  }
 }
 
 @media (max-width: 520px) {
@@ -543,7 +512,6 @@ footer {
   }
 }
 
-.footer-legal:focus-visible,
 .footer-version:focus-visible {
   outline: 0.15rem solid rgba(94, 75, 35, 0.6);
   outline-offset: 0.2rem;

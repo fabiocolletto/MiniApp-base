@@ -19,7 +19,6 @@ const headerTitle = document.querySelector('.header-title');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
-const legalButton = document.querySelector('.footer-legal');
 const headerActions = document.querySelector('.header-actions');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -147,7 +146,7 @@ function updateMemoryStatus(status) {
   const message =
     typeof status?.message === 'string' && status.message.trim()
       ? status.message.trim()
-      : 'Memória IndexedDB · carregando';
+      : 'Memória · carregando';
   const details =
     typeof status?.details === 'string' && status.details.trim() ? status.details.trim() : '';
 
@@ -235,7 +234,6 @@ registerLink?.addEventListener('click', (event) => {
   event.preventDefault();
   renderView('register');
 });
-legalButton?.addEventListener('click', () => renderView('legal'));
 
 document.addEventListener('app:navigate', (event) => {
   const viewName = resolveViewName(event?.detail);

@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.74 - 2025-10-20 07:50 BRT
+- Remove o link de termos legais do rodapé para simplificar as ações e focar nos status principais.
+- Atualiza o indicador de memória para exibir somente o rótulo “Memória” acompanhado do estado atual.
+
 ## v0.1.73 - 2025-10-20 07:40 BRT
 - Simplifica o indicador de versão no rodapé para exibir apenas o código curto alinhado ao estilo do estado da memória.
 - Atualiza os textos auxiliares para refletirem a release v0.1.73.
