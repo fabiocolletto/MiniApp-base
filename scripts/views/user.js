@@ -3,6 +3,7 @@ import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/sess
 import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
+import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
 
 const BASE_CLASSES = 'card view view--user';
 export function renderUserPanel(viewRoot) {
@@ -146,7 +147,15 @@ export function renderUserPanel(viewRoot) {
   const passwordToggle = document.createElement('button');
   passwordToggle.type = 'button';
   passwordToggle.className = 'user-details__password-toggle';
-  passwordToggle.textContent = 'Mostrar senha';
+  passwordToggle.setAttribute('aria-controls', 'user-details-password');
+
+  const passwordToggleIcon = document.createElement('span');
+  passwordToggleIcon.className = 'user-details__password-toggle-icon';
+
+  const passwordToggleText = document.createElement('span');
+  passwordToggleText.className = 'sr-only';
+
+  passwordToggle.append(passwordToggleIcon, passwordToggleText);
 
   primaryPasswordField.append(passwordToggle);
 
@@ -672,8 +681,15 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
+    const action = isPasswordVisible ? 'hide' : 'show';
+    const label = isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha';
+
     primaryPasswordInput.type = isPasswordVisible ? 'text' : 'password';
-    passwordToggle.textContent = isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha';
+    passwordToggleIcon.replaceChildren(createPasswordToggleIcon(action));
+    passwordToggleText.textContent = label;
+    passwordToggle.setAttribute('aria-label', label);
+    passwordToggle.setAttribute('title', label);
+    passwordToggle.setAttribute('aria-pressed', String(isPasswordVisible));
   }
 
   passwordToggle.addEventListener('click', (event) => {

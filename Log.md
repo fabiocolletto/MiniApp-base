@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.92 - 2025-10-20 23:10 BRT
+- Permite alternar a visualização da senha no formulário "Editar dados principais" do painel administrativo.
+- Redistribui os campos do formulário em múltiplas colunas com larguras ajustadas para cada informação.
+- Atualiza o rodapé para refletir a versão v0.1.92 com horário correspondente.
+- Substitui o texto dos botões de senha por ícones que indicam visualizar ou ocultar nos painéis administrativo e do usuário.
+
 ## v0.1.91 - 2025-10-20 17:45 BRT
 - Sincroniza o IndexedDB global com a lista de cadastros locais ao adicionar, atualizar, remover ou carregar usuários.
 - Persiste o identificador da sessão ativa no armazenamento global ao autenticar ou encerrar usuários, permitindo abrir o painel inicial automaticamente.

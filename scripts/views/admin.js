@@ -1,6 +1,7 @@
 import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { formatPhoneNumberForDisplay, validatePasswordStrength } from './shared/validation.js';
+import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
 import {
   filterUsersByQuery,
   sortUsersForAdmin,
@@ -61,9 +62,14 @@ function createFormField({
   disabled = false,
   attributes = {},
   options,
+  columnSpan = 12,
+  enablePasswordToggle = false,
 }) {
   const wrapper = document.createElement('label');
-  wrapper.className = 'admin-user-table__form-field';
+  const normalizedColumnSpan = Number.isFinite(columnSpan)
+    ? Math.min(12, Math.max(1, Math.round(columnSpan)))
+    : 12;
+  wrapper.className = `admin-user-table__form-field admin-user-table__form-field--span-${normalizedColumnSpan}`;
   wrapper.htmlFor = id;
 
   const labelText = document.createElement('span');
@@ -122,7 +128,58 @@ function createFormField({
     }
   });
 
-  wrapper.append(labelText, field);
+  wrapper.append(labelText);
+
+  if (enablePasswordToggle && field instanceof HTMLInputElement) {
+    const controls = document.createElement('div');
+    controls.className = 'admin-user-table__input-wrapper';
+
+    const toggleButton = document.createElement('button');
+    toggleButton.type = 'button';
+    toggleButton.className = 'admin-user-table__password-toggle';
+    toggleButton.setAttribute('aria-controls', id);
+
+    let isPasswordVisible = false;
+
+    const toggleButtonIcon = document.createElement('span');
+    toggleButtonIcon.className = 'admin-user-table__password-toggle-icon';
+
+    const toggleButtonText = document.createElement('span');
+    toggleButtonText.className = 'sr-only';
+
+    toggleButton.append(toggleButtonIcon, toggleButtonText);
+
+    const updateToggleState = () => {
+      const action = isPasswordVisible ? 'hide' : 'show';
+      const label = isPasswordVisible ? 'Ocultar senha de acesso' : 'Mostrar senha de acesso';
+
+      field.type = isPasswordVisible ? 'text' : 'password';
+      toggleButtonIcon.replaceChildren(createPasswordToggleIcon(action));
+      toggleButtonText.textContent = label;
+      toggleButton.setAttribute('aria-label', label);
+      toggleButton.setAttribute('title', label);
+      toggleButton.setAttribute('aria-pressed', String(isPasswordVisible));
+    };
+
+    updateToggleState();
+    toggleButton.disabled = field.disabled;
+
+    toggleButton.addEventListener('click', () => {
+      if (field.disabled) {
+        return;
+      }
+
+      isPasswordVisible = !isPasswordVisible;
+      updateToggleState();
+      field.focus({ preventScroll: true });
+    });
+
+    controls.append(field, toggleButton);
+    wrapper.append(controls);
+  } else {
+    wrapper.append(field);
+  }
+
   return wrapper;
 }
 
@@ -169,6 +226,7 @@ function createDetailsRow(user, isExpanded, editingState) {
     attributes: {
       autocomplete: 'name',
     },
+    columnSpan: 12,
   });
 
   const phoneField = createFormField({
@@ -182,6 +240,7 @@ function createDetailsRow(user, isExpanded, editingState) {
       autocomplete: 'tel',
       inputmode: 'tel',
     },
+    columnSpan: 5,
   });
 
   const emailField = createFormField({
@@ -196,6 +255,7 @@ function createDetailsRow(user, isExpanded, editingState) {
       autocomplete: 'email',
       spellcheck: 'false',
     },
+    columnSpan: 7,
   });
 
   const userTypeField = createFormField({
@@ -205,6 +265,7 @@ function createDetailsRow(user, isExpanded, editingState) {
     value: normalizeUserType(editingState?.userType ?? user.userType),
     disabled: isBusy,
     options: USER_TYPE_OPTIONS,
+    columnSpan: 5,
   });
 
   const passwordField = createFormField({
@@ -218,6 +279,8 @@ function createDetailsRow(user, isExpanded, editingState) {
     attributes: {
       autocomplete: 'new-password',
     },
+    columnSpan: 7,
+    enablePasswordToggle: true,
   });
 
   fieldset.append(nameField, phoneField, emailField, userTypeField, passwordField);
