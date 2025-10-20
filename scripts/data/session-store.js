@@ -3,6 +3,52 @@ import eventBus from '../events/event-bus.js';
 
 const SESSION_STORAGE_KEY = 'miniapp-active-user-id';
 const sessionListeners = new Set();
+const sessionStatusListeners = new Set();
+
+function createSessionLoadingStatus() {
+  return {
+    state: 'loading',
+    message: 'Sessão sincronizando',
+    details: 'Aguardando leitura dos cadastros e da sessão ativa.',
+  };
+}
+
+let sessionStatus = createSessionLoadingStatus();
+
+function cloneSessionStatus() {
+  return {
+    state: sessionStatus.state,
+    message: sessionStatus.message,
+    details: sessionStatus.details,
+  };
+}
+
+function notifySessionStatus() {
+  const snapshot = cloneSessionStatus();
+  sessionStatusListeners.forEach((listener) => {
+    try {
+      listener(snapshot);
+    } catch (error) {
+      console.error('Erro ao notificar assinante do status da sessão.', error);
+    }
+  });
+  eventBus.emit('session:status', snapshot);
+}
+
+function setSessionStatus(nextStatus) {
+  const state = typeof nextStatus?.state === 'string' ? nextStatus.state : sessionStatus.state;
+  const message = typeof nextStatus?.message === 'string' ? nextStatus.message : sessionStatus.message;
+  const details = typeof nextStatus?.details === 'string' ? nextStatus.details : sessionStatus.details;
+
+  const hasChanged =
+    state !== sessionStatus.state || message !== sessionStatus.message || details !== sessionStatus.details;
+
+  sessionStatus = { state, message, details };
+
+  if (hasChanged) {
+    notifySessionStatus();
+  }
+}
 let activeUserId = null;
 let usersSnapshot = getUsers();
 let hasLoadedFromStorage = false;
@@ -84,6 +130,46 @@ function findActiveUser() {
   return usersSnapshot.find((user) => user.id === activeUserId) ?? null;
 }
 
+function applySessionStatus(activeUserOverride) {
+  if (!hasSyncedUsers) {
+    setSessionStatus(createSessionLoadingStatus());
+    return;
+  }
+
+  const activeUser =
+    activeUserOverride && typeof activeUserOverride === 'object' ? activeUserOverride : findActiveUser() ?? null;
+
+  if (activeUser) {
+    const displayName = typeof activeUser.name === 'string' ? activeUser.name.trim() : '';
+    const displayPhone = typeof activeUser.phone === 'string' ? activeUser.phone.trim() : '';
+    const identifier = displayName || displayPhone ? [displayName, displayPhone].filter(Boolean).join(' · ') : '';
+
+    setSessionStatus({
+      state: 'connected',
+      message: 'Usuário conectado',
+      details: identifier ? `Sessão ativa para ${identifier}.` : 'Sessão ativa para o usuário conectado.',
+    });
+    return;
+  }
+
+  if (usersSnapshot.length === 0) {
+    setSessionStatus({
+      state: 'empty',
+      message: 'Nenhum usuário',
+      details: 'Cadastre um usuário para iniciar uma sessão.',
+    });
+    return;
+  }
+
+  const totalUsers = usersSnapshot.length;
+  const pluralSuffix = totalUsers === 1 ? '' : 's';
+  setSessionStatus({
+    state: 'idle',
+    message: 'Usuário desconectado',
+    details: `Sessão encerrada. ${totalUsers} cadastro${pluralSuffix} disponível${pluralSuffix}.`,
+  });
+}
+
 function notifySessionListeners() {
   const activeUser = getActiveUser();
   sessionListeners.forEach((listener) => {
@@ -94,6 +180,7 @@ function notifySessionListeners() {
     }
   });
   eventBus.emit('session:changed', activeUser);
+  applySessionStatus(activeUser);
 }
 
 function updateActiveUserId(newId) {
@@ -160,6 +247,28 @@ export function subscribeSession(listener) {
   };
 }
 
+export function getSessionStatus() {
+  return cloneSessionStatus();
+}
+
+export function subscribeSessionStatus(listener) {
+  if (typeof listener !== 'function') {
+    return () => {};
+  }
+
+  sessionStatusListeners.add(listener);
+
+  try {
+    listener(getSessionStatus());
+  } catch (error) {
+    console.error('Erro ao inicializar assinante do status da sessão.', error);
+  }
+
+  return () => {
+    sessionStatusListeners.delete(listener);
+  };
+}
+
 function syncUsersSnapshot(latestUsers) {
   usersSnapshot = Array.isArray(latestUsers) ? latestUsers : [];
   hasSyncedUsers = true;
@@ -190,3 +299,5 @@ if (!hasLoadedFromStorage) {
 Promise.resolve().then(() => {
   eventBus.emit('session:changed', getActiveUser());
 });
+
+notifySessionStatus();

@@ -9,7 +9,10 @@ import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
-import { getActiveUser as defaultGetActiveUser } from '../scripts/data/session-store.js';
+import {
+  getActiveUser as defaultGetActiveUser,
+  getSessionStatus as defaultGetSessionStatus,
+} from '../scripts/data/session-store.js';
 import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
 
 const viewRoot = document.getElementById('view-root');
@@ -22,6 +25,8 @@ const registerLink = document.querySelector('.header-register-link');
 const headerActions = document.querySelector('.header-actions');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
+const sessionIndicator = document.querySelector('.footer-session');
+const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__text');
 
 let headerUserButton = null;
 let allowPreventScrollOption = true;
@@ -40,6 +45,10 @@ const getStorageStatusFn =
   rawHooks && typeof rawHooks.getStorageStatus === 'function'
     ? rawHooks.getStorageStatus
     : defaultGetStorageStatus;
+const getSessionStatusFn =
+  rawHooks && typeof rawHooks.getSessionStatus === 'function'
+    ? rawHooks.getSessionStatus
+    : defaultGetSessionStatus;
 
 const views = {
   greeting: renderGreeting,
@@ -197,6 +206,31 @@ function updateMemoryStatus(status) {
   }
 }
 
+function updateSessionStatus(status) {
+  if (!(sessionIndicator instanceof HTMLElement) || !(sessionIndicatorText instanceof HTMLElement)) {
+    return;
+  }
+
+  const state = typeof status?.state === 'string' ? status.state : 'loading';
+  const message =
+    typeof status?.message === 'string' && status.message.trim()
+      ? status.message.trim()
+      : 'Sessão sincronizando';
+  const details =
+    typeof status?.details === 'string' && status.details.trim() ? status.details.trim() : '';
+
+  sessionIndicator.dataset.state = state;
+  sessionIndicatorText.textContent = message;
+
+  if (details) {
+    sessionIndicator.setAttribute('title', details);
+    sessionIndicator.setAttribute('aria-label', `${message}. ${details}`);
+  } else {
+    sessionIndicator.removeAttribute('title');
+    sessionIndicator.setAttribute('aria-label', message);
+  }
+}
+
 function focusViewRoot() {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -332,6 +366,13 @@ export function initializeAppShell(router) {
     updateMemoryStatus(getStorageStatusFn());
     eventBus.on('storage:status', (status) => {
       updateMemoryStatus(status);
+    });
+  }
+
+  if (sessionIndicator instanceof HTMLElement && sessionIndicatorText instanceof HTMLElement) {
+    updateSessionStatus(getSessionStatusFn());
+    eventBus.on('session:status', (status) => {
+      updateSessionStatus(status);
     });
   }
 }
