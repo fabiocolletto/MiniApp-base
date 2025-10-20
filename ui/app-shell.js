@@ -18,7 +18,6 @@ import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/use
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
 const logo = document.querySelector('.header-logo');
-const headerTitle = document.querySelector('.header-title');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
@@ -825,7 +824,6 @@ export function initializeAppShell(router) {
 
   logo?.addEventListener('click', () => renderView('admin'));
   versionButton?.addEventListener('click', () => renderView('log'));
-  headerTitle?.addEventListener('click', () => router.goTo('dashboard'));
   loginLink?.addEventListener('click', (event) => {
     event.preventDefault();
     router.goTo('login');

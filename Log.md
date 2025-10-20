@@ -1,10 +1,16 @@
 # Log
 
-## v0.1.93 - 2025-10-20 19:35 BRT
+## v0.1.94 - 2025-10-20 20:45 BRT
+- Remove o título textual "MiniApp Base" do cabeçalho, mantendo somente o logotipo no topo.
+- Atualiza o rodapé para refletir a versão v0.1.94 com horário correspondente.
+
+## v0.1.93 - 2025-10-20 20:25 BRT
 - Simplifica o painel de cadastro mantendo apenas orientações essenciais e indica no campo "Crie uma senha" que são necessários 8 dígitos.
 - Atualiza o rodapé para refletir a versão v0.1.93 com horário correspondente.
 - Adiciona link para usuários já cadastrados abrirem rapidamente o painel de login a partir do cadastro.
 - Reposiciona o lembrete de login dentro do formulário, realçando a mensagem auxiliar sem expandir o cartão do cadastro.
+- Padroniza o layout dos painéis de autenticação com classes compartilhadas para título, introdução, formulário e feedback, mantendo espaçamentos idênticos no login e cadastro.
+- Mantém os campos de DDI e telefone alinhados na mesma linha nos painéis de login e cadastro, reutilizando a máscara responsiva para ambos os fluxos.
 
 ## v0.1.92 - 2025-10-20 23:10 BRT
 - Permite alternar a visualização da senha no formulário "Editar dados principais" do painel administrativo.
