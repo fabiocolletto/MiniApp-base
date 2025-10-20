@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.84 - 2025-10-20 18:00 BRT
+- Remove os rótulos visíveis dos campos de código do país e número, mantendo os exemplos diretamente nos placeholders dinâmicos.
+- Restaura a orientação de senha com placeholder e dica mínima destacando os oito caracteres entre letras e números.
+- Reintroduz o início da frase de consentimento legal ao lado da caixa de seleção preservando o estilo minimalista.
+- Atualiza o rodapé para a versão v0.1.84 com horário correspondente.
+- Refina o botão móvel de acesso rápido removendo o texto “Acesso”, preservando apenas o ícone sem contornos visíveis e mantendo a identificação acessível.
+
 ## v0.1.83 - 2025-10-20 15:30 BRT
 - Adiciona sobreposição desfocada ao abrir a legenda de estados da sessão, destacando o painel em telas móveis.
 - Inclui botão dedicado de fechar e suporte a clique no fundo para encerrar o popover de forma intuitiva e acessível.

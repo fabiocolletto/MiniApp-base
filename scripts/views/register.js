@@ -80,10 +80,6 @@ export function renderRegisterPanel(viewRoot) {
   heading.className = 'register-panel__title';
   heading.textContent = 'Crie sua conta';
 
-  const intro = document.createElement('p');
-  intro.className = 'register-panel__intro';
-  intro.textContent = 'Informe seu telefone e defina uma senha para liberar o acesso imediato.';
-
   const form = document.createElement('form');
   form.className = 'register-panel__form user-form';
   form.autocomplete = 'on';
@@ -103,7 +99,7 @@ export function renderRegisterPanel(viewRoot) {
   countryGroup.className = 'register-panel__phone-subfield register-panel__phone-subfield--country';
 
   const countryLabel = document.createElement('label');
-  countryLabel.className = 'register-panel__phone-subfield-label';
+  countryLabel.className = 'register-panel__phone-subfield-label sr-only';
   countryLabel.setAttribute('for', 'register-phone-country');
   countryLabel.textContent = 'Código do país';
 
@@ -122,7 +118,7 @@ export function renderRegisterPanel(viewRoot) {
   numberGroup.className = 'register-panel__phone-subfield register-panel__phone-subfield--number';
 
   const numberLabel = document.createElement('label');
-  numberLabel.className = 'register-panel__phone-subfield-label';
+  numberLabel.className = 'register-panel__phone-subfield-label sr-only';
   numberLabel.setAttribute('for', 'register-phone-number');
   numberLabel.textContent = 'Número do telefone';
 
@@ -200,7 +196,7 @@ export function renderRegisterPanel(viewRoot) {
     id: 'register-password',
     label: 'Crie uma senha',
     type: 'password',
-    placeholder: 'Mínimo de 8 caracteres com letra e número/símbolo',
+    placeholder: 'A senha deve ter oito caracteres entre letras e números.',
     autocomplete: 'new-password',
   });
 
@@ -208,7 +204,7 @@ export function renderRegisterPanel(viewRoot) {
 
   const passwordHint = document.createElement('p');
   passwordHint.className = 'user-form__hint register-panel__hint';
-  passwordHint.textContent = 'Mínimo de 8 caracteres.';
+  passwordHint.textContent = 'A senha deve ter oito caracteres entre letras e números, podendo incluir símbolo.';
   passwordField.append(passwordHint);
 
   const legalSection = document.createElement('div');
@@ -223,19 +219,12 @@ export function renderRegisterPanel(viewRoot) {
   legalCheckbox.id = 'register-legal-consent';
   legalCheckbox.name = 'register-legal-consent';
   legalCheckbox.className = 'register-panel__legal-checkbox';
+  legalCheckbox.setAttribute('aria-label', 'Concordo com os termos legais.');
 
   const legalText = document.createElement('span');
   legalText.className = 'register-panel__legal-text';
-  legalText.append('Li e concordo com os termos legais. ');
+  legalText.textContent = 'Li e concordo com os termos legais.';
 
-  const legalLink = document.createElement('a');
-  legalLink.className = 'register-panel__legal-link';
-  legalLink.href = 'https://5horas.com.br/home/pagina-legal/docs-legais/';
-  legalLink.target = '_blank';
-  legalLink.rel = 'noopener noreferrer';
-  legalLink.textContent = 'Saiba mais';
-
-  legalText.append(legalLink);
   legalOption.append(legalCheckbox, legalText);
   legalSection.append(legalOption);
 
@@ -290,11 +279,11 @@ export function renderRegisterPanel(viewRoot) {
 
   updateLegalControls();
 
-    const collectPhoneDigits = () => {
-      const countryDigits = sanitizeCountryCode(phoneCountryInput.value);
-      const numberDigits = phoneNumberInput.value.replace(/[^0-9]/g, '');
-      return { countryDigits, numberDigits };
-    };
+  const collectPhoneDigits = () => {
+    const countryDigits = sanitizeCountryCode(phoneCountryInput.value);
+    const numberDigits = phoneNumberInput.value.replace(/[^0-9]/g, '');
+    return { countryDigits, numberDigits };
+  };
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -389,5 +378,5 @@ export function renderRegisterPanel(viewRoot) {
 
   form.append(phoneField, passwordField, legalSection, submitButton, feedback);
 
-  viewRoot.replaceChildren(heading, intro, form);
+  viewRoot.replaceChildren(heading, form);
 }
