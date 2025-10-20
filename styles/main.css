@@ -595,6 +595,22 @@ footer {
   scrollbar-gutter: stable both-edges;
 }
 
+.card.view--splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.splash__loader {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1f2933);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
 .view--admin {
   display: grid;
   gap: clamp(1.35rem, 3vw, 2.1rem);
