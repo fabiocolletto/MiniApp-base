@@ -23,6 +23,7 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const headerActions = document.querySelector('.header-actions');
+const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 const sessionIndicator = document.querySelector('.footer-session');
@@ -54,14 +55,22 @@ const SESSION_LEGEND_ITEMS = [
   },
 ];
 
-let sessionPopover = null;
-let sessionPopoverBackdrop = null;
-let sessionPopoverItems = new Map();
-let sessionPopoverOpen = false;
-let removeSessionPopoverListeners = null;
+let sessionLegendPanel = null;
+let sessionLegendItems = new Map();
 
 let headerUserButton = null;
 let allowPreventScrollOption = true;
+let shellRouter = null;
+
+let headerMobileMenuPanel = null;
+
+let appModalBackdrop = null;
+let appModalContainer = null;
+let appModalOpen = false;
+let removeAppModalListeners = null;
+let activeModalId = null;
+let modalActiveTrigger = null;
+let modalCleanup = null;
 
 const rawHooks =
   typeof globalThis === 'object' && globalThis && '__MINIAPP_UI_HOOKS__' in globalThis
@@ -132,6 +141,288 @@ function getHeaderUserButton() {
   return headerUserButton;
 }
 
+function ensureAppModalElements() {
+  const body = document.body;
+  if (!(body instanceof HTMLElement)) {
+    return { backdrop: null, container: null };
+  }
+
+  if (!appModalBackdrop || !appModalBackdrop.isConnected) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'app-modal-backdrop';
+    backdrop.hidden = true;
+    backdrop.addEventListener('click', () => {
+      closeAppModal();
+    });
+    body.append(backdrop);
+    appModalBackdrop = backdrop;
+  }
+
+  if (!appModalContainer || !appModalContainer.isConnected) {
+    const container = document.createElement('div');
+    container.className = 'app-modal';
+    container.hidden = true;
+    container.setAttribute('role', 'dialog');
+    container.setAttribute('aria-modal', 'true');
+    container.setAttribute('aria-hidden', 'true');
+    body.append(container);
+    appModalContainer = container;
+  }
+
+  return { backdrop: appModalBackdrop, container: appModalContainer };
+}
+
+function closeAppModal({ restoreFocus = true, id } = {}) {
+  if (!appModalOpen) {
+    return;
+  }
+
+  if (typeof id === 'string' && activeModalId && activeModalId !== id) {
+    return;
+  }
+
+  appModalOpen = false;
+
+  if (typeof modalCleanup === 'function') {
+    modalCleanup();
+  }
+  modalCleanup = null;
+
+  if (removeAppModalListeners) {
+    removeAppModalListeners();
+    removeAppModalListeners = null;
+  }
+
+  const body = document.body;
+  if (body instanceof HTMLElement) {
+    body.classList.remove(dimmedShellClass);
+  }
+
+  if (appModalBackdrop instanceof HTMLElement) {
+    appModalBackdrop.classList.remove('app-modal-backdrop--visible');
+    appModalBackdrop.hidden = true;
+  }
+
+  if (appModalContainer instanceof HTMLElement) {
+    appModalContainer.hidden = true;
+    appModalContainer.setAttribute('aria-hidden', 'true');
+    appModalContainer.replaceChildren();
+    appModalContainer.removeAttribute('aria-labelledby');
+    appModalContainer.removeAttribute('aria-describedby');
+  }
+
+  const trigger = modalActiveTrigger;
+  activeModalId = null;
+  modalActiveTrigger = null;
+
+  if (restoreFocus && trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
+}
+
+function openAppModal({
+  id,
+  panel,
+  labelledBy,
+  describedBy,
+  focusSelector,
+  trigger,
+  onClose,
+} = {}) {
+  if (!(panel instanceof HTMLElement)) {
+    return;
+  }
+
+  const { backdrop, container } = ensureAppModalElements();
+  if (!(backdrop instanceof HTMLElement) || !(container instanceof HTMLElement)) {
+    return;
+  }
+
+  if (appModalOpen) {
+    closeAppModal({ restoreFocus: false });
+  }
+
+  container.replaceChildren(panel);
+
+  if (typeof labelledBy === 'string' && labelledBy) {
+    container.setAttribute('aria-labelledby', labelledBy);
+  } else {
+    container.removeAttribute('aria-labelledby');
+  }
+
+  if (typeof describedBy === 'string' && describedBy) {
+    container.setAttribute('aria-describedby', describedBy);
+  } else {
+    container.removeAttribute('aria-describedby');
+  }
+
+  appModalOpen = true;
+  activeModalId = typeof id === 'string' ? id : null;
+  modalActiveTrigger = trigger instanceof HTMLElement ? trigger : null;
+  modalCleanup = typeof onClose === 'function' ? onClose : null;
+
+  const body = document.body;
+  if (body instanceof HTMLElement) {
+    body.classList.add(dimmedShellClass);
+  }
+
+  backdrop.hidden = false;
+  backdrop.classList.add('app-modal-backdrop--visible');
+  container.hidden = false;
+  container.setAttribute('aria-hidden', 'false');
+
+  const focusableSelectors =
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const focusableItems = Array.from(container.querySelectorAll(focusableSelectors)).filter(
+    (element) => element instanceof HTMLElement && !element.hasAttribute('disabled')
+  );
+  const firstFocusable = focusableItems[0] || null;
+  const lastFocusable = focusableItems[focusableItems.length - 1] || null;
+
+  const handleKeydown = (event) => {
+    if (!(event instanceof KeyboardEvent)) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeAppModal({ restoreFocus: true });
+      return;
+    }
+
+    if (event.key !== 'Tab' || focusableItems.length === 0) {
+      return;
+    }
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable?.focus?.();
+      }
+      return;
+    }
+
+    if (document.activeElement === lastFocusable) {
+      event.preventDefault();
+      firstFocusable?.focus?.();
+    }
+  };
+
+  document.addEventListener('keydown', handleKeydown);
+  removeAppModalListeners = () => {
+    document.removeEventListener('keydown', handleKeydown);
+  };
+
+  let focusTarget = null;
+  if (typeof focusSelector === 'string' && focusSelector) {
+    focusTarget = container.querySelector(focusSelector);
+  } else if (focusSelector instanceof HTMLElement) {
+    focusTarget = focusSelector;
+  }
+
+  if (!(focusTarget instanceof HTMLElement)) {
+    focusTarget =
+      focusableItems.find((element) => element.classList.contains('app-modal__action--primary')) ||
+      firstFocusable ||
+      container;
+  }
+
+  setTimeout(() => {
+    focusTarget?.focus?.();
+  }, 0);
+}
+
+function ensureHeaderMobileMenu() {
+  if (headerMobileMenuPanel && headerMobileMenuPanel.isConnected) {
+    return headerMobileMenuPanel;
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'app-modal__panel app-modal__panel--mobile-menu';
+  panel.id = 'mobile-access-menu';
+
+  const header = document.createElement('div');
+  header.className = 'app-modal__header header-mobile-menu__header';
+
+  const title = document.createElement('h2');
+  title.className = 'app-modal__title header-mobile-menu__title';
+  title.id = 'mobile-access-menu-title';
+  title.textContent = 'Acesso rápido';
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'app-modal__close header-mobile-menu__close';
+  closeButton.setAttribute('aria-label', 'Fechar menu de acesso');
+  closeButton.textContent = '×';
+  closeButton.addEventListener('click', () => {
+    closeHeaderMobileMenu(true);
+  });
+
+  header.append(title, closeButton);
+
+  const description = document.createElement('p');
+  description.className = 'app-modal__description header-mobile-menu__description';
+  description.id = 'mobile-access-menu-description';
+  description.textContent = 'Escolha a opção desejada para continuar.';
+
+  const actions = document.createElement('div');
+  actions.className = 'app-modal__actions header-mobile-menu__actions';
+
+  const registerAction = document.createElement('button');
+  registerAction.type = 'button';
+  registerAction.id = 'mobile-access-menu-register';
+  registerAction.className =
+    'app-modal__action app-modal__action--primary header-mobile-menu__action header-mobile-menu__action--primary';
+  registerAction.textContent = 'Cadastro';
+  registerAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    shellRouter?.goTo?.('register');
+  });
+
+  const loginAction = document.createElement('button');
+  loginAction.type = 'button';
+  loginAction.className = 'app-modal__action header-mobile-menu__action';
+  loginAction.textContent = 'Login';
+  loginAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    shellRouter?.goTo?.('login');
+  });
+
+  actions.append(registerAction, loginAction);
+
+  panel.append(header, description, actions);
+  headerMobileMenuPanel = panel;
+
+  return headerMobileMenuPanel;
+}
+
+function closeHeaderMobileMenu(focusToggle = false) {
+  closeAppModal({ restoreFocus: focusToggle, id: 'mobile-menu' });
+}
+
+function openHeaderMobileMenu() {
+  const panel = ensureHeaderMobileMenu();
+  if (!(panel instanceof HTMLElement)) {
+    return;
+  }
+
+  openAppModal({
+    id: 'mobile-menu',
+    panel,
+    labelledBy: 'mobile-access-menu-title',
+    describedBy: 'mobile-access-menu-description',
+    focusSelector: '#mobile-access-menu-register',
+    trigger: headerMobileToggle instanceof HTMLElement ? headerMobileToggle : null,
+    onClose: () => {
+      headerMobileToggle?.setAttribute('aria-expanded', 'false');
+    },
+  });
+
+  if (headerMobileToggle instanceof HTMLElement) {
+    headerMobileToggle.setAttribute('aria-expanded', 'true');
+  }
+}
+
 function extractInitials(user) {
   const name = typeof user?.name === 'string' ? user.name.trim() : '';
   if (name) {
@@ -193,6 +484,23 @@ function updateHeaderSession(user) {
   setLinkVisibility(loginLink, !isAuthenticated);
   setLinkVisibility(registerLink, !isAuthenticated);
 
+  if (headerActions instanceof HTMLElement) {
+    headerActions.dataset.mobile = isAuthenticated ? 'user' : 'guest';
+  }
+
+  if (headerMobileToggle instanceof HTMLElement) {
+    if (isAuthenticated) {
+      headerMobileToggle.hidden = true;
+      headerMobileToggle.setAttribute('aria-hidden', 'true');
+      headerMobileToggle.setAttribute('aria-expanded', 'false');
+      closeHeaderMobileMenu();
+    } else {
+      headerMobileToggle.hidden = false;
+      headerMobileToggle.removeAttribute('aria-hidden');
+      headerMobileToggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   if (!isAuthenticated) {
     if (headerUserButton?.isConnected) {
       headerUserButton.remove();
@@ -213,71 +521,51 @@ function updateHeaderSession(user) {
   }
 }
 
-function ensureSessionPopover() {
-  if (sessionPopover && sessionPopover.isConnected) {
-    return sessionPopover;
+function ensureSessionLegendPanel() {
+  if (sessionLegendPanel && sessionLegendPanel.isConnected) {
+    return sessionLegendPanel;
   }
 
-  const body = document.body;
-  if (!(body instanceof HTMLElement)) {
-    return null;
-  }
+  const panel = document.createElement('div');
+  panel.className = 'app-modal__panel app-modal__panel--session';
+  panel.id = 'session-status-panel';
 
-  if (!sessionPopoverBackdrop || !sessionPopoverBackdrop.isConnected) {
-    const backdrop = document.createElement('div');
-    backdrop.className = 'footer-session__backdrop';
-    backdrop.hidden = true;
-    backdrop.setAttribute('aria-hidden', 'true');
-    backdrop.addEventListener('click', () => {
-      closeSessionPopover();
-    });
-    body.append(backdrop);
-    sessionPopoverBackdrop = backdrop;
-  }
+  const header = document.createElement('div');
+  header.className = 'app-modal__header footer-session__header';
 
-  sessionPopoverItems = new Map();
-
-  const popover = document.createElement('div');
-  popover.id = 'session-status-popover';
-  popover.className = 'footer-session__popover';
-  popover.setAttribute('role', 'dialog');
-  popover.setAttribute('aria-modal', 'false');
-  popover.setAttribute('aria-hidden', 'true');
-  popover.hidden = true;
-
-  const heading = document.createElement('p');
-  heading.className = 'footer-session__popover-title';
-  heading.textContent = 'Status da sessão';
+  const title = document.createElement('h2');
+  title.className = 'app-modal__title footer-session__title';
+  title.id = 'session-status-title';
+  title.textContent = 'Status da sessão';
 
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
-  closeButton.className = 'footer-session__popover-close';
+  closeButton.className = 'app-modal__close footer-session__close';
   closeButton.setAttribute('aria-label', 'Fechar legenda de status da sessão');
-  closeButton.setAttribute('title', 'Fechar');
-  const closeIcon = document.createElement('span');
-  closeIcon.className = 'footer-session__popover-close-icon';
-  closeIcon.setAttribute('aria-hidden', 'true');
-  closeIcon.textContent = '×';
-  closeButton.append(closeIcon);
+  closeButton.textContent = '×';
   closeButton.addEventListener('click', () => {
     closeSessionPopover(true);
   });
 
-  const headingWrapper = document.createElement('div');
-  headingWrapper.className = 'footer-session__popover-header';
-  headingWrapper.append(heading, closeButton);
+  header.append(title, closeButton);
+
+  const description = document.createElement('p');
+  description.className = 'app-modal__description footer-session__description';
+  description.id = 'session-status-description';
+  description.textContent = 'Consulte os estados disponíveis para entender a sincronização da sua conta.';
 
   const legend = document.createElement('ul');
   legend.className = 'footer-session__legend';
 
-  SESSION_LEGEND_ITEMS.forEach(({ state, label, description }) => {
+  sessionLegendItems = new Map();
+  SESSION_LEGEND_ITEMS.forEach(({ state, label, description: itemDescription }) => {
     const item = document.createElement('li');
     item.className = 'footer-session__legend-item';
     item.dataset.state = state;
 
-    const itemDot = document.createElement('span');
-    itemDot.className = 'footer-session__legend-dot';
-    itemDot.setAttribute('aria-hidden', 'true');
+    const dot = document.createElement('span');
+    dot.className = 'footer-session__legend-dot';
+    dot.setAttribute('aria-hidden', 'true');
 
     const content = document.createElement('div');
     content.className = 'footer-session__legend-content';
@@ -286,26 +574,23 @@ function ensureSessionPopover() {
     itemLabel.className = 'footer-session__legend-label';
     itemLabel.textContent = label;
 
-    const itemDescription = document.createElement('span');
-    itemDescription.className = 'footer-session__legend-description';
-    itemDescription.textContent = description;
+    const itemText = document.createElement('span');
+    itemText.className = 'footer-session__legend-description';
+    itemText.textContent = itemDescription;
 
-    content.append(itemLabel, itemDescription);
-    item.append(itemDot, content);
+    content.append(itemLabel, itemText);
+    item.append(dot, content);
     legend.append(item);
-    sessionPopoverItems.set(state, item);
+    sessionLegendItems.set(state, item);
   });
 
-  popover.append(headingWrapper, legend);
-  body.append(popover);
-
-  sessionPopover = popover;
-
-  return sessionPopover;
+  panel.append(header, description, legend);
+  sessionLegendPanel = panel;
+  return sessionLegendPanel;
 }
 
-function highlightSessionPopoverState(state) {
-  sessionPopoverItems.forEach((item, key) => {
+function highlightSessionLegendState(state) {
+  sessionLegendItems.forEach((item, key) => {
     const isActive = key === state;
     item.classList.toggle('footer-session__legend-item--active', isActive);
     if (isActive) {
@@ -316,68 +601,11 @@ function highlightSessionPopoverState(state) {
   });
 }
 
-function positionSessionPopover() {
-  if (!(sessionIndicator instanceof HTMLElement) || !(sessionPopover instanceof HTMLElement)) {
-    return;
-  }
-
-  const rect = sessionIndicator.getBoundingClientRect();
-  const viewportPadding = 12;
-  const popoverRect = sessionPopover.getBoundingClientRect();
-
-  let left = rect.left + rect.width / 2 - popoverRect.width / 2;
-  const maxLeft = window.innerWidth - popoverRect.width - viewportPadding;
-  left = Math.min(Math.max(viewportPadding, left), Math.max(viewportPadding, maxLeft));
-
-  const offset = 16;
-  const desiredTop = rect.top - popoverRect.height - offset;
-  const top = Math.max(viewportPadding, desiredTop);
-
-  const arrowOffset = rect.left + rect.width / 2 - left;
-  const arrowMin = 16;
-  const arrowMax = Math.max(arrowMin, popoverRect.width - arrowMin);
-  const arrowPosition = Math.min(Math.max(arrowMin, arrowOffset), arrowMax);
-  sessionPopover.style.setProperty('--arrow-inline-offset', `${Math.round(arrowPosition)}px`);
-
-  sessionPopover.style.left = `${Math.round(left)}px`;
-  sessionPopover.style.top = `${Math.round(top)}px`;
-}
-
 function closeSessionPopover(focusButton = false) {
-  const body = document.body;
-  if (body instanceof HTMLElement) {
-    body.classList.remove(dimmedShellClass);
-  }
-
-  if (!sessionPopoverOpen) {
-    return;
-  }
-
-  sessionPopoverOpen = false;
-
-  if (removeSessionPopoverListeners) {
-    removeSessionPopoverListeners();
-    removeSessionPopoverListeners = null;
-  }
-
-  if (sessionPopover) {
-    sessionPopover.hidden = true;
-    sessionPopover.setAttribute('aria-hidden', 'true');
-  }
-
-  if (sessionPopoverBackdrop instanceof HTMLElement) {
-    sessionPopoverBackdrop.classList.remove('footer-session__backdrop--visible');
-    sessionPopoverBackdrop.setAttribute('aria-hidden', 'true');
-    sessionPopoverBackdrop.hidden = true;
-  }
-
+  closeAppModal({ restoreFocus: focusButton, id: 'session-legend' });
   if (sessionIndicator instanceof HTMLElement) {
     sessionIndicator.setAttribute('aria-expanded', 'false');
     sessionIndicator.classList.remove('footer-session--open');
-  }
-
-  if (focusButton && sessionIndicator instanceof HTMLElement) {
-    sessionIndicator.focus();
   }
 }
 
@@ -386,87 +614,45 @@ function openSessionPopover() {
     return;
   }
 
-  const popover = ensureSessionPopover();
-  if (!(popover instanceof HTMLElement)) {
+  const panel = ensureSessionLegendPanel();
+  if (!(panel instanceof HTMLElement)) {
     return;
   }
 
-  if (sessionPopoverOpen) {
-    positionSessionPopover();
-    return;
-  }
+  highlightSessionLegendState(sessionIndicator.dataset.state);
 
-  sessionPopoverOpen = true;
-
-  const body = document.body;
-  if (body instanceof HTMLElement) {
-    body.classList.add(dimmedShellClass);
-  }
-
-  if (sessionPopoverBackdrop instanceof HTMLElement) {
-    sessionPopoverBackdrop.hidden = false;
-    sessionPopoverBackdrop.setAttribute('aria-hidden', 'false');
-    sessionPopoverBackdrop.classList.add('footer-session__backdrop--visible');
-  }
-
-  const onPointerDown = (event) => {
-    const target = event.target;
-    if (sessionIndicator.contains(target) || popover.contains(target)) {
-      return;
-    }
-    closeSessionPopover();
-  };
-
-  const onKeyDown = (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeSessionPopover(true);
-    }
-  };
-
-  const onViewportChange = () => {
-    positionSessionPopover();
-  };
-
-  document.addEventListener('pointerdown', onPointerDown, true);
-  document.addEventListener('keydown', onKeyDown);
-  window.addEventListener('resize', onViewportChange);
-  window.addEventListener('scroll', onViewportChange, true);
-
-  removeSessionPopoverListeners = () => {
-    document.removeEventListener('pointerdown', onPointerDown, true);
-    document.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('resize', onViewportChange);
-    window.removeEventListener('scroll', onViewportChange, true);
-  };
-
-  popover.hidden = false;
-  popover.setAttribute('aria-hidden', 'false');
-  popover.style.visibility = 'hidden';
-  popover.style.pointerEvents = 'none';
-
-  highlightSessionPopoverState(sessionIndicator.dataset.state ?? 'loading');
-  positionSessionPopover();
-
-  popover.style.visibility = '';
-  popover.style.pointerEvents = '';
+  openAppModal({
+    id: 'session-legend',
+    panel,
+    labelledBy: 'session-status-title',
+    describedBy: 'session-status-description',
+    focusSelector: '.footer-session__legend-item--active',
+    trigger: sessionIndicator,
+    onClose: () => {
+      sessionIndicator.setAttribute('aria-expanded', 'false');
+      sessionIndicator.classList.remove('footer-session--open');
+    },
+  });
 
   sessionIndicator.setAttribute('aria-expanded', 'true');
   sessionIndicator.classList.add('footer-session--open');
 }
 
 function toggleSessionPopover() {
-  if (sessionPopoverOpen) {
-    closeSessionPopover();
-  } else {
-    openSessionPopover();
+  if (appModalOpen && activeModalId === 'session-legend') {
+    closeSessionPopover(true);
+    return;
   }
+
+  openSessionPopover();
 }
 
 function registerSessionIndicatorInteractions() {
   if (!(sessionIndicator instanceof HTMLButtonElement)) {
     return;
   }
+
+  sessionIndicator.setAttribute('aria-controls', 'session-status-panel');
 
   sessionIndicator.addEventListener('click', (event) => {
     event.preventDefault();
@@ -533,10 +719,7 @@ function updateSessionStatus(status) {
     sessionIndicator.setAttribute('aria-label', message);
   }
 
-  highlightSessionPopoverState(state);
-  if (sessionPopoverOpen) {
-    positionSessionPopover();
-  }
+  highlightSessionLegendState(state);
 }
 
 function focusViewRoot() {
@@ -638,6 +821,7 @@ export function initializeAppShell(router) {
   }
 
   initialized = true;
+  shellRouter = router;
 
   logo?.addEventListener('click', () => renderView('admin'));
   versionButton?.addEventListener('click', () => renderView('log'));
@@ -649,6 +833,19 @@ export function initializeAppShell(router) {
   registerLink?.addEventListener('click', (event) => {
     event.preventDefault();
     router.goTo('register');
+  });
+
+  if (headerMobileToggle instanceof HTMLButtonElement) {
+    headerMobileToggle.setAttribute('aria-controls', 'mobile-access-menu');
+  }
+
+  headerMobileToggle?.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (appModalOpen && activeModalId === 'mobile-menu') {
+      closeHeaderMobileMenu(true);
+    } else {
+      openHeaderMobileMenu();
+    }
   });
 
   registerSessionIndicatorInteractions();

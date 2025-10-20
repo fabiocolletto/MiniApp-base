@@ -1,10 +1,13 @@
 # Log
 
-## v0.1.83 - 2025-10-20 12:45 BRT
+## v0.1.83 - 2025-10-20 15:30 BRT
 - Adiciona sobreposição desfocada ao abrir a legenda de estados da sessão, destacando o painel em telas móveis.
 - Inclui botão dedicado de fechar e suporte a clique no fundo para encerrar o popover de forma intuitiva e acessível.
 - Ajusta o cabeçalho e estilos do popover para acomodar as novas ações e atualiza o rodapé para a versão v0.1.83.
 - Move o popover e a sobreposição para o corpo da página e aplica desfoque/atenuação global aos elementos de fundo quando a legenda estiver aberta.
+- Refatora o shell para um sistema de modais centralizados reutilizável, com menu móvel no cabeçalho, legenda de sessão padronizada e foco gerenciado automaticamente.
+- Simplifica o blur do plano de fundo sem reduzir opacidade, atualiza o CSS dos modais e reorganiza os indicadores do rodapé para manter duas linhas no mobile.
+- Ajusta a formatação dos telefones nacionais e internacionais após a divisão em DDI e número, garantindo exibição consistente nas diferentes rotas.
 
 ## v0.1.82 - 2025-10-20 11:40 BRT
 - Implementa e fortalece o bootstrap assíncrono baseado exclusivamente no IndexedDB, com logs resilientes e tratamento para contas órfãs.
