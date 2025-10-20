@@ -1,5 +1,30 @@
 # Log
 
+## v0.1.80 - 2025-10-20 09:45 BRT
+- Recompõe o widget da tabela de clientes com espaçamento compacto entre colunas e linhas, aproximando o visual de uma tabela do Google.
+- Simplifica botões, campos e bloco de detalhes para um estilo neutro, mantendo o foco na leitura dos dados no painel administrativo.
+- Ajusta o comportamento responsivo para manter a aparência funcional em telas menores sem sombras excessivas.
+
+## v0.1.79 - 2025-10-20 09:20 BRT
+- Simplifica o painel administrativo com o widget de tabela de clientes cadastrados, destacando colunas fixas e único botão de edição para expandir detalhes.
+- Centraliza a edição dos dados principais dentro do painel expandido e organiza os demais campos informativos em blocos legíveis.
+- Atualiza os estilos do painel para acomodar o novo fluxo mantendo pesquisa, filtros e ordenação ativos.
+
+## v0.1.78 - 2025-10-20 09:00 BRT
+- Aprimora o painel administrativo com barra de busca, resumo dinâmico e ordenação configurável para localizar usuários rapidamente.
+- Acrescenta coluna de e-mail com edição direta durante a gestão de contatos e mantém os detalhes sincronizados após atualizações.
+- Cria utilidades compartilhadas para filtragem/ordenação com cobertura automatizada garantindo a consistência das novas regras.
+
+## v0.1.77 - 2025-10-20 08:50 BRT
+- Formata a exibição dos telefones no painel administrativo após novos cadastros, garantindo leitura clara e fallback quando o dado estiver ausente.
+- Reaproveita a formatação amigável ao destacar o telefone confirmado na tela de sucesso do cadastro.
+- Amplia as utilidades de validação com suporte à formatação e inclui testes automatizados para cobrir os novos cenários.
+
+## v0.1.76 - 2025-10-20 08:40 BRT
+- Implementa validações de telefone aceitando formato internacional com `+` e restringindo celulares nacionais a 11 dígitos iniciando em 9, com sanitização antes de salvar.
+- Impõe requisitos mínimos de senha com 8 caracteres e combinação de letras com números ou símbolos, exibindo orientações diretas no formulário.
+- Acrescenta mensagens de apoio visuais para telefone e senha, além de testes automatizados para cobrir as novas regras de validação.
+
 ## v0.1.75 - 2025-10-20 08:10 BRT
 - Ajusta o indicador de memória para exibir apenas o rótulo “Memória” seguido do status correspondente.
 - Atualiza o texto padrão do status de armazenamento em todo o aplicativo para refletir o novo formato sem o separador pontuado.
