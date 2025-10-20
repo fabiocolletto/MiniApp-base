@@ -141,12 +141,13 @@ function applySessionStatus(activeUserOverride) {
 
   if (activeUser) {
     const displayName = typeof activeUser.name === 'string' ? activeUser.name.trim() : '';
+    const [firstName = ''] = displayName ? displayName.split(/\s+/).filter(Boolean) : [''];
     const displayPhone = typeof activeUser.phone === 'string' ? activeUser.phone.trim() : '';
     const identifier = displayName || displayPhone ? [displayName, displayPhone].filter(Boolean).join(' · ') : '';
 
     setSessionStatus({
       state: 'connected',
-      message: 'Usuário conectado',
+      message: firstName ? `Usuário ${firstName} logado` : 'Usuário conectado',
       details: identifier ? `Sessão ativa para ${identifier}.` : 'Sessão ativa para o usuário conectado.',
     });
     return;

@@ -41,15 +41,15 @@ test('atualiza o status da sessão conforme o ciclo de autenticação', { concur
   assert.equal(status.message, 'Nenhum usuário');
   assert.match(status.details, /Cadastre um usuário/i);
 
-  const created = await addUser({ phone: '11999990000', password: 'senha123' });
+  const created = await addUser({ name: 'Fabio Augusto', phone: '11999990000', password: 'senha123' });
   status = await waitForSessionState('idle');
   assert.equal(status.message, 'Usuário desconectado');
   assert.match(status.details, /1 cadastro disponível/);
 
   setActiveUser(created.id);
   status = await waitForSessionState('connected');
-  assert.equal(status.message, 'Usuário conectado');
-  assert.match(status.details, /Sessão ativa/);
+  assert.equal(status.message, 'Usuário Fabio logado');
+  assert.match(status.details, /Sessão ativa para Fabio Augusto/);
 
   clearActiveUser();
   status = await waitForSessionState('idle');

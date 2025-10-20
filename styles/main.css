@@ -1038,14 +1038,14 @@ footer {
 
 
 .card.view--admin {
-  width: 100%;
-  max-width: none;
-  padding: clamp(1.75rem, 4vw, 2.65rem);
+  width: min(92vw, 72rem);
+  max-width: 72rem;
+  padding: clamp(1.1rem, 2.4vw, 1.8rem);
   box-sizing: border-box;
-  justify-self: stretch;
-  align-self: stretch;
-  min-height: var(--view-max-block-size);
-  max-height: var(--view-max-block-size);
+  justify-self: center;
+  align-self: start;
+  min-height: auto;
+  max-height: none;
   background: #fff;
 }
 
@@ -1103,11 +1103,27 @@ footer {
 
 .view--admin {
   display: grid;
-  gap: clamp(1.35rem, 3vw, 2.1rem);
+  gap: clamp(0.75rem, 2vw, 1.2rem);
   align-content: start;
   justify-items: stretch;
   text-align: left;
-  min-height: 100%;
+}
+
+.admin-user-layout {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.2rem);
+  width: 100%;
+  max-width: 68rem;
+  margin: 0 auto;
+  align-content: start;
+  justify-items: stretch;
+}
+
+.admin-user-overview {
+  display: grid;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  align-content: start;
+  justify-items: stretch;
 }
 
 .admin-user-section {
@@ -1116,6 +1132,10 @@ footer {
   width: 100%;
   justify-self: stretch;
   overflow-x: auto;
+}
+
+.admin-user-table-panel {
+  gap: 0;
 }
 
 .admin-user-section__title {
@@ -1500,11 +1520,15 @@ footer {
 
 @media (max-width: 72rem) {
   .card.view--admin {
-    padding: clamp(1.65rem, 3vw, 2.35rem);
+    padding: clamp(1rem, 2.4vw, 1.6rem);
   }
 
   .admin-user-section {
     gap: clamp(0.9rem, 3vw, 1.4rem);
+  }
+
+  .admin-user-table-panel {
+    gap: 0;
   }
 
   .admin-user-table {
@@ -2341,12 +2365,16 @@ footer {
 
 @media (min-width: 62rem) {
   .card.view--admin {
-    padding: clamp(2rem, 3vw, 3rem);
+    padding: clamp(1.35rem, 2.6vw, 2.1rem);
   }
 
   .admin-user-section {
-    gap: clamp(1.2rem, 2vw, 1.9rem);
+    gap: clamp(1rem, 2vw, 1.5rem);
     overflow-x: visible;
+  }
+
+  .admin-user-table-panel {
+    gap: 0;
   }
 
   .admin-user-table {
@@ -2354,7 +2382,7 @@ footer {
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 42rem) {
   .admin-user-table__cell--actions {
     flex-direction: column;
     align-items: stretch;
@@ -2363,15 +2391,17 @@ footer {
   .admin-user-table__action {
     text-align: center;
   }
-}
 
-@media (max-width: 60rem) {
   .view--admin {
     align-content: stretch;
   }
 
   .admin-user-section {
     overflow-x: auto;
+  }
+
+  .admin-user-table-panel {
+    gap: 0;
   }
 
   .admin-user-toolbar {
@@ -2398,7 +2428,7 @@ footer {
   }
 }
 
-@media (max-width: 64rem) and (orientation: portrait) {
+@media (max-width: 42rem) and (orientation: portrait) {
   .card.view--admin {
     padding: clamp(1.1rem, 3.4vw, 1.6rem);
     align-self: start;
@@ -2417,6 +2447,10 @@ footer {
 
   .admin-user-section {
     gap: clamp(0.55rem, 2.3vw, 0.9rem);
+  }
+
+  .admin-user-table-panel {
+    gap: 0;
   }
 
   .admin-user-table__container {
