@@ -9,6 +9,7 @@ import { renderRegisterPanel } from './views/register.js';
 import { renderLegal } from './views/legal.js';
 import { runViewCleanup } from './view-cleanup.js';
 import { subscribeSession } from './data/session-store.js';
+import { getStorageStatus, subscribeStorageStatus } from './data/user-store.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -19,6 +20,8 @@ const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const legalButton = document.querySelector('.footer-legal');
 const headerActions = document.querySelector('.header-actions');
+const memoryIndicator = document.querySelector('.footer-memory');
+const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 
 let headerUserButton = null;
 
@@ -119,6 +122,31 @@ function updateHeaderSession(user) {
   }
 }
 
+function updateMemoryStatus(status) {
+  if (!(memoryIndicator instanceof HTMLElement) || !(memoryIndicatorText instanceof HTMLElement)) {
+    return;
+  }
+
+  const state = typeof status?.state === 'string' ? status.state : 'loading';
+  const message =
+    typeof status?.message === 'string' && status.message.trim()
+      ? status.message.trim()
+      : 'Memória IndexedDB · carregando';
+  const details =
+    typeof status?.details === 'string' && status.details.trim() ? status.details.trim() : '';
+
+  memoryIndicator.dataset.state = state;
+  memoryIndicatorText.textContent = message;
+
+  if (details) {
+    memoryIndicator.setAttribute('title', details);
+    memoryIndicator.setAttribute('aria-label', `${message}. ${details}`);
+  } else {
+    memoryIndicator.removeAttribute('title');
+    memoryIndicator.setAttribute('aria-label', message);
+  }
+}
+
 const views = {
   greeting: renderGreeting,
   admin: renderAdmin,
@@ -203,5 +231,12 @@ document.addEventListener('app:navigate', (event) => {
 subscribeSession((user) => {
   updateHeaderSession(user);
 });
+
+if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
+  updateMemoryStatus(getStorageStatus());
+  subscribeStorageStatus((status) => {
+    updateMemoryStatus(status);
+  });
+}
 
 renderView('greeting');

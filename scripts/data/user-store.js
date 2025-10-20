@@ -7,11 +7,80 @@ import {
 } from './indexed-user-store.js';
 
 const listeners = new Set();
+const statusListeners = new Set();
 let users = [];
 let initializationPromise = null;
 let hasInitialized = false;
 let storageError = null;
 let unsubscribeFromIndexedDb = () => {};
+
+function createLoadingStatus() {
+  return {
+    state: 'loading',
+    message: 'Memória IndexedDB · carregando',
+    details: 'Verificando disponibilidade do armazenamento local.',
+  };
+}
+
+let storageStatus = createLoadingStatus();
+
+function cloneStorageStatus() {
+  return {
+    state: storageStatus.state,
+    message: storageStatus.message,
+    details: storageStatus.details,
+  };
+}
+
+function notifyStorageStatus() {
+  const snapshot = cloneStorageStatus();
+  statusListeners.forEach((listener) => {
+    try {
+      listener(snapshot);
+    } catch (error) {
+      console.error('Erro ao notificar assinante do status do armazenamento.', error);
+    }
+  });
+}
+
+function setStorageStatus(nextStatus) {
+  storageStatus = {
+    state: nextStatus?.state ?? storageStatus.state,
+    message: nextStatus?.message ?? storageStatus.message,
+    details: nextStatus?.details ?? storageStatus.details,
+  };
+  notifyStorageStatus();
+}
+
+function markStorageLoading() {
+  setStorageStatus(createLoadingStatus());
+}
+
+function markStorageReady() {
+  storageError = null;
+  setStorageStatus({
+    state: 'ready',
+    message: 'Memória IndexedDB · ativa',
+    details: 'Armazenamento local conectado e sincronizado.',
+  });
+}
+
+function markStorageError(error, { persistent = false } = {}) {
+  if (persistent) {
+    storageError = error;
+  }
+
+  const details =
+    error instanceof Error && typeof error.message === 'string' && error.message.trim()
+      ? error.message.trim()
+      : 'IndexedDB indisponível ou falha ao acessar o armazenamento local.';
+
+  setStorageStatus({
+    state: 'error',
+    message: 'Memória IndexedDB · indisponível',
+    details,
+  });
+}
 
 const PROFILE_FIELDS = ['email', 'secondaryPhone', 'document', 'address', 'notes'];
 
@@ -124,14 +193,18 @@ function notify() {
 function setUsers(newUsers) {
   users = Array.isArray(newUsers) ? newUsers.map(normalizeUser) : [];
   hasInitialized = true;
+  if (!storageError) {
+    markStorageReady();
+  }
   notify();
 }
 
 async function initializeUserStore() {
+  markStorageLoading();
   try {
     const persistedUsers = await loadUsersFromIndexedDb();
-    setUsers(persistedUsers);
     storageError = null;
+    setUsers(persistedUsers);
 
     try {
       unsubscribeFromIndexedDb = watchUsersFromIndexedDb((indexedUsers) => {
@@ -142,7 +215,7 @@ async function initializeUserStore() {
       unsubscribeFromIndexedDb = () => {};
     }
   } catch (error) {
-    storageError = error;
+    markStorageError(error, { persistent: true });
     hasInitialized = true;
     console.error('Erro ao carregar usuários do IndexedDB.', error);
     notify();
@@ -153,6 +226,28 @@ initializationPromise = initializeUserStore();
 
 export function getUsers() {
   return users.map(cloneUser);
+}
+
+export function getStorageStatus() {
+  return cloneStorageStatus();
+}
+
+export function subscribeStorageStatus(listener) {
+  if (typeof listener !== 'function') {
+    return () => {};
+  }
+
+  statusListeners.add(listener);
+
+  try {
+    listener(cloneStorageStatus());
+  } catch (error) {
+    console.error('Erro ao inicializar assinante do status do armazenamento.', error);
+  }
+
+  return () => {
+    statusListeners.delete(listener);
+  };
 }
 
 export async function addUser({ name, phone, password, device, profile }) {
@@ -191,11 +286,38 @@ export async function addUser({ name, phone, password, device, profile }) {
     }
 
     notify();
+    markStorageReady();
     return cloneUser(normalized);
   } catch (error) {
     console.error('Erro ao salvar usuário no IndexedDB.', error);
+    markStorageError(error);
     throw new Error('Não foi possível salvar o cadastro no armazenamento local. Tente novamente.');
   }
+}
+
+export async function authenticateUser({ phone, password }) {
+  const sanitizedPhone = typeof phone === 'string' ? phone.trim() : '';
+  const sanitizedPassword = typeof password === 'string' ? password : '';
+
+  if (!sanitizedPhone || !sanitizedPassword) {
+    throw new Error('Informe telefone e senha para acessar o painel.');
+  }
+
+  await initializationPromise?.catch(() => {});
+
+  if (storageError) {
+    throw new Error('Armazenamento local indisponível. Verifique o suporte ao IndexedDB e tente novamente.');
+  }
+
+  const matchedUser = users.find(
+    (user) => user.phone === sanitizedPhone && user.password === sanitizedPassword
+  );
+
+  if (!matchedUser) {
+    throw new Error('Telefone ou senha inválidos. Verifique os dados e tente novamente.');
+  }
+
+  return cloneUser(matchedUser);
 }
 
 export async function updateUser(id, updates = {}) {
@@ -247,9 +369,11 @@ export async function updateUser(id, updates = {}) {
     }
 
     notify();
+    markStorageReady();
     return cloneUser(normalized);
   } catch (error) {
     console.error('Erro ao atualizar usuário no IndexedDB.', error);
+    markStorageError(error);
     throw new Error('Não foi possível atualizar o usuário. Tente novamente.');
   }
 }
@@ -270,8 +394,10 @@ export async function deleteUser(id) {
     await deleteUserFromIndexedDb(numericId);
     users = users.filter((user) => user.id !== numericId);
     notify();
+    markStorageReady();
   } catch (error) {
     console.error('Erro ao remover usuário do IndexedDB.', error);
+    markStorageError(error);
     throw new Error('Não foi possível remover o usuário. Tente novamente.');
   }
 }
@@ -316,4 +442,5 @@ export function teardownUserStore() {
   users = [];
   hasInitialized = false;
   storageError = null;
+  markStorageLoading();
 }

@@ -1,4 +1,4 @@
-import { addUser } from '../data/user-store.js';
+import { authenticateUser, updateUser } from '../data/user-store.js';
 import { setActiveUser } from '../data/session-store.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
@@ -99,12 +99,25 @@ export function renderLoginPanel(viewRoot) {
       submitButton.disabled = true;
       submitButton.setAttribute('aria-busy', 'true');
 
-      const savedUser = await addUser({
+      const deviceInfo = collectDeviceInfo();
+      const authenticatedUser = await authenticateUser({
         phone: phoneValue,
         password: passwordValue,
-        device: collectDeviceInfo(),
       });
-      setActiveUser(savedUser?.id);
+      setActiveUser(authenticatedUser?.id);
+
+      if (
+        authenticatedUser?.id != null &&
+        typeof deviceInfo === 'string' &&
+        deviceInfo &&
+        deviceInfo !== authenticatedUser.device
+      ) {
+        try {
+          await updateUser(authenticatedUser.id, { device: deviceInfo });
+        } catch (updateError) {
+          console.warn('Não foi possível atualizar o dispositivo do usuário autenticado.', updateError);
+        }
+      }
       submitButton.disabled = false;
       submitButton.removeAttribute('aria-busy');
       document.dispatchEvent(
@@ -114,19 +127,25 @@ export function renderLoginPanel(viewRoot) {
       );
       return;
     } catch (error) {
-      console.error('Erro ao cadastrar acesso pelo painel de login.', error);
+      console.error('Erro ao autenticar acesso pelo painel de login.', error);
       const errorMessage = error instanceof Error ? error.message : '';
       const isStorageIssue =
         typeof errorMessage === 'string' &&
         (errorMessage.includes('Armazenamento local indisponível') ||
           errorMessage.includes('armazenamento local'));
 
-      showFeedback(
-        isStorageIssue
-          ? 'Não foi possível concluir o acesso porque o armazenamento local está indisponível neste dispositivo.'
-          : 'Não foi possível concluir o acesso. Verifique os dados e tente novamente.',
-        { isError: true }
-      );
+      if (isStorageIssue) {
+        showFeedback(
+          'Não foi possível concluir o acesso porque o armazenamento local está indisponível neste dispositivo.',
+          { isError: true }
+        );
+      } else if (errorMessage) {
+        showFeedback(errorMessage, { isError: true });
+      } else {
+        showFeedback('Não foi possível concluir o acesso. Verifique os dados e tente novamente.', {
+          isError: true,
+        });
+      }
     }
 
     submitButton.disabled = false;
