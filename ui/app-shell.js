@@ -28,6 +28,13 @@ const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text
 const sessionIndicator = document.querySelector('.footer-session');
 const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__text');
 const sessionIndicatorAnnouncement = sessionIndicator?.querySelector('.footer-session__announcement');
+const footerElement = document.querySelector('footer');
+const footerToggleButton = footerElement?.querySelector('[data-footer-toggle]');
+
+const mobileFooterMediaQuery =
+  typeof window === 'object' && window && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(max-width: 640px)')
+    : null;
 
 const dimmedShellClass = 'app-shell--dimmed';
 
@@ -217,6 +224,93 @@ function closeAppModal({ restoreFocus = true, id } = {}) {
   if (restoreFocus && trigger instanceof HTMLElement) {
     trigger.focus();
   }
+}
+
+function updateFooterMobileAccessibility() {
+  if (!(footerToggleButton instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  const isMobile = Boolean(mobileFooterMediaQuery?.matches);
+
+  if (!(footerElement instanceof HTMLElement) || !isMobile) {
+    footerToggleButton.removeAttribute('aria-expanded');
+    footerToggleButton.removeAttribute('aria-label');
+    footerToggleButton.removeAttribute('aria-controls');
+    return;
+  }
+
+  const isExpanded = footerElement.dataset.mobileState === 'expanded';
+  footerToggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  footerToggleButton.setAttribute(
+    'aria-label',
+    isExpanded ? 'Recolher detalhes do rodapé' : 'Expandir detalhes do rodapé'
+  );
+  footerToggleButton.setAttribute('aria-controls', 'footer-actions');
+}
+
+function setFooterMobileState(state) {
+  if (!(footerElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const normalized = state === 'expanded' ? 'expanded' : 'collapsed';
+  footerElement.dataset.mobileState = normalized;
+  updateFooterMobileAccessibility();
+}
+
+function applyFooterMobileMode() {
+  if (!(footerElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const isMobile = Boolean(mobileFooterMediaQuery?.matches);
+
+  if (!isMobile) {
+    footerElement.removeAttribute('data-mobile-state');
+    updateFooterMobileAccessibility();
+    return;
+  }
+
+  const normalized = footerElement.dataset.mobileState === 'expanded' ? 'expanded' : 'collapsed';
+  footerElement.dataset.mobileState = normalized;
+  updateFooterMobileAccessibility();
+}
+
+function registerFooterMobileToggle() {
+  if (!(footerElement instanceof HTMLElement) || !(footerToggleButton instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  const handleToggle = (event) => {
+    if (!(event instanceof Event)) {
+      return;
+    }
+
+    if (!mobileFooterMediaQuery?.matches) {
+      return;
+    }
+
+    event.preventDefault();
+    const isExpanded = footerElement.dataset.mobileState === 'expanded';
+    setFooterMobileState(isExpanded ? 'collapsed' : 'expanded');
+  };
+
+  const handleMediaChange = () => {
+    applyFooterMobileMode();
+  };
+
+  footerToggleButton.addEventListener('click', handleToggle);
+
+  if (mobileFooterMediaQuery) {
+    if (typeof mobileFooterMediaQuery.addEventListener === 'function') {
+      mobileFooterMediaQuery.addEventListener('change', handleMediaChange);
+    } else if (typeof mobileFooterMediaQuery.addListener === 'function') {
+      mobileFooterMediaQuery.addListener(handleMediaChange);
+    }
+  }
+
+  applyFooterMobileMode();
 }
 
 function openAppModal({
@@ -847,6 +941,8 @@ export function initializeAppShell(router) {
   });
 
   registerSessionIndicatorInteractions();
+
+  registerFooterMobileToggle();
 
   document.addEventListener('app:navigate', (event) => {
     const detail = event && typeof event === 'object' ? event.detail : undefined;
