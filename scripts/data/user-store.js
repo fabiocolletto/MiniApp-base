@@ -19,7 +19,7 @@ let unsubscribeFromIndexedDb = () => {};
 function createLoadingStatus() {
   return {
     state: 'loading',
-    message: 'Memória IndexedDB · carregando',
+    message: 'Memória · carregando',
     details: 'Verificando disponibilidade do armazenamento local.',
   };
 }
@@ -63,7 +63,7 @@ function markStorageReady() {
   storageError = null;
   setStorageStatus({
     state: 'ready',
-    message: 'Memória IndexedDB · ativa',
+    message: 'Memória · ativa',
     details: 'Armazenamento local conectado e sincronizado.',
   });
 }
@@ -76,11 +76,11 @@ function markStorageError(error, { persistent = false } = {}) {
   const details =
     error instanceof Error && typeof error.message === 'string' && error.message.trim()
       ? error.message.trim()
-      : 'IndexedDB indisponível ou falha ao acessar o armazenamento local.';
+      : 'Armazenamento local indisponível ou falha ao acessar o armazenamento persistente.';
 
   setStorageStatus({
     state: 'error',
-    message: 'Memória IndexedDB · indisponível',
+    message: 'Memória · indisponível',
     details,
   });
 }
