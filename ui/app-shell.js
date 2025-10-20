@@ -1,0 +1,337 @@
+import eventBus from '../scripts/events/event-bus.js';
+import { renderGreeting } from '../scripts/views/greeting.js';
+import { renderAdmin } from '../scripts/views/admin.js';
+import { renderLog } from '../scripts/views/log.js';
+import { renderHome } from '../scripts/views/home.js';
+import { renderNotFound } from '../scripts/views/not-found.js';
+import { renderUserPanel } from '../scripts/views/user.js';
+import { renderLoginPanel } from '../scripts/views/login.js';
+import { renderRegisterPanel } from '../scripts/views/register.js';
+import { renderLegal } from '../scripts/views/legal.js';
+import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
+import { getActiveUser as defaultGetActiveUser } from '../scripts/data/session-store.js';
+import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
+
+const viewRoot = document.getElementById('view-root');
+const mainElement = document.querySelector('main');
+const logo = document.querySelector('.header-logo');
+const headerTitle = document.querySelector('.header-title');
+const versionButton = document.querySelector('.footer-version');
+const loginLink = document.querySelector('.header-login-link');
+const registerLink = document.querySelector('.header-register-link');
+const headerActions = document.querySelector('.header-actions');
+const memoryIndicator = document.querySelector('.footer-memory');
+const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
+
+let headerUserButton = null;
+let allowPreventScrollOption = true;
+
+const rawHooks =
+  typeof globalThis === 'object' && globalThis && '__MINIAPP_UI_HOOKS__' in globalThis
+    ? globalThis.__MINIAPP_UI_HOOKS__
+    : undefined;
+
+const viewOverrides = rawHooks && typeof rawHooks.views === 'object' ? rawHooks.views : null;
+const viewCleanup =
+  rawHooks && typeof rawHooks.runViewCleanup === 'function' ? rawHooks.runViewCleanup : defaultRunViewCleanup;
+const getActiveUserFn =
+  rawHooks && typeof rawHooks.getActiveUser === 'function' ? rawHooks.getActiveUser : defaultGetActiveUser;
+const getStorageStatusFn =
+  rawHooks && typeof rawHooks.getStorageStatus === 'function'
+    ? rawHooks.getStorageStatus
+    : defaultGetStorageStatus;
+
+const views = {
+  greeting: renderGreeting,
+  admin: renderAdmin,
+  log: renderLog,
+  home: renderHome,
+  user: renderUserPanel,
+  login: renderLoginPanel,
+  register: renderRegisterPanel,
+  legal: renderLegal,
+};
+
+if (viewOverrides) {
+  Object.entries(viewOverrides).forEach(([name, renderer]) => {
+    if (typeof renderer === 'function') {
+      views[name] = renderer;
+    }
+  });
+}
+
+function resolveViewName(payload) {
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  const view = payload && typeof payload === 'object' ? payload.view : undefined;
+  if (typeof view === 'string') {
+    const trimmed = view.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  return null;
+}
+
+function getHeaderUserButton() {
+  if (headerUserButton) {
+    return headerUserButton;
+  }
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'header-action header-action--avatar';
+  button.addEventListener('click', () => {
+    renderView('user');
+  });
+
+  headerUserButton = button;
+  return headerUserButton;
+}
+
+function extractInitials(user) {
+  const name = typeof user?.name === 'string' ? user.name.trim() : '';
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : parts[0]?.[1] ?? '';
+    return `${first}${last}`.toUpperCase();
+  }
+
+  const phone = typeof user?.phone === 'string' ? user.phone.replace(/\D+/g, '') : '';
+  if (phone.length >= 2) {
+    return phone.slice(-2).toUpperCase();
+  }
+
+  return 'US';
+}
+
+function formatUserLabel(user) {
+  const rawName = typeof user?.name === 'string' ? user.name.trim() : '';
+  const rawPhone = typeof user?.phone === 'string' ? user.phone.trim() : '';
+
+  if (rawName && rawPhone) {
+    return `Abrir painel do usuário ${rawName} (${rawPhone})`;
+  }
+
+  if (rawName) {
+    return `Abrir painel do usuário ${rawName}`;
+  }
+
+  if (rawPhone) {
+    return `Abrir painel do usuário com telefone ${rawPhone}`;
+  }
+
+  return 'Abrir painel do usuário';
+}
+
+function setLinkVisibility(link, isVisible) {
+  if (!(link instanceof HTMLElement)) {
+    return;
+  }
+
+  if (isVisible) {
+    link.hidden = false;
+    link.removeAttribute('aria-hidden');
+    link.removeAttribute('tabindex');
+    link.style.removeProperty('display');
+    return;
+  }
+
+  link.hidden = true;
+  link.setAttribute('aria-hidden', 'true');
+  link.setAttribute('tabindex', '-1');
+  link.style.display = 'none';
+}
+
+function updateHeaderSession(user) {
+  const isAuthenticated = Boolean(user);
+
+  setLinkVisibility(loginLink, !isAuthenticated);
+  setLinkVisibility(registerLink, !isAuthenticated);
+
+  if (!isAuthenticated) {
+    if (headerUserButton?.isConnected) {
+      headerUserButton.remove();
+    }
+    return;
+  }
+
+  const button = getHeaderUserButton();
+  const initials = extractInitials(user);
+  const label = formatUserLabel(user);
+
+  button.textContent = initials;
+  button.setAttribute('aria-label', label);
+  button.setAttribute('title', label);
+
+  if (!button.isConnected && headerActions instanceof HTMLElement) {
+    headerActions.append(button);
+  }
+}
+
+function updateMemoryStatus(status) {
+  if (!(memoryIndicator instanceof HTMLElement) || !(memoryIndicatorText instanceof HTMLElement)) {
+    return;
+  }
+
+  const state = typeof status?.state === 'string' ? status.state : 'loading';
+  const message =
+    typeof status?.message === 'string' && status.message.trim()
+      ? status.message.trim()
+      : 'Memória carregando';
+  const details =
+    typeof status?.details === 'string' && status.details.trim() ? status.details.trim() : '';
+
+  memoryIndicator.dataset.state = state;
+  memoryIndicatorText.textContent = message;
+
+  if (details) {
+    memoryIndicator.setAttribute('title', details);
+    memoryIndicator.setAttribute('aria-label', `${message}. ${details}`);
+  } else {
+    memoryIndicator.removeAttribute('title');
+    memoryIndicator.setAttribute('aria-label', message);
+  }
+}
+
+function focusViewRoot() {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return;
+  }
+
+  if (allowPreventScrollOption) {
+    try {
+      viewRoot.focus({ preventScroll: true });
+      return;
+    } catch (error) {
+      allowPreventScrollOption = false;
+    }
+  }
+
+  viewRoot.focus();
+}
+
+function applyMainState(view) {
+  const isAdminView = view === 'admin';
+  const isUserView = view === 'user';
+  const isLoginView = view === 'login';
+  const isRegisterView = view === 'register';
+
+  mainElement?.classList.toggle('main--admin', isAdminView);
+  mainElement?.classList.toggle('main--user', isUserView);
+  mainElement?.classList.toggle('main--login', isLoginView);
+  mainElement?.classList.toggle('main--register', isRegisterView);
+}
+
+export function renderView(name) {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return;
+  }
+
+  applyMainState(name);
+
+  const view = views[name];
+
+  viewCleanup(viewRoot);
+
+  if (typeof view !== 'function') {
+    console.warn(`View "${name}" não encontrada.`);
+    renderNotFound(viewRoot, name);
+    focusViewRoot();
+    return;
+  }
+
+  viewRoot.dataset.view = name;
+  view(viewRoot);
+  focusViewRoot();
+}
+
+function handleNavigationRequest(viewName, router) {
+  if (viewName === 'home' || viewName === 'dashboard') {
+    router.goTo('dashboard');
+    return;
+  }
+
+  if (viewName === 'login') {
+    router.goTo('login');
+    return;
+  }
+
+  if (viewName === 'register') {
+    router.goTo('register');
+    return;
+  }
+
+  renderView(viewName);
+}
+
+export function showSplash(message = 'Carregando painel...') {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return;
+  }
+
+  mainElement?.classList.remove('main--admin', 'main--user', 'main--login', 'main--register');
+  viewRoot.className = 'card view view--splash';
+  viewRoot.dataset.view = 'splash';
+
+  const loader = document.createElement('div');
+  loader.className = 'splash__loader';
+  loader.setAttribute('role', 'status');
+  loader.setAttribute('aria-live', 'polite');
+  loader.textContent = message;
+
+  viewRoot.replaceChildren(loader);
+}
+
+let initialized = false;
+
+export function initializeAppShell(router) {
+  if (initialized) {
+    return;
+  }
+
+  initialized = true;
+
+  logo?.addEventListener('click', () => renderView('admin'));
+  versionButton?.addEventListener('click', () => renderView('log'));
+  headerTitle?.addEventListener('click', () => router.goTo('dashboard'));
+  loginLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    router.goTo('login');
+  });
+  registerLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    router.goTo('register');
+  });
+
+  document.addEventListener('app:navigate', (event) => {
+    const detail = event && typeof event === 'object' ? event.detail : undefined;
+    const viewName = resolveViewName(detail);
+    if (viewName) {
+      eventBus.emit('app:navigate', { view: viewName });
+    }
+  });
+
+  eventBus.on('app:navigate', (detail) => {
+    const viewName = resolveViewName(detail);
+    if (viewName) {
+      handleNavigationRequest(viewName, router);
+    }
+  });
+
+  updateHeaderSession(getActiveUserFn());
+
+  eventBus.on('session:changed', (user) => {
+    updateHeaderSession(user);
+  });
+
+  if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
+    updateMemoryStatus(getStorageStatusFn());
+    eventBus.on('storage:status', (status) => {
+      updateMemoryStatus(status);
+    });
+  }
+}

@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.82 - 2025-10-20 10:29 BRT
+- Implementa e fortalece o bootstrap assíncrono baseado exclusivamente no IndexedDB, com logs resilientes e tratamento para contas órfãs.
+- Integra o roteador nomeado ao shell exibindo splash mínimo até a decisão final e garantindo navegação consistente entre dashboard, login e cadastro.
+- Mantém os testes automatizados de seleção de rota e integração DOM cobrindo os cenários de sessão ativa, cadastros sem sessão, banco vazio e sessão órfã.
+- Estabelece o processo de arquivamento de documentação, movendo a nota preliminar da v0.1.83 para `Arquivados/` e reforçando a atualização contínua desta edição.
+
 ## v0.1.81 - 2025-10-20 09:55 BRT
 - Remove o preenchimento automático de foco ao abrir a edição de clientes no painel administrativo.
 - Limita o cartão expansível aos campos editáveis, ocultando dados apenas informativos.
