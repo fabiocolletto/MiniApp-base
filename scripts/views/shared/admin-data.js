@@ -29,6 +29,7 @@ function userMatchesQuery(user, normalizedQuery, numericQuery) {
     formatPhoneNumberForDisplay(user?.phone),
     user?.profile?.email,
     user?.profile?.document,
+    user?.userType,
     user?.device,
   ];
 

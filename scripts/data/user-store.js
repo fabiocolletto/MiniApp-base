@@ -16,6 +16,35 @@ let hasInitialized = false;
 let storageError = null;
 let unsubscribeFromIndexedDb = () => {};
 
+const USER_TYPES = ['administrador', 'colaborador', 'usuario'];
+const DEFAULT_USER_TYPE = 'usuario';
+
+function sanitizeUserType(value) {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (USER_TYPES.includes(normalized)) {
+    return normalized;
+  }
+
+  if (normalized === 'admin' || normalized === 'administradora') {
+    return 'administrador';
+  }
+
+  if (normalized === 'colaboradora') {
+    return 'colaborador';
+  }
+
+  if (normalized === 'user' || normalized === 'usuarios') {
+    return 'usuario';
+  }
+
+  return DEFAULT_USER_TYPE;
+}
+
 function createLoadingStatus() {
   return {
     state: 'loading',
@@ -188,6 +217,7 @@ function cloneUser(user) {
     phone: user.phone,
     password: user.password,
     device: user.device,
+    userType: sanitizeUserType(user.userType),
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt),
     profile: cloneProfile(user.profile),
@@ -205,6 +235,7 @@ function normalizeUser(user) {
     phone: typeof user?.phone === 'string' ? user.phone : '',
     password: typeof user?.password === 'string' ? user.password : '',
     device: sanitizedDevice,
+    userType: sanitizeUserType(user?.userType),
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
     profile: normalizeProfile(user?.profile),
@@ -287,12 +318,13 @@ export function subscribeStorageStatus(listener) {
   };
 }
 
-export async function addUser({ name, phone, password, device, profile }) {
+export async function addUser({ name, phone, password, device, profile, userType }) {
   const sanitizedName = typeof name === 'string' ? name.trim().slice(0, 120) : '';
   const sanitizedPhone = typeof phone === 'string' ? phone.trim() : '';
   const sanitizedPassword = typeof password === 'string' ? password : '';
   const sanitizedDevice = typeof device === 'string' ? device.trim().slice(0, 512) : '';
   const sanitizedProfile = normalizeProfile(profile);
+  const sanitizedUserType = sanitizeUserType(userType);
 
   if (!sanitizedPhone || !sanitizedPassword) {
     throw new Error('Telefone e senha são obrigatórios para acessar o painel.');
@@ -311,6 +343,7 @@ export async function addUser({ name, phone, password, device, profile }) {
       password: sanitizedPassword,
       device: sanitizedDevice,
       profile: sanitizedProfile,
+      userType: sanitizedUserType,
     });
 
     const normalized = normalizeUser(savedUser);
@@ -379,6 +412,10 @@ export async function updateUser(id, updates = {}) {
 
   if (Object.prototype.hasOwnProperty.call(updates, 'device')) {
     sanitizedUpdates.device = typeof updates.device === 'string' ? updates.device.trim().slice(0, 512) : '';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'userType')) {
+    sanitizedUpdates.userType = sanitizeUserType(updates.userType);
   }
 
   if (Object.prototype.hasOwnProperty.call(updates, 'profile')) {

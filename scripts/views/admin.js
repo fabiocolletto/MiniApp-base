@@ -1,6 +1,6 @@
-import { subscribeUsers, updateUser } from '../data/user-store.js';
+import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
-import { formatPhoneNumberForDisplay } from './shared/validation.js';
+import { formatPhoneNumberForDisplay, validatePasswordStrength } from './shared/validation.js';
 import {
   filterUsersByQuery,
   sortUsersForAdmin,
@@ -13,6 +13,44 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   timeStyle: 'short',
 });
 
+const USER_TYPE_OPTIONS = [
+  { value: 'administrador', label: 'Administrador' },
+  { value: 'colaborador', label: 'Colaborador' },
+  { value: 'usuario', label: 'Usuário' },
+];
+
+const USER_TYPE_LABELS = USER_TYPE_OPTIONS.reduce((accumulator, option) => {
+  accumulator[option.value] = option.label;
+  return accumulator;
+}, {});
+
+function normalizeUserType(value) {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (USER_TYPE_LABELS[normalized]) {
+    return normalized;
+  }
+
+  if (normalized === 'admin' || normalized === 'administradora') {
+    return 'administrador';
+  }
+
+  if (normalized === 'colaboradora') {
+    return 'colaborador';
+  }
+
+  return 'usuario';
+}
+
+function formatUserType(value) {
+  const normalized = normalizeUserType(value);
+  return USER_TYPE_LABELS[normalized] || USER_TYPE_LABELS.usuario;
+}
+
 function createFormField({
   id,
   label,
@@ -22,6 +60,7 @@ function createFormField({
   maxLength,
   disabled = false,
   attributes = {},
+  options,
 }) {
   const wrapper = document.createElement('label');
   wrapper.className = 'admin-user-table__form-field';
@@ -31,28 +70,59 @@ function createFormField({
   labelText.className = 'admin-user-table__form-label';
   labelText.textContent = label;
 
-  const input = document.createElement('input');
-  input.className = 'admin-user-table__input';
-  input.id = id;
-  input.name = name;
-  input.type = type;
-  input.value = value;
+  const normalizedValue = String(value ?? '');
+  let field;
 
-  if (typeof maxLength === 'number') {
-    input.maxLength = maxLength;
+  if (Array.isArray(options) && options.length > 0) {
+    field = document.createElement('select');
+    field.className = 'admin-user-table__input admin-user-table__select';
+    field.id = id;
+    field.name = name;
+
+    let hasMatchingValue = false;
+    let fallbackValue = '';
+
+    options.forEach(({ value: optionValue, label: optionLabel }, index) => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionLabel;
+      if (index === 0) {
+        fallbackValue = optionValue;
+      }
+      if (optionValue === normalizedValue) {
+        option.selected = true;
+        hasMatchingValue = true;
+      }
+      field.append(option);
+    });
+
+    if (!hasMatchingValue) {
+      field.value = fallbackValue;
+    }
+  } else {
+    field = document.createElement('input');
+    field.className = 'admin-user-table__input';
+    field.id = id;
+    field.name = name;
+    field.type = type;
+    field.value = normalizedValue;
+
+    if (typeof maxLength === 'number') {
+      field.maxLength = maxLength;
+    }
   }
 
   if (disabled) {
-    input.disabled = true;
+    field.disabled = true;
   }
 
   Object.entries(attributes).forEach(([attribute, attributeValue]) => {
     if (attributeValue != null) {
-      input.setAttribute(attribute, attributeValue);
+      field.setAttribute(attribute, attributeValue);
     }
   });
 
-  wrapper.append(labelText, input);
+  wrapper.append(labelText, field);
   return wrapper;
 }
 
@@ -63,7 +133,7 @@ function createDetailsRow(user, isExpanded, editingState) {
   row.hidden = !isExpanded;
 
   const cell = document.createElement('td');
-  cell.colSpan = 6;
+  cell.colSpan = 7;
   cell.className = 'admin-user-table__details-cell';
   cell.dataset.label = 'Detalhes do cliente';
 
@@ -87,7 +157,7 @@ function createDetailsRow(user, isExpanded, editingState) {
   legend.textContent = 'Editar dados principais';
   fieldset.append(legend);
 
-  const isSaving = Boolean(editingState?.isSaving);
+  const isBusy = Boolean(editingState?.isSaving || editingState?.isDeleting);
 
   const nameField = createFormField({
     id: `admin-user-name-${user.id}`,
@@ -95,7 +165,7 @@ function createDetailsRow(user, isExpanded, editingState) {
     name: 'admin-user-name',
     value: editingState?.name ?? user.name ?? '',
     maxLength: 120,
-    disabled: isSaving,
+    disabled: isBusy,
     attributes: {
       autocomplete: 'name',
     },
@@ -107,7 +177,7 @@ function createDetailsRow(user, isExpanded, editingState) {
     name: 'admin-user-phone',
     value: editingState?.phone ?? user.phone ?? '',
     maxLength: 32,
-    disabled: isSaving,
+    disabled: isBusy,
     attributes: {
       autocomplete: 'tel',
       inputmode: 'tel',
@@ -121,14 +191,36 @@ function createDetailsRow(user, isExpanded, editingState) {
     type: 'email',
     value: editingState?.email ?? user.profile?.email ?? '',
     maxLength: 120,
-    disabled: isSaving,
+    disabled: isBusy,
     attributes: {
       autocomplete: 'email',
       spellcheck: 'false',
     },
   });
 
-  fieldset.append(nameField, phoneField, emailField);
+  const userTypeField = createFormField({
+    id: `admin-user-type-${user.id}`,
+    label: 'Tipo de usuário',
+    name: 'admin-user-type',
+    value: normalizeUserType(editingState?.userType ?? user.userType),
+    disabled: isBusy,
+    options: USER_TYPE_OPTIONS,
+  });
+
+  const passwordField = createFormField({
+    id: `admin-user-password-${user.id}`,
+    label: 'Senha de acesso',
+    name: 'admin-user-password',
+    type: 'password',
+    value: editingState?.password ?? user.password ?? '',
+    maxLength: 120,
+    disabled: isBusy,
+    attributes: {
+      autocomplete: 'new-password',
+    },
+  });
+
+  fieldset.append(nameField, phoneField, emailField, userTypeField, passwordField);
 
   const formActions = document.createElement('div');
   formActions.className = 'admin-user-table__form-actions';
@@ -138,15 +230,22 @@ function createDetailsRow(user, isExpanded, editingState) {
   cancelButton.className = 'admin-user-table__action admin-user-table__action--cancel';
   cancelButton.dataset.action = 'cancel-edit';
   cancelButton.textContent = 'Cancelar';
-  cancelButton.disabled = isSaving;
+  cancelButton.disabled = isBusy;
 
   const saveButton = document.createElement('button');
   saveButton.type = 'submit';
   saveButton.className = 'admin-user-table__action admin-user-table__action--save';
-  saveButton.textContent = isSaving ? 'Salvando…' : 'Salvar alterações';
-  saveButton.disabled = isSaving;
+  saveButton.textContent = editingState?.isSaving ? 'Salvando…' : 'Salvar alterações';
+  saveButton.disabled = isBusy;
 
-  formActions.append(cancelButton, saveButton);
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'admin-user-table__action admin-user-table__action--delete';
+  deleteButton.dataset.action = 'delete';
+  deleteButton.textContent = editingState?.isDeleting ? 'Excluindo…' : 'Excluir cliente';
+  deleteButton.disabled = isBusy;
+
+  formActions.append(cancelButton, saveButton, deleteButton);
   fieldset.append(formActions);
   form.append(fieldset);
 
@@ -172,7 +271,7 @@ function renderUserTableBody(
     emptyRow.className = 'admin-user-table__empty-row';
 
     const emptyCell = document.createElement('td');
-    emptyCell.colSpan = 6;
+    emptyCell.colSpan = 7;
     emptyCell.className = 'admin-user-table__empty-cell';
     emptyCell.dataset.label = 'Clientes';
     emptyCell.textContent = emptyMessage || 'Nenhum cliente cadastrado até o momento.';
@@ -211,6 +310,11 @@ function renderUserTableBody(
     const emailValue = user.profile?.email?.trim();
     emailCell.textContent = emailValue || '—';
 
+    const userTypeCell = document.createElement('td');
+    userTypeCell.className = 'admin-user-table__cell admin-user-table__cell--user-type';
+    userTypeCell.dataset.label = 'Tipo de usuário';
+    userTypeCell.textContent = formatUserType(user.userType);
+
     const createdAtCell = document.createElement('td');
     createdAtCell.className = 'admin-user-table__cell admin-user-table__cell--created-at';
     createdAtCell.dataset.label = 'Criado em';
@@ -237,11 +341,11 @@ function renderUserTableBody(
     editButton.dataset.action = 'edit';
     editButton.textContent = isExpanded ? 'Fechar edição' : 'Editar';
     editButton.setAttribute('aria-expanded', String(isExpanded));
-    editButton.disabled = Boolean(editingState?.isSaving && isEditing);
+    editButton.disabled = Boolean((editingState?.isSaving || editingState?.isDeleting) && isEditing);
 
     actionsCell.append(editButton);
 
-    row.append(nameCell, phoneCell, emailCell, createdAtCell, updatedAtCell, actionsCell);
+    row.append(nameCell, phoneCell, emailCell, userTypeCell, createdAtCell, updatedAtCell, actionsCell);
 
     const detailsRow = createDetailsRow(user, isExpanded, isEditing ? editingState : null);
 
@@ -288,10 +392,10 @@ export function renderAdmin(viewRoot) {
   searchInput.className = 'admin-user-toolbar__search-input';
   searchInput.type = 'search';
   searchInput.id = 'admin-user-search';
-  searchInput.placeholder = 'Nome, telefone ou e-mail';
+  searchInput.placeholder = 'Nome, telefone, e-mail ou tipo';
   searchInput.autocomplete = 'off';
   searchInput.spellcheck = false;
-  searchInput.setAttribute('aria-label', 'Pesquisar clientes por nome, telefone ou e-mail');
+  searchInput.setAttribute('aria-label', 'Pesquisar clientes por nome, telefone, e-mail ou tipo');
 
   searchGroup.append(searchLabel, searchInput);
 
@@ -342,7 +446,7 @@ export function renderAdmin(viewRoot) {
   const headRow = document.createElement('tr');
   headRow.className = 'admin-user-table__head-row';
 
-  ['Nome', 'Telefone', 'E-mail', 'Registrado em', 'Última alteração', 'Ações'].forEach(
+  ['Nome', 'Telefone', 'E-mail', 'Tipo de usuário', 'Registrado em', 'Última alteração', 'Ações'].forEach(
     (headingText) => {
       const headerCell = document.createElement('th');
       headerCell.scope = 'col';
@@ -408,7 +512,7 @@ export function renderAdmin(viewRoot) {
     refreshTable();
   });
 
-  tableBody.addEventListener('click', (event) => {
+  tableBody.addEventListener('click', async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
       return;
@@ -429,7 +533,7 @@ export function renderAdmin(viewRoot) {
         return;
       }
 
-      if (editingState?.isSaving) {
+      if (editingState?.isSaving || editingState?.isDeleting) {
         return;
       }
 
@@ -459,7 +563,10 @@ export function renderAdmin(viewRoot) {
         name: user.name || '',
         phone: user.phone || '',
         email: user.profile?.email || '',
+        password: user.password || '',
+        userType: normalizeUserType(user.userType),
         isSaving: false,
+        isDeleting: false,
       };
       expandedUserId = userId;
       refreshTable();
@@ -474,7 +581,7 @@ export function renderAdmin(viewRoot) {
         return;
       }
 
-      if (editingState?.isSaving) {
+      if (editingState?.isSaving || editingState?.isDeleting) {
         return;
       }
 
@@ -489,6 +596,84 @@ export function renderAdmin(viewRoot) {
           button.focus();
         }
       });
+      return;
+    }
+
+    if (action === 'delete') {
+      const detailsRow = actionButton.closest('tr');
+      const userId = Number(detailsRow?.dataset.detailsFor);
+
+      if (Number.isNaN(userId)) {
+        window.alert('Não foi possível identificar o cliente em edição.');
+        return;
+      }
+
+      if (editingState?.isSaving || editingState?.isDeleting) {
+        return;
+      }
+
+      const user = usersSnapshot.find((item) => item.id === userId);
+      if (!user) {
+        window.alert('Não foi possível localizar o cliente selecionado.');
+        return;
+      }
+
+      const confirmation = window.confirm(
+        'Tem certeza de que deseja excluir este cliente? Essa ação não pode ser desfeita.',
+      );
+
+      if (!confirmation) {
+        return;
+      }
+
+      editingState = {
+        userId,
+        name: editingState?.name ?? user.name ?? '',
+        phone: editingState?.phone ?? user.phone ?? '',
+        email: editingState?.email ?? user.profile?.email ?? '',
+        password: editingState?.password ?? user.password ?? '',
+        userType: normalizeUserType(editingState?.userType ?? user.userType),
+        isSaving: false,
+        isDeleting: true,
+      };
+      expandedUserId = userId;
+      refreshTable();
+
+      try {
+        await deleteUser(userId);
+        window.alert('Cliente removido com sucesso.');
+        editingState = null;
+        expandedUserId = null;
+      } catch (error) {
+        console.error('Erro ao remover cliente pelo painel administrativo.', error);
+        window.alert('Não foi possível remover o cliente. Tente novamente.');
+        editingState = {
+          userId,
+          name: user.name || '',
+          phone: user.phone || '',
+          email: user.profile?.email || '',
+          password: user.password || '',
+          userType: normalizeUserType(user.userType),
+          isSaving: false,
+          isDeleting: false,
+        };
+        expandedUserId = userId;
+      }
+
+      refreshTable();
+
+      if (!editingState) {
+        requestAnimationFrame(() => {
+          const button = tableBody.querySelector(
+            `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
+          );
+          if (button instanceof HTMLButtonElement) {
+            button.focus();
+          }
+        });
+      }
+
+      return;
     }
   });
 
@@ -518,14 +703,22 @@ export function renderAdmin(viewRoot) {
       return;
     }
 
+    if (editingState?.isDeleting) {
+      return;
+    }
+
     const nameInput = form.querySelector('input[name="admin-user-name"]');
     const phoneInput = form.querySelector('input[name="admin-user-phone"]');
     const emailInput = form.querySelector('input[name="admin-user-email"]');
+    const userTypeSelect = form.querySelector('select[name="admin-user-type"]');
+    const passwordInput = form.querySelector('input[name="admin-user-password"]');
 
     if (
       !(nameInput instanceof HTMLInputElement) ||
       !(phoneInput instanceof HTMLInputElement) ||
-      !(emailInput instanceof HTMLInputElement)
+      !(emailInput instanceof HTMLInputElement) ||
+      !(userTypeSelect instanceof HTMLSelectElement) ||
+      !(passwordInput instanceof HTMLInputElement)
     ) {
       window.alert('Não foi possível identificar os campos de edição.');
       return;
@@ -534,6 +727,8 @@ export function renderAdmin(viewRoot) {
     const trimmedName = nameInput.value.trim();
     const trimmedPhone = phoneInput.value.trim();
     const trimmedEmail = emailInput.value.trim();
+    const passwordValue = passwordInput.value;
+    const selectedUserType = normalizeUserType(userTypeSelect.value);
 
     if (!trimmedName || !trimmedPhone) {
       window.alert('Nome e telefone são obrigatórios para atualizar o cadastro.');
@@ -547,12 +742,28 @@ export function renderAdmin(viewRoot) {
       return;
     }
 
+    const hasPasswordChange = passwordValue !== user.password;
+
+    if (hasPasswordChange) {
+      const passwordValidation = validatePasswordStrength(passwordValue);
+
+      if (!passwordValidation.isValid) {
+        window.alert(passwordValidation.message);
+        passwordInput.focus();
+        passwordInput.select?.();
+        return;
+      }
+    }
+
     editingState = {
       userId,
       name: trimmedName,
       phone: trimmedPhone,
       email: trimmedEmail,
+      password: passwordValue,
+      userType: selectedUserType,
       isSaving: true,
+      isDeleting: false,
     };
     expandedUserId = userId;
     refreshTable();
@@ -561,7 +772,9 @@ export function renderAdmin(viewRoot) {
       await updateUser(userId, {
         name: trimmedName,
         phone: trimmedPhone,
+        userType: selectedUserType,
         profile: { email: trimmedEmail },
+        ...(hasPasswordChange ? { password: passwordValue } : {}),
       });
       window.alert('Cliente atualizado com sucesso.');
       editingState = null;
@@ -574,7 +787,10 @@ export function renderAdmin(viewRoot) {
         name: trimmedName,
         phone: trimmedPhone,
         email: trimmedEmail,
+        password: passwordValue,
+        userType: selectedUserType,
         isSaving: false,
+        isDeleting: false,
       };
       expandedUserId = userId;
     }
@@ -601,12 +817,14 @@ export function renderAdmin(viewRoot) {
       if (!matchingUser) {
         editingState = null;
         expandedUserId = null;
-      } else if (!editingState.isSaving) {
+      } else if (!editingState.isSaving && !editingState.isDeleting) {
         editingState = {
           ...editingState,
           name: editingState.name ?? matchingUser.name ?? '',
           phone: editingState.phone ?? matchingUser.phone ?? '',
           email: editingState.email ?? matchingUser.profile?.email ?? '',
+          password: editingState.password ?? matchingUser.password ?? '',
+          userType: normalizeUserType(editingState.userType ?? matchingUser.userType),
         };
         expandedUserId = matchingUser.id;
       }

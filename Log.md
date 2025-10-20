@@ -1,5 +1,20 @@
 # Log
 
+## v0.1.87 - 2025-10-20 20:30 BRT
+- Exibe o tipo de usuário (administrador, colaborador ou usuário) diretamente na lista principal do painel administrativo com edição disponível nos detalhes expandidos.
+- Persiste o tipo padronizado no armazenamento local, incluindo novas opções no cadastro, atualização e filtros de pesquisa.
+- Ajusta os estilos da tabela e do seletor para acomodar o novo campo, atualizando a versão do rodapé e a cobertura automatizada.
+
+## v0.1.86 - 2025-10-20 19:45 BRT
+- Inclui campo de senha no formulário "Editar dados principais" do painel administrativo com validação antes de atualizar as credenciais.
+- Sincroniza o estado de edição com a nova credencial e mantém os controles desabilitados durante salvamentos ou exclusões.
+- Atualiza o rodapé para a versão v0.1.86 com horário correspondente.
+
+## v0.1.85 - 2025-10-20 19:10 BRT
+- Adiciona ação de exclusão de clientes no painel administrativo com confirmação de segurança e alerta de sucesso.
+- Desabilita os campos e botões de edição durante salvamentos ou exclusões para evitar conflitos simultâneos.
+- Atualiza o rodapé para a versão v0.1.85 com horário correspondente.
+
 ## v0.1.84 - 2025-10-20 18:00 BRT
 - Remove os rótulos visíveis dos campos de código do país e número, mantendo os exemplos diretamente nos placeholders dinâmicos.
 - Restaura a orientação de senha com placeholder e dica mínima destacando os oito caracteres entre letras e números.
