@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.81 - 2025-10-20 09:55 BRT
+- Remove o preenchimento automático de foco ao abrir a edição de clientes no painel administrativo.
+- Limita o cartão expansível aos campos editáveis, ocultando dados apenas informativos.
+
 ## v0.1.80 - 2025-10-20 09:45 BRT
 - Recompõe o widget da tabela de clientes com espaçamento compacto entre colunas e linhas, aproximando o visual de uma tabela do Google.
 - Simplifica botões, campos e bloco de detalhes para um estilo neutro, mantendo o foco na leitura dos dados no painel administrativo.

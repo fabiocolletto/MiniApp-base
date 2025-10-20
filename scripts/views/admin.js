@@ -13,36 +13,6 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   timeStyle: 'short',
 });
 
-function formatDetailValue(value) {
-  if (value == null) {
-    return 'Não informado';
-  }
-
-  const trimmed = typeof value === 'string' ? value.trim() : value;
-
-  if (typeof trimmed === 'string') {
-    return trimmed || 'Não informado';
-  }
-
-  return String(trimmed);
-}
-
-function appendDetailItem(listElement, label, value, { isMultiline = false } = {}) {
-  const term = document.createElement('dt');
-  term.className = 'admin-user-table__details-term';
-  term.textContent = label;
-
-  const definition = document.createElement('dd');
-  definition.className = 'admin-user-table__details-value';
-  definition.textContent = formatDetailValue(value);
-
-  if (isMultiline) {
-    definition.classList.add('admin-user-table__details-value--multiline');
-  }
-
-  listElement.append(term, definition);
-}
-
 function createFormField({
   id,
   label,
@@ -181,28 +151,6 @@ function createDetailsRow(user, isExpanded, editingState) {
   form.append(fieldset);
 
   container.append(form);
-
-  const infoGroups = document.createElement('div');
-  infoGroups.className = 'admin-user-table__details-groups';
-
-  const contactList = document.createElement('dl');
-  contactList.className = 'admin-user-table__details-list';
-  appendDetailItem(
-    contactList,
-    'Telefone adicional',
-    formatPhoneNumberForDisplay(user.profile?.secondaryPhone),
-  );
-  appendDetailItem(contactList, 'Documento', user.profile?.document ?? '');
-  appendDetailItem(contactList, 'Endereço', user.profile?.address ?? '', { isMultiline: true });
-
-  const metaList = document.createElement('dl');
-  metaList.className = 'admin-user-table__details-list admin-user-table__details-list--meta';
-  appendDetailItem(metaList, 'Dispositivo', user.device || 'Não informado');
-  appendDetailItem(metaList, 'Senha', user.password || 'Não informado');
-  appendDetailItem(metaList, 'Observações', user.profile?.notes ?? '', { isMultiline: true });
-
-  infoGroups.append(contactList, metaList);
-  container.append(infoGroups);
 
   cell.append(container);
   row.append(cell);
@@ -515,15 +463,6 @@ export function renderAdmin(viewRoot) {
       };
       expandedUserId = userId;
       refreshTable();
-      requestAnimationFrame(() => {
-        const input = tableBody.querySelector(
-          `.admin-user-table__details-row[data-details-for="${userId}"] input[name="admin-user-name"]`,
-        );
-        if (input instanceof HTMLInputElement) {
-          input.focus();
-          input.select();
-        }
-      });
       return;
     }
 
