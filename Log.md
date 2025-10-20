@@ -1,19 +1,11 @@
 # Log
 
-## v0.1.69 - 2025-10-20 03:05 BRT
-- Adiciona um indicador no rodapé que sinaliza o estado da memória IndexedDB com feedback visual e acessível.
-- Expõe o status do armazenamento no `user-store` para atualizar o indicador em tempo real, incluindo tratamento para carregamento, sucesso e falhas.
-- Atualiza o rodapé para exibir a nova versão publicada.
-
-## v0.1.68 - 2025-10-19 23:30 BRT
-- Corrige o painel de login para autenticar usuários existentes sem gerar novos cadastros.
-- Atualiza o dispositivo registrado ao confirmar o acesso, mantendo o histórico do usuário coerente.
-- Atualiza o rodapé para exibir a nova versão do aplicativo.
-
-## v0.1.67 - 2025-10-19 23:00 BRT
+## v0.1.67 - 2025-10-20 03:05 BRT
 - Reduz o respiro vertical do conteúdo principal e alinha os cartões ao topo para eliminar grandes áreas vazias.
 - Permite que o cartão de login diminua conforme o conteúdo mantendo apenas o limite máximo de altura.
-- Atualiza o rodapé para exibir a nova versão do aplicativo.
+- Corrige o painel de login para autenticar usuários existentes sem gerar novos cadastros e manter o dispositivo sincronizado.
+- Adiciona um indicador no rodapé que sinaliza o estado da memória IndexedDB com feedback visual e acessível, atualizado em tempo real.
+- Atualiza o rodapé para refletir a versão publicada após os ajustes consolidados.
 
 ## v0.1.66 - 2025-10-19 22:30 BRT
 - Remove o card de cadastros enviados do painel do usuário e foca os formulários no usuário autenticado.
