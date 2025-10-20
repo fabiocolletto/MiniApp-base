@@ -1,4 +1,5 @@
 import { getUsers, subscribeUsers } from './user-store.js';
+import { setSessionState as persistGlobalSessionState } from '../../core/account-store.js';
 import eventBus from '../events/event-bus.js';
 
 const SESSION_STORAGE_KEY = 'miniapp-active-user-id';
@@ -105,6 +106,22 @@ function writePersistedUserId(id) {
   }
 }
 
+function persistGlobalSession(accountId) {
+  const normalizedId =
+    accountId == null ? '' : typeof accountId === 'string' ? accountId.trim() : String(accountId).trim();
+
+  try {
+    const promise = persistGlobalSessionState(normalizedId ? { activeAccountId: normalizedId } : {});
+    if (promise && typeof promise.then === 'function') {
+      promise.catch((error) => {
+        console.error('Não foi possível sincronizar a sessão global.', error);
+      });
+    }
+  } catch (error) {
+    console.error('Não foi possível sincronizar a sessão global.', error);
+  }
+}
+
 function cloneUser(user) {
   if (!user || typeof user !== 'object') {
     return null;
@@ -188,6 +205,7 @@ function updateActiveUserId(newId) {
   if (newId == null) {
     activeUserId = null;
     writePersistedUserId(null);
+    persistGlobalSession(null);
     notifySessionListeners();
     return;
   }
@@ -210,6 +228,7 @@ function updateActiveUserId(newId) {
 
   activeUserId = numericId;
   writePersistedUserId(numericId);
+  persistGlobalSession(numericId);
   notifySessionListeners();
 }
 

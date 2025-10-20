@@ -7,6 +7,7 @@ import {
   resetIndexedDbMock,
 } from './indexed-user-store.js';
 import eventBus from '../events/event-bus.js';
+import { replaceAccounts } from '../../core/account-store.js';
 
 const listeners = new Set();
 const statusListeners = new Set();
@@ -18,6 +19,51 @@ let unsubscribeFromIndexedDb = () => {};
 
 const USER_TYPES = ['administrador', 'colaborador', 'usuario'];
 const DEFAULT_USER_TYPE = 'usuario';
+
+let accountsSyncPromise = null;
+
+function scheduleAccountsSync() {
+  if (accountsSyncPromise) {
+    return accountsSyncPromise;
+  }
+
+  accountsSyncPromise = (async () => {
+    const snapshot = users
+      .map((user) => {
+        const numericId = Number(user?.id);
+        if (!Number.isFinite(numericId)) {
+          return null;
+        }
+
+        const id = String(numericId);
+        const name = typeof user?.name === 'string' ? user.name.trim() : '';
+        const phone = typeof user?.phone === 'string' ? user.phone.trim() : '';
+        const createdAtValue = user?.createdAt instanceof Date ? user.createdAt : new Date(user?.createdAt);
+        const createdAt = Number.isNaN(createdAtValue?.getTime()) ? '' : createdAtValue.toISOString();
+        const type = typeof user?.userType === 'string' ? user.userType.trim() : '';
+        const kind = type ? `user:${type}` : 'user';
+        const labelParts = [name, phone].filter(Boolean);
+
+        return {
+          id,
+          label: labelParts.length > 0 ? labelParts.join(' · ') : undefined,
+          kind,
+          createdAt: createdAt || undefined,
+        };
+      })
+      .filter((account) => account !== null);
+
+    try {
+      await replaceAccounts(snapshot);
+    } catch (error) {
+      console.error('Não foi possível sincronizar cadastros globais com o armazenamento principal.', error);
+    } finally {
+      accountsSyncPromise = null;
+    }
+  })();
+
+  return accountsSyncPromise;
+}
 
 function sanitizeUserType(value) {
   const normalized = String(value ?? '')
@@ -54,6 +100,7 @@ function createLoadingStatus() {
 }
 
 let storageStatus = createLoadingStatus();
+let pendingStorageReadyReason = null;
 
 function cloneStorageStatus() {
   return {
@@ -88,10 +135,23 @@ function markStorageLoading() {
   setStorageStatus(createLoadingStatus());
 }
 
-function markStorageReady() {
-  storageError = null;
+function createStorageReadyStatus({ reason } = {}) {
   const totalUsers = Array.isArray(users) ? users.length : 0;
   const hasUsers = totalUsers > 0;
+
+  if (reason === 'update') {
+    const availabilitySummary = hasUsers
+      ? totalUsers === 1
+        ? '1 cadastro disponível na memória local.'
+        : `${totalUsers} cadastros disponíveis na memória local.`
+      : 'Nenhum cadastro disponível na memória local.';
+
+    return {
+      state: hasUsers ? 'ready' : 'empty',
+      message: 'Memória atualizada',
+      details: `Dados sincronizados com sucesso. ${availabilitySummary}`,
+    };
+  }
 
   const details = hasUsers
     ? totalUsers === 1
@@ -99,11 +159,19 @@ function markStorageReady() {
       : `Armazenamento local sincronizado com ${totalUsers} cadastros.`
     : 'Armazenamento local ativo, nenhum cadastro armazenado.';
 
-  setStorageStatus({
+  return {
     state: hasUsers ? 'ready' : 'empty',
     message: hasUsers ? 'Memória ativa' : 'Memória ativa (vazia)',
     details,
-  });
+  };
+}
+
+function markStorageReady({ reason } = {}) {
+  storageError = null;
+  const effectiveReason =
+    reason != null && reason !== '' ? reason : pendingStorageReadyReason ?? null;
+  pendingStorageReadyReason = null;
+  setStorageStatus(createStorageReadyStatus({ reason: effectiveReason }));
 }
 
 function markStorageError(error, { persistent = false } = {}) {
@@ -265,6 +333,7 @@ function setUsers(newUsers) {
     markStorageReady();
   }
   notify();
+  scheduleAccountsSync();
 }
 
 async function initializeUserStore() {
@@ -357,6 +426,7 @@ export async function addUser({ name, phone, password, device, profile, userType
 
     notify();
     markStorageReady();
+    scheduleAccountsSync();
     return cloneUser(normalized);
   } catch (error) {
     console.error('Erro ao salvar usuário no IndexedDB.', error);
@@ -432,6 +502,7 @@ export async function updateUser(id, updates = {}) {
   }
 
   try {
+    pendingStorageReadyReason = 'update';
     const updatedUser = await updateUserInIndexedDb(numericId, sanitizedUpdates);
     const normalized = normalizeUser(updatedUser);
     const existingIndex = users.findIndex((user) => user.id === normalized.id);
@@ -443,9 +514,13 @@ export async function updateUser(id, updates = {}) {
     }
 
     notify();
-    markStorageReady();
+    if (pendingStorageReadyReason === 'update') {
+      markStorageReady({ reason: 'update' });
+    }
+    scheduleAccountsSync();
     return cloneUser(normalized);
   } catch (error) {
+    pendingStorageReadyReason = null;
     console.error('Erro ao atualizar usuário no IndexedDB.', error);
     markStorageError(error);
     throw new Error('Não foi possível atualizar o usuário. Tente novamente.');
@@ -469,6 +544,7 @@ export async function deleteUser(id) {
     users = users.filter((user) => user.id !== numericId);
     notify();
     markStorageReady();
+    scheduleAccountsSync();
   } catch (error) {
     console.error('Erro ao remover usuário do IndexedDB.', error);
     markStorageError(error);
@@ -516,7 +592,9 @@ export function teardownUserStore() {
   users = [];
   hasInitialized = false;
   storageError = null;
+  pendingStorageReadyReason = null;
   markStorageLoading();
+  scheduleAccountsSync();
 }
 
 export async function resetUserStoreForTests() {
