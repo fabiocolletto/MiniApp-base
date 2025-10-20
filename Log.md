@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.72 - 2025-10-20 07:29 BRT
+- Corrige a restauração da sessão persistida ao aguardar a sincronização dos usuários antes de limpar o login.
+- Mantém a versão exibida no rodapé alinhada à release publicada.
+
 ## v0.1.71 - 2025-10-20 04:30 BRT
 - Recriação do painel do usuário com cartões segmentados para credenciais, dados pessoais, contatos e endereço, aplicando um layout em grade responsivo.
 - Inclusão de novos campos de perfil (pronome, data de nascimento, profissão, empresa, biografia, redes sociais e endereço detalhado) com persistência no store e atualização automática do formulário.
