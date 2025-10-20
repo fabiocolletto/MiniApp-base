@@ -1,109 +1,9 @@
-import { subscribeUsers, updateUser } from '../data/user-store.js';
+import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
+import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 
 const BASE_CLASSES = 'card view view--user';
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-});
-
-function maskPassword(password) {
-  if (typeof password !== 'string') {
-    return '••••';
-  }
-
-  const sanitized = password.trim();
-  const minLength = 4;
-  const visibleLength = Math.max(sanitized.length, minLength);
-  return '•'.repeat(visibleLength);
-}
-
-function renderUserRegistrations(listElement, users, { lastRegisteredUserId = null, selectedUserId = null, onSelect } = {}) {
-  if (!(listElement instanceof HTMLElement)) {
-    return;
-  }
-
-  listElement.innerHTML = '';
-
-  if (!Array.isArray(users) || users.length === 0) {
-    const emptyItem = document.createElement('li');
-    emptyItem.className = 'user-registrations__empty';
-    emptyItem.textContent = 'Nenhum cadastro realizado até o momento.';
-    listElement.append(emptyItem);
-    return;
-  }
-
-  users
-    .slice()
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .forEach((user) => {
-      const item = document.createElement('li');
-      item.className = 'user-registrations__item';
-      item.dataset.userId = String(user.id);
-      item.tabIndex = 0;
-      item.setAttribute('role', 'button');
-      item.setAttribute('aria-pressed', user.id === selectedUserId ? 'true' : 'false');
-
-      if (lastRegisteredUserId != null && user.id === lastRegisteredUserId) {
-        item.classList.add('user-registrations__item--highlight');
-      }
-
-      if (selectedUserId != null && user.id === selectedUserId) {
-        item.classList.add('user-registrations__item--selected');
-      }
-
-      const name = document.createElement('span');
-      name.className = 'user-registrations__name';
-      name.textContent = user.name || 'Nome não informado';
-
-      const phone = document.createElement('span');
-      phone.className = 'user-registrations__phone';
-      phone.textContent = user.phone;
-
-      const createdAt = document.createElement('time');
-      createdAt.className = 'user-registrations__timestamp';
-      createdAt.dateTime = user.createdAt.toISOString();
-      createdAt.textContent = `Criado em ${dateFormatter.format(user.createdAt)}`;
-
-      const updatedAt = document.createElement('time');
-      updatedAt.className = 'user-registrations__timestamp';
-      updatedAt.dateTime = user.updatedAt.toISOString();
-      updatedAt.textContent = `Atualizado em ${dateFormatter.format(user.updatedAt)}`;
-
-      const password = document.createElement('span');
-      password.className = 'user-registrations__password';
-      password.textContent = `Senha cadastrada: ${maskPassword(user.password)}`;
-
-      const deviceLabel = typeof user.device === 'string' && user.device.trim()
-        ? user.device.trim()
-        : 'não identificado';
-
-      const device = document.createElement('span');
-      device.className = 'user-registrations__device';
-      device.textContent = `Dispositivo utilizado: ${deviceLabel}`;
-      if (deviceLabel && deviceLabel !== 'não identificado') {
-        device.title = deviceLabel;
-      }
-
-      if (typeof onSelect === 'function') {
-        const handleSelect = () => {
-          onSelect(user.id);
-        };
-        item.addEventListener('click', handleSelect);
-        item.addEventListener('keydown', (event) => {
-          if (event.key === ' ' || event.key === 'Enter') {
-            event.preventDefault();
-            handleSelect();
-          }
-        });
-      }
-
-      item.append(name, phone, createdAt, updatedAt, password, device);
-      listElement.append(item);
-    });
-}
-
 export function renderUserPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -121,24 +21,6 @@ export function renderUserPanel(viewRoot) {
   intro.textContent =
     'Gerencie seus cadastros pessoais e acompanhe as atualizações em um único lugar.';
 
-  const registrationsSection = document.createElement('section');
-  registrationsSection.className =
-    'user-panel__section user-panel__section--registrations user-registrations';
-
-  const registrationsHeading = document.createElement('h2');
-  registrationsHeading.className = 'user-registrations__title';
-  registrationsHeading.textContent = 'Cadastros enviados';
-
-  const registrationsDescription = document.createElement('p');
-  registrationsDescription.className = 'user-registrations__description';
-  registrationsDescription.textContent = 'Confira abaixo os cadastros realizados por este formulário.';
-
-  const registrationsList = document.createElement('ul');
-  registrationsList.className = 'user-registrations__list';
-  registrationsList.setAttribute('aria-live', 'polite');
-
-  registrationsSection.append(registrationsHeading, registrationsDescription, registrationsList);
-
   const detailsSection = document.createElement('section');
   detailsSection.className = 'user-panel__section user-panel__section--details user-details';
 
@@ -149,11 +31,11 @@ export function renderUserPanel(viewRoot) {
   const detailsDescription = document.createElement('p');
   detailsDescription.className = 'user-details__description';
   detailsDescription.textContent =
-    'Selecione um cadastro enviado para revisar telefone, senha e complementar suas informações.';
+    'Revise telefone, senha e complemente os dados vinculados ao usuário autenticado.';
 
   const selectionInfo = document.createElement('p');
   selectionInfo.className = 'user-details__selected';
-  selectionInfo.textContent = 'Nenhum cadastro selecionado no momento.';
+  selectionInfo.textContent = 'Nenhum usuário autenticado no momento.';
 
   function createDetailsFeedbackElement() {
     const detailsFeedback = document.createElement('p');
@@ -188,6 +70,45 @@ export function renderUserPanel(viewRoot) {
     } else {
       feedbackElement.removeAttribute('role');
     }
+  }
+
+  function resetAccountFeedback(feedbackElement) {
+    if (!feedbackElement) {
+      return;
+    }
+
+    feedbackElement.hidden = true;
+    feedbackElement.textContent = '';
+    feedbackElement.classList.remove('user-account__feedback--error', 'user-account__feedback--success');
+    feedbackElement.removeAttribute('role');
+  }
+
+  function showAccountFeedback(feedbackElement, message, { isError = false } = {}) {
+    if (!feedbackElement) {
+      return;
+    }
+
+    feedbackElement.textContent = message;
+    feedbackElement.hidden = false;
+    feedbackElement.classList.toggle('user-account__feedback--error', isError);
+    feedbackElement.classList.toggle('user-account__feedback--success', !isError);
+    if (isError) {
+      feedbackElement.setAttribute('role', 'alert');
+    } else {
+      feedbackElement.removeAttribute('role');
+    }
+  }
+
+  function navigateTo(view) {
+    if (!view) {
+      return;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent('app:navigate', {
+        detail: { view },
+      })
+    );
   }
 
   const primaryForm = document.createElement('form');
@@ -325,14 +246,48 @@ export function renderUserPanel(viewRoot) {
 
   detailsSection.append(detailsHeading, detailsDescription, selectionInfo, primaryForm, profileForm);
 
-  const columnsWrapper = document.createElement('div');
-  columnsWrapper.className = 'user-panel__columns';
-  columnsWrapper.append(registrationsSection, detailsSection);
+  const accountSection = document.createElement('section');
+  accountSection.className = 'user-panel__section user-panel__section--account user-account';
 
-  let lastRegisteredUserId = null;
+  const accountHeading = document.createElement('h2');
+  accountHeading.className = 'user-panel__section-title user-account__title';
+  accountHeading.textContent = 'Sessão e segurança';
+
+  const accountDescription = document.createElement('p');
+  accountDescription.className = 'user-panel__section-description user-account__description';
+  accountDescription.textContent =
+    'Gerencie sua sessão atual, finalize o acesso com segurança ou remova todos os dados armazenados.';
+
+  const accountActions = document.createElement('div');
+  accountActions.className = 'user-account__actions';
+
+  const logoffButton = document.createElement('button');
+  logoffButton.type = 'button';
+  logoffButton.className = 'user-account__action user-account__action--logoff';
+  logoffButton.textContent = 'Fazer logoff';
+
+  const logoutButton = document.createElement('button');
+  logoutButton.type = 'button';
+  logoutButton.className = 'user-account__action user-account__action--logout';
+  logoutButton.textContent = 'Fazer logout';
+
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'user-account__action user-account__action--delete';
+  deleteButton.textContent = 'Excluir todos os dados';
+
+  accountActions.append(logoffButton, logoutButton, deleteButton);
+
+  const accountFeedback = document.createElement('p');
+  accountFeedback.className = 'user-account__feedback';
+  accountFeedback.setAttribute('aria-live', 'polite');
+  accountFeedback.hidden = true;
+
+  accountSection.append(accountHeading, accountDescription, accountActions, accountFeedback);
+
   let usersSnapshot = [];
-  let selectedUserId = null;
   let isPasswordVisible = false;
+  let sessionUserId = getActiveUserId();
 
   const primaryPhoneInput = primaryPhoneField.querySelector('input');
   const primaryPasswordInput = primaryPasswordField.querySelector('input');
@@ -343,12 +298,50 @@ export function renderUserPanel(viewRoot) {
   const profileAddressInput = profileAddressField.querySelector('input');
   const profileNotesInput = profileNotesField.querySelector('textarea');
 
-  function getSelectedUser() {
-    if (selectedUserId == null) {
+  function getActiveSessionUser() {
+    if (sessionUserId == null) {
       return null;
     }
 
-    return usersSnapshot.find((user) => user.id === selectedUserId) ?? null;
+    return usersSnapshot.find((user) => user.id === sessionUserId) ?? null;
+  }
+
+  function hasActiveSessionUser() {
+    return Boolean(getActiveSessionUser());
+  }
+
+  function updateAccountActionsState() {
+    const hasActive = hasActiveSessionUser();
+
+    [logoffButton, logoutButton, deleteButton].forEach((button) => {
+      if (button) {
+        button.disabled = !hasActive;
+        if (!hasActive) {
+          button.removeAttribute('aria-busy');
+        }
+      }
+    });
+
+    if (!hasActive) {
+      logoffButton?.setAttribute('title', 'Nenhuma sessão ativa no momento.');
+      logoutButton?.setAttribute('title', 'Nenhuma sessão ativa no momento.');
+      deleteButton?.setAttribute('title', 'Nenhum usuário autenticado para excluir.');
+      return;
+    }
+
+    const activeUser = getActiveSessionUser();
+    const nameLabel = activeUser?.name ? activeUser.name.trim() : '';
+    const phoneLabel = activeUser?.phone ? activeUser.phone.trim() : '';
+
+    const labelComplement = nameLabel
+      ? ` de ${nameLabel}`
+      : phoneLabel
+      ? ` do usuário ${phoneLabel}`
+      : '';
+
+    logoffButton?.setAttribute('title', `Encerrar sessão atual${labelComplement}.`);
+    logoutButton?.setAttribute('title', `Encerrar sessão e retornar à tela de login${labelComplement}.`);
+    deleteButton?.setAttribute('title', `Remover definitivamente todos os dados${labelComplement}.`);
   }
 
   function updatePasswordVisibility() {
@@ -376,16 +369,16 @@ export function renderUserPanel(viewRoot) {
     }
 
     if (!user) {
-      selectionInfo.textContent = 'Nenhum cadastro selecionado. Escolha um item da lista para editar os dados.';
+      selectionInfo.textContent = 'Nenhum usuário autenticado. Faça login para editar os dados.';
       return;
     }
 
-    const nameLabel = user.name || 'Cadastro sem nome';
-    selectionInfo.textContent = `Editando informações de ${nameLabel} (ID ${user.id}).`;
+    const nameLabel = user.name?.trim() || 'Usuário sem nome';
+    selectionInfo.textContent = `Editando informações de ${nameLabel}.`;
   }
 
   function updateFormsState() {
-    const user = getSelectedUser();
+    const user = getActiveSessionUser();
     updateSelectionInfo(user);
 
     const shouldDisable = !user;
@@ -468,43 +461,16 @@ export function renderUserPanel(viewRoot) {
     updatePasswordVisibility();
   }
 
-  function handleSelectUser(userId) {
-    if (Number.isNaN(Number(userId))) {
-      return;
-    }
-
-    const numericId = Number(userId);
-
-    if (selectedUserId === numericId) {
-      return;
-    }
-
-    selectedUserId = numericId;
-    isPasswordVisible = false;
-    resetDetailsFeedback(primaryFeedback);
-    resetDetailsFeedback(profileFeedback);
-    refreshRegistrationList();
-    updateFormsState();
-  }
-
-  function refreshRegistrationList() {
-    renderUserRegistrations(registrationsList, usersSnapshot, {
-      lastRegisteredUserId,
-      selectedUserId,
-      onSelect: handleSelectUser,
-    });
-  }
-
+  updateAccountActionsState();
   updateFormsState();
-  refreshRegistrationList();
 
   primaryForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     resetDetailsFeedback(primaryFeedback);
 
-    const user = getSelectedUser();
+    const user = getActiveSessionUser();
     if (!user) {
-      showDetailsFeedback(primaryFeedback, 'Selecione um cadastro para atualizar telefone ou senha.', {
+      showDetailsFeedback(primaryFeedback, 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
         isError: true,
       });
       return;
@@ -569,10 +535,12 @@ export function renderUserPanel(viewRoot) {
     event.preventDefault();
     resetDetailsFeedback(profileFeedback);
 
-    const user = getSelectedUser();
+    const user = getActiveSessionUser();
 
     if (!user) {
-      showDetailsFeedback(profileFeedback, 'Selecione um cadastro para complementar os dados.', { isError: true });
+      showDetailsFeedback(profileFeedback, 'Nenhuma sessão ativa. Faça login para complementar os dados.', {
+        isError: true,
+      });
       return;
     }
 
@@ -646,50 +614,146 @@ export function renderUserPanel(viewRoot) {
     profileSubmit.removeAttribute('aria-busy');
   });
 
+  logoffButton.addEventListener('click', () => {
+    resetAccountFeedback(accountFeedback);
+
+    if (!hasActiveSessionUser()) {
+      showAccountFeedback(accountFeedback, 'Nenhuma sessão ativa para encerrar no momento.', { isError: true });
+      return;
+    }
+
+    clearActiveUser();
+    showAccountFeedback(accountFeedback, 'Sessão finalizada. Faça login novamente para continuar.', {
+      isError: false,
+    });
+    isPasswordVisible = false;
+    updatePasswordVisibility();
+    resetDetailsFeedback(primaryFeedback);
+    resetDetailsFeedback(profileFeedback);
+    updateFormsState();
+    updateAccountActionsState();
+  });
+
+  logoutButton.addEventListener('click', () => {
+    resetAccountFeedback(accountFeedback);
+
+    if (!hasActiveSessionUser()) {
+      showAccountFeedback(accountFeedback, 'Nenhuma sessão ativa para encerrar no momento.', { isError: true });
+      return;
+    }
+
+    clearActiveUser();
+    isPasswordVisible = false;
+    updatePasswordVisibility();
+    resetDetailsFeedback(primaryFeedback);
+    resetDetailsFeedback(profileFeedback);
+    updateFormsState();
+    updateAccountActionsState();
+    navigateTo('login');
+  });
+
+  deleteButton.addEventListener('click', async () => {
+    resetAccountFeedback(accountFeedback);
+
+    const activeUser = getActiveSessionUser();
+    if (!activeUser) {
+      showAccountFeedback(accountFeedback, 'Nenhum usuário autenticado encontrado para exclusão.', {
+        isError: true,
+      });
+      return;
+    }
+
+    const confirmationMessage = activeUser.name
+      ? `Excluir todos os dados de ${activeUser.name}? Essa ação não pode ser desfeita.`
+      : 'Excluir todos os dados deste cadastro? Essa ação não pode ser desfeita.';
+
+    const shouldDelete = window.confirm(confirmationMessage);
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      deleteButton.disabled = true;
+      deleteButton.setAttribute('aria-busy', 'true');
+      await deleteUser(activeUser.id);
+      clearActiveUser();
+      showAccountFeedback(accountFeedback, 'Todos os dados foram removidos com sucesso.', { isError: false });
+    } catch (error) {
+      console.error('Erro ao excluir cadastro pelo painel do usuário.', error);
+      showAccountFeedback(
+        accountFeedback,
+        'Não foi possível remover os dados armazenados. Tente novamente mais tarde.',
+        { isError: true }
+      );
+    }
+
+    deleteButton.removeAttribute('aria-busy');
+    isPasswordVisible = false;
+    updatePasswordVisibility();
+    resetDetailsFeedback(primaryFeedback);
+    resetDetailsFeedback(profileFeedback);
+    updateAccountActionsState();
+    updateFormsState();
+  });
+
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout';
-  layout.append(columnsWrapper);
+  layout.append(detailsSection, accountSection);
 
   const unsubscribe = subscribeUsers((users) => {
-    const previousUsers = Array.isArray(usersSnapshot) ? usersSnapshot.slice() : [];
-    const previousIds = new Set(previousUsers.map((user) => user.id));
+    const hadActiveUser = hasActiveSessionUser();
 
     usersSnapshot = Array.isArray(users) ? users.slice() : [];
 
-    if (usersSnapshot.length === 0) {
-      selectedUserId = null;
-      isPasswordVisible = false;
-      lastRegisteredUserId = null;
-    } else {
-      const newEntries = usersSnapshot.filter((user) => !previousIds.has(user.id));
+    const stillHasSessionUser =
+      sessionUserId != null && usersSnapshot.some((user) => user.id === sessionUserId);
 
-      if (newEntries.length > 0) {
-        newEntries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        lastRegisteredUserId = newEntries[0]?.id ?? lastRegisteredUserId;
-      } else if (!usersSnapshot.some((user) => user.id === lastRegisteredUserId)) {
-        lastRegisteredUserId = usersSnapshot[0]?.id ?? null;
-      }
-
-      const hasSelectedUser = usersSnapshot.some((user) => user.id === selectedUserId);
-      if (!hasSelectedUser) {
-        const fallbackUser =
-          usersSnapshot.find((user) => user.id === lastRegisteredUserId) ?? usersSnapshot[0];
-        const fallbackId = fallbackUser?.id ?? null;
-        if (fallbackId !== selectedUserId) {
-          selectedUserId = fallbackId;
-          isPasswordVisible = false;
-        } else {
-          selectedUserId = fallbackId;
-        }
-      }
+    if (!stillHasSessionUser) {
+      sessionUserId = null;
     }
 
-    refreshRegistrationList();
+    if (hadActiveUser && !hasActiveSessionUser()) {
+      isPasswordVisible = false;
+      updatePasswordVisibility();
+      resetDetailsFeedback(primaryFeedback);
+      resetDetailsFeedback(profileFeedback);
+    }
+
+    updateAccountActionsState();
+    updateFormsState();
+  });
+
+  const unsubscribeSession = subscribeSession((sessionUser) => {
+    const previousSessionUserId = sessionUserId;
+    sessionUserId = sessionUser?.id ?? null;
+
+    if (sessionUserId == null && previousSessionUserId != null) {
+      isPasswordVisible = false;
+      updatePasswordVisibility();
+      resetDetailsFeedback(primaryFeedback);
+      resetDetailsFeedback(profileFeedback);
+    }
+
+    if (sessionUserId != null) {
+      const hasSessionUser = usersSnapshot.some((user) => user.id === sessionUserId);
+      if (!hasSessionUser) {
+        sessionUserId = null;
+      } else if (sessionUserId !== previousSessionUserId) {
+        isPasswordVisible = false;
+        updatePasswordVisibility();
+        resetDetailsFeedback(primaryFeedback);
+        resetDetailsFeedback(profileFeedback);
+      }
+      resetAccountFeedback(accountFeedback);
+    }
+
+    updateAccountActionsState();
     updateFormsState();
   });
 
   registerViewCleanup(viewRoot, () => {
     unsubscribe();
+    unsubscribeSession();
   });
 
   viewRoot.replaceChildren(heading, intro, layout);

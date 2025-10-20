@@ -1,5 +1,33 @@
 # Log
 
+## v0.1.66 - 2025-10-19 22:30 BRT
+- Remove o card de cadastros enviados do painel do usuário e foca os formulários no usuário autenticado.
+- Simplifica a lógica do painel para depender apenas da sessão ativa, com mensagens e feedbacks ajustados ao novo fluxo.
+- Atualiza o layout e os estilos para acomodar a estrutura reduzida do painel e registra a nova versão no rodapé.
+
+## v0.1.65 - 2025-10-19 22:10 BRT
+- Adiciona botões de logoff, logout e remoção completa dos dados diretamente no painel do usuário.
+- Sincroniza o painel com a sessão ativa para habilitar ações apenas quando houver usuário autenticado e destacar o cadastro correspondente.
+- Ajusta os estilos do painel para acomodar o bloco de segurança com feedbacks visuais consistentes.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
+## v0.1.64 - 2025-10-19 21:40 BRT
+- Garante que os botões de cadastro e login fiquem ocultos quando houver um usuário autenticado, exibindo apenas o avatar com iniciais no cabeçalho.
+- Mantém o botão de avatar funcional para abrir o painel do usuário e remove qualquer resquício visual dos botões ocultos.
+- Atualiza a versão mostrada no rodapé para refletir a nova release.
+
+## v0.1.63 - 2025-10-19 21:10 BRT
+- Implementa um store de sessão persistente para manter o usuário autenticado entre cadastros e acessos.
+- Exibe a confirmação dedicada de cadastro concluído com acesso rápido ao painel do usuário.
+- Substitui os links de cadastro/login por um botão com as iniciais do usuário ativo no cabeçalho.
+- Atualiza o painel de login para ativar a sessão e navegar diretamente para o painel do usuário.
+- Atualiza a versão apresentada no rodapé para refletir a nova release.
+
+## v0.1.62 - 2025-10-19 20:20 BRT
+- Compacta o cartão de cadastro em modo retrato reduzindo o padding, gaps da view e espaçamentos do formulário.
+- Faz o botão "Criar conta" dimensionar pela largura do texto mantendo o alinhamento centralizado.
+- Atualiza a versão exibida no rodapé para refletir a nova release.
+
 ## v0.1.61 - 2025-10-19 19:50 BRT
 - Substitui o botão de concordância legal por uma caixa de seleção direta no formulário de cadastro.
 - Integra o link "Saiba mais" ao texto de consentimento para facilitar o acesso aos documentos legais.

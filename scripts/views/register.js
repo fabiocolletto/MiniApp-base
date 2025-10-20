@@ -1,8 +1,73 @@
 import { addUser } from '../data/user-store.js';
+import { setActiveUser } from '../data/session-store.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 
 const BASE_CLASSES = 'card view view--register';
+
+function renderRegisterSuccess(viewRoot, savedUser) {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return;
+  }
+
+  viewRoot.className = `${BASE_CLASSES} register-view--success`;
+  viewRoot.dataset.view = 'register-success';
+
+  const title = document.createElement('h1');
+  title.className = 'register-panel__title register-success__title';
+  title.textContent = 'Cadastro concluído!';
+  title.tabIndex = -1;
+
+  const message = document.createElement('p');
+  message.className = 'register-success__message';
+  message.textContent =
+    'Seu acesso foi liberado e o painel do usuário já está pronto para receber suas informações.';
+
+  let summary = null;
+  if (savedUser?.phone) {
+    summary = document.createElement('p');
+    summary.className = 'register-success__summary';
+    const phoneHighlight = document.createElement('strong');
+    phoneHighlight.className = 'register-success__highlight';
+    phoneHighlight.textContent = savedUser.phone;
+    summary.append('Telefone cadastrado: ', phoneHighlight);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'register-success__actions';
+
+  const openPanelButton = document.createElement('button');
+  openPanelButton.type = 'button';
+  openPanelButton.className = 'register-success__action register-success__action--primary';
+  openPanelButton.textContent = 'Ir para o painel do usuário';
+  openPanelButton.addEventListener('click', () => {
+    document.dispatchEvent(
+      new CustomEvent('app:navigate', {
+        detail: { view: 'user' },
+      })
+    );
+  });
+
+  const registerAnotherButton = document.createElement('button');
+  registerAnotherButton.type = 'button';
+  registerAnotherButton.className = 'register-success__action register-success__action--secondary';
+  registerAnotherButton.textContent = 'Fazer outro cadastro';
+  registerAnotherButton.addEventListener('click', () => {
+    renderRegisterPanel(viewRoot);
+  });
+
+  actions.append(openPanelButton, registerAnotherButton);
+
+  if (summary) {
+    viewRoot.replaceChildren(title, message, summary, actions);
+  } else {
+    viewRoot.replaceChildren(title, message, actions);
+  }
+
+  setTimeout(() => {
+    title.focus();
+  }, 0);
+}
 
 export function renderRegisterPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
@@ -156,20 +221,16 @@ export function renderRegisterPanel(viewRoot) {
       updateLegalControls();
       submitButton.setAttribute('aria-busy', 'true');
 
-      await addUser({
+      const savedUser = await addUser({
         phone: phoneValue,
         password: passwordValue,
         device: collectDeviceInfo(),
       });
-
-      form.reset();
-      hasAcceptedTerms = false;
-      legalCheckbox.checked = false;
-      updateLegalControls();
-      showFeedback('Cadastro criado com sucesso! Você já pode acessar o painel de login para entrar.', {
-        isError: false,
-      });
-      phoneInput.focus();
+      setActiveUser(savedUser?.id);
+      isSubmitting = false;
+      submitButton.removeAttribute('aria-busy');
+      renderRegisterSuccess(viewRoot, savedUser);
+      return;
     } catch (error) {
       console.error('Erro ao criar cadastro pelo painel dedicado.', error);
       const errorMessage = error instanceof Error ? error.message : '';
