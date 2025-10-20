@@ -3,12 +3,7 @@ import { setActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
-import {
-  sanitizePhoneInput,
-  validatePasswordStrength,
-  validatePhoneNumber,
-  formatPhoneNumberForDisplay,
-} from './shared/validation.js';
+import { validatePasswordStrength, validatePhoneParts, formatPhoneNumberForDisplay } from './shared/validation.js';
 
 const BASE_CLASSES = 'card view view--register';
 
@@ -94,14 +89,112 @@ export function renderRegisterPanel(viewRoot) {
   form.autocomplete = 'on';
   form.noValidate = true;
 
-  const phoneField = createInputField({
-    id: 'register-phone',
-    label: 'Telefone de contato',
-    type: 'tel',
-    placeholder: '+5511999999999',
-    autocomplete: 'tel',
-    inputMode: 'tel',
-  });
+  const phoneField = document.createElement('div');
+  phoneField.className = 'user-form__field user-form__field--inline register-panel__phone-field';
+
+  const phoneFieldLabel = document.createElement('span');
+  phoneFieldLabel.className = 'user-form__label register-panel__phone-label';
+  phoneFieldLabel.textContent = 'Telefone de contato';
+
+  const phoneInputsWrapper = document.createElement('div');
+  phoneInputsWrapper.className = 'register-panel__phone-inputs';
+
+  const countryGroup = document.createElement('div');
+  countryGroup.className = 'register-panel__phone-subfield register-panel__phone-subfield--country';
+
+  const countryLabel = document.createElement('label');
+  countryLabel.className = 'register-panel__phone-subfield-label';
+  countryLabel.setAttribute('for', 'register-phone-country');
+  countryLabel.textContent = 'Código do país';
+
+  const phoneCountryInput = document.createElement('input');
+  phoneCountryInput.id = 'register-phone-country';
+  phoneCountryInput.name = 'register-phone-country';
+  phoneCountryInput.type = 'tel';
+  phoneCountryInput.inputMode = 'numeric';
+  phoneCountryInput.autocomplete = 'tel-country-code';
+  phoneCountryInput.value = '55';
+  phoneCountryInput.required = true;
+
+  countryGroup.append(countryLabel, phoneCountryInput);
+
+  const numberGroup = document.createElement('div');
+  numberGroup.className = 'register-panel__phone-subfield register-panel__phone-subfield--number';
+
+  const numberLabel = document.createElement('label');
+  numberLabel.className = 'register-panel__phone-subfield-label';
+  numberLabel.setAttribute('for', 'register-phone-number');
+  numberLabel.textContent = 'Número do telefone';
+
+  const phoneNumberInput = document.createElement('input');
+  phoneNumberInput.id = 'register-phone-number';
+  phoneNumberInput.name = 'register-phone-number';
+  phoneNumberInput.type = 'tel';
+  phoneNumberInput.placeholder = '(11) 98888-7777';
+  phoneNumberInput.inputMode = 'tel';
+  phoneNumberInput.autocomplete = 'tel-national';
+  phoneNumberInput.required = true;
+
+  numberGroup.append(numberLabel, phoneNumberInput);
+
+  phoneInputsWrapper.append(countryGroup, numberGroup);
+  phoneField.append(phoneFieldLabel, phoneInputsWrapper);
+
+  const sanitizeCountryCode = (value) => value.replace(/[^0-9]/g, '').slice(0, 3);
+
+  const isBrazilianCode = (code) => !code || code === '55';
+
+  const formatBrazilianDigits = (digits) => {
+    const limited = digits.slice(0, 11);
+    if (!limited) {
+      return '';
+    }
+    if (limited.length <= 2) {
+      return `(${limited}`;
+    }
+    if (limited.length <= 7) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    }
+    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+  };
+
+  const formatInternationalDigits = (digits) => {
+    const limited = digits.slice(0, 15);
+    if (limited.length <= 4) {
+      return limited;
+    }
+    const groups = [];
+    for (let index = 0; index < limited.length; index += 3) {
+      groups.push(limited.slice(index, index + 3));
+    }
+    return groups.join(' ');
+  };
+
+  const updateNumberPlaceholder = (code) => {
+    if (isBrazilianCode(code)) {
+      phoneNumberInput.placeholder = '(11) 98888-7777';
+      return;
+    }
+    phoneNumberInput.placeholder = 'Ex.: 447911234567';
+  };
+
+  const applyCurrentMask = () => {
+    const countryDigits = sanitizeCountryCode(phoneCountryInput.value);
+    const numberDigits = phoneNumberInput.value.replace(/[^0-9]/g, '');
+    const formatted = isBrazilianCode(countryDigits)
+      ? formatBrazilianDigits(numberDigits)
+      : formatInternationalDigits(numberDigits);
+    phoneNumberInput.value = formatted;
+    phoneCountryInput.value = countryDigits;
+    updateNumberPlaceholder(countryDigits);
+  };
+
+  phoneCountryInput.addEventListener('input', applyCurrentMask);
+  phoneCountryInput.addEventListener('change', applyCurrentMask);
+  phoneNumberInput.addEventListener('input', applyCurrentMask);
+  phoneNumberInput.addEventListener('change', applyCurrentMask);
+
+  applyCurrentMask();
 
   const passwordField = createInputField({
     id: 'register-password',
@@ -111,19 +204,11 @@ export function renderRegisterPanel(viewRoot) {
     autocomplete: 'new-password',
   });
 
-  const phoneInput = phoneField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
-
-  const phoneHint = document.createElement('p');
-  phoneHint.className = 'user-form__hint register-panel__hint';
-  phoneHint.textContent =
-    'Aceitamos celulares brasileiros com 11 dígitos iniciando em 9 ou números internacionais no formato +CódigoPaís.';
-  phoneField.append(phoneHint);
 
   const passwordHint = document.createElement('p');
   passwordHint.className = 'user-form__hint register-panel__hint';
-  passwordHint.textContent =
-    'Crie uma senha com pelo menos 8 caracteres, incluindo letras e números ou símbolos para proteger melhor sua conta.';
+  passwordHint.textContent = 'Mínimo de 8 caracteres.';
   passwordField.append(passwordHint);
 
   const legalSection = document.createElement('div');
@@ -205,18 +290,30 @@ export function renderRegisterPanel(viewRoot) {
 
   updateLegalControls();
 
+    const collectPhoneDigits = () => {
+      const countryDigits = sanitizeCountryCode(phoneCountryInput.value);
+      const numberDigits = phoneNumberInput.value.replace(/[^0-9]/g, '');
+      return { countryDigits, numberDigits };
+    };
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     resetFeedback();
 
-    if (!phoneInput || !passwordInput) {
+    if (!phoneCountryInput || !phoneNumberInput || !passwordInput) {
       showFeedback('Não foi possível carregar o formulário de cadastro. Atualize a página e tente novamente.', {
         isError: true,
       });
       return;
     }
 
-    const phoneValue = phoneInput.value.trim();
+    const { countryDigits, numberDigits } = collectPhoneDigits();
+    phoneCountryInput.value = countryDigits;
+    const isBrazilian = isBrazilianCode(countryDigits);
+    phoneNumberInput.value = isBrazilian
+      ? formatBrazilianDigits(numberDigits)
+      : formatInternationalDigits(numberDigits);
+
     const passwordValue = passwordInput.value;
 
     if (!hasAcceptedTerms) {
@@ -227,15 +324,25 @@ export function renderRegisterPanel(viewRoot) {
       return;
     }
 
-    const phoneValidation = validatePhoneNumber(phoneValue);
+    const phoneValidation = validatePhoneParts(countryDigits, numberDigits);
     if (!phoneValidation.isValid) {
       showFeedback(phoneValidation.message, { isError: true });
-      phoneInput.value = sanitizePhoneInput(phoneValue);
-      phoneInput.focus();
+      if (phoneValidation.field === 'country') {
+        phoneCountryInput.focus();
+        phoneCountryInput.select?.();
+      } else {
+        phoneNumberInput.focus();
+      }
       return;
     }
 
-    phoneInput.value = phoneValidation.sanitized;
+    const sanitizedPhone = phoneValidation.sanitized;
+    const sanitizedCountry = phoneValidation.countryCode || countryDigits;
+    const sanitizedLocal = phoneValidation.localNumber || numberDigits;
+    phoneCountryInput.value = sanitizedCountry;
+    phoneNumberInput.value = isBrazilianCode(sanitizedCountry)
+      ? formatBrazilianDigits(sanitizedLocal)
+      : formatInternationalDigits(sanitizedLocal);
 
     const passwordValidation = validatePasswordStrength(passwordValue);
     if (!passwordValidation.isValid) {
@@ -251,7 +358,7 @@ export function renderRegisterPanel(viewRoot) {
       submitButton.setAttribute('aria-busy', 'true');
 
       const savedUser = await addUser({
-        phone: phoneValidation.sanitized,
+        phone: sanitizedPhone,
         password: passwordValue,
         device: collectDeviceInfo(),
       });
