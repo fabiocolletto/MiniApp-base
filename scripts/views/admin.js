@@ -364,13 +364,11 @@ export function renderAdmin(viewRoot) {
   const heading = document.createElement('h1');
   heading.textContent = 'Painel Administrativo';
 
-  const widget = document.createElement('section');
-  widget.className = 'admin-user-section admin-client-widget';
-  widget.setAttribute('aria-label', 'Widget tabela de clientes cadastrados');
+  const layout = document.createElement('div');
+  layout.className = 'admin-user-layout';
 
-  const widgetTitle = document.createElement('h2');
-  widgetTitle.className = 'admin-user-section__title';
-  widgetTitle.textContent = 'Widget: Tabela de clientes cadastrados';
+  const overview = document.createElement('div');
+  overview.className = 'admin-user-overview';
 
   const widgetDescription = document.createElement('p');
   widgetDescription.className = 'admin-user-section__description';
@@ -437,6 +435,16 @@ export function renderAdmin(viewRoot) {
 
   toolbar.append(searchGroup, sortGroup, summary);
 
+  overview.append(widgetDescription, toolbar);
+
+  const widget = document.createElement('section');
+  widget.className = 'admin-user-section admin-client-widget admin-user-table-panel';
+  widget.setAttribute('aria-label', 'Widget tabela de clientes cadastrados');
+
+  const widgetTitle = document.createElement('h2');
+  widgetTitle.className = 'admin-user-section__title';
+  widgetTitle.textContent = 'Widget: Tabela de clientes cadastrados';
+
   const table = document.createElement('table');
   table.className = 'admin-user-table';
   table.createCaption().textContent = 'Tabela de clientes cadastrados';
@@ -467,7 +475,9 @@ export function renderAdmin(viewRoot) {
   table.append(tableHead, tableBody);
   tableContainer.append(table);
 
-  widget.append(widgetTitle, widgetDescription, toolbar, tableContainer);
+  widget.append(widgetTitle, tableContainer);
+
+  layout.append(overview, widget);
 
   let usersSnapshot = [];
   let expandedUserId = null;
@@ -841,7 +851,7 @@ export function renderAdmin(viewRoot) {
     unsubscribe();
   });
 
-  viewRoot.replaceChildren(heading, widget);
+  viewRoot.replaceChildren(heading, layout);
 
   refreshTable();
 }

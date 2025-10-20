@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.90 - 2025-10-20 18:00 BRT
+- Reestrutura o painel administrativo para que o contêiner do widget mantenha apenas o título e a tabela, replicando o ajuste de largura aplicado ao painel de login.
+- Ajusta a linha de corte entre mobile e desktop do painel administrativo para manter o layout de tabela em tablets na vertical e horizontal.
+- Conserva o espaçamento compacto da visão administrativa sem converter a tabela em cartões em dispositivos intermediários.
+- Atualiza o rodapé para refletir a versão v0.1.90 com horário correspondente.
+- Exibe o primeiro nome do usuário autenticado diretamente no indicador de sessão do rodapé.
+
 ## v0.1.89 - 2025-10-20 21:40 BRT
 - Registra no README as boas práticas de testes visuais móveis, listando Galaxy S24, iPhone 14 Pro e Pixel 7 como aparelhos padrão.
 - Estabelece a captura obrigatória em modos vertical e horizontal para cada dispositivo móvel e resume o procedimento para tablet e desktop.
