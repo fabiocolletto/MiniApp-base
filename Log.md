@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.95 - 2025-10-20 21:20 BRT
+- Ajusta o rodapé móvel para exibir apenas a linha principal e expandir as demais informações ao toque.
+- Converte o selo da marca em botão acessível com setas indicativas e recolhe as ações adicionais por padrão no mobile.
+- Atualiza a caixa de validação das condições legais para fundo branco com borda preta.
+- Atualiza o rodapé para refletir a versão v0.1.95 com horário correspondente.
+
 ## v0.1.94 - 2025-10-20 20:45 BRT
 - Remove o título textual "MiniApp Base" do cabeçalho, mantendo somente o logotipo no topo.
 - Atualiza o rodapé para refletir a versão v0.1.94 com horário correspondente.
