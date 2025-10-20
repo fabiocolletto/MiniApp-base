@@ -27,6 +27,48 @@ const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 const sessionIndicator = document.querySelector('.footer-session');
 const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__text');
+const sessionIndicatorAnnouncement = sessionIndicator?.querySelector(
+  '.footer-session__announcement'
+);
+
+const dimmedShellClass = 'app-shell--dimmed';
+
+type SessionStateKey = 'loading' | 'connected' | 'idle' | 'empty';
+
+type SessionLegendItem = {
+  state: SessionStateKey;
+  label: string;
+  description: string;
+};
+
+const SESSION_LEGEND_ITEMS: SessionLegendItem[] = [
+  {
+    state: 'loading',
+    label: 'Sincronizando',
+    description: 'Estamos conectando com o servidor para validar a sua sessão.',
+  },
+  {
+    state: 'connected',
+    label: 'Conectada',
+    description: 'A sessão está ativa e pronta para carregar seus dados.',
+  },
+  {
+    state: 'idle',
+    label: 'Inativa',
+    description: 'A sessão continua válida, mas não há sincronização em andamento.',
+  },
+  {
+    state: 'empty',
+    label: 'Sem sessão',
+    description: 'Nenhum usuário autenticado no momento neste dispositivo.',
+  },
+];
+
+let sessionPopover: HTMLDivElement | null = null;
+let sessionPopoverBackdrop: HTMLDivElement | null = null;
+let sessionPopoverItems = new Map<SessionStateKey, HTMLLIElement>();
+let sessionPopoverOpen = false;
+let removeSessionPopoverListeners: (() => void) | null = null;
 
 let headerUserButton: HTMLButtonElement | null = null;
 let allowPreventScrollOption = true;
@@ -209,6 +251,274 @@ function updateHeaderSession(user: unknown): void {
   }
 }
 
+function ensureSessionPopover(): HTMLDivElement | null {
+  if (sessionPopover && sessionPopover.isConnected) {
+    return sessionPopover;
+  }
+
+  const body = document.body;
+  if (!(body instanceof HTMLElement)) {
+    return null;
+  }
+
+  if (!sessionPopoverBackdrop || !sessionPopoverBackdrop.isConnected) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'footer-session__backdrop';
+    backdrop.hidden = true;
+    backdrop.setAttribute('aria-hidden', 'true');
+    backdrop.addEventListener('click', () => {
+      closeSessionPopover();
+    });
+    body.append(backdrop);
+    sessionPopoverBackdrop = backdrop;
+  }
+
+  sessionPopoverItems = new Map();
+
+  const popover = document.createElement('div');
+  popover.id = 'session-status-popover';
+  popover.className = 'footer-session__popover';
+  popover.setAttribute('role', 'dialog');
+  popover.setAttribute('aria-modal', 'false');
+  popover.setAttribute('aria-hidden', 'true');
+  popover.hidden = true;
+
+  const heading = document.createElement('p');
+  heading.className = 'footer-session__popover-title';
+  heading.textContent = 'Status da sessão';
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'footer-session__popover-close';
+  closeButton.setAttribute('aria-label', 'Fechar legenda de status da sessão');
+  closeButton.setAttribute('title', 'Fechar');
+  const closeIcon = document.createElement('span');
+  closeIcon.className = 'footer-session__popover-close-icon';
+  closeIcon.setAttribute('aria-hidden', 'true');
+  closeIcon.textContent = '×';
+  closeButton.append(closeIcon);
+  closeButton.addEventListener('click', () => {
+    closeSessionPopover(true);
+  });
+
+  const headingWrapper = document.createElement('div');
+  headingWrapper.className = 'footer-session__popover-header';
+  headingWrapper.append(heading, closeButton);
+
+  const legend = document.createElement('ul');
+  legend.className = 'footer-session__legend';
+
+  SESSION_LEGEND_ITEMS.forEach(({ state, label, description }) => {
+    const item = document.createElement('li');
+    item.className = 'footer-session__legend-item';
+    item.dataset.state = state;
+
+    const itemDot = document.createElement('span');
+    itemDot.className = 'footer-session__legend-dot';
+    itemDot.setAttribute('aria-hidden', 'true');
+
+    const content = document.createElement('div');
+    content.className = 'footer-session__legend-content';
+
+    const itemLabel = document.createElement('span');
+    itemLabel.className = 'footer-session__legend-label';
+    itemLabel.textContent = label;
+
+    const itemDescription = document.createElement('span');
+    itemDescription.className = 'footer-session__legend-description';
+    itemDescription.textContent = description;
+
+    content.append(itemLabel, itemDescription);
+    item.append(itemDot, content);
+    legend.append(item);
+    sessionPopoverItems.set(state, item);
+  });
+
+  popover.append(headingWrapper, legend);
+  body.append(popover);
+
+  sessionPopover = popover;
+
+  return sessionPopover;
+}
+
+function highlightSessionPopoverState(state: string): void {
+  sessionPopoverItems.forEach((item, key) => {
+    const isActive = key === state;
+    item.classList.toggle('footer-session__legend-item--active', isActive);
+    if (isActive) {
+      item.setAttribute('aria-current', 'true');
+    } else {
+      item.removeAttribute('aria-current');
+    }
+  });
+}
+
+function positionSessionPopover(): void {
+  if (!(sessionIndicator instanceof HTMLElement) || !(sessionPopover instanceof HTMLElement)) {
+    return;
+  }
+
+  const rect = sessionIndicator.getBoundingClientRect();
+  const viewportPadding = 12;
+  const popoverRect = sessionPopover.getBoundingClientRect();
+
+  let left = rect.left + rect.width / 2 - popoverRect.width / 2;
+  const maxLeft = window.innerWidth - popoverRect.width - viewportPadding;
+  left = Math.min(Math.max(viewportPadding, left), Math.max(viewportPadding, maxLeft));
+
+  const offset = 16;
+  const desiredTop = rect.top - popoverRect.height - offset;
+  const top = Math.max(viewportPadding, desiredTop);
+
+  const arrowOffset = rect.left + rect.width / 2 - left;
+  const arrowMin = 16;
+  const arrowMax = Math.max(arrowMin, popoverRect.width - arrowMin);
+  const arrowPosition = Math.min(Math.max(arrowMin, arrowOffset), arrowMax);
+  sessionPopover.style.setProperty('--arrow-inline-offset', `${Math.round(arrowPosition)}px`);
+
+  sessionPopover.style.left = `${Math.round(left)}px`;
+  sessionPopover.style.top = `${Math.round(top)}px`;
+}
+
+function closeSessionPopover(focusButton = false): void {
+  const body = document.body;
+  if (body instanceof HTMLElement) {
+    body.classList.remove(dimmedShellClass);
+  }
+
+  if (!sessionPopoverOpen) {
+    return;
+  }
+
+  sessionPopoverOpen = false;
+
+  if (removeSessionPopoverListeners) {
+    removeSessionPopoverListeners();
+    removeSessionPopoverListeners = null;
+  }
+
+  if (sessionPopover) {
+    sessionPopover.hidden = true;
+    sessionPopover.setAttribute('aria-hidden', 'true');
+  }
+
+  if (sessionPopoverBackdrop instanceof HTMLElement) {
+    sessionPopoverBackdrop.classList.remove('footer-session__backdrop--visible');
+    sessionPopoverBackdrop.setAttribute('aria-hidden', 'true');
+    sessionPopoverBackdrop.hidden = true;
+  }
+
+  if (sessionIndicator instanceof HTMLElement) {
+    sessionIndicator.setAttribute('aria-expanded', 'false');
+    sessionIndicator.classList.remove('footer-session--open');
+  }
+
+  if (focusButton && sessionIndicator instanceof HTMLElement) {
+    sessionIndicator.focus();
+  }
+}
+
+function openSessionPopover(): void {
+  if (!(sessionIndicator instanceof HTMLElement)) {
+    return;
+  }
+
+  const popover = ensureSessionPopover();
+  if (!(popover instanceof HTMLElement)) {
+    return;
+  }
+
+  if (sessionPopoverOpen) {
+    positionSessionPopover();
+    return;
+  }
+
+  sessionPopoverOpen = true;
+
+  const body = document.body;
+  if (body instanceof HTMLElement) {
+    body.classList.add(dimmedShellClass);
+  }
+
+  if (sessionPopoverBackdrop instanceof HTMLElement) {
+    sessionPopoverBackdrop.hidden = false;
+    sessionPopoverBackdrop.setAttribute('aria-hidden', 'false');
+    sessionPopoverBackdrop.classList.add('footer-session__backdrop--visible');
+  }
+
+  const onPointerDown = (event: PointerEvent) => {
+    const target = event.target as Node | null;
+    if (sessionIndicator.contains(target) || popover.contains(target)) {
+      return;
+    }
+    closeSessionPopover();
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSessionPopover(true);
+    }
+  };
+
+  const onViewportChange = () => {
+    positionSessionPopover();
+  };
+
+  document.addEventListener('pointerdown', onPointerDown, true);
+  document.addEventListener('keydown', onKeyDown);
+  window.addEventListener('resize', onViewportChange);
+  window.addEventListener('scroll', onViewportChange, true);
+
+  removeSessionPopoverListeners = () => {
+    document.removeEventListener('pointerdown', onPointerDown, true);
+    document.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('resize', onViewportChange);
+    window.removeEventListener('scroll', onViewportChange, true);
+  };
+
+  popover.hidden = false;
+  popover.setAttribute('aria-hidden', 'false');
+  popover.style.visibility = 'hidden';
+  popover.style.pointerEvents = 'none';
+
+  highlightSessionPopoverState(sessionIndicator.dataset.state ?? 'loading');
+  positionSessionPopover();
+
+  popover.style.visibility = '';
+  popover.style.pointerEvents = '';
+
+  sessionIndicator.setAttribute('aria-expanded', 'true');
+  sessionIndicator.classList.add('footer-session--open');
+}
+
+function toggleSessionPopover(): void {
+  if (sessionPopoverOpen) {
+    closeSessionPopover();
+  } else {
+    openSessionPopover();
+  }
+}
+
+function registerSessionIndicatorInteractions(): void {
+  if (!(sessionIndicator instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  sessionIndicator.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleSessionPopover();
+  });
+
+  sessionIndicator.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleSessionPopover();
+    }
+  });
+}
+
 function updateMemoryStatus(status: unknown): void {
   if (!(memoryIndicator instanceof HTMLElement) || !(memoryIndicatorText instanceof HTMLElement)) {
     return;
@@ -250,6 +560,9 @@ function updateSessionStatus(status: unknown): void {
 
   sessionIndicator.dataset.state = state;
   sessionIndicatorText.textContent = message;
+  if (sessionIndicatorAnnouncement instanceof HTMLElement) {
+    sessionIndicatorAnnouncement.textContent = details ? `${message}. ${details}` : message;
+  }
 
   if (details) {
     sessionIndicator.setAttribute('title', details);
@@ -257,6 +570,11 @@ function updateSessionStatus(status: unknown): void {
   } else {
     sessionIndicator.removeAttribute('title');
     sessionIndicator.setAttribute('aria-label', message);
+  }
+
+  highlightSessionPopoverState(state);
+  if (sessionPopoverOpen) {
+    positionSessionPopover();
   }
 }
 
@@ -293,6 +611,8 @@ export function renderView(name: ViewName): void {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
   }
+
+  closeSessionPopover();
 
   applyMainState(name);
 
@@ -369,6 +689,8 @@ export function initializeAppShell(router: RouterBridge): void {
     event.preventDefault();
     router.goTo('register');
   });
+
+  registerSessionIndicatorInteractions();
 
   document.addEventListener('app:navigate', (event) => {
     const viewName = resolveViewName((event as CustomEvent)?.detail);

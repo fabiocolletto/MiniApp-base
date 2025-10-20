@@ -78,24 +78,32 @@
           <span class="footer-memory__dot" aria-hidden="true"></span>
           <span class="footer-memory__text">Memória carregando</span>
         </span>
-        <span
+        <button
+          type="button"
           class="footer-session"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
           data-state="loading"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="session-status-popover"
         >
           <span class="footer-session__dot" aria-hidden="true"></span>
           <span class="footer-session__text">Sessão sincronizando</span>
-        </span>
+          <span
+            class="footer-session__announcement sr-only"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            Sessão sincronizando
+          </span>
+        </button>
         <button
           type="button"
           class="footer-version"
-          aria-label="Abrir registro de alterações da versão v0.1.82 das 10h29"
-          title="Exibir mudanças da versão v0.1.82 das 10h29"
+          aria-label="Abrir registro de alterações da versão v0.1.83 das 12h45"
+          title="Exibir mudanças da versão v0.1.83 das 12h45"
         >
           <span class="footer-version__dot" aria-hidden="true"></span>
-          <span class="footer-version__text">V0.1.82</span>
+          <span class="footer-version__text">V0.1.83</span>
         </button>
       </div>
     </footer>
