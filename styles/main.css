@@ -1376,6 +1376,7 @@ footer {
   border-radius: 0.5rem;
   display: grid;
   gap: clamp(0.6rem, 2vw, 0.95rem);
+  grid-auto-flow: row dense;
   background: #fff;
 }
 
@@ -1390,6 +1391,66 @@ footer {
 .admin-user-table__form-field {
   display: grid;
   gap: 0.3rem;
+  grid-column: 1 / -1;
+}
+
+.admin-user-table__form-field--span-12 {
+  grid-column: 1 / -1;
+}
+
+.admin-user-table__input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-user-table__input-wrapper .admin-user-table__input {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.admin-user-table__password-toggle {
+  border: 0.1rem solid #dadce0;
+  background: #f8f9fa;
+  color: #1a73e8;
+  border-radius: 0.35rem;
+  padding: 0.35rem;
+  font: inherit;
+  font-size: var(--panel-font-size-compact);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.35rem;
+}
+
+.admin-user-table__password-toggle:hover,
+.admin-user-table__password-toggle:focus-visible {
+  outline: none;
+  border-color: #1a73e8;
+  background: rgba(26, 115, 232, 0.1);
+}
+
+.admin-user-table__password-toggle-icon {
+  display: inline-flex;
+  width: 1.2rem;
+  height: 1.2rem;
+  pointer-events: none;
+}
+
+.admin-user-table__password-toggle-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.admin-user-table__password-toggle[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #f1f3f4;
 }
 
 .admin-user-table__form-label {
@@ -1403,6 +1464,41 @@ footer {
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: flex-end;
+}
+
+@media (min-width: 48rem) {
+  .admin-user-table__form-fieldset {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  .admin-user-table__form-field {
+    grid-column: span 12;
+  }
+
+  .admin-user-table__form-field--span-4 {
+    grid-column: span 4;
+  }
+
+  .admin-user-table__form-field--span-5 {
+    grid-column: span 5;
+  }
+
+  .admin-user-table__form-field--span-6 {
+    grid-column: span 6;
+  }
+
+  .admin-user-table__form-field--span-7 {
+    grid-column: span 7;
+  }
+
+  .admin-user-table__form-field--span-8 {
+    grid-column: span 8;
+  }
+
+  .admin-user-table__form-actions {
+    grid-column: 1 / -1;
+  }
 }
 
 .admin-user-table__details-groups {
@@ -2271,7 +2367,7 @@ footer {
 }
 
 .user-details__password-field input {
-  padding-right: 6rem;
+  padding-right: 4rem;
 }
 
 .user-details__password-toggle {
@@ -2282,21 +2378,37 @@ footer {
   border: none;
   background: transparent;
   color: #b56a1b;
-  font-weight: 600;
-  font-size: var(--panel-font-size-strong);
   cursor: pointer;
-  padding: 0.25rem 0.35rem;
+  padding: 0.25rem;
+  border-radius: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .user-details__password-toggle:focus-visible {
   outline: 0.15rem solid rgba(242, 159, 5, 0.55);
   outline-offset: 0.1rem;
-  border-radius: 0.35rem;
 }
 
 .user-details__password-toggle[disabled] {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.user-details__password-toggle-icon {
+  display: inline-flex;
+  width: 1.45rem;
+  height: 1.45rem;
+  pointer-events: none;
+}
+
+.user-details__password-toggle-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .user-details__submit {
