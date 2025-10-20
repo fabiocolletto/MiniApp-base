@@ -85,7 +85,31 @@ function markStorageError(error, { persistent = false } = {}) {
   });
 }
 
-const PROFILE_FIELDS = ['email', 'secondaryPhone', 'document', 'address', 'notes'];
+const PROFILE_FIELDS = [
+  'email',
+  'secondaryPhone',
+  'document',
+  'address',
+  'addressNumber',
+  'addressComplement',
+  'addressDistrict',
+  'addressCity',
+  'addressState',
+  'addressZip',
+  'addressCountry',
+  'website',
+  'socialLinkedin',
+  'socialInstagram',
+  'socialFacebook',
+  'socialTwitter',
+  'socialYoutube',
+  'birthDate',
+  'pronouns',
+  'profession',
+  'company',
+  'bio',
+  'notes',
+];
 
 function createEmptyProfile() {
   return PROFILE_FIELDS.reduce((accumulator, field) => {

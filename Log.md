@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.71 - 2025-10-20 04:30 BRT
+- Recriação do painel do usuário com cartões segmentados para credenciais, dados pessoais, contatos e endereço, aplicando um layout em grade responsivo.
+- Inclusão de novos campos de perfil (pronome, data de nascimento, profissão, empresa, biografia, redes sociais e endereço detalhado) com persistência no store e atualização automática do formulário.
+- Ajustes visuais para destacar o usuário autenticado, harmonizar cores, aprimorar tipografia dos grupos e garantir responsividade em diferentes larguras móveis.
+- Validação visual do painel atualizado em dispositivos móveis pequenos e médios, confirmando a responsividade antes da liberação.
+
 ## v0.1.70 - 2025-10-20 03:45 BRT
 - Implementa modo de armazenamento em memória para execuções de teste garantindo compatibilidade com ambientes sem IndexedDB.
 - Expõe rotina de reinicialização do store de usuários para facilitar ciclos de teste e limpar assinantes remanescentes.

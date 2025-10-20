@@ -108,8 +108,11 @@ export function renderUserPanel(viewRoot) {
     eventBus.emit('app:navigate', { view });
   }
 
+  const formsWrapper = document.createElement('div');
+  formsWrapper.className = 'user-details__grid';
+
   const primaryForm = document.createElement('form');
-  primaryForm.className = 'user-details__form user-details__form--primary';
+  primaryForm.className = 'user-details__form user-details__form--primary user-details__card';
   primaryForm.noValidate = true;
 
   const primaryTitle = document.createElement('h3');
@@ -154,19 +157,23 @@ export function renderUserPanel(viewRoot) {
 
   const primaryFeedback = createDetailsFeedbackElement();
 
-  primaryForm.append(primaryTitle, primaryIntro, primaryPhoneField, primaryPasswordField, primarySubmit, primaryFeedback);
+  const primaryFields = document.createElement('div');
+  primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
+  primaryFields.append(primaryPhoneField, primaryPasswordField);
+
+  primaryForm.append(primaryTitle, primaryIntro, primaryFields, primarySubmit, primaryFeedback);
 
   const profileForm = document.createElement('form');
-  profileForm.className = 'user-details__form user-details__form--profile';
+  profileForm.className = 'user-details__form user-details__form--profile user-details__card';
   profileForm.noValidate = true;
 
   const profileTitle = document.createElement('h3');
   profileTitle.className = 'user-details__form-title';
-  profileTitle.textContent = 'Dados complementares';
+  profileTitle.textContent = 'Complete seu perfil';
 
   const profileIntro = document.createElement('p');
   profileIntro.className = 'user-details__form-description';
-  profileIntro.textContent = 'Inclua ou revise informações adicionais para deixar o cadastro completo.';
+  profileIntro.textContent = 'Inclua informações pessoais, de contato, endereço e redes para deixar seu cadastro completo.';
 
   const profileNameField = createInputField({
     id: 'user-details-name',
@@ -177,12 +184,110 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
+  const profilePronounsField = createInputField({
+    id: 'user-details-pronouns',
+    label: 'Pronomes',
+    type: 'text',
+    placeholder: 'Ela/dela, Ele/dele, Elu/delu, ...',
+    autocomplete: 'off',
+    required: false,
+  });
+
+  const profileBirthDateField = createInputField({
+    id: 'user-details-birth-date',
+    label: 'Data de nascimento',
+    type: 'date',
+    placeholder: 'Selecione a data',
+    autocomplete: 'bday',
+    required: false,
+  });
+
+  const profileProfessionField = createInputField({
+    id: 'user-details-profession',
+    label: 'Profissão ou cargo',
+    type: 'text',
+    placeholder: 'Ex.: Desenvolvedor(a) front-end',
+    autocomplete: 'organization-title',
+    required: false,
+  });
+
+  const profileCompanyField = createInputField({
+    id: 'user-details-company',
+    label: 'Empresa ou organização',
+    type: 'text',
+    placeholder: 'Onde você atua atualmente?',
+    autocomplete: 'organization',
+    required: false,
+  });
+
+  const profileBioField = createTextareaField({
+    id: 'user-details-bio',
+    label: 'Biografia e destaques',
+    placeholder: 'Conte um pouco sobre sua trajetória, objetivos e conquistas.',
+    rows: 4,
+  });
+  profileBioField.classList.add('user-form__field--full');
+
   const profileEmailField = createInputField({
     id: 'user-details-email',
     label: 'E-mail',
     type: 'email',
     placeholder: 'nome@exemplo.com',
     autocomplete: 'email',
+    required: false,
+  });
+
+  const profileWebsiteField = createInputField({
+    id: 'user-details-website',
+    label: 'Site pessoal ou portfólio',
+    type: 'url',
+    placeholder: 'https://seuportfolio.com',
+    autocomplete: 'url',
+    required: false,
+  });
+
+  const profileLinkedinField = createInputField({
+    id: 'user-details-linkedin',
+    label: 'LinkedIn',
+    type: 'url',
+    placeholder: 'https://linkedin.com/in/usuario',
+    autocomplete: 'url',
+    required: false,
+  });
+
+  const profileInstagramField = createInputField({
+    id: 'user-details-instagram',
+    label: 'Instagram',
+    type: 'url',
+    placeholder: 'https://instagram.com/usuario',
+    autocomplete: 'url',
+    required: false,
+  });
+
+  const profileFacebookField = createInputField({
+    id: 'user-details-facebook',
+    label: 'Facebook',
+    type: 'url',
+    placeholder: 'https://facebook.com/usuario',
+    autocomplete: 'url',
+    required: false,
+  });
+
+  const profileTwitterField = createInputField({
+    id: 'user-details-twitter',
+    label: 'X (Twitter)',
+    type: 'url',
+    placeholder: 'https://x.com/usuario',
+    autocomplete: 'url',
+    required: false,
+  });
+
+  const profileYoutubeField = createInputField({
+    id: 'user-details-youtube',
+    label: 'YouTube',
+    type: 'url',
+    placeholder: 'https://youtube.com/@usuario',
+    autocomplete: 'url',
     required: false,
   });
 
@@ -207,41 +312,195 @@ export function renderUserPanel(viewRoot) {
 
   const profileAddressField = createInputField({
     id: 'user-details-address',
-    label: 'Endereço completo',
+    label: 'Logradouro',
     type: 'text',
-    placeholder: 'Rua, número e complemento',
-    autocomplete: 'street-address',
+    placeholder: 'Rua, avenida, alameda...',
+    autocomplete: 'address-line1',
+    required: false,
+  });
+
+  const profileAddressNumberField = createInputField({
+    id: 'user-details-address-number',
+    label: 'Número',
+    type: 'text',
+    placeholder: 'Número ou S/N',
+    autocomplete: 'address-line2',
+    required: false,
+  });
+
+  const profileAddressComplementField = createInputField({
+    id: 'user-details-address-complement',
+    label: 'Complemento',
+    type: 'text',
+    placeholder: 'Apartamento, bloco, referência',
+    autocomplete: 'address-line2',
+    required: false,
+  });
+
+  const profileAddressDistrictField = createInputField({
+    id: 'user-details-address-district',
+    label: 'Bairro ou distrito',
+    type: 'text',
+    placeholder: 'Informe o bairro',
+    autocomplete: 'address-level2',
+    required: false,
+  });
+
+  const profileAddressCityField = createInputField({
+    id: 'user-details-address-city',
+    label: 'Cidade',
+    type: 'text',
+    placeholder: 'Informe a cidade',
+    autocomplete: 'address-level2',
+    required: false,
+  });
+
+  const profileAddressStateField = createInputField({
+    id: 'user-details-address-state',
+    label: 'Estado',
+    type: 'text',
+    placeholder: 'Ex.: SP',
+    autocomplete: 'address-level1',
+    required: false,
+  });
+
+  const profileAddressZipField = createInputField({
+    id: 'user-details-address-zip',
+    label: 'CEP',
+    type: 'text',
+    placeholder: '00000-000',
+    autocomplete: 'postal-code',
+    inputMode: 'numeric',
+    required: false,
+  });
+
+  const profileAddressCountryField = createInputField({
+    id: 'user-details-address-country',
+    label: 'País',
+    type: 'text',
+    placeholder: 'Brasil',
+    autocomplete: 'country-name',
     required: false,
   });
 
   const profileNotesField = createTextareaField({
     id: 'user-details-notes',
     label: 'Observações adicionais',
-    placeholder: 'Informações relevantes sobre o cadastro',
-    rows: 3,
+    placeholder: 'Compartilhe observações importantes, preferências ou instruções especiais.',
+    rows: 4,
   });
+  profileNotesField.classList.add('user-form__field--full');
 
   const profileSubmit = document.createElement('button');
   profileSubmit.type = 'submit';
   profileSubmit.className = 'user-details__submit';
-  profileSubmit.textContent = 'Salvar dados complementares';
+  profileSubmit.textContent = 'Salvar perfil completo';
 
   const profileFeedback = createDetailsFeedbackElement();
+
+  const profilePersonalGroup = document.createElement('section');
+  profilePersonalGroup.className = 'user-details__group user-details__group--personal';
+
+  const profilePersonalTitle = document.createElement('h4');
+  profilePersonalTitle.className = 'user-details__group-title';
+  profilePersonalTitle.textContent = 'Dados pessoais';
+
+  const profilePersonalDescription = document.createElement('p');
+  profilePersonalDescription.className = 'user-details__group-description';
+  profilePersonalDescription.textContent = 'Nome completo, pronomes, data de nascimento e resumo profissional.';
+
+  const profilePersonalGrid = document.createElement('div');
+  profilePersonalGrid.className = 'user-details__form-grid user-details__form-grid--two';
+  profilePersonalGrid.append(
+    profileNameField,
+    profilePronounsField,
+    profileBirthDateField,
+    profileProfessionField,
+    profileCompanyField,
+    profileBioField,
+  );
+
+  profilePersonalGroup.append(
+    profilePersonalTitle,
+    profilePersonalDescription,
+    profilePersonalGrid,
+  );
+
+  const profileContactGroup = document.createElement('section');
+  profileContactGroup.className = 'user-details__group user-details__group--contact';
+
+  const profileContactTitle = document.createElement('h4');
+  profileContactTitle.className = 'user-details__group-title';
+  profileContactTitle.textContent = 'Contatos e redes sociais';
+
+  const profileContactDescription = document.createElement('p');
+  profileContactDescription.className = 'user-details__group-description';
+  profileContactDescription.textContent = 'Centralize seus canais de contato e presença digital.';
+
+  const profileContactGrid = document.createElement('div');
+  profileContactGrid.className = 'user-details__form-grid user-details__form-grid--two';
+  profileContactGrid.append(
+    profileEmailField,
+    profileSecondaryPhoneField,
+    profileWebsiteField,
+    profileLinkedinField,
+    profileInstagramField,
+    profileFacebookField,
+    profileTwitterField,
+    profileYoutubeField,
+  );
+
+  profileContactGroup.append(
+    profileContactTitle,
+    profileContactDescription,
+    profileContactGrid,
+  );
+
+  const profileAddressGroup = document.createElement('section');
+  profileAddressGroup.className = 'user-details__group user-details__group--address';
+
+  const profileAddressTitle = document.createElement('h4');
+  profileAddressTitle.className = 'user-details__group-title';
+  profileAddressTitle.textContent = 'Endereço e documentação';
+
+  const profileAddressDescription = document.createElement('p');
+  profileAddressDescription.className = 'user-details__group-description';
+  profileAddressDescription.textContent = 'Informe onde podemos encontrá-lo e documentos para identificação.';
+
+  const profileAddressGrid = document.createElement('div');
+  profileAddressGrid.className = 'user-details__form-grid user-details__form-grid--two';
+  profileAddressGrid.append(
+    profileDocumentField,
+    profileAddressField,
+    profileAddressNumberField,
+    profileAddressComplementField,
+    profileAddressDistrictField,
+    profileAddressCityField,
+    profileAddressStateField,
+    profileAddressZipField,
+    profileAddressCountryField,
+    profileNotesField,
+  );
+
+  profileAddressGroup.append(
+    profileAddressTitle,
+    profileAddressDescription,
+    profileAddressGrid,
+  );
 
   profileForm.append(
     profileTitle,
     profileIntro,
-    profileNameField,
-    profileEmailField,
-    profileSecondaryPhoneField,
-    profileDocumentField,
-    profileAddressField,
-    profileNotesField,
+    profilePersonalGroup,
+    profileContactGroup,
+    profileAddressGroup,
     profileSubmit,
     profileFeedback,
   );
 
-  detailsSection.append(detailsHeading, detailsDescription, selectionInfo, primaryForm, profileForm);
+  formsWrapper.append(primaryForm, profileForm);
+
+  detailsSection.append(detailsHeading, detailsDescription, selectionInfo, formsWrapper);
 
   const accountSection = document.createElement('section');
   accountSection.className = 'user-panel__section user-panel__section--account user-account';
@@ -289,11 +548,78 @@ export function renderUserPanel(viewRoot) {
   const primaryPhoneInput = primaryPhoneField.querySelector('input');
   const primaryPasswordInput = primaryPasswordField.querySelector('input');
   const profileNameInput = profileNameField.querySelector('input');
+  const profilePronounsInput = profilePronounsField.querySelector('input');
+  const profileBirthDateInput = profileBirthDateField.querySelector('input');
+  const profileProfessionInput = profileProfessionField.querySelector('input');
+  const profileCompanyInput = profileCompanyField.querySelector('input');
+  const profileBioInput = profileBioField.querySelector('textarea');
   const profileEmailInput = profileEmailField.querySelector('input');
   const profileSecondaryPhoneInput = profileSecondaryPhoneField.querySelector('input');
+  const profileWebsiteInput = profileWebsiteField.querySelector('input');
+  const profileLinkedinInput = profileLinkedinField.querySelector('input');
+  const profileInstagramInput = profileInstagramField.querySelector('input');
+  const profileFacebookInput = profileFacebookField.querySelector('input');
+  const profileTwitterInput = profileTwitterField.querySelector('input');
+  const profileYoutubeInput = profileYoutubeField.querySelector('input');
   const profileDocumentInput = profileDocumentField.querySelector('input');
   const profileAddressInput = profileAddressField.querySelector('input');
+  const profileAddressNumberInput = profileAddressNumberField.querySelector('input');
+  const profileAddressComplementInput = profileAddressComplementField.querySelector('input');
+  const profileAddressDistrictInput = profileAddressDistrictField.querySelector('input');
+  const profileAddressCityInput = profileAddressCityField.querySelector('input');
+  const profileAddressStateInput = profileAddressStateField.querySelector('input');
+  const profileAddressZipInput = profileAddressZipField.querySelector('input');
+  const profileAddressCountryInput = profileAddressCountryField.querySelector('input');
   const profileNotesInput = profileNotesField.querySelector('textarea');
+
+  const profileFieldBindings = {
+    pronouns: profilePronounsInput,
+    birthDate: profileBirthDateInput,
+    profession: profileProfessionInput,
+    company: profileCompanyInput,
+    bio: profileBioInput,
+    email: profileEmailInput,
+    secondaryPhone: profileSecondaryPhoneInput,
+    website: profileWebsiteInput,
+    socialLinkedin: profileLinkedinInput,
+    socialInstagram: profileInstagramInput,
+    socialFacebook: profileFacebookInput,
+    socialTwitter: profileTwitterInput,
+    socialYoutube: profileYoutubeInput,
+    document: profileDocumentInput,
+    address: profileAddressInput,
+    addressNumber: profileAddressNumberInput,
+    addressComplement: profileAddressComplementInput,
+    addressDistrict: profileAddressDistrictInput,
+    addressCity: profileAddressCityInput,
+    addressState: profileAddressStateInput,
+    addressZip: profileAddressZipInput,
+    addressCountry: profileAddressCountryInput,
+    notes: profileNotesInput,
+  };
+
+  function readFieldValue(fieldElement) {
+    if (!fieldElement) {
+      return '';
+    }
+
+    if (fieldElement instanceof HTMLInputElement) {
+      if (fieldElement.type === 'date') {
+        return fieldElement.value;
+      }
+      return fieldElement.value.trim();
+    }
+
+    if (fieldElement instanceof HTMLTextAreaElement) {
+      return fieldElement.value.trim();
+    }
+
+    if ('value' in fieldElement) {
+      return String(fieldElement.value ?? '').trim();
+    }
+
+    return '';
+  }
 
   function getActiveSessionUser() {
     if (sessionUserId == null) {
@@ -386,19 +712,19 @@ export function renderUserPanel(viewRoot) {
       }
     });
 
-    [
-      profileNameInput,
-      profileEmailInput,
-      profileSecondaryPhoneInput,
-      profileDocumentInput,
-      profileAddressInput,
-      profileNotesInput,
-      profileSubmit,
-    ].forEach((element) => {
-      if (element) {
+    if (profileSubmit) {
+      profileSubmit.disabled = shouldDisable;
+    }
+
+    Object.values(profileFieldBindings).forEach((element) => {
+      if (element instanceof HTMLElement) {
         element.disabled = shouldDisable;
       }
     });
+
+    if (profileNameInput) {
+      profileNameInput.disabled = shouldDisable;
+    }
 
     if (!user) {
       if (primaryPhoneInput) {
@@ -410,21 +736,11 @@ export function renderUserPanel(viewRoot) {
       if (profileNameInput) {
         profileNameInput.value = '';
       }
-      if (profileEmailInput) {
-        profileEmailInput.value = '';
-      }
-      if (profileSecondaryPhoneInput) {
-        profileSecondaryPhoneInput.value = '';
-      }
-      if (profileDocumentInput) {
-        profileDocumentInput.value = '';
-      }
-      if (profileAddressInput) {
-        profileAddressInput.value = '';
-      }
-      if (profileNotesInput) {
-        profileNotesInput.value = '';
-      }
+      Object.values(profileFieldBindings).forEach((element) => {
+        if (element && 'value' in element) {
+          element.value = '';
+        }
+      });
       isPasswordVisible = false;
       updatePasswordVisibility();
       return;
@@ -439,21 +755,25 @@ export function renderUserPanel(viewRoot) {
     if (profileNameInput) {
       profileNameInput.value = user.name;
     }
-    if (profileEmailInput) {
-      profileEmailInput.value = user.profile?.email ?? '';
-    }
-    if (profileSecondaryPhoneInput) {
-      profileSecondaryPhoneInput.value = user.profile?.secondaryPhone ?? '';
-    }
-    if (profileDocumentInput) {
-      profileDocumentInput.value = user.profile?.document ?? '';
-    }
-    if (profileAddressInput) {
-      profileAddressInput.value = user.profile?.address ?? '';
-    }
-    if (profileNotesInput) {
-      profileNotesInput.value = user.profile?.notes ?? '';
-    }
+
+    Object.entries(profileFieldBindings).forEach(([key, element]) => {
+      if (!element || !('value' in element)) {
+        return;
+      }
+
+      const profileValue = user.profile?.[key] ?? '';
+
+      if (key === 'birthDate') {
+        if (element instanceof HTMLInputElement) {
+          element.value = /^\d{4}-\d{2}-\d{2}$/.test(profileValue) ? profileValue : '';
+        } else {
+          element.value = '';
+        }
+        return;
+      }
+
+      element.value = profileValue;
+    });
 
     updatePasswordVisibility();
   }
@@ -541,19 +861,14 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    if (!profileNameInput || !profileEmailInput || !profileSecondaryPhoneInput || !profileDocumentInput || !profileAddressInput || !profileNotesInput) {
+    if (!profileNameInput || Object.values(profileFieldBindings).some((element) => element == null)) {
       showDetailsFeedback(profileFeedback, 'Os campos adicionais não foram carregados corretamente.', {
         isError: true,
       });
       return;
     }
 
-    const nameValue = profileNameInput.value.trim();
-    const emailValue = profileEmailInput.value.trim();
-    const secondaryPhoneValue = profileSecondaryPhoneInput.value.trim();
-    const documentValue = profileDocumentInput.value.trim();
-    const addressValue = profileAddressInput.value.trim();
-    const notesValue = profileNotesInput.value.trim();
+    const nameValue = readFieldValue(profileNameInput);
 
     const updates = {};
     const profileUpdates = {};
@@ -566,25 +881,18 @@ export function renderUserPanel(viewRoot) {
       updates.name = nameValue;
     }
 
-    if (emailValue !== (user.profile?.email ?? '')) {
-      profileUpdates.email = emailValue;
-    }
+    Object.entries(profileFieldBindings).forEach(([key, element]) => {
+      if (!element) {
+        return;
+      }
 
-    if (secondaryPhoneValue !== (user.profile?.secondaryPhone ?? '')) {
-      profileUpdates.secondaryPhone = secondaryPhoneValue;
-    }
+      const nextValue = readFieldValue(element);
+      const currentValue = user.profile?.[key] ?? '';
 
-    if (documentValue !== (user.profile?.document ?? '')) {
-      profileUpdates.document = documentValue;
-    }
-
-    if (addressValue !== (user.profile?.address ?? '')) {
-      profileUpdates.address = addressValue;
-    }
-
-    if (notesValue !== (user.profile?.notes ?? '')) {
-      profileUpdates.notes = notesValue;
-    }
+      if (nextValue !== currentValue) {
+        profileUpdates[key] = nextValue;
+      }
+    });
 
     if (Object.keys(profileUpdates).length > 0) {
       updates.profile = profileUpdates;
@@ -599,10 +907,10 @@ export function renderUserPanel(viewRoot) {
       profileSubmit.disabled = true;
       profileSubmit.setAttribute('aria-busy', 'true');
       await updateUser(user.id, updates);
-      showDetailsFeedback(profileFeedback, 'Dados complementares atualizados com sucesso!', { isError: false });
+      showDetailsFeedback(profileFeedback, 'Perfil completo atualizado com sucesso!', { isError: false });
     } catch (error) {
       console.error('Erro ao complementar cadastro pelo painel do usuário.', error);
-      showDetailsFeedback(profileFeedback, 'Não foi possível salvar os dados adicionais. Tente novamente.', {
+      showDetailsFeedback(profileFeedback, 'Não foi possível salvar os dados do perfil. Tente novamente.', {
         isError: true,
       });
     }
