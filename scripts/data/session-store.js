@@ -1,4 +1,5 @@
 import { getUsers, subscribeUsers } from './user-store.js';
+import eventBus from '../events/event-bus.js';
 
 const SESSION_STORAGE_KEY = 'miniapp-active-user-id';
 const sessionListeners = new Set();
@@ -91,6 +92,7 @@ function notifySessionListeners() {
       console.error('Erro ao notificar assinante da sessão ativa.', error);
     }
   });
+  eventBus.emit('session:changed', activeUser);
 }
 
 function updateActiveUserId(newId) {
@@ -180,3 +182,7 @@ if (!hasLoadedFromStorage) {
     updateActiveUserId(storedUserId);
   }
 }
+
+Promise.resolve().then(() => {
+  eventBus.emit('session:changed', getActiveUser());
+});

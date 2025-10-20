@@ -72,6 +72,27 @@ function mergeProfile(existingProfile, updates = {}) {
   };
 }
 
+const useMemoryStore =
+  (typeof process !== 'undefined' && process?.env?.MINIAPP_USE_MEMORY_STORE === '1') === true ||
+  typeof indexedDB === 'undefined';
+
+const memoryStore = [];
+let memoryAutoIncrement = 1;
+
+function createMemoryRecord({ name, phone, password, device, profile }) {
+  const now = new Date().toISOString();
+  return {
+    id: memoryAutoIncrement++,
+    name,
+    phone,
+    password,
+    device,
+    profile: normalizeProfile(profile),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const changeListeners = new Set();
 let databasePromise;
 
@@ -105,7 +126,15 @@ function openDatabase() {
       };
 
       request.onblocked = () => {
-        console.warn('A abertura do banco IndexedDB foi bloqueada. Feche outras abas da aplicação.');
+        const error = new Error(
+          'IndexedDB bloqueado por outra aba ou janela. Feche outras sessões da aplicação e tente novamente.'
+        );
+        console.warn(
+          'A abertura do banco IndexedDB foi bloqueada. Feche outras abas da aplicação para liberar o acesso.',
+          error
+        );
+        databasePromise = undefined;
+        reject(error);
       };
     });
   }
@@ -142,6 +171,68 @@ function deserializeUser(record) {
   };
 }
 
+async function loadUsersFromMemory() {
+  return memoryStore.map(deserializeUser);
+}
+
+async function saveUserToMemory({ name, phone, password, device, profile }) {
+  const record = createMemoryRecord({ name, phone, password, device, profile });
+  memoryStore.push(record);
+  await notifyListeners();
+  return deserializeUser(record);
+}
+
+async function updateUserInMemory(id, updates = {}) {
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
+    throw new Error('Identificador de usuário inválido.');
+  }
+
+  const index = memoryStore.findIndex((record) => record.id === numericId);
+  if (index === -1) {
+    throw new Error('Usuário não encontrado para atualização.');
+  }
+
+  const existingRecord = memoryStore[index];
+  const now = new Date().toISOString();
+  const nextRecord = {
+    ...existingRecord,
+    ...(Object.prototype.hasOwnProperty.call(updates, 'name') ? { name: updates.name } : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'device') ? { device: updates.device } : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
+      ? { profile: mergeProfile(existingRecord.profile, updates.profile) }
+      : {}),
+    updatedAt: now,
+  };
+
+  memoryStore[index] = nextRecord;
+  await notifyListeners();
+  return deserializeUser(nextRecord);
+}
+
+async function deleteUserFromMemory(id) {
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
+    throw new Error('Identificador de usuário inválido.');
+  }
+
+  const index = memoryStore.findIndex((record) => record.id === numericId);
+  if (index === -1) {
+    return;
+  }
+
+  memoryStore.splice(index, 1);
+  await notifyListeners();
+}
+
+function resetMemoryStore() {
+  memoryStore.length = 0;
+  memoryAutoIncrement = 1;
+  changeListeners.clear();
+}
+
 async function notifyListeners() {
   try {
     const users = await loadUsers();
@@ -158,6 +249,10 @@ async function notifyListeners() {
 }
 
 export async function loadUsers() {
+  if (useMemoryStore) {
+    return loadUsersFromMemory();
+  }
+
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -181,6 +276,10 @@ export async function loadUsers() {
 }
 
 export async function saveUser({ name, phone, password, device, profile }) {
+  if (useMemoryStore) {
+    return saveUserToMemory({ name, phone, password, device, profile });
+  }
+
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -232,13 +331,14 @@ export function watchUsers(listener) {
     return () => {};
   }
 
-  if (!isIndexedDbSupported()) {
+  changeListeners.add(listener);
+
+  if (!useMemoryStore && !isIndexedDbSupported()) {
     throw new Error('IndexedDB não é suportado neste navegador.');
   }
 
-  changeListeners.add(listener);
-
-  loadUsers()
+  Promise.resolve()
+    .then(() => loadUsers())
     .then((users) => {
       try {
         listener(users.slice());
@@ -256,6 +356,10 @@ export function watchUsers(listener) {
 }
 
 export async function updateUser(id, updates = {}) {
+  if (useMemoryStore) {
+    return updateUserInMemory(id, updates);
+  }
+
   const db = await openDatabase();
   const numericId = Number(id);
 
@@ -331,6 +435,10 @@ export async function updateUser(id, updates = {}) {
 }
 
 export async function deleteUser(id) {
+  if (useMemoryStore) {
+    return deleteUserFromMemory(id);
+  }
+
   const db = await openDatabase();
   const numericId = Number(id);
 
@@ -364,4 +472,12 @@ export async function deleteUser(id) {
       reject(transaction.error || new Error('Erro na transação ao remover usuário.'));
     };
   });
+}
+
+export function resetIndexedDbMock() {
+  if (!useMemoryStore) {
+    return;
+  }
+
+  resetMemoryStore();
 }

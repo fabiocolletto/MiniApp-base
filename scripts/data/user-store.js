@@ -4,7 +4,9 @@ import {
   watchUsers as watchUsersFromIndexedDb,
   updateUser as updateUserInIndexedDb,
   deleteUser as deleteUserFromIndexedDb,
+  resetIndexedDbMock,
 } from './indexed-user-store.js';
+import eventBus from '../events/event-bus.js';
 
 const listeners = new Set();
 const statusListeners = new Set();
@@ -34,6 +36,7 @@ function cloneStorageStatus() {
 
 function notifyStorageStatus() {
   const snapshot = cloneStorageStatus();
+  eventBus.emit('storage:status', snapshot);
   statusListeners.forEach((listener) => {
     try {
       listener(snapshot);
@@ -181,6 +184,7 @@ function notify() {
   }
 
   const snapshot = users.map(cloneUser);
+  eventBus.emit('users:updated', snapshot);
   listeners.forEach((listener) => {
     try {
       listener(snapshot);
@@ -438,9 +442,27 @@ export function subscribeUsers(listener) {
 
 export function teardownUserStore() {
   unsubscribeFromIndexedDb();
+  unsubscribeFromIndexedDb = () => {};
   listeners.clear();
   users = [];
   hasInitialized = false;
   storageError = null;
   markStorageLoading();
+}
+
+export async function resetUserStoreForTests() {
+  try {
+    resetIndexedDbMock();
+  } catch (error) {
+    console.warn('Falha ao limpar armazenamento em memória para testes.', error);
+  }
+
+  teardownUserStore();
+  initializationPromise = initializeUserStore();
+
+  try {
+    await initializationPromise;
+  } catch (error) {
+    console.warn('Falha ao reinicializar o store de usuários em ambiente de teste.', error);
+  }
 }

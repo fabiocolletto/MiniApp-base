@@ -1,3 +1,4 @@
+import eventBus from './events/event-bus.js';
 import { renderGreeting } from './views/greeting.js';
 import { renderAdmin } from './views/admin.js';
 import { renderLog } from './views/log.js';
@@ -8,8 +9,8 @@ import { renderLoginPanel } from './views/login.js';
 import { renderRegisterPanel } from './views/register.js';
 import { renderLegal } from './views/legal.js';
 import { runViewCleanup } from './view-cleanup.js';
-import { subscribeSession } from './data/session-store.js';
-import { getStorageStatus, subscribeStorageStatus } from './data/user-store.js';
+import { getActiveUser } from './data/session-store.js';
+import { getStorageStatus } from './data/user-store.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -24,6 +25,21 @@ const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 
 let headerUserButton = null;
+
+function resolveViewName(payload) {
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  const view = payload?.view;
+  if (typeof view === 'string') {
+    const trimmed = view.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  return null;
+}
 
 function getHeaderUserButton() {
   if (headerUserButton) {
@@ -222,19 +238,28 @@ registerLink?.addEventListener('click', (event) => {
 legalButton?.addEventListener('click', () => renderView('legal'));
 
 document.addEventListener('app:navigate', (event) => {
-  const viewName = event?.detail?.view;
-  if (typeof viewName === 'string') {
+  const viewName = resolveViewName(event?.detail);
+  if (viewName) {
+    eventBus.emit('app:navigate', { view: viewName });
+  }
+});
+
+eventBus.on('app:navigate', (detail) => {
+  const viewName = resolveViewName(detail);
+  if (viewName) {
     renderView(viewName);
   }
 });
 
-subscribeSession((user) => {
+updateHeaderSession(getActiveUser());
+
+eventBus.on('session:changed', (user) => {
   updateHeaderSession(user);
 });
 
 if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
   updateMemoryStatus(getStorageStatus());
-  subscribeStorageStatus((status) => {
+  eventBus.on('storage:status', (status) => {
     updateMemoryStatus(status);
   });
 }

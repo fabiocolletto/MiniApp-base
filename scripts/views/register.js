@@ -1,5 +1,6 @@
 import { addUser } from '../data/user-store.js';
 import { setActiveUser } from '../data/session-store.js';
+import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 
@@ -41,11 +42,7 @@ function renderRegisterSuccess(viewRoot, savedUser) {
   openPanelButton.className = 'register-success__action register-success__action--primary';
   openPanelButton.textContent = 'Ir para o painel do usuário';
   openPanelButton.addEventListener('click', () => {
-    document.dispatchEvent(
-      new CustomEvent('app:navigate', {
-        detail: { view: 'user' },
-      })
-    );
+    eventBus.emit('app:navigate', { view: 'user' });
   });
 
   const registerAnotherButton = document.createElement('button');

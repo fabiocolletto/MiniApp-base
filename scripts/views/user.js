@@ -1,5 +1,6 @@
 import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
 import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
+import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 
@@ -104,11 +105,7 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    document.dispatchEvent(
-      new CustomEvent('app:navigate', {
-        detail: { view },
-      })
-    );
+    eventBus.emit('app:navigate', { view });
   }
 
   const primaryForm = document.createElement('form');
