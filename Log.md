@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.89 - 2025-10-20 21:40 BRT
+- Registra no README as boas práticas de testes visuais móveis, listando Galaxy S24, iPhone 14 Pro e Pixel 7 como aparelhos padrão.
+- Estabelece a captura obrigatória em modos vertical e horizontal para cada dispositivo móvel e resume o procedimento para tablet e desktop.
+- Atualiza o rodapé para refletir a versão v0.1.89 com horário correspondente.
+
+## v0.1.88 - 2025-10-20 21:00 BRT
+- Mantém a tabela de clientes no formato tabular original em telas verticais utilizando contêiner com rolagem horizontal suave.
+- Ajusta os estilos responsivos para evitar a conversão dos registros em cartões e preservar o cabeçalho completo.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.88.
+
 ## v0.1.87 - 2025-10-20 20:30 BRT
 - Exibe o tipo de usuário (administrador, colaborador ou usuário) diretamente na lista principal do painel administrativo com edição disponível nos detalhes expandidos.
 - Persiste o tipo padronizado no armazenamento local, incluindo novas opções no cadastro, atualização e filtros de pesquisa.

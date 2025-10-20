@@ -441,6 +441,9 @@ export function renderAdmin(viewRoot) {
   table.className = 'admin-user-table';
   table.createCaption().textContent = 'Tabela de clientes cadastrados';
 
+  const tableContainer = document.createElement('div');
+  tableContainer.className = 'admin-user-table__container';
+
   const tableHead = document.createElement('thead');
   tableHead.className = 'admin-user-table__head';
   const headRow = document.createElement('tr');
@@ -462,8 +465,9 @@ export function renderAdmin(viewRoot) {
   tableBody.className = 'admin-user-table__body';
 
   table.append(tableHead, tableBody);
+  tableContainer.append(table);
 
-  widget.append(widgetTitle, widgetDescription, toolbar, table);
+  widget.append(widgetTitle, widgetDescription, toolbar, tableContainer);
 
   let usersSnapshot = [];
   let expandedUserId = null;
