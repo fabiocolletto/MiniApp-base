@@ -6,6 +6,7 @@ const sessionListeners = new Set();
 let activeUserId = null;
 let usersSnapshot = getUsers();
 let hasLoadedFromStorage = false;
+let hasSyncedUsers = false;
 
 function getStorage() {
   if (typeof window === 'undefined') {
@@ -110,11 +111,13 @@ function updateActiveUserId(newId) {
     return;
   }
 
-  const userExists = usersSnapshot.some((user) => user.id === numericId);
-  if (!userExists) {
-    console.warn('Usuário ativo não encontrado, limpando sessão.');
-    updateActiveUserId(null);
-    return;
+  if (hasSyncedUsers) {
+    const userExists = usersSnapshot.some((user) => user.id === numericId);
+    if (!userExists) {
+      console.warn('Usuário ativo não encontrado, limpando sessão.');
+      updateActiveUserId(null);
+      return;
+    }
   }
 
   activeUserId = numericId;
@@ -159,6 +162,7 @@ export function subscribeSession(listener) {
 
 function syncUsersSnapshot(latestUsers) {
   usersSnapshot = Array.isArray(latestUsers) ? latestUsers : [];
+  hasSyncedUsers = true;
 
   if (activeUserId != null) {
     const hasActiveUser = usersSnapshot.some((user) => user.id === activeUserId);
