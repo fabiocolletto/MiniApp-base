@@ -1871,6 +1871,35 @@ footer {
   width: 100%;
 }
 
+.register-panel__redirect {
+  inline-size: min(100%, 24rem);
+  justify-self: center;
+  margin: 0;
+  text-align: center;
+  font-size: var(--panel-font-size-compact);
+  color: rgba(61, 42, 18, 0.78);
+}
+
+.register-panel__redirect-text {
+  display: inline-block;
+  margin: 0;
+  font-weight: 500;
+}
+
+.register-panel__redirect-link {
+  color: #8a4b0c;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08rem;
+  text-decoration-color: rgba(138, 75, 12, 0.6);
+}
+
+.register-panel__redirect-link:focus-visible {
+  outline: 0.15rem solid rgba(242, 159, 5, 0.5);
+  outline-offset: 0.1rem;
+  border-radius: 0.25rem;
+}
+
 .register-view--success {
   text-align: center;
   gap: clamp(1.1rem, 3vw, 1.8rem);
