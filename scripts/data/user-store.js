@@ -19,7 +19,7 @@ let unsubscribeFromIndexedDb = () => {};
 function createLoadingStatus() {
   return {
     state: 'loading',
-    message: 'Memória · carregando',
+    message: 'Memória carregando',
     details: 'Verificando disponibilidade do armazenamento local.',
   };
 }
@@ -63,7 +63,7 @@ function markStorageReady() {
   storageError = null;
   setStorageStatus({
     state: 'ready',
-    message: 'Memória · ativa',
+    message: 'Memória ativa',
     details: 'Armazenamento local conectado e sincronizado.',
   });
 }
@@ -80,7 +80,7 @@ function markStorageError(error, { persistent = false } = {}) {
 
   setStorageStatus({
     state: 'error',
-    message: 'Memória · indisponível',
+    message: 'Memória indisponível',
     details,
   });
 }

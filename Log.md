@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.75 - 2025-10-20 08:10 BRT
+- Ajusta o indicador de memória para exibir apenas o rótulo “Memória” seguido do status correspondente.
+- Atualiza o texto padrão do status de armazenamento em todo o aplicativo para refletir o novo formato sem o separador pontuado.
+- Incrementa o rodapé para a versão v0.1.75 com horário atualizado no botão de histórico.
+
 ## v0.1.74 - 2025-10-20 07:50 BRT
 - Remove o link de termos legais do rodapé para simplificar as ações e focar nos status principais.
 - Atualiza o indicador de memória para exibir somente o rótulo “Memória” acompanhado do estado atual.
