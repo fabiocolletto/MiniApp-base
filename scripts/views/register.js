@@ -350,6 +350,7 @@ export function renderRegisterPanel(viewRoot) {
         phone: sanitizedPhone,
         password: passwordValue,
         device: collectDeviceInfo(),
+        userType: 'usuario',
       });
       setActiveUser(savedUser?.id);
       isSubmitting = false;

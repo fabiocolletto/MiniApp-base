@@ -27,16 +27,19 @@ test('adiciona usuário e retorna dados sanitizados', { concurrency: false }, as
     password: 'segredo',
     device: ' Dispositivo de Teste ',
     profile: { email: ' maria@example.com  ' },
+    userType: 'Administrador',
   });
 
   assert.equal(savedUser.name, 'Maria da Silva');
   assert.equal(savedUser.phone, '11987654321');
   assert.equal(savedUser.device, 'Dispositivo de Teste');
   assert.equal(savedUser.profile.email, 'maria@example.com');
+  assert.equal(savedUser.userType, 'administrador');
 
   const users = getUsers();
   assert.equal(users.length, 1);
   assert.notStrictEqual(users[0], savedUser);
+  assert.equal(users[0].userType, 'administrador');
 
   const status = getStorageStatus();
   assert.equal(status.state, 'ready');
@@ -63,6 +66,8 @@ test('autentica usuário com credenciais válidas', { concurrency: false }, asyn
 
   assert.equal(authenticated.id, savedUser.id);
   assert.notStrictEqual(authenticated, savedUser);
+  assert.equal(savedUser.userType, 'usuario');
+  assert.equal(authenticated.userType, 'usuario');
 
   await assert.rejects(
     () => authenticateUser({ phone: '11888877777', password: 'senha-incorreta' }),
@@ -83,14 +88,17 @@ test('atualiza dados e perfil do usuário existente', { concurrency: false }, as
   const updatedUser = await updateUser(savedUser.id, {
     name: '  Usuário Atualizado  ',
     profile: { notes: '  anotação importante  ' },
+    userType: 'Colaborador',
   });
 
   assert.equal(updatedUser.name, 'Usuário Atualizado');
   assert.equal(updatedUser.profile.notes, 'anotação importante');
+  assert.equal(updatedUser.userType, 'colaborador');
 
   const users = getUsers();
   assert.equal(users[0].name, 'Usuário Atualizado');
   assert.equal(users[0].profile.notes, 'anotação importante');
+  assert.equal(users[0].userType, 'colaborador');
 });
 
 test('remove usuário cadastrado', { concurrency: false }, async () => {
@@ -98,6 +106,8 @@ test('remove usuário cadastrado', { concurrency: false }, async () => {
     phone: '11666655555',
     password: 'senha456',
   });
+
+  assert.equal(savedUser.userType, 'usuario');
 
   await deleteUser(savedUser.id);
 

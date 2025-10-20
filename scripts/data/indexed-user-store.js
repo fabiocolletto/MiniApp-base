@@ -103,7 +103,7 @@ const useMemoryStore =
 const memoryStore = [];
 let memoryAutoIncrement = 1;
 
-function createMemoryRecord({ name, phone, password, device, profile }) {
+function createMemoryRecord({ name, phone, password, device, profile, userType }) {
   const now = new Date().toISOString();
   return {
     id: memoryAutoIncrement++,
@@ -111,6 +111,7 @@ function createMemoryRecord({ name, phone, password, device, profile }) {
     phone,
     password,
     device,
+    userType: sanitizeUserType(userType),
     profile: normalizeProfile(profile),
     createdAt: now,
     updatedAt: now,
@@ -119,6 +120,35 @@ function createMemoryRecord({ name, phone, password, device, profile }) {
 
 const changeListeners = new Set();
 let databasePromise;
+
+const USER_TYPES = ['administrador', 'colaborador', 'usuario'];
+const DEFAULT_USER_TYPE = 'usuario';
+
+function sanitizeUserType(value) {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (USER_TYPES.includes(normalized)) {
+    return normalized;
+  }
+
+  if (normalized === 'admin' || normalized === 'administradora') {
+    return 'administrador';
+  }
+
+  if (normalized === 'colaboradora') {
+    return 'colaborador';
+  }
+
+  if (normalized === 'user' || normalized === 'usuarios') {
+    return 'usuario';
+  }
+
+  return DEFAULT_USER_TYPE;
+}
 
 function isIndexedDbSupported() {
   return typeof indexedDB !== 'undefined';
@@ -189,6 +219,7 @@ function deserializeUser(record) {
     phone: typeof record.phone === 'string' ? record.phone : '',
     password: typeof record.password === 'string' ? record.password : '',
     device: typeof record.device === 'string' ? record.device : '',
+    userType: sanitizeUserType(record.userType),
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
     profile: normalizeProfile(record.profile),
@@ -199,8 +230,8 @@ async function loadUsersFromMemory() {
   return memoryStore.map(deserializeUser);
 }
 
-async function saveUserToMemory({ name, phone, password, device, profile }) {
-  const record = createMemoryRecord({ name, phone, password, device, profile });
+async function saveUserToMemory({ name, phone, password, device, profile, userType }) {
+  const record = createMemoryRecord({ name, phone, password, device, profile, userType });
   memoryStore.push(record);
   await notifyListeners();
   return deserializeUser(record);
@@ -225,6 +256,9 @@ async function updateUserInMemory(id, updates = {}) {
     ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'device') ? { device: updates.device } : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'userType')
+      ? { userType: sanitizeUserType(updates.userType) }
+      : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
       ? { profile: mergeProfile(existingRecord.profile, updates.profile) }
       : {}),
@@ -299,9 +333,9 @@ export async function loadUsers() {
   });
 }
 
-export async function saveUser({ name, phone, password, device, profile }) {
+export async function saveUser({ name, phone, password, device, profile, userType }) {
   if (useMemoryStore) {
-    return saveUserToMemory({ name, phone, password, device, profile });
+    return saveUserToMemory({ name, phone, password, device, profile, userType });
   }
 
   const db = await openDatabase();
@@ -315,6 +349,7 @@ export async function saveUser({ name, phone, password, device, profile }) {
       phone,
       password,
       device,
+      userType: sanitizeUserType(userType),
       profile: normalizeProfile(profile),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -416,6 +451,9 @@ export async function updateUser(id, updates = {}) {
         ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
         ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
         ...(Object.prototype.hasOwnProperty.call(updates, 'device') ? { device: updates.device } : {}),
+        ...(Object.prototype.hasOwnProperty.call(updates, 'userType')
+          ? { userType: sanitizeUserType(updates.userType) }
+          : {}),
         ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
           ? { profile: mergeProfile(existing.profile, updates.profile) }
           : {}),

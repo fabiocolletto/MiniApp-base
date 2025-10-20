@@ -1290,6 +1290,12 @@ footer {
   word-break: break-word;
 }
 
+.admin-user-table__cell--user-type {
+  font-weight: 500;
+  color: #1f1f1f;
+  white-space: nowrap;
+}
+
 .admin-user-table__cell--created-at time,
 .admin-user-table__cell--updated-at time {
   display: block;
@@ -1315,6 +1321,15 @@ footer {
   color: #202124;
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-user-table__select {
+  appearance: none;
+  padding-right: 2.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%235f6368' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem auto;
 }
 
 .admin-user-table__input:focus-visible {
@@ -1399,6 +1414,17 @@ footer {
 
 .admin-user-table__action--cancel {
   color: #c5221f;
+}
+
+.admin-user-table__action--delete {
+  color: #d93025;
+}
+
+.admin-user-table__action--delete:hover,
+.admin-user-table__action--delete:focus-visible {
+  border-color: #d93025;
+  background: rgba(217, 48, 37, 0.08);
+  color: #a50e0e;
 }
 
 .admin-user-table__action[disabled] {
