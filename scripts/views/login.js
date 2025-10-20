@@ -1,5 +1,6 @@
 import { authenticateUser, updateUser } from '../data/user-store.js';
 import { setActiveUser } from '../data/session-store.js';
+import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 
@@ -120,11 +121,7 @@ export function renderLoginPanel(viewRoot) {
       }
       submitButton.disabled = false;
       submitButton.removeAttribute('aria-busy');
-      document.dispatchEvent(
-        new CustomEvent('app:navigate', {
-          detail: { view: 'user' },
-        })
-      );
+      eventBus.emit('app:navigate', { view: 'user' });
       return;
     } catch (error) {
       console.error('Erro ao autenticar acesso pelo painel de login.', error);

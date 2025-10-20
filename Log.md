@@ -1,5 +1,14 @@
 # Log
 
+## v0.1.70 - 2025-10-20 03:45 BRT
+- Implementa modo de armazenamento em memória para execuções de teste garantindo compatibilidade com ambientes sem IndexedDB.
+- Expõe rotina de reinicialização do store de usuários para facilitar ciclos de teste e limpar assinantes remanescentes.
+- Configura suíte `npm test` com Node Test para validar cadastro, autenticação, atualização e remoção de usuários.
+- Introduz um EventBus central para propagar navegação, sessão ativa e estado da memória entre os módulos da aplicação.
+- Atualiza os painéis de login, cadastro e usuário para emitirem eventos através do barramento compartilhado.
+- Conecta o indicador de memória e o cabeçalho ao novo EventBus e registra a versão no rodapé.
+- Trata o bloqueio do IndexedDB por outras abas sinalizando o erro imediatamente ao indicador de memória.
+
 ## v0.1.67 - 2025-10-20 03:05 BRT
 - Reduz o respiro vertical do conteúdo principal e alinha os cartões ao topo para eliminar grandes áreas vazias.
 - Permite que o cartão de login diminua conforme o conteúdo mantendo apenas o limite máximo de altura.
