@@ -3,6 +3,12 @@ import { setActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
+import {
+  sanitizePhoneInput,
+  validatePasswordStrength,
+  validatePhoneNumber,
+  formatPhoneNumberForDisplay,
+} from './shared/validation.js';
 
 const BASE_CLASSES = 'card view view--register';
 
@@ -30,7 +36,8 @@ function renderRegisterSuccess(viewRoot, savedUser) {
     summary.className = 'register-success__summary';
     const phoneHighlight = document.createElement('strong');
     phoneHighlight.className = 'register-success__highlight';
-    phoneHighlight.textContent = savedUser.phone;
+    phoneHighlight.textContent =
+      formatPhoneNumberForDisplay(savedUser.phone) || savedUser.phone || '';
     summary.append('Telefone cadastrado: ', phoneHighlight);
   }
 
@@ -91,7 +98,7 @@ export function renderRegisterPanel(viewRoot) {
     id: 'register-phone',
     label: 'Telefone de contato',
     type: 'tel',
-    placeholder: '(00) 00000-0000',
+    placeholder: '+5511999999999',
     autocomplete: 'tel',
     inputMode: 'tel',
   });
@@ -100,12 +107,24 @@ export function renderRegisterPanel(viewRoot) {
     id: 'register-password',
     label: 'Crie uma senha',
     type: 'password',
-    placeholder: 'Digite uma senha segura',
+    placeholder: 'Mínimo de 8 caracteres com letra e número/símbolo',
     autocomplete: 'new-password',
   });
 
   const phoneInput = phoneField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
+
+  const phoneHint = document.createElement('p');
+  phoneHint.className = 'user-form__hint register-panel__hint';
+  phoneHint.textContent =
+    'Aceitamos celulares brasileiros com 11 dígitos iniciando em 9 ou números internacionais no formato +CódigoPaís.';
+  phoneField.append(phoneHint);
+
+  const passwordHint = document.createElement('p');
+  passwordHint.className = 'user-form__hint register-panel__hint';
+  passwordHint.textContent =
+    'Crie uma senha com pelo menos 8 caracteres, incluindo letras e números ou símbolos para proteger melhor sua conta.';
+  passwordField.append(passwordHint);
 
   const legalSection = document.createElement('div');
   legalSection.className = 'register-panel__legal';
@@ -208,8 +227,21 @@ export function renderRegisterPanel(viewRoot) {
       return;
     }
 
-    if (!phoneValue || !passwordValue) {
-      showFeedback('Informe telefone e senha para concluir o cadastro.', { isError: true });
+    const phoneValidation = validatePhoneNumber(phoneValue);
+    if (!phoneValidation.isValid) {
+      showFeedback(phoneValidation.message, { isError: true });
+      phoneInput.value = sanitizePhoneInput(phoneValue);
+      phoneInput.focus();
+      return;
+    }
+
+    phoneInput.value = phoneValidation.sanitized;
+
+    const passwordValidation = validatePasswordStrength(passwordValue);
+    if (!passwordValidation.isValid) {
+      showFeedback(passwordValidation.message, { isError: true });
+      passwordInput.focus();
+      passwordInput.select?.();
       return;
     }
 
@@ -219,7 +251,7 @@ export function renderRegisterPanel(viewRoot) {
       submitButton.setAttribute('aria-busy', 'true');
 
       const savedUser = await addUser({
-        phone: phoneValue,
+        phone: phoneValidation.sanitized,
         password: passwordValue,
         device: collectDeviceInfo(),
       });
