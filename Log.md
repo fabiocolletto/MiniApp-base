@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.113 - 2025-10-22 02:05 BRT
+- Adiciona ao cabeçalho botões dedicados para abrir rapidamente os painéis administrativo e do usuário.
+- Expande o menu móvel de acesso rápido com atalhos equivalentes aos novos botões do cabeçalho.
+- Padroniza os estilos dos botões no CSS principal utilizando variáveis para que herdem as mesmas propriedades base.
+- Atualiza o rodapé para exibir a versão v0.1.113 das 02h05.
+
 ## v0.1.112 - 2025-10-22 00:45 BRT
 - Substitui o painel administrativo por um layout inspirado no painel inicial com cards informativos, callouts e atalhos alinhados ao painel do usuário.
 - Compartilha os estilos do painel inicial com o novo painel administrativo e remove a tabela legada para manter tokens visuais unificados.

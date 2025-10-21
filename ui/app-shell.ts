@@ -22,6 +22,8 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
+const adminLink = document.querySelector('.header-admin-link');
+const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -728,6 +730,16 @@ export function initializeAppShell(router: RouterBridge): void {
   homeLink?.addEventListener('click', (event) => {
     event.preventDefault();
     toggleHomePanel();
+  });
+
+  adminLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    renderView('admin');
+  });
+
+  userLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    renderView('user');
   });
 
   logo?.addEventListener('click', () => renderView('admin'));
