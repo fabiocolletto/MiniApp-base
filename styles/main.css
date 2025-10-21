@@ -1061,7 +1061,8 @@ footer {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(94, 75, 35, 0.35) transparent;
-  padding: 5%;
+  padding-block: clamp(1.25rem, 3.6vw, 2.5rem);
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
   box-sizing: border-box;
   display: grid;
   place-items: center;
@@ -2095,13 +2096,7 @@ main > :where(.card.view):not(.auth-view) {
 }
 
 .user-panel__widget.user-form {
-  max-width: min(100%, 36rem);
-  margin: 0 auto;
   width: 100%;
-}
-
-.user-panel__widget--profile.user-form {
-  max-width: min(100%, 40rem);
 }
 
 .user-widget__title {
