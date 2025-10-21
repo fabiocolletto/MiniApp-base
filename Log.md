@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.96 - 2025-10-20 23:50 BRT
+- Reestrutura o painel do usuário com título único e formulários alinhados ao padrão dos fluxos de login e cadastro.
+- Converte o feedback do painel em helper compartilhado reutilizando o estilo dos formulários de autenticação.
+- Agrupa os campos complementares em seções colapsáveis e inclui um atalho de login quando não há sessão ativa.
+- Atualiza o rodapé para refletir a versão v0.1.96 com horário correspondente.
+- Recentraliza o painel do usuário no mesmo cartão das telas de autenticação e suaviza os blocos internos para manter a consistência visual.
+
 ## v0.1.95 - 2025-10-20 21:20 BRT
 - Ajusta o rodapé móvel para exibir apenas a linha principal e expandir as demais informações ao toque.
 - Converte o selo da marca em botão acessível com setas indicativas e recolhe as ações adicionais por padrão no mobile.
