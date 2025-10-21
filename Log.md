@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.98 - 2025-10-21 02:45 BRT
+- Reorganiza o grupo "Endereço e documentação" colocando o campo de CEP na primeira posição do grid.
+- Implementa busca automática de endereço via ViaCEP com normalização, feedback discreto e preenchimento condicional dos campos.
+- Garante cancelamento seguro da busca ao alterar ou limpar o CEP e adiciona testes para o serviço e a nova ordem dos campos.
+
 ## v0.1.97 - 2025-10-21 01:15 BRT
 - Recompõe o painel do usuário com três widgets de primeiro nível (dados de acesso, perfil completo e sessão) usando contêiner único para cada bloco.
 - Centraliza o título principal na área do painel e atualiza a grade interna para acomodar os widgets em diferentes larguras sem rolagens extras.
