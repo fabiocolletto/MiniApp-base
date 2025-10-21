@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.109 - 2025-10-21 21:05 BRT
+- Adiciona controle no cabeçalho para abrir ou recolher o painel inicial com feedback visual e rótulos acessíveis.
+- Inclui a nova ação no menu móvel reaproveitando o mesmo comportamento de alternância do painel inicial.
+- Atualiza o rodapé para exibir a versão v0.1.109 das 21h05.
+
 ## v0.1.108 - 2025-10-21 20:15 BRT
 - Impede que os widgets do painel do usuário se sobreponham ao exibir duas colunas, reajustando os limites responsivos da grade.
 - Atualiza o rodapé para exibir a versão v0.1.108 das 20h15.

@@ -438,6 +438,26 @@ header {
   box-shadow: 0 0 0 0.15rem rgba(var(--color-warm-rgb), 0.2);
 }
 
+.header-action--home {
+  border-color: rgba(var(--color-warm-rgb), 0.4);
+}
+
+.header-action--home[aria-pressed='true'] {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--color-warm-rgb), 0.12) 0%,
+    rgba(var(--color-warm-rgb), 0.28) 100%
+  );
+  color: var(--color-text-primary);
+  border-color: rgba(var(--color-warm-rgb), 0.75);
+  box-shadow: 0 0.45rem 1.2rem rgba(var(--color-warm-rgb), 0.28);
+}
+
+.header-action--home[aria-pressed='true']:hover,
+.header-action--home[aria-pressed='true']:focus-visible {
+  box-shadow: 0 0.55rem 1.35rem rgba(var(--color-warm-rgb), 0.35);
+}
+
 .header-action--register {
   background: var(--color-bg-card);
   color: var(--color-accent-strong);
