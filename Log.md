@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.114 - 2025-10-22 03:15 BRT
+- Reorganiza os botões do cabeçalho em um menu de painéis com abertura controlada e suporte a teclado e leitores de tela.
+- Sincroniza o comportamento do novo menu entre os módulos JS e TS, garantindo fechamento automático ao navegar pelos painéis.
+- Atualiza os estilos e o rodapé para exibir a versão v0.1.114 das 03h15.
+
 ## v0.1.113 - 2025-10-22 02:05 BRT
 - Adiciona ao cabeçalho botões dedicados para abrir rapidamente os painéis administrativo e do usuário.
 - Expande o menu móvel de acesso rápido com atalhos equivalentes aos novos botões do cabeçalho.
@@ -608,3 +613,9 @@
 - Atualização do README para anunciar o início do novo projeto colaborativo.
 - Criação do `AGENTS.md` com as diretrizes que devem ser seguidas antes de cada tarefa.
 - Criação do `Log.md` para registrar versões e alterações futuras.
+# # Log
+#
+# ## v0.1.114 - 2025-10-22 03:15 BRT
+# - Reorganiza os botões do cabeçalho em um menu de painéis com abertura controlada e suporte a teclado e leitores de tela.
+# - Sincroniza o comportamento do novo menu entre os módulos JS e TS, garantindo fechamento automático ao navegar pelos painéis.
+# - Atualiza os estilos e o rodapé para exibir a versão v0.1.114 das 03h15.

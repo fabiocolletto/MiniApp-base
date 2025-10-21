@@ -364,6 +364,96 @@ header {
   gap: clamp(0.35rem, 1.35vw, 0.85rem);
 }
 
+.header-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.header-action--menu {
+  gap: 0.45rem;
+  padding-inline: clamp(0.95rem, 2.1vw, 1.5rem);
+}
+
+.header-menu__icon {
+  display: inline-block;
+  width: 0.7rem;
+  aspect-ratio: 1 / 1;
+  border-inline-start: 0.18rem solid currentColor;
+  border-block-start: 0.18rem solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.header-menu[data-state='open'] .header-menu__icon {
+  transform: rotate(225deg);
+}
+
+.header-menu__panel {
+  position: absolute;
+  inset-block-start: calc(100% + 0.5rem);
+  inset-inline-end: 0;
+  min-inline-size: clamp(12rem, 22vw, 16rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: clamp(0.35rem, 1.2vw, 0.6rem);
+  border-radius: 1rem;
+  border: 0.1rem solid rgba(var(--color-warm-rgb), 0.18);
+  background: var(--color-bg-card);
+  box-shadow: 0 1.2rem 2.6rem rgba(var(--color-warm-rgb), 0.18);
+  z-index: 20;
+}
+
+.header-menu__panel[hidden] {
+  display: none;
+}
+
+.header-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: clamp(0.5rem, 1.6vw, 0.75rem) clamp(0.75rem, 2vw, 1.2rem);
+  border: none;
+  border-radius: 0.85rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.header-menu__item:hover,
+.header-menu__item:focus-visible {
+  background: rgba(var(--color-warm-rgb), 0.12);
+  color: var(--color-text-primary);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.header-menu__item[aria-pressed='true'] {
+  background: linear-gradient(
+      135deg,
+      rgba(var(--color-warm-rgb), 0.12) 0%,
+      rgba(var(--color-warm-rgb), 0.32) 100%
+    ),
+    var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.header-menu__item[aria-pressed='true']:hover,
+.header-menu__item[aria-pressed='true']:focus-visible {
+  background: linear-gradient(
+      135deg,
+      rgba(var(--color-warm-rgb), 0.18) 0%,
+      rgba(var(--color-warm-rgb), 0.38) 100%
+    ),
+    var(--color-bg-card);
+}
+
 .header-mobile-toggle {
   position: absolute;
   inset-inline-end: clamp(0.75rem, 3vw, 1.25rem);

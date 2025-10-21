@@ -18,34 +18,59 @@
         loading="lazy"
       />
       <nav class="header-actions" aria-label="Ações de acesso">
-        <button
-          type="button"
-          class="header-action header-action--home header-home-link"
-          aria-pressed="false"
-          aria-controls="view-root"
-          aria-label="Abrir painel inicial"
-          title="Abrir painel inicial"
-        >
-          Painel inicial
-        </button>
-        <button
-          type="button"
-          class="header-action header-action--admin header-admin-link"
-          aria-controls="view-root"
-          aria-label="Abrir painel administrativo"
-          title="Abrir painel administrativo"
-        >
-          Painel administrativo
-        </button>
-        <button
-          type="button"
-          class="header-action header-action--user header-user-link"
-          aria-controls="view-root"
-          aria-label="Abrir painel do usuário"
-          title="Abrir painel do usuário"
-        >
-          Painel do usuário
-        </button>
+        <div class="header-menu" data-state="closed">
+          <button
+            type="button"
+            class="header-action header-action--menu header-menu__trigger"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="header-navigation-menu"
+            aria-label="Abrir menu de painéis"
+            title="Abrir menu de painéis"
+          >
+            Painéis
+            <span class="header-menu__icon" aria-hidden="true"></span>
+          </button>
+          <div
+            class="header-menu__panel"
+            id="header-navigation-menu"
+            role="menu"
+            aria-label="Painéis disponíveis"
+            hidden
+          >
+            <button
+              type="button"
+              class="header-menu__item header-home-link"
+              role="menuitem"
+              aria-pressed="false"
+              aria-controls="view-root"
+              aria-label="Abrir painel inicial"
+              title="Abrir painel inicial"
+            >
+              Painel inicial
+            </button>
+            <button
+              type="button"
+              class="header-menu__item header-admin-link"
+              role="menuitem"
+              aria-controls="view-root"
+              aria-label="Abrir painel administrativo"
+              title="Abrir painel administrativo"
+            >
+              Painel administrativo
+            </button>
+            <button
+              type="button"
+              class="header-menu__item header-user-link"
+              role="menuitem"
+              aria-controls="view-root"
+              aria-label="Abrir painel do usuário"
+              title="Abrir painel do usuário"
+            >
+              Painel do usuário
+            </button>
+          </div>
+        </div>
         <a
           class="header-action header-action--register header-register-link"
           href="#register"
@@ -137,11 +162,11 @@
         <button
           type="button"
           class="footer-version"
-          aria-label="Abrir registro de alterações da versão v0.1.113 das 02h05"
-          title="Exibir mudanças da versão v0.1.113 das 02h05"
+          aria-label="Abrir registro de alterações da versão v0.1.114 das 03h15"
+          title="Exibir mudanças da versão v0.1.114 das 03h15"
         >
           <span class="footer-version__dot" aria-hidden="true"></span>
-          <span class="footer-version__text">V0.1.113</span>
+          <span class="footer-version__text">V0.1.114</span>
         </button>
       </div>
     </footer>
