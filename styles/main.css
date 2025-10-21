@@ -2092,6 +2092,7 @@ main > :where(.card.view):not(.auth-view) {
   border: var(--panel-border);
   color: #3d2a12;
   min-height: 0;
+  min-width: 0;
   text-align: left;
 }
 
@@ -2562,8 +2563,9 @@ main > :where(.card.view):not(.auth-view) {
 .user-details__access-summary-item {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 0.35rem 0.9rem;
+  min-width: 0;
 }
 
 .user-details__access-summary-label {
@@ -2571,23 +2573,33 @@ main > :where(.card.view):not(.auth-view) {
   font-size: var(--panel-font-size-strong);
   font-weight: 500;
   color: rgba(61, 42, 18, 0.6);
+  flex: 0 0 auto;
 }
 
 .user-details__access-summary-value {
   margin: 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.65rem;
   flex-wrap: wrap;
   font-size: var(--panel-font-size-base);
   font-weight: 500;
   color: rgba(61, 42, 18, 0.78);
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 16rem;
 }
 
 .user-details__access-summary-text {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  flex: 1 1 auto;
 }
 
 .user-details__access-summary-copy {
