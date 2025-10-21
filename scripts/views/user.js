@@ -2,10 +2,23 @@ import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
 import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
+import { normalizeCep, lookupCep } from '../utils/cep-service.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
 
 const BASE_CLASSES = 'card view view--user';
+export const PROFILE_ADDRESS_FIELD_SEQUENCE = [
+  'zip',
+  'document',
+  'street',
+  'number',
+  'complement',
+  'district',
+  'city',
+  'state',
+  'country',
+  'notes',
+];
 export function renderUserPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -397,6 +410,12 @@ export function renderUserPanel(viewRoot) {
     required: false,
   });
 
+  const profileAddressZipFeedback = document.createElement('span');
+  profileAddressZipFeedback.className = 'user-form__hint user-details__zip-feedback';
+  profileAddressZipFeedback.id = 'user-details-address-zip-feedback';
+  profileAddressZipFeedback.hidden = true;
+  profileAddressZipField.append(profileAddressZipFeedback);
+
   const profileAddressCountryField = createInputField({
     id: 'user-details-address-country',
     label: 'País',
@@ -464,17 +483,21 @@ export function renderUserPanel(viewRoot) {
 
   const profileAddressGrid = document.createElement('div');
   profileAddressGrid.className = 'user-details__form-grid user-details__form-grid--two';
+  const profileAddressFieldsMap = {
+    zip: profileAddressZipField,
+    document: profileDocumentField,
+    street: profileAddressField,
+    number: profileAddressNumberField,
+    complement: profileAddressComplementField,
+    district: profileAddressDistrictField,
+    city: profileAddressCityField,
+    state: profileAddressStateField,
+    country: profileAddressCountryField,
+    notes: profileNotesField,
+  };
+
   profileAddressGrid.append(
-    profileDocumentField,
-    profileAddressField,
-    profileAddressNumberField,
-    profileAddressComplementField,
-    profileAddressDistrictField,
-    profileAddressCityField,
-    profileAddressStateField,
-    profileAddressZipField,
-    profileAddressCountryField,
-    profileNotesField,
+    ...PROFILE_ADDRESS_FIELD_SEQUENCE.map((key) => profileAddressFieldsMap[key]).filter(Boolean),
   );
 
   const { container: profileAddressGroup, content: profileAddressContent } = createCollapsibleGroup({
@@ -563,6 +586,181 @@ export function renderUserPanel(viewRoot) {
   const profileAddressZipInput = profileAddressZipField.querySelector('input');
   const profileAddressCountryInput = profileAddressCountryField.querySelector('input');
   const profileNotesInput = profileNotesField.querySelector('textarea');
+
+  if (profileAddressZipInput && profileAddressZipFeedback) {
+    const describedBy = profileAddressZipInput.getAttribute('aria-describedby');
+    const tokens = new Set(describedBy ? describedBy.split(/\s+/).filter(Boolean) : []);
+    tokens.add(profileAddressZipFeedback.id);
+    profileAddressZipInput.setAttribute('aria-describedby', Array.from(tokens).join(' '));
+    profileAddressZipInput.maxLength = 8;
+  }
+
+  function setZipBusyState(isBusy) {
+    if (!profileAddressZipInput) {
+      return;
+    }
+
+    if (isBusy) {
+      profileAddressZipInput.setAttribute('aria-busy', 'true');
+    } else {
+      profileAddressZipInput.removeAttribute('aria-busy');
+    }
+  }
+
+  function setZipFeedback(message, { tone = 'neutral' } = {}) {
+    if (!profileAddressZipFeedback || !profileAddressZipInput) {
+      return;
+    }
+
+    if (!message) {
+      profileAddressZipFeedback.hidden = true;
+      profileAddressZipFeedback.textContent = '';
+      profileAddressZipInput.removeAttribute('aria-invalid');
+      profileAddressZipInput.removeAttribute('title');
+      return;
+    }
+
+    profileAddressZipFeedback.hidden = false;
+    profileAddressZipFeedback.textContent = message;
+    profileAddressZipInput.setAttribute('title', message);
+
+    if (tone === 'error') {
+      profileAddressZipInput.setAttribute('aria-invalid', 'true');
+    } else {
+      profileAddressZipInput.removeAttribute('aria-invalid');
+    }
+  }
+
+  let zipLookupController = null;
+  let zipLookupRequestId = 0;
+
+  function cancelZipLookup() {
+    zipLookupRequestId += 1;
+    if (zipLookupController) {
+      zipLookupController.abort();
+      zipLookupController = null;
+    }
+    setZipBusyState(false);
+  }
+
+  function fillAddressFromLookup(address) {
+    if (!address) {
+      return;
+    }
+
+    const { street, district, city, state } = address;
+
+    if (street && profileAddressInput) {
+      profileAddressInput.value = street;
+    }
+    if (district && profileAddressDistrictInput) {
+      profileAddressDistrictInput.value = district;
+    }
+    if (city && profileAddressCityInput) {
+      profileAddressCityInput.value = city;
+    }
+    if (state && profileAddressStateInput) {
+      profileAddressStateInput.value = state;
+    }
+  }
+
+  async function handleZipLookup() {
+    if (!profileAddressZipInput) {
+      return;
+    }
+
+    const currentCep = normalizeCep(profileAddressZipInput.value);
+    if (profileAddressZipInput.value !== currentCep) {
+      profileAddressZipInput.value = currentCep;
+    }
+
+    if (!currentCep) {
+      cancelZipLookup();
+      setZipFeedback('');
+      return;
+    }
+
+    if (currentCep.length !== 8) {
+      cancelZipLookup();
+      setZipFeedback('Informe um CEP com 8 dígitos para buscar automaticamente.', {
+        tone: 'error',
+      });
+      return;
+    }
+
+    const requestId = ++zipLookupRequestId;
+
+    if (zipLookupController) {
+      zipLookupController.abort();
+    }
+
+    zipLookupController = new AbortController();
+    const { signal } = zipLookupController;
+
+    setZipBusyState(true);
+    setZipFeedback('Buscando endereço pelo CEP...', { tone: 'neutral' });
+
+    let result;
+    try {
+      result = await lookupCep(currentCep, { signal });
+    } finally {
+      if (zipLookupController && zipLookupController.signal === signal) {
+        zipLookupController = null;
+      }
+      setZipBusyState(false);
+    }
+
+    if (signal.aborted || requestId !== zipLookupRequestId) {
+      return;
+    }
+
+    const latestCep = normalizeCep(profileAddressZipInput.value);
+    if (latestCep !== currentCep) {
+      return;
+    }
+
+    if (!result || result.status === 'aborted') {
+      setZipFeedback('');
+      return;
+    }
+
+    if (result.status === 'success') {
+      fillAddressFromLookup(result.address);
+      setZipFeedback('Endereço preenchido automaticamente. Confira os dados antes de salvar.');
+      return;
+    }
+
+    if (result.status === 'not-found') {
+      setZipFeedback('CEP não encontrado. Preencha os dados manualmente.', { tone: 'error' });
+      return;
+    }
+
+    if (result.status === 'network-error') {
+      setZipFeedback('Não foi possível buscar o CEP no momento. Preencha os campos manualmente.', {
+        tone: 'error',
+      });
+      return;
+    }
+
+    setZipFeedback('Informe um CEP com 8 dígitos para buscar automaticamente.', { tone: 'error' });
+  }
+
+  if (profileAddressZipInput) {
+    profileAddressZipInput.addEventListener('input', () => {
+      const sanitized = normalizeCep(profileAddressZipInput.value);
+      if (profileAddressZipInput.value !== sanitized) {
+        profileAddressZipInput.value = sanitized;
+      }
+
+      if (!sanitized) {
+        cancelZipLookup();
+        setZipFeedback('');
+      }
+    });
+
+    profileAddressZipInput.addEventListener('change', handleZipLookup);
+    profileAddressZipInput.addEventListener('blur', handleZipLookup);
+  }
 
   const profileFieldBindings = {
     pronouns: profilePronounsInput,
