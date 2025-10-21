@@ -2067,7 +2067,7 @@ footer {
   text-align: left;
 }
 
-.user-panel__section {
+.user-panel__widget {
   display: grid;
   gap: clamp(0.85rem, 2.4vw, 1.4rem);
   padding: clamp(1rem, 2.6vw, 1.6rem);
@@ -2080,7 +2080,17 @@ footer {
   text-align: left;
 }
 
-.user-panel__section-title {
+.user-panel__widget.user-form {
+  max-width: min(100%, 36rem);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.user-panel__widget--profile.user-form {
+  max-width: min(100%, 40rem);
+}
+
+.user-widget__title {
   margin: 0;
   font-size: var(--panel-font-size-heading);
   color: #5e4b23;
@@ -2088,39 +2098,27 @@ footer {
   letter-spacing: clamp(0.05rem, 0.2vw, 0.11rem);
 }
 
-.user-panel__section-description {
+.user-widget__description {
   margin: 0;
   font-size: var(--panel-font-size-base);
   color: rgba(61, 42, 18, 0.7);
   line-height: 1.5;
 }
 
-.user-panel__section--form .user-form {
-  max-width: 36rem;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.user-panel__section--details {
+.user-panel__widget--access,
+.user-panel__widget--profile,
+.user-panel__widget--session {
   align-self: stretch;
 }
 
-.user-panel__section--account {
-  align-self: stretch;
-}
+@media (min-width: 64rem) {
+  .user-panel__layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-.user-panel__forms {
-  display: grid;
-  gap: clamp(1rem, 2.8vw, 1.5rem);
-}
-
-.user-panel__form {
-  max-width: min(100%, 36rem);
-  margin: 0 auto;
-}
-
-.user-panel__form--profile {
-  max-width: min(100%, 40rem);
+  .user-panel__widget--session {
+    grid-column: span 2;
+  }
 }
 
 .user-details__selected {
