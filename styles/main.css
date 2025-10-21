@@ -184,6 +184,14 @@ main {
   justify-items: center;
 }
 
+.main--login,
+.main--register {
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  grid-auto-rows: minmax(0, max-content);
+}
+
 header,
 main,
 footer {
