@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.112 - 2025-10-22 00:45 BRT
+- Substitui o painel administrativo por um layout inspirado no painel inicial com cards informativos, callouts e atalhos alinhados ao painel do usuário.
+- Compartilha os estilos do painel inicial com o novo painel administrativo e remove a tabela legada para manter tokens visuais unificados.
+- Atualiza o rodapé para exibir a versão v0.1.112 das 00h45.
+
 ## v0.1.111 - 2025-10-21 23:30 BRT
 - Atualiza o painel inicial para reutilizar o layout, os tokens visuais e os feedbacks do painel do usuário com cards informativos e atalhos rápidos.
 - Amplia a folha de estilos com o grid compartilhado, botões de ação e destaques dedicados ao novo painel inicial.

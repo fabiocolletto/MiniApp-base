@@ -1,419 +1,66 @@
-import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
-import { registerViewCleanup } from '../view-cleanup.js';
-import { formatPhoneNumberForDisplay, validatePasswordStrength } from './shared/validation.js';
-import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
-import {
-  filterUsersByQuery,
-  sortUsersForAdmin,
-  createAdminSummary,
-} from './shared/admin-data.js';
+import eventBus from '../events/event-bus.js';
 
-const BASE_CLASSES = 'card view view--admin';
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-});
+const BASE_CLASSES = 'card view view--admin admin-dashboard';
 
-const USER_TYPE_OPTIONS = [
-  { value: 'administrador', label: 'Administrador' },
-  { value: 'colaborador', label: 'Colaborador' },
-  { value: 'usuario', label: 'Usuário' },
-];
-
-const USER_TYPE_LABELS = USER_TYPE_OPTIONS.reduce((accumulator, option) => {
-  accumulator[option.value] = option.label;
-  return accumulator;
-}, {});
-
-function normalizeUserType(value) {
-  const normalized = String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase();
-
-  if (USER_TYPE_LABELS[normalized]) {
-    return normalized;
-  }
-
-  if (normalized === 'admin' || normalized === 'administradora') {
-    return 'administrador';
-  }
-
-  if (normalized === 'colaboradora') {
-    return 'colaborador';
-  }
-
-  return 'usuario';
-}
-
-function formatUserType(value) {
-  const normalized = normalizeUserType(value);
-  return USER_TYPE_LABELS[normalized] || USER_TYPE_LABELS.usuario;
-}
-
-function createFormField({
-  id,
-  label,
-  name,
-  type = 'text',
-  value = '',
-  maxLength,
-  disabled = false,
-  attributes = {},
-  options,
-  columnSpan = 12,
-  enablePasswordToggle = false,
-}) {
-  const wrapper = document.createElement('label');
-  const normalizedColumnSpan = Number.isFinite(columnSpan)
-    ? Math.min(12, Math.max(1, Math.round(columnSpan)))
-    : 12;
-  wrapper.className = `admin-user-table__form-field admin-user-table__form-field--span-${normalizedColumnSpan}`;
-  wrapper.htmlFor = id;
-
-  const labelText = document.createElement('span');
-  labelText.className = 'admin-user-table__form-label';
-  labelText.textContent = label;
-
-  const normalizedValue = String(value ?? '');
-  let field;
-
-  if (Array.isArray(options) && options.length > 0) {
-    field = document.createElement('select');
-    field.className = 'admin-user-table__input admin-user-table__select';
-    field.id = id;
-    field.name = name;
-
-    let hasMatchingValue = false;
-    let fallbackValue = '';
-
-    options.forEach(({ value: optionValue, label: optionLabel }, index) => {
-      const option = document.createElement('option');
-      option.value = optionValue;
-      option.textContent = optionLabel;
-      if (index === 0) {
-        fallbackValue = optionValue;
-      }
-      if (optionValue === normalizedValue) {
-        option.selected = true;
-        hasMatchingValue = true;
-      }
-      field.append(option);
-    });
-
-    if (!hasMatchingValue) {
-      field.value = fallbackValue;
-    }
-  } else {
-    field = document.createElement('input');
-    field.className = 'admin-user-table__input';
-    field.id = id;
-    field.name = name;
-    field.type = type;
-    field.value = normalizedValue;
-
-    if (typeof maxLength === 'number') {
-      field.maxLength = maxLength;
-    }
-  }
-
-  if (disabled) {
-    field.disabled = true;
-  }
-
-  Object.entries(attributes).forEach(([attribute, attributeValue]) => {
-    if (attributeValue != null) {
-      field.setAttribute(attribute, attributeValue);
-    }
-  });
-
-  wrapper.append(labelText);
-
-  if (enablePasswordToggle && field instanceof HTMLInputElement) {
-    const controls = document.createElement('div');
-    controls.className = 'admin-user-table__input-wrapper';
-
-    const toggleButton = document.createElement('button');
-    toggleButton.type = 'button';
-    toggleButton.className = 'admin-user-table__password-toggle';
-    toggleButton.setAttribute('aria-controls', id);
-
-    let isPasswordVisible = false;
-
-    const toggleButtonIcon = document.createElement('span');
-    toggleButtonIcon.className = 'admin-user-table__password-toggle-icon';
-
-    const toggleButtonText = document.createElement('span');
-    toggleButtonText.className = 'sr-only';
-
-    toggleButton.append(toggleButtonIcon, toggleButtonText);
-
-    const updateToggleState = () => {
-      const action = isPasswordVisible ? 'hide' : 'show';
-      const label = isPasswordVisible ? 'Ocultar senha de acesso' : 'Mostrar senha de acesso';
-
-      field.type = isPasswordVisible ? 'text' : 'password';
-      toggleButtonIcon.replaceChildren(createPasswordToggleIcon(action));
-      toggleButtonText.textContent = label;
-      toggleButton.setAttribute('aria-label', label);
-      toggleButton.setAttribute('title', label);
-      toggleButton.setAttribute('aria-pressed', String(isPasswordVisible));
-    };
-
-    updateToggleState();
-    toggleButton.disabled = field.disabled;
-
-    toggleButton.addEventListener('click', () => {
-      if (field.disabled) {
-        return;
-      }
-
-      isPasswordVisible = !isPasswordVisible;
-      updateToggleState();
-      field.focus({ preventScroll: true });
-    });
-
-    controls.append(field, toggleButton);
-    wrapper.append(controls);
-  } else {
-    wrapper.append(field);
-  }
-
-  return wrapper;
-}
-
-function createDetailsRow(user, isExpanded, editingState) {
-  const row = document.createElement('tr');
-  row.className = 'admin-user-table__details-row';
-  row.dataset.detailsFor = String(user.id);
-  row.hidden = !isExpanded;
-
-  const cell = document.createElement('td');
-  cell.colSpan = 7;
-  cell.className = 'admin-user-table__details-cell';
-  cell.dataset.label = 'Detalhes do cliente';
-
-  if (!isExpanded) {
-    row.append(cell);
-    return row;
-  }
-
-  const container = document.createElement('div');
-  container.className = 'admin-user-table__details';
-
-  const form = document.createElement('form');
-  form.className = 'admin-user-table__form';
-  form.dataset.userId = String(user.id);
-
-  const fieldset = document.createElement('fieldset');
-  fieldset.className = 'admin-user-table__form-fieldset';
-
-  const legend = document.createElement('legend');
-  legend.className = 'admin-user-table__form-legend';
-  legend.textContent = 'Editar dados principais';
-  fieldset.append(legend);
-
-  const isBusy = Boolean(editingState?.isSaving || editingState?.isDeleting);
-
-  const nameField = createFormField({
-    id: `admin-user-name-${user.id}`,
-    label: 'Nome completo',
-    name: 'admin-user-name',
-    value: editingState?.name ?? user.name ?? '',
-    maxLength: 120,
-    disabled: isBusy,
-    attributes: {
-      autocomplete: 'name',
-    },
-    columnSpan: 12,
-  });
-
-  const phoneField = createFormField({
-    id: `admin-user-phone-${user.id}`,
-    label: 'Telefone de contato',
-    name: 'admin-user-phone',
-    value: editingState?.phone ?? user.phone ?? '',
-    maxLength: 32,
-    disabled: isBusy,
-    attributes: {
-      autocomplete: 'tel',
-      inputmode: 'tel',
-    },
-    columnSpan: 5,
-  });
-
-  const emailField = createFormField({
-    id: `admin-user-email-${user.id}`,
-    label: 'E-mail principal',
-    name: 'admin-user-email',
-    type: 'email',
-    value: editingState?.email ?? user.profile?.email ?? '',
-    maxLength: 120,
-    disabled: isBusy,
-    attributes: {
-      autocomplete: 'email',
-      spellcheck: 'false',
-    },
-    columnSpan: 7,
-  });
-
-  const userTypeField = createFormField({
-    id: `admin-user-type-${user.id}`,
-    label: 'Tipo de usuário',
-    name: 'admin-user-type',
-    value: normalizeUserType(editingState?.userType ?? user.userType),
-    disabled: isBusy,
-    options: USER_TYPE_OPTIONS,
-    columnSpan: 5,
-  });
-
-  const passwordField = createFormField({
-    id: `admin-user-password-${user.id}`,
-    label: 'Senha de acesso',
-    name: 'admin-user-password',
-    type: 'password',
-    value: editingState?.password ?? user.password ?? '',
-    maxLength: 120,
-    disabled: isBusy,
-    attributes: {
-      autocomplete: 'new-password',
-    },
-    columnSpan: 7,
-    enablePasswordToggle: true,
-  });
-
-  fieldset.append(nameField, phoneField, emailField, userTypeField, passwordField);
-
-  const formActions = document.createElement('div');
-  formActions.className = 'admin-user-table__form-actions';
-
-  const cancelButton = document.createElement('button');
-  cancelButton.type = 'button';
-  cancelButton.className = 'admin-user-table__action admin-user-table__action--cancel';
-  cancelButton.dataset.action = 'cancel-edit';
-  cancelButton.textContent = 'Cancelar';
-  cancelButton.disabled = isBusy;
-
-  const saveButton = document.createElement('button');
-  saveButton.type = 'submit';
-  saveButton.className = 'admin-user-table__action admin-user-table__action--save';
-  saveButton.textContent = editingState?.isSaving ? 'Salvando…' : 'Salvar alterações';
-  saveButton.disabled = isBusy;
-
-  const deleteButton = document.createElement('button');
-  deleteButton.type = 'button';
-  deleteButton.className = 'admin-user-table__action admin-user-table__action--delete';
-  deleteButton.dataset.action = 'delete';
-  deleteButton.textContent = editingState?.isDeleting ? 'Excluindo…' : 'Excluir cliente';
-  deleteButton.disabled = isBusy;
-
-  formActions.append(cancelButton, saveButton, deleteButton);
-  fieldset.append(formActions);
-  form.append(fieldset);
-
-  container.append(form);
-
-  cell.append(container);
-  row.append(cell);
-
-  return row;
-}
-
-function renderUserTableBody(
-  bodyElement,
-  users,
-  expandedUserId = null,
-  editingState = null,
-  { emptyMessage } = {},
-) {
-  bodyElement.innerHTML = '';
-
-  if (!Array.isArray(users) || users.length === 0) {
-    const emptyRow = document.createElement('tr');
-    emptyRow.className = 'admin-user-table__empty-row';
-
-    const emptyCell = document.createElement('td');
-    emptyCell.colSpan = 7;
-    emptyCell.className = 'admin-user-table__empty-cell';
-    emptyCell.dataset.label = 'Clientes';
-    emptyCell.textContent = emptyMessage || 'Nenhum cliente cadastrado até o momento.';
-
-    emptyRow.append(emptyCell);
-    bodyElement.append(emptyRow);
+function navigateTo(view) {
+  if (!view) {
     return;
   }
 
-  users.forEach((user) => {
-    const row = document.createElement('tr');
-    row.className = 'admin-user-table__row';
-    row.dataset.userId = String(user.id);
+  eventBus.emit('app:navigate', { view });
+}
 
-    const isExpanded = expandedUserId === user.id;
-    const isEditing = editingState?.userId === user.id;
+function createActionButton({ label, description, view }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'admin-dashboard__action-button';
 
-    if (isExpanded) {
-      row.classList.add('admin-user-table__row--editing');
-    }
+  const labelElement = document.createElement('span');
+  labelElement.className = 'admin-dashboard__action-label';
+  labelElement.textContent = label;
 
-    const nameCell = document.createElement('td');
-    nameCell.className = 'admin-user-table__cell admin-user-table__cell--name';
-    nameCell.dataset.label = 'Nome';
-    nameCell.textContent = user.name || 'Nome não informado';
+  const descriptionElement = document.createElement('span');
+  descriptionElement.className = 'admin-dashboard__action-description';
+  descriptionElement.textContent = description;
 
-    const phoneCell = document.createElement('td');
-    phoneCell.className = 'admin-user-table__cell admin-user-table__cell--phone';
-    phoneCell.dataset.label = 'Telefone';
-    const formattedPhone = formatPhoneNumberForDisplay(user.phone);
-    phoneCell.textContent = formattedPhone || 'Telefone não informado';
+  button.append(labelElement, descriptionElement);
+  button.addEventListener('click', () => navigateTo(view));
 
-    const emailCell = document.createElement('td');
-    emailCell.className = 'admin-user-table__cell admin-user-table__cell--email';
-    emailCell.dataset.label = 'E-mail';
-    const emailValue = user.profile?.email?.trim();
-    emailCell.textContent = emailValue || '—';
+  return button;
+}
 
-    const userTypeCell = document.createElement('td');
-    userTypeCell.className = 'admin-user-table__cell admin-user-table__cell--user-type';
-    userTypeCell.dataset.label = 'Tipo de usuário';
-    userTypeCell.textContent = formatUserType(user.userType);
+function createHighlight({ title, description }) {
+  const item = document.createElement('li');
+  item.className = 'admin-dashboard__list-item';
 
-    const createdAtCell = document.createElement('td');
-    createdAtCell.className = 'admin-user-table__cell admin-user-table__cell--created-at';
-    createdAtCell.dataset.label = 'Criado em';
-    const createdAtTime = document.createElement('time');
-    createdAtTime.dateTime = user.createdAt.toISOString();
-    createdAtTime.textContent = dateFormatter.format(user.createdAt);
-    createdAtCell.append(createdAtTime);
+  const titleElement = document.createElement('span');
+  titleElement.className = 'admin-dashboard__list-title';
+  titleElement.textContent = title;
 
-    const updatedAtCell = document.createElement('td');
-    updatedAtCell.className = 'admin-user-table__cell admin-user-table__cell--updated-at';
-    updatedAtCell.dataset.label = 'Atualizado em';
-    const updatedAtTime = document.createElement('time');
-    updatedAtTime.dateTime = user.updatedAt.toISOString();
-    updatedAtTime.textContent = dateFormatter.format(user.updatedAt);
-    updatedAtCell.append(updatedAtTime);
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'admin-dashboard__list-description';
+  descriptionElement.textContent = description;
 
-    const actionsCell = document.createElement('td');
-    actionsCell.className = 'admin-user-table__cell admin-user-table__cell--actions';
-    actionsCell.dataset.label = 'Ações';
+  item.append(titleElement, descriptionElement);
 
-    const editButton = document.createElement('button');
-    editButton.type = 'button';
-    editButton.className = 'admin-user-table__action admin-user-table__action--edit';
-    editButton.dataset.action = 'edit';
-    editButton.textContent = isExpanded ? 'Fechar edição' : 'Editar';
-    editButton.setAttribute('aria-expanded', String(isExpanded));
-    editButton.disabled = Boolean((editingState?.isSaving || editingState?.isDeleting) && isEditing);
+  return item;
+}
 
-    actionsCell.append(editButton);
+function createInsight({ title, description }) {
+  const item = document.createElement('li');
+  item.className = 'admin-dashboard__insight';
 
-    row.append(nameCell, phoneCell, emailCell, userTypeCell, createdAtCell, updatedAtCell, actionsCell);
+  const titleElement = document.createElement('span');
+  titleElement.className = 'admin-dashboard__insight-title';
+  titleElement.textContent = title;
 
-    const detailsRow = createDetailsRow(user, isExpanded, isEditing ? editingState : null);
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'admin-dashboard__insight-description';
+  descriptionElement.textContent = description;
 
-    bodyElement.append(row, detailsRow);
-  });
+  item.append(titleElement, descriptionElement);
+
+  return item;
 }
 
 export function renderAdmin(viewRoot) {
@@ -425,496 +72,160 @@ export function renderAdmin(viewRoot) {
   viewRoot.dataset.view = 'admin';
 
   const heading = document.createElement('h1');
-  heading.textContent = 'Painel Administrativo';
+  heading.className = 'user-panel__title admin-dashboard__title';
+  heading.textContent = 'Painel administrativo';
+
+  const intro = document.createElement('p');
+  intro.className = 'user-panel__intro admin-dashboard__intro';
+  intro.textContent =
+    'Monitore os bastidores do MiniApp Base, organize as rotinas operacionais e mantenha todos os painéis alinhados.';
+
+  const operationsCallout = document.createElement('section');
+  operationsCallout.className = 'user-details__selected admin-dashboard__callout';
+
+  const calloutText = document.createElement('p');
+  calloutText.className = 'user-details__selected-text';
+  calloutText.textContent =
+    'Nenhuma ação emergencial pendente. Utilize os atalhos abaixo para revisar cadastros, políticas e registros.';
+
+  const calloutActions = document.createElement('div');
+  calloutActions.className = 'admin-dashboard__callout-actions';
+
+  const userPanelButton = document.createElement('button');
+  userPanelButton.type = 'button';
+  userPanelButton.className = 'user-details__selected-action admin-dashboard__callout-button';
+  userPanelButton.textContent = 'Abrir painel do usuário';
+  userPanelButton.addEventListener('click', () => navigateTo('user'));
+
+  const homeButton = document.createElement('button');
+  homeButton.type = 'button';
+  homeButton.className =
+    'user-details__selected-action admin-dashboard__callout-button admin-dashboard__callout-button--secondary';
+  homeButton.textContent = 'Voltar ao painel inicial';
+  homeButton.addEventListener('click', () => navigateTo('home'));
+
+  calloutActions.append(userPanelButton, homeButton);
+  operationsCallout.append(calloutText, calloutActions);
 
   const layout = document.createElement('div');
-  layout.className = 'admin-user-layout';
+  layout.className = 'user-panel__layout admin-dashboard__layout';
 
-  const overview = document.createElement('div');
-  overview.className = 'admin-user-overview';
+  const overviewWidget = document.createElement('section');
+  overviewWidget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--overview';
 
-  const widgetDescription = document.createElement('p');
-  widgetDescription.className = 'admin-user-section__description';
-  widgetDescription.textContent =
-    'Utilize os controles abaixo para pesquisar, filtrar e ordenar os clientes cadastrados.';
+  const overviewTitle = document.createElement('h2');
+  overviewTitle.className = 'user-widget__title';
+  overviewTitle.textContent = 'Indicadores principais';
 
-  const toolbar = document.createElement('div');
-  toolbar.className = 'admin-user-toolbar';
+  const overviewDescription = document.createElement('p');
+  overviewDescription.className = 'user-widget__description';
+  overviewDescription.textContent =
+    'Acompanhe rapidamente o status das rotinas administrativas mais importantes antes de aplicar mudanças.';
 
-  const searchGroup = document.createElement('div');
-  searchGroup.className = 'admin-user-toolbar__group admin-user-toolbar__group--search';
-
-  const searchLabel = document.createElement('label');
-  searchLabel.className = 'admin-user-toolbar__label';
-  searchLabel.htmlFor = 'admin-user-search';
-  searchLabel.textContent = 'Pesquisar';
-
-  const searchInput = document.createElement('input');
-  searchInput.className = 'admin-user-toolbar__search-input';
-  searchInput.type = 'search';
-  searchInput.id = 'admin-user-search';
-  searchInput.placeholder = 'Nome, telefone, e-mail ou tipo';
-  searchInput.autocomplete = 'off';
-  searchInput.spellcheck = false;
-  searchInput.setAttribute('aria-label', 'Pesquisar clientes por nome, telefone, e-mail ou tipo');
-
-  searchGroup.append(searchLabel, searchInput);
-
-  const sortGroup = document.createElement('div');
-  sortGroup.className = 'admin-user-toolbar__group admin-user-toolbar__group--sort';
-
-  const sortLabel = document.createElement('label');
-  sortLabel.className = 'admin-user-toolbar__label';
-  sortLabel.htmlFor = 'admin-user-sort';
-  sortLabel.textContent = 'Ordenar';
-
-  const sortSelect = document.createElement('select');
-  sortSelect.className = 'admin-user-toolbar__sort-select';
-  sortSelect.id = 'admin-user-sort';
-  sortSelect.setAttribute('aria-label', 'Alterar a ordem da lista de clientes');
+  const highlightList = document.createElement('ul');
+  highlightList.className = 'admin-dashboard__list';
 
   [
-    { value: 'createdAtDesc', label: 'Mais recentes' },
-    { value: 'createdAtAsc', label: 'Mais antigos' },
-    { value: 'nameAsc', label: 'Nome A–Z' },
-    { value: 'nameDesc', label: 'Nome Z–A' },
-    { value: 'updatedAtDesc', label: 'Atualizados recentemente' },
-    { value: 'updatedAtAsc', label: 'Atualizados há mais tempo' },
-  ].forEach(({ value, label }) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = label;
-    sortSelect.append(option);
-  });
-
-  sortGroup.append(sortLabel, sortSelect);
-
-  const summary = document.createElement('p');
-  summary.className = 'admin-user-toolbar__summary';
-  summary.setAttribute('role', 'status');
-  summary.setAttribute('aria-live', 'polite');
-  summary.setAttribute('aria-atomic', 'true');
-  summary.textContent = 'Carregando clientes...';
-
-  toolbar.append(searchGroup, sortGroup, summary);
-
-  overview.append(widgetDescription, toolbar);
-
-  const widget = document.createElement('section');
-  widget.className = 'admin-user-section admin-client-widget admin-user-table-panel';
-  widget.setAttribute('aria-label', 'Widget tabela de clientes cadastrados');
-
-  const widgetTitle = document.createElement('h2');
-  widgetTitle.className = 'admin-user-section__title';
-  widgetTitle.textContent = 'Widget: Tabela de clientes cadastrados';
-
-  const table = document.createElement('table');
-  table.className = 'admin-user-table';
-  table.createCaption().textContent = 'Tabela de clientes cadastrados';
-
-  const tableContainer = document.createElement('div');
-  tableContainer.className = 'admin-user-table__container';
-
-  const tableHead = document.createElement('thead');
-  tableHead.className = 'admin-user-table__head';
-  const headRow = document.createElement('tr');
-  headRow.className = 'admin-user-table__head-row';
-
-  ['Nome', 'Telefone', 'E-mail', 'Tipo de usuário', 'Registrado em', 'Última alteração', 'Ações'].forEach(
-    (headingText) => {
-      const headerCell = document.createElement('th');
-      headerCell.scope = 'col';
-      headerCell.className = 'admin-user-table__header';
-      headerCell.textContent = headingText;
-      headRow.append(headerCell);
+    {
+      title: 'Cadastros sincronizados',
+      description:
+        'Os dados do painel do usuário compartilham a mesma malha responsiva do MiniApp Base e refletem atualizações em tempo real.',
     },
-  );
+    {
+      title: 'Relatórios em ordem',
+      description:
+        'O histórico de alterações permanece disponível no painel de Log com registros em horário de Brasília.',
+    },
+    {
+      title: 'Políticas alinhadas',
+      description:
+        'A área legal segue o padrão visual dos painéis centrais e facilita auditorias e revisões de compliance.',
+    },
+  ]
+    .map(createHighlight)
+    .forEach((item) => highlightList.append(item));
 
-  tableHead.append(headRow);
+  overviewWidget.append(overviewTitle, overviewDescription, highlightList);
 
-  const tableBody = document.createElement('tbody');
-  tableBody.className = 'admin-user-table__body';
+  const actionsWidget = document.createElement('section');
+  actionsWidget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--actions';
 
-  table.append(tableHead, tableBody);
-  tableContainer.append(table);
+  const actionsTitle = document.createElement('h2');
+  actionsTitle.className = 'user-widget__title';
+  actionsTitle.textContent = 'Ações recomendadas';
 
-  widget.append(widgetTitle, tableContainer);
+  const actionsDescription = document.createElement('p');
+  actionsDescription.className = 'user-widget__description';
+  actionsDescription.textContent = 'Escolha o próximo passo para manter a operação sob controle.';
 
-  layout.append(overview, widget);
+  const actionsContainer = document.createElement('div');
+  actionsContainer.className = 'admin-dashboard__actions';
 
-  let usersSnapshot = [];
-  let expandedUserId = null;
-  let editingState = null;
-  let filterQuery = '';
-  let sortOption = 'createdAtDesc';
+  [
+    {
+      label: 'Revisar painel do usuário',
+      description: 'Verifique cadastros, preferências e feedbacks em tempo real.',
+      view: 'user',
+    },
+    {
+      label: 'Consultar painel inicial',
+      description: 'Retome a visão geral do MiniApp Base para compartilhar com a equipe.',
+      view: 'home',
+    },
+    {
+      label: 'Acessar registro de alterações',
+      description: 'Abra o painel de Log para conferir releases e horários oficiais.',
+      view: 'log',
+    },
+    {
+      label: 'Revisar termos e políticas',
+      description: 'Confira a base legal atualizada antes de habilitar novas rotinas.',
+      view: 'legal',
+    },
+  ]
+    .map(createActionButton)
+    .forEach((button) => actionsContainer.append(button));
 
-  function refreshToolbar(totalUsers, visibleUsers) {
-    summary.textContent = createAdminSummary(totalUsers, visibleUsers, filterQuery);
-    sortSelect.value = sortOption;
-    searchInput.value = filterQuery;
-  }
+  actionsWidget.append(actionsTitle, actionsDescription, actionsContainer);
 
-  function refreshTable() {
-    const filteredUsers = filterUsersByQuery(usersSnapshot, filterQuery, {
-      alwaysIncludeId: editingState?.userId,
-    });
-    const sortedUsers = sortUsersForAdmin(filteredUsers, sortOption);
-    const totalUsers = usersSnapshot.length;
-    const visibleUsers = sortedUsers.length;
-    const emptyMessage =
-      visibleUsers === 0
-        ? filterQuery.trim()
-          ? 'Nenhum cliente encontrado para a busca atual.'
-          : 'Nenhum cliente cadastrado até o momento.'
-        : undefined;
+  const insightsWidget = document.createElement('section');
+  insightsWidget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--insights';
 
-    renderUserTableBody(tableBody, sortedUsers, expandedUserId, editingState, {
-      emptyMessage,
-    });
-    refreshToolbar(totalUsers, visibleUsers);
-  }
+  const insightsTitle = document.createElement('h2');
+  insightsTitle.className = 'user-widget__title';
+  insightsTitle.textContent = 'Diretrizes operacionais';
 
-  searchInput.addEventListener('input', (event) => {
-    filterQuery = event.target.value;
-    refreshTable();
-  });
+  const insightsDescription = document.createElement('p');
+  insightsDescription.className = 'user-widget__description';
+  insightsDescription.textContent =
+    'Garanta consistência entre equipes reutilizando os mesmos componentes e tokens visuais do painel do usuário.';
 
-  searchInput.addEventListener('search', (event) => {
-    filterQuery = event.target.value;
-    refreshTable();
-  });
+  const insightsList = document.createElement('ul');
+  insightsList.className = 'admin-dashboard__insights';
 
-  sortSelect.addEventListener('change', (event) => {
-    sortOption = event.target.value;
-    refreshTable();
-  });
+  [
+    {
+      title: 'Layout compartilhado',
+      description:
+        'Cards, sombras e espaçamentos seguem o padrão do painel do usuário para manter a identidade única do MiniApp Base.',
+    },
+    {
+      title: 'Acessibilidade contínua',
+      description:
+        'Labels, descrições e estados dinâmicos replicam o comportamento acessível validado no painel inicial.',
+    },
+    {
+      title: 'Fluxos coordenados',
+      description:
+        'Todos os atalhos utilizam o roteador central para preservar histórico e evitar perdas de contexto.',
+    },
+  ]
+    .map(createInsight)
+    .forEach((item) => insightsList.append(item));
 
-  tableBody.addEventListener('click', async (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
+  insightsWidget.append(insightsTitle, insightsDescription, insightsList);
 
-    const actionButton = target.closest('button[data-action]');
-    if (!(actionButton instanceof HTMLButtonElement)) {
-      return;
-    }
+  layout.append(overviewWidget, actionsWidget, insightsWidget);
 
-    const action = actionButton.dataset.action;
-
-    if (action === 'edit') {
-      const row = actionButton.closest('tr');
-      const userId = Number(row?.dataset.userId);
-
-      if (!row || Number.isNaN(userId)) {
-        return;
-      }
-
-      if (editingState?.isSaving || editingState?.isDeleting) {
-        return;
-      }
-
-      const user = usersSnapshot.find((item) => item.id === userId);
-      if (!user) {
-        window.alert('Não foi possível localizar o cliente selecionado.');
-        return;
-      }
-
-      if (editingState?.userId === userId) {
-        editingState = null;
-        expandedUserId = null;
-        refreshTable();
-        requestAnimationFrame(() => {
-          const button = tableBody.querySelector(
-            `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
-          );
-          if (button instanceof HTMLButtonElement) {
-            button.focus();
-          }
-        });
-        return;
-      }
-
-      editingState = {
-        userId,
-        name: user.name || '',
-        phone: user.phone || '',
-        email: user.profile?.email || '',
-        password: user.password || '',
-        userType: normalizeUserType(user.userType),
-        isSaving: false,
-        isDeleting: false,
-      };
-      expandedUserId = userId;
-      refreshTable();
-      return;
-    }
-
-    if (action === 'cancel-edit') {
-      const detailsRow = actionButton.closest('tr');
-      const userId = Number(detailsRow?.dataset.detailsFor);
-
-      if (Number.isNaN(userId)) {
-        return;
-      }
-
-      if (editingState?.isSaving || editingState?.isDeleting) {
-        return;
-      }
-
-      editingState = null;
-      expandedUserId = null;
-      refreshTable();
-      requestAnimationFrame(() => {
-        const button = tableBody.querySelector(
-          `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
-        );
-        if (button instanceof HTMLButtonElement) {
-          button.focus();
-        }
-      });
-      return;
-    }
-
-    if (action === 'delete') {
-      const detailsRow = actionButton.closest('tr');
-      const userId = Number(detailsRow?.dataset.detailsFor);
-
-      if (Number.isNaN(userId)) {
-        window.alert('Não foi possível identificar o cliente em edição.');
-        return;
-      }
-
-      if (editingState?.isSaving || editingState?.isDeleting) {
-        return;
-      }
-
-      const user = usersSnapshot.find((item) => item.id === userId);
-      if (!user) {
-        window.alert('Não foi possível localizar o cliente selecionado.');
-        return;
-      }
-
-      const confirmation = window.confirm(
-        'Tem certeza de que deseja excluir este cliente? Essa ação não pode ser desfeita.',
-      );
-
-      if (!confirmation) {
-        return;
-      }
-
-      editingState = {
-        userId,
-        name: editingState?.name ?? user.name ?? '',
-        phone: editingState?.phone ?? user.phone ?? '',
-        email: editingState?.email ?? user.profile?.email ?? '',
-        password: editingState?.password ?? user.password ?? '',
-        userType: normalizeUserType(editingState?.userType ?? user.userType),
-        isSaving: false,
-        isDeleting: true,
-      };
-      expandedUserId = userId;
-      refreshTable();
-
-      try {
-        await deleteUser(userId);
-        window.alert('Cliente removido com sucesso.');
-        editingState = null;
-        expandedUserId = null;
-      } catch (error) {
-        console.error('Erro ao remover cliente pelo painel administrativo.', error);
-        window.alert('Não foi possível remover o cliente. Tente novamente.');
-        editingState = {
-          userId,
-          name: user.name || '',
-          phone: user.phone || '',
-          email: user.profile?.email || '',
-          password: user.password || '',
-          userType: normalizeUserType(user.userType),
-          isSaving: false,
-          isDeleting: false,
-        };
-        expandedUserId = userId;
-      }
-
-      refreshTable();
-
-      if (!editingState) {
-        requestAnimationFrame(() => {
-          const button = tableBody.querySelector(
-            `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
-          );
-          if (button instanceof HTMLButtonElement) {
-            button.focus();
-          }
-        });
-      }
-
-      return;
-    }
-  });
-
-  tableBody.addEventListener('submit', async (event) => {
-    const form = event.target;
-    if (!(form instanceof HTMLFormElement)) {
-      return;
-    }
-
-    if (!form.classList.contains('admin-user-table__form')) {
-      return;
-    }
-
-    event.preventDefault();
-
-    const userId = Number(form.dataset.userId);
-    if (Number.isNaN(userId)) {
-      window.alert('Não foi possível identificar o cliente em edição.');
-      return;
-    }
-
-    const row = tableBody.querySelector(`.admin-user-table__row[data-user-id="${userId}"]`);
-    const user = usersSnapshot.find((item) => item.id === userId);
-
-    if (!row || !user) {
-      window.alert('Não foi possível localizar o cliente selecionado.');
-      return;
-    }
-
-    if (editingState?.isDeleting) {
-      return;
-    }
-
-    const nameInput = form.querySelector('input[name="admin-user-name"]');
-    const phoneInput = form.querySelector('input[name="admin-user-phone"]');
-    const emailInput = form.querySelector('input[name="admin-user-email"]');
-    const userTypeSelect = form.querySelector('select[name="admin-user-type"]');
-    const passwordInput = form.querySelector('input[name="admin-user-password"]');
-
-    if (
-      !(nameInput instanceof HTMLInputElement) ||
-      !(phoneInput instanceof HTMLInputElement) ||
-      !(emailInput instanceof HTMLInputElement) ||
-      !(userTypeSelect instanceof HTMLSelectElement) ||
-      !(passwordInput instanceof HTMLInputElement)
-    ) {
-      window.alert('Não foi possível identificar os campos de edição.');
-      return;
-    }
-
-    const trimmedName = nameInput.value.trim();
-    const trimmedPhone = phoneInput.value.trim();
-    const trimmedEmail = emailInput.value.trim();
-    const passwordValue = passwordInput.value;
-    const selectedUserType = normalizeUserType(userTypeSelect.value);
-
-    if (!trimmedName || !trimmedPhone) {
-      window.alert('Nome e telefone são obrigatórios para atualizar o cadastro.');
-      return;
-    }
-
-    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/iu.test(trimmedEmail)) {
-      window.alert('Informe um e-mail válido ou deixe o campo em branco.');
-      emailInput.focus();
-      emailInput.select();
-      return;
-    }
-
-    const hasPasswordChange = passwordValue !== user.password;
-
-    if (hasPasswordChange) {
-      const passwordValidation = validatePasswordStrength(passwordValue);
-
-      if (!passwordValidation.isValid) {
-        window.alert(passwordValidation.message);
-        passwordInput.focus();
-        passwordInput.select?.();
-        return;
-      }
-    }
-
-    editingState = {
-      userId,
-      name: trimmedName,
-      phone: trimmedPhone,
-      email: trimmedEmail,
-      password: passwordValue,
-      userType: selectedUserType,
-      isSaving: true,
-      isDeleting: false,
-    };
-    expandedUserId = userId;
-    refreshTable();
-
-    try {
-      await updateUser(userId, {
-        name: trimmedName,
-        phone: trimmedPhone,
-        userType: selectedUserType,
-        profile: { email: trimmedEmail },
-        ...(hasPasswordChange ? { password: passwordValue } : {}),
-      });
-      window.alert('Cliente atualizado com sucesso.');
-      editingState = null;
-      expandedUserId = null;
-    } catch (error) {
-      console.error('Erro ao atualizar cliente pelo painel administrativo.', error);
-      window.alert('Não foi possível atualizar o cliente. Tente novamente.');
-      editingState = {
-        userId,
-        name: trimmedName,
-        phone: trimmedPhone,
-        email: trimmedEmail,
-        password: passwordValue,
-        userType: selectedUserType,
-        isSaving: false,
-        isDeleting: false,
-      };
-      expandedUserId = userId;
-    }
-
-    refreshTable();
-
-    if (!editingState) {
-      requestAnimationFrame(() => {
-        const button = tableBody.querySelector(
-          `.admin-user-table__row[data-user-id="${userId}"] .admin-user-table__action--edit`,
-        );
-        if (button instanceof HTMLButtonElement) {
-          button.focus();
-        }
-      });
-    }
-  });
-
-  const unsubscribe = subscribeUsers((users) => {
-    usersSnapshot = Array.isArray(users) ? users.slice() : [];
-
-    if (editingState) {
-      const matchingUser = usersSnapshot.find((user) => user.id === editingState.userId);
-      if (!matchingUser) {
-        editingState = null;
-        expandedUserId = null;
-      } else if (!editingState.isSaving && !editingState.isDeleting) {
-        editingState = {
-          ...editingState,
-          name: editingState.name ?? matchingUser.name ?? '',
-          phone: editingState.phone ?? matchingUser.phone ?? '',
-          email: editingState.email ?? matchingUser.profile?.email ?? '',
-          password: editingState.password ?? matchingUser.password ?? '',
-          userType: normalizeUserType(editingState.userType ?? matchingUser.userType),
-        };
-        expandedUserId = matchingUser.id;
-      }
-    }
-
-    refreshTable();
-  });
-
-  registerViewCleanup(viewRoot, () => {
-    unsubscribe();
-  });
-
-  viewRoot.replaceChildren(heading, layout);
-
-  refreshTable();
+  viewRoot.replaceChildren(heading, intro, operationsCallout, layout);
 }
