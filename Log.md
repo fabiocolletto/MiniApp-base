@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.102 - 2025-10-21 11:45 BRT
+- Substitui o padding percentual das views por espaçamentos fixos em clamp para alinhar o painel do usuário às laterais sem encolher em telas amplas.
+- Remove os limites de largura e a centralização automática dos formulários do painel do usuário para que os widgets ocupem toda a grade disponível.
+- Atualiza o rodapé para exibir a versão v0.1.102 das 11h45.
+
 ## v0.1.101 - 2025-10-21 11:00 BRT
 - Replica o modelo de gavetas do cartão "Perfil completo" no widget "Dados de acesso" com seções de Logs do sistema, Sessão e Preferências.
 - Move o resumo de acesso, o estado da sessão e os campos de telefone e senha para os novos agrupadores mantendo ações e feedbacks ativos.
