@@ -1,23 +1,11 @@
 # Log
 
-## v0.1.101 - 2025-10-21 10:50 BRT
-- Faz o contêiner do painel do usuário ocupar toda a largura disponível sem sombras ou cantos arredondados, mantendo o conteúdo alinhado às bordas do header e footer.
-- Alinha o painel de saudação ao novo estilo chapado, removendo o cartão externo e preservando apenas os widgets internos.
-- Ajusta o estilo base para que as views aproveitem o espaço útil do layout fixo sem sobreposição do cabeçalho ou rodapé.
-
-## v0.1.100 - 2025-10-21 09:10 BRT
-- Remove o acolchoamento adicional do conteúdo principal para que o painel central encoste nas bordas definidas pelo cabeçalho e rodapé.
-- Elimina o arredondamento e expande o cartão do painel do usuário para ocupar toda a altura disponível entre os elementos fixos.
-- Estende o painel de saudação até tocar header e footer, retirando o espaçamento interno e o arredondamento remanescentes.
-- Move o bloco “Sessão e segurança” para dentro do cartão de “Dados de acesso”, ajustando o estilo do agrupamento e cobrindo a nova estrutura com teste automatizado.
-- Compacta os painéis de usuário e administrativo reduzindo gaps, paddings e sombras por meio de novos tokens globais reutilizáveis.
-- Remove contêineres decorativos redundantes nos formulários do usuário e reaproveita os mesmos espaçamentos otimizados dentro de widgets, ações e colapsáveis.
-
-## v0.1.99 - 2025-10-21 04:30 BRT
-- Substitui os botões de salvar por autosave nos formulários de telefone, senha e perfil, bloqueando submissões implícitas.
-- Centraliza a persistência em helper reutilizável com controle de feedback e estado ocupado para múltiplos campos.
-- Automatiza o preenchimento e salvamento do endereço ao consultar o CEP, exibindo mensagens específicas para sucesso ou falha.
-- Cobre o fluxo de autosave com testes unitários dedicados ao novo helper de persistência.
+## v0.1.99 - 2025-10-21 05:15 BRT
+- Padroniza o layout chapado do MiniApp Base aplicando o contêiner compartilhado aos painéis centrais e removendo bordas, sombras e larguras redundantes, incluindo o cartão de boas-vindas.
+- Harmoniza o painel administrativo com a mesma malha do painel do usuário, reaproveitando tokens globais e classes compartilhadas sem depender de estilos paralelos.
+- Reorganiza o painel do usuário em widgets compactos com o bloco “Sessão e segurança” integrado, campos redistribuídos e espaçamentos unificados.
+- Implanta autosave para telefone, senha e perfis completos via helper reutilizável que controla feedbacks, estados ocupados e bloqueia submissões implícitas.
+- Integra consulta ViaCEP para preencher endereço automaticamente, tratando cancelamentos, mensagens específicas e testes dedicados ao fluxo de persistência.
 
 ## v0.1.98 - 2025-10-21 02:45 BRT
 - Reorganiza o grupo "Endereço e documentação" colocando o campo de CEP na primeira posição do grid.

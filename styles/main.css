@@ -1088,20 +1088,7 @@ footer {
   background: transparent;
 }
 
-
-.card.view--admin {
-  width: min(92vw, 72rem);
-  max-width: 72rem;
-  padding: clamp(1.1rem, 2.4vw, 1.8rem);
-  box-sizing: border-box;
-  justify-self: center;
-  align-self: start;
-  min-height: auto;
-  max-height: none;
-  background: #fff;
-}
-
-.card.view--user {
+main > :where(.card.view):not(.auth-view) {
   width: 100%;
   max-width: none;
   padding: 0;
@@ -1120,17 +1107,7 @@ footer {
 }
 
 .card.view--greeting {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-  border-radius: 0;
-  box-shadow: none;
-  border: none;
-  justify-self: stretch;
-  align-self: stretch;
-  background: transparent;
-  min-height: var(--view-max-block-size);
-  max-height: var(--view-max-block-size);
+  overflow: visible;
 }
 
 .card.auth-view {
@@ -1163,9 +1140,10 @@ footer {
 }
 
 .view--admin {
-  display: grid;
   gap: var(--panel-gap);
+  grid-template-rows: auto auto minmax(0, 1fr);
   align-content: start;
+  align-items: start;
   justify-items: stretch;
   text-align: left;
 }
@@ -1676,10 +1654,6 @@ footer {
 }
 
 @media (max-width: 72rem) {
-  .card.view--admin {
-    padding: var(--panel-padding-large);
-  }
-
   .admin-user-section {
     gap: var(--panel-stack-gap);
   }
@@ -1710,14 +1684,11 @@ footer {
 }
 
 .view--user {
-  display: grid;
   gap: var(--panel-gap);
   grid-template-rows: auto auto minmax(0, 1fr);
   align-content: start;
   align-items: start;
   justify-items: stretch;
-  text-align: center;
-  min-height: 100%;
 }
 
 .auth-view {
@@ -2648,10 +2619,6 @@ footer {
 }
 
 @media (min-width: 62rem) {
-  .card.view--admin {
-    padding: clamp(1.35rem, 2.6vw, 2.1rem);
-  }
-
   .admin-user-section {
     gap: clamp(1rem, 2vw, 1.5rem);
     overflow-x: visible;
@@ -2713,12 +2680,6 @@ footer {
 }
 
 @media (max-width: 42rem) and (orientation: portrait) {
-  .card.view--admin {
-    padding: clamp(1.1rem, 3.4vw, 1.6rem);
-    align-self: start;
-    justify-self: stretch;
-  }
-
   .view--admin {
     gap: clamp(0.75rem, 2.4vw, 1.15rem);
     align-items: start;
@@ -2743,25 +2704,13 @@ footer {
 }
 
 .view--log {
-  text-align: center;
-  display: grid;
   gap: 1.25rem;
-  width: min(92vw, 50rem);
-  margin-inline: auto;
-  align-items: center;
-  justify-items: center;
   color: #3d2a12;
 }
 
 .view--legal {
-  text-align: center;
-  display: grid;
   gap: clamp(1rem, 3vw, 1.75rem);
-  width: min(92vw, 56rem);
-  margin-inline: auto;
   color: #3d2a12;
-  justify-items: center;
-  align-items: center;
 }
 
 .legal-description {
@@ -2821,7 +2770,6 @@ footer {
 }
 
 .view--error {
-  display: grid;
   gap: 1.25rem;
 }
 
@@ -2867,27 +2815,12 @@ footer {
 }
 
 @media (min-width: 900px) {
-  .view--log {
-    width: min(85vw, 54rem);
-  }
-
   .log-content {
     max-height: clamp(24rem, 60vh, 32rem);
   }
 }
 
 @media (max-width: 600px) {
-  :root {
-    --content-padding-block-start: 4.5rem;
-    --content-padding-block-end: 4rem;
-    --content-padding-inline: 1rem;
-  }
-
-  .card {
-    width: 100%;
-    padding: 2.25rem 1.5rem;
-  }
-
   .log-description {
     font-size: 1rem;
   }
