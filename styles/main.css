@@ -2239,9 +2239,15 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   align-self: stretch;
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 48rem) {
   .user-panel__layout {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  }
+}
+
+@media (min-width: 72rem) {
+  .user-panel__layout {
+    grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
   }
 }
 

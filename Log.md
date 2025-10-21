@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.108 - 2025-10-21 20:15 BRT
+- Impede que os widgets do painel do usuário se sobreponham ao exibir duas colunas, reajustando os limites responsivos da grade.
+- Atualiza o rodapé para exibir a versão v0.1.108 das 20h15.
+
 ## v0.1.107 - 2025-10-21 19:30 BRT
 - Ajusta o container central do painel de log aplicando espaçamento equivalente ao cabeçalho e ao rodapé para impedir que o conteúdo fique oculto nas extremidades fixas.
 - Atualiza o rodapé para exibir a versão v0.1.107 das 19h30.
