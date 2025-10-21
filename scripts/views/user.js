@@ -1,4 +1,11 @@
-import { deleteUser, subscribeUsers, updateUser } from '../data/user-store.js';
+import {
+  deleteUser,
+  subscribeUsers,
+  updateUser,
+  sanitizeUserThemePreference,
+  getDefaultUserPreferences,
+} from '../data/user-store.js';
+import { setThemePreference } from '../theme/theme-manager.js';
 import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
@@ -451,9 +458,107 @@ export function renderUserPanel(viewRoot) {
   });
   sessionGroupContent.append(sessionContent);
 
+  const {
+    element: themeFeedback,
+    reset: resetThemeFeedback,
+    show: showThemeFeedback,
+  } = createPanelFeedback('user-preferences__feedback');
+
   const preferencesContent = document.createElement('div');
   preferencesContent.className = 'user-details__preferences-content';
-  preferencesContent.append(primaryFields, primaryFeedback);
+
+  const themeFieldset = document.createElement('fieldset');
+  themeFieldset.className = 'user-preferences__theme-fieldset';
+
+  const themeLegend = document.createElement('legend');
+  themeLegend.className = 'user-preferences__theme-legend';
+  themeLegend.textContent = 'Tema do painel';
+
+  const themeDescription = document.createElement('p');
+  themeDescription.className = 'user-preferences__theme-description';
+  themeDescription.textContent = 'Escolha entre modo claro, escuro ou acompanhe automaticamente o tema do seu sistema.';
+
+  const themeOptionsContainer = document.createElement('div');
+  themeOptionsContainer.className = 'user-preferences__theme-options';
+
+  const themePreferenceInputs = new Map();
+  const themePreferenceOptionBlocks = new Map();
+
+  [
+    {
+      value: 'system',
+      label: 'Automático (Sistema)',
+      description: 'Adapta-se automaticamente ao modo claro ou escuro definido no dispositivo.',
+    },
+    {
+      value: 'light',
+      label: 'Claro',
+      description: 'Mantém cores claras em todo o painel para máxima luminosidade.',
+    },
+    {
+      value: 'dark',
+      label: 'Escuro',
+      description: 'Prioriza tons escuros para reduzir o brilho e descansar a visão.',
+    },
+  ].forEach(({ value, label, description }) => {
+    const optionContainer = document.createElement('div');
+    optionContainer.className = 'user-preferences__theme-option';
+
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'user-theme-preference';
+    input.value = value;
+    input.id = `user-theme-preference-${value}`;
+    input.className = 'user-preferences__theme-input';
+
+    const optionLabel = document.createElement('label');
+    optionLabel.className = 'user-preferences__theme-option-label';
+    optionLabel.setAttribute('for', input.id);
+
+    const optionTitle = document.createElement('span');
+    optionTitle.className = 'user-preferences__theme-option-title';
+    optionTitle.textContent = label;
+
+    const optionDescription = document.createElement('span');
+    optionDescription.className = 'user-preferences__theme-option-description';
+    optionDescription.textContent = description;
+
+    optionLabel.append(optionTitle, optionDescription);
+    optionContainer.append(input, optionLabel);
+    themeOptionsContainer.append(optionContainer);
+    themePreferenceInputs.set(value, input);
+    themePreferenceOptionBlocks.set(value, optionContainer);
+  });
+
+  const defaultThemePreference = sanitizeUserThemePreference(
+    getDefaultUserPreferences()?.theme ?? 'system',
+  );
+
+  const hasHTMLInputElement = typeof HTMLInputElement === 'function';
+  const hasHTMLElement = typeof HTMLElement === 'function';
+  const hasHTMLFieldSetElement = typeof HTMLFieldSetElement === 'function';
+
+  function selectThemePreference(preference) {
+    const normalized = sanitizeUserThemePreference(preference);
+    themePreferenceInputs.forEach((input, value) => {
+      if (input && (hasHTMLInputElement ? input instanceof HTMLInputElement : 'checked' in input)) {
+        input.checked = value === normalized;
+      }
+    });
+    themePreferenceOptionBlocks.forEach((element, value) => {
+      if (element && (hasHTMLElement ? element instanceof HTMLElement : 'classList' in element)) {
+        element.classList.toggle('user-preferences__theme-option--checked', value === normalized);
+      }
+    });
+  }
+
+  themeFieldset.append(themeLegend, themeDescription, themeOptionsContainer, themeFeedback);
+
+  preferencesContent.append(themeFieldset, primaryFields, primaryFeedback);
+
+  themeOptionsContainer.addEventListener('change', handleThemePreferenceChange);
+
+  selectThemePreference(defaultThemePreference);
 
   const { container: preferencesGroup, content: preferencesGroupContent } = createCollapsibleGroup({
     title: 'Preferências',
@@ -1335,8 +1440,23 @@ export function renderUserPanel(viewRoot) {
       }
     });
 
+    if (themeFieldset && (hasHTMLFieldSetElement ? themeFieldset instanceof HTMLFieldSetElement : 'disabled' in themeFieldset)) {
+      themeFieldset.disabled = shouldDisable;
+      if (shouldDisable) {
+        themeFieldset.setAttribute('aria-disabled', 'true');
+      } else {
+        themeFieldset.removeAttribute('aria-disabled');
+      }
+    }
+
+    themePreferenceInputs.forEach((input) => {
+      if (input && (hasHTMLInputElement ? input instanceof HTMLInputElement : 'disabled' in input)) {
+        input.disabled = shouldDisable;
+      }
+    });
+
     Object.values(profileFieldBindings).forEach((element) => {
-      if (element instanceof HTMLElement) {
+      if (element && (hasHTMLElement ? element instanceof HTMLElement : 'disabled' in element)) {
         element.disabled = shouldDisable;
       }
     });
@@ -1346,6 +1466,8 @@ export function renderUserPanel(viewRoot) {
     }
 
     if (!user) {
+      selectThemePreference(defaultThemePreference);
+      resetThemeFeedback();
       if (primaryPhoneInput) {
         primaryPhoneInput.value = '';
       }
@@ -1374,6 +1496,8 @@ export function renderUserPanel(viewRoot) {
     if (profileNameInput) {
       profileNameInput.value = user.name;
     }
+
+    selectThemePreference(user.preferences?.theme);
 
     Object.entries(profileFieldBindings).forEach(([key, element]) => {
       if (!element || !('value' in element)) {
@@ -1489,6 +1613,74 @@ export function renderUserPanel(viewRoot) {
       errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
       missingSessionMessage: 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.',
     });
+  }
+
+  async function handleThemePreferenceChange(event) {
+    const target = event?.target;
+    if (!(target instanceof HTMLInputElement) || target.name !== 'user-theme-preference') {
+      return;
+    }
+
+    const user = getActiveSessionUser();
+    const selectedValue = sanitizeUserThemePreference(target.value);
+
+    selectThemePreference(selectedValue);
+
+    if (!user) {
+      resetThemeFeedback();
+      selectThemePreference(defaultThemePreference);
+      showThemeFeedback('Nenhuma sessão ativa. Faça login para alterar o tema do painel.', {
+        isError: true,
+      });
+      return;
+    }
+
+    const currentPreference = sanitizeUserThemePreference(user.preferences?.theme);
+
+    if (selectedValue === currentPreference) {
+      resetThemeFeedback();
+      return;
+    }
+
+    const busyTargets = Array.from(themePreferenceInputs.values()).filter(
+      (input) => input instanceof HTMLInputElement,
+    );
+    if (themeFieldset instanceof HTMLFieldSetElement) {
+      busyTargets.push(themeFieldset);
+    }
+
+    const previousPreference = currentPreference;
+
+    // Atualiza o tema imediatamente enquanto persiste a escolha no cadastro.
+    try {
+      setThemePreference(selectedValue);
+    } catch (error) {
+      console.error('Erro ao aplicar tema imediatamente no painel.', error);
+    }
+
+    const result = await runPersistOperation(
+      'preferences:theme',
+      { preferences: { theme: selectedValue } },
+      {
+        feedback: {
+          reset: resetThemeFeedback,
+          show: showThemeFeedback,
+        },
+        busyTargets,
+        successMessage: 'Tema atualizado com sucesso! O painel seguirá a sua preferência.',
+        errorMessage: 'Não foi possível atualizar o tema agora. Tente novamente.',
+        missingSessionMessage: 'Nenhuma sessão ativa. Faça login para alterar o tema.',
+      },
+    );
+
+    if (!result || result.status !== 'success') {
+      selectThemePreference(previousPreference);
+      try {
+        setThemePreference(previousPreference);
+      } catch (error) {
+        console.error('Não foi possível restaurar o tema anterior após falha na atualização.', error);
+      }
+    }
   }
 
   const profileGroupFields = {
@@ -1772,6 +1964,7 @@ export function renderUserPanel(viewRoot) {
       updatePasswordVisibility();
       resetPrimaryFeedback();
       resetProfileFeedback();
+      resetThemeFeedback();
     }
 
     updateAccountActionsState();
@@ -1787,6 +1980,7 @@ export function renderUserPanel(viewRoot) {
       updatePasswordVisibility();
       resetPrimaryFeedback();
       resetProfileFeedback();
+      resetThemeFeedback();
     }
 
     if (sessionUserId != null) {
@@ -1798,6 +1992,7 @@ export function renderUserPanel(viewRoot) {
         updatePasswordVisibility();
         resetPrimaryFeedback();
         resetProfileFeedback();
+        resetThemeFeedback();
       }
       resetAccountFeedback();
     }
@@ -1809,6 +2004,7 @@ export function renderUserPanel(viewRoot) {
   registerViewCleanup(viewRoot, () => {
     unsubscribe();
     unsubscribeSession();
+    themeOptionsContainer.removeEventListener('change', handleThemePreferenceChange);
   });
 
   viewRoot.replaceChildren(heading, intro, layout);

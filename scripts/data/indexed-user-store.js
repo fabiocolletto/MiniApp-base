@@ -35,6 +35,54 @@ function createEmptyProfile() {
   }, {});
 }
 
+const VALID_THEME_PREFERENCES = ['light', 'dark', 'system'];
+const DEFAULT_THEME_PREFERENCE = 'system';
+
+function sanitizeThemePreference(value) {
+  if (typeof value !== 'string') {
+    return DEFAULT_THEME_PREFERENCE;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return VALID_THEME_PREFERENCES.includes(normalized) ? normalized : DEFAULT_THEME_PREFERENCE;
+}
+
+function createEmptyPreferences() {
+  return {
+    theme: DEFAULT_THEME_PREFERENCE,
+  };
+}
+
+function normalizePreferences(rawPreferences) {
+  if (!rawPreferences || typeof rawPreferences !== 'object') {
+    return createEmptyPreferences();
+  }
+
+  const normalized = createEmptyPreferences();
+
+  if (Object.prototype.hasOwnProperty.call(rawPreferences, 'theme')) {
+    normalized.theme = sanitizeThemePreference(rawPreferences.theme);
+  }
+
+  return normalized;
+}
+
+function mergePreferences(existingPreferences, updates = {}) {
+  const basePreferences = normalizePreferences(existingPreferences);
+
+  if (!updates || typeof updates !== 'object') {
+    return basePreferences;
+  }
+
+  const merged = { ...basePreferences };
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'theme')) {
+    merged.theme = sanitizeThemePreference(updates.theme);
+  }
+
+  return merged;
+}
+
 function normalizeProfile(rawProfile) {
   if (!rawProfile || typeof rawProfile !== 'object') {
     return createEmptyProfile();
@@ -103,7 +151,7 @@ const useMemoryStore =
 const memoryStore = [];
 let memoryAutoIncrement = 1;
 
-function createMemoryRecord({ name, phone, password, device, profile, userType }) {
+function createMemoryRecord({ name, phone, password, device, profile, userType, preferences }) {
   const now = new Date().toISOString();
   return {
     id: memoryAutoIncrement++,
@@ -113,6 +161,7 @@ function createMemoryRecord({ name, phone, password, device, profile, userType }
     device,
     userType: sanitizeUserType(userType),
     profile: normalizeProfile(profile),
+    preferences: normalizePreferences(preferences),
     createdAt: now,
     updatedAt: now,
   };
@@ -207,6 +256,7 @@ function deserializeUser(record) {
       createdAt: new Date(),
       updatedAt: new Date(),
       profile: createEmptyProfile(),
+      preferences: createEmptyPreferences(),
     };
   }
 
@@ -223,6 +273,7 @@ function deserializeUser(record) {
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
     profile: normalizeProfile(record.profile),
+    preferences: normalizePreferences(record.preferences),
   };
 }
 
@@ -230,8 +281,8 @@ async function loadUsersFromMemory() {
   return memoryStore.map(deserializeUser);
 }
 
-async function saveUserToMemory({ name, phone, password, device, profile, userType }) {
-  const record = createMemoryRecord({ name, phone, password, device, profile, userType });
+async function saveUserToMemory({ name, phone, password, device, profile, userType, preferences }) {
+  const record = createMemoryRecord({ name, phone, password, device, profile, userType, preferences });
   memoryStore.push(record);
   await notifyListeners();
   return deserializeUser(record);
@@ -261,6 +312,9 @@ async function updateUserInMemory(id, updates = {}) {
       : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
       ? { profile: mergeProfile(existingRecord.profile, updates.profile) }
+      : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'preferences')
+      ? { preferences: mergePreferences(existingRecord.preferences, updates.preferences) }
       : {}),
     updatedAt: now,
   };
@@ -333,9 +387,9 @@ export async function loadUsers() {
   });
 }
 
-export async function saveUser({ name, phone, password, device, profile, userType }) {
+export async function saveUser({ name, phone, password, device, profile, userType, preferences }) {
   if (useMemoryStore) {
-    return saveUserToMemory({ name, phone, password, device, profile, userType });
+    return saveUserToMemory({ name, phone, password, device, profile, userType, preferences });
   }
 
   const db = await openDatabase();
@@ -351,6 +405,7 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
       device,
       userType: sanitizeUserType(userType),
       profile: normalizeProfile(profile),
+      preferences: normalizePreferences(preferences),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -454,9 +509,12 @@ export async function updateUser(id, updates = {}) {
         ...(Object.prototype.hasOwnProperty.call(updates, 'userType')
           ? { userType: sanitizeUserType(updates.userType) }
           : {}),
-        ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
-          ? { profile: mergeProfile(existing.profile, updates.profile) }
-          : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
+      ? { profile: mergeProfile(existing.profile, updates.profile) }
+      : {}),
+    ...(Object.prototype.hasOwnProperty.call(updates, 'preferences')
+      ? { preferences: mergePreferences(existing.preferences, updates.preferences) }
+      : {}),
         updatedAt: now,
       };
 
