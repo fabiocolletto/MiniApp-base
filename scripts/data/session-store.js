@@ -6,6 +6,31 @@ const SESSION_STORAGE_KEY = 'miniapp-active-user-id';
 const sessionListeners = new Set();
 const sessionStatusListeners = new Set();
 
+const VALID_THEME_PREFERENCES = ['light', 'dark', 'system'];
+
+function normalizeThemePreference(value) {
+  if (typeof value !== 'string') {
+    return 'system';
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return VALID_THEME_PREFERENCES.includes(normalized) ? normalized : 'system';
+}
+
+function clonePreferences(preferences) {
+  if (!preferences || typeof preferences !== 'object') {
+    return { theme: 'system' };
+  }
+
+  const cloned = { theme: 'system' };
+
+  if (Object.prototype.hasOwnProperty.call(preferences, 'theme')) {
+    cloned.theme = normalizeThemePreference(preferences.theme);
+  }
+
+  return cloned;
+}
+
 function createSessionLoadingStatus() {
   return {
     state: 'loading',
@@ -136,6 +161,7 @@ function cloneUser(user) {
     createdAt: user.createdAt instanceof Date ? new Date(user.createdAt) : new Date(user.createdAt),
     updatedAt: user.updatedAt instanceof Date ? new Date(user.updatedAt) : new Date(user.updatedAt),
     profile: user.profile ? { ...user.profile } : {},
+    preferences: clonePreferences(user.preferences),
   };
 }
 

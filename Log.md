@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.104 - 2025-10-21 16:20 BRT
+- Implementa um gerenciador central de tema que respeita o modo do sistema, persiste a escolha localmente e sincroniza com a sessão ativa.
+- Adiciona ao painel do usuário um seletor acessível de tema com opções Claro, Escuro e Automático, incluindo feedback dedicado e salvamento imediato nas preferências.
+- Refatora a paleta visual com variáveis de cor para suportar Light/Dark Mode, troca dinamicamente logotipos e ícones conforme o tema e ajusta elementos decorativos.
+- Ajusta o seletor de tema e o painel do usuário para rodarem nos testes Node sem depender de elementos DOM nativos.
+- Atualiza o rodapé para exibir a versão v0.1.104 das 16h20.
+
 ## v0.1.103 - 2025-10-21 12:50 BRT
 - Corrige o estouro horizontal do painel de usuário garantindo que os resumos de acesso respeitem a largura disponível.
 - Ajusta a quebra e o comportamento flexível dos textos longos para manter o cartão central dentro da grade.

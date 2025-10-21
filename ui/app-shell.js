@@ -13,7 +13,16 @@ import {
   getActiveUser as defaultGetActiveUser,
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
-import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
+import {
+  getStorageStatus as defaultGetStorageStatus,
+  sanitizeUserThemePreference,
+} from '../scripts/data/user-store.js';
+import {
+  getResolvedTheme,
+  getThemePreference,
+  setThemePreference,
+  subscribeThemeChange,
+} from '../scripts/theme/theme-manager.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -30,6 +39,7 @@ const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__t
 const sessionIndicatorAnnouncement = sessionIndicator?.querySelector('.footer-session__announcement');
 const footerElement = document.querySelector('footer');
 const footerToggleButton = footerElement?.querySelector('[data-footer-toggle]');
+const footerBrandIcon = footerElement?.querySelector('.footer-brand__icon');
 
 const mobileFooterMediaQuery =
   typeof window === 'object' && window && typeof window.matchMedia === 'function'
@@ -37,6 +47,20 @@ const mobileFooterMediaQuery =
     : null;
 
 const dimmedShellClass = 'app-shell--dimmed';
+
+const THEME_ASSETS = {
+  light: {
+    logo: 'https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp',
+    icon: 'https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp',
+  },
+  dark: {
+    logo: 'https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp',
+    icon: 'https://5horas.com.br/wp-content/uploads/2025/10/Icone-Dark-Transparente-500x500px.webp',
+  },
+};
+
+let currentBrandTheme = null;
+let lastSessionThemePreference = null;
 
 const SESSION_LEGEND_ITEMS = [
   {
@@ -77,6 +101,60 @@ let removeAppModalListeners = null;
 let activeModalId = null;
 let modalActiveTrigger = null;
 let modalCleanup = null;
+
+function updateBrandAssets(theme) {
+  const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+  if (currentBrandTheme === normalizedTheme) {
+    return;
+  }
+
+  currentBrandTheme = normalizedTheme;
+  const assets = THEME_ASSETS[normalizedTheme];
+
+  if (assets?.logo && logo) {
+    const currentLogo = typeof logo.getAttribute === 'function' ? logo.getAttribute('src') : null;
+    if (currentLogo !== assets.logo) {
+      if (typeof logo.setAttribute === 'function') {
+        logo.setAttribute('src', assets.logo);
+      } else if ('src' in logo) {
+        logo.src = assets.logo;
+      }
+    }
+  }
+
+  if (assets?.icon && footerBrandIcon) {
+    const currentIcon =
+      typeof footerBrandIcon.getAttribute === 'function' ? footerBrandIcon.getAttribute('src') : null;
+    if (currentIcon !== assets.icon) {
+      if (typeof footerBrandIcon.setAttribute === 'function') {
+        footerBrandIcon.setAttribute('src', assets.icon);
+      } else if ('src' in footerBrandIcon) {
+        footerBrandIcon.src = assets.icon;
+      }
+    }
+  }
+}
+
+function resolveUserThemePreference(user) {
+  if (!user || typeof user !== 'object') {
+    return 'system';
+  }
+
+  const rawPreference = user.preferences && typeof user.preferences === 'object' ? user.preferences.theme : undefined;
+  return sanitizeUserThemePreference(rawPreference);
+}
+
+function applySessionThemePreference(user) {
+  const preference = resolveUserThemePreference(user);
+  if (lastSessionThemePreference === preference && getThemePreference() === preference) {
+    return;
+  }
+
+  lastSessionThemePreference = preference;
+  if (getThemePreference() !== preference) {
+    setThemePreference(preference);
+  }
+}
 
 const rawHooks =
   typeof globalThis === 'object' && globalThis && '__MINIAPP_UI_HOOKS__' in globalThis
@@ -959,11 +1037,20 @@ export function initializeAppShell(router) {
     }
   });
 
+  updateBrandAssets(getResolvedTheme());
+  subscribeThemeChange((payload) => {
+    const theme = payload && typeof payload === 'object' ? payload.theme : undefined;
+    updateBrandAssets(theme ?? getResolvedTheme());
+  });
+
   updateHeaderSession(getActiveUserFn());
 
   eventBus.on('session:changed', (user) => {
     updateHeaderSession(user);
+    applySessionThemePreference(user);
   });
+
+  applySessionThemePreference(getActiveUserFn());
 
   if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
     updateMemoryStatus(getStorageStatusFn());

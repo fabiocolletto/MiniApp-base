@@ -251,6 +251,56 @@ function normalizeProfile(profile) {
   return normalized;
 }
 
+const VALID_THEME_PREFERENCES = ['light', 'dark', 'system'];
+const DEFAULT_THEME_PREFERENCE = 'system';
+
+function sanitizeThemePreference(value) {
+  if (typeof value !== 'string') {
+    return DEFAULT_THEME_PREFERENCE;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return VALID_THEME_PREFERENCES.includes(normalized) ? normalized : DEFAULT_THEME_PREFERENCE;
+}
+
+function createEmptyPreferences() {
+  return {
+    theme: DEFAULT_THEME_PREFERENCE,
+  };
+}
+
+function normalizePreferences(rawPreferences) {
+  if (!rawPreferences || typeof rawPreferences !== 'object') {
+    return createEmptyPreferences();
+  }
+
+  const normalized = createEmptyPreferences();
+
+  if (Object.prototype.hasOwnProperty.call(rawPreferences, 'theme')) {
+    normalized.theme = sanitizeThemePreference(rawPreferences.theme);
+  }
+
+  return normalized;
+}
+
+function clonePreferences(preferences) {
+  return normalizePreferences(preferences);
+}
+
+function sanitizePreferencesUpdates(updates = {}) {
+  if (!updates || typeof updates !== 'object') {
+    return {};
+  }
+
+  const sanitized = {};
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'theme')) {
+    sanitized.theme = sanitizeThemePreference(updates.theme);
+  }
+
+  return sanitized;
+}
+
 function sanitizeProfileUpdates(updates = {}) {
   if (!updates || typeof updates !== 'object') {
     return {};
@@ -289,6 +339,7 @@ function cloneUser(user) {
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt),
     profile: cloneProfile(user.profile),
+    preferences: clonePreferences(user.preferences),
   };
 }
 
@@ -307,6 +358,7 @@ function normalizeUser(user) {
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
     profile: normalizeProfile(user?.profile),
+    preferences: normalizePreferences(user?.preferences),
   };
 }
 
@@ -387,13 +439,14 @@ export function subscribeStorageStatus(listener) {
   };
 }
 
-export async function addUser({ name, phone, password, device, profile, userType }) {
+export async function addUser({ name, phone, password, device, profile, userType, preferences }) {
   const sanitizedName = typeof name === 'string' ? name.trim().slice(0, 120) : '';
   const sanitizedPhone = typeof phone === 'string' ? phone.trim() : '';
   const sanitizedPassword = typeof password === 'string' ? password : '';
   const sanitizedDevice = typeof device === 'string' ? device.trim().slice(0, 512) : '';
   const sanitizedProfile = normalizeProfile(profile);
   const sanitizedUserType = sanitizeUserType(userType);
+  const sanitizedPreferences = normalizePreferences(preferences);
 
   if (!sanitizedPhone || !sanitizedPassword) {
     throw new Error('Telefone e senha são obrigatórios para acessar o painel.');
@@ -413,6 +466,7 @@ export async function addUser({ name, phone, password, device, profile, userType
       device: sanitizedDevice,
       profile: sanitizedProfile,
       userType: sanitizedUserType,
+      preferences: sanitizedPreferences,
     });
 
     const normalized = normalizeUser(savedUser);
@@ -492,6 +546,13 @@ export async function updateUser(id, updates = {}) {
     const profileUpdates = sanitizeProfileUpdates(updates.profile);
     if (Object.keys(profileUpdates).length > 0) {
       sanitizedUpdates.profile = profileUpdates;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'preferences')) {
+    const preferencesUpdates = sanitizePreferencesUpdates(updates.preferences);
+    if (Object.keys(preferencesUpdates).length > 0) {
+      sanitizedUpdates.preferences = preferencesUpdates;
     }
   }
 
@@ -595,6 +656,18 @@ export function teardownUserStore() {
   pendingStorageReadyReason = null;
   markStorageLoading();
   scheduleAccountsSync();
+}
+
+export function getDefaultUserPreferences() {
+  return createEmptyPreferences();
+}
+
+export function normalizeUserPreferences(preferences) {
+  return normalizePreferences(preferences);
+}
+
+export function sanitizeUserThemePreference(preference) {
+  return sanitizeThemePreference(preference);
 }
 
 export async function resetUserStoreForTests() {
