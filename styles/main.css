@@ -423,15 +423,25 @@ header {
 }
 
 .header-action {
+  --header-action-bg: var(--color-bg-card);
+  --header-action-bg-hover: var(--header-action-bg);
+  --header-action-color: var(--color-text-secondary);
+  --header-action-border: rgba(var(--color-warm-rgb), 0.35);
+  --header-action-border-hover: rgba(var(--color-warm-rgb), 0.6);
+  --header-action-shadow: 0 0.35rem 0.95rem rgba(var(--color-warm-rgb), 0.12);
+  --header-action-shadow-hover: 0 0.4rem 1rem rgba(var(--color-warm-rgb), 0.18);
+  --header-action-focus-shadow: 0 0 0 0.15rem rgba(var(--color-warm-rgb), 0.2);
+  --header-action-hover-translate: translateY(-1px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding-block: clamp(0.4rem, 1vw, 0.6rem);
   padding-inline: clamp(0.9rem, 2vw, 1.4rem);
   border-radius: 999px;
-  border: 0.12rem solid rgba(var(--color-warm-rgb), 0.35);
-  background: var(--color-bg-card);
-  color: var(--color-text-secondary);
+  border: 0.12rem solid var(--header-action-border);
+  background: var(--header-action-bg);
+  color: var(--header-action-color);
+  box-shadow: var(--header-action-shadow);
   font-weight: 600;
   text-decoration: none;
   line-height: 1;
@@ -447,66 +457,81 @@ header {
 
 .header-action:hover,
 .header-action:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 0.4rem 1rem rgba(var(--color-warm-rgb), 0.18);
-  border-color: rgba(var(--color-warm-rgb), 0.6);
+  transform: var(--header-action-hover-translate);
+  background: var(--header-action-bg-hover);
+  box-shadow: var(--header-action-shadow-hover);
+  border-color: var(--header-action-border-hover);
   outline: none;
 }
 
 .header-action:focus-visible {
-  box-shadow: 0 0 0 0.15rem rgba(var(--color-warm-rgb), 0.2);
+  box-shadow: var(--header-action-focus-shadow);
 }
 
 .header-action--home {
-  border-color: rgba(var(--color-warm-rgb), 0.4);
+  --header-action-border: rgba(var(--color-warm-rgb), 0.4);
+  --header-action-border-hover: rgba(var(--color-warm-rgb), 0.75);
 }
 
 .header-action--home[aria-pressed='true'] {
-  background: linear-gradient(
+  --header-action-bg: linear-gradient(
     135deg,
     rgba(var(--color-warm-rgb), 0.12) 0%,
     rgba(var(--color-warm-rgb), 0.28) 100%
   );
-  color: var(--color-text-primary);
-  border-color: rgba(var(--color-warm-rgb), 0.75);
-  box-shadow: 0 0.45rem 1.2rem rgba(var(--color-warm-rgb), 0.28);
+  --header-action-color: var(--color-text-primary);
+  --header-action-border: rgba(var(--color-warm-rgb), 0.75);
+  --header-action-border-hover: rgba(var(--color-warm-rgb), 0.85);
+  --header-action-shadow: 0 0.45rem 1.2rem rgba(var(--color-warm-rgb), 0.28);
+  --header-action-shadow-hover: 0 0.55rem 1.35rem rgba(var(--color-warm-rgb), 0.35);
 }
 
-.header-action--home[aria-pressed='true']:hover,
-.header-action--home[aria-pressed='true']:focus-visible {
-  box-shadow: 0 0.55rem 1.35rem rgba(var(--color-warm-rgb), 0.35);
+.header-action--admin {
+  --header-action-bg: linear-gradient(
+    135deg,
+    rgba(var(--color-accent-rgb), 0.18) 0%,
+    rgba(var(--color-accent-rgb), 0.35) 100%
+  );
+  --header-action-color: var(--color-text-primary);
+  --header-action-border: rgba(var(--color-accent-rgb), 0.6);
+  --header-action-border-hover: rgba(var(--color-accent-rgb), 0.85);
+  --header-action-shadow: 0 0.45rem 1.15rem rgba(var(--color-accent-rgb), 0.28);
+  --header-action-shadow-hover: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.38);
+  --header-action-focus-shadow: 0 0 0 0.15rem rgba(var(--color-accent-rgb), 0.22);
 }
 
 .header-action--register {
-  background: var(--color-bg-card);
-  color: var(--color-accent-strong);
-  border-color: rgba(var(--color-accent-rgb), 0.45);
-  box-shadow: 0 0.35rem 0.85rem rgba(var(--color-accent-rgb), 0.2);
+  --header-action-color: var(--color-accent-strong);
+  --header-action-border: rgba(var(--color-accent-rgb), 0.45);
+  --header-action-border-hover: rgba(var(--color-accent-rgb), 0.9);
+  --header-action-shadow: 0 0.35rem 0.85rem rgba(var(--color-accent-rgb), 0.2);
+  --header-action-shadow-hover: 0 0.45rem 1.2rem rgba(var(--color-accent-rgb), 0.4);
+  --header-action-focus-shadow: 0 0 0 0.15rem rgba(var(--color-accent-rgb), 0.2);
 }
 
-.header-action--register:hover,
-.header-action--register:focus-visible {
-  box-shadow: 0 0.45rem 1.2rem rgba(var(--color-accent-rgb), 0.4);
-  border-color: rgba(var(--color-accent-rgb), 0.9);
+.header-action--user {
+  --header-action-bg: rgba(var(--color-warm-rgb), 0.08);
+  --header-action-color: var(--color-text-primary);
+  --header-action-border: rgba(var(--color-warm-rgb), 0.45);
+  --header-action-border-hover: rgba(var(--color-warm-rgb), 0.75);
+  --header-action-shadow: 0 0.35rem 1rem rgba(var(--color-warm-rgb), 0.2);
+  --header-action-shadow-hover: 0 0.45rem 1.25rem rgba(var(--color-warm-rgb), 0.28);
 }
 
 .header-action--avatar {
+  --header-action-bg: linear-gradient(135deg, var(--color-accent-deep) 0%, var(--color-accent-strong) 100%);
+  --header-action-bg-hover: linear-gradient(135deg, var(--color-accent-strong) 0%, var(--color-accent) 100%);
+  --header-action-color: var(--color-text-inverse);
+  --header-action-border: rgba(var(--color-accent-rgb), 0.6);
+  --header-action-border-hover: rgba(var(--color-accent-rgb), 0.9);
+  --header-action-shadow: 0 0.45rem 1.2rem rgba(138, 75, 12, 0.32);
+  --header-action-shadow-hover: 0 0.6rem 1.4rem rgba(138, 75, 12, 0.45);
+  --header-action-focus-shadow: 0 0 0 0.15rem rgba(var(--color-accent-rgb), 0.24);
   padding-inline: clamp(0.75rem, 1.8vw, 1.1rem);
   min-width: auto;
   text-transform: uppercase;
   font-size: clamp(0.95rem, 2.4vw, 1.05rem);
   letter-spacing: 0.08em;
-  background: linear-gradient(135deg, var(--color-accent-deep) 0%, var(--color-accent-strong) 100%);
-  color: var(--color-text-inverse);
-  border-color: rgba(var(--color-accent-rgb), 0.6);
-  box-shadow: 0 0.45rem 1.2rem rgba(138, 75, 12, 0.32);
-}
-
-.header-action--avatar:hover,
-.header-action--avatar:focus-visible {
-  box-shadow: 0 0.6rem 1.4rem rgba(138, 75, 12, 0.45);
-  border-color: rgba(var(--color-accent-rgb), 0.9);
-  background: linear-gradient(135deg, var(--color-accent-strong) 0%, var(--color-accent) 100%);
 }
 
 .header-login-link {

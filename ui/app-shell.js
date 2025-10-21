@@ -32,6 +32,8 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
+const adminLink = document.querySelector('.header-admin-link');
+const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
@@ -657,6 +659,26 @@ function ensureHeaderMobileMenu() {
     toggleHomePanel();
   });
 
+  const adminAction = document.createElement('button');
+  adminAction.type = 'button';
+  adminAction.id = 'mobile-access-menu-admin';
+  adminAction.className = 'app-modal__action header-mobile-menu__action';
+  adminAction.textContent = 'Painel administrativo';
+  adminAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('admin');
+  });
+
+  const userAction = document.createElement('button');
+  userAction.type = 'button';
+  userAction.id = 'mobile-access-menu-user';
+  userAction.className = 'app-modal__action header-mobile-menu__action';
+  userAction.textContent = 'Painel do usuário';
+  userAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('user');
+  });
+
   const registerAction = document.createElement('button');
   registerAction.type = 'button';
   registerAction.id = 'mobile-access-menu-register';
@@ -677,7 +699,7 @@ function ensureHeaderMobileMenu() {
     shellRouter?.goTo?.('login');
   });
 
-  actions.append(homeAction, registerAction, loginAction);
+  actions.append(homeAction, adminAction, userAction, registerAction, loginAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
@@ -1170,6 +1192,16 @@ export function initializeAppShell(router) {
   homeLink?.addEventListener('click', (event) => {
     event.preventDefault();
     toggleHomePanel();
+  });
+
+  adminLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    renderView('admin');
+  });
+
+  userLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    renderView('user');
   });
 
   logo?.addEventListener('click', () => renderView('admin'));
