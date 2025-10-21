@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.100 - 2025-10-21 10:05 BRT
+- Acrescenta ao cartão "Dados de acesso" um resumo compacto com telefone formatado, tipo de usuário, dispositivo reconhecido e registro da última atualização.
+- Disponibiliza atalho para copiar o telefone cadastrado com feedback imediato, reforçando o texto introdutório para orientar o uso do widget.
+- Ajusta os estilos do painel para acomodar o novo bloco de resumo e atualiza o rodapé para a versão v0.1.100 das 10h05.
+- Suaviza a tipografia do painel, aplicando antisserrilhamento global e reduzindo o contraste do resumo de acesso com fundo branco e cores mais leves.
+- Valida visualmente o painel do usuário em tablet (768x1024 e 1024x768), confirmando o cartão central limpo e responsivo em retrato e paisagem.
+- Recolhe o texto auxiliar da seção "Sessão e segurança" e reduz os botões de ação para deixá-los mais discretos na interface.
+
 ## v0.1.99 - 2025-10-21 05:15 BRT
 - Padroniza o layout chapado do MiniApp Base aplicando o contêiner compartilhado aos painéis centrais e removendo bordas, sombras e larguras redundantes, incluindo o cartão de boas-vindas.
 - Harmoniza o painel administrativo com a mesma malha do painel do usuário, reaproveitando tokens globais e classes compartilhadas sem depender de estilos paralelos.

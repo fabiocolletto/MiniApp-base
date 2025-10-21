@@ -5,9 +5,64 @@ import { registerViewCleanup } from '../view-cleanup.js';
 import { normalizeCep, lookupCep } from '../utils/cep-service.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
-import { validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
+import {
+  formatPhoneNumberForDisplay,
+  validatePhoneNumber,
+  validatePasswordStrength,
+} from './shared/validation.js';
 
 const BASE_CLASSES = 'card view view--user';
+const USER_TYPE_LABELS = {
+  administrador: 'Administrador',
+  colaborador: 'Colaborador',
+  usuario: 'Usuário',
+};
+
+const updatedAtFormatter = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+});
+
+function normalizeUserType(value) {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized === 'admin' || normalized === 'administradora') {
+    return 'administrador';
+  }
+
+  if (normalized === 'colaboradora') {
+    return 'colaborador';
+  }
+
+  if (USER_TYPE_LABELS[normalized]) {
+    return normalized;
+  }
+
+  return 'usuario';
+}
+
+function formatUserTypeLabel(value) {
+  const normalized = normalizeUserType(value);
+  return USER_TYPE_LABELS[normalized] || USER_TYPE_LABELS.usuario;
+}
+
+function formatUpdatedAtLabel(value) {
+  if (!value) {
+    return 'Nunca atualizado';
+  }
+
+  const dateValue = value instanceof Date ? value : new Date(value);
+
+  if (!dateValue || Number.isNaN(dateValue.getTime())) {
+    return 'Nunca atualizado';
+  }
+
+  return `Atualizado em ${updatedAtFormatter.format(dateValue)}`;
+}
 export const PROFILE_ADDRESS_FIELD_SEQUENCE = [
   'zip',
   'document',
@@ -241,7 +296,67 @@ export function renderUserPanel(viewRoot) {
 
   const primaryIntro = document.createElement('p');
   primaryIntro.className = 'user-widget__description user-details__form-description';
-  primaryIntro.textContent = 'Telefone e senha que você usa para entrar.';
+  primaryIntro.textContent =
+    'Confira um resumo rápido do acesso e atualize o telefone ou a senha sempre que necessário.';
+
+  const accessSummary = document.createElement('section');
+  accessSummary.className = 'user-details__access-summary';
+  accessSummary.hidden = true;
+
+  const accessSummaryTitle = document.createElement('h3');
+  accessSummaryTitle.className = 'user-details__access-summary-title';
+  accessSummaryTitle.textContent = 'Resumo do acesso';
+
+  const accessSummaryDescription = document.createElement('p');
+  accessSummaryDescription.className = 'user-details__access-summary-description';
+  const defaultAccessSummaryDescription =
+    'Veja rapidamente os dados utilizados para autenticação antes de editar.';
+  accessSummaryDescription.textContent = defaultAccessSummaryDescription;
+
+  const accessSummaryList = document.createElement('dl');
+  accessSummaryList.className = 'user-details__access-summary-list';
+
+  function createAccessSummaryItem(label, { withCopy = false } = {}) {
+    const item = document.createElement('div');
+    item.className = 'user-details__access-summary-item';
+
+    const term = document.createElement('dt');
+    term.className = 'user-details__access-summary-label';
+    term.textContent = label;
+
+    const definition = document.createElement('dd');
+    definition.className = 'user-details__access-summary-value';
+
+    const value = document.createElement('span');
+    value.className = 'user-details__access-summary-text';
+    value.textContent = '—';
+
+    definition.append(value);
+
+    let copyButton = null;
+    if (withCopy) {
+      copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.className = 'user-details__access-summary-copy';
+      copyButton.textContent = 'Copiar';
+      copyButton.disabled = true;
+      definition.append(copyButton);
+    }
+
+    item.append(term, definition);
+    accessSummaryList.append(item);
+
+    return { item, term, definition, value, copyButton };
+  }
+
+  const accessSummaryItems = {
+    phone: createAccessSummaryItem('Telefone principal', { withCopy: true }),
+    userType: createAccessSummaryItem('Tipo de acesso'),
+    device: createAccessSummaryItem('Dispositivo reconhecido'),
+    updatedAt: createAccessSummaryItem('Última atualização'),
+  };
+
+  accessSummary.append(accessSummaryTitle, accessSummaryDescription, accessSummaryList);
 
   const primaryPhoneField = createInputField({
     id: 'user-details-phone',
@@ -295,28 +410,23 @@ export function renderUserPanel(viewRoot) {
   accountHeading.className = 'user-widget__title user-details__access-state-title';
   accountHeading.textContent = 'Sessão e segurança';
 
-  const accountDescription = document.createElement('p');
-  accountDescription.className = 'user-widget__description user-details__access-state-description';
-  accountDescription.textContent =
-    'Gerencie sua sessão atual, finalize o acesso com segurança ou remova todos os dados armazenados.';
-
   const accountActions = document.createElement('div');
   accountActions.className = 'user-account__actions';
 
   const logoffButton = document.createElement('button');
   logoffButton.type = 'button';
   logoffButton.className = 'user-account__action user-account__action--logoff';
-  logoffButton.textContent = 'Fazer logoff';
+  logoffButton.textContent = 'Logoff';
 
   const logoutButton = document.createElement('button');
   logoutButton.type = 'button';
   logoutButton.className = 'user-account__action user-account__action--logout';
-  logoutButton.textContent = 'Fazer logout';
+  logoutButton.textContent = 'Logout';
 
   const deleteButton = document.createElement('button');
   deleteButton.type = 'button';
   deleteButton.className = 'user-account__action user-account__action--delete';
-  deleteButton.textContent = 'Excluir todos os dados';
+  deleteButton.textContent = 'Limpar dados';
 
   accountActions.append(logoffButton, logoutButton, deleteButton);
 
@@ -326,11 +436,12 @@ export function renderUserPanel(viewRoot) {
     show: showAccountFeedback,
   } = createPanelFeedback('user-account__feedback');
 
-  accountSection.append(accountHeading, accountDescription, accountActions, accountFeedback);
+  accountSection.append(accountHeading, accountActions, accountFeedback);
 
   primaryForm.append(
     primaryTitle,
     primaryIntro,
+    accessSummary,
     selectionInfo,
     primaryFields,
     primaryFeedback,
@@ -1031,6 +1142,152 @@ export function renderUserPanel(viewRoot) {
     updatePasswordVisibility();
   });
 
+  if (accessSummaryItems.phone.copyButton) {
+    accessSummaryItems.phone.copyButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const button = accessSummaryItems.phone.copyButton;
+      if (!button || button.disabled) {
+        return;
+      }
+
+      const rawPhone = button.dataset.rawPhone || '';
+      if (!rawPhone) {
+        return;
+      }
+
+      resetPrimaryFeedback();
+
+      const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+      if (!clipboard || typeof clipboard.writeText !== 'function') {
+        showPrimaryFeedback('Não foi possível copiar automaticamente. Copie manualmente.', {
+          isError: true,
+        });
+        return;
+      }
+
+      try {
+        await clipboard.writeText(rawPhone);
+        showPrimaryFeedback('Telefone copiado para a área de transferência.', { isError: false });
+      } catch (error) {
+        console.error('Erro ao copiar telefone do usuário pelo painel.', error);
+        showPrimaryFeedback('Falha ao copiar o telefone. Copie manualmente.', { isError: true });
+      }
+    });
+  }
+
+  function updateAccessSummary(user) {
+    const state = user ? 'ready' : 'idle';
+
+    if (accessSummary) {
+      accessSummary.hidden = !user;
+      accessSummary.dataset.state = state;
+    }
+
+    if (accessSummaryDescription) {
+      if (!user) {
+        accessSummaryDescription.textContent = defaultAccessSummaryDescription;
+      } else {
+        const nameLabel = typeof user.name === 'string' && user.name.trim() ? user.name.trim() : null;
+        accessSummaryDescription.textContent = nameLabel
+          ? `Dados principais de ${nameLabel}.`
+          : 'Dados principais do cadastro ativo.';
+      }
+    }
+
+    const { phone, userType, device, updatedAt } = accessSummaryItems;
+
+    function setSummaryText(item, text, { title, dataset } = {}) {
+      if (!item || !item.value) {
+        return;
+      }
+
+      const label = text && String(text).trim() ? String(text).trim() : '—';
+      item.value.textContent = label;
+
+      if (title) {
+        item.value.setAttribute('title', title);
+      } else {
+        item.value.removeAttribute('title');
+      }
+
+      if (dataset && typeof dataset === 'object') {
+        const normalizedEntries = Object.entries(dataset).filter(([, value]) => value != null && value !== '');
+        const allowedKeys = new Set(normalizedEntries.map(([key]) => `data-${key}`));
+
+        Array.from(item.value.attributes || [])
+          .map((attr) => (attr && typeof attr.name === 'string' ? attr.name : null))
+          .filter((name) => typeof name === 'string' && name.startsWith('data-') && !allowedKeys.has(name))
+          .forEach((name) => {
+            item.value.removeAttribute(name);
+          });
+
+        normalizedEntries.forEach(([key, value]) => {
+          item.value.dataset[key] = String(value);
+        });
+      } else {
+        Array.from(item.value.attributes || [])
+          .map((attr) => (attr && typeof attr.name === 'string' ? attr.name : null))
+          .filter((name) => typeof name === 'string' && name.startsWith('data-'))
+          .forEach((name) => {
+            item.value.removeAttribute(name);
+          });
+      }
+    }
+
+    if (!user) {
+      setSummaryText(phone, '—');
+      setSummaryText(userType, '—');
+      setSummaryText(device, '—');
+      setSummaryText(updatedAt, '—');
+
+      if (phone?.copyButton) {
+        phone.copyButton.disabled = true;
+        phone.copyButton.removeAttribute('title');
+        phone.copyButton.removeAttribute('aria-label');
+        delete phone.copyButton.dataset.rawPhone;
+      }
+
+      return;
+    }
+
+    const formattedPhone = formatPhoneNumberForDisplay(user.phone);
+    const rawPhone = typeof user.phone === 'string' ? user.phone.trim() : '';
+    const phoneLabel = formattedPhone || (rawPhone ? rawPhone : 'Não informado');
+    const phoneTitle = rawPhone ? `Telefone cadastrado: ${rawPhone}` : 'Nenhum telefone cadastrado';
+    setSummaryText(phone, phoneLabel, {
+      title: phoneTitle,
+      dataset: rawPhone ? { rawPhone } : null,
+    });
+
+    if (phone?.copyButton) {
+      const copyLabel = rawPhone ? 'Copiar telefone de login' : 'Nenhum telefone cadastrado';
+      phone.copyButton.disabled = !rawPhone;
+      if (rawPhone) {
+        phone.copyButton.dataset.rawPhone = rawPhone;
+      } else {
+        delete phone.copyButton.dataset.rawPhone;
+      }
+      phone.copyButton.setAttribute('title', copyLabel);
+      phone.copyButton.setAttribute('aria-label', copyLabel);
+    }
+
+    const userTypeLabel = formatUserTypeLabel(user.userType);
+    setSummaryText(userType, userTypeLabel);
+
+    const deviceLabel = typeof user.device === 'string' && user.device.trim()
+      ? user.device.trim()
+      : 'Não identificado';
+    setSummaryText(device, deviceLabel);
+
+    const updatedAtLabel = formatUpdatedAtLabel(user.updatedAt);
+    const updatedAtValue = user?.updatedAt instanceof Date
+      ? user.updatedAt.toISOString()
+      : user?.updatedAt;
+    setSummaryText(updatedAt, updatedAtLabel, {
+      dataset: updatedAtValue ? { updatedAt: updatedAtValue } : null,
+    });
+  }
+
   function updateSelectionInfo(user) {
     if (!selectionText || !selectionAction) {
       return;
@@ -1051,6 +1308,7 @@ export function renderUserPanel(viewRoot) {
 
   function updateFormsState() {
     const user = getActiveSessionUser();
+    updateAccessSummary(user);
     updateSelectionInfo(user);
 
     const shouldDisable = !user;
