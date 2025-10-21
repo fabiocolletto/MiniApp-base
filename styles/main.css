@@ -18,9 +18,9 @@
     100dvh - var(--header-total-size) - var(--footer-total-size) -
       (var(--content-padding-block-start) + var(--content-padding-block-end))
   );
-  --content-padding-block-start: clamp(1.5rem, 6vh, 3rem);
-  --content-padding-block-end: clamp(1.5rem, 6vh, 3rem);
-  --content-padding-inline: 1.5rem;
+  --content-padding-block-start: 0;
+  --content-padding-block-end: 0;
+  --content-padding-inline: 0;
   --panel-font-size-compact: clamp(0.7rem, 0.82vw + 0.52rem, 0.88rem);
   --panel-font-size-base: clamp(0.78rem, 0.9vw + 0.58rem, 0.95rem);
   --panel-font-size-strong: clamp(0.84rem, 0.95vw + 0.6rem, 1rem);
@@ -1054,6 +1054,15 @@ footer {
   text-align: center;
 }
 
+.view--greeting {
+  padding: 0;
+  justify-self: stretch;
+  align-self: stretch;
+  margin-block-start: calc(var(--header-total-size) * -1);
+  margin-block-end: calc(var(--footer-total-size) * -1);
+  background: #fff;
+}
+
 .view::-webkit-scrollbar {
   width: 0.45rem;
 }
@@ -1081,16 +1090,31 @@ footer {
 }
 
 .card.view--user {
-  width: min(92vw, 44rem);
-  padding: clamp(1.25rem, 2.8vw, 1.95rem);
+  width: 100%;
+  max-width: none;
+  padding: 0;
   box-sizing: border-box;
-  justify-self: center;
-  align-self: center;
+  border-radius: 0;
+  justify-self: stretch;
+  align-self: stretch;
   background: #fff;
+  min-height: var(--view-max-block-size);
   max-height: var(--view-max-block-size);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
+}
+
+.card.view--greeting {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  justify-self: stretch;
+  align-self: stretch;
+  min-height: var(--view-max-block-size);
+  max-height: var(--view-max-block-size);
 }
 
 .card.auth-view {
