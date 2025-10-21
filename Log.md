@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.106 - 2025-10-21 18:55 BRT
+- Centraliza o cartão do painel de cadastro ajustando o alinhamento vertical das views de autenticação, garantindo preenchimento uniforme sem interferência de outros elementos.
+- Revalida visualmente o painel de cadastro em tamanhos de tela móvel, tablet e desktop para confirmar a centralização consistente do cartão.
+- Atualiza o rodapé para exibir a versão v0.1.106 das 18h55.
+
 ## v0.1.105 - 2025-10-21 17:40 BRT
 - Recentra o cartão de boas-vindas ajustando o comportamento do `<main>` para centralizar a view de saudação sem sobreposição do cabeçalho fixo.
 - Refina a classe `main--greeting` para posicionar o cartão considerando os espaços reservados do cabeçalho e do rodapé fixos.
