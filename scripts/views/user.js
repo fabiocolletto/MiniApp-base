@@ -231,7 +231,7 @@ export function renderUserPanel(viewRoot) {
   }
 
   const primaryForm = document.createElement('form');
-  primaryForm.className = 'user-widget user-panel__widget user-panel__widget--access user-form user-details__card';
+  primaryForm.className = 'user-widget user-panel__widget user-panel__widget--access user-form';
   primaryForm.noValidate = true;
   primaryForm.addEventListener('submit', (event) => event.preventDefault());
 
@@ -338,7 +338,7 @@ export function renderUserPanel(viewRoot) {
   );
 
   const profileForm = document.createElement('form');
-  profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form user-details__card';
+  profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form';
   profileForm.noValidate = true;
   profileForm.addEventListener('submit', (event) => event.preventDefault());
 
