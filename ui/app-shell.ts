@@ -25,6 +25,9 @@ const homeLink = document.querySelector('.header-home-link');
 const adminLink = document.querySelector('.header-admin-link');
 const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
+const headerMenu = document.querySelector('.header-menu');
+const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
+const headerMenuPanel = document.getElementById('header-navigation-menu');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 const sessionIndicator = document.querySelector('.footer-session');
@@ -75,6 +78,9 @@ let removeSessionPopoverListeners: (() => void) | null = null;
 let headerUserButton: HTMLButtonElement | null = null;
 let allowPreventScrollOption = true;
 let shellRouter: RouterBridge | null = null;
+
+let headerMenuOpen = false;
+let removeHeaderMenuListeners: (() => void) | null = null;
 
 type UiHooks = Partial<{
   views: Record<string, (viewRoot: HTMLElement) => void>;
@@ -209,6 +215,10 @@ function formatUserLabel(user: unknown): string {
   return 'Abrir painel do usuário';
 }
 
+function isHtmlElement(element: unknown): element is HTMLElement {
+  return element instanceof HTMLElement;
+}
+
 function isHomePanelActive(): boolean {
   return viewRoot instanceof HTMLElement && viewRoot.dataset.view === 'home';
 }
@@ -242,12 +252,179 @@ function syncHomeToggleStateFromDom(): void {
 }
 
 function toggleHomePanel(): void {
+  closeHeaderMenu();
+
   if (isHomePanelActive()) {
     renderView('greeting');
     return;
   }
 
   shellRouter?.goTo('dashboard');
+}
+
+type HeaderMenuFocusTarget = 'first' | 'last' | null;
+
+function getHeaderMenuItems(): HTMLElement[] {
+  if (!(headerMenuPanel instanceof HTMLElement)) {
+    return [];
+  }
+
+  return Array.from(headerMenuPanel.querySelectorAll<HTMLElement>('.header-menu__item')).filter(
+    (item): item is HTMLElement => item instanceof HTMLElement
+  );
+}
+
+function setHeaderMenuState(isOpen: boolean): void {
+  if (headerMenu instanceof HTMLElement) {
+    headerMenu.dataset.state = isOpen ? 'open' : 'closed';
+  }
+
+  if (headerMenuTrigger instanceof HTMLElement) {
+    const label = isOpen ? 'Fechar menu de painéis' : 'Abrir menu de painéis';
+    headerMenuTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    headerMenuTrigger.setAttribute('aria-label', label);
+    headerMenuTrigger.setAttribute('title', label);
+  }
+
+  if (headerMenuPanel instanceof HTMLElement) {
+    headerMenuPanel.hidden = !isOpen;
+  }
+}
+
+function closeHeaderMenu({ focusTrigger = false }: { focusTrigger?: boolean } = {}): void {
+  if (!headerMenuOpen) {
+    return;
+  }
+
+  headerMenuOpen = false;
+  setHeaderMenuState(false);
+
+  removeHeaderMenuListeners?.();
+  removeHeaderMenuListeners = null;
+
+  if (focusTrigger && headerMenuTrigger instanceof HTMLElement) {
+    headerMenuTrigger.focus();
+  }
+}
+
+function openHeaderMenu({ focus = 'first' }: { focus?: HeaderMenuFocusTarget } = {}): void {
+  if (headerMenuOpen) {
+    return;
+  }
+
+  headerMenuOpen = true;
+  setHeaderMenuState(true);
+
+  const items = getHeaderMenuItems();
+  if (focus === 'first' && items.length) {
+    items[0].focus();
+  } else if (focus === 'last' && items.length) {
+    items[items.length - 1].focus();
+  }
+
+  const handlePointerDown = (event: Event) => {
+    if (!(headerMenu instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = event.target;
+    if (!isHtmlElement(target) || !headerMenu.contains(target)) {
+      closeHeaderMenu();
+    }
+  };
+
+  const handleFocusIn = (event: FocusEvent) => {
+    if (!(headerMenu instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = event.target;
+    if (!isHtmlElement(target) || !headerMenu.contains(target)) {
+      closeHeaderMenu();
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeHeaderMenu({ focusTrigger: true });
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      closeHeaderMenu();
+    }
+  };
+
+  if (typeof document === 'object' && document) {
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('focusin', handleFocusIn as EventListener);
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    removeHeaderMenuListeners = () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('focusin', handleFocusIn as EventListener);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  } else {
+    removeHeaderMenuListeners = null;
+  }
+}
+
+function toggleHeaderMenu(): void {
+  if (headerMenuOpen) {
+    closeHeaderMenu({ focusTrigger: true });
+    return;
+  }
+
+  openHeaderMenu();
+}
+
+function focusHeaderMenuItemByOffset(currentIndex: number, offset: number): void {
+  const items = getHeaderMenuItems();
+  if (!items.length) {
+    return;
+  }
+
+  const normalizedIndex = ((currentIndex + offset) % items.length + items.length) % items.length;
+  items[normalizedIndex]?.focus();
+}
+
+function handleHeaderMenuItemKeydown(event: KeyboardEvent): void {
+  const target = event.target;
+  if (!isHtmlElement(target) || !target.classList.contains('header-menu__item')) {
+    return;
+  }
+
+  const items = getHeaderMenuItems();
+  const currentIndex = items.indexOf(target);
+
+  if (currentIndex === -1) {
+    return;
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    focusHeaderMenuItemByOffset(currentIndex, 1);
+    return;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    focusHeaderMenuItemByOffset(currentIndex, -1);
+    return;
+  }
+
+  if (event.key === 'Home') {
+    event.preventDefault();
+    items[0]?.focus();
+    return;
+  }
+
+  if (event.key === 'End') {
+    event.preventDefault();
+    items[items.length - 1]?.focus();
+  }
 }
 
 function setLinkVisibility(link: Element | null, isVisible: boolean): void {
@@ -658,6 +835,7 @@ export function renderView(name: ViewName): void {
     return;
   }
 
+  closeHeaderMenu();
   closeSessionPopover();
 
   applyMainState(name);
@@ -735,23 +913,63 @@ export function initializeAppShell(router: RouterBridge): void {
   adminLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('admin');
+    closeHeaderMenu();
   });
 
   userLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('user');
+    closeHeaderMenu();
   });
 
-  logo?.addEventListener('click', () => renderView('admin'));
-  versionButton?.addEventListener('click', () => renderView('log'));
+  logo?.addEventListener('click', () => {
+    closeHeaderMenu();
+    renderView('admin');
+  });
+  versionButton?.addEventListener('click', () => {
+    closeHeaderMenu();
+    renderView('log');
+  });
   loginLink?.addEventListener('click', (event) => {
     event.preventDefault();
+    closeHeaderMenu();
     router.goTo('login');
   });
   registerLink?.addEventListener('click', (event) => {
     event.preventDefault();
+    closeHeaderMenu();
     router.goTo('register');
   });
+
+  if (headerMenuTrigger instanceof HTMLElement) {
+    headerMenuTrigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleHeaderMenu();
+    });
+
+    headerMenuTrigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        openHeaderMenu({ focus: 'first' });
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        openHeaderMenu({ focus: 'last' });
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleHeaderMenu();
+      }
+    });
+  }
+
+  if (headerMenuPanel instanceof HTMLElement) {
+    headerMenuPanel.addEventListener('keydown', handleHeaderMenuItemKeydown);
+  }
 
   registerSessionIndicatorInteractions();
 

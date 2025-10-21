@@ -35,6 +35,9 @@ const homeLink = document.querySelector('.header-home-link');
 const adminLink = document.querySelector('.header-admin-link');
 const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
+const headerMenu = document.querySelector('.header-menu');
+const headerMenuTrigger = document.querySelector('.header-menu__trigger');
+const headerMenuPanel = document.getElementById('header-navigation-menu');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -201,6 +204,9 @@ let shellRouter = null;
 
 let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
+
+let headerMenuOpen = false;
+let removeHeaderMenuListeners = null;
 
 let appModalBackdrop = null;
 let appModalContainer = null;
@@ -409,6 +415,180 @@ function closeAppModal({ restoreFocus = true, id } = {}) {
 
   if (restoreFocus && trigger instanceof HTMLElement) {
     trigger.focus();
+  }
+}
+
+function getHeaderMenuItems() {
+  if (!(headerMenuPanel instanceof HTMLElement)) {
+    return [];
+  }
+
+  return Array.from(headerMenuPanel.querySelectorAll('.header-menu__item')).filter(
+    (item) => item instanceof HTMLElement
+  );
+}
+
+function setHeaderMenuState(isOpen) {
+  if (headerMenu instanceof HTMLElement) {
+    headerMenu.dataset.state = isOpen ? 'open' : 'closed';
+  }
+
+  if (headerMenuTrigger instanceof HTMLElement) {
+    const label = isOpen ? 'Fechar menu de painéis' : 'Abrir menu de painéis';
+    headerMenuTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    headerMenuTrigger.setAttribute('aria-label', label);
+    headerMenuTrigger.setAttribute('title', label);
+  }
+
+  if (headerMenuPanel instanceof HTMLElement) {
+    headerMenuPanel.hidden = !isOpen;
+  }
+}
+
+function closeHeaderMenu({ focusTrigger = false } = {}) {
+  if (!headerMenuOpen) {
+    return;
+  }
+
+  headerMenuOpen = false;
+  setHeaderMenuState(false);
+
+  if (typeof removeHeaderMenuListeners === 'function') {
+    removeHeaderMenuListeners();
+    removeHeaderMenuListeners = null;
+  }
+
+  if (focusTrigger && headerMenuTrigger instanceof HTMLElement) {
+    headerMenuTrigger.focus();
+  }
+}
+
+function openHeaderMenu({ focus = 'first' } = {}) {
+  if (headerMenuOpen) {
+    return;
+  }
+
+  headerMenuOpen = true;
+  setHeaderMenuState(true);
+
+  const items = getHeaderMenuItems();
+  if (focus === 'first' && items.length) {
+    items[0].focus();
+  } else if (focus === 'last' && items.length) {
+    items[items.length - 1].focus();
+  }
+
+  const handlePointerDown = (event) => {
+    if (!(headerMenu instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = event?.target;
+    if (!isHtmlElement(target) || !headerMenu.contains(target)) {
+      closeHeaderMenu();
+    }
+  };
+
+  const handleFocusIn = (event) => {
+    if (!(headerMenu instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = event?.target;
+    if (!isHtmlElement(target) || !headerMenu.contains(target)) {
+      closeHeaderMenu();
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeHeaderMenu({ focusTrigger: true });
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      closeHeaderMenu();
+    }
+  };
+
+  if (typeof document === 'object' && document) {
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    removeHeaderMenuListeners = () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  } else {
+    removeHeaderMenuListeners = null;
+  }
+}
+
+function toggleHeaderMenu() {
+  if (headerMenuOpen) {
+    closeHeaderMenu({ focusTrigger: true });
+    return;
+  }
+
+  openHeaderMenu();
+}
+
+function focusHeaderMenuItemByOffset(currentIndex, offset) {
+  const items = getHeaderMenuItems();
+  if (!items.length) {
+    return;
+  }
+
+  const normalizedIndex = ((currentIndex + offset) % items.length + items.length) % items.length;
+  const item = items[normalizedIndex];
+  if (item instanceof HTMLElement) {
+    item.focus();
+  }
+}
+
+function handleHeaderMenuItemKeydown(event) {
+  const target = event?.target;
+  if (!(target instanceof HTMLElement) || !target.classList.contains('header-menu__item')) {
+    return;
+  }
+
+  const items = getHeaderMenuItems();
+  const currentIndex = items.indexOf(target);
+
+  if (currentIndex === -1) {
+    return;
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    focusHeaderMenuItemByOffset(currentIndex, 1);
+    return;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    focusHeaderMenuItemByOffset(currentIndex, -1);
+    return;
+  }
+
+  if (event.key === 'Home') {
+    event.preventDefault();
+    const firstItem = items[0];
+    if (firstItem instanceof HTMLElement) {
+      firstItem.focus();
+    }
+    return;
+  }
+
+  if (event.key === 'End') {
+    event.preventDefault();
+    const lastItem = items[items.length - 1];
+    if (lastItem instanceof HTMLElement) {
+      lastItem.focus();
+    }
   }
 }
 
@@ -809,6 +989,8 @@ function syncHomeToggleStateFromDom() {
 }
 
 function toggleHomePanel() {
+  closeHeaderMenu();
+
   if (isHomePanelActive()) {
     renderView('greeting');
     return;
@@ -1119,6 +1301,7 @@ export function renderView(name) {
     return;
   }
 
+  closeHeaderMenu();
   closeSessionPopover();
 
   applyMainState(name);
@@ -1197,23 +1380,63 @@ export function initializeAppShell(router) {
   adminLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('admin');
+    closeHeaderMenu();
   });
 
   userLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('user');
+    closeHeaderMenu();
   });
 
-  logo?.addEventListener('click', () => renderView('admin'));
-  versionButton?.addEventListener('click', () => renderView('log'));
+  logo?.addEventListener('click', () => {
+    closeHeaderMenu();
+    renderView('admin');
+  });
+  versionButton?.addEventListener('click', () => {
+    closeHeaderMenu();
+    renderView('log');
+  });
   loginLink?.addEventListener('click', (event) => {
     event.preventDefault();
+    closeHeaderMenu();
     router.goTo('login');
   });
   registerLink?.addEventListener('click', (event) => {
     event.preventDefault();
+    closeHeaderMenu();
     router.goTo('register');
   });
+
+  if (headerMenuTrigger instanceof HTMLElement) {
+    headerMenuTrigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleHeaderMenu();
+    });
+
+    headerMenuTrigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        openHeaderMenu({ focus: 'first' });
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        openHeaderMenu({ focus: 'last' });
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleHeaderMenu();
+      }
+    });
+  }
+
+  if (headerMenuPanel instanceof HTMLElement) {
+    headerMenuPanel.addEventListener('keydown', handleHeaderMenuItemKeydown);
+  }
 
   if (headerMobileToggle instanceof HTMLButtonElement) {
     headerMobileToggle.setAttribute('aria-controls', 'mobile-access-menu');
