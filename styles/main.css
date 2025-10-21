@@ -1107,9 +1107,11 @@ footer {
   padding: 0;
   box-sizing: border-box;
   border-radius: 0;
+  box-shadow: none;
+  border: none;
   justify-self: stretch;
   align-self: stretch;
-  background: #fff;
+  background: transparent;
   min-height: var(--view-max-block-size);
   max-height: var(--view-max-block-size);
   overflow: auto;
@@ -1123,8 +1125,10 @@ footer {
   padding: 0;
   border-radius: 0;
   box-shadow: none;
+  border: none;
   justify-self: stretch;
   align-self: stretch;
+  background: transparent;
   min-height: var(--view-max-block-size);
   max-height: var(--view-max-block-size);
 }

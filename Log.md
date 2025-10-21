@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.101 - 2025-10-21 10:50 BRT
+- Faz o contêiner do painel do usuário ocupar toda a largura disponível sem sombras ou cantos arredondados, mantendo o conteúdo alinhado às bordas do header e footer.
+- Alinha o painel de saudação ao novo estilo chapado, removendo o cartão externo e preservando apenas os widgets internos.
+- Ajusta o estilo base para que as views aproveitem o espaço útil do layout fixo sem sobreposição do cabeçalho ou rodapé.
+
 ## v0.1.100 - 2025-10-21 09:10 BRT
 - Remove o acolchoamento adicional do conteúdo principal para que o painel central encoste nas bordas definidas pelo cabeçalho e rodapé.
 - Elimina o arredondamento e expande o cartão do painel do usuário para ocupar toda a altura disponível entre os elementos fixos.
