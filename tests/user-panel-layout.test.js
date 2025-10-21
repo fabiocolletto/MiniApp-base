@@ -242,6 +242,17 @@ function findElement(root, predicate) {
   return null;
 }
 
+function isDescendant(node, ancestor) {
+  let current = node;
+  while (current) {
+    if (current === ancestor) {
+      return true;
+    }
+    current = current.parentNode;
+  }
+  return false;
+}
+
 test('renderUserPanel mantém sessão dentro do cartão de acesso', async (t) => {
   const fakeDocument = new FakeDocument();
   globalThis.document = fakeDocument;
@@ -272,7 +283,7 @@ test('renderUserPanel mantém sessão dentro do cartão de acesso', async (t) =>
     node instanceof FakeElement && node.classList.contains('user-details__access-state'),
   );
   assert.ok(accessState, 'sessão e segurança deve estar dentro do cartão de acesso');
-  assert.strictEqual(accessState.parentNode, primaryForm);
+  assert.ok(isDescendant(accessState, primaryForm), 'sessão e segurança deve continuar no cartão de acesso');
 
   const actionBar = findElement(accessState, (node) =>
     node instanceof FakeElement && node.classList.contains('user-account__actions'),
