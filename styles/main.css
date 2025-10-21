@@ -26,6 +26,18 @@
   --panel-font-size-strong: clamp(0.84rem, 0.95vw + 0.6rem, 1rem);
   --panel-font-size-title: clamp(0.95rem, 1vw + 0.66rem, 1.12rem);
   --panel-font-size-heading: clamp(1.05rem, 1.1vw + 0.7rem, 1.25rem);
+  --panel-gap: clamp(0.6rem, 1.8vw, 1rem);
+  --panel-stack-gap: clamp(0.7rem, 2vw, 1.1rem);
+  --panel-inner-gap: clamp(0.65rem, 1.9vw, 1rem);
+  --panel-cluster-gap: clamp(0.45rem, 1.6vw, 0.8rem);
+  --panel-padding: clamp(0.75rem, 1.9vw, 1.25rem);
+  --panel-padding-large: clamp(0.85rem, 2.1vw, 1.35rem);
+  --panel-radius: 0.85rem;
+  --panel-shadow: 0 0.45rem 1.2rem rgba(61, 44, 16, 0.08);
+  --panel-border: 0.06rem solid rgba(94, 75, 35, 0.08);
+  --panel-border-strong: 0.06rem solid rgba(242, 159, 5, 0.22);
+  --panel-input-padding-block: 0.55rem;
+  --panel-input-padding-inline: 0.8rem;
 }
 @media (orientation: landscape) {
   :root {
@@ -1148,7 +1160,7 @@ footer {
 
 .view--admin {
   display: grid;
-  gap: clamp(0.75rem, 2vw, 1.2rem);
+  gap: var(--panel-gap);
   align-content: start;
   justify-items: stretch;
   text-align: left;
@@ -1156,7 +1168,7 @@ footer {
 
 .admin-user-layout {
   display: grid;
-  gap: clamp(0.75rem, 2vw, 1.2rem);
+  gap: var(--panel-gap);
   width: 100%;
   max-width: 68rem;
   margin: 0 auto;
@@ -1166,14 +1178,14 @@ footer {
 
 .admin-user-overview {
   display: grid;
-  gap: clamp(0.6rem, 1.6vw, 1rem);
+  gap: var(--panel-inner-gap);
   align-content: start;
   justify-items: stretch;
 }
 
 .admin-user-section {
   display: grid;
-  gap: clamp(1rem, 3vw, 1.6rem);
+  gap: var(--panel-stack-gap);
   width: 100%;
   justify-self: stretch;
   overflow-x: auto;
@@ -1199,12 +1211,12 @@ footer {
 .admin-user-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(0.75rem, 2vw, 1.2rem);
+  gap: var(--panel-cluster-gap);
   align-items: flex-end;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 1.1rem;
-  padding: clamp(0.85rem, 2vw, 1.3rem);
-  box-shadow: inset 0 0 0 0.08rem rgba(61, 44, 16, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: var(--panel-radius);
+  padding: var(--panel-padding);
+  box-shadow: inset 0 0 0 0.06rem rgba(61, 44, 16, 0.08);
 }
 
 .admin-user-toolbar__group {
@@ -1228,8 +1240,8 @@ footer {
 .admin-user-toolbar__search-input,
 .admin-user-toolbar__sort-select {
   width: 100%;
-  padding: 0.65rem 0.85rem;
-  border-radius: 0.85rem;
+  padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
+  border-radius: 0.75rem;
   border: 0.08rem solid rgba(61, 44, 16, 0.22);
   background: #fff;
   color: #3d2a12;
@@ -1285,7 +1297,7 @@ footer {
 }
 
 .admin-user-table caption {
-  padding: 0.75rem 1rem 0.5rem;
+  padding: var(--panel-padding) var(--panel-padding) 0.45rem;
   font-weight: 600;
   font-size: var(--panel-font-size-strong);
   color: #3c4043;
@@ -1332,7 +1344,7 @@ footer {
 }
 
 .admin-user-table__cell {
-  padding: 0.55rem 1rem;
+  padding: 0.45rem 0.75rem;
   font-size: var(--panel-font-size-base);
   border-bottom: 0.1rem solid #eceff1;
   vertical-align: middle;
@@ -1548,16 +1560,16 @@ footer {
 
 .admin-user-table__details-groups {
   display: grid;
-  gap: clamp(0.6rem, 2vw, 1rem);
+  gap: var(--panel-inner-gap);
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 }
 
 .admin-user-table__action {
-  border: 0.1rem solid #dadce0;
+  border: 0.08rem solid #dadce0;
   background: #fff;
   color: #1a73e8;
-  border-radius: 0.35rem;
-  padding: 0.35rem 0.85rem;
+  border-radius: 0.3rem;
+  padding: 0.3rem 0.7rem;
   font: inherit;
   font-weight: 500;
   cursor: pointer;
@@ -1661,11 +1673,11 @@ footer {
 
 @media (max-width: 72rem) {
   .card.view--admin {
-    padding: clamp(1rem, 2.4vw, 1.6rem);
+    padding: var(--panel-padding-large);
   }
 
   .admin-user-section {
-    gap: clamp(0.9rem, 3vw, 1.4rem);
+    gap: var(--panel-stack-gap);
   }
 
   .admin-user-table-panel {
@@ -1695,7 +1707,7 @@ footer {
 
 .view--user {
   display: grid;
-  gap: clamp(1.1rem, 3vw, 1.6rem);
+  gap: var(--panel-gap);
   grid-template-rows: auto auto minmax(0, 1fr);
   align-content: start;
   align-items: start;
@@ -2084,7 +2096,7 @@ footer {
 
 .user-panel__layout {
   display: grid;
-  gap: clamp(1rem, 3vw, 1.6rem);
+  gap: var(--panel-gap);
   width: 100%;
   align-content: start;
   justify-items: stretch;
@@ -2093,12 +2105,12 @@ footer {
 
 .user-panel__widget {
   display: grid;
-  gap: clamp(0.85rem, 2.4vw, 1.4rem);
-  padding: clamp(1rem, 2.6vw, 1.6rem);
-  border-radius: 1.25rem;
+  gap: var(--panel-stack-gap);
+  padding: var(--panel-padding);
+  border-radius: var(--panel-radius);
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 0.85rem 2rem rgba(61, 44, 16, 0.1);
-  border: 0.08rem solid rgba(94, 75, 35, 0.08);
+  box-shadow: var(--panel-shadow);
+  border: var(--panel-border);
   color: #3d2a12;
   min-height: 0;
   text-align: left;
@@ -2142,9 +2154,9 @@ footer {
 
 .user-details__selected {
   margin: 0;
-  padding: clamp(0.75rem, 2.2vw, 1.05rem);
-  border-radius: 0.9rem;
-  border: 0.08rem solid rgba(242, 159, 5, 0.28);
+  padding: var(--panel-padding);
+  border-radius: var(--panel-radius);
+  border: var(--panel-border-strong);
   background: rgba(255, 250, 244, 0.94);
   font-size: var(--panel-font-size-strong);
   font-weight: 600;
@@ -2152,7 +2164,7 @@ footer {
   text-align: center;
   line-height: 1.4;
   display: grid;
-  gap: clamp(0.45rem, 1.6vw, 0.75rem);
+  gap: var(--panel-cluster-gap);
   justify-items: center;
 }
 
@@ -2163,7 +2175,7 @@ footer {
 .user-details__selected-action {
   padding: 0.55rem 1.35rem;
   border-radius: 999px;
-  border: 0.1rem solid rgba(242, 159, 5, 0.55);
+  border: 0.08rem solid rgba(242, 159, 5, 0.45);
   background: #fff;
   color: #8a4b0c;
   font: inherit;
@@ -2175,8 +2187,8 @@ footer {
 .user-details__selected-action:hover,
 .user-details__selected-action:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 0.8rem 1.6rem rgba(242, 135, 5, 0.18);
-  border-color: rgba(242, 135, 5, 0.65);
+  box-shadow: 0 0.55rem 1.2rem rgba(242, 135, 5, 0.16);
+  border-color: rgba(242, 135, 5, 0.6);
   color: #6f3f09;
   outline: none;
 }
@@ -2193,21 +2205,11 @@ footer {
   box-shadow: none;
 }
 
-.user-details__card {
-  width: 100%;
-  padding: clamp(1rem, 2.6vw, 1.6rem);
-  border-radius: 1.05rem;
-  background: linear-gradient(180deg, rgba(255, 250, 244, 0.98), rgba(255, 255, 255, 0.99));
-  border: 0.08rem solid rgba(94, 75, 35, 0.08);
-  box-shadow: 0 0.75rem 1.8rem rgba(61, 44, 16, 0.1);
-}
-
-
 .user-details__collapsible {
-  border-radius: 0.95rem;
-  border: 0.08rem solid rgba(242, 159, 5, 0.16);
+  border-radius: var(--panel-radius);
+  border: var(--panel-border-strong);
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 0.65rem 1.6rem rgba(61, 44, 16, 0.08);
+  box-shadow: var(--panel-shadow);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2216,8 +2218,8 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: clamp(0.75rem, 2vw, 1rem);
-  padding: clamp(0.85rem, 2.4vw, 1.2rem);
+  gap: var(--panel-cluster-gap);
+  padding: var(--panel-padding);
   cursor: pointer;
   list-style: none;
 }
@@ -2272,10 +2274,10 @@ footer {
 }
 
 .user-details__collapsible-content {
-  border-top: 0.08rem solid rgba(242, 159, 5, 0.2);
-  padding: clamp(0.8rem, 2.2vw, 1.15rem) clamp(0.85rem, 2.4vw, 1.3rem) clamp(0.95rem, 2.6vw, 1.4rem);
+  border-top: 0.06rem solid rgba(242, 159, 5, 0.2);
+  padding: var(--panel-padding-large);
   display: grid;
-  gap: clamp(0.7rem, 2vw, 1.1rem);
+  gap: var(--panel-inner-gap);
 }
 
 .user-details__group-title {
@@ -2295,7 +2297,7 @@ footer {
 
 .user-details__form-grid {
   display: grid;
-  gap: clamp(0.65rem, 2vw, 1.05rem);
+  gap: var(--panel-inner-gap);
 }
 
 .user-details__form-grid--two {
@@ -2315,14 +2317,14 @@ footer {
 .user-account__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(0.75rem, 2.5vw, 1.25rem);
+  gap: var(--panel-cluster-gap);
   justify-content: center;
 }
 
 .user-account__action {
-  padding: 0.7rem 1.8rem;
-  border-radius: 2rem;
-  border: 0.12rem solid rgba(242, 159, 5, 0.55);
+  padding: 0.65rem 1.6rem;
+  border-radius: 1.6rem;
+  border: 0.1rem solid rgba(242, 159, 5, 0.5);
   background: #fffaf4;
   color: #8a4b0c;
   font: inherit;
@@ -2336,8 +2338,8 @@ footer {
 .user-account__action:hover,
 .user-account__action:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 0.9rem 1.8rem rgba(242, 135, 5, 0.22);
-  border-color: rgba(242, 135, 5, 0.68);
+  box-shadow: 0 0.6rem 1.3rem rgba(242, 135, 5, 0.18);
+  border-color: rgba(242, 135, 5, 0.62);
   color: #6f3f09;
   outline: none;
 }
@@ -2365,8 +2367,8 @@ footer {
 
 .user-account__action--delete:hover,
 .user-account__action--delete:focus-visible {
-  box-shadow: 0 1rem 2rem rgba(217, 70, 70, 0.32);
-  border-color: rgba(217, 70, 70, 0.85);
+  box-shadow: 0 0.75rem 1.5rem rgba(217, 70, 70, 0.26);
+  border-color: rgba(217, 70, 70, 0.8);
   color: #7b1c1c;
 }
 
@@ -2393,7 +2395,7 @@ footer {
 
 .user-form {
   display: grid;
-  gap: clamp(1rem, 3vw, 1.5rem);
+  gap: var(--panel-inner-gap);
   text-align: left;
   justify-items: stretch;
   align-content: start;
@@ -2425,9 +2427,9 @@ footer {
 }
 
 .user-form__field input {
-  padding: 0.75rem 1rem;
-  border-radius: 0.85rem;
-  border: 0.1rem solid rgba(94, 75, 35, 0.35);
+  padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
+  border-radius: 0.75rem;
+  border: 0.08rem solid rgba(94, 75, 35, 0.3);
   font: inherit;
   color: inherit;
   background: #fff;
@@ -2441,9 +2443,9 @@ footer {
 }
 
 .user-form__field--textarea textarea {
-  padding: 0.75rem 1rem;
-  border-radius: 0.85rem;
-  border: 0.1rem solid rgba(94, 75, 35, 0.35);
+  padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
+  border-radius: 0.75rem;
+  border: 0.08rem solid rgba(94, 75, 35, 0.3);
   font: inherit;
   color: inherit;
   background: #fff;
@@ -2460,9 +2462,9 @@ footer {
 
 .user-form__submit {
   justify-self: center;
-  padding: 0.85rem 2.5rem;
-  border-radius: 2rem;
-  border: 0.12rem solid rgba(242, 159, 5, 0.55);
+  padding: 0.7rem 2.1rem;
+  border-radius: 1.6rem;
+  border: 0.1rem solid rgba(242, 159, 5, 0.5);
   font: inherit;
   font-weight: 600;
   color: #b05d00;
@@ -2481,8 +2483,8 @@ footer {
 .user-form__submit:hover,
 .user-form__submit:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 0.8rem 1.6rem rgba(242, 135, 5, 0.2);
-  border-color: rgba(242, 135, 5, 0.65);
+  box-shadow: 0 0.55rem 1.2rem rgba(242, 135, 5, 0.16);
+  border-color: rgba(242, 135, 5, 0.6);
   color: #8a4b0c;
   outline: none;
 }
@@ -2509,7 +2511,7 @@ footer {
 
 .user-details {
   display: grid;
-  gap: clamp(1.1rem, 3vw, 1.9rem);
+  gap: var(--panel-stack-gap);
   text-align: left;
   align-content: start;
 }
