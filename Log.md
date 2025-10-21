@@ -1,9 +1,10 @@
 # Log
 
-## v0.1.100 - 2025-10-21 05:45 BRT
+## v0.1.100 - 2025-10-21 07:15 BRT
 - Remove o acolchoamento adicional do conteúdo principal para que o painel central encoste nas bordas definidas pelo cabeçalho e rodapé.
 - Elimina o arredondamento e expande o cartão do painel do usuário para ocupar toda a altura disponível entre os elementos fixos.
 - Estende o painel de saudação até tocar header e footer, retirando o espaçamento interno e o arredondamento remanescentes.
+- Move o bloco “Sessão e segurança” para dentro do cartão de “Dados de acesso”, ajustando o estilo do agrupamento e cobrindo a nova estrutura com teste automatizado.
 
 ## v0.1.99 - 2025-10-21 04:30 BRT
 - Substitui os botões de salvar por autosave nos formulários de telefone, senha e perfil, bloqueando submissões implícitas.
