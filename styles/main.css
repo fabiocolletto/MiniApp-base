@@ -21,9 +21,9 @@
       var(--layout-footer-offset, var(--footer-total-size)) -
       (var(--content-padding-block-start) + var(--content-padding-block-end))
   );
-  --content-padding-block-start: 0;
-  --content-padding-block-end: 0;
-  --content-padding-inline: 0;
+  --content-padding-block-start: 0px;
+  --content-padding-block-end: 0px;
+  --content-padding-inline: 0px;
   --panel-font-size-compact: clamp(0.7rem, 0.82vw + 0.52rem, 0.88rem);
   --panel-font-size-base: clamp(0.78rem, 0.9vw + 0.58rem, 0.95rem);
   --panel-font-size-strong: clamp(0.84rem, 0.95vw + 0.6rem, 1rem);
@@ -1850,36 +1850,43 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   max-width: 46rem;
 }
 
-.home-dashboard__callout,
-.admin-dashboard__callout {
-  width: min(100%, 42rem);
-  margin: 0 auto;
+.home-dashboard__title,
+.admin-dashboard__title,
+.home-dashboard__intro,
+.admin-dashboard__intro {
+  width: min(100%, 72rem);
+  max-width: min(100%, 72rem);
+  margin-inline: auto;
+  text-align: left;
 }
 
-.home-dashboard__callout-actions,
-.admin-dashboard__callout-actions {
+.home-dashboard__callout {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  justify-items: start;
+  align-items: start;
+  text-align: left;
+}
+
+.home-dashboard__callout-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--panel-cluster-gap);
-  justify-content: center;
+  justify-content: flex-start;
 }
 
-.home-dashboard__callout-button,
-.admin-dashboard__callout-button {
+.home-dashboard__callout-button {
   min-width: clamp(8.5rem, 24vw, 11.5rem);
 }
 
-.home-dashboard__callout-button--secondary,
-.admin-dashboard__callout-button--secondary {
+.home-dashboard__callout-button--secondary {
   border-color: rgba(var(--color-warm-rgb), 0.25);
   background: rgba(var(--color-accent-rgb), 0.08);
   color: var(--color-text-secondary);
 }
 
 .home-dashboard__callout-button--secondary:hover,
-.home-dashboard__callout-button--secondary:focus-visible,
-.admin-dashboard__callout-button--secondary:hover,
-.admin-dashboard__callout-button--secondary:focus-visible {
+.home-dashboard__callout-button--secondary:focus-visible {
   border-color: rgba(var(--color-accent-rgb), 0.45);
   color: var(--color-accent-deep);
 }
@@ -1889,21 +1896,18 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   align-content: start;
 }
 
-.home-dashboard__actions,
-.admin-dashboard__actions {
+.home-dashboard__actions {
   display: grid;
   gap: var(--panel-cluster-gap);
 }
 
 @media (min-width: 40rem) {
-  .home-dashboard__actions,
-  .admin-dashboard__actions {
+  .home-dashboard__actions {
     grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
   }
 }
 
-.home-dashboard__action-button,
-.admin-dashboard__action-button {
+.home-dashboard__action-button {
   display: grid;
   gap: 0.3rem;
   padding: clamp(0.65rem, 2.1vw, 1rem) clamp(0.95rem, 2.8vw, 1.4rem);
@@ -1919,9 +1923,7 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .home-dashboard__action-button:hover,
-.home-dashboard__action-button:focus-visible,
-.admin-dashboard__action-button:hover,
-.admin-dashboard__action-button:focus-visible {
+.home-dashboard__action-button:focus-visible {
   transform: translateY(-1px);
   background: rgba(var(--color-accent-rgb), 0.2);
   border-color: rgba(var(--color-accent-rgb), 0.5);
@@ -1929,19 +1931,16 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   outline: none;
 }
 
-.home-dashboard__action-button:focus-visible,
-.admin-dashboard__action-button:focus-visible {
+.home-dashboard__action-button:focus-visible {
   outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.55);
   outline-offset: 0.08rem;
 }
 
-.home-dashboard__action-label,
-.admin-dashboard__action-label {
+.home-dashboard__action-label {
   font-size: var(--panel-font-size-strong);
 }
 
-.home-dashboard__action-description,
-.admin-dashboard__action-description {
+.home-dashboard__action-description {
   color: var(--color-text-soft);
   font-size: var(--panel-font-size-base);
   font-weight: 400;
@@ -1949,9 +1948,7 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .home-dashboard__list,
-.home-dashboard__insights,
-.admin-dashboard__list,
-.admin-dashboard__insights {
+.home-dashboard__insights {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1959,8 +1956,7 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   gap: clamp(0.55rem, 1.6vw, 0.95rem);
 }
 
-.home-dashboard__list-item,
-.admin-dashboard__list-item {
+.home-dashboard__list-item {
   padding: clamp(0.55rem, 1.8vw, 1rem);
   border-radius: 0.85rem;
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.18);
@@ -1970,28 +1966,129 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .home-dashboard__list-title,
-.home-dashboard__insight-title,
-.admin-dashboard__list-title,
-.admin-dashboard__insight-title {
+.home-dashboard__insight-title {
   font-size: var(--panel-font-size-strong);
   font-weight: 700;
   color: var(--color-text-secondary);
 }
 
 .home-dashboard__list-description,
-.home-dashboard__insight-description,
-.admin-dashboard__list-description,
-.admin-dashboard__insight-description {
+.home-dashboard__insight-description {
   margin: 0;
   font-size: var(--panel-font-size-base);
   color: var(--color-text-soft);
   line-height: 1.6;
 }
 
-.home-dashboard__insight,
-.admin-dashboard__insight {
+.home-dashboard__insight {
   display: grid;
   gap: 0.35rem;
+}
+
+.admin-dashboard__user-management {
+  display: grid;
+  gap: clamp(0.9rem, 2.6vw, 1.4rem);
+}
+
+.admin-dashboard__user-summary,
+.admin-dashboard__user-actions {
+  display: grid;
+  gap: var(--panel-inner-gap);
+}
+
+.admin-dashboard__user-section-title {
+  margin: 0;
+  font-size: var(--panel-font-size-strong);
+  text-transform: uppercase;
+  letter-spacing: clamp(0.04rem, 0.18vw, 0.1rem);
+  color: var(--color-accent-deep);
+}
+
+.admin-dashboard__user-section-description {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}
+
+.admin-dashboard__user-stats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: clamp(0.55rem, 1.8vw, 0.95rem);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.admin-dashboard__user-stat {
+  display: grid;
+  gap: 0.25rem;
+  padding: clamp(0.6rem, 1.9vw, 0.95rem);
+  border-radius: 0.85rem;
+  border: 0.06rem solid rgba(var(--color-accent-rgb), 0.2);
+  background: rgba(var(--color-accent-rgb), 0.08);
+}
+
+.admin-dashboard__user-stat-value {
+  font-size: clamp(1.05rem, 1.2vw + 0.75rem, 1.35rem);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.admin-dashboard__user-stat-label {
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+}
+
+.admin-dashboard__user-action-grid {
+  display: grid;
+  gap: var(--panel-cluster-gap);
+}
+
+@media (min-width: 40rem) {
+  .admin-dashboard__user-action-grid {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+}
+
+.admin-dashboard__user-action {
+  display: grid;
+  gap: 0.35rem;
+  padding: clamp(0.65rem, 2.1vw, 1rem) clamp(1rem, 3vw, 1.5rem);
+  border-radius: 0.95rem;
+  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.28);
+  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.04));
+  color: var(--color-accent-deep);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-dashboard__user-action:hover,
+.admin-dashboard__user-action:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(var(--color-accent-rgb), 0.55);
+  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.2), rgba(var(--color-accent-rgb), 0.08));
+  box-shadow: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.18);
+  outline: none;
+}
+
+.admin-dashboard__user-action:focus-visible {
+  outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.55);
+  outline-offset: 0.08rem;
+}
+
+.admin-dashboard__user-action-label {
+  font-size: var(--panel-font-size-strong);
+}
+
+.admin-dashboard__user-action-description {
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .user-panel__widget {
