@@ -21,6 +21,7 @@ const logo = document.querySelector('.header-logo');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
+const homeLink = document.querySelector('.header-home-link');
 const headerActions = document.querySelector('.header-actions');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -71,6 +72,7 @@ let removeSessionPopoverListeners: (() => void) | null = null;
 
 let headerUserButton: HTMLButtonElement | null = null;
 let allowPreventScrollOption = true;
+let shellRouter: RouterBridge | null = null;
 
 type UiHooks = Partial<{
   views: Record<string, (viewRoot: HTMLElement) => void>;
@@ -203,6 +205,47 @@ function formatUserLabel(user: unknown): string {
   }
 
   return 'Abrir painel do usuário';
+}
+
+function isHomePanelActive(): boolean {
+  return viewRoot instanceof HTMLElement && viewRoot.dataset.view === 'home';
+}
+
+function getHomeToggleLabel(isActive: boolean): string {
+  return isActive ? 'Fechar painel inicial' : 'Abrir painel inicial';
+}
+
+function applyHomeToggleState(isActive: boolean): void {
+  if (!(homeLink instanceof HTMLElement)) {
+    return;
+  }
+
+  const label = getHomeToggleLabel(isActive);
+  homeLink.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  homeLink.setAttribute('aria-label', label);
+  homeLink.setAttribute('title', label);
+}
+
+function updateHomeToggleStateForView(viewName: string): void {
+  applyHomeToggleState(viewName === 'home');
+}
+
+function syncHomeToggleStateFromDom(): void {
+  if (!(viewRoot instanceof HTMLElement)) {
+    applyHomeToggleState(false);
+    return;
+  }
+
+  updateHomeToggleStateForView(viewRoot.dataset.view ?? '');
+}
+
+function toggleHomePanel(): void {
+  if (isHomePanelActive()) {
+    renderView('greeting');
+    return;
+  }
+
+  shellRouter?.goTo('dashboard');
 }
 
 function setLinkVisibility(link: Element | null, isVisible: boolean): void {
@@ -624,12 +667,14 @@ export function renderView(name: ViewName): void {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
+    updateHomeToggleStateForView(name);
     focusViewRoot();
     return;
   }
 
   viewRoot.dataset.view = name;
   view(viewRoot);
+  updateHomeToggleStateForView(name);
   focusViewRoot();
 }
 
@@ -678,6 +723,12 @@ export function initializeAppShell(router: RouterBridge): void {
   }
 
   initialized = true;
+  shellRouter = router;
+
+  homeLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleHomePanel();
+  });
 
   logo?.addEventListener('click', () => renderView('admin'));
   versionButton?.addEventListener('click', () => renderView('log'));
@@ -725,4 +776,6 @@ export function initializeAppShell(router: RouterBridge): void {
       updateSessionStatus(status);
     });
   }
+
+  syncHomeToggleStateFromDom();
 }

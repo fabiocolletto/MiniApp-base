@@ -30,6 +30,7 @@ const logo = document.querySelector('.header-logo');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
+const homeLink = document.querySelector('.header-home-link');
 const headerActions = document.querySelector('.header-actions');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
@@ -93,6 +94,7 @@ let allowPreventScrollOption = true;
 let shellRouter = null;
 
 let headerMobileMenuPanel = null;
+let mobileHomeAction = null;
 
 let appModalBackdrop = null;
 let appModalContainer = null;
@@ -539,6 +541,16 @@ function ensureHeaderMobileMenu() {
   const actions = document.createElement('div');
   actions.className = 'app-modal__actions header-mobile-menu__actions';
 
+  const homeAction = document.createElement('button');
+  homeAction.type = 'button';
+  homeAction.id = 'mobile-access-menu-home';
+  homeAction.className = 'app-modal__action header-mobile-menu__action header-mobile-menu__action--home';
+  homeAction.setAttribute('aria-pressed', 'false');
+  homeAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    toggleHomePanel();
+  });
+
   const registerAction = document.createElement('button');
   registerAction.type = 'button';
   registerAction.id = 'mobile-access-menu-register';
@@ -559,10 +571,12 @@ function ensureHeaderMobileMenu() {
     shellRouter?.goTo?.('login');
   });
 
-  actions.append(registerAction, loginAction);
+  actions.append(homeAction, registerAction, loginAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
+  mobileHomeAction = homeAction;
+  syncHomeToggleStateFromDom();
 
   return headerMobileMenuPanel;
 }
@@ -628,6 +642,51 @@ function formatUserLabel(user) {
   }
 
   return 'Abrir painel do usuário';
+}
+
+function isHomePanelActive() {
+  return viewRoot instanceof HTMLElement && viewRoot.dataset.view === 'home';
+}
+
+function getHomeToggleLabel(isActive) {
+  return isActive ? 'Fechar painel inicial' : 'Abrir painel inicial';
+}
+
+function applyHomeToggleState(isActive) {
+  const label = getHomeToggleLabel(isActive);
+
+  if (homeLink instanceof HTMLElement) {
+    homeLink.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    homeLink.setAttribute('aria-label', label);
+    homeLink.setAttribute('title', label);
+  }
+
+  if (mobileHomeAction instanceof HTMLElement) {
+    mobileHomeAction.textContent = label;
+    mobileHomeAction.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  }
+}
+
+function updateHomeToggleStateForView(viewName) {
+  applyHomeToggleState(viewName === 'home');
+}
+
+function syncHomeToggleStateFromDom() {
+  if (!(viewRoot instanceof HTMLElement)) {
+    applyHomeToggleState(false);
+    return;
+  }
+
+  updateHomeToggleStateForView(viewRoot.dataset.view ?? '');
+}
+
+function toggleHomePanel() {
+  if (isHomePanelActive()) {
+    renderView('greeting');
+    return;
+  }
+
+  shellRouter?.goTo?.('dashboard');
 }
 
 function setLinkVisibility(link, isVisible) {
@@ -940,12 +999,14 @@ export function renderView(name) {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
+    updateHomeToggleStateForView(name);
     focusViewRoot();
     return;
   }
 
   viewRoot.dataset.view = name;
   view(viewRoot);
+  updateHomeToggleStateForView(name);
   focusViewRoot();
 }
 
@@ -995,6 +1056,11 @@ export function initializeAppShell(router) {
 
   initialized = true;
   shellRouter = router;
+
+  homeLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleHomePanel();
+  });
 
   logo?.addEventListener('click', () => renderView('admin'));
   versionButton?.addEventListener('click', () => renderView('log'));
@@ -1067,4 +1133,6 @@ export function initializeAppShell(router) {
       updateSessionStatus(status);
     });
   }
+
+  syncHomeToggleStateFromDom();
 }
