@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.105 - 2025-10-21 17:40 BRT
+- Recentra o cartão de boas-vindas ajustando o comportamento do `<main>` para centralizar a view de saudação sem sobreposição do cabeçalho fixo.
+- Refina a classe `main--greeting` para posicionar o cartão considerando os espaços reservados do cabeçalho e do rodapé fixos.
+- Ajusta o preenchimento interno do painel do usuário para impedir que o rodapé fixo cubra os widgets e eliminar o excesso de largura exibido na tela.
+- Revalida visualmente apenas o painel do usuário confirmando que o conteúdo deixa espaço de segurança para o cabeçalho e o rodapé fixos.
+- Atualiza o rodapé para exibir a versão v0.1.105 das 17h40.
+
 ## v0.1.104 - 2025-10-21 16:20 BRT
 - Implementa um gerenciador central de tema que respeita o modo do sistema, persiste a escolha localmente e sincroniza com a sessão ativa.
 - Adiciona ao painel do usuário um seletor acessível de tema com opções Claro, Escuro e Automático, incluindo feedback dedicado e salvamento imediato nas preferências.

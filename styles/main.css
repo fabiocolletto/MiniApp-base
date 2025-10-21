@@ -175,6 +175,15 @@ main {
   box-sizing: border-box;
 }
 
+.main--greeting {
+  min-height: 100dvh;
+  padding-block-start: var(--header-total-size);
+  padding-block-end: var(--footer-total-size);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+}
+
 header,
 main,
 footer {
@@ -1171,11 +1180,7 @@ footer {
 }
 
 .view--greeting {
-  padding: 0;
-  justify-self: stretch;
-  align-self: stretch;
-  margin-block-start: calc(var(--header-total-size) * -1);
-  margin-block-end: calc(var(--footer-total-size) * -1);
+  margin: 0;
   background: var(--color-bg-card);
 }
 
@@ -1192,7 +1197,7 @@ footer {
   background: transparent;
 }
 
-main > :where(.card.view):not(.auth-view) {
+main > :where(.card.view):not(.auth-view, .view--greeting) {
   width: 100%;
   max-width: none;
   padding: 0;
@@ -1793,6 +1798,12 @@ main > :where(.card.view):not(.auth-view) {
   align-content: start;
   align-items: start;
   justify-items: stretch;
+}
+
+.view.view--user {
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
+  padding-block-end: calc(clamp(1.25rem, 3.6vw, 2.5rem) + var(--panel-gap));
 }
 
 .auth-view {

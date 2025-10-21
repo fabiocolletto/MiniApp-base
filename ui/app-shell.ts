@@ -599,11 +599,13 @@ function applyMainState(view: string): void {
   const isUserView = view === 'user';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
+  const isGreetingView = view === 'greeting';
 
   mainElement?.classList.toggle('main--admin', isAdminView);
   mainElement?.classList.toggle('main--user', isUserView);
   mainElement?.classList.toggle('main--login', isLoginView);
   mainElement?.classList.toggle('main--register', isRegisterView);
+  mainElement?.classList.toggle('main--greeting', isGreetingView);
 }
 
 export function renderView(name: ViewName): void {
@@ -655,7 +657,7 @@ export function showSplash(message = 'Carregando painel...'): void {
     return;
   }
 
-  mainElement?.classList.remove('main--admin', 'main--user', 'main--login', 'main--register');
+  mainElement?.classList.remove('main--admin', 'main--user', 'main--login', 'main--register', 'main--greeting');
   viewRoot.className = 'card view view--splash';
   viewRoot.dataset.view = 'splash';
 
