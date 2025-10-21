@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.116 - 2025-10-22 06:45 BRT
+- Ajusta o painel de login para seguir o layout do cadastro, removendo a introdução e adicionando redirecionamento para criar conta.
+- Compartilha os estilos de redirecionamento entre login e cadastro para manter tipografia e ênfase alinhadas.
+- Atualiza o rodapé para exibir a versão v0.1.116 das 06h45.
+
 ## v0.1.115 - 2025-10-22 05:35 BRT
 - Realinha o título e a introdução do painel inicial para acompanhar a largura dos widgets e manter as bordas alinhadas.
 - Reestrutura o painel administrativo, removendo callouts e listas anteriores para seguir o modelo do painel inicial com título e introdução focados em gestão.
