@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.111 - 2025-10-21 23:30 BRT
+- Atualiza o painel inicial para reutilizar o layout, os tokens visuais e os feedbacks do painel do usuário com cards informativos e atalhos rápidos.
+- Amplia a folha de estilos com o grid compartilhado, botões de ação e destaques dedicados ao novo painel inicial.
+- Atualiza o rodapé para exibir a versão v0.1.111 das 23h30.
+
 ## v0.1.110 - 2025-10-21 22:55 BRT
 - Passa a medir dinamicamente as alturas do cabeçalho e do rodapé fixos, atualizando o espaçamento das views para impedir que o painel inicial volte a ficar sob o header.
 - Reage às mudanças do rodapé móvel e do estado de sessão, agendando novas medições para manter o conteúdo visível em qualquer modo do MiniApp Base.
