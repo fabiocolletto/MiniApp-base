@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.103 - 2025-10-21 12:50 BRT
+- Corrige o estouro horizontal do painel de usuário garantindo que os resumos de acesso respeitem a largura disponível.
+- Ajusta a quebra e o comportamento flexível dos textos longos para manter o cartão central dentro da grade.
+- Atualiza o rodapé para exibir a versão v0.1.103 das 12h50.
+
 ## v0.1.102 - 2025-10-21 11:45 BRT
 - Substitui o padding percentual das views por espaçamentos fixos em clamp para alinhar o painel do usuário às laterais sem encolher em telas amplas.
 - Remove os limites de largura e a centralização automática dos formulários do painel do usuário para que os widgets ocupem toda a grade disponível.
