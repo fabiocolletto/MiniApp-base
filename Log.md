@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.110 - 2025-10-21 22:55 BRT
+- Passa a medir dinamicamente as alturas do cabeçalho e do rodapé fixos, atualizando o espaçamento das views para impedir que o painel inicial volte a ficar sob o header.
+- Reage às mudanças do rodapé móvel e do estado de sessão, agendando novas medições para manter o conteúdo visível em qualquer modo do MiniApp Base.
+- Atualiza o rodapé para exibir a versão v0.1.110 das 22h55.
+
 ## v0.1.109 - 2025-10-21 21:05 BRT
 - Adiciona controle no cabeçalho para abrir ou recolher o painel inicial com feedback visual e rótulos acessíveis.
 - Inclui a nova ação no menu móvel reaproveitando o mesmo comportamento de alternância do painel inicial.
