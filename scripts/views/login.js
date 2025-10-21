@@ -55,11 +55,6 @@ export function renderLoginPanel(viewRoot) {
   heading.className = 'auth-panel__title';
   heading.textContent = 'Painel de Login';
 
-  const intro = document.createElement('p');
-  intro.className = 'auth-panel__intro';
-  intro.textContent =
-    'Informe seu telefone e senha para acessar rapidamente o painel e acompanhar seus cadastros.';
-
   const form = document.createElement('form');
   form.className = 'auth-panel__form user-form';
   form.autocomplete = 'on';
@@ -164,6 +159,25 @@ export function renderLoginPanel(viewRoot) {
   feedback.className = 'user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
+
+  const registerRedirect = document.createElement('p');
+  registerRedirect.className = 'login-panel__redirect';
+
+  const registerRedirectText = document.createElement('span');
+  registerRedirectText.className = 'login-panel__redirect-text';
+  registerRedirectText.textContent = 'Ainda não possui cadastro?';
+
+  const registerLink = document.createElement('a');
+  registerLink.className = 'login-panel__redirect-link';
+  registerLink.href = '#register';
+  registerLink.title = 'Ir para o painel de cadastro';
+  registerLink.textContent = 'Crie sua conta agora';
+  registerLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    eventBus.emit('app:navigate', { view: 'register' });
+  });
+
+  registerRedirect.append(registerRedirectText, ' ', registerLink, '.');
 
   function resetFeedback() {
     feedback.hidden = true;
@@ -276,7 +290,7 @@ export function renderLoginPanel(viewRoot) {
     submitButton.removeAttribute('aria-busy');
   });
 
-  form.append(phoneField, passwordField, submitButton, feedback);
+  form.append(phoneField, passwordField, submitButton, feedback, registerRedirect);
 
-  viewRoot.replaceChildren(heading, intro, form);
+  viewRoot.replaceChildren(heading, form);
 }
