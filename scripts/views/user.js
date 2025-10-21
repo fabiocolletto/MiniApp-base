@@ -16,12 +16,11 @@ export function renderUserPanel(viewRoot) {
 
   const heading = document.createElement('h1');
   heading.className = 'user-panel__title';
-  heading.textContent = 'Painel do Usuário';
+  heading.textContent = 'Gerencie seus dados';
 
   const intro = document.createElement('p');
   intro.className = 'user-panel__intro';
-  intro.textContent =
-    'Gerencie seus cadastros pessoais e acompanhe as atualizações em um único lugar.';
+  intro.textContent = 'Atualize telefone, senha e detalhes do perfil sem sair deste painel.';
 
   const detailsSection = document.createElement('section');
   detailsSection.className = 'user-panel__section user-panel__section--details user-details';
@@ -32,73 +31,98 @@ export function renderUserPanel(viewRoot) {
 
   const detailsDescription = document.createElement('p');
   detailsDescription.className = 'user-details__description';
-  detailsDescription.textContent =
-    'Revise telefone, senha e complemente os dados vinculados ao usuário autenticado.';
+  detailsDescription.textContent = 'Revise telefone, senha e complemente o seu perfil em poucos passos.';
 
-  const selectionInfo = document.createElement('p');
+  const selectionInfo = document.createElement('div');
   selectionInfo.className = 'user-details__selected';
-  selectionInfo.textContent = 'Nenhum usuário autenticado no momento.';
 
-  function createDetailsFeedbackElement() {
-    const detailsFeedback = document.createElement('p');
-    detailsFeedback.className = 'user-details__feedback';
-    detailsFeedback.setAttribute('aria-live', 'polite');
-    detailsFeedback.hidden = true;
-    return detailsFeedback;
-  }
+  const selectionText = document.createElement('p');
+  selectionText.className = 'user-details__selected-text';
+  selectionText.textContent = 'Nenhuma sessão ativa. Faça login para começar.';
 
-  function resetDetailsFeedback(feedbackElement) {
-    if (!feedbackElement) {
-      return;
-    }
+  const selectionAction = document.createElement('button');
+  selectionAction.type = 'button';
+  selectionAction.className = 'user-details__selected-action';
+  selectionAction.textContent = 'Ir para o login';
+  selectionAction.addEventListener('click', () => {
+    navigateTo('login');
+  });
 
+  selectionInfo.append(selectionText, selectionAction);
+
+  function createPanelFeedback(baseClass) {
+    const feedbackElement = document.createElement('p');
+    feedbackElement.className = `${baseClass} user-form__feedback`;
+    feedbackElement.setAttribute('aria-live', 'polite');
     feedbackElement.hidden = true;
-    feedbackElement.textContent = '';
-    feedbackElement.classList.remove('user-details__feedback--error', 'user-details__feedback--success');
-    feedbackElement.removeAttribute('role');
-  }
 
-  function showDetailsFeedback(feedbackElement, message, { isError = false } = {}) {
-    if (!feedbackElement) {
-      return;
-    }
+    const successClass = `${baseClass}--success`;
+    const errorClass = `${baseClass}--error`;
 
-    feedbackElement.textContent = message;
-    feedbackElement.hidden = false;
-    feedbackElement.classList.toggle('user-details__feedback--error', isError);
-    feedbackElement.classList.toggle('user-details__feedback--success', !isError);
-    if (isError) {
-      feedbackElement.setAttribute('role', 'alert');
-    } else {
+    function reset() {
+      feedbackElement.hidden = true;
+      feedbackElement.textContent = '';
+      feedbackElement.classList.remove(
+        errorClass,
+        successClass,
+        'user-form__feedback--error',
+        'user-form__feedback--success',
+      );
       feedbackElement.removeAttribute('role');
     }
+
+    function show(message, { isError = false } = {}) {
+      feedbackElement.textContent = message;
+      feedbackElement.hidden = false;
+      feedbackElement.classList.toggle(errorClass, isError);
+      feedbackElement.classList.toggle(successClass, !isError);
+      feedbackElement.classList.toggle('user-form__feedback--error', isError);
+      feedbackElement.classList.toggle('user-form__feedback--success', !isError);
+      if (isError) {
+        feedbackElement.setAttribute('role', 'alert');
+      } else {
+        feedbackElement.removeAttribute('role');
+      }
+    }
+
+    return { element: feedbackElement, reset, show };
   }
 
-  function resetAccountFeedback(feedbackElement) {
-    if (!feedbackElement) {
-      return;
+  function createCollapsibleGroup({ title, description, open = false }) {
+    const container = document.createElement('details');
+    container.className = 'user-details__collapsible';
+    container.open = Boolean(open);
+
+    const summary = document.createElement('summary');
+    summary.className = 'user-details__collapsible-summary';
+
+    const summaryHeader = document.createElement('div');
+    summaryHeader.className = 'user-details__collapsible-header';
+
+    const headerTitle = document.createElement('span');
+    headerTitle.className = 'user-details__group-title';
+    headerTitle.textContent = title;
+    summaryHeader.append(headerTitle);
+
+    if (description) {
+      const headerDescription = document.createElement('span');
+      headerDescription.className = 'user-details__group-description';
+      headerDescription.textContent = description;
+      summaryHeader.append(headerDescription);
     }
 
-    feedbackElement.hidden = true;
-    feedbackElement.textContent = '';
-    feedbackElement.classList.remove('user-account__feedback--error', 'user-account__feedback--success');
-    feedbackElement.removeAttribute('role');
-  }
+    const indicator = document.createElement('span');
+    indicator.className = 'user-details__collapsible-icon';
+    indicator.setAttribute('aria-hidden', 'true');
 
-  function showAccountFeedback(feedbackElement, message, { isError = false } = {}) {
-    if (!feedbackElement) {
-      return;
-    }
+    summary.append(summaryHeader, indicator);
 
-    feedbackElement.textContent = message;
-    feedbackElement.hidden = false;
-    feedbackElement.classList.toggle('user-account__feedback--error', isError);
-    feedbackElement.classList.toggle('user-account__feedback--success', !isError);
-    if (isError) {
-      feedbackElement.setAttribute('role', 'alert');
-    } else {
-      feedbackElement.removeAttribute('role');
-    }
+    const content = document.createElement('div');
+    content.className = 'user-details__collapsible-content';
+
+    container.append(summary, content);
+
+    return { container, content };
   }
 
   function navigateTo(view) {
@@ -110,19 +134,19 @@ export function renderUserPanel(viewRoot) {
   }
 
   const formsWrapper = document.createElement('div');
-  formsWrapper.className = 'user-details__grid';
+  formsWrapper.className = 'user-panel__forms';
 
   const primaryForm = document.createElement('form');
-  primaryForm.className = 'user-details__form user-details__form--primary user-details__card';
+  primaryForm.className = 'user-form user-details__card user-panel__form user-panel__form--primary';
   primaryForm.noValidate = true;
 
   const primaryTitle = document.createElement('h3');
   primaryTitle.className = 'user-details__form-title';
-  primaryTitle.textContent = 'Dados principais do cadastro';
+  primaryTitle.textContent = 'Dados de acesso';
 
   const primaryIntro = document.createElement('p');
   primaryIntro.className = 'user-details__form-description';
-  primaryIntro.textContent = 'Atualize o telefone e a senha informados inicialmente.';
+  primaryIntro.textContent = 'Telefone e senha que você usa para entrar.';
 
   const primaryPhoneField = createInputField({
     id: 'user-details-phone',
@@ -161,10 +185,14 @@ export function renderUserPanel(viewRoot) {
 
   const primarySubmit = document.createElement('button');
   primarySubmit.type = 'submit';
-  primarySubmit.className = 'user-details__submit';
-  primarySubmit.textContent = 'Atualizar contato';
+  primarySubmit.className = 'user-form__submit';
+  primarySubmit.textContent = 'Salvar dados de acesso';
 
-  const primaryFeedback = createDetailsFeedbackElement();
+  const {
+    element: primaryFeedback,
+    reset: resetPrimaryFeedback,
+    show: showPrimaryFeedback,
+  } = createPanelFeedback('user-details__feedback');
 
   const primaryFields = document.createElement('div');
   primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
@@ -173,16 +201,16 @@ export function renderUserPanel(viewRoot) {
   primaryForm.append(primaryTitle, primaryIntro, primaryFields, primarySubmit, primaryFeedback);
 
   const profileForm = document.createElement('form');
-  profileForm.className = 'user-details__form user-details__form--profile user-details__card';
+  profileForm.className = 'user-form user-details__card user-panel__form user-panel__form--profile';
   profileForm.noValidate = true;
 
   const profileTitle = document.createElement('h3');
   profileTitle.className = 'user-details__form-title';
-  profileTitle.textContent = 'Complete seu perfil';
+  profileTitle.textContent = 'Perfil completo';
 
   const profileIntro = document.createElement('p');
   profileIntro.className = 'user-details__form-description';
-  profileIntro.textContent = 'Inclua informações pessoais, de contato, endereço e redes para deixar seu cadastro completo.';
+  profileIntro.textContent = 'Organize dados pessoais, contatos e endereço em um só lugar.';
 
   const profileNameField = createInputField({
     id: 'user-details-name',
@@ -402,21 +430,14 @@ export function renderUserPanel(viewRoot) {
 
   const profileSubmit = document.createElement('button');
   profileSubmit.type = 'submit';
-  profileSubmit.className = 'user-details__submit';
+  profileSubmit.className = 'user-form__submit';
   profileSubmit.textContent = 'Salvar perfil completo';
 
-  const profileFeedback = createDetailsFeedbackElement();
-
-  const profilePersonalGroup = document.createElement('section');
-  profilePersonalGroup.className = 'user-details__group user-details__group--personal';
-
-  const profilePersonalTitle = document.createElement('h4');
-  profilePersonalTitle.className = 'user-details__group-title';
-  profilePersonalTitle.textContent = 'Dados pessoais';
-
-  const profilePersonalDescription = document.createElement('p');
-  profilePersonalDescription.className = 'user-details__group-description';
-  profilePersonalDescription.textContent = 'Nome completo, pronomes, data de nascimento e resumo profissional.';
+  const {
+    element: profileFeedback,
+    reset: resetProfileFeedback,
+    show: showProfileFeedback,
+  } = createPanelFeedback('user-details__feedback');
 
   const profilePersonalGrid = document.createElement('div');
   profilePersonalGrid.className = 'user-details__form-grid user-details__form-grid--two';
@@ -429,22 +450,12 @@ export function renderUserPanel(viewRoot) {
     profileBioField,
   );
 
-  profilePersonalGroup.append(
-    profilePersonalTitle,
-    profilePersonalDescription,
-    profilePersonalGrid,
-  );
-
-  const profileContactGroup = document.createElement('section');
-  profileContactGroup.className = 'user-details__group user-details__group--contact';
-
-  const profileContactTitle = document.createElement('h4');
-  profileContactTitle.className = 'user-details__group-title';
-  profileContactTitle.textContent = 'Contatos e redes sociais';
-
-  const profileContactDescription = document.createElement('p');
-  profileContactDescription.className = 'user-details__group-description';
-  profileContactDescription.textContent = 'Centralize seus canais de contato e presença digital.';
+  const { container: profilePersonalGroup, content: profilePersonalContent } = createCollapsibleGroup({
+    title: 'Dados pessoais',
+    description: 'Nome, pronomes, nascimento e resumo profissional.',
+    open: true,
+  });
+  profilePersonalContent.append(profilePersonalGrid);
 
   const profileContactGrid = document.createElement('div');
   profileContactGrid.className = 'user-details__form-grid user-details__form-grid--two';
@@ -459,22 +470,11 @@ export function renderUserPanel(viewRoot) {
     profileYoutubeField,
   );
 
-  profileContactGroup.append(
-    profileContactTitle,
-    profileContactDescription,
-    profileContactGrid,
-  );
-
-  const profileAddressGroup = document.createElement('section');
-  profileAddressGroup.className = 'user-details__group user-details__group--address';
-
-  const profileAddressTitle = document.createElement('h4');
-  profileAddressTitle.className = 'user-details__group-title';
-  profileAddressTitle.textContent = 'Endereço e documentação';
-
-  const profileAddressDescription = document.createElement('p');
-  profileAddressDescription.className = 'user-details__group-description';
-  profileAddressDescription.textContent = 'Informe onde podemos encontrá-lo e documentos para identificação.';
+  const { container: profileContactGroup, content: profileContactContent } = createCollapsibleGroup({
+    title: 'Contatos e redes sociais',
+    description: 'Centralize seus canais de atendimento e presença digital.',
+  });
+  profileContactContent.append(profileContactGrid);
 
   const profileAddressGrid = document.createElement('div');
   profileAddressGrid.className = 'user-details__form-grid user-details__form-grid--two';
@@ -491,11 +491,11 @@ export function renderUserPanel(viewRoot) {
     profileNotesField,
   );
 
-  profileAddressGroup.append(
-    profileAddressTitle,
-    profileAddressDescription,
-    profileAddressGrid,
-  );
+  const { container: profileAddressGroup, content: profileAddressContent } = createCollapsibleGroup({
+    title: 'Endereço e documentação',
+    description: 'Localização completa, documento e observações extras.',
+  });
+  profileAddressContent.append(profileAddressGrid);
 
   profileForm.append(
     profileTitle,
@@ -543,10 +543,11 @@ export function renderUserPanel(viewRoot) {
 
   accountActions.append(logoffButton, logoutButton, deleteButton);
 
-  const accountFeedback = document.createElement('p');
-  accountFeedback.className = 'user-account__feedback';
-  accountFeedback.setAttribute('aria-live', 'polite');
-  accountFeedback.hidden = true;
+  const {
+    element: accountFeedback,
+    reset: resetAccountFeedback,
+    show: showAccountFeedback,
+  } = createPanelFeedback('user-account__feedback');
 
   accountSection.append(accountHeading, accountDescription, accountActions, accountFeedback);
 
@@ -703,17 +704,21 @@ export function renderUserPanel(viewRoot) {
   });
 
   function updateSelectionInfo(user) {
-    if (!selectionInfo) {
+    if (!selectionText || !selectionAction) {
       return;
     }
 
     if (!user) {
-      selectionInfo.textContent = 'Nenhum usuário autenticado. Faça login para editar os dados.';
+      selectionText.textContent = 'Nenhuma sessão ativa. Faça login para editar os dados.';
+      selectionAction.hidden = false;
+      selectionAction.disabled = false;
       return;
     }
 
     const nameLabel = user.name?.trim() || 'Usuário sem nome';
-    selectionInfo.textContent = `Editando informações de ${nameLabel}.`;
+    selectionText.textContent = `Editando informações de ${nameLabel}.`;
+    selectionAction.hidden = true;
+    selectionAction.disabled = true;
   }
 
   function updateFormsState() {
@@ -799,18 +804,18 @@ export function renderUserPanel(viewRoot) {
 
   primaryForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    resetDetailsFeedback(primaryFeedback);
+    resetPrimaryFeedback();
 
     const user = getActiveSessionUser();
     if (!user) {
-      showDetailsFeedback(primaryFeedback, 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
+      showPrimaryFeedback('Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
         isError: true,
       });
       return;
     }
 
     if (!primaryPhoneInput || !primaryPasswordInput) {
-      showDetailsFeedback(primaryFeedback, 'Os campos de telefone e senha não foram carregados corretamente.', {
+      showPrimaryFeedback('Os campos de telefone e senha não foram carregados corretamente.', {
         isError: true,
       });
       return;
@@ -823,7 +828,7 @@ export function renderUserPanel(viewRoot) {
 
     if (phoneValue !== user.phone) {
       if (!phoneValue) {
-        showDetailsFeedback(primaryFeedback, 'Informe um telefone válido para atualizar o cadastro.', {
+        showPrimaryFeedback('Informe um telefone válido para atualizar o cadastro.', {
           isError: true,
         });
         return;
@@ -833,7 +838,7 @@ export function renderUserPanel(viewRoot) {
 
     if (passwordValue !== user.password) {
       if (!passwordValue) {
-        showDetailsFeedback(primaryFeedback, 'Informe uma senha válida para atualizar o cadastro.', {
+        showPrimaryFeedback('Informe uma senha válida para atualizar o cadastro.', {
           isError: true,
         });
         return;
@@ -842,7 +847,7 @@ export function renderUserPanel(viewRoot) {
     }
 
     if (Object.keys(updates).length === 0) {
-      showDetailsFeedback(primaryFeedback, 'Nenhuma alteração identificada para salvar.', { isError: true });
+      showPrimaryFeedback('Nenhuma alteração identificada para salvar.', { isError: true });
       return;
     }
 
@@ -851,10 +856,10 @@ export function renderUserPanel(viewRoot) {
       primarySubmit.setAttribute('aria-busy', 'true');
       passwordToggle.disabled = true;
       await updateUser(user.id, updates);
-      showDetailsFeedback(primaryFeedback, 'Dados principais atualizados com sucesso!', { isError: false });
+      showPrimaryFeedback('Dados principais atualizados com sucesso!', { isError: false });
     } catch (error) {
       console.error('Erro ao atualizar telefone ou senha pelo painel do usuário.', error);
-      showDetailsFeedback(primaryFeedback, 'Não foi possível atualizar os dados. Tente novamente.', {
+      showPrimaryFeedback('Não foi possível atualizar os dados. Tente novamente.', {
         isError: true,
       });
     }
@@ -866,19 +871,19 @@ export function renderUserPanel(viewRoot) {
 
   profileForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    resetDetailsFeedback(profileFeedback);
+    resetProfileFeedback();
 
     const user = getActiveSessionUser();
 
     if (!user) {
-      showDetailsFeedback(profileFeedback, 'Nenhuma sessão ativa. Faça login para complementar os dados.', {
+      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
         isError: true,
       });
       return;
     }
 
     if (!profileNameInput || Object.values(profileFieldBindings).some((element) => element == null)) {
-      showDetailsFeedback(profileFeedback, 'Os campos adicionais não foram carregados corretamente.', {
+      showProfileFeedback('Os campos adicionais não foram carregados corretamente.', {
         isError: true,
       });
       return;
@@ -891,7 +896,7 @@ export function renderUserPanel(viewRoot) {
 
     if (nameValue !== user.name) {
       if (!nameValue) {
-        showDetailsFeedback(profileFeedback, 'O nome completo não pode ficar vazio.', { isError: true });
+        showProfileFeedback('O nome completo não pode ficar vazio.', { isError: true });
         return;
       }
       updates.name = nameValue;
@@ -915,7 +920,7 @@ export function renderUserPanel(viewRoot) {
     }
 
     if (Object.keys(updates).length === 0) {
-      showDetailsFeedback(profileFeedback, 'Nenhuma alteração identificada para salvar.', { isError: true });
+      showProfileFeedback('Nenhuma alteração identificada para salvar.', { isError: true });
       return;
     }
 
@@ -923,10 +928,10 @@ export function renderUserPanel(viewRoot) {
       profileSubmit.disabled = true;
       profileSubmit.setAttribute('aria-busy', 'true');
       await updateUser(user.id, updates);
-      showDetailsFeedback(profileFeedback, 'Perfil completo atualizado com sucesso!', { isError: false });
+      showProfileFeedback('Perfil completo atualizado com sucesso!', { isError: false });
     } catch (error) {
       console.error('Erro ao complementar cadastro pelo painel do usuário.', error);
-      showDetailsFeedback(profileFeedback, 'Não foi possível salvar os dados do perfil. Tente novamente.', {
+      showProfileFeedback('Não foi possível salvar os dados do perfil. Tente novamente.', {
         isError: true,
       });
     }
@@ -936,49 +941,49 @@ export function renderUserPanel(viewRoot) {
   });
 
   logoffButton.addEventListener('click', () => {
-    resetAccountFeedback(accountFeedback);
+    resetAccountFeedback();
 
     if (!hasActiveSessionUser()) {
-      showAccountFeedback(accountFeedback, 'Nenhuma sessão ativa para encerrar no momento.', { isError: true });
+      showAccountFeedback('Nenhuma sessão ativa para encerrar no momento.', { isError: true });
       return;
     }
 
     clearActiveUser();
-    showAccountFeedback(accountFeedback, 'Sessão finalizada. Faça login novamente para continuar.', {
+    showAccountFeedback('Sessão finalizada. Faça login novamente para continuar.', {
       isError: false,
     });
     isPasswordVisible = false;
     updatePasswordVisibility();
-    resetDetailsFeedback(primaryFeedback);
-    resetDetailsFeedback(profileFeedback);
+    resetPrimaryFeedback();
+    resetProfileFeedback();
     updateFormsState();
     updateAccountActionsState();
   });
 
   logoutButton.addEventListener('click', () => {
-    resetAccountFeedback(accountFeedback);
+    resetAccountFeedback();
 
     if (!hasActiveSessionUser()) {
-      showAccountFeedback(accountFeedback, 'Nenhuma sessão ativa para encerrar no momento.', { isError: true });
+      showAccountFeedback('Nenhuma sessão ativa para encerrar no momento.', { isError: true });
       return;
     }
 
     clearActiveUser();
     isPasswordVisible = false;
     updatePasswordVisibility();
-    resetDetailsFeedback(primaryFeedback);
-    resetDetailsFeedback(profileFeedback);
+    resetPrimaryFeedback();
+    resetProfileFeedback();
     updateFormsState();
     updateAccountActionsState();
     navigateTo('login');
   });
 
   deleteButton.addEventListener('click', async () => {
-    resetAccountFeedback(accountFeedback);
+    resetAccountFeedback();
 
     const activeUser = getActiveSessionUser();
     if (!activeUser) {
-      showAccountFeedback(accountFeedback, 'Nenhum usuário autenticado encontrado para exclusão.', {
+      showAccountFeedback('Nenhum usuário autenticado encontrado para exclusão.', {
         isError: true,
       });
       return;
@@ -998,21 +1003,19 @@ export function renderUserPanel(viewRoot) {
       deleteButton.setAttribute('aria-busy', 'true');
       await deleteUser(activeUser.id);
       clearActiveUser();
-      showAccountFeedback(accountFeedback, 'Todos os dados foram removidos com sucesso.', { isError: false });
+      showAccountFeedback('Todos os dados foram removidos com sucesso.', { isError: false });
     } catch (error) {
       console.error('Erro ao excluir cadastro pelo painel do usuário.', error);
-      showAccountFeedback(
-        accountFeedback,
-        'Não foi possível remover os dados armazenados. Tente novamente mais tarde.',
-        { isError: true }
-      );
+      showAccountFeedback('Não foi possível remover os dados armazenados. Tente novamente mais tarde.', {
+        isError: true,
+      });
     }
 
     deleteButton.removeAttribute('aria-busy');
     isPasswordVisible = false;
     updatePasswordVisibility();
-    resetDetailsFeedback(primaryFeedback);
-    resetDetailsFeedback(profileFeedback);
+    resetPrimaryFeedback();
+    resetProfileFeedback();
     updateAccountActionsState();
     updateFormsState();
   });
@@ -1036,8 +1039,8 @@ export function renderUserPanel(viewRoot) {
     if (hadActiveUser && !hasActiveSessionUser()) {
       isPasswordVisible = false;
       updatePasswordVisibility();
-      resetDetailsFeedback(primaryFeedback);
-      resetDetailsFeedback(profileFeedback);
+      resetPrimaryFeedback();
+      resetProfileFeedback();
     }
 
     updateAccountActionsState();
@@ -1051,8 +1054,8 @@ export function renderUserPanel(viewRoot) {
     if (sessionUserId == null && previousSessionUserId != null) {
       isPasswordVisible = false;
       updatePasswordVisibility();
-      resetDetailsFeedback(primaryFeedback);
-      resetDetailsFeedback(profileFeedback);
+      resetPrimaryFeedback();
+      resetProfileFeedback();
     }
 
     if (sessionUserId != null) {
@@ -1062,10 +1065,10 @@ export function renderUserPanel(viewRoot) {
       } else if (sessionUserId !== previousSessionUserId) {
         isPasswordVisible = false;
         updatePasswordVisibility();
-        resetDetailsFeedback(primaryFeedback);
-        resetDetailsFeedback(profileFeedback);
+        resetPrimaryFeedback();
+        resetProfileFeedback();
       }
-      resetAccountFeedback(accountFeedback);
+      resetAccountFeedback();
     }
 
     updateAccountActionsState();
