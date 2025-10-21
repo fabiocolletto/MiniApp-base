@@ -288,7 +288,54 @@ export function renderUserPanel(viewRoot) {
   primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
   primaryFields.append(primaryPhoneField, primaryPasswordField);
 
-  primaryForm.append(primaryTitle, primaryIntro, selectionInfo, primaryFields, primaryFeedback);
+  const accountSection = document.createElement('section');
+  accountSection.className = 'user-account user-details__access-state';
+
+  const accountHeading = document.createElement('h3');
+  accountHeading.className = 'user-widget__title user-details__access-state-title';
+  accountHeading.textContent = 'Sessão e segurança';
+
+  const accountDescription = document.createElement('p');
+  accountDescription.className = 'user-widget__description user-details__access-state-description';
+  accountDescription.textContent =
+    'Gerencie sua sessão atual, finalize o acesso com segurança ou remova todos os dados armazenados.';
+
+  const accountActions = document.createElement('div');
+  accountActions.className = 'user-account__actions';
+
+  const logoffButton = document.createElement('button');
+  logoffButton.type = 'button';
+  logoffButton.className = 'user-account__action user-account__action--logoff';
+  logoffButton.textContent = 'Fazer logoff';
+
+  const logoutButton = document.createElement('button');
+  logoutButton.type = 'button';
+  logoutButton.className = 'user-account__action user-account__action--logout';
+  logoutButton.textContent = 'Fazer logout';
+
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'user-account__action user-account__action--delete';
+  deleteButton.textContent = 'Excluir todos os dados';
+
+  accountActions.append(logoffButton, logoutButton, deleteButton);
+
+  const {
+    element: accountFeedback,
+    reset: resetAccountFeedback,
+    show: showAccountFeedback,
+  } = createPanelFeedback('user-account__feedback');
+
+  accountSection.append(accountHeading, accountDescription, accountActions, accountFeedback);
+
+  primaryForm.append(
+    primaryTitle,
+    primaryIntro,
+    selectionInfo,
+    primaryFields,
+    primaryFeedback,
+    accountSection,
+  );
 
   const profileForm = document.createElement('form');
   profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form user-details__card';
@@ -602,45 +649,7 @@ export function renderUserPanel(viewRoot) {
     profileFeedback,
   );
 
-  const accountSection = document.createElement('section');
-  accountSection.className = 'user-widget user-panel__widget user-panel__widget--session user-account';
-
-  const accountHeading = document.createElement('h2');
-  accountHeading.className = 'user-widget__title user-account__title';
-  accountHeading.textContent = 'Sessão e segurança';
-
-  const accountDescription = document.createElement('p');
-  accountDescription.className = 'user-widget__description user-account__description';
-  accountDescription.textContent =
-    'Gerencie sua sessão atual, finalize o acesso com segurança ou remova todos os dados armazenados.';
-
-  const accountActions = document.createElement('div');
-  accountActions.className = 'user-account__actions';
-
-  const logoffButton = document.createElement('button');
-  logoffButton.type = 'button';
-  logoffButton.className = 'user-account__action user-account__action--logoff';
-  logoffButton.textContent = 'Fazer logoff';
-
-  const logoutButton = document.createElement('button');
-  logoutButton.type = 'button';
-  logoutButton.className = 'user-account__action user-account__action--logout';
-  logoutButton.textContent = 'Fazer logout';
-
-  const deleteButton = document.createElement('button');
-  deleteButton.type = 'button';
-  deleteButton.className = 'user-account__action user-account__action--delete';
-  deleteButton.textContent = 'Excluir todos os dados';
-
-  accountActions.append(logoffButton, logoutButton, deleteButton);
-
-  const {
-    element: accountFeedback,
-    reset: resetAccountFeedback,
-    show: showAccountFeedback,
-  } = createPanelFeedback('user-account__feedback');
-
-  accountSection.append(accountHeading, accountDescription, accountActions, accountFeedback);
+  
 
   let usersSnapshot = [];
   let isPasswordVisible = false;
@@ -1470,7 +1479,7 @@ export function renderUserPanel(viewRoot) {
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout';
-  layout.append(primaryForm, profileForm, accountSection);
+  layout.append(primaryForm, profileForm);
 
   const unsubscribe = subscribeUsers((users) => {
     const hadActiveUser = hasActiveSessionUser();
