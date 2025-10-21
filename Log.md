@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.115 - 2025-10-22 05:35 BRT
+- Realinha o título e a introdução do painel inicial para acompanhar a largura dos widgets e manter as bordas alinhadas.
+- Reestrutura o painel administrativo, removendo callouts e listas anteriores para seguir o modelo do painel inicial com título e introdução focados em gestão.
+- Adiciona um widget dedicado à gestão de usuários com indicadores resumidos e ações rápidas conectadas ao roteador central.
+- Converte os preenchimentos dinâmicos do `<main>` para unidades absolutas, garantindo o afastamento do cabeçalho e do rodapé fixos em todos os painéis.
+- Valida visualmente os painéis inicial, administrativo e do usuário confirmando que nenhum conteúdo fica encoberto após as correções.
+- Atualiza o rodapé para exibir a versão v0.1.115 das 05h35.
+
 ## v0.1.114 - 2025-10-22 03:15 BRT
 - Reorganiza os botões do cabeçalho em um menu de painéis com abertura controlada e suporte a teclado e leitores de tela.
 - Sincroniza o comportamento do novo menu entre os módulos JS e TS, garantindo fechamento automático ao navegar pelos painéis.
