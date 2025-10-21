@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.107 - 2025-10-21 19:30 BRT
+- Ajusta o container central do painel de log aplicando espaçamento equivalente ao cabeçalho e ao rodapé para impedir que o conteúdo fique oculto nas extremidades fixas.
+- Atualiza o rodapé para exibir a versão v0.1.107 das 19h30.
+
 ## v0.1.106 - 2025-10-21 18:55 BRT
 - Centraliza o cartão do painel de cadastro ajustando o alinhamento vertical das views de autenticação, garantindo preenchimento uniforme sem interferência de outros elementos.
 - Revalida visualmente o painel de cadastro em tamanhos de tela móvel, tablet e desktop para confirmar a centralização consistente do cartão.
