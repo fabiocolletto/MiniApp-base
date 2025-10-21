@@ -2258,6 +2258,12 @@ main > :where(.card.view):not(.auth-view) {
   gap: var(--panel-inner-gap);
 }
 
+.user-details__session-content,
+.user-details__preferences-content {
+  display: grid;
+  gap: var(--panel-inner-gap);
+}
+
 .user-details__group-title {
   margin: 0;
   font-size: var(--panel-font-size-strong);

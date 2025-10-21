@@ -303,14 +303,10 @@ export function renderUserPanel(viewRoot) {
   accessSummary.className = 'user-details__access-summary';
   accessSummary.hidden = true;
 
-  const accessSummaryTitle = document.createElement('h3');
-  accessSummaryTitle.className = 'user-details__access-summary-title';
-  accessSummaryTitle.textContent = 'Resumo do acesso';
-
   const accessSummaryDescription = document.createElement('p');
   accessSummaryDescription.className = 'user-details__access-summary-description';
   const defaultAccessSummaryDescription =
-    'Veja rapidamente os dados utilizados para autenticação antes de editar.';
+    'Histórico recente das credenciais utilizadas e atualizações registradas.';
   accessSummaryDescription.textContent = defaultAccessSummaryDescription;
 
   const accessSummaryList = document.createElement('dl');
@@ -356,7 +352,7 @@ export function renderUserPanel(viewRoot) {
     updatedAt: createAccessSummaryItem('Última atualização'),
   };
 
-  accessSummary.append(accessSummaryTitle, accessSummaryDescription, accessSummaryList);
+  accessSummary.append(accessSummaryDescription, accessSummaryList);
 
   const primaryPhoneField = createInputField({
     id: 'user-details-phone',
@@ -408,7 +404,7 @@ export function renderUserPanel(viewRoot) {
 
   const accountHeading = document.createElement('h3');
   accountHeading.className = 'user-widget__title user-details__access-state-title';
-  accountHeading.textContent = 'Sessão e segurança';
+  accountHeading.textContent = 'Controles da sessão';
 
   const accountActions = document.createElement('div');
   accountActions.className = 'user-account__actions';
@@ -438,15 +434,35 @@ export function renderUserPanel(viewRoot) {
 
   accountSection.append(accountHeading, accountActions, accountFeedback);
 
-  primaryForm.append(
-    primaryTitle,
-    primaryIntro,
-    accessSummary,
-    selectionInfo,
-    primaryFields,
-    primaryFeedback,
-    accountSection,
-  );
+  const { container: accessLogsGroup, content: accessLogsContent } = createCollapsibleGroup({
+    title: 'Logs do sistema',
+    description: 'Resumo dos últimos acessos e dispositivos reconhecidos.',
+    open: true,
+  });
+  accessLogsContent.append(accessSummary);
+
+  const sessionContent = document.createElement('div');
+  sessionContent.className = 'user-details__session-content';
+  sessionContent.append(selectionInfo, accountSection);
+
+  const { container: sessionGroup, content: sessionGroupContent } = createCollapsibleGroup({
+    title: 'Sessão',
+    description: 'Status atual, encerramento e limpeza de credenciais.',
+  });
+  sessionGroupContent.append(sessionContent);
+
+  const preferencesContent = document.createElement('div');
+  preferencesContent.className = 'user-details__preferences-content';
+  preferencesContent.append(primaryFields, primaryFeedback);
+
+  const { container: preferencesGroup, content: preferencesGroupContent } = createCollapsibleGroup({
+    title: 'Preferências',
+    description: 'Telefone principal, senha e mensagens de confirmação.',
+    open: true,
+  });
+  preferencesGroupContent.append(preferencesContent);
+
+  primaryForm.append(primaryTitle, primaryIntro, accessLogsGroup, sessionGroup, preferencesGroup);
 
   const profileForm = document.createElement('form');
   profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form';

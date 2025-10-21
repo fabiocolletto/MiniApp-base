@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.101 - 2025-10-21 11:00 BRT
+- Replica o modelo de gavetas do cartão "Perfil completo" no widget "Dados de acesso" com seções de Logs do sistema, Sessão e Preferências.
+- Move o resumo de acesso, o estado da sessão e os campos de telefone e senha para os novos agrupadores mantendo ações e feedbacks ativos.
+- Ajusta a folha de estilos para acomodar os novos contêineres internos das gavetas.
+- Atualiza o rodapé para exibir a versão v0.1.101 das 11h00.
+
 ## v0.1.100 - 2025-10-21 10:05 BRT
 - Acrescenta ao cartão "Dados de acesso" um resumo compacto com telefone formatado, tipo de usuário, dispositivo reconhecido e registro da última atualização.
 - Disponibiliza atalho para copiar o telefone cadastrado com feedback imediato, reforçando o texto introdutório para orientar o uso do widget.
