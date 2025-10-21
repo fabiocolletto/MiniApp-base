@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.97 - 2025-10-21 01:15 BRT
+- Recompõe o painel do usuário com três widgets de primeiro nível (dados de acesso, perfil completo e sessão) usando contêiner único para cada bloco.
+- Centraliza o título principal na área do painel e atualiza a grade interna para acomodar os widgets em diferentes larguras sem rolagens extras.
+- Ajusta o CSS para o novo padrão de widgets, garantindo espaçamentos, responsividade e aparência consistente entre os formulários.
+- Atualiza o rodapé para refletir a versão v0.1.97 com horário correspondente.
+
 ## v0.1.96 - 2025-10-20 23:50 BRT
 - Reestrutura o painel do usuário com título único e formulários alinhados ao padrão dos fluxos de login e cadastro.
 - Converte o feedback do painel em helper compartilhado reutilizando o estilo dos formulários de autenticação.

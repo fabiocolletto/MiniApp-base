@@ -22,19 +22,8 @@ export function renderUserPanel(viewRoot) {
   intro.className = 'user-panel__intro';
   intro.textContent = 'Atualize telefone, senha e detalhes do perfil sem sair deste painel.';
 
-  const detailsSection = document.createElement('section');
-  detailsSection.className = 'user-panel__section user-panel__section--details user-details';
-
-  const detailsHeading = document.createElement('h2');
-  detailsHeading.className = 'user-details__title';
-  detailsHeading.textContent = 'Complete seus dados';
-
-  const detailsDescription = document.createElement('p');
-  detailsDescription.className = 'user-details__description';
-  detailsDescription.textContent = 'Revise telefone, senha e complemente o seu perfil em poucos passos.';
-
   const selectionInfo = document.createElement('div');
-  selectionInfo.className = 'user-details__selected';
+  selectionInfo.className = 'user-widget__status user-details__selected';
 
   const selectionText = document.createElement('p');
   selectionText.className = 'user-details__selected-text';
@@ -133,19 +122,16 @@ export function renderUserPanel(viewRoot) {
     eventBus.emit('app:navigate', { view });
   }
 
-  const formsWrapper = document.createElement('div');
-  formsWrapper.className = 'user-panel__forms';
-
   const primaryForm = document.createElement('form');
-  primaryForm.className = 'user-form user-details__card user-panel__form user-panel__form--primary';
+  primaryForm.className = 'user-widget user-panel__widget user-panel__widget--access user-form user-details__card';
   primaryForm.noValidate = true;
 
-  const primaryTitle = document.createElement('h3');
-  primaryTitle.className = 'user-details__form-title';
+  const primaryTitle = document.createElement('h2');
+  primaryTitle.className = 'user-widget__title user-details__form-title';
   primaryTitle.textContent = 'Dados de acesso';
 
   const primaryIntro = document.createElement('p');
-  primaryIntro.className = 'user-details__form-description';
+  primaryIntro.className = 'user-widget__description user-details__form-description';
   primaryIntro.textContent = 'Telefone e senha que você usa para entrar.';
 
   const primaryPhoneField = createInputField({
@@ -198,18 +184,18 @@ export function renderUserPanel(viewRoot) {
   primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
   primaryFields.append(primaryPhoneField, primaryPasswordField);
 
-  primaryForm.append(primaryTitle, primaryIntro, primaryFields, primarySubmit, primaryFeedback);
+  primaryForm.append(primaryTitle, primaryIntro, selectionInfo, primaryFields, primarySubmit, primaryFeedback);
 
   const profileForm = document.createElement('form');
-  profileForm.className = 'user-form user-details__card user-panel__form user-panel__form--profile';
+  profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form user-details__card';
   profileForm.noValidate = true;
 
-  const profileTitle = document.createElement('h3');
-  profileTitle.className = 'user-details__form-title';
+  const profileTitle = document.createElement('h2');
+  profileTitle.className = 'user-widget__title user-details__form-title';
   profileTitle.textContent = 'Perfil completo';
 
   const profileIntro = document.createElement('p');
-  profileIntro.className = 'user-details__form-description';
+  profileIntro.className = 'user-widget__description user-details__form-description';
   profileIntro.textContent = 'Organize dados pessoais, contatos e endereço em um só lugar.';
 
   const profileNameField = createInputField({
@@ -507,19 +493,15 @@ export function renderUserPanel(viewRoot) {
     profileFeedback,
   );
 
-  formsWrapper.append(primaryForm, profileForm);
-
-  detailsSection.append(detailsHeading, detailsDescription, selectionInfo, formsWrapper);
-
   const accountSection = document.createElement('section');
-  accountSection.className = 'user-panel__section user-panel__section--account user-account';
+  accountSection.className = 'user-widget user-panel__widget user-panel__widget--session user-account';
 
   const accountHeading = document.createElement('h2');
-  accountHeading.className = 'user-panel__section-title user-account__title';
+  accountHeading.className = 'user-widget__title user-account__title';
   accountHeading.textContent = 'Sessão e segurança';
 
   const accountDescription = document.createElement('p');
-  accountDescription.className = 'user-panel__section-description user-account__description';
+  accountDescription.className = 'user-widget__description user-account__description';
   accountDescription.textContent =
     'Gerencie sua sessão atual, finalize o acesso com segurança ou remova todos os dados armazenados.';
 
@@ -1022,7 +1004,7 @@ export function renderUserPanel(viewRoot) {
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout';
-  layout.append(detailsSection, accountSection);
+  layout.append(primaryForm, profileForm, accountSection);
 
   const unsubscribe = subscribeUsers((users) => {
     const hadActiveUser = hasActiveSessionUser();
