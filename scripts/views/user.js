@@ -5,6 +5,7 @@ import { registerViewCleanup } from '../view-cleanup.js';
 import { normalizeCep, lookupCep } from '../utils/cep-service.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
+import { validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
 
 const BASE_CLASSES = 'card view view--user';
 export const PROFILE_ADDRESS_FIELD_SEQUENCE = [
@@ -19,6 +20,100 @@ export const PROFILE_ADDRESS_FIELD_SEQUENCE = [
   'country',
   'notes',
 ];
+
+export function createPersistUserChanges(getUserFn, updateUserFn) {
+  if (typeof getUserFn !== 'function') {
+    throw new Error('A função de acesso ao usuário ativo é obrigatória.');
+  }
+
+  if (typeof updateUserFn !== 'function') {
+    throw new Error('A função de atualização de usuário é obrigatória.');
+  }
+
+  return async function persistUserChanges(
+    updates,
+    {
+      feedback,
+      busyTargets = [],
+      successMessage = 'Alterações salvas com sucesso!',
+      errorMessage = 'Não foi possível salvar as alterações. Tente novamente.',
+      missingSessionMessage = 'Nenhuma sessão ativa. Faça login para continuar.',
+    } = {},
+  ) {
+    const hasUpdates = updates && typeof updates === 'object' && Object.keys(updates).length > 0;
+    if (!hasUpdates) {
+      return { status: 'no-changes' };
+    }
+
+    const activeUser = getUserFn();
+    if (!activeUser || activeUser.id == null) {
+      if (feedback?.reset) {
+        feedback.reset();
+      }
+      if (feedback?.show) {
+        feedback.show(missingSessionMessage, { isError: true });
+      }
+      return { status: 'no-session' };
+    }
+
+    if (feedback?.reset) {
+      feedback.reset();
+    }
+
+    const elements = Array.isArray(busyTargets) ? busyTargets.filter(Boolean) : [];
+    const disabledSnapshot = new WeakMap();
+
+    const toggleBusyState = (isBusy) => {
+      elements.forEach((element) => {
+        if (!element || typeof element !== 'object') {
+          return;
+        }
+
+        if ('disabled' in element) {
+          if (isBusy) {
+            disabledSnapshot.set(element, Boolean(element.disabled));
+            element.disabled = true;
+          } else if (disabledSnapshot.has(element)) {
+            const wasDisabled = disabledSnapshot.get(element);
+            element.disabled = Boolean(wasDisabled);
+          } else {
+            element.disabled = false;
+          }
+        }
+
+        if (element instanceof HTMLElement) {
+          if (isBusy) {
+            element.setAttribute('aria-busy', 'true');
+          } else {
+            element.removeAttribute('aria-busy');
+          }
+        }
+      });
+
+      if (!isBusy) {
+        elements.forEach((element) => disabledSnapshot.delete(element));
+      }
+    };
+
+    toggleBusyState(true);
+
+    try {
+      await updateUserFn(activeUser.id, updates);
+      if (feedback?.show) {
+        feedback.show(successMessage, { isError: false });
+      }
+      return { status: 'success' };
+    } catch (error) {
+      console.error('Erro ao persistir alterações no painel do usuário.', error);
+      if (feedback?.show) {
+        feedback.show(errorMessage, { isError: true });
+      }
+      return { status: 'error', error };
+    } finally {
+      toggleBusyState(false);
+    }
+  };
+}
 export function renderUserPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -138,6 +233,7 @@ export function renderUserPanel(viewRoot) {
   const primaryForm = document.createElement('form');
   primaryForm.className = 'user-widget user-panel__widget user-panel__widget--access user-form user-details__card';
   primaryForm.noValidate = true;
+  primaryForm.addEventListener('submit', (event) => event.preventDefault());
 
   const primaryTitle = document.createElement('h2');
   primaryTitle.className = 'user-widget__title user-details__form-title';
@@ -182,11 +278,6 @@ export function renderUserPanel(viewRoot) {
 
   primaryPasswordField.append(passwordToggle);
 
-  const primarySubmit = document.createElement('button');
-  primarySubmit.type = 'submit';
-  primarySubmit.className = 'user-form__submit';
-  primarySubmit.textContent = 'Salvar dados de acesso';
-
   const {
     element: primaryFeedback,
     reset: resetPrimaryFeedback,
@@ -197,11 +288,12 @@ export function renderUserPanel(viewRoot) {
   primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
   primaryFields.append(primaryPhoneField, primaryPasswordField);
 
-  primaryForm.append(primaryTitle, primaryIntro, selectionInfo, primaryFields, primarySubmit, primaryFeedback);
+  primaryForm.append(primaryTitle, primaryIntro, selectionInfo, primaryFields, primaryFeedback);
 
   const profileForm = document.createElement('form');
   profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form user-details__card';
   profileForm.noValidate = true;
+  profileForm.addEventListener('submit', (event) => event.preventDefault());
 
   const profileTitle = document.createElement('h2');
   profileTitle.className = 'user-widget__title user-details__form-title';
@@ -433,11 +525,6 @@ export function renderUserPanel(viewRoot) {
   });
   profileNotesField.classList.add('user-form__field--full');
 
-  const profileSubmit = document.createElement('button');
-  profileSubmit.type = 'submit';
-  profileSubmit.className = 'user-form__submit';
-  profileSubmit.textContent = 'Salvar perfil completo';
-
   const {
     element: profileFeedback,
     reset: resetProfileFeedback,
@@ -512,7 +599,6 @@ export function renderUserPanel(viewRoot) {
     profilePersonalGroup,
     profileContactGroup,
     profileAddressGroup,
-    profileSubmit,
     profileFeedback,
   );
 
@@ -559,6 +645,32 @@ export function renderUserPanel(viewRoot) {
   let usersSnapshot = [];
   let isPasswordVisible = false;
   let sessionUserId = getActiveUserId();
+  const pendingPersistOperations = new Map();
+
+  const persistUserChanges = createPersistUserChanges(() => getActiveSessionUser(), updateUser);
+
+  function runPersistOperation(key, updates, options) {
+    if (!key) {
+      return persistUserChanges(updates, options);
+    }
+
+    if (pendingPersistOperations.has(key)) {
+      return pendingPersistOperations.get(key);
+    }
+
+    const operationPromise = (async () => {
+      try {
+        return await persistUserChanges(updates, options);
+      } finally {
+        if (pendingPersistOperations.get(key) === operationPromise) {
+          pendingPersistOperations.delete(key);
+        }
+      }
+    })();
+
+    pendingPersistOperations.set(key, operationPromise);
+    return operationPromise;
+  }
 
   const primaryPhoneInput = primaryPhoneField.querySelector('input');
   const primaryPasswordInput = primaryPasswordField.querySelector('input');
@@ -703,6 +815,9 @@ export function renderUserPanel(viewRoot) {
     let result;
     try {
       result = await lookupCep(currentCep, { signal });
+    } catch (error) {
+      console.error('Erro ao consultar CEP no painel do usuário.', error);
+      result = { status: 'network-error' };
     } finally {
       if (zipLookupController && zipLookupController.signal === signal) {
         zipLookupController = null;
@@ -726,7 +841,31 @@ export function renderUserPanel(viewRoot) {
 
     if (result.status === 'success') {
       fillAddressFromLookup(result.address);
-      setZipFeedback('Endereço preenchido automaticamente. Confira os dados antes de salvar.');
+      const saveResult = await persistProfileGroup('address');
+
+      if (saveResult?.status === 'success') {
+        setZipFeedback('Endereço preenchido e salvo automaticamente. Confira os dados.', {
+          tone: 'neutral',
+        });
+        return;
+      }
+
+      if (saveResult?.status === 'no-session') {
+        setZipFeedback('Endereço preenchido automaticamente. Faça login para salvar as alterações.', {
+          tone: 'error',
+        });
+        return;
+      }
+
+      if (saveResult?.status === 'error') {
+        setZipFeedback(
+          'Preenchemos o endereço, mas não foi possível salvar automaticamente. Revise os campos e tente novamente.',
+          { tone: 'error' },
+        );
+        return;
+      }
+
+      setZipFeedback('Endereço preenchido automaticamente. Confira os dados antes de continuar.');
       return;
     }
 
@@ -907,15 +1046,11 @@ export function renderUserPanel(viewRoot) {
 
     const shouldDisable = !user;
 
-    [primaryPhoneInput, primaryPasswordInput, primarySubmit, passwordToggle].forEach((element) => {
+    [primaryPhoneInput, primaryPasswordInput, passwordToggle].forEach((element) => {
       if (element) {
         element.disabled = shouldDisable;
       }
     });
-
-    if (profileSubmit) {
-      profileSubmit.disabled = shouldDisable;
-    }
 
     Object.values(profileFieldBindings).forEach((element) => {
       if (element instanceof HTMLElement) {
@@ -982,143 +1117,276 @@ export function renderUserPanel(viewRoot) {
   updateAccountActionsState();
   updateFormsState();
 
-  primaryForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    resetPrimaryFeedback();
+  async function handlePrimaryPhoneCommit() {
+    if (!primaryPhoneInput) {
+      return;
+    }
+
+    const trimmedValue = primaryPhoneInput.value.trim();
+    if (primaryPhoneInput.value !== trimmedValue) {
+      primaryPhoneInput.value = trimmedValue;
+    }
 
     const user = getActiveSessionUser();
+
     if (!user) {
+      resetPrimaryFeedback();
       showPrimaryFeedback('Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
         isError: true,
       });
       return;
     }
 
-    if (!primaryPhoneInput || !primaryPasswordInput) {
-      showPrimaryFeedback('Os campos de telefone e senha não foram carregados corretamente.', {
-        isError: true,
-      });
+    if (trimmedValue === user.phone) {
       return;
     }
 
-    const phoneValue = primaryPhoneInput.value.trim();
-    const passwordValue = primaryPasswordInput.value;
-
-    const updates = {};
-
-    if (phoneValue !== user.phone) {
-      if (!phoneValue) {
-        showPrimaryFeedback('Informe um telefone válido para atualizar o cadastro.', {
-          isError: true,
-        });
-        return;
-      }
-      updates.phone = phoneValue;
-    }
-
-    if (passwordValue !== user.password) {
-      if (!passwordValue) {
-        showPrimaryFeedback('Informe uma senha válida para atualizar o cadastro.', {
-          isError: true,
-        });
-        return;
-      }
-      updates.password = passwordValue;
-    }
-
-    if (Object.keys(updates).length === 0) {
-      showPrimaryFeedback('Nenhuma alteração identificada para salvar.', { isError: true });
+    const validation = validatePhoneNumber(trimmedValue);
+    if (!validation.isValid) {
+      resetPrimaryFeedback();
+      showPrimaryFeedback(
+        validation.message || 'Informe um telefone válido para atualizar o cadastro.',
+        { isError: true },
+      );
       return;
     }
 
-    try {
-      primarySubmit.disabled = true;
-      primarySubmit.setAttribute('aria-busy', 'true');
-      passwordToggle.disabled = true;
-      await updateUser(user.id, updates);
-      showPrimaryFeedback('Dados principais atualizados com sucesso!', { isError: false });
-    } catch (error) {
-      console.error('Erro ao atualizar telefone ou senha pelo painel do usuário.', error);
-      showPrimaryFeedback('Não foi possível atualizar os dados. Tente novamente.', {
-        isError: true,
-      });
+    const busyTargets = [primaryPhoneInput, primaryPasswordInput, passwordToggle].filter(Boolean);
+    await runPersistOperation('primary', { phone: trimmedValue }, {
+      feedback: {
+        reset: resetPrimaryFeedback,
+        show: showPrimaryFeedback,
+      },
+      busyTargets,
+      successMessage: 'Dados principais atualizados com sucesso!',
+      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.',
+    });
+  }
+
+  async function handlePrimaryPasswordCommit() {
+    if (!primaryPasswordInput) {
+      return;
     }
-
-    primarySubmit.disabled = false;
-    primarySubmit.removeAttribute('aria-busy');
-    passwordToggle.disabled = false;
-  });
-
-  profileForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    resetProfileFeedback();
 
     const user = getActiveSessionUser();
 
     if (!user) {
-      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
+      resetPrimaryFeedback();
+      showPrimaryFeedback('Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
         isError: true,
       });
       return;
     }
 
-    if (!profileNameInput || Object.values(profileFieldBindings).some((element) => element == null)) {
-      showProfileFeedback('Os campos adicionais não foram carregados corretamente.', {
-        isError: true,
-      });
+    const nextValue = primaryPasswordInput.value;
+
+    if (nextValue === user.password) {
       return;
     }
 
-    const nameValue = readFieldValue(profileNameInput);
+    const validation = validatePasswordStrength(nextValue);
+    if (!validation.isValid) {
+      resetPrimaryFeedback();
+      showPrimaryFeedback(
+        validation.message || 'Informe uma senha válida para atualizar o cadastro.',
+        { isError: true },
+      );
+      return;
+    }
 
-    const updates = {};
+    const busyTargets = [primaryPhoneInput, primaryPasswordInput, passwordToggle].filter(Boolean);
+    await runPersistOperation('primary', { password: nextValue }, {
+      feedback: {
+        reset: resetPrimaryFeedback,
+        show: showPrimaryFeedback,
+      },
+      busyTargets,
+      successMessage: 'Dados principais atualizados com sucesso!',
+      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.',
+    });
+  }
+
+  const profileGroupFields = {
+    personal: ['pronouns', 'birthDate', 'profession', 'company', 'bio'],
+    contact: [
+      'email',
+      'secondaryPhone',
+      'website',
+      'socialLinkedin',
+      'socialInstagram',
+      'socialFacebook',
+      'socialTwitter',
+      'socialYoutube',
+    ],
+    address: [
+      'document',
+      'address',
+      'addressNumber',
+      'addressComplement',
+      'addressDistrict',
+      'addressCity',
+      'addressState',
+      'addressZip',
+      'addressCountry',
+      'notes',
+    ],
+  };
+
+  function collectProfileGroupUpdates(groupName, user) {
+    const keys = profileGroupFields[groupName];
+    if (!keys || !user) {
+      return {};
+    }
+
     const profileUpdates = {};
 
-    if (nameValue !== user.name) {
-      if (!nameValue) {
-        showProfileFeedback('O nome completo não pode ficar vazio.', { isError: true });
-        return;
-      }
-      updates.name = nameValue;
-    }
-
-    Object.entries(profileFieldBindings).forEach(([key, element]) => {
+    keys.forEach((key) => {
+      const element = profileFieldBindings[key];
       if (!element) {
         return;
       }
 
-      const nextValue = readFieldValue(element);
-      const currentValue = user.profile?.[key] ?? '';
+      let nextValue = readFieldValue(element);
+      let currentValue = user.profile?.[key] ?? '';
+
+      if (key === 'birthDate') {
+        const normalized = /^\d{4}-\d{2}-\d{2}$/.test(nextValue) ? nextValue : '';
+        if (element instanceof HTMLInputElement) {
+          element.value = normalized;
+        }
+        nextValue = normalized;
+      } else if (key === 'addressZip') {
+        const normalizedZip = normalizeCep(nextValue);
+        if (element.value !== normalizedZip) {
+          element.value = normalizedZip;
+        }
+        nextValue = normalizedZip;
+        currentValue = normalizeCep(typeof currentValue === 'string' ? currentValue : '');
+      }
 
       if (nextValue !== currentValue) {
         profileUpdates[key] = nextValue;
       }
     });
 
-    if (Object.keys(profileUpdates).length > 0) {
-      updates.profile = profileUpdates;
+    return profileUpdates;
+  }
+
+  async function persistProfileGroup(groupName) {
+    const user = getActiveSessionUser();
+
+    if (!user) {
+      resetProfileFeedback();
+      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
+        isError: true,
+      });
+      return { status: 'no-session' };
     }
 
-    if (Object.keys(updates).length === 0) {
-      showProfileFeedback('Nenhuma alteração identificada para salvar.', { isError: true });
+    const profileUpdates = collectProfileGroupUpdates(groupName, user);
+
+    if (Object.keys(profileUpdates).length === 0) {
+      return { status: 'no-changes' };
+    }
+
+    const busyTargets = (profileGroupFields[groupName] || [])
+      .map((key) => profileFieldBindings[key])
+      .filter(Boolean);
+
+    return runPersistOperation(`profile:${groupName}`, { profile: profileUpdates }, {
+      feedback: {
+        reset: resetProfileFeedback,
+        show: showProfileFeedback,
+      },
+      busyTargets,
+      successMessage: 'Perfil completo atualizado com sucesso!',
+      errorMessage: 'Não foi possível salvar os dados do perfil. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para complementar os dados.',
+    });
+  }
+
+  async function handleProfileNameCommit() {
+    if (!profileNameInput) {
       return;
     }
 
-    try {
-      profileSubmit.disabled = true;
-      profileSubmit.setAttribute('aria-busy', 'true');
-      await updateUser(user.id, updates);
-      showProfileFeedback('Perfil completo atualizado com sucesso!', { isError: false });
-    } catch (error) {
-      console.error('Erro ao complementar cadastro pelo painel do usuário.', error);
-      showProfileFeedback('Não foi possível salvar os dados do perfil. Tente novamente.', {
+    const user = getActiveSessionUser();
+
+    if (!user) {
+      resetProfileFeedback();
+      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
         isError: true,
       });
+      return;
     }
 
-    profileSubmit.disabled = false;
-    profileSubmit.removeAttribute('aria-busy');
-  });
+    const nextValue = readFieldValue(profileNameInput);
+
+    if (nextValue === user.name) {
+      return;
+    }
+
+    if (!nextValue) {
+      resetProfileFeedback();
+      showProfileFeedback('O nome completo não pode ficar vazio.', { isError: true });
+      return;
+    }
+
+    await runPersistOperation('profile:name', { name: nextValue }, {
+      feedback: {
+        reset: resetProfileFeedback,
+        show: showProfileFeedback,
+      },
+      busyTargets: [profileNameInput],
+      successMessage: 'Perfil completo atualizado com sucesso!',
+      errorMessage: 'Não foi possível salvar os dados do perfil. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para complementar os dados.',
+    });
+  }
+
+  function attachProfileGroupHandlers(groupName) {
+    const keys = profileGroupFields[groupName];
+    if (!keys) {
+      return;
+    }
+
+    const handler = () => {
+      persistProfileGroup(groupName);
+    };
+
+    keys
+      .filter((key) => key !== 'addressZip')
+      .forEach((key) => {
+        const element = profileFieldBindings[key];
+        if (!element) {
+          return;
+        }
+
+        element.addEventListener('blur', handler);
+        element.addEventListener('change', handler);
+      });
+  }
+
+  if (primaryPhoneInput) {
+    primaryPhoneInput.addEventListener('blur', handlePrimaryPhoneCommit);
+    primaryPhoneInput.addEventListener('change', handlePrimaryPhoneCommit);
+  }
+
+  if (primaryPasswordInput) {
+    primaryPasswordInput.addEventListener('blur', handlePrimaryPasswordCommit);
+    primaryPasswordInput.addEventListener('change', handlePrimaryPasswordCommit);
+  }
+
+  if (profileNameInput) {
+    profileNameInput.addEventListener('blur', handleProfileNameCommit);
+    profileNameInput.addEventListener('change', handleProfileNameCommit);
+  }
+
+  attachProfileGroupHandlers('personal');
+  attachProfileGroupHandlers('contact');
+  attachProfileGroupHandlers('address');
 
   logoffButton.addEventListener('click', () => {
     resetAccountFeedback();

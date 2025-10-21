@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.99 - 2025-10-21 04:30 BRT
+- Substitui os botões de salvar por autosave nos formulários de telefone, senha e perfil, bloqueando submissões implícitas.
+- Centraliza a persistência em helper reutilizável com controle de feedback e estado ocupado para múltiplos campos.
+- Automatiza o preenchimento e salvamento do endereço ao consultar o CEP, exibindo mensagens específicas para sucesso ou falha.
+- Cobre o fluxo de autosave com testes unitários dedicados ao novo helper de persistência.
+
 ## v0.1.98 - 2025-10-21 02:45 BRT
 - Reorganiza o grupo "Endereço e documentação" colocando o campo de CEP na primeira posição do grid.
 - Implementa busca automática de endereço via ViaCEP com normalização, feedback discreto e preenchimento condicional dos campos.
