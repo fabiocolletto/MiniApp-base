@@ -3025,6 +3025,12 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   }
 }
 
+main > .view--log {
+  padding-block: clamp(1.25rem, 3.6vw, 2.5rem);
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  scroll-padding-block: clamp(1.25rem, 3.6vw, 2.5rem);
+}
+
 .view--log {
   gap: 1.25rem;
   color: var(--color-text-primary);
