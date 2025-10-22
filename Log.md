@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.161 - 2025-10-23 20:00 BRT
+- Ajusta a vitrine da Mini App Store para ocupar uma única coluna, exibindo cada miniapp em linha exclusiva no catálogo.
+- Define altura automática para os cartões do catálogo, permitindo que o conteúdo adapte o tamanho do widget conforme necessário.
+- Atualiza o rodapé para comunicar a versão v0.1.161 das 20h00.
+
 ## v0.1.160 - 2025-10-23 19:30 BRT
 - Remove a tela de boas-vindas acionada pelo menu do painel inicial, mantendo o usuário no painel ao reabrir o item.
 - Limpa o markup e os estilos associados à saudação inicial e passa a iniciar o app com o splash padrão de carregamento.
