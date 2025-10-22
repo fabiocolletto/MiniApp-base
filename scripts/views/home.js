@@ -122,6 +122,22 @@ function renderMiniAppListItem(app) {
       ? app.description.trim()
       : 'Nenhuma descrição cadastrada ainda.';
 
+  const detailApp = {
+    id: app?.id ?? '',
+    name: name.textContent,
+    description: description.textContent,
+    category:
+      typeof app?.category === 'string' && app.category.trim() !== ''
+        ? app.category.trim()
+        : '—',
+    status: formatStatus(app?.status),
+    updatedAt: formatUpdatedAt(app?.updatedAt),
+  };
+
+  if (typeof app?.version === 'string' && app.version.trim() !== '') {
+    detailApp.version = app.version.trim();
+  }
+
   const metaList = document.createElement('dl');
   metaList.className = 'user-dashboard__summary-list';
 
@@ -141,10 +157,7 @@ function renderMiniAppListItem(app) {
   detailsButton.className = 'user-dashboard__summary-edit';
   detailsButton.textContent = 'Ver detalhes';
   detailsButton.addEventListener('click', () => {
-    eventBus.emit('app:navigate', { view: 'miniapps' });
-    if (app?.id) {
-      eventBus.emit('miniapp:details', { appId: app.id });
-    }
+    eventBus.emit('miniapp:details', { app: detailApp, trigger: detailsButton });
   });
 
   item.append(name, description, metaList, detailsButton);
