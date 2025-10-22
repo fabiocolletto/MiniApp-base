@@ -953,7 +953,13 @@ export function initializeAppShell(router: RouterBridge): void {
 
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
-    renderView('admin');
+
+    if (shellRouter && typeof shellRouter.goTo === 'function') {
+      shellRouter.goTo('dashboard');
+      return;
+    }
+
+    renderView('home');
   });
   versionButton?.addEventListener('click', () => {
     closeHeaderMenu();
