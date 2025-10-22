@@ -1,9 +1,13 @@
 # Log
 
-## v0.1.128 - 2025-10-22 15:20 BRT
+## v0.1.128 - 2025-10-22 19:10 BRT
+- Adiciona o painel "Mini App Store" com título, introdução e vitrine listando os miniapps disponíveis com dados principais.
+- Reaproveita os estilos existentes dos painéis inicial e do usuário na Mini App Store, evitando novos seletores exclusivos.
+- Insere o atalho da Mini App Store no menu de painéis do cabeçalho e no menu móvel de acesso rápido para abrir a nova view.
+- Cria ação de detalhes para cada miniapp disparando a navegação para o painel administrativo e emitindo evento dedicado.
 - Remove os widgets de visão geral, ações rápidas, mini-apps e boas práticas do painel inicial para manter apenas o bloco principal.
 - Centraliza o título, a introdução e o callout de sessão do painel inicial para destacar as ações de login e cadastro.
-- Atualiza o rodapé para informar a versão v0.1.128 das 15h20.
+- Atualiza o rodapé para informar a versão v0.1.128 das 19h10.
 - Sincroniza o resumo dos dados principais com o estado de edição ocultando a lista ao abrir o formulário sem esconder o botão de recolhimento.
 - Revalida visualmente o painel do usuário com o resumo recolhido e expandido.
 
