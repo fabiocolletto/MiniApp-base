@@ -1873,6 +1873,15 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   width: min(100%, 72rem);
   max-width: min(100%, 72rem);
   margin-inline: auto;
+}
+
+.home-dashboard__title,
+.home-dashboard__intro {
+  text-align: center;
+}
+
+.admin-dashboard__title,
+.admin-dashboard__intro {
   text-align: left;
 }
 
@@ -1884,16 +1893,13 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 .home-dashboard__callout {
   width: min(100%, 72rem);
   margin: 0 auto;
-  justify-items: start;
-  align-items: start;
-  text-align: left;
 }
 
 .home-dashboard__callout-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--panel-cluster-gap);
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .home-dashboard__callout-button {
