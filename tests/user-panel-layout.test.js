@@ -331,4 +331,38 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
 
   const themeSelect = findElement(form, (node) => node instanceof FakeElement && node.tagName === 'SELECT');
   assert.ok(themeSelect, 'seletor de tema precisa fazer parte do formulário');
+
+  const accessWidget = layout.children.find(
+    (child) => child instanceof FakeElement && child.classList.contains('user-panel__widget--access'),
+  );
+  assert.ok(accessWidget, 'widget de controle de acesso não foi renderizado');
+  assert.equal(accessWidget.dataset.state, 'empty', 'widget de acesso deve iniciar no estado "empty" sem sessão ativa');
+
+  const accessActionList = findElement(
+    accessWidget,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__action-list'),
+  );
+  assert.ok(accessActionList, 'lista de ações deve estar disponível no widget de acesso');
+  assert.equal(accessActionList.children.length, 4, 'widget de acesso deve exibir quatro ações rápidas');
+
+  const accessButtons = accessActionList.querySelectorAll('button');
+  assert.equal(accessButtons.length, 4, 'quatro botões precisam estar presentes no widget de acesso');
+  const buttonActions = accessButtons.map((button) => button.dataset.action);
+  assert.deepEqual(
+    buttonActions,
+    ['logoff', 'logout', 'switch-user', 'erase-data'],
+    'as ações devem seguir a ordem logoff, logout, troca de usuário e exclusão de dados',
+  );
+
+  const logoffButton = accessButtons.find((button) => button.dataset.action === 'logoff');
+  assert.ok(logoffButton, 'botão de logoff deve existir');
+  assert.equal(logoffButton.disabled, true, 'logoff deve iniciar desabilitado sem sessão ativa');
+
+  const switchButton = accessButtons.find((button) => button.dataset.action === 'switch-user');
+  assert.ok(switchButton, 'botão de troca de usuário deve existir');
+  assert.equal(
+    switchButton.disabled,
+    false,
+    'botão de troca de usuário deve permanecer disponível para abrir a tela de login mesmo sem sessão ativa',
+  );
 });

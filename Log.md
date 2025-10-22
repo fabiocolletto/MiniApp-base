@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.136 - 2025-10-23 02:05 BRT
+- Constrói o widget de controle de acesso no painel do usuário com botões de logoff, logout, troca de usuário e exclusão de dados locais.
+- Ajusta o teste de layout do painel do usuário para cobrir o novo widget e validar a disponibilidade das ações.
+- Atualiza o rodapé para informar a versão v0.1.136 das 02h05.
+
 ## v0.1.135 - 2025-10-23 01:30 BRT
 - Normaliza o `userType` do snapshot da sessão para refletir os mesmos valores sanitizados utilizados no armazenamento de usuário.
 - Garante que consumidores notificados pela sessão, incluindo o painel inicial, recebam o novo campo sem alterações colaterais no fluxo existente.
