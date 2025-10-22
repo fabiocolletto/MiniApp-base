@@ -1876,6 +1876,11 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   text-align: left;
 }
 
+.admin-dashboard__title,
+.admin-dashboard__intro {
+  padding-inline: var(--panel-padding);
+}
+
 .home-dashboard__callout {
   width: min(100%, 72rem);
   margin: 0 auto;
@@ -2454,6 +2459,22 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 @media (min-width: 48rem) {
   .user-panel__layout {
     grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  }
+}
+
+.admin-dashboard__layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 48rem) {
+  .admin-dashboard__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 72rem) {
+  .admin-dashboard__layout {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
