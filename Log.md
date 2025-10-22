@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.162 - 2025-10-23 20:30 BRT
+- Reorganiza a grade do formulário do painel do usuário com colunas responsivas baseadas em atributos de tamanho para cada campo.
+- Ajusta os elementos do painel do usuário para definir `data-field-size` compatível com a nova malha e garantir mensagens e envio em largura total.
+- Atualiza o rodapé para comunicar a versão v0.1.162 das 20h30.
+
 ## v0.1.161 - 2025-10-23 20:00 BRT
 - Ajusta a vitrine da Mini App Store para ocupar uma única coluna, exibindo cada miniapp em linha exclusiva no catálogo.
 - Define altura automática para os cartões do catálogo, permitindo que o conteúdo adapte o tamanho do widget conforme necessário.

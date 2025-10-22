@@ -3684,6 +3684,49 @@ main > :where(.card.view):not(.auth-view) {
   width: 100%;
 }
 
+.user-dashboard__form {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row dense;
+}
+
+@media (min-width: 48rem) {
+  .user-dashboard__form {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}
+
+.user-dashboard__form [data-field-size] {
+  width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .user-dashboard__form [data-field-size='full'] {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .user-dashboard__form [data-field-size='wide'] {
+    grid-column: span 2;
+    max-width: min(100%, clamp(22rem, 48vw, 34rem));
+  }
+
+  .user-dashboard__form [data-field-size='medium'] {
+    grid-column: span 1;
+    max-width: min(100%, clamp(18rem, 38vw, 26rem));
+  }
+
+  .user-dashboard__form [data-field-size='compact'] {
+    grid-column: span 1;
+    max-width: min(100%, clamp(16rem, 32vw, 20rem));
+  }
+}
+
+.user-dashboard__form .user-form__submit {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  width: 100%;
+}
+
 .user-form__field,
 .form-field {
   display: grid;
