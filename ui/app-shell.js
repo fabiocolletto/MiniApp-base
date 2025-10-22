@@ -1514,6 +1514,46 @@ export function initializeAppShell(router) {
 
   registerFooterMobileToggle();
 
+  const handleFooterBrandShortcut = (event) => {
+    if (!(event instanceof Event)) {
+      return;
+    }
+
+    const isMobile = Boolean(mobileFooterMediaQuery?.matches);
+    if (isMobile) {
+      return;
+    }
+
+    const target = event.target;
+    let isFromBrandIcon = false;
+
+    if (footerBrandIcon instanceof HTMLElement && target && typeof target === 'object') {
+      const isNode =
+        (typeof Node === 'function' && target instanceof Node) ||
+        (typeof Node !== 'function' && 'nodeType' in target);
+
+      if (isNode) {
+        isFromBrandIcon = footerBrandIcon.contains(target);
+      }
+    }
+
+    if (isFromBrandIcon) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    closeHeaderMenu();
+    renderView('admin');
+  };
+
+  if (footerBrandIcon instanceof HTMLElement) {
+    footerBrandIcon.addEventListener('click', handleFooterBrandShortcut);
+  }
+
+  if (footerToggleButton instanceof HTMLButtonElement) {
+    footerToggleButton.addEventListener('click', handleFooterBrandShortcut);
+  }
+
   document.addEventListener('app:navigate', (event) => {
     const detail = event && typeof event === 'object' ? event.detail : undefined;
     const viewName = resolveViewName(detail);
