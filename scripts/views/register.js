@@ -16,7 +16,7 @@ function renderRegisterSuccess(viewRoot, savedUser) {
   viewRoot.dataset.view = 'register-success';
 
   const title = document.createElement('h1');
-  title.className = 'auth-panel__title register-panel__title register-success__title';
+  title.className = 'auth-panel__title register-success__title';
   title.textContent = 'Cadastro concluído!';
   title.tabIndex = -1;
 
@@ -77,7 +77,7 @@ export function renderRegisterPanel(viewRoot) {
   viewRoot.dataset.view = 'register';
 
   const heading = document.createElement('h1');
-  heading.className = 'auth-panel__title register-panel__title';
+  heading.className = 'auth-panel__title';
   heading.textContent = 'Crie sua conta';
 
   const form = document.createElement('form');
@@ -86,22 +86,20 @@ export function renderRegisterPanel(viewRoot) {
   form.noValidate = true;
 
   const phoneField = document.createElement('div');
-  phoneField.className =
-    'user-form__field user-form__field--inline auth-panel__phone-field register-panel__phone-field';
+  phoneField.className = 'user-form__field user-form__field--inline auth-panel__phone-field';
 
   const phoneFieldLabel = document.createElement('span');
-  phoneFieldLabel.className = 'user-form__label register-panel__phone-label auth-panel__phone-label';
+  phoneFieldLabel.className = 'user-form__label auth-panel__phone-label';
   phoneFieldLabel.textContent = 'Telefone de contato';
 
   const phoneInputsWrapper = document.createElement('div');
-  phoneInputsWrapper.className = 'auth-panel__phone-inputs register-panel__phone-inputs';
+  phoneInputsWrapper.className = 'auth-panel__phone-inputs';
 
   const countryGroup = document.createElement('div');
-  countryGroup.className =
-    'auth-panel__phone-subfield auth-panel__phone-subfield--country register-panel__phone-subfield register-panel__phone-subfield--country';
+  countryGroup.className = 'auth-panel__phone-subfield auth-panel__phone-subfield--country';
 
   const countryLabel = document.createElement('label');
-  countryLabel.className = 'auth-panel__phone-subfield-label register-panel__phone-subfield-label sr-only';
+  countryLabel.className = 'auth-panel__phone-subfield-label sr-only';
   countryLabel.setAttribute('for', 'register-phone-country');
   countryLabel.textContent = 'Código do país';
 
@@ -117,11 +115,10 @@ export function renderRegisterPanel(viewRoot) {
   countryGroup.append(countryLabel, phoneCountryInput);
 
   const numberGroup = document.createElement('div');
-  numberGroup.className =
-    'auth-panel__phone-subfield auth-panel__phone-subfield--number register-panel__phone-subfield register-panel__phone-subfield--number';
+  numberGroup.className = 'auth-panel__phone-subfield auth-panel__phone-subfield--number';
 
   const numberLabel = document.createElement('label');
-  numberLabel.className = 'auth-panel__phone-subfield-label register-panel__phone-subfield-label sr-only';
+  numberLabel.className = 'auth-panel__phone-subfield-label sr-only';
   numberLabel.setAttribute('for', 'register-phone-number');
   numberLabel.textContent = 'Número do telefone';
 
@@ -232,19 +229,19 @@ export function renderRegisterPanel(viewRoot) {
   submitButton.textContent = 'Criar conta';
 
   const feedback = document.createElement('p');
-  feedback.className = 'user-form__feedback auth-panel__feedback register-panel__feedback';
+  feedback.className = 'user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
   const loginRedirect = document.createElement('p');
-  loginRedirect.className = 'register-panel__redirect';
+  loginRedirect.className = 'auth-panel__redirect';
 
   const loginRedirectText = document.createElement('span');
-  loginRedirectText.className = 'register-panel__redirect-text';
+  loginRedirectText.className = 'auth-panel__redirect-text';
   loginRedirectText.textContent = 'Já possui cadastro?';
 
   const loginLink = document.createElement('a');
-  loginLink.className = 'register-panel__redirect-link';
+  loginLink.className = 'auth-panel__redirect-link';
   loginLink.href = '#login';
   loginLink.title = 'Acessar o painel de login';
   loginLink.textContent = 'Acesse o painel de login';

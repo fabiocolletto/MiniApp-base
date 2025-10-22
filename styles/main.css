@@ -1818,85 +1818,62 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   text-align: center;
 }
 
-.register-panel__title {
-  text-align: center;
-}
-
-.register-panel__intro {
-  margin: 0 auto;
-  max-width: 24rem;
-  font-size: var(--panel-font-size-base);
-  color: var(--color-text-soft);
-  line-height: 1.6;
-}
-
 .user-form__field--inline {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: clamp(0.5rem, 1.6vw, 0.85rem);
 }
 
-.auth-panel__phone-field,
-.register-panel__phone-field {
+.auth-panel__phone-field {
   align-items: start;
 }
 
-.auth-panel__phone-inputs,
-.register-panel__phone-inputs {
+.auth-panel__phone-inputs {
   display: grid;
   grid-template-columns: minmax(3.75rem, 5.75rem) minmax(0, 1fr);
   gap: clamp(0.5rem, 1.6vw, 0.85rem);
   align-items: end;
 }
 
-.auth-panel__phone-subfield,
-.register-panel__phone-subfield {
+.auth-panel__phone-subfield {
   display: grid;
   gap: 0.35rem;
 }
 
-.auth-panel__phone-subfield-label,
-.register-panel__phone-subfield-label {
+.auth-panel__phone-subfield-label {
   font-size: var(--panel-font-size-compact);
   color: var(--color-text-soft);
   font-weight: 600;
 }
 
-.auth-panel__phone-subfield input,
-.register-panel__phone-subfield input {
+.auth-panel__phone-subfield input {
   width: 100%;
   min-width: 0;
 }
 
-.auth-panel__phone-subfield--country,
-.register-panel__phone-subfield--country {
+.auth-panel__phone-subfield--country {
   max-width: 5.75rem;
 }
 
-.auth-panel__phone-subfield--country input,
-.register-panel__phone-subfield--country input {
+.auth-panel__phone-subfield--country input {
   text-align: center;
   padding-inline: clamp(0.5rem, 1vw, 0.75rem);
 }
 
-.auth-panel__phone-subfield--number input,
-.register-panel__phone-subfield--number input {
+.auth-panel__phone-subfield--number input {
   padding-inline: clamp(0.75rem, 1.4vw, 1.05rem);
 }
 
 @media (max-width: 20rem) {
-  .auth-panel__phone-inputs,
-  .register-panel__phone-inputs {
+  .auth-panel__phone-inputs {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .auth-panel__phone-subfield--country,
-  .register-panel__phone-subfield--country {
+  .auth-panel__phone-subfield--country {
     max-width: none;
   }
 
-  .auth-panel__phone-subfield--country input,
-  .register-panel__phone-subfield--country input {
+  .auth-panel__phone-subfield--country input {
     justify-self: start;
     max-width: 6.5rem;
   }
@@ -2007,8 +1984,7 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   width: 100%;
 }
 
-.register-panel__redirect,
-.login-panel__redirect {
+.auth-panel__redirect {
   inline-size: min(100%, 24rem);
   justify-self: center;
   margin: 0;
@@ -2017,15 +1993,13 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   color: var(--color-text-soft);
 }
 
-.register-panel__redirect-text,
-.login-panel__redirect-text {
+.auth-panel__redirect-text {
   display: inline-block;
   margin: 0;
   font-weight: 500;
 }
 
-.register-panel__redirect-link,
-.login-panel__redirect-link {
+.auth-panel__redirect-link {
   color: var(--color-accent-deep);
   font-weight: 600;
   text-decoration: underline;
@@ -2033,8 +2007,7 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   text-decoration-color: rgba(138, 75, 12, 0.6);
 }
 
-.register-panel__redirect-link:focus-visible,
-.login-panel__redirect-link:focus-visible {
+.auth-panel__redirect-link:focus-visible {
   outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.5);
   outline-offset: 0.1rem;
   border-radius: 0.25rem;

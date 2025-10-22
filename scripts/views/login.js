@@ -61,19 +61,17 @@ export function renderLoginPanel(viewRoot) {
   form.noValidate = true;
 
   const phoneField = document.createElement('div');
-  phoneField.className =
-    'user-form__field user-form__field--inline auth-panel__phone-field login-panel__phone-field';
+  phoneField.className = 'user-form__field user-form__field--inline auth-panel__phone-field';
 
   const phoneFieldLabel = document.createElement('span');
   phoneFieldLabel.className = 'user-form__label auth-panel__phone-label';
   phoneFieldLabel.textContent = 'Telefone cadastrado';
 
   const phoneInputsWrapper = document.createElement('div');
-  phoneInputsWrapper.className = 'auth-panel__phone-inputs login-panel__phone-inputs';
+  phoneInputsWrapper.className = 'auth-panel__phone-inputs';
 
   const countryGroup = document.createElement('div');
-  countryGroup.className =
-    'auth-panel__phone-subfield auth-panel__phone-subfield--country login-panel__phone-subfield login-panel__phone-subfield--country';
+  countryGroup.className = 'auth-panel__phone-subfield auth-panel__phone-subfield--country';
 
   const countryLabel = document.createElement('label');
   countryLabel.className = 'auth-panel__phone-subfield-label sr-only';
@@ -92,8 +90,7 @@ export function renderLoginPanel(viewRoot) {
   countryGroup.append(countryLabel, phoneCountryInput);
 
   const numberGroup = document.createElement('div');
-  numberGroup.className =
-    'auth-panel__phone-subfield auth-panel__phone-subfield--number login-panel__phone-subfield login-panel__phone-subfield--number';
+  numberGroup.className = 'auth-panel__phone-subfield auth-panel__phone-subfield--number';
 
   const numberLabel = document.createElement('label');
   numberLabel.className = 'auth-panel__phone-subfield-label sr-only';
@@ -161,14 +158,14 @@ export function renderLoginPanel(viewRoot) {
   feedback.hidden = true;
 
   const registerRedirect = document.createElement('p');
-  registerRedirect.className = 'login-panel__redirect';
+  registerRedirect.className = 'auth-panel__redirect';
 
   const registerRedirectText = document.createElement('span');
-  registerRedirectText.className = 'login-panel__redirect-text';
+  registerRedirectText.className = 'auth-panel__redirect-text';
   registerRedirectText.textContent = 'Ainda não possui cadastro?';
 
   const registerLink = document.createElement('a');
-  registerLink.className = 'login-panel__redirect-link';
+  registerLink.className = 'auth-panel__redirect-link';
   registerLink.href = '#register';
   registerLink.title = 'Ir para o painel de cadastro';
   registerLink.textContent = 'Crie sua conta agora';
