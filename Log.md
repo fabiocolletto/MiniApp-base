@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.119 - 2025-10-22 15:05 BRT
+- Corrige o cálculo dos offsets do cabeçalho e do rodapé usando arredondamento para cima e elimina a sobreposição do cartão de cadastro em telas baixas.
+- Atualiza o rodapé para exibir a versão v0.1.119 das 15h05.
+- Valida visualmente o painel de cadastro em orientação paisagem confirmando que o rodapé não cobre o botão "Criar conta".
+
 ## v0.1.118 - 2025-10-22 14:20 BRT
 - Alinha o título principal do painel administrativo aplicando o mesmo padding lateral dos widgets para que o texto acompanhe o restante do conteúdo.
 - Mantém os widgets de indicadores e da tabela empilhados em uma única coluna em qualquer largura para abrir mais espaço aos dados detalhados.
