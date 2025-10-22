@@ -38,6 +38,7 @@ const storeLink = document.querySelector('.header-store-link');
 const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
 const headerMenu = document.querySelector('.header-menu');
+const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
 const headerMenuPanel = document.getElementById('header-navigation-menu');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
@@ -333,7 +334,7 @@ function getHeaderUserButton() {
 
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'header-action header-action--avatar';
+  button.className = 'header-action header-action--avatar header-menu__user';
   button.addEventListener('click', () => {
     renderView('user');
   });
@@ -1033,12 +1034,17 @@ function setLinkVisibility(link, isVisible) {
 
 function updateHeaderSession(user) {
   const isAuthenticated = Boolean(user);
+  const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, !isAuthenticated);
   setLinkVisibility(registerLink, !isAuthenticated);
 
   if (headerActions instanceof HTMLElement) {
     headerActions.dataset.mobile = isAuthenticated ? 'user' : 'guest';
+  }
+
+  if (menuControls) {
+    menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
   }
 
   if (headerMobileToggle instanceof HTMLElement) {
@@ -1070,8 +1076,12 @@ function updateHeaderSession(user) {
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
 
-  if (!button.isConnected && headerActions instanceof HTMLElement) {
-    headerActions.append(button);
+  if (!button.isConnected) {
+    if (menuControls) {
+      menuControls.append(button);
+    } else if (headerActions instanceof HTMLElement) {
+      headerActions.append(button);
+    }
   }
 
   scheduleLayoutOffsetUpdate();

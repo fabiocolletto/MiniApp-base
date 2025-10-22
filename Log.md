@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.132 - 2025-10-22 22:45 BRT
+- Unifica o gatilho do menu de painéis e o botão da conta em um mesmo agrupamento no cabeçalho, mantendo o atalho do usuário dentro do menu quando autenticado.
+- Ajusta os estilos do cabeçalho para o novo agrupamento garantindo feedbacks de foco, hover e espaçamento consistente entre os botões.
+- Atualiza o rodapé para informar a versão v0.1.132 das 22h45.
+
 ## v0.1.131 - 2025-10-22 22:10 BRT
 - Corrige a centralização do menu móvel garantindo que o modal ocupe toda a viewport inclusive em navegadores sem suporte ao atalho `inset`.
 - Ajusta o espaçamento vertical do modal para considerar as áreas seguras superiores e inferiores em aparelhos com notch ou barra de navegação fixa.

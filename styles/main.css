@@ -370,6 +370,84 @@ header {
   align-items: stretch;
 }
 
+.header-menu__controls {
+  --header-menu-radius: clamp(1.05rem, 2.4vw, 1.35rem);
+  --header-action-bg: var(--color-bg-card);
+  --header-action-bg-hover: var(--header-action-bg);
+  --header-action-border: rgba(var(--color-warm-rgb), 0.35);
+  --header-action-border-hover: rgba(var(--color-warm-rgb), 0.6);
+  --header-action-shadow: 0 0.35rem 0.95rem rgba(var(--color-warm-rgb), 0.12);
+  --header-action-shadow-hover: 0 0.4rem 1rem rgba(var(--color-warm-rgb), 0.18);
+  --header-action-focus-shadow: 0 0 0 0.15rem rgba(var(--color-warm-rgb), 0.2);
+  --header-action-hover-translate: translateY(-1px);
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: var(--header-menu-radius);
+  border: 0.12rem solid var(--header-action-border);
+  background: var(--header-action-bg);
+  box-shadow: var(--header-action-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+}
+
+.header-menu__controls:hover {
+  border-color: var(--header-action-border-hover);
+  box-shadow: var(--header-action-shadow-hover);
+  transform: var(--header-action-hover-translate);
+}
+
+.header-menu__controls:focus-within {
+  border-color: var(--header-action-border-hover);
+  box-shadow: var(--header-action-focus-shadow);
+}
+
+.header-menu__controls .header-action {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding-block: clamp(0.45rem, 1.3vw, 0.75rem);
+  background: var(--header-action-bg);
+}
+
+.header-menu__controls .header-action:hover,
+.header-menu__controls .header-action:focus-visible {
+  transform: none;
+  background: rgba(var(--color-warm-rgb), 0.08);
+  box-shadow: none;
+}
+
+.header-menu__controls .header-action:focus-visible {
+  outline: none;
+}
+
+.header-menu__controls .header-action--menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-inline: clamp(0.85rem, 2.1vw, 1.35rem);
+}
+
+.header-menu__controls[data-session='authenticated'] .header-action--menu {
+  border-inline-end: 0.12rem solid rgba(var(--color-warm-rgb), 0.18);
+}
+
+.header-menu__controls .header-menu__icon {
+  margin-inline-start: 0.25rem;
+}
+
+.header-menu__controls[data-session='guest'] .header-menu__icon {
+  margin-inline-start: 0.45rem;
+}
+
+.header-menu__user {
+  min-inline-size: clamp(2.4rem, 5vw, 2.85rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .header-action--menu {
   gap: 0.45rem;
   padding-inline: clamp(0.95rem, 2.1vw, 1.5rem);
