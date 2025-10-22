@@ -50,7 +50,8 @@ function createToggleActionButton({
 }) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'user-dashboard__summary-edit miniapp-store__action-button';
+  button.className =
+    'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button';
 
   if (modifier) {
     button.classList.add(`miniapp-store__action-button--${modifier}`);
@@ -178,7 +179,7 @@ function renderMiniAppListItem({
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
   detailsButton.className =
-    'user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
+    'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
   detailsButton.textContent = 'Saiba Mais';
 
   item.addEventListener('click', (event) => {
