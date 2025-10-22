@@ -753,16 +753,20 @@ function updateMemoryStatus(status: unknown): void {
       : 'Memória carregando';
   const details =
     typeof typedStatus?.details === 'string' && typedStatus.details.trim() ? typedStatus.details.trim() : '';
+  const accessibleHighlight =
+    state === 'updated' ? 'Dados sincronizados automaticamente.' : '';
 
   memoryIndicator.dataset.state = state;
   memoryIndicatorText.textContent = message;
 
   if (details) {
+    const joined = accessibleHighlight ? `${message}. ${accessibleHighlight} ${details}` : `${message}. ${details}`;
     memoryIndicator.setAttribute('title', details);
-    memoryIndicator.setAttribute('aria-label', `${message}. ${details}`);
+    memoryIndicator.setAttribute('aria-label', joined);
   } else {
     memoryIndicator.removeAttribute('title');
-    memoryIndicator.setAttribute('aria-label', message);
+    const fallbackLabel = accessibleHighlight ? `${message}. ${accessibleHighlight}` : message;
+    memoryIndicator.setAttribute('aria-label', fallbackLabel);
   }
 }
 

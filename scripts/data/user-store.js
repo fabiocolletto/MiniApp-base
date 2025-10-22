@@ -147,8 +147,8 @@ function createStorageReadyStatus({ reason } = {}) {
       : 'Nenhum cadastro disponível na memória local.';
 
     return {
-      state: hasUsers ? 'ready' : 'empty',
-      message: 'Memória atualizada',
+      state: hasUsers ? 'updated' : 'empty',
+      message: hasUsers ? 'Memória atualizada' : 'Memória atualizada (vazia)',
       details: `Dados sincronizados com sucesso. ${availabilitySummary}`,
     };
   }

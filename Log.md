@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.117 - 2025-10-22 12:30 BRT
+- Acrescenta ao painel administrativo um widget de listagem com filtros, tabela expansível e edição automática dos dados principais, de perfil e preferências diretamente no painel.
+- Gera feedbacks visuais para o auto-save administrativo, mantendo a seleção ao filtrar e cobrindo o fluxo com testes usando DOM simulada.
+- Destaca sincronizações automáticas da memória com o novo estado visual “updated”, ajustando acessibilidade, estilos e testes do armazenamento.
+- Atualiza o rodapé para exibir a versão v0.1.117 das 12h30.
+- Mantém o feedback de auto-save visível após novas renderizações e garante que o resumo do toolbar destaque filtros ativos mesmo quando todos os usuários permanecem na listagem.
+- Amplia o teste do painel administrativo com DOM falso, aguardando a conclusão do auto-save, validando feedbacks, filtros e o seletor de tipo com o ambiente sem suporte a seletores por id.
+
 ## v0.1.116 - 2025-10-22 06:45 BRT
 - Ajusta o painel de login para seguir o layout do cadastro, removendo a introdução e adicionando redirecionamento para criar conta.
 - Compartilha os estilos de redirecionamento entre login e cadastro para manter tipografia e ênfase alinhadas.
