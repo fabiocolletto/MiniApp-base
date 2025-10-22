@@ -112,13 +112,13 @@ function applyLayoutOffsets() {
   const footerSize = getElementBlockSize(footerElement);
 
   if (headerSize > 0) {
-    style.setProperty('--layout-header-offset', `${Math.round(headerSize)}px`);
+    style.setProperty('--layout-header-offset', `${Math.ceil(headerSize)}px`);
   } else {
     style.removeProperty('--layout-header-offset');
   }
 
   if (footerSize > 0) {
-    style.setProperty('--layout-footer-offset', `${Math.round(footerSize)}px`);
+    style.setProperty('--layout-footer-offset', `${Math.ceil(footerSize)}px`);
   } else {
     style.removeProperty('--layout-footer-offset');
   }
