@@ -1,4 +1,13 @@
 import eventBus from '../events/event-bus.js';
+import { getActiveUser, subscribeSession } from '../data/session-store.js';
+import {
+  MAX_FAVORITE_MINI_APPS,
+  getUserMiniAppPreferences,
+  subscribeMiniAppPreferences,
+  toggleMiniAppFavorite,
+  toggleMiniAppSaved,
+} from '../data/miniapp-preferences-store.js';
+import { registerViewCleanup } from '../view-cleanup.js';
 
 const MINI_APPS = [
   {
@@ -30,18 +39,14 @@ const MINI_APPS = [
   },
 ];
 
-const favoriteMiniAppIds = new Set();
-const subscribedMiniAppIds = new Set();
-
 function createToggleActionButton({
-  app,
-  stateSet,
   defaultLabel,
   activeLabel,
   defaultTitle,
   activeTitle,
-  eventName,
   modifier,
+  getIsActive,
+  onPress,
 }) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -52,7 +57,9 @@ function createToggleActionButton({
     button.dataset.action = modifier;
   }
 
-  const applyState = (isActive) => {
+  const applyState = () => {
+    const stateValue = getIsActive ? getIsActive() : false;
+    const isActive = stateValue === true;
     const label = isActive ? activeLabel : defaultLabel;
     const title = isActive ? activeTitle : defaultTitle;
 
@@ -61,29 +68,20 @@ function createToggleActionButton({
     button.title = title;
     button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     button.dataset.state = isActive ? 'active' : 'idle';
+    button.disabled = stateValue === null;
   };
 
-  const initialState = stateSet.has(app.id);
-  applyState(initialState);
+  applyState();
 
   button.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-
-    const currentState = button.getAttribute('aria-pressed') === 'true';
-    const nextState = !currentState;
-
-    if (nextState) {
-      stateSet.add(app.id);
-    } else {
-      stateSet.delete(app.id);
+    if (typeof onPress === 'function') {
+      onPress({ applyState, button });
     }
-
-    applyState(nextState);
-    eventBus.emit(eventName, { app, active: nextState, trigger: button });
   });
 
-  return button;
+  return { button, refresh: applyState };
 }
 
 function createSummaryEntry(term, value) {
@@ -106,7 +104,13 @@ function createSummaryEntry(term, value) {
   return wrapper;
 }
 
-function renderMiniAppListItem(app) {
+function renderMiniAppListItem({
+  app,
+  getIsFavorite,
+  getIsSaved,
+  onToggleFavorite,
+  onToggleSaved,
+}) {
   const item = document.createElement('li');
   item.className = 'home-dashboard__list-item';
   item.dataset.appId = app.id;
@@ -143,26 +147,32 @@ function renderMiniAppListItem(app) {
     eventBus.emit('miniapp:details', { app, trigger: detail });
   };
 
-  const favoriteButton = createToggleActionButton({
-    app,
-    stateSet: favoriteMiniAppIds,
+  const favoriteControl = createToggleActionButton({
     defaultLabel: 'Favoritar',
     activeLabel: 'Favorito',
     defaultTitle: `Adicionar ${app.name} aos favoritos`,
     activeTitle: `Remover ${app.name} dos favoritos`,
-    eventName: 'miniapp:favorite',
     modifier: 'favorite',
+    getIsActive: () => (typeof getIsFavorite === 'function' ? getIsFavorite(app.id) : false),
+    onPress: ({ applyState, button }) => {
+      if (typeof onToggleFavorite === 'function') {
+        onToggleFavorite({ app, applyState, button });
+      }
+    },
   });
 
-  const subscribeButton = createToggleActionButton({
-    app,
-    stateSet: subscribedMiniAppIds,
-    defaultLabel: 'Assinar',
-    activeLabel: 'Assinado',
-    defaultTitle: `Assinar novidades do ${app.name}`,
-    activeTitle: `Cancelar assinatura do ${app.name}`,
-    eventName: 'miniapp:subscribe',
-    modifier: 'subscribe',
+  const savedControl = createToggleActionButton({
+    defaultLabel: 'Salvar',
+    activeLabel: 'Salvo',
+    defaultTitle: `Salvar ${app.name} para ver depois`,
+    activeTitle: `Remover ${app.name} dos salvos`,
+    modifier: 'saved',
+    getIsActive: () => (typeof getIsSaved === 'function' ? getIsSaved(app.id) : false),
+    onPress: ({ applyState, button }) => {
+      if (typeof onToggleSaved === 'function') {
+        onToggleSaved({ app, applyState, button });
+      }
+    },
   });
 
   const detailsButton = document.createElement('button');
@@ -201,16 +211,37 @@ function renderMiniAppListItem(app) {
 
   const actions = document.createElement('div');
   actions.className = 'miniapp-store__actions';
-  actions.append(favoriteButton, subscribeButton, detailsButton);
+  actions.append(favoriteControl.button, savedControl.button, detailsButton);
 
   item.append(name, description, metaList, actions);
-  return item;
+  return {
+    element: item,
+    controls: {
+      favorite: favoriteControl,
+      saved: savedControl,
+    },
+  };
 }
 
 export function renderMiniAppStore(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
   }
+
+  const cleanupHandlers = [];
+
+  registerViewCleanup(viewRoot, () => {
+    while (cleanupHandlers.length > 0) {
+      const cleanup = cleanupHandlers.pop();
+      try {
+        if (typeof cleanup === 'function') {
+          cleanup();
+        }
+      } catch (error) {
+        console.error('Erro ao limpar a Mini App Store.', error);
+      }
+    }
+  });
 
   viewRoot.className = 'card view view--user miniapp-store-view';
   viewRoot.dataset.view = 'miniapps';
@@ -230,15 +261,174 @@ export function renderMiniAppStore(viewRoot) {
   catalogDescription.textContent =
     'Veja os principais dados de cada miniapp disponível. Toque em um cartão para abrir a ficha técnica com as informações completas.';
 
+  const feedback = document.createElement('p');
+  feedback.className = 'miniapp-store__feedback';
+  feedback.setAttribute('role', 'status');
+  feedback.setAttribute('aria-live', 'polite');
+  feedback.hidden = true;
+
   const list = document.createElement('ul');
   list.className = 'home-dashboard__miniapps miniapp-store__miniapps';
 
+  const controlsByAppId = new Map();
+
+  const state = {
+    user: getActiveUser(),
+    preferences: { favorites: [], saved: [] },
+  };
+
+  function refreshUserPreferences() {
+    if (!state.user) {
+      state.preferences = { favorites: [], saved: [] };
+      return;
+    }
+
+    state.preferences = getUserMiniAppPreferences(state.user.id);
+  }
+
+  function getIsFavorite(appId) {
+    if (!state.user || !state.preferences || !Array.isArray(state.preferences.favorites)) {
+      return null;
+    }
+
+    return state.preferences.favorites.includes(appId);
+  }
+
+  function getIsSaved(appId) {
+    if (!state.user || !state.preferences || !Array.isArray(state.preferences.saved)) {
+      return null;
+    }
+
+    return state.preferences.saved.includes(appId);
+  }
+
+  function showFeedback(message, type = 'info') {
+    if (typeof message !== 'string' || message.trim() === '') {
+      feedback.textContent = '';
+      feedback.dataset.state = 'idle';
+      feedback.hidden = true;
+      return;
+    }
+
+    feedback.textContent = message.trim();
+    feedback.dataset.state = type;
+    feedback.hidden = false;
+  }
+
+  function refreshControls() {
+    controlsByAppId.forEach((registry) => {
+      try {
+        registry?.favorite?.refresh?.();
+        registry?.saved?.refresh?.();
+      } catch (error) {
+        console.error('Não foi possível atualizar o estado dos controles de mini-app.', error);
+      }
+    });
+  }
+
+  function handleFavoriteToggle({ app, applyState, button }) {
+    if (!state.user) {
+      showFeedback('Entre com sua conta para favoritar mini-apps.', 'warning');
+      applyState();
+      return;
+    }
+
+    const result = toggleMiniAppFavorite(state.user.id, app.id);
+
+    if (!result?.success) {
+      if (result?.reason === 'favorite-limit-exceeded') {
+        showFeedback(
+          `Você pode favoritar até ${MAX_FAVORITE_MINI_APPS} mini-apps. Remova um favorito antes de adicionar outro.`,
+          'error',
+        );
+      } else {
+        showFeedback('Não foi possível atualizar seus favoritos. Tente novamente mais tarde.', 'error');
+      }
+      applyState();
+      return;
+    }
+
+    refreshUserPreferences();
+    refreshControls();
+    applyState();
+    showFeedback('Lista de favoritos atualizada com sucesso.', 'success');
+    eventBus.emit('miniapp:favorite', { app, active: result.added, trigger: button });
+  }
+
+  function handleSavedToggle({ app, applyState, button }) {
+    if (!state.user) {
+      showFeedback('Entre com sua conta para salvar mini-apps.', 'warning');
+      applyState();
+      return;
+    }
+
+    const result = toggleMiniAppSaved(state.user.id, app.id);
+
+    if (!result?.success) {
+      showFeedback('Não foi possível atualizar seus mini-apps salvos. Tente novamente mais tarde.', 'error');
+      applyState();
+      return;
+    }
+
+    refreshUserPreferences();
+    refreshControls();
+    applyState();
+    showFeedback('Lista de mini-apps salvos atualizada com sucesso.', 'success');
+    eventBus.emit('miniapp:saved', { app, active: result.added, trigger: button });
+  }
+
+  refreshUserPreferences();
+
   MINI_APPS.forEach((app) => {
-    list.append(renderMiniAppListItem(app));
+    const { element, controls } = renderMiniAppListItem({
+      app,
+      getIsFavorite: getIsFavorite,
+      getIsSaved: getIsSaved,
+      onToggleFavorite: handleFavoriteToggle,
+      onToggleSaved: handleSavedToggle,
+    });
+
+    controlsByAppId.set(app.id, controls);
+    list.append(element);
   });
 
-  catalogSection.append(catalogTitle, catalogDescription, list);
+  refreshControls();
+
+  catalogSection.append(catalogTitle, catalogDescription, feedback, list);
   layout.append(catalogSection);
 
   viewRoot.replaceChildren(layout);
+
+  const unsubscribeSession = subscribeSession((user) => {
+    state.user = user;
+    refreshUserPreferences();
+    refreshControls();
+    showFeedback('', 'info');
+  });
+
+  if (typeof unsubscribeSession === 'function') {
+    cleanupHandlers.push(unsubscribeSession);
+  }
+
+  const unsubscribePreferences = subscribeMiniAppPreferences((event) => {
+    if (!state.user) {
+      return;
+    }
+
+    const normalizedUserId = String(state.user.id ?? '').trim();
+    if (!normalizedUserId) {
+      return;
+    }
+
+    if (event?.userId && event.userId !== normalizedUserId) {
+      return;
+    }
+
+    refreshUserPreferences();
+    refreshControls();
+  });
+
+  if (typeof unsubscribePreferences === 'function') {
+    cleanupHandlers.push(unsubscribePreferences);
+  }
 }
