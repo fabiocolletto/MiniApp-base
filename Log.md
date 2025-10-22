@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.139 - 2025-10-23 04:20 BRT
+- Renomeia o painel inicial para "Início" nos rótulos do cabeçalho, controles do shell e logs de bootstrap.
+- Atualiza as views e ações associadas, incluindo o título do Início e a descrição de logout, para refletir o novo nome.
+- Ajusta os testes de bootstrap e o rodapé para comunicarem a versão v0.1.139 das 04h20 com a nova terminologia.
+
 ## v0.1.138 - 2025-10-23 03:40 BRT
 - Atalho no ícone da marca do rodapé abre diretamente o painel administrativo em telas largas sem interferir no toggle móvel.
 - Replica o atalho condicional na variante TypeScript do shell para manter paridade entre os bundles.

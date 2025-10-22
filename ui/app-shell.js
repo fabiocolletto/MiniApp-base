@@ -1010,7 +1010,7 @@ function isHomePanelActive() {
 }
 
 function getHomeToggleLabel(isActive) {
-  return isActive ? 'Fechar painel inicial' : 'Abrir painel inicial';
+  return isActive ? 'Fechar Início' : 'Abrir Início';
 }
 
 function applyHomeToggleState(isActive) {
