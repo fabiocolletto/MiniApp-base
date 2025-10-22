@@ -27,6 +27,8 @@ class Router {
     }
 
     if (this.#currentRoute === route) {
+      renderView(targetView);
+      logInfo('router.navigate', `Rota "${route}" já estava ativa. View recarregada.`);
       return;
     }
 

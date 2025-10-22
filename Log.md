@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.122 - 2025-10-22 19:15 BRT
+- Corrige o roteador em TypeScript para recarregar o painel inicial mesmo quando a rota "dashboard" já está ativa, evitando que o botão do cabeçalho pareça inoperante após visitar o painel administrativo.
+- Amplia os testes de bootstrap para cobrir o recarregamento do painel inicial quando a rota já estava ativa.
+- Atualiza o rodapé para exibir a versão v0.1.122 das 19h15.
+
 ## v0.1.121 - 2025-10-22 18:05 BRT
 - Garante que o botão do cabeçalho para o painel inicial reabra a view mesmo quando a rota já estiver marcada como ativa.
 - Atualiza o rodapé para exibir a versão v0.1.121 das 18h05.
