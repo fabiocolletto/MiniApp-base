@@ -183,7 +183,14 @@ function createMiniAppListContainer(emptyMessage, modifier) {
 function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
   const widget = document.createElement('section');
   widget.className =
-    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--favorites home-dashboard__widget-row';
+    [
+      'surface-card',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+      'home-dashboard__widget--favorites',
+      'home-dashboard__widget-row',
+    ].join(' ');
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -215,7 +222,14 @@ function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
 function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
   const widget = document.createElement('section');
   widget.className =
-    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--saved home-dashboard__widget-row';
+    [
+      'surface-card',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+      'home-dashboard__widget--saved',
+      'home-dashboard__widget-row',
+    ].join(' ');
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -245,10 +259,17 @@ function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
 
 function renderGuestCallout() {
   const sessionCallout = document.createElement('section');
-  sessionCallout.className = 'surface-card user-details__selected home-dashboard__callout';
+  sessionCallout.className =
+    [
+      'surface-card',
+      'surface-card--subtle',
+      'home-dashboard__callout',
+      'home-dashboard__widget-row',
+      'user-dashboard__feedback',
+    ].join(' ');
 
   const sessionText = document.createElement('p');
-  sessionText.className = 'user-details__selected-text';
+  sessionText.className = 'user-widget__description';
   sessionText.textContent = 'Nenhuma sessão ativa. Escolha um painel para começar a navegar.';
 
   const sessionActions = document.createElement('div');
@@ -276,7 +297,14 @@ function renderGuestCallout() {
 function renderMiniAppsWidget(user, accessibleMiniApps) {
   const widget = document.createElement('section');
   widget.className =
-    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps home-dashboard__widget-row';
+    [
+      'surface-card',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+      'home-dashboard__widget--miniapps',
+      'home-dashboard__widget-row',
+    ].join(' ');
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -336,7 +364,7 @@ export function renderHome(viewRoot) {
     'Acompanhe o progresso do MiniApp Base, acione os principais painéis e descubra o que mudou nesta edição.';
 
   const layout = document.createElement('div');
-  layout.className = 'user-panel__layout home-dashboard__layout';
+  layout.className = 'user-panel__layout user-dashboard__layout home-dashboard__layout';
 
   viewRoot.replaceChildren(heading, intro, layout);
 
