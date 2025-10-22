@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.134 - 2025-10-23 00:40 BRT
+- Substitui a flecha do menu de painéis por um ícone neutro alinhado ao novo layout, removendo o destaque vermelho.
+- Sincroniza o rótulo do botão de painéis com o título da view ativa e oculta o texto quando o painel inicial está aberto.
+- Reestrutura o cabeçalho exibindo apenas o logotipo à esquerda e o botão do menu de painéis à direita, movendo os atalhos de login e cadastro para dentro do menu.
+- Atualiza o rodapé para informar a versão v0.1.134 das 00h40.
+
 ## v0.1.133 - 2025-10-22 23:40 BRT
 - Remove o callout de sessão do painel inicial quando há usuário autenticado e exibe a lista de mini-apps liberados para o perfil correspondente.
 - Sincroniza o painel inicial com mudanças da sessão e do catálogo para manter os mini-apps habilitados atualizados em tempo real.
