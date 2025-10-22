@@ -259,10 +259,13 @@ export function renderUserPanel(viewRoot) {
 
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
+  accountSummary.id = 'user-dashboard-summary';
   accountSummary.hidden = true;
 
   const accountSummaryList = document.createElement('dl');
   accountSummaryList.className = 'user-dashboard__summary-list';
+  accountSummaryList.id = 'user-dashboard-summary-list';
+  accountSummaryList.hidden = true;
 
   const summaryName = createSummaryItem('Nome completo');
   const summaryPhone = createSummaryItem('Telefone principal');
@@ -275,6 +278,7 @@ export function renderUserPanel(viewRoot) {
   summaryEditButton.className = 'user-dashboard__summary-edit';
   summaryEditButton.textContent = 'Editar dados';
   summaryEditButton.setAttribute('aria-expanded', 'false');
+  summaryEditButton.setAttribute('aria-controls', 'user-dashboard-summary-list user-dashboard-form');
 
   accountSummary.append(accountSummaryList, summaryEditButton);
 
@@ -284,6 +288,7 @@ export function renderUserPanel(viewRoot) {
 
   const accountForm = document.createElement('form');
   accountForm.className = 'user-form user-dashboard__form';
+  accountForm.id = 'user-dashboard-form';
   accountForm.noValidate = true;
   accountForm.hidden = true;
 
@@ -413,6 +418,11 @@ export function renderUserPanel(viewRoot) {
 
     if (accountSummary instanceof HTMLElement) {
       accountSummary.hidden = !hasUser;
+    }
+
+    if (accountSummaryList instanceof HTMLElement) {
+      const shouldShowSummaryList = hasUser && !accountExpanded;
+      accountSummaryList.hidden = !shouldShowSummaryList;
     }
 
     if (emptyState instanceof HTMLElement) {

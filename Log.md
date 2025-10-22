@@ -1,9 +1,11 @@
 # Log
 
-## v0.1.128 - 2025-10-22 14:10 BRT
+## v0.1.128 - 2025-10-22 15:20 BRT
 - Remove os widgets de visão geral, ações rápidas, mini-apps e boas práticas do painel inicial para manter apenas o bloco principal.
 - Centraliza o título, a introdução e o callout de sessão do painel inicial para destacar as ações de login e cadastro.
-- Atualiza o rodapé para informar a versão v0.1.128 das 14h10.
+- Atualiza o rodapé para informar a versão v0.1.128 das 15h20.
+- Sincroniza o resumo dos dados principais com o estado de edição ocultando a lista ao abrir o formulário sem esconder o botão de recolhimento.
+- Revalida visualmente o painel do usuário com o resumo recolhido e expandido.
 
 ## v0.1.127 - 2025-10-22
 - Realinha o atalho de alternância de tema no painel do usuário para que o botão fique alinhado à esquerda do widget.
