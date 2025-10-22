@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.157 - 2025-10-23 18:00 BRT
+- Alinha as validações do painel do usuário para focar e marcar como inválidos os campos de telefone e senha em caso de erro.
+- Limpa os estados de `aria-invalid` ao reiniciar o feedback ou após validar corretamente, evitando sinalizações persistentes.
+- Associa os campos do formulário de usuário ao feedback de status via `aria-describedby` para leitura assistiva.
+
 ## v0.1.156 - 2025-10-23 17:30 BRT
 - Ajusta o feedback do painel do usuário para manter aria-live ativo e alternar os papéis ARIA entre alertas e status conforme o tipo de mensagem.
 - Garante que a limpeza do feedback preserve a remoção de atributos e conteúdo ao reaproveitar `showFeedback('', {})`.

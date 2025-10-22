@@ -388,6 +388,8 @@ export function renderUserPanel(viewRoot) {
   feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
   feedbackElement.hidden = true;
   feedbackElement.setAttribute('aria-live', 'polite');
+  const feedbackElementId = 'user-dashboard-feedback';
+  feedbackElement.id = feedbackElementId;
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
@@ -429,6 +431,12 @@ export function renderUserPanel(viewRoot) {
   const phoneInput = phoneField.querySelector('input');
   const emailInput = emailField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
+
+  [nameInput, phoneInput, emailInput, passwordInput, themeSelect]
+    .filter((field) => field instanceof HTMLElement)
+    .forEach((field) => {
+      field.setAttribute('aria-describedby', feedbackElementId);
+    });
 
   const accessActions = new Map();
   const busyButtons = new Set();
@@ -717,8 +725,17 @@ export function renderUserPanel(viewRoot) {
     }
   };
 
+  const clearFieldValidity = () => {
+    [phoneInput, passwordInput]
+      .filter((field) => field instanceof HTMLElement)
+      .forEach((field) => {
+        field.removeAttribute('aria-invalid');
+      });
+  };
+
   const resetFeedback = () => {
     showFeedback('', {});
+    clearFieldValidity();
   };
 
   const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
@@ -864,8 +881,16 @@ export function renderUserPanel(viewRoot) {
       const phoneValidation = validatePhoneNumber(phoneInput.value);
       if (!phoneValidation.isValid) {
         showFeedback(phoneValidation.message ?? 'Informe um telefone válido.', { isError: true });
+        phoneInput.setAttribute('aria-invalid', 'true');
+        try {
+          phoneInput.focus();
+        } catch (error) {
+          // Ignora ambientes sem suporte a foco programático.
+        }
         return;
       }
+
+      phoneInput.removeAttribute('aria-invalid');
 
       const sanitizedPhone = phoneValidation.sanitized ?? phoneValidation.localNumber ?? '';
       if (sanitizedPhone && sanitizedPhone !== (activeUser.phone ?? '')) {
@@ -886,9 +911,18 @@ export function renderUserPanel(viewRoot) {
         const passwordValidation = validatePasswordStrength(passwordValue);
         if (!passwordValidation.isValid) {
           showFeedback(passwordValidation.message ?? 'Informe uma senha válida.', { isError: true });
+          passwordInput.setAttribute('aria-invalid', 'true');
+          try {
+            passwordInput.focus();
+          } catch (error) {
+            // Ignora ambientes sem suporte a foco programático.
+          }
           return;
         }
         updates.password = passwordValue;
+        passwordInput.removeAttribute('aria-invalid');
+      } else {
+        passwordInput.removeAttribute('aria-invalid');
       }
     }
 
