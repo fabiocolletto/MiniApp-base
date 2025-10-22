@@ -7,7 +7,7 @@ import {
 } from '../data/miniapp-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
-const BASE_CLASSES = 'card view view--admin admin-dashboard';
+const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
 
 const USER_TYPE_LABELS = {
   administrador: 'Administrador',

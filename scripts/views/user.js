@@ -16,7 +16,7 @@ import { createInputField } from './shared/form-fields.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
 import eventBus from '../events/event-bus.js';
 
-const BASE_CLASSES = 'card view view--user user-dashboard';
+const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
 function normalizePreferences(preferences) {
   const defaults = getDefaultUserPreferences();
