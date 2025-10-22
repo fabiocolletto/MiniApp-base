@@ -2436,6 +2436,70 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   width: 100%;
 }
 
+.user-dashboard__layout {
+  max-width: min(72rem, 100%);
+  margin: 0 auto;
+}
+
+.user-dashboard__widget {
+  align-content: start;
+}
+
+.user-dashboard__actions {
+  display: grid;
+  gap: var(--panel-stack-gap);
+}
+
+.user-dashboard__action-grid {
+  display: grid;
+  gap: var(--panel-cluster-gap);
+}
+
+@media (min-width: 40rem) {
+  .user-dashboard__action-grid {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+}
+
+.user-dashboard__quick-action[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.user-dashboard__quick-action--logout {
+  border-color: rgba(var(--color-error-rgb), 0.36);
+  background: rgba(var(--color-error-rgb), 0.12);
+  color: var(--color-error-text);
+}
+
+.user-dashboard__quick-action--logout:hover,
+.user-dashboard__quick-action--logout:focus-visible {
+  border-color: rgba(var(--color-error-rgb), 0.5);
+  background: rgba(var(--color-error-rgb), 0.18);
+  color: var(--color-error-text);
+}
+
+.user-dashboard__empty-state {
+  margin: 0;
+  padding: clamp(0.75rem, 2.2vw, 1.25rem);
+  border-radius: var(--panel-radius);
+  border: 0.06rem dashed rgba(var(--color-accent-rgb), 0.25);
+  background: rgba(var(--color-accent-rgb), 0.06);
+  text-align: center;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+}
+
+.user-dashboard__empty-state[hidden] {
+  display: none !important;
+}
+
+.user-dashboard__feedback {
+  text-align: center;
+}
+
 .user-widget__title {
   margin: 0;
   font-size: var(--panel-font-size-heading);
@@ -2858,6 +2922,22 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   background: var(--color-bg-card);
   box-sizing: border-box;
   width: 100%;
+}
+
+.user-form__select {
+  padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
+  border-radius: 0.75rem;
+  border: 0.08rem solid rgba(var(--color-warm-rgb), 0.3);
+  font: inherit;
+  color: inherit;
+  background: var(--color-bg-card);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.user-form__select:focus {
+  outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 0.1rem;
 }
 
 .user-form__field input:focus {
