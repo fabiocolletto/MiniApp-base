@@ -294,6 +294,16 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(summary, 'o resumo dos dados principais deve estar presente');
   assert.equal(summary.hidden, true, 'o resumo deve permanecer oculto enquanto não houver sessão ativa');
 
+  const summaryList = findElement(summary, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__summary-list'),
+  );
+  assert.ok(summaryList, 'a lista do resumo precisa ser renderizada dentro do widget');
+  assert.equal(
+    summaryList.hidden,
+    true,
+    'a lista do resumo deve permanecer oculta enquanto não houver sessão ativa',
+  );
+
   const editButton = findElement(summary, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__summary-edit'),
   );
@@ -303,6 +313,11 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     editButton.getAttribute('aria-expanded'),
     'false',
     'botão de edição deve indicar estado recolhido enquanto o formulário estiver oculto',
+  );
+  assert.equal(
+    editButton.getAttribute('aria-controls'),
+    'user-dashboard-summary-list user-dashboard-form',
+    'botão de edição deve referenciar o resumo e o formulário controlados',
   );
 
   const emptyState = findElement(accountWidget, (node) =>
