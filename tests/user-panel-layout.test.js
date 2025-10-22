@@ -257,10 +257,36 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   const viewRoot = fakeDocument.createElement('div');
   renderUserPanel(viewRoot);
 
+  assert.equal(
+    viewRoot.querySelector('.user-panel__title'),
+    null,
+    'o painel não deve exibir título textual ao iniciar',
+  );
+  assert.equal(
+    viewRoot.querySelector('.user-panel__intro'),
+    null,
+    'o painel não deve exibir subtítulo textual ao iniciar',
+  );
+
   const layout = viewRoot.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
   );
   assert.ok(layout, 'layout principal não foi renderizado');
+  assert.equal(layout.children.length, 3, 'o painel deve renderizar três widgets principais');
+
+  const [firstWidget, secondWidget, thirdWidget] = layout.children;
+  assert.ok(
+    firstWidget instanceof FakeElement && firstWidget.classList.contains('user-dashboard__widget--theme'),
+    'o widget de preferências de tema deve ser o primeiro item do painel',
+  );
+  assert.ok(
+    secondWidget instanceof FakeElement && secondWidget.classList.contains('user-panel__widget--access'),
+    'o widget de acesso e sessão deve ocupar a segunda posição do painel',
+  );
+  assert.ok(
+    thirdWidget instanceof FakeElement && thirdWidget.classList.contains('user-dashboard__widget--account'),
+    'o widget de dados principais deve ocupar a terceira posição do painel',
+  );
 
   const themeWidget = layout.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--theme'),

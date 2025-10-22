@@ -214,15 +214,6 @@ export function renderUserPanel(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'user';
 
-  const heading = document.createElement('h1');
-  heading.className = 'user-panel__title admin-dashboard__title';
-  heading.textContent = 'Painel do usuário';
-
-  const intro = document.createElement('p');
-  intro.className = 'user-panel__intro admin-dashboard__intro';
-  intro.textContent =
-    'Gerencie rapidamente seus dados principais, acompanhe o status da sessão e ajuste preferências sem sair deste painel.';
-
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
@@ -408,8 +399,8 @@ export function renderUserPanel(viewRoot) {
   themeWidget.append(themeTitle, themeDescription, actionsWrapper);
   actionsWrapper.append(actionList);
 
-  layout.append(themeWidget, accountWidget, accessWidget);
-  viewRoot.replaceChildren(heading, intro, layout);
+  layout.append(themeWidget, accessWidget, accountWidget);
+  viewRoot.replaceChildren(layout);
 
   const cleanupCallbacks = [];
   const unsubscribeCallbacks = [];

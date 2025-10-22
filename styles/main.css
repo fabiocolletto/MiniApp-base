@@ -1725,14 +1725,14 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 
 .view--user {
   gap: var(--panel-gap);
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   align-content: start;
   align-items: start;
   justify-items: stretch;
 }
 
 .view.view--user {
-  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
   padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
   padding-block-end: calc(clamp(1.25rem, 3.6vw, 2.5rem) + var(--panel-gap));
 }
@@ -2951,8 +2951,14 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .user-dashboard__layout {
-  max-width: min(72rem, 100%);
+  width: 100%;
+  max-width: min(86rem, 100%);
   margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.user-dashboard__widget--account {
+  grid-column: 1 / -1;
 }
 
 .user-dashboard__widget {
@@ -3181,15 +3187,23 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   .user-panel__layout {
     grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
   }
+
+  .user-dashboard__layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.user-panel__layout.admin-dashboard__layout {
+.view--admin .user-panel__layout.admin-dashboard__layout {
   grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 72rem) {
   .user-panel__layout {
     grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+  }
+
+  .user-dashboard__layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
