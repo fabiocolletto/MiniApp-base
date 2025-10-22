@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.147 - 2025-10-23 12:30 BRT
+- Ajusta o painel Início para abrir a ficha técnica dos mini-apps diretamente do botão "Ver detalhes", enviando os metadados formatados para o modal e preservando o foco ao fechar.
+
 ## v0.1.146 - 2025-10-23 11:40 BRT
 - Cria o armazenamento de preferências de mini-apps com persistência por usuário, limite de quatro favoritos e suporte a mini-apps salvos ilimitados.
 - Atualiza a Mini App Store para consumir o novo armazenamento, exibir avisos ao atingir o limite de favoritos e sincronizar automaticamente os botões de ação.
