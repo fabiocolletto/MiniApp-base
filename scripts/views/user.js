@@ -330,6 +330,7 @@ export function renderUserPanel(viewRoot) {
     placeholder: 'Informe como deseja ser identificado',
     autocomplete: 'name',
   });
+  nameField.setAttribute('data-field-size', 'full');
 
   const phoneField = createInputField({
     id: 'user-dashboard-phone',
@@ -339,6 +340,7 @@ export function renderUserPanel(viewRoot) {
     autocomplete: 'tel',
     inputMode: 'tel',
   });
+  phoneField.setAttribute('data-field-size', 'compact');
 
   const emailField = createInputField({
     id: 'user-dashboard-email',
@@ -348,6 +350,7 @@ export function renderUserPanel(viewRoot) {
     autocomplete: 'email',
     required: false,
   });
+  emailField.setAttribute('data-field-size', 'wide');
 
   const passwordField = createInputField({
     id: 'user-dashboard-password',
@@ -357,10 +360,12 @@ export function renderUserPanel(viewRoot) {
     autocomplete: 'new-password',
     required: false,
   });
+  passwordField.setAttribute('data-field-size', 'medium');
 
   const themeField = document.createElement('label');
   themeField.className = 'form-field user-form__field';
   themeField.setAttribute('for', 'user-dashboard-theme');
+  themeField.setAttribute('data-field-size', 'compact');
 
   const themeLabel = document.createElement('span');
   themeLabel.className = 'form-label user-form__label';
@@ -390,11 +395,13 @@ export function renderUserPanel(viewRoot) {
   feedbackElement.setAttribute('aria-live', 'polite');
   const feedbackElementId = 'user-dashboard-feedback';
   feedbackElement.id = feedbackElementId;
+  feedbackElement.setAttribute('data-field-size', 'full');
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
   submitButton.className = 'button form-submit user-form__submit';
   submitButton.textContent = 'Salvar alterações';
+  submitButton.setAttribute('data-field-size', 'full');
 
   accountForm.append(
     nameField,
