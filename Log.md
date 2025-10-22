@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.135 - 2025-10-23 01:30 BRT
+- Normaliza o `userType` do snapshot da sessão para refletir os mesmos valores sanitizados utilizados no armazenamento de usuário.
+- Garante que consumidores notificados pela sessão, incluindo o painel inicial, recebam o novo campo sem alterações colaterais no fluxo existente.
+- Adiciona teste de regressão para validar que sessões ativas de administradores retornem `userType: 'administrador'` após autenticação.
+
 ## v0.1.134 - 2025-10-23 00:40 BRT
 - Substitui a flecha do menu de painéis por um ícone neutro alinhado ao novo layout, removendo o destaque vermelho.
 - Sincroniza o rótulo do botão de painéis com o título da view ativa e oculta o texto quando o painel inicial está aberto.
