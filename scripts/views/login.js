@@ -51,10 +51,6 @@ export function renderLoginPanel(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'login';
 
-  const heading = document.createElement('h1');
-  heading.className = 'auth-panel__title';
-  heading.textContent = 'Painel de Login';
-
   const form = document.createElement('form');
   form.className = 'form auth-panel__form user-form';
   form.autocomplete = 'on';
@@ -298,5 +294,6 @@ export function renderLoginPanel(viewRoot) {
 
   form.append(phoneField, passwordField, submitButton, feedback, registerRedirect);
 
-  viewRoot.replaceChildren(heading, form);
+  viewRoot.setAttribute('aria-label', 'Painel de login');
+  viewRoot.replaceChildren(form);
 }

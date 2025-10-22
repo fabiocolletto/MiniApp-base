@@ -15,8 +15,11 @@ function renderRegisterSuccess(viewRoot, savedUser) {
   viewRoot.className = `${BASE_CLASSES} register-view--success`;
   viewRoot.dataset.view = 'register-success';
 
-  const title = document.createElement('h1');
-  title.className = 'auth-panel__title register-success__title';
+  const successWidget = document.createElement('section');
+  successWidget.className = 'surface-card register-success__widget';
+
+  const title = document.createElement('h2');
+  title.className = 'register-success__title';
   title.textContent = 'Cadastro concluído!';
   title.tabIndex = -1;
 
@@ -59,11 +62,16 @@ function renderRegisterSuccess(viewRoot, savedUser) {
 
   actions.append(openPanelButton, registerAnotherButton);
 
+  successWidget.append(title, message);
+
   if (summary) {
-    viewRoot.replaceChildren(title, message, summary, actions);
-  } else {
-    viewRoot.replaceChildren(title, message, actions);
+    successWidget.append(summary);
   }
+
+  successWidget.append(actions);
+
+  viewRoot.setAttribute('aria-label', 'Cadastro concluído');
+  viewRoot.replaceChildren(successWidget);
 
   setTimeout(() => {
     title.focus();
@@ -77,10 +85,6 @@ export function renderRegisterPanel(viewRoot) {
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'register';
-
-  const heading = document.createElement('h1');
-  heading.className = 'auth-panel__title';
-  heading.textContent = 'Crie sua conta';
 
   const form = document.createElement('form');
   form.className = 'form auth-panel__form user-form';
@@ -404,5 +408,6 @@ export function renderRegisterPanel(viewRoot) {
 
   form.append(phoneField, passwordField, legalSection, submitButton, feedback, loginRedirect);
 
-  viewRoot.replaceChildren(heading, form);
+  viewRoot.setAttribute('aria-label', 'Painel de cadastro');
+  viewRoot.replaceChildren(form);
 }

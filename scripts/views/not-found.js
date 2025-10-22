@@ -8,8 +8,8 @@ export function renderNotFound(viewRoot, viewName) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'not-found';
 
-  const heading = document.createElement('h1');
-  heading.textContent = 'Conteúdo não disponível';
+  const errorWidget = document.createElement('section');
+  errorWidget.className = 'surface-card error-view__widget';
 
   const message = document.createElement('p');
   message.textContent =
@@ -20,5 +20,8 @@ export function renderNotFound(viewRoot, viewName) {
   const hint = document.createElement('p');
   hint.textContent = 'Use os atalhos do cabeçalho e rodapé para navegar pelas páginas disponíveis.';
 
-  viewRoot.replaceChildren(heading, message, hint);
+  errorWidget.append(message, hint);
+
+  viewRoot.setAttribute('aria-label', 'Conteúdo não disponível');
+  viewRoot.replaceChildren(errorWidget);
 }

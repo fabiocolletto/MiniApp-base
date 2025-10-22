@@ -12,12 +12,6 @@ export function renderGreeting(viewRoot) {
   sun.className = 'sun';
   sun.setAttribute('role', 'presentation');
 
-  const heading = document.createElement('h1');
-  heading.textContent = 'Bom dia!';
-
-  const message = document.createElement('p');
-  message.textContent =
-    'Que o seu dia seja cheio de energia positiva e boas conquistas.';
-
-  viewRoot.replaceChildren(sun, heading, message);
+  viewRoot.setAttribute('aria-label', 'Painel de boas-vindas');
+  viewRoot.replaceChildren(sun);
 }

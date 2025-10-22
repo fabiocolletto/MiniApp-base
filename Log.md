@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.155 - 2025-10-23 17:00 BRT
+- Remove os títulos e parágrafos introdutórios dos painéis de boas-vindas, início, administração, login, cadastro e log para que o conteúdo visível seja formado apenas pelos widgets.
+- Reestrutura os estados de sucesso do cadastro, a view legal e a tela de erro para encapsular as mensagens em cartões `surface-card`, preservando alinhamentos e acessibilidade com rótulos de `aria-label`.
+- Atualiza o rodapé para comunicar a versão v0.1.155 das 17h00.
+
 ## v0.1.154 - 2025-10-22 19:45 BRT
 - Padroniza o painel Início com as classes compartilhadas de widgets e callout, substituindo estilos específicos por variantes globais da folha de estilos.
 - Alinha o layout do painel Início ao grid padrão adicionando a classe de grade compartilhada dos painéis.
