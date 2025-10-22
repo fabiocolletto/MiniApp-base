@@ -270,7 +270,7 @@ export function renderMiniAppStore(viewRoot) {
   feedback.hidden = true;
 
   const list = document.createElement('ul');
-  list.className = 'home-dashboard__miniapps miniapp-store__miniapps';
+  list.className = 'home-dashboard__miniapps';
 
   const controlsByAppId = new Map();
 
