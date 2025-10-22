@@ -1,4 +1,4 @@
-const BASE_CLASSES = 'card view view--log';
+const BASE_CLASSES = 'card view dashboard-view view--log log-panel';
 const LOG_PATH = 'Log.md';
 
 export function renderLog(viewRoot) {
@@ -8,6 +8,12 @@ export function renderLog(viewRoot) {
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'log';
+
+  const layout = document.createElement('div');
+  layout.className = 'log-panel__layout';
+
+  const widget = document.createElement('section');
+  widget.className = 'surface-card log-panel__widget';
 
   const logContent = document.createElement('pre');
   logContent.className = 'log-content';
@@ -20,7 +26,9 @@ export function renderLog(viewRoot) {
 
   viewRoot.setAttribute('aria-busy', 'true');
   viewRoot.setAttribute('aria-label', 'Histórico de versões do MiniApp Base');
-  viewRoot.replaceChildren(logContent);
+  widget.append(logContent);
+  layout.append(widget);
+  viewRoot.replaceChildren(layout);
 
   (async () => {
     try {

@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.159 - 2025-10-23 19:00 BRT
+- Alinha o painel Log ao grid padrão dos painéis aplicando a classe compartilhada e encapsulando o conteúdo em um cartão dedicado.
+- Ajusta os estilos do painel para reutilizar o espaçamento padrão sem duplicar bordas e sombras no histórico.
+- Atualiza o rodapé para comunicar a versão v0.1.159 das 19h00.
+
 ## v0.1.158 - 2025-10-23 18:30 BRT
 - Substitui o grid do catálogo da Mini App Store pela configuração padrão ao remover a classe personalizada da lista.
 - Ajusta os estilos da view para manter espaçamentos próprios sem sobrescrever as colunas responsivas herdadas.
