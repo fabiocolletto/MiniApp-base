@@ -33,9 +33,7 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
-const adminLink = document.querySelector('.header-admin-link');
 const storeLink = document.querySelector('.header-store-link');
-const userLink = document.querySelector('.header-user-link');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
@@ -904,16 +902,6 @@ function ensureHeaderMobileMenu() {
     toggleHomePanel();
   });
 
-  const adminAction = document.createElement('button');
-  adminAction.type = 'button';
-  adminAction.id = 'mobile-access-menu-admin';
-  adminAction.className = 'app-modal__action header-mobile-menu__action';
-  adminAction.textContent = 'Painel administrativo';
-  adminAction.addEventListener('click', () => {
-    closeHeaderMobileMenu();
-    renderView('admin');
-  });
-
   const storeAction = document.createElement('button');
   storeAction.type = 'button';
   storeAction.id = 'mobile-access-menu-store';
@@ -922,16 +910,6 @@ function ensureHeaderMobileMenu() {
   storeAction.addEventListener('click', () => {
     closeHeaderMobileMenu();
     renderView('miniapps');
-  });
-
-  const userAction = document.createElement('button');
-  userAction.type = 'button';
-  userAction.id = 'mobile-access-menu-user';
-  userAction.className = 'app-modal__action header-mobile-menu__action';
-  userAction.textContent = 'Painel do usuário';
-  userAction.addEventListener('click', () => {
-    closeHeaderMobileMenu();
-    renderView('user');
   });
 
   const registerAction = document.createElement('button');
@@ -954,7 +932,7 @@ function ensureHeaderMobileMenu() {
     shellRouter?.goTo?.('login');
   });
 
-  actions.append(homeAction, adminAction, storeAction, userAction, registerAction, loginAction);
+  actions.append(homeAction, storeAction, registerAction, loginAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
@@ -1458,21 +1436,9 @@ export function initializeAppShell(router) {
     toggleHomePanel();
   });
 
-  adminLink?.addEventListener('click', (event) => {
-    event.preventDefault();
-    renderView('admin');
-    closeHeaderMenu();
-  });
-
   storeLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('miniapps');
-    closeHeaderMenu();
-  });
-
-  userLink?.addEventListener('click', (event) => {
-    event.preventDefault();
-    renderView('user');
     closeHeaderMenu();
   });
 
