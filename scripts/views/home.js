@@ -185,6 +185,25 @@ export function renderHome(viewRoot) {
 
   actionsWidget.append(actionsTitle, actionsDescription, actionsContainer);
 
+  const miniAppsWidget = document.createElement('section');
+  miniAppsWidget.className = 'user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps';
+
+  const miniAppsTitle = document.createElement('h2');
+  miniAppsTitle.className = 'user-widget__title';
+  miniAppsTitle.textContent = 'Mini-apps disponíveis';
+
+  const miniAppsDescription = document.createElement('p');
+  miniAppsDescription.className = 'user-widget__description';
+  miniAppsDescription.textContent =
+    'A lista abaixo será preenchida automaticamente com os mini-apps liberados para você.';
+
+  const miniAppsList = document.createElement('ul');
+  miniAppsList.className = 'home-dashboard__miniapps';
+  miniAppsList.setAttribute('aria-live', 'polite');
+  miniAppsList.setAttribute('aria-label', 'Mini-apps disponíveis');
+
+  miniAppsWidget.append(miniAppsTitle, miniAppsDescription, miniAppsList);
+
   const insightsWidget = document.createElement('section');
   insightsWidget.className = 'user-panel__widget home-dashboard__widget home-dashboard__widget--insights';
 
@@ -221,7 +240,7 @@ export function renderHome(viewRoot) {
 
   insightsWidget.append(insightsTitle, insightsDescription, insightsList);
 
-  layout.append(overviewWidget, actionsWidget, insightsWidget);
+  layout.append(overviewWidget, actionsWidget, miniAppsWidget, insightsWidget);
 
   viewRoot.replaceChildren(heading, intro, sessionCallout, layout);
 }

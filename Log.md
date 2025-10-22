@@ -1,5 +1,23 @@
 # Log
 
+## v0.1.125 - 2025-10-22 23:10 BRT
+- Remove o widget de resumo da conta, mantendo apenas o controle de alternância de tema em destaque no painel do usuário.
+- Reorganiza a view para apresentar um único widget de preferências de tema com botão dedicado sincronizado com o formulário.
+- Atualiza o teste de layout para refletir a remoção dos atalhos extras e garantir que o botão de tema permaneça disponível.
+- Atualiza o rodapé para exibir a versão v0.1.125 das 23h10.
+
+## v0.1.124 - 2025-10-22 22:30 BRT
+- Adiciona atalho dedicado para alternar entre temas claro e escuro no painel do usuário, exibindo o próximo estado e bloqueando o controle quando não houver sessão.
+- Sincroniza o botão de tema com o seletor existente, aplicando a escolha via gerenciador global e persistindo a preferência do usuário para acessos futuros.
+- Refina os estilos do atalho de tema na lista compacta de ações, mantendo contraste em ambos os modos e feedback consistente ao foco.
+- Atualiza o rodapé para exibir a versão v0.1.124 das 22h30.
+
+## v0.1.123 - 2025-10-22 21:40 BRT
+- Acrescenta ao painel inicial um widget dedicado aos mini-apps com lista dinâmica pronta para receber os itens disponíveis.
+- Estiliza o espaço reservado da lista de mini-apps mantendo o painel consistente com os demais widgets e comunicando o estado vazio.
+- Converte os atalhos destacados do painel do usuário em uma lista compacta para leitura rápida, mantendo cada ação com descrição acessível.
+- Atualiza o rodapé para exibir a versão v0.1.123 das 21h40.
+
 ## v0.1.122 - 2025-10-22 19:15 BRT
 - Corrige o roteador em TypeScript para recarregar o painel inicial mesmo quando a rota "dashboard" já está ativa, evitando que o botão do cabeçalho pareça inoperante após visitar o painel administrativo.
 - Amplia os testes de bootstrap para cobrir o recarregamento do painel inicial quando a rota já estava ativa.
