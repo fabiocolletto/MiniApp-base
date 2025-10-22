@@ -43,7 +43,7 @@ export async function determineInitialRoute() {
       const activeAccount = accounts.find((account) => account.id === session.activeAccountId);
 
       if (activeAccount) {
-        logInfo('bootstrap.route.dashboard', 'Conta ativa encontrada. Abrindo painel inicial.');
+        logInfo('bootstrap.route.dashboard', 'Conta ativa encontrada. Abrindo Início.');
         return 'dashboard';
       }
 

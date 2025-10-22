@@ -222,7 +222,7 @@ export function renderHome(viewRoot) {
           cleanup();
         }
       } catch (error) {
-        console.error('Erro ao limpar o painel inicial.', error);
+        console.error('Erro ao limpar o Início.', error);
       }
     }
   });
@@ -232,7 +232,7 @@ export function renderHome(viewRoot) {
 
   const heading = document.createElement('h1');
   heading.className = 'user-panel__title home-dashboard__title';
-  heading.textContent = 'Painel inicial';
+  heading.textContent = 'Início';
 
   const intro = document.createElement('p');
   intro.className = 'user-panel__intro home-dashboard__intro';

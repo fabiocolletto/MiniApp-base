@@ -248,7 +248,7 @@ function isHomePanelActive(): boolean {
 }
 
 function getHomeToggleLabel(isActive: boolean): string {
-  return isActive ? 'Fechar painel inicial' : 'Abrir painel inicial';
+  return isActive ? 'Fechar Início' : 'Abrir Início';
 }
 
 function applyHomeToggleState(isActive: boolean): void {

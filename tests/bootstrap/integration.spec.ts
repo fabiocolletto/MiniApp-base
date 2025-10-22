@@ -406,7 +406,7 @@ test('bootstrap direciona para register quando validação falha', async () => {
   assert.equal(dom.elements.viewRoot.__lastRendered, 'register');
 });
 
-test('router recarrega o painel inicial quando a rota já está ativa', () => {
+test('router recarrega o Início quando a rota já está ativa', () => {
   resetDomState();
 
   router.goTo('dashboard');

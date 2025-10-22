@@ -579,7 +579,7 @@ export function renderUserPanel(viewRoot) {
   logoutAction = registerAccessAction({
     key: 'logout',
     label: 'Logout da conta',
-    description: 'Retorne ao painel inicial e saia desta conta neste dispositivo.',
+    description: 'Retorne ao Início e saia desta conta neste dispositivo.',
     onClick: handleLogout,
     extraClass: 'user-dashboard__quick-action-button--logout',
     requiresSession: true,
