@@ -94,6 +94,23 @@ function createQuickAction({ label, description, onClick, extraClass = '' }) {
   return { item, button, labelElement, descriptionElement, cleanup };
 }
 
+function createSummaryItem(label) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'user-dashboard__summary-item';
+
+  const term = document.createElement('dt');
+  term.className = 'user-dashboard__summary-label';
+  term.textContent = label;
+
+  const description = document.createElement('dd');
+  description.className = 'user-dashboard__summary-value';
+  description.textContent = '—';
+
+  wrapper.append(term, description);
+
+  return { wrapper, valueElement: description };
+}
+
 export function createPersistUserChanges(getUserFn, updateUserFn) {
   if (typeof getUserFn !== 'function') {
     throw new Error('A função de acesso ao usuário ativo é obrigatória.');
@@ -240,6 +257,27 @@ export function renderUserPanel(viewRoot) {
   accountDescription.textContent =
     'Atualize telefone, e-mail, senha e preferências de tema. Todas as alterações são salvas em poucos segundos.';
 
+  const accountSummary = document.createElement('div');
+  accountSummary.className = 'user-dashboard__summary';
+  accountSummary.hidden = true;
+
+  const accountSummaryList = document.createElement('dl');
+  accountSummaryList.className = 'user-dashboard__summary-list';
+
+  const summaryName = createSummaryItem('Nome completo');
+  const summaryPhone = createSummaryItem('Telefone principal');
+  const summaryEmail = createSummaryItem('E-mail de contato');
+
+  accountSummaryList.append(summaryName.wrapper, summaryPhone.wrapper, summaryEmail.wrapper);
+
+  const summaryEditButton = document.createElement('button');
+  summaryEditButton.type = 'button';
+  summaryEditButton.className = 'user-dashboard__summary-edit';
+  summaryEditButton.textContent = 'Editar dados';
+  summaryEditButton.setAttribute('aria-expanded', 'false');
+
+  accountSummary.append(accountSummaryList, summaryEditButton);
+
   const emptyState = document.createElement('p');
   emptyState.className = 'user-dashboard__empty-state';
   emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
@@ -247,6 +285,7 @@ export function renderUserPanel(viewRoot) {
   const accountForm = document.createElement('form');
   accountForm.className = 'user-form user-dashboard__form';
   accountForm.noValidate = true;
+  accountForm.hidden = true;
 
   const nameField = createInputField({
     id: 'user-dashboard-name',
@@ -328,7 +367,7 @@ export function renderUserPanel(viewRoot) {
     submitButton,
   );
 
-  accountWidget.append(accountTitle, accountDescription, emptyState, accountForm);
+  accountWidget.append(accountTitle, accountDescription, accountSummary, emptyState, accountForm);
 
   themeWidget.append(themeTitle, themeDescription, actionsWrapper);
   actionsWrapper.append(actionList);
@@ -343,11 +382,79 @@ export function renderUserPanel(viewRoot) {
   let activeUserId = getActiveUserId();
   let sessionSnapshot = null;
   let activeUser = null;
+  let accountExpanded = false;
 
   const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
   const emailInput = emailField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
+
+  const updateSummary = () => {
+    const user = activeUser;
+    const fallback = 'Não informado';
+
+    if (summaryName.valueElement) {
+      summaryName.valueElement.textContent = user?.name ? user.name : fallback;
+    }
+
+    if (summaryPhone.valueElement) {
+      summaryPhone.valueElement.textContent = user?.phone
+        ? formatPhoneNumberForDisplay(user.phone)
+        : fallback;
+    }
+
+    if (summaryEmail.valueElement) {
+      summaryEmail.valueElement.textContent = user?.profile?.email ? user.profile.email : fallback;
+    }
+  };
+
+  const updateAccountViewState = () => {
+    const hasUser = Boolean(activeUser);
+
+    if (accountSummary instanceof HTMLElement) {
+      accountSummary.hidden = !hasUser;
+    }
+
+    if (emptyState instanceof HTMLElement) {
+      emptyState.hidden = hasUser;
+    }
+
+    if (accountForm instanceof HTMLElement) {
+      accountForm.hidden = !(hasUser && accountExpanded);
+    }
+
+    if (summaryEditButton instanceof HTMLElement) {
+      summaryEditButton.disabled = !hasUser;
+      summaryEditButton.textContent = hasUser && accountExpanded ? 'Ocultar edição' : 'Editar dados';
+      summaryEditButton.setAttribute('aria-expanded', hasUser ? String(Boolean(accountExpanded)) : 'false');
+    }
+
+    if (accountWidget instanceof HTMLElement) {
+      const state = hasUser ? (accountExpanded ? 'expanded' : 'collapsed') : 'empty';
+      accountWidget.dataset.state = state;
+    }
+  };
+
+  const toggleAccountExpanded = (nextState) => {
+    const hasUser = Boolean(activeUser);
+    accountExpanded = Boolean(nextState) && hasUser;
+    updateAccountViewState();
+
+    if (accountExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
+      try {
+        nameInput.focus();
+      } catch (error) {
+        // Ignora navegadores ou ambientes sem suporte a foco programático.
+      }
+    }
+  };
+
+  const handleEditToggle = () => {
+    toggleAccountExpanded(!accountExpanded);
+  };
+
+  summaryEditButton.addEventListener('click', handleEditToggle);
+  cleanupCallbacks.push(() => summaryEditButton.removeEventListener('click', handleEditToggle));
 
   const showFeedback = (message, { isError = false } = {}) => {
     if (!(feedbackElement instanceof HTMLElement)) {
@@ -630,10 +737,6 @@ export function renderUserPanel(viewRoot) {
     const user = activeUser;
     const isEnabled = Boolean(user);
 
-    if (emptyState instanceof HTMLElement) {
-      emptyState.hidden = isEnabled;
-    }
-
     const nextTheme = user?.preferences?.theme ?? 'system';
 
     if (nameInput) {
@@ -664,6 +767,13 @@ export function renderUserPanel(viewRoot) {
     if (submitButton) {
       submitButton.disabled = !isEnabled;
     }
+
+    if (!isEnabled) {
+      accountExpanded = false;
+    }
+
+    updateSummary();
+    updateAccountViewState();
   };
 
   const updateActionState = () => {
@@ -676,6 +786,10 @@ export function renderUserPanel(viewRoot) {
   const syncActiveUser = () => {
     const source = (activeUserId != null && usersById.get(activeUserId)) || sessionSnapshot;
     activeUser = normalizeUserData(source);
+
+    if (!activeUser) {
+      accountExpanded = false;
+    }
 
     updateForm();
     updateActionState();
