@@ -1432,6 +1432,10 @@ footer {
   padding-block-end: calc(clamp(1.25rem, 3.6vw, 2.5rem) + var(--panel-gap));
 }
 
+.view.view--admin {
+  padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+}
+
 .view--home > h1 {
   margin: 0;
 }
@@ -1914,9 +1918,13 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   text-align: left;
 }
 
-.home-dashboard__layout,
-.admin-dashboard__layout {
+.home-dashboard__layout {
   max-width: min(72rem, 100%);
+  margin: 0 auto;
+}
+
+.admin-dashboard__layout {
+  max-width: min(86rem, 100%);
   margin: 0 auto;
 }
 
@@ -1926,26 +1934,17 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .home-dashboard__title,
-.admin-dashboard__title,
-.home-dashboard__intro,
-.admin-dashboard__intro {
-  width: min(100%, 72rem);
-  max-width: min(100%, 72rem);
-  margin-inline: auto;
-}
-
-.home-dashboard__title,
 .home-dashboard__intro {
+  width: min(100%, 72rem);
+  margin-inline: auto;
   text-align: center;
 }
 
 .admin-dashboard__title,
 .admin-dashboard__intro {
+  width: min(100%, 86rem);
+  margin-inline: auto;
   text-align: left;
-}
-
-.admin-dashboard__title,
-.admin-dashboard__intro {
   padding-inline: var(--panel-padding);
 }
 
@@ -2974,20 +2973,8 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   }
 }
 
-.admin-dashboard__layout {
+.user-panel__layout.admin-dashboard__layout {
   grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 48rem) {
-  .admin-dashboard__layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (min-width: 72rem) {
-  .admin-dashboard__layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @media (min-width: 72rem) {
