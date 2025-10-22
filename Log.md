@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.148 - 2025-10-23 13:50 BRT
+- Unifica os estilos compartilhados de login e cadastro em seletores neutros para títulos, campos de telefone e redirecionamentos.
+- Atualiza os painéis de cadastro e login para usar as novas classes unificadas, removendo seletores redundantes.
+- Revalida visualmente os fluxos de acesso garantindo consistência após a refatoração e atualiza o rodapé para exibir a versão v0.1.148 das 13h50.
+
 ## v0.1.147 - 2025-10-23 12:30 BRT
 - Ajusta o painel Início para abrir a ficha técnica dos mini-apps diretamente do botão "Ver detalhes", enviando os metadados formatados para o modal e preservando o foco ao fechar.
 
