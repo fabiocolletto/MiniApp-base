@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.140 - 2025-10-23 05:20 BRT
+- Ajuste do layout do painel administrativo para manter cada widget ocupando toda a largura em qualquer resolução.
+- Registro da revisão assegurando que o painel administrativo continue apresentando somente os dois widgets principais.
+- Redução do espaçamento lateral do painel administrativo para aproveitar melhor a largura disponível.
+- Atualização dos metadados do rodapé para refletir a versão v0.1.140 das 05h20.
+
 ## v0.1.139 - 2025-10-23 04:20 BRT
 - Renomeia o painel inicial para "Início" nos rótulos do cabeçalho, controles do shell e logs de bootstrap.
 - Atualiza as views e ações associadas, incluindo o título do Início e a descrição de logout, para refletir o novo nome.
