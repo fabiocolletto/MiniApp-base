@@ -1420,7 +1420,13 @@ export function initializeAppShell(router) {
 
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
-    renderView('admin');
+
+    if (shellRouter && typeof shellRouter.goTo === 'function') {
+      shellRouter.goTo('dashboard');
+      return;
+    }
+
+    renderView('home');
   });
   versionButton?.addEventListener('click', () => {
     closeHeaderMenu();

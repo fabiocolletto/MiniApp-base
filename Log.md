@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.133 - 2025-10-22 23:40 BRT
+- Remove o callout de sessão do painel inicial quando há usuário autenticado e exibe a lista de mini-apps liberados para o perfil correspondente.
+- Sincroniza o painel inicial com mudanças da sessão e do catálogo para manter os mini-apps habilitados atualizados em tempo real.
+- Faz com que o logotipo do cabeçalho retorne ao painel inicial sempre que for clicado.
+- Atualiza o rodapé para informar a versão v0.1.133 das 23h40.
+
 ## v0.1.132 - 2025-10-22 22:45 BRT
 - Unifica o gatilho do menu de painéis e o botão da conta em um mesmo agrupamento no cabeçalho, mantendo o atalho do usuário dentro do menu quando autenticado.
 - Ajusta os estilos do cabeçalho para o novo agrupamento garantindo feedbacks de foco, hover e espaçamento consistente entre os botões.
