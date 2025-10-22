@@ -36,7 +36,6 @@ const homeLink = document.querySelector('.header-home-link');
 const adminLink = document.querySelector('.header-admin-link');
 const storeLink = document.querySelector('.header-store-link');
 const userLink = document.querySelector('.header-user-link');
-const headerActions = document.querySelector('.header-actions');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
@@ -312,6 +311,19 @@ if (viewOverrides) {
   });
 }
 
+const NEUTRAL_MENU_VIEWS = new Set(['home', 'splash']);
+
+const MENU_LABEL_FALLBACKS = {
+  admin: 'Painel administrativo',
+  miniapps: 'Mini App Store',
+  user: 'Painel do usuário',
+  login: 'Painel de Login',
+  register: 'Crie sua conta',
+  log: 'Log do Projeto',
+  legal: 'Documentos legais',
+  'not-found': 'Conteúdo não disponível',
+};
+
 function resolveViewName(payload) {
   if (typeof payload === 'string') {
     const trimmed = payload.trim();
@@ -430,6 +442,55 @@ function getHeaderMenuItems() {
   return Array.from(headerMenuPanel.querySelectorAll('.header-menu__item')).filter(
     (item) => item instanceof HTMLElement
   );
+}
+
+function extractViewHeading() {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return '';
+  }
+
+  const heading = viewRoot.querySelector('h1');
+  if (!(heading instanceof HTMLElement)) {
+    return '';
+  }
+
+  const text = heading.textContent;
+  return typeof text === 'string' ? text.trim() : '';
+}
+
+function updateHeaderMenuTriggerLabel(viewName) {
+  if (!(headerMenuTrigger instanceof HTMLElement)) {
+    return;
+  }
+
+  const labelElement = headerMenuTrigger.querySelector('.header-menu__label');
+  if (!(labelElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const normalizedView = typeof viewName === 'string' ? viewName.trim() : '';
+  const isNeutral = NEUTRAL_MENU_VIEWS.has(normalizedView);
+
+  let labelText = '';
+  if (!isNeutral) {
+    const headingText = extractViewHeading();
+    labelText = headingText || MENU_LABEL_FALLBACKS[normalizedView] || '';
+
+    if (!labelText) {
+      labelText = 'Painéis';
+    }
+  }
+
+  const normalizedLabel = typeof labelText === 'string' ? labelText.trim() : '';
+  const hasLabel = !isNeutral && Boolean(normalizedLabel);
+
+  labelElement.textContent = hasLabel ? normalizedLabel : '';
+  headerMenuTrigger.dataset.hasLabel = hasLabel ? 'true' : 'false';
+}
+
+function syncHeaderMenuTriggerLabelFromDom() {
+  const currentView = viewRoot instanceof HTMLElement ? viewRoot.dataset.view ?? '' : '';
+  updateHeaderMenuTriggerLabel(currentView);
 }
 
 function setHeaderMenuState(isOpen) {
@@ -1039,10 +1100,6 @@ function updateHeaderSession(user) {
   setLinkVisibility(loginLink, !isAuthenticated);
   setLinkVisibility(registerLink, !isAuthenticated);
 
-  if (headerActions instanceof HTMLElement) {
-    headerActions.dataset.mobile = isAuthenticated ? 'user' : 'guest';
-  }
-
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
   }
@@ -1076,12 +1133,8 @@ function updateHeaderSession(user) {
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
 
-  if (!button.isConnected) {
-    if (menuControls) {
-      menuControls.append(button);
-    } else if (headerActions instanceof HTMLElement) {
-      headerActions.append(button);
-    }
+  if (!button.isConnected && menuControls) {
+    menuControls.append(button);
   }
 
   scheduleLayoutOffsetUpdate();
@@ -1336,14 +1389,18 @@ export function renderView(name) {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
-    updateHomeToggleStateForView(name);
+    const activeViewName = viewRoot.dataset.view ?? name;
+    updateHomeToggleStateForView(activeViewName);
+    updateHeaderMenuTriggerLabel(activeViewName);
     focusViewRoot();
     return;
   }
 
   viewRoot.dataset.view = name;
   view(viewRoot);
-  updateHomeToggleStateForView(name);
+  const activeViewName = viewRoot.dataset.view ?? name;
+  updateHomeToggleStateForView(activeViewName);
+  updateHeaderMenuTriggerLabel(activeViewName);
   focusViewRoot();
   scheduleLayoutOffsetUpdate();
 }
@@ -1383,6 +1440,7 @@ export function showSplash(message = 'Carregando painel...') {
   loader.textContent = message;
 
   viewRoot.replaceChildren(loader);
+  updateHeaderMenuTriggerLabel('splash');
 }
 
 let initialized = false;
@@ -1535,6 +1593,7 @@ export function initializeAppShell(router) {
   }
 
   syncHomeToggleStateFromDom();
+  syncHeaderMenuTriggerLabelFromDom();
 
   scheduleLayoutOffsetUpdate();
 

@@ -26,7 +26,6 @@ const homeLink = document.querySelector('.header-home-link');
 const adminLink = document.querySelector('.header-admin-link');
 const storeLink = document.querySelector('.header-store-link');
 const userLink = document.querySelector('.header-user-link');
-const headerActions = document.querySelector('.header-actions');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
@@ -128,6 +127,21 @@ type ViewName =
   | 'login'
   | 'register'
   | 'legal';
+
+type MenuViewName = ViewName | 'splash' | 'not-found';
+
+const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'splash']);
+
+const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
+  admin: 'Painel administrativo',
+  miniapps: 'Mini App Store',
+  user: 'Painel do usuário',
+  login: 'Painel de Login',
+  register: 'Crie sua conta',
+  log: 'Log do Projeto',
+  legal: 'Documentos legais',
+  'not-found': 'Conteúdo não disponível',
+};
 
 type NavigationPayload = { view?: string } | string | null | undefined;
 
@@ -277,6 +291,55 @@ function getHeaderMenuItems(): HTMLElement[] {
   return Array.from(headerMenuPanel.querySelectorAll<HTMLElement>('.header-menu__item')).filter(
     (item): item is HTMLElement => item instanceof HTMLElement
   );
+}
+
+function extractViewHeading(): string {
+  if (!(viewRoot instanceof HTMLElement)) {
+    return '';
+  }
+
+  const heading = viewRoot.querySelector('h1');
+  if (!(heading instanceof HTMLElement)) {
+    return '';
+  }
+
+  const text = heading.textContent;
+  return typeof text === 'string' ? text.trim() : '';
+}
+
+function updateHeaderMenuTriggerLabel(viewName: string): void {
+  if (!(headerMenuTrigger instanceof HTMLElement)) {
+    return;
+  }
+
+  const labelElement = headerMenuTrigger.querySelector<HTMLElement>('.header-menu__label');
+  if (!(labelElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const normalizedView = typeof viewName === 'string' ? viewName.trim() : '';
+  const isNeutral = NEUTRAL_MENU_VIEWS.has(normalizedView as MenuViewName);
+
+  let labelText = '';
+  if (!isNeutral) {
+    const headingText = extractViewHeading();
+    labelText = headingText || MENU_LABEL_FALLBACKS[normalizedView as MenuViewName] || '';
+
+    if (!labelText) {
+      labelText = 'Painéis';
+    }
+  }
+
+  const normalizedLabel = labelText.trim();
+  const hasLabel = !isNeutral && Boolean(normalizedLabel);
+
+  labelElement.textContent = hasLabel ? normalizedLabel : '';
+  headerMenuTrigger.dataset.hasLabel = hasLabel ? 'true' : 'false';
+}
+
+function syncHeaderMenuTriggerLabelFromDom(): void {
+  const currentView = viewRoot instanceof HTMLElement ? viewRoot.dataset.view ?? '' : '';
+  updateHeaderMenuTriggerLabel(currentView);
 }
 
 function setHeaderMenuState(isOpen: boolean): void {
@@ -483,11 +546,6 @@ function updateHeaderSession(user: unknown): void {
 
   if (menuControls) {
     menuControls.append(button);
-    return;
-  }
-
-  if (headerActions instanceof HTMLElement) {
-    headerActions.append(button);
   }
 }
 
@@ -870,14 +928,18 @@ export function renderView(name: ViewName): void {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
-    updateHomeToggleStateForView(name);
+    const activeViewName = viewRoot.dataset.view ?? name;
+    updateHomeToggleStateForView(activeViewName);
+    updateHeaderMenuTriggerLabel(activeViewName);
     focusViewRoot();
     return;
   }
 
   viewRoot.dataset.view = name;
   view(viewRoot);
-  updateHomeToggleStateForView(name);
+  const activeViewName = viewRoot.dataset.view ?? name;
+  updateHomeToggleStateForView(activeViewName);
+  updateHeaderMenuTriggerLabel(activeViewName);
   focusViewRoot();
 }
 
@@ -916,6 +978,8 @@ export function showSplash(message = 'Carregando painel...'): void {
   loader.textContent = message;
 
   viewRoot.replaceChildren(loader);
+
+  updateHeaderMenuTriggerLabel('splash');
 }
 
 let initialized = false;
@@ -1043,4 +1107,5 @@ export function initializeAppShell(router: RouterBridge): void {
   }
 
   syncHomeToggleStateFromDom();
+  syncHeaderMenuTriggerLabelFromDom();
 }
