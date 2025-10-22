@@ -1533,6 +1533,40 @@ footer {
   gap: var(--panel-stack-gap);
 }
 
+.miniapp-store__feedback {
+  margin-block: 0;
+  margin-block-end: clamp(0.6rem, 1.8vw, 1.1rem);
+  padding: clamp(0.5rem, 1.6vw, 0.85rem);
+  border-radius: 0.85rem;
+  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.18);
+  background: rgba(var(--color-accent-rgb), 0.08);
+  color: var(--color-text-secondary);
+  font-size: var(--panel-font-size-base);
+  line-height: 1.5;
+}
+
+.miniapp-store__feedback[hidden] {
+  display: none !important;
+}
+
+.miniapp-store__feedback[data-state='success'] {
+  border-color: rgba(var(--color-accent-rgb), 0.32);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.miniapp-store__feedback[data-state='warning'] {
+  border-color: rgba(var(--color-accent-rgb), 0.32);
+  background: rgba(var(--color-accent-rgb), 0.18);
+  color: var(--color-text-secondary);
+}
+
+.miniapp-store__feedback[data-state='error'] {
+  border-color: rgba(var(--color-error-rgb), 0.36);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
 .miniapp-store-view .miniapp-store__miniapps {
   padding: clamp(0.6rem, 1.8vw, 0.95rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2133,6 +2167,10 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   margin: 0 auto;
 }
 
+.home-dashboard__widget-row {
+  grid-column: 1 / -1;
+}
+
 .admin-dashboard__layout {
   max-width: min(86rem, 100%);
   margin: 0 auto;
@@ -2267,6 +2305,10 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   display: grid;
   gap: var(--panel-inner-gap);
   align-content: start;
+  justify-content: flex-start;
+  justify-items: stretch;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
 }
 
 .home-dashboard__miniapps:empty {
@@ -2275,12 +2317,18 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .home-dashboard__miniapps:empty::before {
-  content: 'Os mini-apps liberados para você aparecerão aqui.';
+  content: attr(data-empty-message);
   color: var(--color-text-soft);
   font-size: var(--panel-font-size-base);
   text-align: center;
   line-height: 1.6;
   padding-inline: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+@media (min-width: 64rem) {
+  .home-dashboard__miniapps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .home-dashboard__list-item {

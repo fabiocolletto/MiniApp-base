@@ -5,6 +5,11 @@ import {
   getMiniAppsSnapshot,
   subscribeMiniApps,
 } from '../data/miniapp-store.js';
+import {
+  MAX_FAVORITE_MINI_APPS,
+  getUserMiniAppPreferences,
+  subscribeMiniAppPreferences,
+} from '../data/miniapp-preferences-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
 const BASE_CLASSES = 'card view view--home';
@@ -146,6 +151,84 @@ function renderMiniAppListItem(app) {
   return item;
 }
 
+function createMiniAppListContainer(emptyMessage, modifier) {
+  const list = document.createElement('ul');
+  list.className = 'home-dashboard__miniapps';
+
+  if (modifier) {
+    list.classList.add(`home-dashboard__miniapps--${modifier}`);
+  }
+
+  if (typeof emptyMessage === 'string' && emptyMessage.trim() !== '') {
+    list.dataset.emptyMessage = emptyMessage.trim();
+  }
+
+  return list;
+}
+
+function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
+  const widget = document.createElement('section');
+  widget.className =
+    'user-panel__widget home-dashboard__widget home-dashboard__widget--favorites home-dashboard__widget-row';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Miniapps favoritados';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent = `Organize até ${MAX_FAVORITE_MINI_APPS} favoritos para acesso rápido no perfil ${formatUserTypeLabel(
+    user,
+  )}.`;
+
+  const list = createMiniAppListContainer('Você ainda não favoritou mini-apps.', 'favorites');
+
+  const accessibleMap = new Map(accessibleMiniApps.map((app) => [app.id, app]));
+  const favoriteIds = Array.isArray(preferences?.favorites) ? preferences.favorites : [];
+
+  favoriteIds
+    .slice(0, MAX_FAVORITE_MINI_APPS)
+    .map((id) => accessibleMap.get(id))
+    .filter(Boolean)
+    .forEach((app) => {
+      list.append(renderMiniAppListItem(app));
+    });
+
+  widget.append(title, description, list);
+  return widget;
+}
+
+function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
+  const widget = document.createElement('section');
+  widget.className =
+    'user-panel__widget home-dashboard__widget home-dashboard__widget--saved home-dashboard__widget-row';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Miniapps salvos';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent = `Todos os mini-apps que você salvou ficam disponíveis aqui para o perfil ${formatUserTypeLabel(
+    user,
+  )}.`;
+
+  const list = createMiniAppListContainer('Salve mini-apps na loja para vê-los aqui.', 'saved');
+
+  const accessibleMap = new Map(accessibleMiniApps.map((app) => [app.id, app]));
+  const savedIds = Array.isArray(preferences?.saved) ? preferences.saved : [];
+
+  savedIds
+    .map((id) => accessibleMap.get(id))
+    .filter(Boolean)
+    .forEach((app) => {
+      list.append(renderMiniAppListItem(app));
+    });
+
+  widget.append(title, description, list);
+  return widget;
+}
+
 function renderGuestCallout() {
   const sessionCallout = document.createElement('section');
   sessionCallout.className = 'user-details__selected home-dashboard__callout';
@@ -176,9 +259,10 @@ function renderGuestCallout() {
   return sessionCallout;
 }
 
-function renderMiniAppsWidget(user, miniApps) {
+function renderMiniAppsWidget(user, accessibleMiniApps) {
   const widget = document.createElement('section');
-  widget.className = 'user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps';
+  widget.className =
+    'user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps home-dashboard__widget-row';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -188,7 +272,6 @@ function renderMiniAppsWidget(user, miniApps) {
   description.className = 'user-widget__description';
 
   const label = formatUserTypeLabel(user);
-  const accessibleMiniApps = filterMiniAppsForUser(miniApps, user);
 
   if (accessibleMiniApps.length > 0) {
     description.textContent = `Estes mini-apps estão liberados para o perfil ${label}.`;
@@ -196,8 +279,7 @@ function renderMiniAppsWidget(user, miniApps) {
     description.textContent = `Nenhum mini-app foi liberado para o perfil ${label} até o momento.`;
   }
 
-  const list = document.createElement('ul');
-  list.className = 'home-dashboard__miniapps';
+  const list = createMiniAppListContainer('Os mini-apps liberados para você aparecerão aqui.', 'available');
 
   accessibleMiniApps.forEach((app) => {
     list.append(renderMiniAppListItem(app));
@@ -247,7 +329,19 @@ export function renderHome(viewRoot) {
   const state = {
     user: getActiveUser(),
     miniApps: getMiniAppsSnapshot(),
+    preferences: { favorites: [], saved: [] },
   };
+
+  function refreshPreferences() {
+    if (!state.user) {
+      state.preferences = { favorites: [], saved: [] };
+      return;
+    }
+
+    state.preferences = getUserMiniAppPreferences(state.user.id);
+  }
+
+  refreshPreferences();
 
   function updateLayout() {
     layout.replaceChildren();
@@ -257,13 +351,20 @@ export function renderHome(viewRoot) {
       return;
     }
 
-    layout.append(renderMiniAppsWidget(state.user, state.miniApps));
+    const accessibleMiniApps = filterMiniAppsForUser(state.miniApps, state.user);
+
+    layout.append(
+      renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
+      renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
+      renderMiniAppsWidget(state.user, accessibleMiniApps),
+    );
   }
 
   updateLayout();
 
   const unsubscribeSession = subscribeSession((user) => {
     state.user = user;
+    refreshPreferences();
     updateLayout();
   });
 
@@ -278,5 +379,27 @@ export function renderHome(viewRoot) {
 
   if (typeof unsubscribeMiniApps === 'function') {
     cleanupHandlers.push(unsubscribeMiniApps);
+  }
+
+  const unsubscribePreferences = subscribeMiniAppPreferences((event) => {
+    if (!state.user) {
+      return;
+    }
+
+    const normalizedUserId = String(state.user.id ?? '').trim();
+    if (!normalizedUserId) {
+      return;
+    }
+
+    if (event?.userId && event.userId !== normalizedUserId) {
+      return;
+    }
+
+    refreshPreferences();
+    updateLayout();
+  });
+
+  if (typeof unsubscribePreferences === 'function') {
+    cleanupHandlers.push(unsubscribePreferences);
   }
 }
