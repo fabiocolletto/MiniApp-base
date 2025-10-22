@@ -54,6 +54,10 @@ function renderMiniAppListItem(app) {
   const item = document.createElement('li');
   item.className = 'home-dashboard__list-item';
   item.dataset.appId = app.id;
+  item.tabIndex = 0;
+  item.setAttribute('role', 'button');
+  item.setAttribute('aria-haspopup', 'dialog');
+  item.setAttribute('aria-label', `Abrir ficha técnica de ${app.name}`);
 
   const name = document.createElement('h3');
   name.className = 'home-dashboard__action-label';
@@ -81,10 +85,35 @@ function renderMiniAppListItem(app) {
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
   detailsButton.className = 'user-dashboard__summary-edit';
-  detailsButton.textContent = 'Ver detalhes';
-  detailsButton.addEventListener('click', () => {
-    eventBus.emit('app:navigate', { view: 'admin' });
-    eventBus.emit('miniapp:details', { appId: app.id });
+  detailsButton.textContent = 'Saiba Mais';
+
+  const openDetails = (trigger) => {
+    const detail = trigger instanceof HTMLElement ? trigger : item;
+    eventBus.emit('miniapp:details', { app, trigger: detail });
+  };
+
+  item.addEventListener('click', (event) => {
+    if (event?.target instanceof HTMLElement && detailsButton.contains(event.target)) {
+      return;
+    }
+    openDetails(item);
+  });
+
+  item.addEventListener('keydown', (event) => {
+    if (!(event instanceof KeyboardEvent)) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openDetails(item);
+    }
+  });
+
+  detailsButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openDetails(detailsButton);
   });
 
   item.append(name, description, metaList, detailsButton);
@@ -96,23 +125,14 @@ export function renderMiniAppStore(viewRoot) {
     return;
   }
 
-  viewRoot.className = 'card view view--user';
+  viewRoot.className = 'card view view--user miniapp-store-view';
   viewRoot.dataset.view = 'miniapps';
 
-  const heading = document.createElement('h1');
-  heading.className = 'user-panel__title home-dashboard__title';
-  heading.textContent = 'Mini App Store';
-
-  const intro = document.createElement('p');
-  intro.className = 'user-panel__intro home-dashboard__intro';
-  intro.textContent =
-    'Explore a vitrine de miniapps disponíveis para a sua operação, conheça os destaques de cada solução e solicite acesso quando estiver pronto para ativar.';
-
   const layout = document.createElement('div');
-  layout.className = 'user-panel__layout user-dashboard__layout';
+  layout.className = 'user-panel__layout user-dashboard__layout miniapp-store__layout';
 
   const catalogSection = document.createElement('section');
-  catalogSection.className = 'user-panel__widget user-dashboard__widget';
+  catalogSection.className = 'user-panel__widget user-dashboard__widget miniapp-store__catalog';
 
   const catalogTitle = document.createElement('h2');
   catalogTitle.className = 'user-widget__title';
@@ -121,10 +141,10 @@ export function renderMiniAppStore(viewRoot) {
   const catalogDescription = document.createElement('p');
   catalogDescription.className = 'user-widget__description';
   catalogDescription.textContent =
-    'Veja os principais dados de cada miniapp disponível. Escolha um deles para abrir o painel administrativo e continuar a configuração.';
+    'Veja os principais dados de cada miniapp disponível. Toque em um cartão para abrir a ficha técnica com as informações completas.';
 
   const list = document.createElement('ul');
-  list.className = 'home-dashboard__miniapps';
+  list.className = 'home-dashboard__miniapps miniapp-store__miniapps';
 
   MINI_APPS.forEach((app) => {
     list.append(renderMiniAppListItem(app));
@@ -133,5 +153,5 @@ export function renderMiniAppStore(viewRoot) {
   catalogSection.append(catalogTitle, catalogDescription, list);
   layout.append(catalogSection);
 
-  viewRoot.replaceChildren(heading, intro, layout);
+  viewRoot.replaceChildren(layout);
 }

@@ -1,5 +1,16 @@
 # Log
 
+## v0.1.142 - 2025-10-23 07:40 BRT
+- Reduz a altura percebida dos cartões da Mini App Store ao remover a proporção quadrada e comprimir tipografia, exibindo metadados em duas colunas.
+- Realinha o botão de detalhes para a borda direita com rótulo "Saiba Mais", preservando a abertura da ficha técnica modal.
+- Atualiza os metadados do rodapé para refletir a versão v0.1.142 das 07h40.
+
+## v0.1.141 - 2025-10-23 06:30 BRT
+- Remove os textos externos ao widget "Miniapps disponíveis" e concentra toda a vitrine dentro do cartão dedicado na Mini App Store.
+- Reestrutura o grid dos miniapps para cartões quadrados em duas colunas, com tipografia compacta e espaçamento lateral otimizado.
+- Passa a exibir a ficha técnica dos miniapps em um modal com desfoque ao acionar os cartões, detalhando categoria, versão, status e atualização.
+- Atualiza os metadados do rodapé para refletir a versão v0.1.141 das 06h30.
+
 ## v0.1.140 - 2025-10-23 05:20 BRT
 - Ajuste do layout do painel administrativo para manter cada widget ocupando toda a largura em qualquer resolução.
 - Registro da revisão assegurando que o painel administrativo continue apresentando somente os dois widgets principais.

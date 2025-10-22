@@ -1186,6 +1186,119 @@ function ensureSessionLegendPanel() {
   return sessionLegendPanel;
 }
 
+function createMiniAppMetaEntry(term, value, { isStatus = false } = {}) {
+  if (!term || !value) {
+    return null;
+  }
+
+  const item = document.createElement('div');
+  item.className = 'miniapp-details__meta-item';
+
+  const label = document.createElement('dt');
+  label.className = 'miniapp-details__meta-label';
+  label.textContent = term;
+
+  const detail = document.createElement('dd');
+  detail.className = 'miniapp-details__meta-value';
+  if (isStatus) {
+    detail.classList.add('miniapp-details__meta-value--status');
+  }
+  detail.textContent = value;
+
+  item.append(label, detail);
+  return item;
+}
+
+function buildMiniAppDetailsPanel(app) {
+  const panel = document.createElement('div');
+  const safeId = typeof app?.id === 'string' && app.id ? app.id : 'miniapp';
+  panel.className = 'app-modal__panel app-modal__panel--miniapp miniapp-details';
+  panel.id = `miniapp-details-${safeId}`;
+
+  const header = document.createElement('div');
+  header.className = 'app-modal__header miniapp-details__header';
+
+  const title = document.createElement('h2');
+  title.className = 'app-modal__title miniapp-details__title';
+  title.id = `miniapp-details-title-${safeId}`;
+  title.textContent = app?.name ?? 'Miniapp disponível';
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'app-modal__close miniapp-details__close';
+  closeButton.setAttribute('aria-label', 'Fechar ficha técnica do miniapp');
+  closeButton.textContent = '×';
+  closeButton.addEventListener('click', () => {
+    closeAppModal({ restoreFocus: true, id: panel.id });
+  });
+
+  header.append(title, closeButton);
+
+  const lead = document.createElement('p');
+  lead.className = 'app-modal__description miniapp-details__lead';
+  lead.id = `miniapp-details-description-${safeId}`;
+  lead.textContent =
+    app?.description ?? 'Conheça os detalhes técnicos do miniapp selecionado.';
+
+  const highlights = document.createElement('div');
+  highlights.className = 'miniapp-details__highlights';
+
+  if (app?.category) {
+    const category = document.createElement('span');
+    category.className = 'miniapp-details__chip';
+    category.textContent = app.category;
+    highlights.append(category);
+  }
+
+  if (highlights.childElementCount === 0) {
+    highlights.hidden = true;
+  }
+
+  const metaList = document.createElement('dl');
+  metaList.className = 'miniapp-details__meta';
+
+  [
+    ['Versão', app?.version ?? '—'],
+    ['Status', app?.status ?? '—', { isStatus: true }],
+    ['Última atualização', app?.updatedAt ?? '—'],
+  ]
+    .map(([term, value, options]) => createMiniAppMetaEntry(term, value, options))
+    .filter(Boolean)
+    .forEach((entry) => metaList.append(entry));
+
+  panel.append(header, lead);
+
+  if (!highlights.hidden) {
+    panel.append(highlights);
+  }
+
+  panel.append(metaList);
+
+  return {
+    panel,
+    title,
+    lead,
+    closeButton,
+  };
+}
+
+function openMiniAppDetailsModal({ app, trigger } = {}) {
+  if (!app || typeof app !== 'object') {
+    return;
+  }
+
+  const { panel, title, lead, closeButton } = buildMiniAppDetailsPanel(app);
+
+  openAppModal({
+    id: panel.id,
+    panel,
+    labelledBy: title.id,
+    describedBy: lead.id,
+    focusSelector: closeButton,
+    trigger: trigger instanceof HTMLElement ? trigger : null,
+  });
+}
+
 function highlightSessionLegendState(state) {
   sessionLegendItems.forEach((item, key) => {
     const isActive = key === state;
@@ -1567,6 +1680,10 @@ export function initializeAppShell(router) {
     if (viewName) {
       handleNavigationRequest(viewName, router);
     }
+  });
+
+  eventBus.on('miniapp:details', (payload) => {
+    openMiniAppDetailsModal(payload);
   });
 
   updateBrandAssets(getResolvedTheme());
