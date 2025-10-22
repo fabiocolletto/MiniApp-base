@@ -242,7 +242,7 @@ function findElement(root, predicate) {
   return null;
 }
 
-test('renderUserPanel monta resumo e formulário principais com atalhos ativos', async (t) => {
+test('renderUserPanel monta preferências de tema e formulário principais com atalho ativo', async (t) => {
   const fakeDocument = new FakeDocument();
   globalThis.document = fakeDocument;
   globalThis.HTMLElement = FakeElement;
@@ -262,22 +262,20 @@ test('renderUserPanel monta resumo e formulário principais com atalhos ativos',
   );
   assert.ok(layout, 'layout principal não foi renderizado');
 
-  const overviewWidget = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--overview'),
+  const themeWidget = layout.children.find(
+    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--theme'),
   );
-  assert.ok(overviewWidget, 'widget de resumo não foi renderizado');
+  assert.ok(themeWidget, 'widget de preferências de tema não foi renderizado');
 
-  const statsList = overviewWidget.querySelector('.admin-dashboard__user-stats');
-  assert.ok(statsList, 'indicadores principais devem estar presentes');
-  assert.equal(statsList.children.length, 4, 'o resumo deve apresentar quatro indicadores');
+  const actionList = themeWidget.querySelector('.user-dashboard__action-list');
+  assert.ok(actionList, 'a lista de ações rápidas deve estar visível no widget de tema');
 
-  const actionGrid = overviewWidget.querySelector('.user-dashboard__action-grid');
-  assert.ok(actionGrid, 'atalhos rápidos precisam estar visíveis no widget de resumo');
+  assert.equal(actionList.children.length, 1, 'o widget de tema deve exibir apenas o atalho de alternância');
 
-  const logoutButton = findElement(actionGrid, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-dashboard__quick-action--logout'),
+  const themeToggleButton = findElement(actionList, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__quick-action-button--theme'),
   );
-  assert.ok(logoutButton, 'botão de encerrar sessão deve estar disponível no painel');
+  assert.ok(themeToggleButton, 'botão de alternância de tema deve estar disponível no painel');
 
   const accountWidget = layout.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--account'),

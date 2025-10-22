@@ -4,87 +4,17 @@ import {
   sanitizeUserThemePreference,
   getDefaultUserPreferences,
 } from '../data/user-store.js';
-import { setThemePreference } from '../theme/theme-manager.js';
-import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
-import eventBus from '../events/event-bus.js';
+import {
+  setThemePreference,
+  getResolvedTheme,
+  subscribeThemeChange,
+} from '../theme/theme-manager.js';
+import { getActiveUserId, subscribeSession } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createInputField } from './shared/form-fields.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
 
 const BASE_CLASSES = 'card view view--user user-dashboard';
-
-const USER_TYPE_LABELS = {
-  administrador: 'Administrador',
-  colaborador: 'Colaborador',
-  usuario: 'Usuário',
-};
-
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-});
-
-function navigateTo(view) {
-  if (!view) {
-    return;
-  }
-
-  eventBus.emit('app:navigate', { view });
-}
-
-function formatDate(value) {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return dateFormatter.format(value);
-  }
-
-  if (typeof value === 'number' || typeof value === 'string') {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return dateFormatter.format(parsed);
-    }
-  }
-
-  return '—';
-}
-
-function formatThemeLabel(preference) {
-  const normalized = sanitizeUserThemePreference(preference);
-
-  switch (normalized) {
-    case 'light':
-      return 'Tema claro';
-    case 'dark':
-      return 'Tema escuro';
-    default:
-      return 'Tema automático';
-  }
-}
-
-function formatUserTypeLabel(type) {
-  if (typeof type !== 'string') {
-    return USER_TYPE_LABELS.usuario;
-  }
-
-  const normalized = type.trim().toLowerCase();
-  return USER_TYPE_LABELS[normalized] ?? USER_TYPE_LABELS.usuario;
-}
-
-function createStatItem(label) {
-  const item = document.createElement('li');
-  item.className = 'admin-dashboard__user-stat user-dashboard__stat';
-
-  const valueElement = document.createElement('span');
-  valueElement.className = 'admin-dashboard__user-stat-value';
-  valueElement.textContent = '—';
-
-  const labelElement = document.createElement('span');
-  labelElement.className = 'admin-dashboard__user-stat-label';
-  labelElement.textContent = label;
-
-  item.append(valueElement, labelElement);
-
-  return { item, valueElement };
-}
 
 function normalizePreferences(preferences) {
   const defaults = getDefaultUserPreferences();
@@ -134,19 +64,23 @@ function normalizeUserData(user) {
 }
 
 function createQuickAction({ label, description, onClick, extraClass = '' }) {
+  const item = document.createElement('li');
+  item.className = 'user-dashboard__quick-action';
+
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = `admin-dashboard__user-action user-dashboard__quick-action ${extraClass}`.trim();
+  button.className = ['user-dashboard__quick-action-button', extraClass].filter(Boolean).join(' ');
 
   const labelElement = document.createElement('span');
-  labelElement.className = 'admin-dashboard__user-action-label';
+  labelElement.className = 'user-dashboard__quick-action-title';
   labelElement.textContent = label;
 
   const descriptionElement = document.createElement('span');
-  descriptionElement.className = 'admin-dashboard__user-action-description';
+  descriptionElement.className = 'user-dashboard__quick-action-description';
   descriptionElement.textContent = description;
 
   button.append(labelElement, descriptionElement);
+  item.append(button);
 
   let cleanup = () => {};
 
@@ -157,7 +91,7 @@ function createQuickAction({ label, description, onClick, extraClass = '' }) {
     };
   }
 
-  return { button, cleanup };
+  return { item, button, labelElement, descriptionElement, cleanup };
 }
 
 export function createPersistUserChanges(getUserFn, updateUserFn) {
@@ -273,33 +207,26 @@ export function renderUserPanel(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
-  const overviewWidget = document.createElement('section');
-  overviewWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--overview';
+  const themeWidget = document.createElement('section');
+  themeWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--theme';
 
-  const overviewTitle = document.createElement('h2');
-  overviewTitle.className = 'user-widget__title';
-  overviewTitle.textContent = 'Resumo da conta';
+  const themeTitle = document.createElement('h2');
+  themeTitle.className = 'user-widget__title';
+  themeTitle.textContent = 'Preferências de tema';
 
-  const overviewDescription = document.createElement('p');
-  overviewDescription.className = 'user-widget__description';
-  overviewDescription.textContent =
-    'Acompanhe o status da sessão ativa, a data da última atualização e ative atalhos rápidos para outras áreas do MiniApp.';
-
-  const statsList = document.createElement('ul');
-  statsList.className = 'admin-dashboard__user-stats user-dashboard__stats';
-
-  const sessionStat = createStatItem('Status da sessão');
-  const updatedStat = createStatItem('Perfil atualizado');
-  const themeStat = createStatItem('Preferência de tema');
-  const roleStat = createStatItem('Tipo de acesso');
-
-  statsList.append(sessionStat.item, updatedStat.item, themeStat.item, roleStat.item);
+  const themeDescription = document.createElement('p');
+  themeDescription.className = 'user-widget__description';
+  themeDescription.textContent =
+    'Alterne rapidamente entre tema claro e escuro e mantenha sua escolha sincronizada em todos os acessos.';
 
   const actionsWrapper = document.createElement('div');
   actionsWrapper.className = 'user-dashboard__actions';
 
-  const actionGrid = document.createElement('div');
-  actionGrid.className = 'admin-dashboard__user-action-grid user-dashboard__action-grid';
+  const actionList = document.createElement('ul');
+  actionList.className = 'user-dashboard__action-list';
+  actionList.setAttribute('role', 'list');
+
+  let themeAction = null;
 
   const accountWidget = document.createElement('section');
   accountWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--account';
@@ -403,14 +330,19 @@ export function renderUserPanel(viewRoot) {
 
   accountWidget.append(accountTitle, accountDescription, emptyState, accountForm);
 
-  overviewWidget.append(overviewTitle, overviewDescription, statsList, actionsWrapper);
-  actionsWrapper.append(actionGrid);
+  themeWidget.append(themeTitle, themeDescription, actionsWrapper);
+  actionsWrapper.append(actionList);
 
-  layout.append(overviewWidget, accountWidget);
+  layout.append(themeWidget, accountWidget);
   viewRoot.replaceChildren(heading, intro, layout);
 
   const cleanupCallbacks = [];
   const unsubscribeCallbacks = [];
+
+  const usersById = new Map();
+  let activeUserId = getActiveUserId();
+  let sessionSnapshot = null;
+  let activeUser = null;
 
   const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
@@ -444,58 +376,124 @@ export function renderUserPanel(viewRoot) {
     showFeedback('', {});
   };
 
-  const editAction = createQuickAction({
-    label: 'Editar cadastro',
-    description: 'Ir direto para o formulário principal.',
-    onClick: () => {
-      if (accountForm instanceof HTMLElement && typeof accountForm.scrollIntoView === 'function') {
-        accountForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+  const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
 
-      if (nameInput && typeof nameInput.focus === 'function') {
-        try {
-          nameInput.focus();
-        } catch (error) {
-          console.error('Não foi possível focar o campo de nome.', error);
-        }
-      }
-    },
-  });
+  const resolveCurrentTheme = () => {
+    const currentPreference = resolveCurrentPreference();
+    return currentPreference === 'system' ? getResolvedTheme() : currentPreference;
+  };
 
-  const logAction = createQuickAction({
-    label: 'Consultar atividades',
-    description: 'Abra o registro de alterações recentes.',
-    onClick: () => navigateTo('log'),
-  });
+  const computeNextThemePreference = () => (resolveCurrentTheme() === 'dark' ? 'light' : 'dark');
 
-  const adminAction = createQuickAction({
-    label: 'Gerenciar cadastros',
-    description: 'Acesse o painel administrativo completo.',
-    onClick: () => navigateTo('admin'),
-  });
+  const formatThemeActionTitle = () => {
+    const preference = resolveCurrentPreference();
+    const currentTheme = resolveCurrentTheme();
 
-  const logoutAction = createQuickAction({
-    label: 'Encerrar sessão',
-    description: 'Desconecte este dispositivo com segurança.',
-    onClick: () => {
-      if (!activeUser) {
-        showFeedback('Nenhuma sessão ativa no momento.', { isError: false });
-        return;
-      }
+    if (!activeUser) {
+      return 'Tema automático';
+    }
 
-      clearActiveUser();
-      showFeedback('Sessão encerrada. Faça login para continuar.', { isError: false });
-    },
-    extraClass: 'user-dashboard__quick-action--logout',
-  });
+    if (preference === 'system') {
+      return currentTheme === 'dark' ? 'Tema escuro (automático) 🌙' : 'Tema claro (automático) ☀️';
+    }
 
-  actionGrid.append(editAction.button, logAction.button, adminAction.button, logoutAction.button);
-  cleanupCallbacks.push(editAction.cleanup, logAction.cleanup, adminAction.cleanup, logoutAction.cleanup);
+    return currentTheme === 'dark' ? 'Tema escuro ativo 🌙' : 'Tema claro ativo ☀️';
+  };
+
+  const formatThemeActionDescription = () => {
+    if (!activeUser) {
+      return 'Inicie uma sessão para escolher entre claro ou escuro.';
+    }
+
+    const nextPreference = computeNextThemePreference();
+    return nextPreference === 'dark'
+      ? 'Clique para ativar o tema escuro imediatamente.'
+      : 'Clique para ativar o tema claro imediatamente.';
+  };
+
+  const updateThemeActionContent = () => {
+    if (!themeAction) {
+      return;
+    }
+
+    themeAction.labelElement.textContent = formatThemeActionTitle();
+    themeAction.descriptionElement.textContent = formatThemeActionDescription();
+
+    const nextPreference = computeNextThemePreference();
+    const preference = resolveCurrentPreference();
+    const currentTheme = resolveCurrentTheme();
+
+    themeAction.button.dataset.themeTarget = nextPreference;
+    themeAction.button.dataset.themePreference = preference;
+    themeAction.button.dataset.themeActive = currentTheme;
+  };
 
   const persistUserChanges = createPersistUserChanges(
     () => (activeUser ? { id: activeUser.id } : null),
     updateUser,
   );
+
+  const handleThemeToggle = async () => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para ajustar o tema.', { isError: true });
+      return;
+    }
+
+    const nextPreference = computeNextThemePreference();
+
+    resetFeedback();
+
+    const result = await persistUserChanges(
+      { preferences: { theme: nextPreference } },
+      {
+        feedback: {
+          reset: resetFeedback,
+          show: (message, options = {}) => {
+            showFeedback(message, options);
+          },
+        },
+        busyTargets: [themeAction?.button].filter(Boolean),
+        successMessage:
+          nextPreference === 'dark'
+            ? 'Tema escuro ativado com sucesso!'
+            : 'Tema claro ativado com sucesso!',
+        errorMessage: 'Não foi possível atualizar o tema. Tente novamente.',
+        missingSessionMessage: 'Nenhuma sessão ativa. Faça login para ajustar o tema.',
+      },
+    );
+
+    if (result.status !== 'success') {
+      return;
+    }
+
+    setThemePreference(nextPreference);
+
+    if (activeUser?.preferences) {
+      activeUser.preferences.theme = nextPreference;
+    }
+    if (activeUser) {
+      activeUser.updatedAt = new Date();
+    }
+
+    if (themeSelect) {
+      themeSelect.value = nextPreference;
+    }
+
+    updateForm();
+    updateActionState();
+    updateThemeActionContent();
+  };
+
+  themeAction = createQuickAction({
+    label: 'Tema automático',
+    description: 'Clique para alternar entre tema claro e escuro.',
+    onClick: handleThemeToggle,
+    extraClass: 'user-dashboard__quick-action-button--theme',
+  });
+
+  actionList.append(themeAction.item);
+  cleanupCallbacks.push(themeAction.cleanup);
+  updateThemeActionContent();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -614,35 +612,19 @@ export function renderUserPanel(viewRoot) {
         activeUser.updatedAt = new Date();
       }
 
-      updateOverview();
       updateForm();
       updateActionState();
+      updateThemeActionContent();
     }
   };
 
   accountForm.addEventListener('submit', handleSubmit);
   cleanupCallbacks.push(() => accountForm.removeEventListener('submit', handleSubmit));
 
-  const usersById = new Map();
-  let activeUserId = getActiveUserId();
-  let sessionSnapshot = null;
-  let activeUser = null;
-
-  const updateOverview = () => {
-    const user = activeUser;
-
-    if (user) {
-      sessionStat.valueElement.textContent = 'Ativa';
-      updatedStat.valueElement.textContent = formatDate(user.updatedAt ?? user.createdAt);
-      themeStat.valueElement.textContent = formatThemeLabel(user.preferences?.theme);
-      roleStat.valueElement.textContent = formatUserTypeLabel(user.userType);
-    } else {
-      sessionStat.valueElement.textContent = 'Desconectada';
-      updatedStat.valueElement.textContent = '—';
-      themeStat.valueElement.textContent = formatThemeLabel('system');
-      roleStat.valueElement.textContent = 'Visitante';
-    }
-  };
+  const unsubscribeThemeListener = subscribeThemeChange(() => {
+    updateThemeActionContent();
+  });
+  cleanupCallbacks.push(unsubscribeThemeListener);
 
   const updateForm = () => {
     const user = activeUser;
@@ -686,17 +668,18 @@ export function renderUserPanel(viewRoot) {
 
   const updateActionState = () => {
     const hasUser = Boolean(activeUser);
-    editAction.button.disabled = !hasUser;
-    logoutAction.button.disabled = !hasUser;
+    if (themeAction) {
+      themeAction.button.disabled = !hasUser;
+    }
   };
 
   const syncActiveUser = () => {
     const source = (activeUserId != null && usersById.get(activeUserId)) || sessionSnapshot;
     activeUser = normalizeUserData(source);
 
-    updateOverview();
     updateForm();
     updateActionState();
+    updateThemeActionContent();
   };
 
   const unsubscribeSession = subscribeSession((user) => {
