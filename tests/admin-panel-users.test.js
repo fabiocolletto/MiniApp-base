@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { setupFakeDom } from './helpers/fake-dom.js';
 import { runViewCleanup } from '../scripts/view-cleanup.js';
+import { resetMiniApps } from '../scripts/data/miniapp-store.js';
 
 const initialUsers = [
   {
@@ -85,6 +86,7 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
     if (viewRoot) {
       runViewCleanup(viewRoot);
     }
+    resetMiniApps();
     teardownDom();
   });
 
@@ -107,6 +109,8 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
     });
     savedUsers.push(saved);
   }
+
+  resetMiniApps();
 
   const { renderAdmin } = await import('../scripts/views/admin.js');
 

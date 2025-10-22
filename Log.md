@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.131 - 2025-10-22 22:10 BRT
+- Corrige a centralização do menu móvel garantindo que o modal ocupe toda a viewport inclusive em navegadores sem suporte ao atalho `inset`.
+- Ajusta o espaçamento vertical do modal para considerar as áreas seguras superiores e inferiores em aparelhos com notch ou barra de navegação fixa.
+
+## v0.1.130 - 2025-10-22 21:40 BRT
+- Implementa armazenamento persistente dos mini-apps no front-end com normalização e fallback seguro quando o `localStorage` não estiver disponível.
+- Reestrutura o widget de miniapps do painel administrativo para assinar o novo armazenamento e aplicar atualizações que se propagam automaticamente.
+- Expõe utilitário de redefinição do catálogo para testes e adapta o teste do painel administrativo para inicializar e restaurar os mini-apps.
+- Atualiza o rodapé para comunicar a versão v0.1.130 das 21h40.
+
 ## v0.1.129 - 2025-10-22 10:12 BRT
 - Reconstrói o painel administrativo com dois widgets principais inspirados no layout do painel do usuário.
 - Disponibiliza a listagem de usuários com expansão para resumo dos dados principais e preferências sincronizadas.

@@ -1,4 +1,10 @@
 import { getUsers, subscribeUsers } from '../data/user-store.js';
+import {
+  ACCESS_LEVEL_OPTIONS,
+  MINI_APP_STATUS_OPTIONS,
+  subscribeMiniApps,
+  updateMiniApp as persistMiniAppUpdate,
+} from '../data/miniapp-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
 const BASE_CLASSES = 'card view view--admin admin-dashboard';
@@ -14,51 +20,6 @@ const THEME_LABELS = {
   light: 'Tema claro',
   system: 'Automático (sistema)',
 };
-
-const MINI_APP_STATUS_OPTIONS = [
-  { value: 'deployment', label: 'Em implantação' },
-  { value: 'testing', label: 'Em teste' },
-  { value: 'active', label: 'Em uso' },
-];
-
-const ACCESS_LEVEL_OPTIONS = [
-  { value: 'administrador', label: 'Administradores' },
-  { value: 'colaborador', label: 'Colaboradores' },
-  { value: 'usuario', label: 'Usuários finais' },
-];
-
-const MINI_APPS = [
-  {
-    id: 'time-tracker',
-    name: 'Time Tracker',
-    category: 'Produtividade',
-    description:
-      'Monitore jornadas, exporte relatórios completos e mantenha a equipe sincronizada com as regras do painel administrativo.',
-    status: 'active',
-    updatedAt: '2025-10-12T18:00:00-03:00',
-    access: ['administrador', 'colaborador'],
-  },
-  {
-    id: 'field-forms',
-    name: 'Field Forms',
-    category: 'Operações',
-    description:
-      'Colete dados em campo mesmo offline, centralize anexos e acompanhe revisões em tempo real a partir do painel.',
-    status: 'testing',
-    updatedAt: '2025-10-18T09:30:00-03:00',
-    access: ['administrador'],
-  },
-  {
-    id: 'insights-hub',
-    name: 'Insights Hub',
-    category: 'Analytics',
-    description:
-      'Combine métricas de diferentes mini-apps, configure alertas inteligentes e acompanhe o avanço da implantação.',
-    status: 'deployment',
-    updatedAt: '2025-10-20T14:45:00-03:00',
-    access: ['administrador', 'colaborador', 'usuario'],
-  },
-];
 
 const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
@@ -349,72 +310,6 @@ function createUsersWidget() {
   return { widget, setUsers, teardown };
 }
 
-function normalizeUpdatedAt(value) {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString();
-  }
-
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString();
-    }
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString();
-    }
-  }
-
-  return new Date().toISOString();
-}
-
-function normalizeAccessLevels(access) {
-  if (!Array.isArray(access)) {
-    return [];
-  }
-
-  const validValues = new Set(ACCESS_LEVEL_OPTIONS.map((option) => option.value));
-  const normalized = [];
-
-  access.forEach((value) => {
-    const normalizedValue = String(value ?? '')
-      .trim()
-      .toLowerCase();
-    if (validValues.has(normalizedValue) && !normalized.includes(normalizedValue)) {
-      normalized.push(normalizedValue);
-    }
-  });
-
-  return normalized;
-}
-
-function normalizeMiniAppEntry(app) {
-  if (!app || typeof app !== 'object') {
-    return null;
-  }
-
-  const id = typeof app.id === 'string' && app.id.trim() ? app.id.trim() : null;
-  if (!id) {
-    return null;
-  }
-
-  const name = typeof app.name === 'string' && app.name.trim() ? app.name.trim() : 'Mini-app sem nome';
-  const category = typeof app.category === 'string' && app.category.trim() ? app.category.trim() : 'Sem categoria';
-  const description = typeof app.description === 'string' && app.description.trim()
-    ? app.description.trim()
-    : 'Nenhuma descrição cadastrada ainda.';
-  const status = MINI_APP_STATUS_OPTIONS.some((option) => option.value === app.status)
-    ? app.status
-    : 'deployment';
-  const updatedAt = normalizeUpdatedAt(app.updatedAt);
-  const access = normalizeAccessLevels(app.access);
-
-  return { id, name, category, description, status, updatedAt, access };
-}
-
 function formatMiniAppStatus(status) {
   const option = MINI_APP_STATUS_OPTIONS.find((item) => item.value === status);
   return option ? option.label : 'Status não definido';
@@ -423,12 +318,6 @@ function formatMiniAppStatus(status) {
 function createMiniAppsWidget() {
   let expandedMiniAppId = null;
   const state = new Map();
-
-  MINI_APPS.map((entry) => normalizeMiniAppEntry(entry))
-    .filter((entry) => entry !== null)
-    .forEach((entry) => {
-      state.set(entry.id, entry);
-    });
 
   const widget = document.createElement('section');
   widget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--miniapps';
@@ -475,23 +364,59 @@ function createMiniAppsWidget() {
   tableContainer.append(table);
   widget.append(title, description, tableContainer);
 
-  function updateMiniApp(id, updater) {
-    const current = state.get(id);
-    if (!current) {
+  const unsubscribe = subscribeMiniApps((entries) => {
+    setMiniApps(Array.isArray(entries) ? entries : []);
+  });
+
+  function applyMiniAppUpdate(id, updater) {
+    if (!state.has(id)) {
       return;
     }
 
-    const next = updater(current);
-    if (!next || typeof next !== 'object') {
+    persistMiniAppUpdate(id, (current) => {
+      const reference = current ?? state.get(id);
+      if (!reference) {
+        return current;
+      }
+
+      const patch = typeof updater === 'function' ? updater(reference) : updater;
+      if (!patch || typeof patch !== 'object') {
+        return reference;
+      }
+
+      return { ...reference, ...patch };
+    });
+  }
+
+  function setMiniApps(entries) {
+    if (!Array.isArray(entries)) {
+      state.clear();
+      expandedMiniAppId = null;
+      renderRows();
       return;
     }
 
-    const normalized = normalizeMiniAppEntry({ ...current, ...next });
-    if (!normalized) {
-      return;
+    const previousExpanded = expandedMiniAppId;
+    state.clear();
+
+    entries.forEach((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return;
+      }
+
+      const id = typeof entry.id === 'string' && entry.id.trim() ? entry.id.trim() : null;
+      if (!id) {
+        return;
+      }
+
+      const access = Array.isArray(entry.access) ? [...entry.access] : [];
+      state.set(id, { ...entry, id, access });
+    });
+
+    if (previousExpanded && !state.has(previousExpanded)) {
+      expandedMiniAppId = null;
     }
 
-    state.set(id, normalized);
     renderRows();
   }
 
@@ -646,7 +571,7 @@ function createMiniAppsWidget() {
         checkbox.checked = app.access.includes(option.value);
 
         checkbox.addEventListener('change', () => {
-          updateMiniApp(app.id, (current) => {
+          applyMiniAppUpdate(app.id, (current) => {
             const nextAccess = new Set(current.access);
             if (checkbox.checked) {
               nextAccess.add(option.value);
@@ -690,7 +615,7 @@ function createMiniAppsWidget() {
       statusSelect.value = app.status;
 
       statusSelect.addEventListener('change', () => {
-        updateMiniApp(app.id, (current) => ({
+        applyMiniAppUpdate(app.id, (current) => ({
           ...current,
           status: statusSelect.value,
           updatedAt: new Date().toISOString(),
@@ -714,6 +639,9 @@ function createMiniAppsWidget() {
   function teardown() {
     state.clear();
     expandedMiniAppId = null;
+    if (typeof unsubscribe === 'function') {
+      unsubscribe();
+    }
   }
 
   return { widget, teardown };
