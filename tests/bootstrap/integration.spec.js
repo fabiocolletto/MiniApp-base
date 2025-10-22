@@ -242,7 +242,6 @@ const renderStub = (name) => (element) => {
 
 globalThis.__MINIAPP_UI_HOOKS__ = {
   views: {
-    greeting: renderStub('greeting'),
     admin: renderStub('admin'),
     log: renderStub('log'),
     home: renderStub('home'),

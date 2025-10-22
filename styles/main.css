@@ -196,15 +196,6 @@ main {
   box-sizing: border-box;
 }
 
-.main--greeting {
-  min-height: 100dvh;
-  padding-block-start: var(--layout-header-offset, var(--header-total-size));
-  padding-block-end: var(--layout-footer-offset, var(--footer-total-size));
-  display: grid;
-  place-content: center;
-  justify-items: center;
-}
-
 .main--login,
 .main--register {
   align-content: center;
@@ -437,62 +428,6 @@ p {
   --card-border: 0.06rem solid rgba(var(--color-accent-rgb), 0.18);
   --card-background: rgba(var(--color-accent-rgb), 0.1);
   --card-shadow: none;
-}
-
-.sun {
-  width: clamp(6rem, 12vw, 10rem);
-  height: clamp(6rem, 12vw, 10rem);
-  margin: 0 auto 1.5rem;
-  background: var(--color-bg-card);
-  border-radius: 50%;
-  position: relative;
-  box-shadow: 0 0 2rem rgba(var(--color-accent-rgb), 0.2);
-  animation: pulse 4s ease-in-out infinite;
-}
-
-.sun::before,
-.sun::after {
-  content: "";
-  position: absolute;
-  inset: -15%;
-  border-radius: 50%;
-  border: 0.5rem solid rgba(255, 209, 102, 0.4);
-  animation: rays 8s linear infinite;
-}
-
-.sun::after {
-  inset: -30%;
-  border-width: 0.25rem;
-  animation-duration: 12s;
-}
-
-:root[data-theme='dark'] .sun {
-  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.18), var(--color-bg-card));
-  box-shadow: 0 0 2.4rem rgba(var(--color-accent-rgb), 0.3);
-}
-
-:root[data-theme='dark'] .sun::before,
-:root[data-theme='dark'] .sun::after {
-  border-color: rgba(var(--color-accent-rgb), 0.32);
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes rays {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 header,
@@ -1683,11 +1618,6 @@ footer {
   grid-template-rows: var(--dashboard-grid-template-rows);
 }
 
-.view--greeting {
-  margin: 0;
-  background: var(--color-bg-card);
-}
-
 .miniapp-store-view {
   --dashboard-grid-template-rows: auto;
 }
@@ -1871,7 +1801,7 @@ footer {
   background: transparent;
 }
 
-main > :where(.card.view):not(.auth-view, .view--greeting) {
+main > :where(.card.view):not(.auth-view) {
   width: 100%;
   max-width: none;
   padding: 0;
@@ -1887,10 +1817,6 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
-}
-
-.card.view--greeting {
-  overflow: visible;
 }
 
 .card.auth-view {

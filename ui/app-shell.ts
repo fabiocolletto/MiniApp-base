@@ -1,5 +1,4 @@
 import eventBus from '../scripts/events/event-bus.js';
-import { renderGreeting } from '../scripts/views/greeting.js';
 import { renderAdmin } from '../scripts/views/admin.js';
 import { renderLog } from '../scripts/views/log.js';
 import { renderHome } from '../scripts/views/home.js';
@@ -123,7 +122,6 @@ export interface RouterBridge {
 }
 
 type ViewName =
-  | 'greeting'
   | 'admin'
   | 'log'
   | 'home'
@@ -151,7 +149,6 @@ const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
 type NavigationPayload = { view?: string } | string | null | undefined;
 
 const views: Record<string, (viewRoot: HTMLElement) => void> = {
-  greeting: renderGreeting,
   admin: renderAdmin,
   log: renderLog,
   home: renderHome,
@@ -279,7 +276,6 @@ function toggleHomePanel(): void {
   closeHeaderMenu();
 
   if (isHomePanelActive()) {
-    renderView('greeting');
     return;
   }
 
@@ -907,13 +903,11 @@ function applyMainState(view: string): void {
   const isUserView = view === 'user';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
-  const isGreetingView = view === 'greeting';
 
   mainElement?.classList.toggle('main--admin', isAdminView);
   mainElement?.classList.toggle('main--user', isUserView);
   mainElement?.classList.toggle('main--login', isLoginView);
   mainElement?.classList.toggle('main--register', isRegisterView);
-  mainElement?.classList.toggle('main--greeting', isGreetingView);
 }
 
 export function renderView(name: ViewName): void {
@@ -972,7 +966,7 @@ export function showSplash(message = 'Carregando painel...'): void {
     return;
   }
 
-  mainElement?.classList.remove('main--admin', 'main--user', 'main--login', 'main--register', 'main--greeting');
+  mainElement?.classList.remove('main--admin', 'main--user', 'main--login', 'main--register');
   viewRoot.className = 'card view view--splash';
   viewRoot.dataset.view = 'splash';
 
