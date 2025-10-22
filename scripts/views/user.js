@@ -71,7 +71,17 @@ function createQuickAction({ label, description, onClick, extraClass = '' }) {
 
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = ['user-dashboard__quick-action-button', extraClass].filter(Boolean).join(' ');
+  button.className =
+    [
+      'button',
+      'button--secondary',
+      'button--stacked',
+      'button--block',
+      'user-dashboard__quick-action-button',
+      extraClass,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
   const labelElement = document.createElement('span');
   labelElement.className = 'user-dashboard__quick-action-title';
@@ -218,7 +228,8 @@ export function renderUserPanel(viewRoot) {
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
   const themeWidget = document.createElement('section');
-  themeWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--theme';
+  themeWidget.className =
+    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--theme';
 
   const themeTitle = document.createElement('h2');
   themeTitle.className = 'user-widget__title';
@@ -239,7 +250,8 @@ export function renderUserPanel(viewRoot) {
   let themeAction = null;
 
   const accountWidget = document.createElement('section');
-  accountWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--account';
+  accountWidget.className =
+    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--account';
 
   const accountTitle = document.createElement('h2');
   accountTitle.className = 'user-widget__title';
@@ -251,7 +263,8 @@ export function renderUserPanel(viewRoot) {
     'Atualize telefone, e-mail, senha e preferências de tema. Todas as alterações são salvas em poucos segundos.';
 
   const accessWidget = document.createElement('section');
-  accessWidget.className = 'user-panel__widget user-dashboard__widget user-panel__widget--access';
+  accessWidget.className =
+    'surface-card user-panel__widget user-dashboard__widget user-panel__widget--access';
   accessWidget.dataset.state = 'empty';
 
   const accessTitle = document.createElement('h2');
@@ -271,7 +284,7 @@ export function renderUserPanel(viewRoot) {
   accessActionList.setAttribute('role', 'list');
 
   const accessFeedback = document.createElement('p');
-  accessFeedback.className = 'user-form__feedback user-dashboard__feedback';
+  accessFeedback.className = 'form-message user-form__feedback user-dashboard__feedback';
   accessFeedback.hidden = true;
   accessFeedback.setAttribute('aria-live', 'polite');
 
@@ -305,7 +318,7 @@ export function renderUserPanel(viewRoot) {
   emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
 
   const accountForm = document.createElement('form');
-  accountForm.className = 'user-form user-dashboard__form';
+  accountForm.className = 'form user-form user-dashboard__form';
   accountForm.id = 'user-dashboard-form';
   accountForm.noValidate = true;
   accountForm.hidden = true;
@@ -346,17 +359,17 @@ export function renderUserPanel(viewRoot) {
   });
 
   const themeField = document.createElement('label');
-  themeField.className = 'user-form__field';
+  themeField.className = 'form-field user-form__field';
   themeField.setAttribute('for', 'user-dashboard-theme');
 
   const themeLabel = document.createElement('span');
-  themeLabel.className = 'user-form__label';
+  themeLabel.className = 'form-label user-form__label';
   themeLabel.textContent = 'Tema da interface';
 
   const themeSelect = document.createElement('select');
   themeSelect.id = 'user-dashboard-theme';
   themeSelect.name = 'user-dashboard-theme';
-  themeSelect.className = 'user-form__select';
+  themeSelect.className = 'form-input form-select user-form__select';
 
   [
     { value: 'system', label: 'Automático (seguir sistema)' },
@@ -372,12 +385,12 @@ export function renderUserPanel(viewRoot) {
   themeField.append(themeLabel, themeSelect);
 
   const feedbackElement = document.createElement('p');
-  feedbackElement.className = 'user-form__feedback user-dashboard__feedback';
+  feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
   feedbackElement.hidden = true;
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
-  submitButton.className = 'user-form__submit';
+  submitButton.className = 'button form-submit user-form__submit';
   submitButton.textContent = 'Salvar alterações';
 
   accountForm.append(
@@ -445,7 +458,12 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    accessFeedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+    accessFeedback.classList.remove(
+      'user-form__feedback--error',
+      'user-form__feedback--success',
+      'form-message--error',
+      'form-message--success',
+    );
 
     if (!message) {
       accessFeedback.hidden = true;
@@ -456,7 +474,10 @@ export function renderUserPanel(viewRoot) {
 
     accessFeedback.hidden = false;
     accessFeedback.textContent = message;
-    accessFeedback.classList.add(isError ? 'user-form__feedback--error' : 'user-form__feedback--success');
+    accessFeedback.classList.add(
+      isError ? 'user-form__feedback--error' : 'user-form__feedback--success',
+      isError ? 'form-message--error' : 'form-message--success',
+    );
     accessFeedback.setAttribute('role', isError ? 'alert' : 'status');
   };
 
@@ -670,7 +691,12 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    feedbackElement.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+    feedbackElement.classList.remove(
+      'user-form__feedback--error',
+      'user-form__feedback--success',
+      'form-message--error',
+      'form-message--success',
+    );
 
     if (!message) {
       feedbackElement.hidden = true;
@@ -682,9 +708,9 @@ export function renderUserPanel(viewRoot) {
     feedbackElement.textContent = message;
 
     if (isError) {
-      feedbackElement.classList.add('user-form__feedback--error');
+      feedbackElement.classList.add('user-form__feedback--error', 'form-message--error');
     } else {
-      feedbackElement.classList.add('user-form__feedback--success');
+      feedbackElement.classList.add('user-form__feedback--success', 'form-message--success');
     }
   };
 

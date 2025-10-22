@@ -41,7 +41,8 @@ function renderRegisterSuccess(viewRoot, savedUser) {
 
   const openPanelButton = document.createElement('button');
   openPanelButton.type = 'button';
-  openPanelButton.className = 'register-success__action register-success__action--primary';
+  openPanelButton.className =
+    'button button--primary button--pill register-success__action register-success__action--primary';
   openPanelButton.textContent = 'Ir para o painel do usuário';
   openPanelButton.addEventListener('click', () => {
     eventBus.emit('app:navigate', { view: 'user' });
@@ -49,7 +50,8 @@ function renderRegisterSuccess(viewRoot, savedUser) {
 
   const registerAnotherButton = document.createElement('button');
   registerAnotherButton.type = 'button';
-  registerAnotherButton.className = 'register-success__action register-success__action--secondary';
+  registerAnotherButton.className =
+    'button button--secondary button--pill register-success__action register-success__action--secondary';
   registerAnotherButton.textContent = 'Fazer outro cadastro';
   registerAnotherButton.addEventListener('click', () => {
     renderRegisterPanel(viewRoot);
@@ -81,15 +83,15 @@ export function renderRegisterPanel(viewRoot) {
   heading.textContent = 'Crie sua conta';
 
   const form = document.createElement('form');
-  form.className = 'auth-panel__form user-form';
+  form.className = 'form auth-panel__form user-form';
   form.autocomplete = 'on';
   form.noValidate = true;
 
   const phoneField = document.createElement('div');
-  phoneField.className = 'user-form__field user-form__field--inline auth-panel__phone-field';
+  phoneField.className = 'form-field user-form__field user-form__field--inline auth-panel__phone-field';
 
   const phoneFieldLabel = document.createElement('span');
-  phoneFieldLabel.className = 'user-form__label auth-panel__phone-label';
+  phoneFieldLabel.className = 'form-label user-form__label auth-panel__phone-label';
   phoneFieldLabel.textContent = 'Telefone de contato';
 
   const phoneInputsWrapper = document.createElement('div');
@@ -111,6 +113,7 @@ export function renderRegisterPanel(viewRoot) {
   phoneCountryInput.autocomplete = 'tel-country-code';
   phoneCountryInput.value = '55';
   phoneCountryInput.required = true;
+  phoneCountryInput.className = 'form-input';
 
   countryGroup.append(countryLabel, phoneCountryInput);
 
@@ -130,6 +133,7 @@ export function renderRegisterPanel(viewRoot) {
   phoneNumberInput.inputMode = 'tel';
   phoneNumberInput.autocomplete = 'tel-national';
   phoneNumberInput.required = true;
+  phoneNumberInput.className = 'form-input';
 
   numberGroup.append(numberLabel, phoneNumberInput);
 
@@ -225,11 +229,11 @@ export function renderRegisterPanel(viewRoot) {
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
-  submitButton.className = 'user-form__submit';
+  submitButton.className = 'button form-submit user-form__submit';
   submitButton.textContent = 'Criar conta';
 
   const feedback = document.createElement('p');
-  feedback.className = 'user-form__feedback auth-panel__feedback';
+  feedback.className = 'form-message user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
@@ -255,7 +259,12 @@ export function renderRegisterPanel(viewRoot) {
   function resetFeedback() {
     feedback.hidden = true;
     feedback.textContent = '';
-    feedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+    feedback.classList.remove(
+      'user-form__feedback--error',
+      'user-form__feedback--success',
+      'form-message--error',
+      'form-message--success',
+    );
     feedback.removeAttribute('role');
   }
 
@@ -263,7 +272,9 @@ export function renderRegisterPanel(viewRoot) {
     feedback.textContent = message;
     feedback.hidden = false;
     feedback.classList.toggle('user-form__feedback--error', isError);
+    feedback.classList.toggle('form-message--error', isError);
     feedback.classList.toggle('user-form__feedback--success', !isError);
+    feedback.classList.toggle('form-message--success', !isError);
     if (isError) {
       feedback.setAttribute('role', 'alert');
     } else {
