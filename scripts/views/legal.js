@@ -10,6 +10,9 @@ export function renderLegal(viewRoot) {
   viewRoot.dataset.view = 'legal';
   viewRoot.setAttribute('aria-label', 'Documentos legais 5Horas');
 
+  const legalWidget = document.createElement('section');
+  legalWidget.className = 'surface-card legal-widget';
+
   const description = document.createElement('p');
   description.className = 'legal-description';
   description.textContent =
@@ -34,5 +37,6 @@ export function renderLegal(viewRoot) {
     'Abrir documentos legais em uma nova aba caso o painel não carregue.';
 
   frameWrapper.append(iframe);
-  viewRoot.replaceChildren(description, frameWrapper, fallbackLink);
+  legalWidget.append(description, frameWrapper, fallbackLink);
+  viewRoot.replaceChildren(legalWidget);
 }

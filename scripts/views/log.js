@@ -9,13 +9,6 @@ export function renderLog(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'log';
 
-  const heading = document.createElement('h1');
-  heading.textContent = 'Log do Projeto';
-
-  const description = document.createElement('p');
-  description.className = 'log-description';
-  description.textContent = 'Acompanhe o histórico de versões do MiniApp.';
-
   const logContent = document.createElement('pre');
   logContent.className = 'log-content';
   logContent.setAttribute('role', 'region');
@@ -26,7 +19,8 @@ export function renderLog(viewRoot) {
   logContent.textContent = 'Carregando histórico do projeto…';
 
   viewRoot.setAttribute('aria-busy', 'true');
-  viewRoot.replaceChildren(heading, description, logContent);
+  viewRoot.setAttribute('aria-label', 'Histórico de versões do MiniApp Base');
+  viewRoot.replaceChildren(logContent);
 
   (async () => {
     try {

@@ -354,19 +354,11 @@ export function renderHome(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'home';
 
-  const heading = document.createElement('h1');
-  heading.className = 'user-panel__title home-dashboard__title';
-  heading.textContent = 'Início';
-
-  const intro = document.createElement('p');
-  intro.className = 'user-panel__intro home-dashboard__intro';
-  intro.textContent =
-    'Acompanhe o progresso do MiniApp Base, acione os principais painéis e descubra o que mudou nesta edição.';
-
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout user-dashboard__layout home-dashboard__layout';
 
-  viewRoot.replaceChildren(heading, intro, layout);
+  viewRoot.setAttribute('aria-label', 'Painel Início');
+  viewRoot.replaceChildren(layout);
 
   const state = {
     user: getActiveUser(),

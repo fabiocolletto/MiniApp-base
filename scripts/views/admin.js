@@ -672,15 +672,6 @@ export function renderAdmin(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'admin';
 
-  const heading = document.createElement('h1');
-  heading.className = 'user-panel__title admin-dashboard__title';
-  heading.textContent = 'Painel administrativo';
-
-  const intro = document.createElement('p');
-  intro.className = 'user-panel__intro admin-dashboard__intro';
-  intro.textContent =
-    'Administre cadastros e mini-apps disponíveis no ecossistema. Expanda cada bloco para ajustar permissões rapidamente.';
-
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout';
 
@@ -692,7 +683,8 @@ export function renderAdmin(viewRoot) {
   cleanupHandlers.push(miniAppsWidget.teardown);
   layout.append(miniAppsWidget.widget);
 
-  viewRoot.replaceChildren(heading, intro, layout);
+  viewRoot.setAttribute('aria-label', 'Painel administrativo');
+  viewRoot.replaceChildren(layout);
 
   const unsubscribe = subscribeUsers((snapshot) => {
     usersWidget.setUsers(snapshot);

@@ -2188,6 +2188,13 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   padding-inline: clamp(1rem, 3vw, 2rem);
 }
 
+.register-success__widget {
+  display: grid;
+  gap: var(--space-lg);
+  justify-items: center;
+  text-align: center;
+}
+
 .register-success__title {
   text-align: center;
 }
@@ -4211,6 +4218,13 @@ main > .view--log {
   color: var(--color-text-primary);
 }
 
+.legal-widget {
+  display: grid;
+  gap: var(--space-lg);
+  justify-items: stretch;
+  align-items: start;
+}
+
 .legal-description {
   margin: 0 auto;
   max-width: 44rem;
@@ -4273,6 +4287,12 @@ main > .view--log {
 
 .view--error p {
   margin: 0;
+}
+
+.error-view__widget {
+  display: grid;
+  gap: var(--space-md);
+  text-align: center;
 }
 
 .log-content {
