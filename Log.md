@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.137 - 2025-10-23 03:10 BRT
+- Remove os atalhos de cabeçalho para os painéis administrativo e do usuário tanto no menu principal quanto no menu móvel.
+- Garante que o bundle JavaScript e a versão TypeScript do shell não recriem os atalhos dinamicamente.
+- Atualiza o rodapé para informar a versão v0.1.137 das 03h10.
+
 ## v0.1.136 - 2025-10-23 02:05 BRT
 - Constrói o widget de controle de acesso no painel do usuário com botões de logoff, logout, troca de usuário e exclusão de dados locais.
 - Ajusta o teste de layout do painel do usuário para cobrir o novo widget e validar a disponibilidade das ações.
