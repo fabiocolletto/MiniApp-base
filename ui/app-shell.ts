@@ -5,6 +5,7 @@ import { renderLog } from '../scripts/views/log.js';
 import { renderHome } from '../scripts/views/home.js';
 import { renderNotFound } from '../scripts/views/not-found.js';
 import { renderUserPanel } from '../scripts/views/user.js';
+import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
@@ -23,6 +24,7 @@ const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
 const adminLink = document.querySelector('.header-admin-link');
+const storeLink = document.querySelector('.header-store-link');
 const userLink = document.querySelector('.header-user-link');
 const headerActions = document.querySelector('.header-actions');
 const headerMenu = document.querySelector('.header-menu');
@@ -121,6 +123,7 @@ type ViewName =
   | 'log'
   | 'home'
   | 'user'
+  | 'miniapps'
   | 'login'
   | 'register'
   | 'legal';
@@ -133,6 +136,7 @@ const views: Record<string, (viewRoot: HTMLElement) => void> = {
   log: renderLog,
   home: renderHome,
   user: renderUserPanel,
+  miniapps: renderMiniAppStore,
   login: renderLoginPanel,
   register: renderRegisterPanel,
   legal: renderLegal,
@@ -917,6 +921,12 @@ export function initializeAppShell(router: RouterBridge): void {
   adminLink?.addEventListener('click', (event) => {
     event.preventDefault();
     renderView('admin');
+    closeHeaderMenu();
+  });
+
+  storeLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    renderView('miniapps');
     closeHeaderMenu();
   });
 
