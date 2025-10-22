@@ -128,7 +128,8 @@ function createUsersWidget() {
   let expandedUserId = null;
 
   const widget = document.createElement('section');
-  widget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--users';
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--users';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -219,7 +220,7 @@ function createUsersWidget() {
 
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
-      toggleButton.className = 'panel-action-tile panel-action-tile--icon admin-user-table__toggle';
+      toggleButton.className = 'button panel-action-tile panel-action-tile--icon admin-user-table__toggle';
       toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
       toggleButton.setAttribute(
         'aria-label',
@@ -320,7 +321,8 @@ function createMiniAppsWidget() {
   const state = new Map();
 
   const widget = document.createElement('section');
-  widget.className = 'user-panel__widget admin-dashboard__widget admin-dashboard__widget--miniapps';
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--miniapps';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -500,7 +502,7 @@ function createMiniAppsWidget() {
 
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
-      toggleButton.className = 'panel-action-tile panel-action-tile--icon admin-user-table__toggle';
+      toggleButton.className = 'button panel-action-tile panel-action-tile--icon admin-user-table__toggle';
       toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
       toggleButton.setAttribute(
         'aria-label',

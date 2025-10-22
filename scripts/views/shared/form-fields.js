@@ -8,14 +8,15 @@ export function createInputField({
   required = true,
 }) {
   const fieldWrapper = document.createElement('label');
-  fieldWrapper.className = 'user-form__field';
+  fieldWrapper.className = 'form-field user-form__field';
   fieldWrapper.setAttribute('for', id);
 
   const fieldLabel = document.createElement('span');
-  fieldLabel.className = 'user-form__label';
+  fieldLabel.className = 'form-label user-form__label';
   fieldLabel.textContent = label;
 
   const input = document.createElement('input');
+  input.className = 'form-input';
   input.id = id;
   input.name = id;
   input.type = type;
@@ -35,14 +36,15 @@ export function createInputField({
 
 export function createTextareaField({ id, label, placeholder, rows = 4 }) {
   const fieldWrapper = document.createElement('label');
-  fieldWrapper.className = 'user-form__field user-form__field--textarea';
+  fieldWrapper.className = 'form-field user-form__field user-form__field--textarea';
   fieldWrapper.setAttribute('for', id);
 
   const fieldLabel = document.createElement('span');
-  fieldLabel.className = 'user-form__label';
+  fieldLabel.className = 'form-label user-form__label';
   fieldLabel.textContent = label;
 
   const textarea = document.createElement('textarea');
+  textarea.className = 'form-input form-textarea';
   textarea.id = id;
   textarea.name = id;
   textarea.placeholder = placeholder;

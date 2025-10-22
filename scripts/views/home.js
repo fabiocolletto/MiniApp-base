@@ -108,7 +108,7 @@ function createSummaryEntry(term, value) {
 
 function renderMiniAppListItem(app) {
   const item = document.createElement('li');
-  item.className = 'home-dashboard__list-item';
+  item.className = 'surface-card home-dashboard__list-item';
   item.dataset.appId = app?.id ?? '';
 
   const name = document.createElement('h3');
@@ -154,7 +154,8 @@ function renderMiniAppListItem(app) {
 
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
-  detailsButton.className = 'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit';
+  detailsButton.className =
+    'button panel-action-tile panel-action-tile--compact user-dashboard__summary-edit';
   detailsButton.textContent = 'Ver detalhes';
   detailsButton.addEventListener('click', () => {
     eventBus.emit('miniapp:details', { app: detailApp, trigger: detailsButton });
@@ -182,7 +183,7 @@ function createMiniAppListContainer(emptyMessage, modifier) {
 function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
   const widget = document.createElement('section');
   widget.className =
-    'user-panel__widget home-dashboard__widget home-dashboard__widget--favorites home-dashboard__widget-row';
+    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--favorites home-dashboard__widget-row';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -214,7 +215,7 @@ function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
 function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
   const widget = document.createElement('section');
   widget.className =
-    'user-panel__widget home-dashboard__widget home-dashboard__widget--saved home-dashboard__widget-row';
+    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--saved home-dashboard__widget-row';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
@@ -244,7 +245,7 @@ function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
 
 function renderGuestCallout() {
   const sessionCallout = document.createElement('section');
-  sessionCallout.className = 'user-details__selected home-dashboard__callout';
+  sessionCallout.className = 'surface-card user-details__selected home-dashboard__callout';
 
   const sessionText = document.createElement('p');
   sessionText.className = 'user-details__selected-text';
@@ -255,14 +256,14 @@ function renderGuestCallout() {
 
   const loginButton = document.createElement('button');
   loginButton.type = 'button';
-  loginButton.className = 'user-details__selected-action home-dashboard__callout-button';
+  loginButton.className = 'button button--primary button--pill home-dashboard__callout-button';
   loginButton.textContent = 'Fazer login';
   loginButton.addEventListener('click', () => navigateTo('login'));
 
   const registerButton = document.createElement('button');
   registerButton.type = 'button';
   registerButton.className =
-    'user-details__selected-action home-dashboard__callout-button home-dashboard__callout-button--secondary';
+    'button button--secondary button--pill home-dashboard__callout-button home-dashboard__callout-button--secondary';
   registerButton.textContent = 'Criar conta';
   registerButton.addEventListener('click', () => navigateTo('register'));
 
@@ -275,7 +276,7 @@ function renderGuestCallout() {
 function renderMiniAppsWidget(user, accessibleMiniApps) {
   const widget = document.createElement('section');
   widget.className =
-    'user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps home-dashboard__widget-row';
+    'surface-card user-panel__widget home-dashboard__widget home-dashboard__widget--miniapps home-dashboard__widget-row';
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';

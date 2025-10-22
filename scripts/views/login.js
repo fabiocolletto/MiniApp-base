@@ -56,15 +56,15 @@ export function renderLoginPanel(viewRoot) {
   heading.textContent = 'Painel de Login';
 
   const form = document.createElement('form');
-  form.className = 'auth-panel__form user-form';
+  form.className = 'form auth-panel__form user-form';
   form.autocomplete = 'on';
   form.noValidate = true;
 
   const phoneField = document.createElement('div');
-  phoneField.className = 'user-form__field user-form__field--inline auth-panel__phone-field';
+  phoneField.className = 'form-field user-form__field user-form__field--inline auth-panel__phone-field';
 
   const phoneFieldLabel = document.createElement('span');
-  phoneFieldLabel.className = 'user-form__label auth-panel__phone-label';
+  phoneFieldLabel.className = 'form-label user-form__label auth-panel__phone-label';
   phoneFieldLabel.textContent = 'Telefone cadastrado';
 
   const phoneInputsWrapper = document.createElement('div');
@@ -86,6 +86,7 @@ export function renderLoginPanel(viewRoot) {
   phoneCountryInput.autocomplete = 'tel-country-code';
   phoneCountryInput.value = BRAZIL_COUNTRY_CODE;
   phoneCountryInput.required = true;
+  phoneCountryInput.className = 'form-input';
 
   countryGroup.append(countryLabel, phoneCountryInput);
 
@@ -105,6 +106,7 @@ export function renderLoginPanel(viewRoot) {
   phoneNumberInput.inputMode = 'tel';
   phoneNumberInput.autocomplete = 'tel-national';
   phoneNumberInput.required = true;
+  phoneNumberInput.className = 'form-input';
 
   numberGroup.append(numberLabel, phoneNumberInput);
 
@@ -149,11 +151,11 @@ export function renderLoginPanel(viewRoot) {
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
-  submitButton.className = 'user-form__submit';
+  submitButton.className = 'button form-submit user-form__submit';
   submitButton.textContent = 'Entrar';
 
   const feedback = document.createElement('p');
-  feedback.className = 'user-form__feedback auth-panel__feedback';
+  feedback.className = 'form-message user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
@@ -179,7 +181,12 @@ export function renderLoginPanel(viewRoot) {
   function resetFeedback() {
     feedback.hidden = true;
     feedback.textContent = '';
-    feedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+    feedback.classList.remove(
+      'user-form__feedback--error',
+      'user-form__feedback--success',
+      'form-message--error',
+      'form-message--success',
+    );
     feedback.removeAttribute('role');
   }
 
@@ -187,7 +194,9 @@ export function renderLoginPanel(viewRoot) {
     feedback.textContent = message;
     feedback.hidden = false;
     feedback.classList.toggle('user-form__feedback--error', isError);
+    feedback.classList.toggle('form-message--error', isError);
     feedback.classList.toggle('user-form__feedback--success', !isError);
+    feedback.classList.toggle('form-message--success', !isError);
     if (isError) {
       feedback.setAttribute('role', 'alert');
     } else {

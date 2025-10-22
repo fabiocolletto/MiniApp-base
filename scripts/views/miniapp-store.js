@@ -51,7 +51,7 @@ function createToggleActionButton({
   const button = document.createElement('button');
   button.type = 'button';
   button.className =
-    'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button';
+    'button panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button';
 
   if (modifier) {
     button.classList.add(`miniapp-store__action-button--${modifier}`);
@@ -179,7 +179,7 @@ function renderMiniAppListItem({
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
   detailsButton.className =
-    'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
+    'button panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
   detailsButton.textContent = 'Saiba Mais';
 
   item.addEventListener('click', (event) => {
@@ -251,7 +251,8 @@ export function renderMiniAppStore(viewRoot) {
   layout.className = 'user-panel__layout user-dashboard__layout miniapp-store__layout';
 
   const catalogSection = document.createElement('section');
-  catalogSection.className = 'user-panel__widget user-dashboard__widget miniapp-store__catalog';
+  catalogSection.className =
+    'surface-card user-panel__widget user-dashboard__widget miniapp-store__catalog';
 
   const catalogTitle = document.createElement('h2');
   catalogTitle.className = 'user-widget__title';

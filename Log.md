@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.151 - 2025-10-22 19:09 BRT
+- Cria a classe utilitária `.button` com variáveis de estado e aplica o padrão aos callouts, ações rápidas, cartões da Mini App
+  Store e botões de formulários, removendo estilos duplicados nas views.
+- Introduz a base `.surface-card` para widgets, callouts e itens de lista, ajustando as views para reaproveitar o mesmo esquema
+  de borda, sombra e preenchimento em Início, Usuário, Administração e Mini App Store.
+- Define tokens de espaçamento (`--space-2xs` a `--space-xl`) e atualiza gaps/paddings recorrentes para usar as novas
+  variáveis, reduzindo `clamp` repetidos em componentes principais.
+- Consolida o estilo de formulários com classes genéricas (`.form-field`, `.form-input`, `.form-message`) e refatora login,
+  cadastro e painel do usuário para consumir os novos seletores enquanto preserva o comportamento existente.
+
 -## v0.1.150 - 2025-10-23 16:20 BRT
 - Cria a classe base `.panel-action-tile` com variáveis compartilhadas para gradientes, bordas e transições, incluindo variantes
   compacta e de ícone para estados específicos.
