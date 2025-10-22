@@ -7,7 +7,7 @@ const userStoreModule = await import('../scripts/data/user-store.js');
 const sessionStoreModule = await import('../scripts/data/session-store.js');
 
 const { resetUserStoreForTests, addUser, deleteUser } = userStoreModule;
-const { getSessionStatus, setActiveUser, clearActiveUser } = sessionStoreModule;
+const { getSessionStatus, setActiveUser, clearActiveUser, getActiveUser } = sessionStoreModule;
 
 async function flushUpdates() {
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -58,4 +58,21 @@ test('atualiza o status da sessão conforme o ciclo de autenticação', { concur
   await deleteUser(created.id);
   status = await waitForSessionState('empty');
   assert.equal(status.message, 'Nenhum usuário');
+});
+
+test('normaliza o tipo do usuário ao recuperar a sessão ativa', { concurrency: false }, async () => {
+  const created = await addUser({
+    name: 'Admin Responsável',
+    phone: '11988880000',
+    password: 'senhaSegura',
+    userType: ' Administradora ',
+  });
+
+  setActiveUser(created.id);
+  await waitForSessionState('connected');
+
+  const activeUser = getActiveUser();
+  assert.ok(activeUser, 'Usuário ativo deveria estar disponível.');
+  assert.equal(activeUser.id, created.id);
+  assert.equal(activeUser.userType, 'administrador');
 });

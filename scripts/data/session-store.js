@@ -7,6 +7,8 @@ const sessionListeners = new Set();
 const sessionStatusListeners = new Set();
 
 const VALID_THEME_PREFERENCES = ['light', 'dark', 'system'];
+const USER_TYPES = ['administrador', 'colaborador', 'usuario'];
+const DEFAULT_USER_TYPE = 'usuario';
 
 function normalizeThemePreference(value) {
   if (typeof value !== 'string') {
@@ -29,6 +31,32 @@ function clonePreferences(preferences) {
   }
 
   return cloned;
+}
+
+function sanitizeUserType(value) {
+  const normalized = String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (USER_TYPES.includes(normalized)) {
+    return normalized;
+  }
+
+  if (normalized === 'admin' || normalized === 'administradora') {
+    return 'administrador';
+  }
+
+  if (normalized === 'colaboradora') {
+    return 'colaborador';
+  }
+
+  if (normalized === 'user' || normalized === 'usuarios') {
+    return 'usuario';
+  }
+
+  return DEFAULT_USER_TYPE;
 }
 
 function createSessionLoadingStatus() {
@@ -158,6 +186,7 @@ function cloneUser(user) {
     phone: user.phone,
     password: user.password,
     device: user.device,
+    userType: sanitizeUserType(user.userType),
     createdAt: user.createdAt instanceof Date ? new Date(user.createdAt) : new Date(user.createdAt),
     updatedAt: user.updatedAt instanceof Date ? new Date(user.updatedAt) : new Date(user.updatedAt),
     profile: user.profile ? { ...user.profile } : {},
