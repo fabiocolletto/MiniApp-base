@@ -140,11 +140,13 @@ export function createAdminSummary(totalUsers, visibleUsers, query = '') {
     return 'Nenhum usuário disponível para exibição.';
   }
 
-  if (visible === total) {
-    return `Exibindo ${formatUserCount(visible)}.`;
-  }
+  let message;
 
-  let message = `Exibindo ${formatUserCount(visible)} de ${formatUserCount(total)}.`;
+  if (visible === total) {
+    message = `Exibindo ${formatUserCount(visible)}.`;
+  } else {
+    message = `Exibindo ${formatUserCount(visible)} de ${formatUserCount(total)}.`;
+  }
 
   if (trimmedQuery) {
     message += ` Filtro: “${trimmedQuery}”.`;
