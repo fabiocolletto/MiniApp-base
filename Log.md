@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.145 - 2025-10-23 10:20 BRT
+- Reorganiza o painel do usuário removendo título e subtítulo, iniciando diretamente pelo widget de preferências de tema.
+- Alinha o grid do painel do usuário ao padrão administrativo com duas colunas para Tema/Acesso e Dados principais ocupando linha exclusiva.
+- Ajusta o teste de layout para validar a nova estrutura dos widgets e a ausência do cabeçalho textual.
+- Atualiza os metadados do rodapé para refletir a versão v0.1.145 das 10h20.
+
 ## v0.1.144 - 2025-10-23 09:10 BRT
 - Adiciona botões de Favoritar e Assinar nos cartões da Mini App Store com feedback de estado e emissão de eventos.
 - Organiza o rodapé dos cartões com um agrupamento de ações responsivo acomodando os novos controles.
