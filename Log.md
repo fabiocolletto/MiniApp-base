@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.121 - 2025-10-22 18:05 BRT
+- Garante que o botão do cabeçalho para o painel inicial reabra a view mesmo quando a rota já estiver marcada como ativa.
+- Atualiza o rodapé para exibir a versão v0.1.121 das 18h05.
+
 ## v0.1.120 - 2025-10-22 16:50 BRT
 - Reconstrói o painel do usuário com layout inspirado no administrativo, trazendo resumo da sessão, atalhos rápidos e formulário
   compacto para atualizar dados principais.
