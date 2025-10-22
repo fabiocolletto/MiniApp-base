@@ -1,5 +1,14 @@
 # Log
 
+## v0.1.144 - 2025-10-23 09:10 BRT
+- Adiciona botões de Favoritar e Assinar nos cartões da Mini App Store com feedback de estado e emissão de eventos.
+- Organiza o rodapé dos cartões com um agrupamento de ações responsivo acomodando os novos controles.
+- Atualiza os metadados do rodapé para refletir a versão v0.1.144 das 09h10.
+
+## v0.1.143 - 2025-10-23 08:20 BRT
+- Harmoniza o botão de expansão dos mini-apps com os estilos base da tabela administrativa para que o ícone alterne para o sinal de menos ao recolher e expandir.
+- Atualiza os metadados do rodapé para refletir a versão v0.1.143 das 08h20.
+
 ## v0.1.142 - 2025-10-23 07:40 BRT
 - Reduz a altura percebida dos cartões da Mini App Store ao remover a proporção quadrada e comprimir tipografia, exibindo metadados em duas colunas.
 - Realinha o botão de detalhes para a borda direita com rótulo "Saiba Mais", preservando a abertura da ficha técnica modal.
