@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.160 - 2025-10-23 19:30 BRT
+- Remove a tela de boas-vindas acionada pelo menu do painel inicial, mantendo o usuário no painel ao reabrir o item.
+- Limpa o markup e os estilos associados à saudação inicial e passa a iniciar o app com o splash padrão de carregamento.
+- Atualiza o rodapé para comunicar a versão v0.1.160 das 19h30.
+
 ## v0.1.159 - 2025-10-23 19:00 BRT
 - Alinha o painel Log ao grid padrão dos painéis aplicando a classe compartilhada e encapsulando o conteúdo em um cartão dedicado.
 - Ajusta os estilos do painel para reutilizar o espaçamento padrão sem duplicar bordas e sombras no histórico.
