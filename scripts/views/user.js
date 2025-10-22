@@ -1,6 +1,7 @@
 import {
   subscribeUsers,
   updateUser,
+  deleteUser,
   sanitizeUserThemePreference,
   getDefaultUserPreferences,
 } from '../data/user-store.js';
@@ -9,10 +10,11 @@ import {
   getResolvedTheme,
   subscribeThemeChange,
 } from '../theme/theme-manager.js';
-import { getActiveUserId, subscribeSession } from '../data/session-store.js';
+import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createInputField } from './shared/form-fields.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
+import eventBus from '../events/event-bus.js';
 
 const BASE_CLASSES = 'card view view--user user-dashboard';
 
@@ -257,6 +259,31 @@ export function renderUserPanel(viewRoot) {
   accountDescription.textContent =
     'Atualize telefone, e-mail, senha e preferências de tema. Todas as alterações são salvas em poucos segundos.';
 
+  const accessWidget = document.createElement('section');
+  accessWidget.className = 'user-panel__widget user-dashboard__widget user-panel__widget--access';
+  accessWidget.dataset.state = 'empty';
+
+  const accessTitle = document.createElement('h2');
+  accessTitle.className = 'user-widget__title';
+  accessTitle.textContent = 'Sessão e acesso';
+
+  const accessDescription = document.createElement('p');
+  accessDescription.className = 'user-widget__description';
+  accessDescription.textContent =
+    'Gerencie a sessão rapidamente: faça logoff, troque de usuário ou remova os dados salvos deste dispositivo.';
+
+  const accessActionsWrapper = document.createElement('div');
+  accessActionsWrapper.className = 'user-dashboard__actions';
+
+  const accessActionList = document.createElement('ul');
+  accessActionList.className = 'user-dashboard__action-list';
+  accessActionList.setAttribute('role', 'list');
+
+  const accessFeedback = document.createElement('p');
+  accessFeedback.className = 'user-form__feedback user-dashboard__feedback';
+  accessFeedback.hidden = true;
+  accessFeedback.setAttribute('aria-live', 'polite');
+
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
   accountSummary.id = 'user-dashboard-summary';
@@ -374,10 +401,14 @@ export function renderUserPanel(viewRoot) {
 
   accountWidget.append(accountTitle, accountDescription, accountSummary, emptyState, accountForm);
 
+  accessActionsWrapper.append(accessActionList);
+
+  accessWidget.append(accessTitle, accessDescription, accessActionsWrapper, accessFeedback);
+
   themeWidget.append(themeTitle, themeDescription, actionsWrapper);
   actionsWrapper.append(actionList);
 
-  layout.append(themeWidget, accountWidget);
+  layout.append(themeWidget, accountWidget, accessWidget);
   viewRoot.replaceChildren(heading, intro, layout);
 
   const cleanupCallbacks = [];
@@ -393,6 +424,183 @@ export function renderUserPanel(viewRoot) {
   const phoneInput = phoneField.querySelector('input');
   const emailInput = emailField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
+
+  const accessActions = new Map();
+  const busyButtons = new Set();
+
+  let logoffAction = null;
+  let logoutAction = null;
+  let switchUserAction = null;
+
+  const setButtonBusy = (button, isBusy) => {
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    if (isBusy) {
+      busyButtons.add(button);
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+    } else {
+      busyButtons.delete(button);
+      button.removeAttribute('aria-busy');
+    }
+
+    updateActionState();
+  };
+
+  const showAccessFeedback = (message, { isError = false } = {}) => {
+    if (!(accessFeedback instanceof HTMLElement)) {
+      return;
+    }
+
+    accessFeedback.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
+
+    if (!message) {
+      accessFeedback.hidden = true;
+      accessFeedback.textContent = '';
+      accessFeedback.removeAttribute('role');
+      return;
+    }
+
+    accessFeedback.hidden = false;
+    accessFeedback.textContent = message;
+    accessFeedback.classList.add(isError ? 'user-form__feedback--error' : 'user-form__feedback--success');
+    accessFeedback.setAttribute('role', isError ? 'alert' : 'status');
+  };
+
+  const resetAccessFeedback = () => {
+    showAccessFeedback('', {});
+  };
+
+  const registerAccessAction = ({ key, label, description, onClick, extraClass = '', requiresSession = true }) => {
+    const action = createQuickAction({ label, description, onClick, extraClass });
+    action.button.dataset.action = key;
+    accessActionList.append(action.item);
+    cleanupCallbacks.push(action.cleanup);
+    accessActions.set(key, { button: action.button, requiresSession });
+    return action;
+  };
+
+  const handleLogoff = () => {
+    if (!activeUser) {
+      showAccessFeedback('Nenhuma sessão ativa para encerrar.', { isError: true });
+      return;
+    }
+
+    resetAccessFeedback();
+    setButtonBusy(logoffAction?.button ?? null, true);
+
+    try {
+      clearActiveUser();
+      showAccessFeedback('Sessão encerrada neste dispositivo.', { isError: false });
+    } catch (error) {
+      console.error('Erro ao encerrar sessão no painel do usuário.', error);
+      showAccessFeedback('Não foi possível encerrar a sessão. Tente novamente.', { isError: true });
+    } finally {
+      setButtonBusy(logoffAction?.button ?? null, false);
+    }
+  };
+
+  const handleLogout = () => {
+    if (!activeUser) {
+      showAccessFeedback('Nenhuma sessão ativa para sair da conta.', { isError: true });
+      return;
+    }
+
+    resetAccessFeedback();
+    setButtonBusy(logoutAction?.button ?? null, true);
+
+    try {
+      clearActiveUser();
+      eventBus.emit('app:navigate', { view: 'dashboard' });
+    } catch (error) {
+      console.error('Erro ao efetuar logout no painel do usuário.', error);
+      showAccessFeedback('Não foi possível realizar o logout. Tente novamente.', { isError: true });
+    } finally {
+      setButtonBusy(logoutAction?.button ?? null, false);
+    }
+  };
+
+  const handleSwitchUser = () => {
+    resetAccessFeedback();
+    setButtonBusy(switchUserAction?.button ?? null, true);
+
+    try {
+      clearActiveUser();
+      eventBus.emit('app:navigate', { view: 'login' });
+    } catch (error) {
+      console.error('Erro ao alternar usuário no painel.', error);
+      showAccessFeedback('Não foi possível abrir a troca de usuário. Tente novamente.', { isError: true });
+    } finally {
+      setButtonBusy(switchUserAction?.button ?? null, false);
+    }
+  };
+
+  const setAllAccessBusy = (isBusy) => {
+    accessActions.forEach(({ button }) => {
+      setButtonBusy(button, isBusy);
+    });
+  };
+
+  const handleEraseData = async () => {
+    if (!activeUser) {
+      showAccessFeedback('Nenhum dado ativo para remover deste dispositivo.', { isError: true });
+      return;
+    }
+
+    resetAccessFeedback();
+    setAllAccessBusy(true);
+
+    try {
+      await deleteUser(activeUser.id);
+      clearActiveUser();
+      setThemePreference('system');
+      showAccessFeedback('Dados locais removidos com sucesso.', { isError: false });
+      eventBus.emit('app:navigate', { view: 'login' });
+    } catch (error) {
+      console.error('Erro ao remover dados do usuário pelo painel.', error);
+      const message =
+        error instanceof Error && error.message ? error.message : 'Não foi possível remover os dados. Tente novamente.';
+      showAccessFeedback(message, { isError: true });
+    } finally {
+      setAllAccessBusy(false);
+    }
+  };
+
+  logoffAction = registerAccessAction({
+    key: 'logoff',
+    label: 'Fazer logoff',
+    description: 'Encerre apenas a sessão atual e mantenha os dados salvos.',
+    onClick: handleLogoff,
+    requiresSession: true,
+  });
+
+  logoutAction = registerAccessAction({
+    key: 'logout',
+    label: 'Logout da conta',
+    description: 'Retorne ao painel inicial e saia desta conta neste dispositivo.',
+    onClick: handleLogout,
+    extraClass: 'user-dashboard__quick-action-button--logout',
+    requiresSession: true,
+  });
+
+  switchUserAction = registerAccessAction({
+    key: 'switch-user',
+    label: 'Trocar usuário',
+    description: 'Acesse rapidamente a tela de login para entrar com outra conta.',
+    onClick: handleSwitchUser,
+    requiresSession: false,
+  });
+
+  registerAccessAction({
+    key: 'erase-data',
+    label: 'Excluir dados locais',
+    description: 'Remova este cadastro e preferências armazenadas neste dispositivo.',
+    onClick: handleEraseData,
+    extraClass: 'user-dashboard__quick-action-button--logout',
+    requiresSession: true,
+  });
 
   const updateSummary = () => {
     const user = activeUser;
@@ -789,7 +997,17 @@ export function renderUserPanel(viewRoot) {
   const updateActionState = () => {
     const hasUser = Boolean(activeUser);
     if (themeAction) {
-      themeAction.button.disabled = !hasUser;
+      const shouldDisable = !hasUser || busyButtons.has(themeAction.button);
+      themeAction.button.disabled = shouldDisable;
+    }
+
+    accessActions.forEach(({ button, requiresSession }) => {
+      const shouldDisable = (requiresSession && !hasUser) || busyButtons.has(button);
+      button.disabled = shouldDisable;
+    });
+
+    if (accessWidget instanceof HTMLElement) {
+      accessWidget.dataset.state = hasUser ? 'ready' : 'empty';
     }
   };
 
