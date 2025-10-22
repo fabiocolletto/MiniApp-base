@@ -831,10 +831,17 @@ footer {
 
 .app-modal {
   position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   inset: 0;
   display: grid;
   place-items: center;
-  padding: clamp(1rem, 5vw, 2rem);
+  --app-modal-padding: clamp(1rem, 5vw, 2rem);
+  padding-inline: var(--app-modal-padding);
+  padding-block-start: calc(var(--app-modal-padding) + var(--safe-area-inset-top));
+  padding-block-end: calc(var(--app-modal-padding) + var(--safe-area-inset-bottom));
   z-index: 50;
 }
 
