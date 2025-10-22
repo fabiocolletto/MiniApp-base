@@ -28,6 +28,13 @@ const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
 const headerMenuPanel = document.getElementById('header-navigation-menu');
+const footerElement = document.querySelector<HTMLElement>('footer');
+const footerToggleButton = footerElement?.querySelector<HTMLButtonElement>('[data-footer-toggle]');
+const footerBrandIcon = footerElement?.querySelector<HTMLElement>('.footer-brand__icon');
+const mobileFooterMediaQuery =
+  typeof window === 'object' && window && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(max-width: 640px)')
+    : null;
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
 const sessionIndicator = document.querySelector('.footer-session');
@@ -1057,6 +1064,28 @@ export function initializeAppShell(router: RouterBridge): void {
   }
 
   registerSessionIndicatorInteractions();
+
+  const handleFooterBrandShortcut = (event: Event): void => {
+    const isMobile = Boolean(mobileFooterMediaQuery?.matches);
+    if (isMobile) {
+      return;
+    }
+
+    const target = event.target;
+    const isFromBrandIcon =
+      footerBrandIcon instanceof HTMLElement && target instanceof Node && footerBrandIcon.contains(target);
+
+    if (isFromBrandIcon) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    closeHeaderMenu();
+    renderView('admin');
+  };
+
+  footerBrandIcon?.addEventListener('click', handleFooterBrandShortcut);
+  footerToggleButton?.addEventListener('click', handleFooterBrandShortcut);
 
   document.addEventListener('app:navigate', (event) => {
     const viewName = resolveViewName((event as CustomEvent)?.detail);

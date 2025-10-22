@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.138 - 2025-10-23 03:40 BRT
+- Atalho no ícone da marca do rodapé abre diretamente o painel administrativo em telas largas sem interferir no toggle móvel.
+- Replica o atalho condicional na variante TypeScript do shell para manter paridade entre os bundles.
+- Atualiza o tooltip do ícone e a versão exibida no rodapé para comunicar a nova release v0.1.138 das 03h40.
+
 ## v0.1.137 - 2025-10-23 03:10 BRT
 - Remove os atalhos de cabeçalho para os painéis administrativo e do usuário tanto no menu principal quanto no menu móvel.
 - Garante que o bundle JavaScript e a versão TypeScript do shell não recriem os atalhos dinamicamente.
