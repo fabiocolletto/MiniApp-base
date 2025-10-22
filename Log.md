@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.153 - 2025-10-22 19:29 BRT
+- Acrescenta espaçamento superior e inferior ao grid padrão dos painéis, afastando os widgets do cabeçalho e do encerramento do layout.
+- Atualiza o rodapé para comunicar a versão v0.1.153 das 19h29.
+
+## v0.1.152 - 2025-10-22 19:19 BRT
+- Ajusta a grade das ações rápidas do painel do usuário para duas colunas, com botões mais largos e compactos.
+- Atualiza o rodapé para comunicar a versão v0.1.152 das 19h19.
+
 ## v0.1.151 - 2025-10-22 19:09 BRT
 - Cria a classe utilitária `.button` com variáveis de estado e aplica o padrão aos callouts, ações rápidas, cartões da Mini App
   Store e botões de formulários, removendo estilos duplicados nas views.
@@ -10,7 +18,7 @@
 - Consolida o estilo de formulários com classes genéricas (`.form-field`, `.form-input`, `.form-message`) e refatora login,
   cadastro e painel do usuário para consumir os novos seletores enquanto preserva o comportamento existente.
 
--## v0.1.150 - 2025-10-23 16:20 BRT
+## v0.1.150 - 2025-10-23 16:20 BRT
 - Cria a classe base `.panel-action-tile` com variáveis compartilhadas para gradientes, bordas e transições, incluindo variantes
   compacta e de ícone para estados específicos.
 - Refatora `.home-dashboard__action-button`, `.admin-dashboard__user-action`, `.miniapp-store__action-button` e botões de
