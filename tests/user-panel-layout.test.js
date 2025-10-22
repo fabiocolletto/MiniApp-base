@@ -282,6 +282,29 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   );
   assert.ok(accountWidget, 'widget de dados principais não foi renderizado');
 
+  assert.equal(
+    accountWidget.dataset.state,
+    'empty',
+    'o widget de dados principais deve iniciar no estado "empty" sem sessão ativa',
+  );
+
+  const summary = findElement(accountWidget, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__summary'),
+  );
+  assert.ok(summary, 'o resumo dos dados principais deve estar presente');
+  assert.equal(summary.hidden, true, 'o resumo deve permanecer oculto enquanto não houver sessão ativa');
+
+  const editButton = findElement(summary, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__summary-edit'),
+  );
+  assert.ok(editButton, 'botão de edição do resumo deve existir');
+  assert.equal(editButton.disabled, true, 'botão de edição deve permanecer desabilitado sem sessão ativa');
+  assert.equal(
+    editButton.getAttribute('aria-expanded'),
+    'false',
+    'botão de edição deve indicar estado recolhido enquanto o formulário estiver oculto',
+  );
+
   const emptyState = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__empty-state'),
   );
@@ -289,6 +312,7 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
 
   const form = accountWidget.querySelector('form.user-form');
   assert.ok(form, 'formulário principal não foi encontrado');
+  assert.equal(form.hidden, true, 'formulário deve iniciar oculto até que a edição seja acionada');
 
   const themeSelect = findElement(form, (node) => node instanceof FakeElement && node.tagName === 'SELECT');
   assert.ok(themeSelect, 'seletor de tema precisa fazer parte do formulário');

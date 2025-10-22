@@ -1,92 +1,53 @@
 # Log
 
-## v0.1.126 - 2025-10-23 00:30 BRT
+## v0.1.127 - 2025-10-22
+- Realinha o atalho de alternância de tema no painel do usuário para que o botão fique alinhado à esquerda do widget.
+- Reintroduz um resumo compacto de nome, telefone e e-mail no widget de dados principais com botão de edição dedicado.
+- Adiciona expansão controlada do formulário completo de dados pessoais ao acionar o botão de edição do resumo.
 - Refina a largura padrão dos atalhos rápidos no painel do usuário para acomodar quatro botões alinhados sem quebrar o grid em tablets.
-- Atualiza o rodapé para exibir a versão v0.1.126 das 00h30.
 - Realiza testes visuais em tablet (768×1024 e 1024×768) confirmando o alinhamento dos atalhos em ambas as orientações.
-
-## v0.1.125 - 2025-10-22 23:50 BRT
 - Remove o widget de resumo da conta, mantendo apenas o controle de alternância de tema em destaque no painel do usuário.
 - Reorganiza a view para apresentar um único widget de preferências de tema com botão dedicado sincronizado com o formulário.
 - Atualiza o teste de layout para refletir a remoção dos atalhos extras e garantir que o botão de tema permaneça disponível.
 - Ajusta a largura do atalho de tema para que os botões ocupem um tamanho padrão capaz de acomodar quatro itens na mesma linha.
-- Atualiza o rodapé para exibir a versão v0.1.125 das 23h50.
-
-## v0.1.124 - 2025-10-22 22:30 BRT
 - Adiciona atalho dedicado para alternar entre temas claro e escuro no painel do usuário, exibindo o próximo estado e bloqueando o controle quando não houver sessão.
 - Sincroniza o botão de tema com o seletor existente, aplicando a escolha via gerenciador global e persistindo a preferência do usuário para acessos futuros.
 - Refina os estilos do atalho de tema na lista compacta de ações, mantendo contraste em ambos os modos e feedback consistente ao foco.
-- Atualiza o rodapé para exibir a versão v0.1.124 das 22h30.
-
-## v0.1.123 - 2025-10-22 21:40 BRT
 - Acrescenta ao painel inicial um widget dedicado aos mini-apps com lista dinâmica pronta para receber os itens disponíveis.
 - Estiliza o espaço reservado da lista de mini-apps mantendo o painel consistente com os demais widgets e comunicando o estado vazio.
 - Converte os atalhos destacados do painel do usuário em uma lista compacta para leitura rápida, mantendo cada ação com descrição acessível.
-- Atualiza o rodapé para exibir a versão v0.1.123 das 21h40.
-
-## v0.1.122 - 2025-10-22 19:15 BRT
 - Corrige o roteador em TypeScript para recarregar o painel inicial mesmo quando a rota "dashboard" já está ativa, evitando que o botão do cabeçalho pareça inoperante após visitar o painel administrativo.
 - Amplia os testes de bootstrap para cobrir o recarregamento do painel inicial quando a rota já estava ativa.
-- Atualiza o rodapé para exibir a versão v0.1.122 das 19h15.
-
-## v0.1.121 - 2025-10-22 18:05 BRT
 - Garante que o botão do cabeçalho para o painel inicial reabra a view mesmo quando a rota já estiver marcada como ativa.
-- Atualiza o rodapé para exibir a versão v0.1.121 das 18h05.
-
-## v0.1.120 - 2025-10-22 16:50 BRT
-- Reconstrói o painel do usuário com layout inspirado no administrativo, trazendo resumo da sessão, atalhos rápidos e formulário
-  compacto para atualizar dados principais.
+- Reconstrói o painel do usuário com layout inspirado no administrativo, trazendo resumo da sessão, atalhos rápidos e formulário compacto para atualizar dados principais.
 - Simplifica os campos e feedbacks do painel, adicionando seletor de tema integrado e mensagens de sessão ausente no estado vazio.
-- Atualiza os testes de layout do painel, remove a dependência do CEP sobre a ordem anterior e ajusta estilos para os novos
-  componentes.
-- Atualiza o rodapé para exibir a versão v0.1.120 das 16h50.
-
-## v0.1.119 - 2025-10-22 15:05 BRT
+- Atualiza os testes de layout do painel, remove a dependência do CEP sobre a ordem anterior e ajusta estilos para os novos componentes.
 - Corrige o cálculo dos offsets do cabeçalho e do rodapé usando arredondamento para cima e elimina a sobreposição do cartão de cadastro em telas baixas.
-- Atualiza o rodapé para exibir a versão v0.1.119 das 15h05.
 - Valida visualmente o painel de cadastro em orientação paisagem confirmando que o rodapé não cobre o botão "Criar conta".
-
-## v0.1.118 - 2025-10-22 14:20 BRT
 - Alinha o título principal do painel administrativo aplicando o mesmo padding lateral dos widgets para que o texto acompanhe o restante do conteúdo.
 - Mantém os widgets de indicadores e da tabela empilhados em uma única coluna em qualquer largura para abrir mais espaço aos dados detalhados.
-- Atualiza o rodapé para exibir a versão v0.1.118 das 14h20.
-
-## v0.1.117 - 2025-10-22 12:30 BRT
 - Acrescenta ao painel administrativo um widget de listagem com filtros, tabela expansível e edição automática dos dados principais, de perfil e preferências diretamente no painel.
 - Gera feedbacks visuais para o auto-save administrativo, mantendo a seleção ao filtrar e cobrindo o fluxo com testes usando DOM simulada.
 - Destaca sincronizações automáticas da memória com o novo estado visual “updated”, ajustando acessibilidade, estilos e testes do armazenamento.
-- Atualiza o rodapé para exibir a versão v0.1.117 das 12h30.
 - Mantém o feedback de auto-save visível após novas renderizações e garante que o resumo do toolbar destaque filtros ativos mesmo quando todos os usuários permanecem na listagem.
 - Amplia o teste do painel administrativo com DOM falso, aguardando a conclusão do auto-save, validando feedbacks, filtros e o seletor de tipo com o ambiente sem suporte a seletores por id.
-
-## v0.1.116 - 2025-10-22 06:45 BRT
 - Ajusta o painel de login para seguir o layout do cadastro, removendo a introdução e adicionando redirecionamento para criar conta.
 - Compartilha os estilos de redirecionamento entre login e cadastro para manter tipografia e ênfase alinhadas.
-- Atualiza o rodapé para exibir a versão v0.1.116 das 06h45.
-
-## v0.1.115 - 2025-10-22 05:35 BRT
 - Realinha o título e a introdução do painel inicial para acompanhar a largura dos widgets e manter as bordas alinhadas.
 - Reestrutura o painel administrativo, removendo callouts e listas anteriores para seguir o modelo do painel inicial com título e introdução focados em gestão.
 - Adiciona um widget dedicado à gestão de usuários com indicadores resumidos e ações rápidas conectadas ao roteador central.
 - Converte os preenchimentos dinâmicos do `<main>` para unidades absolutas, garantindo o afastamento do cabeçalho e do rodapé fixos em todos os painéis.
 - Valida visualmente os painéis inicial, administrativo e do usuário confirmando que nenhum conteúdo fica encoberto após as correções.
-- Atualiza o rodapé para exibir a versão v0.1.115 das 05h35.
-
-## v0.1.114 - 2025-10-22 03:15 BRT
 - Reorganiza os botões do cabeçalho em um menu de painéis com abertura controlada e suporte a teclado e leitores de tela.
 - Sincroniza o comportamento do novo menu entre os módulos JS e TS, garantindo fechamento automático ao navegar pelos painéis.
-- Atualiza os estilos e o rodapé para exibir a versão v0.1.114 das 03h15.
-
-## v0.1.113 - 2025-10-22 02:05 BRT
+- Atualiza os estilos do cabeçalho para acompanhar o novo menu de painéis.
 - Adiciona ao cabeçalho botões dedicados para abrir rapidamente os painéis administrativo e do usuário.
 - Expande o menu móvel de acesso rápido com atalhos equivalentes aos novos botões do cabeçalho.
 - Padroniza os estilos dos botões no CSS principal utilizando variáveis para que herdem as mesmas propriedades base.
-- Atualiza o rodapé para exibir a versão v0.1.113 das 02h05.
-
-## v0.1.112 - 2025-10-22 00:45 BRT
 - Substitui o painel administrativo por um layout inspirado no painel inicial com cards informativos, callouts e atalhos alinhados ao painel do usuário.
 - Compartilha os estilos do painel inicial com o novo painel administrativo e remove a tabela legada para manter tokens visuais unificados.
-- Atualiza o rodapé para exibir a versão v0.1.112 das 00h45.
+- Consolida as alterações do dia 22 em uma única entrada do Log sem registro de horários.
+- Atualiza o rodapé para refletir a versão consolidada do dia 22.
 
 ## v0.1.111 - 2025-10-21 23:30 BRT
 - Atualiza o painel inicial para reutilizar o layout, os tokens visuais e os feedbacks do painel do usuário com cards informativos e atalhos rápidos.
@@ -685,9 +646,3 @@
 - Atualização do README para anunciar o início do novo projeto colaborativo.
 - Criação do `AGENTS.md` com as diretrizes que devem ser seguidas antes de cada tarefa.
 - Criação do `Log.md` para registrar versões e alterações futuras.
-# # Log
-#
-# ## v0.1.114 - 2025-10-22 03:15 BRT
-# - Reorganiza os botões do cabeçalho em um menu de painéis com abertura controlada e suporte a teclado e leitores de tela.
-# - Sincroniza o comportamento do novo menu entre os módulos JS e TS, garantindo fechamento automático ao navegar pelos painéis.
-# - Atualiza os estilos e o rodapé para exibir a versão v0.1.114 das 03h15.
