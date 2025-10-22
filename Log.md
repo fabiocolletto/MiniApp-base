@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.156 - 2025-10-23 17:30 BRT
+- Ajusta o feedback do painel do usuário para manter aria-live ativo e alternar os papéis ARIA entre alertas e status conforme o tipo de mensagem.
+- Garante que a limpeza do feedback preserve a remoção de atributos e conteúdo ao reaproveitar `showFeedback('', {})`.
+- Atualiza o rodapé para comunicar a versão v0.1.156 das 17h30.
+
 ## v0.1.155 - 2025-10-23 17:00 BRT
 - Remove os títulos e parágrafos introdutórios dos painéis de boas-vindas, início, administração, login, cadastro e log para que o conteúdo visível seja formado apenas pelos widgets.
 - Reestrutura os estados de sucesso do cadastro, a view legal e a tela de erro para encapsular as mensagens em cartões `surface-card`, preservando alinhamentos e acessibilidade com rótulos de `aria-label`.

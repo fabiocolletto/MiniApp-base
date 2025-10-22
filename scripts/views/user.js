@@ -387,6 +387,7 @@ export function renderUserPanel(viewRoot) {
   const feedbackElement = document.createElement('p');
   feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
   feedbackElement.hidden = true;
+  feedbackElement.setAttribute('aria-live', 'polite');
 
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
@@ -701,10 +702,12 @@ export function renderUserPanel(viewRoot) {
     if (!message) {
       feedbackElement.hidden = true;
       feedbackElement.textContent = '';
+      feedbackElement.removeAttribute('role');
       return;
     }
 
     feedbackElement.hidden = false;
+    feedbackElement.setAttribute('role', isError ? 'alert' : 'status');
     feedbackElement.textContent = message;
 
     if (isError) {
