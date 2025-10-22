@@ -1,4 +1,4 @@
-import test, { mock } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { setupFakeDom } from './helpers/fake-dom.js';
@@ -77,19 +77,15 @@ const initialUsers = [
   },
 ];
 
-test('renderAdmin lista usuários com filtros, expansão e auto-save', async (t) => {
+test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) => {
   const teardownDom = setupFakeDom();
   let viewRoot;
+
   t.after(() => {
     if (viewRoot) {
       runViewCleanup(viewRoot);
     }
     teardownDom();
-  });
-
-  mock.timers.enable({ apis: ['setTimeout'] });
-  t.after(() => {
-    mock.timers.reset();
   });
 
   const userStoreModule = await import('../scripts/data/user-store.js');
@@ -117,109 +113,109 @@ test('renderAdmin lista usuários com filtros, expansão e auto-save', async (t)
   viewRoot = document.createElement('div');
   renderAdmin(viewRoot);
 
-  const layout = viewRoot.querySelector('.admin-dashboard__layout');
-  assert.ok(layout, 'layout administrativo deve ser renderizado');
+  const widgets = viewRoot.querySelectorAll('.user-panel__widget');
+  assert.equal(widgets.length, 2, 'painel deve começar com dois widgets principais');
 
-  const table = viewRoot.querySelector('.admin-user-table');
-  assert.ok(table, 'tabela de usuários não foi montada');
+  const usersWidget = viewRoot.querySelector('.admin-dashboard__widget--users');
+  assert.ok(usersWidget, 'widget de usuários deve existir');
 
-  const toolbarSummary = viewRoot.querySelector('.admin-user-toolbar__summary');
-  assert.ok(toolbarSummary, 'resumo do toolbar é obrigatório');
-  assert.match(toolbarSummary.textContent ?? '', /Exibindo 2 usuários/i);
+  const userTable = usersWidget.querySelector('.admin-user-table');
+  assert.ok(userTable, 'tabela de usuários não foi renderizada');
+
+  const userRows = Array.from(userTable.querySelectorAll('.admin-user-table__row'));
+  assert.equal(userRows.length, savedUsers.length, 'tabela deve listar todos os usuários cadastrados');
 
   const firstUser = savedUsers[0];
-  const summaryRows = Array.from(viewRoot.querySelectorAll('.admin-user-table__row'));
-  const targetRow = summaryRows.find((row) => {
-    const nameCell = row.querySelector('.admin-user-table__cell--name');
-    return nameCell?.textContent?.includes(firstUser.name);
+  const firstRow = userRows.find((row) => row.dataset.userId === String(firstUser.id));
+  assert.ok(firstRow, 'linha do usuário inicial não encontrada');
+
+  const typeCell = firstRow.querySelector('.admin-user-table__cell--type');
+  assert.equal(typeCell?.textContent, 'Administrador', 'tipo do usuário deve aparecer na linha principal');
+
+  const toggleButton = firstRow.querySelector('.admin-user-table__toggle');
+  assert.ok(toggleButton, 'botão de expansão do usuário não disponível');
+  toggleButton.dispatchEvent({ type: 'click' });
+
+  const detailsRow = Array.from(userTable.querySelectorAll('.admin-user-table__details-row')).find(
+    (row) => row.dataset.userId === String(firstUser.id),
+  );
+  assert.ok(detailsRow, 'linha de detalhes do usuário não encontrada');
+  assert.equal(detailsRow.hidden, false, 'detalhes do usuário devem ficar visíveis após expansão');
+
+  const summaryItems = Array.from(detailsRow.querySelectorAll('.user-dashboard__summary-item'));
+  const emailItem = summaryItems.find((item) => {
+    const label = item.querySelector('.user-dashboard__summary-label');
+    return label?.textContent === 'E-mail principal';
   });
-  assert.ok(targetRow, 'linha do usuário não encontrada');
-  const firstToggle = targetRow.querySelector('.admin-user-table__toggle');
-  assert.ok(firstToggle, 'botão de expansão não encontrado');
-  firstToggle.dispatchEvent({ type: 'click' });
-  await Promise.resolve();
+  const emailValue = emailItem?.querySelector('.user-dashboard__summary-value')?.textContent ?? '';
+  assert.equal(emailValue, 'ana@example.com', 'detalhes devem incluir o e-mail principal sincronizado');
 
-  const detailRows = Array.from(viewRoot.querySelectorAll('.admin-user-table__details-row'));
-  const detailInputs = detailRows.flatMap((row) => Array.from(row.querySelectorAll('input')));
-  const expectedId = `admin-user-${firstUser.id}-name`;
-  assert.ok(
-    detailInputs.some((input) => input.id === expectedId),
-    `linha de detalhes não encontrada. IDs disponíveis: ${detailInputs
-      .map((input) => input.id || '<sem id>')
-      .join(', ')}`,
+  const miniAppsWidget = viewRoot.querySelector('.admin-dashboard__widget--miniapps');
+  assert.ok(miniAppsWidget, 'widget de miniapps não foi exibido');
+
+  const miniAppTable = miniAppsWidget.querySelector('.admin-miniapp-table');
+  assert.ok(miniAppTable, 'tabela de miniapps deve ser renderizada');
+
+  const miniAppRows = Array.from(miniAppTable.querySelectorAll('.admin-miniapp-table__row'));
+  assert.ok(miniAppRows.length > 0, 'é esperado ao menos um mini-app configurado');
+
+  const firstAppRow = miniAppRows[0];
+  const appId = firstAppRow.dataset.appId;
+  assert.ok(appId, 'linha de mini-app precisa expor data-app-id');
+
+  const statusBadgeBefore = firstAppRow.querySelector('.admin-miniapp-table__status-badge');
+  const statusBefore = statusBadgeBefore?.textContent ?? '';
+
+  const miniAppToggle = firstAppRow.querySelector('.admin-user-table__toggle');
+  assert.ok(miniAppToggle, 'botão de expansão do mini-app não encontrado');
+  miniAppToggle.dispatchEvent({ type: 'click' });
+
+  let appDetailsRow = Array.from(miniAppTable.querySelectorAll('.admin-miniapp-table__details-row')).find(
+    (row) => row.dataset.appId === appId,
   );
-  const nameInput = detailInputs.find((input) => input.id === expectedId);
-  assert.ok(nameInput, 'campo de nome do usuário não foi renderizado');
-  const updatedName = `${firstUser.name} Atualizada`;
-  nameInput.value = updatedName;
-  nameInput.dispatchEvent({ type: 'input', target: nameInput });
+  assert.ok(appDetailsRow, 'detalhes do mini-app não foram renderizados');
+  assert.equal(appDetailsRow.hidden, false, 'detalhes do mini-app devem ficar visíveis');
 
-  mock.timers.tick(500);
-  await new Promise((resolve) => setImmediate(resolve));
-  await Promise.resolve();
+  const statusSelect = appDetailsRow.querySelector('.admin-miniapp-table__status-select');
+  assert.ok(statusSelect, 'controle de status do mini-app é obrigatório');
+  const nextStatus = Array.from(statusSelect.children).find((option) => option.value !== statusSelect.value);
+  assert.ok(nextStatus, 'é necessário possuir pelo menos duas opções de status');
+  statusSelect.value = nextStatus.value;
+  statusSelect.dispatchEvent({ type: 'change', target: statusSelect });
 
-  const usersAfterUpdate = userStoreModule.getUsers();
-  const updatedUser = usersAfterUpdate.find((user) => user.id === firstUser.id);
-  assert.ok(updatedUser, 'usuário atualizado deve existir');
-  assert.equal(updatedUser?.name, updatedName);
-
-  const feedbackList = Array.from(viewRoot.querySelectorAll('.admin-user-details__feedback'));
-  const feedback = feedbackList.find((element) => element.dataset.userId === String(firstUser.id));
-  assert.ok(feedback, 'feedback inline deve existir');
-
-  await new Promise((resolve, reject) => {
-    let attempts = 0;
-    const check = () => {
-      if (feedback.dataset.state === 'success') {
-        resolve();
-        return;
-      }
-      if (attempts >= 5) {
-        reject(new Error(`estado do feedback: ${feedback.dataset.state ?? '<indefinido>'}`));
-        return;
-      }
-      attempts += 1;
-      setImmediate(check);
-    };
-    check();
-  });
-
-  assert.equal(feedback.dataset.state, 'success');
-  assert.match(feedback.textContent ?? '', /Dados atualizados automaticamente/i);
-
-  const searchInput = viewRoot.querySelector('.admin-user-toolbar__search');
-  assert.ok(searchInput, 'campo de busca não encontrado');
-  const secondUser = savedUsers[1];
-  searchInput.value = secondUser.name.split(' ')[0];
-  searchInput.dispatchEvent({ type: 'input', target: searchInput });
-
-  mock.timers.tick(50);
-
-  const filteredRows = viewRoot.querySelectorAll('.admin-user-table__row');
-  assert.equal(filteredRows.length, 2, 'filtro por busca mantém o usuário expandido visível');
-  const filteredNames = Array.from(filteredRows).map((row) => {
-    const cell = row.querySelector('.admin-user-table__cell--name');
-    return cell?.textContent ?? '';
-  });
-  assert.ok(
-    filteredNames.some((name) => name.includes(firstUser.name)),
-    'usuário expandido deve permanecer na listagem após filtrar',
+  const updatedRow = Array.from(miniAppTable.querySelectorAll('.admin-miniapp-table__row')).find(
+    (row) => row.dataset.appId === appId,
   );
-  assert.ok(
-    filteredNames.some((name) => name.includes(secondUser.name)),
-    'resultado do filtro por busca deve estar visível',
+  assert.ok(updatedRow, 'linha do mini-app deve persistir após atualização');
+  const statusBadgeAfter = updatedRow.querySelector('.admin-miniapp-table__status-badge');
+  assert.notEqual(statusBadgeAfter?.textContent, statusBefore, 'status exibido deve refletir a alteração');
+
+  appDetailsRow = Array.from(miniAppTable.querySelectorAll('.admin-miniapp-table__details-row')).find(
+    (row) => row.dataset.appId === appId,
   );
-  assert.match(toolbarSummary.textContent ?? '', /Filtro: “Bruno”/i);
 
-  const typeSelect = Array.from(viewRoot.querySelectorAll('select')).find(
-    (element) => element.name === 'admin-user-filter-type'
-  );
-  assert.ok(typeSelect, 'filtro por tipo deve existir');
-  typeSelect.value = 'colaborador';
-  typeSelect.dispatchEvent({ type: 'change', target: typeSelect });
+  const accessCheckbox = appDetailsRow?.querySelector('input[value="usuario"]');
+  if (accessCheckbox) {
+    const previousValue = accessCheckbox.checked;
+    accessCheckbox.checked = !previousValue;
+    accessCheckbox.dispatchEvent({ type: 'change', target: accessCheckbox });
 
-  mock.timers.tick(50);
-
-  const rowsAfterTypeFilter = viewRoot.querySelectorAll('.admin-user-table__row');
-  assert.equal(rowsAfterTypeFilter.length, 2, 'usuário expandido deve continuar visível junto ao filtro');
+    const refreshedRow = Array.from(miniAppTable.querySelectorAll('.admin-miniapp-table__row')).find(
+      (row) => row.dataset.appId === appId,
+    );
+    const accessCell = refreshedRow?.querySelector('.admin-miniapp-table__cell--access');
+    assert.ok(accessCell, 'coluna de acesso deve continuar acessível');
+    const chips = Array.from(accessCell?.querySelectorAll('.admin-miniapp-table__access-chip') ?? []);
+    if (chips.length > 0) {
+      assert.ok(
+        chips.some((chip) => (chip.textContent ?? '').trim() !== ''),
+        'resumo de acesso deve listar os níveis habilitados',
+      );
+    } else {
+      const emptyState = accessCell
+        ?.querySelector('.admin-miniapp-table__access-empty')
+        ?.textContent?.trim();
+      assert.ok(emptyState, 'estado vazio de acesso precisa informar ausência de permissões');
+    }
+  }
 });

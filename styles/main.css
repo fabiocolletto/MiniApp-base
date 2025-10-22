@@ -2328,6 +2328,19 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   border-bottom: 0.06rem solid var(--color-border-muted);
 }
 
+.admin-user-table__details-panel {
+  padding: clamp(0.85rem, 2.4vw, 1.35rem);
+  border-radius: 0.95rem;
+  border: 0.06rem solid rgba(var(--color-accent-rgb), 0.2);
+  background: rgba(var(--color-accent-rgb), 0.08);
+}
+
+.admin-user-table__details-intro {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+}
+
 .admin-user-table__empty-row {
   background: rgba(var(--color-warm-rgb), 0.03);
 }
@@ -2337,6 +2350,201 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   text-align: center;
   font-size: var(--panel-font-size-base);
   color: var(--color-text-muted);
+}
+
+.admin-miniapp-table-container {
+  border-radius: var(--panel-radius);
+  border: 0.06rem solid var(--color-border-muted);
+  background: var(--color-bg-card);
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 0.4rem 1.4rem rgba(var(--color-warm-rgb), 0.08);
+}
+
+.admin-miniapp-table {
+  width: 100%;
+  min-width: 38rem;
+  border-collapse: collapse;
+}
+
+.admin-miniapp-table__row[data-state='expanded'] {
+  background: rgba(var(--color-accent-rgb), 0.06);
+}
+
+.admin-miniapp-table__cell {
+  vertical-align: top;
+}
+
+.admin-miniapp-table__cell--app {
+  width: clamp(16rem, 42%, 26rem);
+}
+
+.admin-miniapp-table__app-name {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-miniapp-table__app-meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
+.admin-miniapp-table__access-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-miniapp-table__access-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-text-secondary);
+  font-size: var(--panel-font-size-compact);
+  font-weight: 600;
+}
+
+.admin-miniapp-table__access-empty {
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-muted);
+}
+
+.admin-miniapp-table__status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-text-secondary);
+  font-size: var(--panel-font-size-compact);
+  font-weight: 600;
+}
+
+.admin-miniapp-table__details-row {
+  background: rgba(var(--color-warm-rgb), 0.05);
+}
+
+.admin-miniapp-table__details-cell {
+  padding: 1.2rem 1.4rem;
+  border-bottom: 0.06rem solid var(--color-border-muted);
+}
+
+.admin-miniapp-table__details {
+  display: grid;
+  gap: clamp(0.75rem, 2.1vw, 1.25rem);
+}
+
+.admin-miniapp-table__details-header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-miniapp-table__details-title {
+  margin: 0;
+  font-size: var(--panel-font-size-heading);
+  color: var(--color-text-secondary);
+}
+
+.admin-miniapp-table__details-subtitle {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
+.admin-miniapp-table__details-description {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+  line-height: 1.55;
+}
+
+.admin-miniapp-table__controls {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.2rem);
+  align-items: start;
+}
+
+@media (min-width: 52rem) {
+  .admin-miniapp-table__controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-miniapp-table__access-fieldset {
+  margin: 0;
+  padding: clamp(0.6rem, 1.8vw, 1rem);
+  border-radius: 0.85rem;
+  border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
+  background: rgba(var(--color-accent-rgb), 0.06);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-miniapp-table__legend {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.admin-miniapp-table__access-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.admin-miniapp-table__access-checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: rgba(var(--color-accent-rgb), 0.8);
+}
+
+.admin-miniapp-table__access-label {
+  font-size: var(--panel-font-size-base);
+}
+
+.admin-miniapp-table__status-field {
+  display: grid;
+  gap: 0.45rem;
+  padding: clamp(0.6rem, 1.8vw, 1rem);
+  border-radius: 0.85rem;
+  border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
+  background: rgba(var(--color-accent-rgb), 0.06);
+}
+
+.admin-miniapp-table__status-label {
+  font-size: var(--panel-font-size-compact);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.admin-miniapp-table__status-select {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 0.06rem solid var(--color-border-muted);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.admin-miniapp-table__status-select:focus {
+  outline: none;
+  border-color: rgba(var(--color-accent-rgb), 0.45);
+  box-shadow: 0 0 0 0.18rem rgba(var(--color-accent-rgb), 0.18);
 }
 
 .admin-user-details {

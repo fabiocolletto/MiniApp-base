@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.129 - 2025-10-22 10:12 BRT
+- Reconstrói o painel administrativo com dois widgets principais inspirados no layout do painel do usuário.
+- Disponibiliza a listagem de usuários com expansão para resumo dos dados principais e preferências sincronizadas.
+- Adiciona widget de gestão de mini-apps com controles de status e níveis de acesso por tipo de usuário.
+- Atualiza os estilos para os novos detalhes do painel administrativo e para o gerenciamento de mini-apps.
+- Revê o teste do painel administrativo validando os novos widgets e interações essenciais.
+
 ## v0.1.128 - 2025-10-22 19:10 BRT
 - Adiciona o painel "Mini App Store" com título, introdução e vitrine listando os miniapps disponíveis com dados principais.
 - Reaproveita os estilos existentes dos painéis inicial e do usuário na Mini App Store, evitando novos seletores exclusivos.
