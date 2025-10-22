@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.149 - 2025-10-23 15:10 BRT
+- Unifica os painéis de Início, Administração, Usuário e Mini App Store com a nova classe base `dashboard-view`, concentrando alinhamentos, preenchimentos e espaçamentos compartilhados.
+- Substitui sobrescritas diretas de padding por variáveis CSS específicas de cada painel para manter apenas diferenças reais como grades e espaçamentos laterais.
+- Atualiza as views JavaScript para incluir a classe base consolidada e revisa a responsividade nos breakpoints de 360px, 768px e 1280px confirmando que o layout permanece íntegro.
+
 ## v0.1.148 - 2025-10-23 13:50 BRT
 - Unifica os estilos compartilhados de login e cadastro em seletores neutros para títulos, campos de telefone e redirecionamentos.
 - Atualiza os painéis de cadastro e login para usar as novas classes unificadas, removendo seletores redundantes.

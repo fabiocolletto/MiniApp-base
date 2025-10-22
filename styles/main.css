@@ -1489,36 +1489,30 @@ footer {
   text-align: center;
 }
 
-.view--greeting {
-  margin: 0;
-  background: var(--color-bg-card);
-}
-
-.view--home {
+.dashboard-view {
+  --dashboard-padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  --dashboard-padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
+  --dashboard-padding-block-end: calc(var(--dashboard-padding-block-start) + var(--panel-gap));
+  --dashboard-grid-template-rows: auto;
   align-content: start;
   align-items: start;
   justify-items: stretch;
   gap: var(--panel-gap);
   text-align: left;
   min-height: 100%;
+  padding-inline: var(--dashboard-padding-inline);
+  padding-block-start: var(--dashboard-padding-block-start);
+  padding-block-end: var(--dashboard-padding-block-end);
+  grid-template-rows: var(--dashboard-grid-template-rows);
 }
 
-.view.view--home {
-  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
-  padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
-  padding-block-end: calc(clamp(1.25rem, 3.6vw, 2.5rem) + var(--panel-gap));
-}
-
-.view.view--admin {
-  padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+.view--greeting {
+  margin: 0;
+  background: var(--color-bg-card);
 }
 
 .miniapp-store-view {
-  align-content: start;
-  align-items: start;
-  justify-items: stretch;
-  gap: var(--panel-gap);
-  text-align: left;
+  --dashboard-grid-template-rows: auto;
 }
 
 .miniapp-store-view .miniapp-store__layout {
@@ -1749,26 +1743,13 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .view--admin {
-  gap: var(--panel-gap);
-  grid-template-rows: auto auto minmax(0, 1fr);
-  align-content: start;
-  align-items: start;
-  justify-items: stretch;
-  text-align: left;
+  --dashboard-padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+  --dashboard-grid-template-rows: auto auto minmax(0, 1fr);
 }
 
 .view--user {
-  gap: var(--panel-gap);
-  grid-template-rows: minmax(0, 1fr);
-  align-content: start;
-  align-items: start;
-  justify-items: stretch;
-}
-
-.view.view--user {
-  padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
-  padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
-  padding-block-end: calc(clamp(1.25rem, 3.6vw, 2.5rem) + var(--panel-gap));
+  --dashboard-padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+  --dashboard-grid-template-rows: minmax(0, 1fr);
 }
 
 .auth-view {

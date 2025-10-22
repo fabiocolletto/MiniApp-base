@@ -243,7 +243,7 @@ export function renderMiniAppStore(viewRoot) {
     }
   });
 
-  viewRoot.className = 'card view view--user miniapp-store-view';
+  viewRoot.className = 'card view dashboard-view view--user miniapp-store-view';
   viewRoot.dataset.view = 'miniapps';
 
   const layout = document.createElement('div');
