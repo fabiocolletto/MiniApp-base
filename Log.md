@@ -1,10 +1,16 @@
 # Log
 
-## v0.1.125 - 2025-10-22 23:10 BRT
+## v0.1.126 - 2025-10-23 00:30 BRT
+- Refina a largura padrão dos atalhos rápidos no painel do usuário para acomodar quatro botões alinhados sem quebrar o grid em tablets.
+- Atualiza o rodapé para exibir a versão v0.1.126 das 00h30.
+- Realiza testes visuais em tablet (768×1024 e 1024×768) confirmando o alinhamento dos atalhos em ambas as orientações.
+
+## v0.1.125 - 2025-10-22 23:50 BRT
 - Remove o widget de resumo da conta, mantendo apenas o controle de alternância de tema em destaque no painel do usuário.
 - Reorganiza a view para apresentar um único widget de preferências de tema com botão dedicado sincronizado com o formulário.
 - Atualiza o teste de layout para refletir a remoção dos atalhos extras e garantir que o botão de tema permaneça disponível.
-- Atualiza o rodapé para exibir a versão v0.1.125 das 23h10.
+- Ajusta a largura do atalho de tema para que os botões ocupem um tamanho padrão capaz de acomodar quatro itens na mesma linha.
+- Atualiza o rodapé para exibir a versão v0.1.125 das 23h50.
 
 ## v0.1.124 - 2025-10-22 22:30 BRT
 - Adiciona atalho dedicado para alternar entre temas claro e escuro no painel do usuário, exibindo o próximo estado e bloqueando o controle quando não houver sessão.
