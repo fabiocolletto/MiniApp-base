@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.158 - 2025-10-23 18:30 BRT
+- Substitui o grid do catálogo da Mini App Store pela configuração padrão ao remover a classe personalizada da lista.
+- Ajusta os estilos da view para manter espaçamentos próprios sem sobrescrever as colunas responsivas herdadas.
+- Atualiza o rodapé para comunicar a versão v0.1.158 das 18h30.
+
 ## v0.1.157 - 2025-10-23 18:00 BRT
 - Alinha as validações do painel do usuário para focar e marcar como inválidos os campos de telefone e senha em caso de erro.
 - Limpa os estados de `aria-invalid` ao reiniciar o feedback ou após validar corretamente, evitando sinalizações persistentes.

@@ -1738,9 +1738,8 @@ footer {
   color: var(--color-error-text);
 }
 
-.miniapp-store-view .miniapp-store__miniapps {
+.miniapp-store-view .home-dashboard__miniapps {
   padding: var(--space-md);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-md);
   justify-items: stretch;
   align-content: stretch;
@@ -1847,12 +1846,6 @@ footer {
   --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.26);
   --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.26);
   --panel-action-shadow: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.18);
-}
-
-@media (max-width: 48rem) {
-  .miniapp-store-view .miniapp-store__miniapps {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 40rem) {
