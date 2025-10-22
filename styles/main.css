@@ -2488,10 +2488,14 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   list-style: none;
   display: grid;
   gap: clamp(0.45rem, 1.6vw, 0.75rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  justify-content: center;
 }
 
 .user-dashboard__quick-action {
   margin: 0;
+  width: min(100%, 11rem);
+  justify-self: center;
 }
 
 .user-dashboard__quick-action-button {
