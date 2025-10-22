@@ -242,18 +242,7 @@ function findElement(root, predicate) {
   return null;
 }
 
-function isDescendant(node, ancestor) {
-  let current = node;
-  while (current) {
-    if (current === ancestor) {
-      return true;
-    }
-    current = current.parentNode;
-  }
-  return false;
-}
-
-test('renderUserPanel mantém sessão dentro do cartão de acesso', async (t) => {
+test('renderUserPanel monta resumo e formulário principais com atalhos ativos', async (t) => {
   const fakeDocument = new FakeDocument();
   globalThis.document = fakeDocument;
   globalThis.HTMLElement = FakeElement;
@@ -272,22 +261,37 @@ test('renderUserPanel mantém sessão dentro do cartão de acesso', async (t) =>
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
   );
   assert.ok(layout, 'layout principal não foi renderizado');
-  assert.equal(layout.children.length, 2, 'layout deve manter apenas dois widgets principais');
 
-  const primaryForm = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-panel__widget--access'),
+  const overviewWidget = layout.children.find(
+    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--overview'),
   );
-  assert.ok(primaryForm, 'card de acesso não foi renderizado');
+  assert.ok(overviewWidget, 'widget de resumo não foi renderizado');
 
-  const accessState = findElement(primaryForm, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-details__access-state'),
-  );
-  assert.ok(accessState, 'sessão e segurança deve estar dentro do cartão de acesso');
-  assert.ok(isDescendant(accessState, primaryForm), 'sessão e segurança deve continuar no cartão de acesso');
+  const statsList = overviewWidget.querySelector('.admin-dashboard__user-stats');
+  assert.ok(statsList, 'indicadores principais devem estar presentes');
+  assert.equal(statsList.children.length, 4, 'o resumo deve apresentar quatro indicadores');
 
-  const actionBar = findElement(accessState, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-account__actions'),
+  const actionGrid = overviewWidget.querySelector('.user-dashboard__action-grid');
+  assert.ok(actionGrid, 'atalhos rápidos precisam estar visíveis no widget de resumo');
+
+  const logoutButton = findElement(actionGrid, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__quick-action--logout'),
   );
-  assert.ok(actionBar, 'ações da sessão precisam continuar disponíveis');
-  assert.strictEqual(actionBar.parentNode, accessState);
+  assert.ok(logoutButton, 'botão de encerrar sessão deve estar disponível no painel');
+
+  const accountWidget = layout.children.find(
+    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--account'),
+  );
+  assert.ok(accountWidget, 'widget de dados principais não foi renderizado');
+
+  const emptyState = findElement(accountWidget, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__empty-state'),
+  );
+  assert.ok(emptyState, 'mensagem de ausência de sessão deve estar disponível');
+
+  const form = accountWidget.querySelector('form.user-form');
+  assert.ok(form, 'formulário principal não foi encontrado');
+
+  const themeSelect = findElement(form, (node) => node instanceof FakeElement && node.tagName === 'SELECT');
+  assert.ok(themeSelect, 'seletor de tema precisa fazer parte do formulário');
 });

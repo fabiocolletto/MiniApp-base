@@ -2,11 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeCep, lookupCep } from '../scripts/utils/cep-service.js';
-import { PROFILE_ADDRESS_FIELD_SEQUENCE } from '../scripts/views/user.js';
-
-test('PROFILE_ADDRESS_FIELD_SEQUENCE mantém o CEP como primeiro item', () => {
-  assert.equal(PROFILE_ADDRESS_FIELD_SEQUENCE[0], 'zip');
-});
 
 test('normalizeCep remove caracteres não numéricos', () => {
   assert.equal(normalizeCep('12.345-678'), '12345678');

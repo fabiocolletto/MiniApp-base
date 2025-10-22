@@ -1,5 +1,4 @@
 import {
-  deleteUser,
   subscribeUsers,
   updateUser,
   sanitizeUserThemePreference,
@@ -9,79 +8,157 @@ import { setThemePreference } from '../theme/theme-manager.js';
 import { clearActiveUser, getActiveUserId, subscribeSession } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
-import { normalizeCep, lookupCep } from '../utils/cep-service.js';
-import { createInputField, createTextareaField } from './shared/form-fields.js';
-import { createPasswordToggleIcon } from './shared/password-toggle-icon.js';
-import {
-  formatPhoneNumberForDisplay,
-  validatePhoneNumber,
-  validatePasswordStrength,
-} from './shared/validation.js';
+import { createInputField } from './shared/form-fields.js';
+import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
 
-const BASE_CLASSES = 'card view view--user';
+const BASE_CLASSES = 'card view view--user user-dashboard';
+
 const USER_TYPE_LABELS = {
   administrador: 'Administrador',
   colaborador: 'Colaborador',
   usuario: 'Usuário',
 };
 
-const updatedAtFormatter = new Intl.DateTimeFormat('pt-BR', {
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
   timeStyle: 'short',
 });
 
-function normalizeUserType(value) {
-  const normalized = String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase();
-
-  if (normalized === 'admin' || normalized === 'administradora') {
-    return 'administrador';
+function navigateTo(view) {
+  if (!view) {
+    return;
   }
 
-  if (normalized === 'colaboradora') {
-    return 'colaborador';
-  }
-
-  if (USER_TYPE_LABELS[normalized]) {
-    return normalized;
-  }
-
-  return 'usuario';
+  eventBus.emit('app:navigate', { view });
 }
 
-function formatUserTypeLabel(value) {
-  const normalized = normalizeUserType(value);
-  return USER_TYPE_LABELS[normalized] || USER_TYPE_LABELS.usuario;
-}
-
-function formatUpdatedAtLabel(value) {
-  if (!value) {
-    return 'Nunca atualizado';
+function formatDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return dateFormatter.format(value);
   }
 
-  const dateValue = value instanceof Date ? value : new Date(value);
-
-  if (!dateValue || Number.isNaN(dateValue.getTime())) {
-    return 'Nunca atualizado';
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return dateFormatter.format(parsed);
+    }
   }
 
-  return `Atualizado em ${updatedAtFormatter.format(dateValue)}`;
+  return '—';
 }
-export const PROFILE_ADDRESS_FIELD_SEQUENCE = [
-  'zip',
-  'document',
-  'street',
-  'number',
-  'complement',
-  'district',
-  'city',
-  'state',
-  'country',
-  'notes',
-];
+
+function formatThemeLabel(preference) {
+  const normalized = sanitizeUserThemePreference(preference);
+
+  switch (normalized) {
+    case 'light':
+      return 'Tema claro';
+    case 'dark':
+      return 'Tema escuro';
+    default:
+      return 'Tema automático';
+  }
+}
+
+function formatUserTypeLabel(type) {
+  if (typeof type !== 'string') {
+    return USER_TYPE_LABELS.usuario;
+  }
+
+  const normalized = type.trim().toLowerCase();
+  return USER_TYPE_LABELS[normalized] ?? USER_TYPE_LABELS.usuario;
+}
+
+function createStatItem(label) {
+  const item = document.createElement('li');
+  item.className = 'admin-dashboard__user-stat user-dashboard__stat';
+
+  const valueElement = document.createElement('span');
+  valueElement.className = 'admin-dashboard__user-stat-value';
+  valueElement.textContent = '—';
+
+  const labelElement = document.createElement('span');
+  labelElement.className = 'admin-dashboard__user-stat-label';
+  labelElement.textContent = label;
+
+  item.append(valueElement, labelElement);
+
+  return { item, valueElement };
+}
+
+function normalizePreferences(preferences) {
+  const defaults = getDefaultUserPreferences();
+  const normalized = { ...defaults };
+
+  if (preferences && typeof preferences === 'object') {
+    if (Object.prototype.hasOwnProperty.call(preferences, 'theme')) {
+      normalized.theme = sanitizeUserThemePreference(preferences.theme);
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeUserData(user) {
+  if (!user || typeof user !== 'object') {
+    return null;
+  }
+
+  const { id } = user;
+  if (id == null) {
+    return null;
+  }
+
+  const name = typeof user.name === 'string' ? user.name.trim() : '';
+  const phone = typeof user.phone === 'string' ? user.phone.trim() : '';
+  const profileEmail = typeof user?.profile?.email === 'string' ? user.profile.email.trim() : '';
+
+  const createdAtRaw = user.createdAt instanceof Date ? user.createdAt : new Date(user.createdAt);
+  const updatedAtRaw = user.updatedAt instanceof Date ? user.updatedAt : new Date(user.updatedAt);
+
+  const createdAt = createdAtRaw instanceof Date && !Number.isNaN(createdAtRaw.getTime()) ? createdAtRaw : null;
+  const updatedAt = updatedAtRaw instanceof Date && !Number.isNaN(updatedAtRaw.getTime()) ? updatedAtRaw : null;
+
+  const userType = typeof user.userType === 'string' ? user.userType.trim().toLowerCase() : 'usuario';
+
+  return {
+    id,
+    name,
+    phone,
+    profile: { email: profileEmail },
+    preferences: normalizePreferences(user.preferences),
+    userType,
+    createdAt,
+    updatedAt,
+  };
+}
+
+function createQuickAction({ label, description, onClick, extraClass = '' }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `admin-dashboard__user-action user-dashboard__quick-action ${extraClass}`.trim();
+
+  const labelElement = document.createElement('span');
+  labelElement.className = 'admin-dashboard__user-action-label';
+  labelElement.textContent = label;
+
+  const descriptionElement = document.createElement('span');
+  descriptionElement.className = 'admin-dashboard__user-action-description';
+  descriptionElement.textContent = description;
+
+  button.append(labelElement, descriptionElement);
+
+  let cleanup = () => {};
+
+  if (typeof onClick === 'function') {
+    button.addEventListener('click', onClick);
+    cleanup = () => {
+      button.removeEventListener('click', onClick);
+    };
+  }
+
+  return { button, cleanup };
+}
 
 export function createPersistUserChanges(getUserFn, updateUserFn) {
   if (typeof getUserFn !== 'function') {
@@ -136,8 +213,7 @@ export function createPersistUserChanges(getUserFn, updateUserFn) {
             disabledSnapshot.set(element, Boolean(element.disabled));
             element.disabled = true;
           } else if (disabledSnapshot.has(element)) {
-            const wasDisabled = disabledSnapshot.get(element);
-            element.disabled = Boolean(wasDisabled);
+            element.disabled = Boolean(disabledSnapshot.get(element));
           } else {
             element.disabled = false;
           }
@@ -176,6 +252,7 @@ export function createPersistUserChanges(getUserFn, updateUserFn) {
     }
   };
 }
+
 export function renderUserPanel(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -185,1828 +262,482 @@ export function renderUserPanel(viewRoot) {
   viewRoot.dataset.view = 'user';
 
   const heading = document.createElement('h1');
-  heading.className = 'user-panel__title';
-  heading.textContent = 'Gerencie seus dados';
+  heading.className = 'user-panel__title admin-dashboard__title';
+  heading.textContent = 'Painel do usuário';
 
   const intro = document.createElement('p');
-  intro.className = 'user-panel__intro';
-  intro.textContent = 'Atualize telefone, senha e detalhes do perfil sem sair deste painel.';
+  intro.className = 'user-panel__intro admin-dashboard__intro';
+  intro.textContent =
+    'Gerencie rapidamente seus dados principais, acompanhe o status da sessão e ajuste preferências sem sair deste painel.';
 
-  const selectionInfo = document.createElement('div');
-  selectionInfo.className = 'user-widget__status user-details__selected';
+  const layout = document.createElement('div');
+  layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
-  const selectionText = document.createElement('p');
-  selectionText.className = 'user-details__selected-text';
-  selectionText.textContent = 'Nenhuma sessão ativa. Faça login para começar.';
+  const overviewWidget = document.createElement('section');
+  overviewWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--overview';
 
-  const selectionAction = document.createElement('button');
-  selectionAction.type = 'button';
-  selectionAction.className = 'user-details__selected-action';
-  selectionAction.textContent = 'Ir para o login';
-  selectionAction.addEventListener('click', () => {
-    navigateTo('login');
-  });
+  const overviewTitle = document.createElement('h2');
+  overviewTitle.className = 'user-widget__title';
+  overviewTitle.textContent = 'Resumo da conta';
 
-  selectionInfo.append(selectionText, selectionAction);
+  const overviewDescription = document.createElement('p');
+  overviewDescription.className = 'user-widget__description';
+  overviewDescription.textContent =
+    'Acompanhe o status da sessão ativa, a data da última atualização e ative atalhos rápidos para outras áreas do MiniApp.';
 
-  function createPanelFeedback(baseClass) {
-    const feedbackElement = document.createElement('p');
-    feedbackElement.className = `${baseClass} user-form__feedback`;
-    feedbackElement.setAttribute('aria-live', 'polite');
-    feedbackElement.hidden = true;
+  const statsList = document.createElement('ul');
+  statsList.className = 'admin-dashboard__user-stats user-dashboard__stats';
 
-    const successClass = `${baseClass}--success`;
-    const errorClass = `${baseClass}--error`;
+  const sessionStat = createStatItem('Status da sessão');
+  const updatedStat = createStatItem('Perfil atualizado');
+  const themeStat = createStatItem('Preferência de tema');
+  const roleStat = createStatItem('Tipo de acesso');
 
-    function reset() {
-      feedbackElement.hidden = true;
-      feedbackElement.textContent = '';
-      feedbackElement.classList.remove(
-        errorClass,
-        successClass,
-        'user-form__feedback--error',
-        'user-form__feedback--success',
-      );
-      feedbackElement.removeAttribute('role');
-    }
+  statsList.append(sessionStat.item, updatedStat.item, themeStat.item, roleStat.item);
 
-    function show(message, { isError = false } = {}) {
-      feedbackElement.textContent = message;
-      feedbackElement.hidden = false;
-      feedbackElement.classList.toggle(errorClass, isError);
-      feedbackElement.classList.toggle(successClass, !isError);
-      feedbackElement.classList.toggle('user-form__feedback--error', isError);
-      feedbackElement.classList.toggle('user-form__feedback--success', !isError);
-      if (isError) {
-        feedbackElement.setAttribute('role', 'alert');
-      } else {
-        feedbackElement.removeAttribute('role');
-      }
-    }
+  const actionsWrapper = document.createElement('div');
+  actionsWrapper.className = 'user-dashboard__actions';
 
-    return { element: feedbackElement, reset, show };
-  }
+  const actionGrid = document.createElement('div');
+  actionGrid.className = 'admin-dashboard__user-action-grid user-dashboard__action-grid';
 
-  function createCollapsibleGroup({ title, description, open = false }) {
-    const container = document.createElement('details');
-    container.className = 'user-details__collapsible';
-    container.open = Boolean(open);
+  const accountWidget = document.createElement('section');
+  accountWidget.className = 'user-panel__widget user-dashboard__widget user-dashboard__widget--account';
 
-    const summary = document.createElement('summary');
-    summary.className = 'user-details__collapsible-summary';
+  const accountTitle = document.createElement('h2');
+  accountTitle.className = 'user-widget__title';
+  accountTitle.textContent = 'Dados principais';
 
-    const summaryHeader = document.createElement('div');
-    summaryHeader.className = 'user-details__collapsible-header';
+  const accountDescription = document.createElement('p');
+  accountDescription.className = 'user-widget__description';
+  accountDescription.textContent =
+    'Atualize telefone, e-mail, senha e preferências de tema. Todas as alterações são salvas em poucos segundos.';
 
-    const headerTitle = document.createElement('span');
-    headerTitle.className = 'user-details__group-title';
-    headerTitle.textContent = title;
-    summaryHeader.append(headerTitle);
+  const emptyState = document.createElement('p');
+  emptyState.className = 'user-dashboard__empty-state';
+  emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
 
-    if (description) {
-      const headerDescription = document.createElement('span');
-      headerDescription.className = 'user-details__group-description';
-      headerDescription.textContent = description;
-      summaryHeader.append(headerDescription);
-    }
+  const accountForm = document.createElement('form');
+  accountForm.className = 'user-form user-dashboard__form';
+  accountForm.noValidate = true;
 
-    const indicator = document.createElement('span');
-    indicator.className = 'user-details__collapsible-icon';
-    indicator.setAttribute('aria-hidden', 'true');
-
-    summary.append(summaryHeader, indicator);
-
-    const content = document.createElement('div');
-    content.className = 'user-details__collapsible-content';
-
-    container.append(summary, content);
-
-    return { container, content };
-  }
-
-  function navigateTo(view) {
-    if (!view) {
-      return;
-    }
-
-    eventBus.emit('app:navigate', { view });
-  }
-
-  const primaryForm = document.createElement('form');
-  primaryForm.className = 'user-widget user-panel__widget user-panel__widget--access user-form';
-  primaryForm.noValidate = true;
-  primaryForm.addEventListener('submit', (event) => event.preventDefault());
-
-  const primaryTitle = document.createElement('h2');
-  primaryTitle.className = 'user-widget__title user-details__form-title';
-  primaryTitle.textContent = 'Dados de acesso';
-
-  const primaryIntro = document.createElement('p');
-  primaryIntro.className = 'user-widget__description user-details__form-description';
-  primaryIntro.textContent =
-    'Confira um resumo rápido do acesso e atualize o telefone ou a senha sempre que necessário.';
-
-  const accessSummary = document.createElement('section');
-  accessSummary.className = 'user-details__access-summary';
-  accessSummary.hidden = true;
-
-  const accessSummaryDescription = document.createElement('p');
-  accessSummaryDescription.className = 'user-details__access-summary-description';
-  const defaultAccessSummaryDescription =
-    'Histórico recente das credenciais utilizadas e atualizações registradas.';
-  accessSummaryDescription.textContent = defaultAccessSummaryDescription;
-
-  const accessSummaryList = document.createElement('dl');
-  accessSummaryList.className = 'user-details__access-summary-list';
-
-  function createAccessSummaryItem(label, { withCopy = false } = {}) {
-    const item = document.createElement('div');
-    item.className = 'user-details__access-summary-item';
-
-    const term = document.createElement('dt');
-    term.className = 'user-details__access-summary-label';
-    term.textContent = label;
-
-    const definition = document.createElement('dd');
-    definition.className = 'user-details__access-summary-value';
-
-    const value = document.createElement('span');
-    value.className = 'user-details__access-summary-text';
-    value.textContent = '—';
-
-    definition.append(value);
-
-    let copyButton = null;
-    if (withCopy) {
-      copyButton = document.createElement('button');
-      copyButton.type = 'button';
-      copyButton.className = 'user-details__access-summary-copy';
-      copyButton.textContent = 'Copiar';
-      copyButton.disabled = true;
-      definition.append(copyButton);
-    }
-
-    item.append(term, definition);
-    accessSummaryList.append(item);
-
-    return { item, term, definition, value, copyButton };
-  }
-
-  const accessSummaryItems = {
-    phone: createAccessSummaryItem('Telefone principal', { withCopy: true }),
-    userType: createAccessSummaryItem('Tipo de acesso'),
-    device: createAccessSummaryItem('Dispositivo reconhecido'),
-    updatedAt: createAccessSummaryItem('Última atualização'),
-  };
-
-  accessSummary.append(accessSummaryDescription, accessSummaryList);
-
-  const primaryPhoneField = createInputField({
-    id: 'user-details-phone',
-    label: 'Telefone cadastrado',
-    type: 'tel',
-    placeholder: '(00) 00000-0000',
-    autocomplete: 'tel',
-    inputMode: 'tel',
-    required: false,
-  });
-
-  const primaryPasswordField = createInputField({
-    id: 'user-details-password',
-    label: 'Senha cadastrada',
-    type: 'password',
-    placeholder: 'Atualize sua senha',
-    autocomplete: 'new-password',
-    required: false,
-  });
-  primaryPasswordField.classList.add('user-details__password-field');
-
-  const passwordToggle = document.createElement('button');
-  passwordToggle.type = 'button';
-  passwordToggle.className = 'user-details__password-toggle';
-  passwordToggle.setAttribute('aria-controls', 'user-details-password');
-
-  const passwordToggleIcon = document.createElement('span');
-  passwordToggleIcon.className = 'user-details__password-toggle-icon';
-
-  const passwordToggleText = document.createElement('span');
-  passwordToggleText.className = 'sr-only';
-
-  passwordToggle.append(passwordToggleIcon, passwordToggleText);
-
-  primaryPasswordField.append(passwordToggle);
-
-  const {
-    element: primaryFeedback,
-    reset: resetPrimaryFeedback,
-    show: showPrimaryFeedback,
-  } = createPanelFeedback('user-details__feedback');
-
-  const primaryFields = document.createElement('div');
-  primaryFields.className = 'user-details__form-grid user-details__form-grid--two';
-  primaryFields.append(primaryPhoneField, primaryPasswordField);
-
-  const accountSection = document.createElement('section');
-  accountSection.className = 'user-account user-details__access-state';
-
-  const accountHeading = document.createElement('h3');
-  accountHeading.className = 'user-widget__title user-details__access-state-title';
-  accountHeading.textContent = 'Controles da sessão';
-
-  const accountActions = document.createElement('div');
-  accountActions.className = 'user-account__actions';
-
-  const logoffButton = document.createElement('button');
-  logoffButton.type = 'button';
-  logoffButton.className = 'user-account__action user-account__action--logoff';
-  logoffButton.textContent = 'Logoff';
-
-  const logoutButton = document.createElement('button');
-  logoutButton.type = 'button';
-  logoutButton.className = 'user-account__action user-account__action--logout';
-  logoutButton.textContent = 'Logout';
-
-  const deleteButton = document.createElement('button');
-  deleteButton.type = 'button';
-  deleteButton.className = 'user-account__action user-account__action--delete';
-  deleteButton.textContent = 'Limpar dados';
-
-  accountActions.append(logoffButton, logoutButton, deleteButton);
-
-  const {
-    element: accountFeedback,
-    reset: resetAccountFeedback,
-    show: showAccountFeedback,
-  } = createPanelFeedback('user-account__feedback');
-
-  accountSection.append(accountHeading, accountActions, accountFeedback);
-
-  const { container: accessLogsGroup, content: accessLogsContent } = createCollapsibleGroup({
-    title: 'Logs do sistema',
-    description: 'Resumo dos últimos acessos e dispositivos reconhecidos.',
-    open: true,
-  });
-  accessLogsContent.append(accessSummary);
-
-  const sessionContent = document.createElement('div');
-  sessionContent.className = 'user-details__session-content';
-  sessionContent.append(selectionInfo, accountSection);
-
-  const { container: sessionGroup, content: sessionGroupContent } = createCollapsibleGroup({
-    title: 'Sessão',
-    description: 'Status atual, encerramento e limpeza de credenciais.',
-  });
-  sessionGroupContent.append(sessionContent);
-
-  const {
-    element: themeFeedback,
-    reset: resetThemeFeedback,
-    show: showThemeFeedback,
-  } = createPanelFeedback('user-preferences__feedback');
-
-  const preferencesContent = document.createElement('div');
-  preferencesContent.className = 'user-details__preferences-content';
-
-  const themeFieldset = document.createElement('fieldset');
-  themeFieldset.className = 'user-preferences__theme-fieldset';
-
-  const themeLegend = document.createElement('legend');
-  themeLegend.className = 'user-preferences__theme-legend';
-  themeLegend.textContent = 'Tema do painel';
-
-  const themeDescription = document.createElement('p');
-  themeDescription.className = 'user-preferences__theme-description';
-  themeDescription.textContent = 'Escolha entre modo claro, escuro ou acompanhe automaticamente o tema do seu sistema.';
-
-  const themeOptionsContainer = document.createElement('div');
-  themeOptionsContainer.className = 'user-preferences__theme-options';
-
-  const themePreferenceInputs = new Map();
-  const themePreferenceOptionBlocks = new Map();
-
-  [
-    {
-      value: 'system',
-      label: 'Automático (Sistema)',
-      description: 'Adapta-se automaticamente ao modo claro ou escuro definido no dispositivo.',
-    },
-    {
-      value: 'light',
-      label: 'Claro',
-      description: 'Mantém cores claras em todo o painel para máxima luminosidade.',
-    },
-    {
-      value: 'dark',
-      label: 'Escuro',
-      description: 'Prioriza tons escuros para reduzir o brilho e descansar a visão.',
-    },
-  ].forEach(({ value, label, description }) => {
-    const optionContainer = document.createElement('div');
-    optionContainer.className = 'user-preferences__theme-option';
-
-    const input = document.createElement('input');
-    input.type = 'radio';
-    input.name = 'user-theme-preference';
-    input.value = value;
-    input.id = `user-theme-preference-${value}`;
-    input.className = 'user-preferences__theme-input';
-
-    const optionLabel = document.createElement('label');
-    optionLabel.className = 'user-preferences__theme-option-label';
-    optionLabel.setAttribute('for', input.id);
-
-    const optionTitle = document.createElement('span');
-    optionTitle.className = 'user-preferences__theme-option-title';
-    optionTitle.textContent = label;
-
-    const optionDescription = document.createElement('span');
-    optionDescription.className = 'user-preferences__theme-option-description';
-    optionDescription.textContent = description;
-
-    optionLabel.append(optionTitle, optionDescription);
-    optionContainer.append(input, optionLabel);
-    themeOptionsContainer.append(optionContainer);
-    themePreferenceInputs.set(value, input);
-    themePreferenceOptionBlocks.set(value, optionContainer);
-  });
-
-  const defaultThemePreference = sanitizeUserThemePreference(
-    getDefaultUserPreferences()?.theme ?? 'system',
-  );
-
-  const hasHTMLInputElement = typeof HTMLInputElement === 'function';
-  const hasHTMLElement = typeof HTMLElement === 'function';
-  const hasHTMLFieldSetElement = typeof HTMLFieldSetElement === 'function';
-
-  function selectThemePreference(preference) {
-    const normalized = sanitizeUserThemePreference(preference);
-    themePreferenceInputs.forEach((input, value) => {
-      if (input && (hasHTMLInputElement ? input instanceof HTMLInputElement : 'checked' in input)) {
-        input.checked = value === normalized;
-      }
-    });
-    themePreferenceOptionBlocks.forEach((element, value) => {
-      if (element && (hasHTMLElement ? element instanceof HTMLElement : 'classList' in element)) {
-        element.classList.toggle('user-preferences__theme-option--checked', value === normalized);
-      }
-    });
-  }
-
-  themeFieldset.append(themeLegend, themeDescription, themeOptionsContainer, themeFeedback);
-
-  preferencesContent.append(themeFieldset, primaryFields, primaryFeedback);
-
-  themeOptionsContainer.addEventListener('change', handleThemePreferenceChange);
-
-  selectThemePreference(defaultThemePreference);
-
-  const { container: preferencesGroup, content: preferencesGroupContent } = createCollapsibleGroup({
-    title: 'Preferências',
-    description: 'Telefone principal, senha e mensagens de confirmação.',
-    open: true,
-  });
-  preferencesGroupContent.append(preferencesContent);
-
-  primaryForm.append(primaryTitle, primaryIntro, accessLogsGroup, sessionGroup, preferencesGroup);
-
-  const profileForm = document.createElement('form');
-  profileForm.className = 'user-widget user-panel__widget user-panel__widget--profile user-form';
-  profileForm.noValidate = true;
-  profileForm.addEventListener('submit', (event) => event.preventDefault());
-
-  const profileTitle = document.createElement('h2');
-  profileTitle.className = 'user-widget__title user-details__form-title';
-  profileTitle.textContent = 'Perfil completo';
-
-  const profileIntro = document.createElement('p');
-  profileIntro.className = 'user-widget__description user-details__form-description';
-  profileIntro.textContent = 'Organize dados pessoais, contatos e endereço em um só lugar.';
-
-  const profileNameField = createInputField({
-    id: 'user-details-name',
+  const nameField = createInputField({
+    id: 'user-dashboard-name',
     label: 'Nome completo',
     type: 'text',
-    placeholder: 'Nome e sobrenome',
+    placeholder: 'Informe como deseja ser identificado',
     autocomplete: 'name',
-    required: false,
   });
 
-  const profilePronounsField = createInputField({
-    id: 'user-details-pronouns',
-    label: 'Pronomes',
-    type: 'text',
-    placeholder: 'Ela/dela, Ele/dele, Elu/delu, ...',
-    autocomplete: 'off',
-    required: false,
+  const phoneField = createInputField({
+    id: 'user-dashboard-phone',
+    label: 'Telefone principal',
+    type: 'tel',
+    placeholder: 'Inclua DDD ou código internacional',
+    autocomplete: 'tel',
+    inputMode: 'tel',
   });
 
-  const profileBirthDateField = createInputField({
-    id: 'user-details-birth-date',
-    label: 'Data de nascimento',
-    type: 'date',
-    placeholder: 'Selecione a data',
-    autocomplete: 'bday',
-    required: false,
-  });
-
-  const profileProfessionField = createInputField({
-    id: 'user-details-profession',
-    label: 'Profissão ou cargo',
-    type: 'text',
-    placeholder: 'Ex.: Desenvolvedor(a) front-end',
-    autocomplete: 'organization-title',
-    required: false,
-  });
-
-  const profileCompanyField = createInputField({
-    id: 'user-details-company',
-    label: 'Empresa ou organização',
-    type: 'text',
-    placeholder: 'Onde você atua atualmente?',
-    autocomplete: 'organization',
-    required: false,
-  });
-
-  const profileBioField = createTextareaField({
-    id: 'user-details-bio',
-    label: 'Biografia e destaques',
-    placeholder: 'Conte um pouco sobre sua trajetória, objetivos e conquistas.',
-    rows: 4,
-  });
-  profileBioField.classList.add('user-form__field--full');
-
-  const profileEmailField = createInputField({
-    id: 'user-details-email',
-    label: 'E-mail',
+  const emailField = createInputField({
+    id: 'user-dashboard-email',
+    label: 'E-mail de contato',
     type: 'email',
     placeholder: 'nome@exemplo.com',
     autocomplete: 'email',
     required: false,
   });
 
-  const profileWebsiteField = createInputField({
-    id: 'user-details-website',
-    label: 'Site pessoal ou portfólio',
-    type: 'url',
-    placeholder: 'https://seuportfolio.com',
-    autocomplete: 'url',
+  const passwordField = createInputField({
+    id: 'user-dashboard-password',
+    label: 'Nova senha (opcional)',
+    type: 'password',
+    placeholder: 'Mínimo de 8 caracteres',
+    autocomplete: 'new-password',
     required: false,
   });
 
-  const profileLinkedinField = createInputField({
-    id: 'user-details-linkedin',
-    label: 'LinkedIn',
-    type: 'url',
-    placeholder: 'https://linkedin.com/in/usuario',
-    autocomplete: 'url',
-    required: false,
+  const themeField = document.createElement('label');
+  themeField.className = 'user-form__field';
+  themeField.setAttribute('for', 'user-dashboard-theme');
+
+  const themeLabel = document.createElement('span');
+  themeLabel.className = 'user-form__label';
+  themeLabel.textContent = 'Tema da interface';
+
+  const themeSelect = document.createElement('select');
+  themeSelect.id = 'user-dashboard-theme';
+  themeSelect.name = 'user-dashboard-theme';
+  themeSelect.className = 'user-form__select';
+
+  [
+    { value: 'system', label: 'Automático (seguir sistema)' },
+    { value: 'light', label: 'Tema claro' },
+    { value: 'dark', label: 'Tema escuro' },
+  ].forEach((option) => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option.value;
+    optionElement.textContent = option.label;
+    themeSelect.append(optionElement);
   });
 
-  const profileInstagramField = createInputField({
-    id: 'user-details-instagram',
-    label: 'Instagram',
-    type: 'url',
-    placeholder: 'https://instagram.com/usuario',
-    autocomplete: 'url',
-    required: false,
-  });
+  themeField.append(themeLabel, themeSelect);
 
-  const profileFacebookField = createInputField({
-    id: 'user-details-facebook',
-    label: 'Facebook',
-    type: 'url',
-    placeholder: 'https://facebook.com/usuario',
-    autocomplete: 'url',
-    required: false,
-  });
+  const feedbackElement = document.createElement('p');
+  feedbackElement.className = 'user-form__feedback user-dashboard__feedback';
+  feedbackElement.hidden = true;
 
-  const profileTwitterField = createInputField({
-    id: 'user-details-twitter',
-    label: 'X (Twitter)',
-    type: 'url',
-    placeholder: 'https://x.com/usuario',
-    autocomplete: 'url',
-    required: false,
-  });
+  const submitButton = document.createElement('button');
+  submitButton.type = 'submit';
+  submitButton.className = 'user-form__submit';
+  submitButton.textContent = 'Salvar alterações';
 
-  const profileYoutubeField = createInputField({
-    id: 'user-details-youtube',
-    label: 'YouTube',
-    type: 'url',
-    placeholder: 'https://youtube.com/@usuario',
-    autocomplete: 'url',
-    required: false,
-  });
-
-  const profileSecondaryPhoneField = createInputField({
-    id: 'user-details-secondary-phone',
-    label: 'Telefone adicional',
-    type: 'tel',
-    placeholder: '(00) 00000-0000',
-    autocomplete: 'tel',
-    inputMode: 'tel',
-    required: false,
-  });
-
-  const profileDocumentField = createInputField({
-    id: 'user-details-document',
-    label: 'Documento de identificação',
-    type: 'text',
-    placeholder: 'CPF ou documento equivalente',
-    autocomplete: 'off',
-    required: false,
-  });
-
-  const profileAddressField = createInputField({
-    id: 'user-details-address',
-    label: 'Logradouro',
-    type: 'text',
-    placeholder: 'Rua, avenida, alameda...',
-    autocomplete: 'address-line1',
-    required: false,
-  });
-
-  const profileAddressNumberField = createInputField({
-    id: 'user-details-address-number',
-    label: 'Número',
-    type: 'text',
-    placeholder: 'Número ou S/N',
-    autocomplete: 'address-line2',
-    required: false,
-  });
-
-  const profileAddressComplementField = createInputField({
-    id: 'user-details-address-complement',
-    label: 'Complemento',
-    type: 'text',
-    placeholder: 'Apartamento, bloco, referência',
-    autocomplete: 'address-line2',
-    required: false,
-  });
-
-  const profileAddressDistrictField = createInputField({
-    id: 'user-details-address-district',
-    label: 'Bairro ou distrito',
-    type: 'text',
-    placeholder: 'Informe o bairro',
-    autocomplete: 'address-level2',
-    required: false,
-  });
-
-  const profileAddressCityField = createInputField({
-    id: 'user-details-address-city',
-    label: 'Cidade',
-    type: 'text',
-    placeholder: 'Informe a cidade',
-    autocomplete: 'address-level2',
-    required: false,
-  });
-
-  const profileAddressStateField = createInputField({
-    id: 'user-details-address-state',
-    label: 'Estado',
-    type: 'text',
-    placeholder: 'Ex.: SP',
-    autocomplete: 'address-level1',
-    required: false,
-  });
-
-  const profileAddressZipField = createInputField({
-    id: 'user-details-address-zip',
-    label: 'CEP',
-    type: 'text',
-    placeholder: '00000-000',
-    autocomplete: 'postal-code',
-    inputMode: 'numeric',
-    required: false,
-  });
-
-  const profileAddressZipFeedback = document.createElement('span');
-  profileAddressZipFeedback.className = 'user-form__hint user-details__zip-feedback';
-  profileAddressZipFeedback.id = 'user-details-address-zip-feedback';
-  profileAddressZipFeedback.hidden = true;
-  profileAddressZipField.append(profileAddressZipFeedback);
-
-  const profileAddressCountryField = createInputField({
-    id: 'user-details-address-country',
-    label: 'País',
-    type: 'text',
-    placeholder: 'Brasil',
-    autocomplete: 'country-name',
-    required: false,
-  });
-
-  const profileNotesField = createTextareaField({
-    id: 'user-details-notes',
-    label: 'Observações adicionais',
-    placeholder: 'Compartilhe observações importantes, preferências ou instruções especiais.',
-    rows: 4,
-  });
-  profileNotesField.classList.add('user-form__field--full');
-
-  const {
-    element: profileFeedback,
-    reset: resetProfileFeedback,
-    show: showProfileFeedback,
-  } = createPanelFeedback('user-details__feedback');
-
-  const profilePersonalGrid = document.createElement('div');
-  profilePersonalGrid.className = 'user-details__form-grid user-details__form-grid--two';
-  profilePersonalGrid.append(
-    profileNameField,
-    profilePronounsField,
-    profileBirthDateField,
-    profileProfessionField,
-    profileCompanyField,
-    profileBioField,
+  accountForm.append(
+    nameField,
+    phoneField,
+    emailField,
+    passwordField,
+    themeField,
+    feedbackElement,
+    submitButton,
   );
 
-  const { container: profilePersonalGroup, content: profilePersonalContent } = createCollapsibleGroup({
-    title: 'Dados pessoais',
-    description: 'Nome, pronomes, nascimento e resumo profissional.',
-    open: true,
-  });
-  profilePersonalContent.append(profilePersonalGrid);
+  accountWidget.append(accountTitle, accountDescription, emptyState, accountForm);
 
-  const profileContactGrid = document.createElement('div');
-  profileContactGrid.className = 'user-details__form-grid user-details__form-grid--two';
-  profileContactGrid.append(
-    profileEmailField,
-    profileSecondaryPhoneField,
-    profileWebsiteField,
-    profileLinkedinField,
-    profileInstagramField,
-    profileFacebookField,
-    profileTwitterField,
-    profileYoutubeField,
-  );
+  overviewWidget.append(overviewTitle, overviewDescription, statsList, actionsWrapper);
+  actionsWrapper.append(actionGrid);
 
-  const { container: profileContactGroup, content: profileContactContent } = createCollapsibleGroup({
-    title: 'Contatos e redes sociais',
-    description: 'Centralize seus canais de atendimento e presença digital.',
-  });
-  profileContactContent.append(profileContactGrid);
+  layout.append(overviewWidget, accountWidget);
+  viewRoot.replaceChildren(heading, intro, layout);
 
-  const profileAddressGrid = document.createElement('div');
-  profileAddressGrid.className = 'user-details__form-grid user-details__form-grid--two';
-  const profileAddressFieldsMap = {
-    zip: profileAddressZipField,
-    document: profileDocumentField,
-    street: profileAddressField,
-    number: profileAddressNumberField,
-    complement: profileAddressComplementField,
-    district: profileAddressDistrictField,
-    city: profileAddressCityField,
-    state: profileAddressStateField,
-    country: profileAddressCountryField,
-    notes: profileNotesField,
-  };
+  const cleanupCallbacks = [];
+  const unsubscribeCallbacks = [];
 
-  profileAddressGrid.append(
-    ...PROFILE_ADDRESS_FIELD_SEQUENCE.map((key) => profileAddressFieldsMap[key]).filter(Boolean),
-  );
+  const nameInput = nameField.querySelector('input');
+  const phoneInput = phoneField.querySelector('input');
+  const emailInput = emailField.querySelector('input');
+  const passwordInput = passwordField.querySelector('input');
 
-  const { container: profileAddressGroup, content: profileAddressContent } = createCollapsibleGroup({
-    title: 'Endereço e documentação',
-    description: 'Localização completa, documento e observações extras.',
-  });
-  profileAddressContent.append(profileAddressGrid);
-
-  profileForm.append(
-    profileTitle,
-    profileIntro,
-    profilePersonalGroup,
-    profileContactGroup,
-    profileAddressGroup,
-    profileFeedback,
-  );
-
-  
-
-  let usersSnapshot = [];
-  let isPasswordVisible = false;
-  let sessionUserId = getActiveUserId();
-  const pendingPersistOperations = new Map();
-
-  const persistUserChanges = createPersistUserChanges(() => getActiveSessionUser(), updateUser);
-
-  function runPersistOperation(key, updates, options) {
-    if (!key) {
-      return persistUserChanges(updates, options);
-    }
-
-    if (pendingPersistOperations.has(key)) {
-      return pendingPersistOperations.get(key);
-    }
-
-    const operationPromise = (async () => {
-      try {
-        return await persistUserChanges(updates, options);
-      } finally {
-        if (pendingPersistOperations.get(key) === operationPromise) {
-          pendingPersistOperations.delete(key);
-        }
-      }
-    })();
-
-    pendingPersistOperations.set(key, operationPromise);
-    return operationPromise;
-  }
-
-  const primaryPhoneInput = primaryPhoneField.querySelector('input');
-  const primaryPasswordInput = primaryPasswordField.querySelector('input');
-  const profileNameInput = profileNameField.querySelector('input');
-  const profilePronounsInput = profilePronounsField.querySelector('input');
-  const profileBirthDateInput = profileBirthDateField.querySelector('input');
-  const profileProfessionInput = profileProfessionField.querySelector('input');
-  const profileCompanyInput = profileCompanyField.querySelector('input');
-  const profileBioInput = profileBioField.querySelector('textarea');
-  const profileEmailInput = profileEmailField.querySelector('input');
-  const profileSecondaryPhoneInput = profileSecondaryPhoneField.querySelector('input');
-  const profileWebsiteInput = profileWebsiteField.querySelector('input');
-  const profileLinkedinInput = profileLinkedinField.querySelector('input');
-  const profileInstagramInput = profileInstagramField.querySelector('input');
-  const profileFacebookInput = profileFacebookField.querySelector('input');
-  const profileTwitterInput = profileTwitterField.querySelector('input');
-  const profileYoutubeInput = profileYoutubeField.querySelector('input');
-  const profileDocumentInput = profileDocumentField.querySelector('input');
-  const profileAddressInput = profileAddressField.querySelector('input');
-  const profileAddressNumberInput = profileAddressNumberField.querySelector('input');
-  const profileAddressComplementInput = profileAddressComplementField.querySelector('input');
-  const profileAddressDistrictInput = profileAddressDistrictField.querySelector('input');
-  const profileAddressCityInput = profileAddressCityField.querySelector('input');
-  const profileAddressStateInput = profileAddressStateField.querySelector('input');
-  const profileAddressZipInput = profileAddressZipField.querySelector('input');
-  const profileAddressCountryInput = profileAddressCountryField.querySelector('input');
-  const profileNotesInput = profileNotesField.querySelector('textarea');
-
-  if (profileAddressZipInput && profileAddressZipFeedback) {
-    const describedBy = profileAddressZipInput.getAttribute('aria-describedby');
-    const tokens = new Set(describedBy ? describedBy.split(/\s+/).filter(Boolean) : []);
-    tokens.add(profileAddressZipFeedback.id);
-    profileAddressZipInput.setAttribute('aria-describedby', Array.from(tokens).join(' '));
-    profileAddressZipInput.maxLength = 8;
-  }
-
-  function setZipBusyState(isBusy) {
-    if (!profileAddressZipInput) {
+  const showFeedback = (message, { isError = false } = {}) => {
+    if (!(feedbackElement instanceof HTMLElement)) {
       return;
     }
 
-    if (isBusy) {
-      profileAddressZipInput.setAttribute('aria-busy', 'true');
-    } else {
-      profileAddressZipInput.removeAttribute('aria-busy');
-    }
-  }
-
-  function setZipFeedback(message, { tone = 'neutral' } = {}) {
-    if (!profileAddressZipFeedback || !profileAddressZipInput) {
-      return;
-    }
+    feedbackElement.classList.remove('user-form__feedback--error', 'user-form__feedback--success');
 
     if (!message) {
-      profileAddressZipFeedback.hidden = true;
-      profileAddressZipFeedback.textContent = '';
-      profileAddressZipInput.removeAttribute('aria-invalid');
-      profileAddressZipInput.removeAttribute('title');
+      feedbackElement.hidden = true;
+      feedbackElement.textContent = '';
       return;
     }
 
-    profileAddressZipFeedback.hidden = false;
-    profileAddressZipFeedback.textContent = message;
-    profileAddressZipInput.setAttribute('title', message);
+    feedbackElement.hidden = false;
+    feedbackElement.textContent = message;
 
-    if (tone === 'error') {
-      profileAddressZipInput.setAttribute('aria-invalid', 'true');
+    if (isError) {
+      feedbackElement.classList.add('user-form__feedback--error');
     } else {
-      profileAddressZipInput.removeAttribute('aria-invalid');
+      feedbackElement.classList.add('user-form__feedback--success');
     }
-  }
+  };
 
-  let zipLookupController = null;
-  let zipLookupRequestId = 0;
+  const resetFeedback = () => {
+    showFeedback('', {});
+  };
 
-  function cancelZipLookup() {
-    zipLookupRequestId += 1;
-    if (zipLookupController) {
-      zipLookupController.abort();
-      zipLookupController = null;
-    }
-    setZipBusyState(false);
-  }
-
-  function fillAddressFromLookup(address) {
-    if (!address) {
-      return;
-    }
-
-    const { street, district, city, state } = address;
-
-    if (street && profileAddressInput) {
-      profileAddressInput.value = street;
-    }
-    if (district && profileAddressDistrictInput) {
-      profileAddressDistrictInput.value = district;
-    }
-    if (city && profileAddressCityInput) {
-      profileAddressCityInput.value = city;
-    }
-    if (state && profileAddressStateInput) {
-      profileAddressStateInput.value = state;
-    }
-  }
-
-  async function handleZipLookup() {
-    if (!profileAddressZipInput) {
-      return;
-    }
-
-    const currentCep = normalizeCep(profileAddressZipInput.value);
-    if (profileAddressZipInput.value !== currentCep) {
-      profileAddressZipInput.value = currentCep;
-    }
-
-    if (!currentCep) {
-      cancelZipLookup();
-      setZipFeedback('');
-      return;
-    }
-
-    if (currentCep.length !== 8) {
-      cancelZipLookup();
-      setZipFeedback('Informe um CEP com 8 dígitos para buscar automaticamente.', {
-        tone: 'error',
-      });
-      return;
-    }
-
-    const requestId = ++zipLookupRequestId;
-
-    if (zipLookupController) {
-      zipLookupController.abort();
-    }
-
-    zipLookupController = new AbortController();
-    const { signal } = zipLookupController;
-
-    setZipBusyState(true);
-    setZipFeedback('Buscando endereço pelo CEP...', { tone: 'neutral' });
-
-    let result;
-    try {
-      result = await lookupCep(currentCep, { signal });
-    } catch (error) {
-      console.error('Erro ao consultar CEP no painel do usuário.', error);
-      result = { status: 'network-error' };
-    } finally {
-      if (zipLookupController && zipLookupController.signal === signal) {
-        zipLookupController = null;
+  const editAction = createQuickAction({
+    label: 'Editar cadastro',
+    description: 'Ir direto para o formulário principal.',
+    onClick: () => {
+      if (accountForm instanceof HTMLElement && typeof accountForm.scrollIntoView === 'function') {
+        accountForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      setZipBusyState(false);
-    }
 
-    if (signal.aborted || requestId !== zipLookupRequestId) {
+      if (nameInput && typeof nameInput.focus === 'function') {
+        try {
+          nameInput.focus();
+        } catch (error) {
+          console.error('Não foi possível focar o campo de nome.', error);
+        }
+      }
+    },
+  });
+
+  const logAction = createQuickAction({
+    label: 'Consultar atividades',
+    description: 'Abra o registro de alterações recentes.',
+    onClick: () => navigateTo('log'),
+  });
+
+  const adminAction = createQuickAction({
+    label: 'Gerenciar cadastros',
+    description: 'Acesse o painel administrativo completo.',
+    onClick: () => navigateTo('admin'),
+  });
+
+  const logoutAction = createQuickAction({
+    label: 'Encerrar sessão',
+    description: 'Desconecte este dispositivo com segurança.',
+    onClick: () => {
+      if (!activeUser) {
+        showFeedback('Nenhuma sessão ativa no momento.', { isError: false });
+        return;
+      }
+
+      clearActiveUser();
+      showFeedback('Sessão encerrada. Faça login para continuar.', { isError: false });
+    },
+    extraClass: 'user-dashboard__quick-action--logout',
+  });
+
+  actionGrid.append(editAction.button, logAction.button, adminAction.button, logoutAction.button);
+  cleanupCallbacks.push(editAction.cleanup, logAction.cleanup, adminAction.cleanup, logoutAction.cleanup);
+
+  const persistUserChanges = createPersistUserChanges(
+    () => (activeUser ? { id: activeUser.id } : null),
+    updateUser,
+  );
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
       return;
     }
 
-    const latestCep = normalizeCep(profileAddressZipInput.value);
-    if (latestCep !== currentCep) {
-      return;
+    resetFeedback();
+
+    const updates = {};
+    const profileUpdates = {};
+
+    if (nameInput) {
+      const nextName = nameInput.value.trim();
+      if (nextName !== (activeUser.name ?? '')) {
+        updates.name = nextName;
+      }
     }
 
-    if (!result || result.status === 'aborted') {
-      setZipFeedback('');
+    if (phoneInput) {
+      const phoneValidation = validatePhoneNumber(phoneInput.value);
+      if (!phoneValidation.isValid) {
+        showFeedback(phoneValidation.message ?? 'Informe um telefone válido.', { isError: true });
+        return;
+      }
+
+      const sanitizedPhone = phoneValidation.sanitized ?? phoneValidation.localNumber ?? '';
+      if (sanitizedPhone && sanitizedPhone !== (activeUser.phone ?? '')) {
+        updates.phone = sanitizedPhone;
+      }
+    }
+
+    if (emailInput) {
+      const nextEmail = emailInput.value.trim();
+      if (nextEmail !== (activeUser.profile?.email ?? '')) {
+        profileUpdates.email = nextEmail;
+      }
+    }
+
+    if (passwordInput) {
+      const passwordValue = passwordInput.value;
+      if (passwordValue) {
+        const passwordValidation = validatePasswordStrength(passwordValue);
+        if (!passwordValidation.isValid) {
+          showFeedback(passwordValidation.message ?? 'Informe uma senha válida.', { isError: true });
+          return;
+        }
+        updates.password = passwordValue;
+      }
+    }
+
+    let nextThemePreference = activeUser.preferences?.theme ?? 'system';
+    if (themeSelect) {
+      const selected = sanitizeUserThemePreference(themeSelect.value);
+      if (selected !== (activeUser.preferences?.theme ?? 'system')) {
+        updates.preferences = { ...(updates.preferences ?? {}), theme: selected };
+      }
+      nextThemePreference = selected;
+    }
+
+    if (Object.keys(profileUpdates).length > 0) {
+      updates.profile = profileUpdates;
+    }
+
+    const result = await persistUserChanges(updates, {
+      feedback: {
+        reset: resetFeedback,
+        show: (message, options = {}) => {
+          showFeedback(message, options);
+        },
+      },
+      busyTargets: [submitButton],
+      successMessage: 'Dados atualizados com sucesso!',
+      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
+    });
+
+    if (result.status === 'no-changes') {
+      showFeedback('Nenhuma alteração para salvar.', { isError: false });
       return;
     }
 
     if (result.status === 'success') {
-      fillAddressFromLookup(result.address);
-      const saveResult = await persistProfileGroup('address');
-
-      if (saveResult?.status === 'success') {
-        setZipFeedback('Endereço preenchido e salvo automaticamente. Confira os dados.', {
-          tone: 'neutral',
-        });
-        return;
+      if (updates.phone && phoneInput) {
+        phoneInput.value = formatPhoneNumberForDisplay(updates.phone);
       }
 
-      if (saveResult?.status === 'no-session') {
-        setZipFeedback('Endereço preenchido automaticamente. Faça login para salvar as alterações.', {
-          tone: 'error',
-        });
-        return;
+      if (passwordInput) {
+        passwordInput.value = '';
       }
 
-      if (saveResult?.status === 'error') {
-        setZipFeedback(
-          'Preenchemos o endereço, mas não foi possível salvar automaticamente. Revise os campos e tente novamente.',
-          { tone: 'error' },
-        );
-        return;
+      if (updates.preferences?.theme) {
+        setThemePreference(updates.preferences.theme);
+        if (themeSelect) {
+          themeSelect.value = updates.preferences.theme;
+        }
+      } else if (themeSelect) {
+        themeSelect.value = nextThemePreference;
       }
 
-      setZipFeedback('Endereço preenchido automaticamente. Confira os dados antes de continuar.');
-      return;
+      if (activeUser) {
+        if (updates.name !== undefined) {
+          activeUser.name = updates.name;
+        }
+        if (updates.phone !== undefined) {
+          activeUser.phone = updates.phone;
+        }
+        if (updates.profile?.email !== undefined) {
+          activeUser.profile.email = updates.profile.email ?? '';
+        }
+        if (updates.preferences?.theme) {
+          activeUser.preferences.theme = updates.preferences.theme;
+        }
+        activeUser.updatedAt = new Date();
+      }
+
+      updateOverview();
+      updateForm();
+      updateActionState();
     }
-
-    if (result.status === 'not-found') {
-      setZipFeedback('CEP não encontrado. Preencha os dados manualmente.', { tone: 'error' });
-      return;
-    }
-
-    if (result.status === 'network-error') {
-      setZipFeedback('Não foi possível buscar o CEP no momento. Preencha os campos manualmente.', {
-        tone: 'error',
-      });
-      return;
-    }
-
-    setZipFeedback('Informe um CEP com 8 dígitos para buscar automaticamente.', { tone: 'error' });
-  }
-
-  if (profileAddressZipInput) {
-    profileAddressZipInput.addEventListener('input', () => {
-      const sanitized = normalizeCep(profileAddressZipInput.value);
-      if (profileAddressZipInput.value !== sanitized) {
-        profileAddressZipInput.value = sanitized;
-      }
-
-      if (!sanitized) {
-        cancelZipLookup();
-        setZipFeedback('');
-      }
-    });
-
-    profileAddressZipInput.addEventListener('change', handleZipLookup);
-    profileAddressZipInput.addEventListener('blur', handleZipLookup);
-  }
-
-  const profileFieldBindings = {
-    pronouns: profilePronounsInput,
-    birthDate: profileBirthDateInput,
-    profession: profileProfessionInput,
-    company: profileCompanyInput,
-    bio: profileBioInput,
-    email: profileEmailInput,
-    secondaryPhone: profileSecondaryPhoneInput,
-    website: profileWebsiteInput,
-    socialLinkedin: profileLinkedinInput,
-    socialInstagram: profileInstagramInput,
-    socialFacebook: profileFacebookInput,
-    socialTwitter: profileTwitterInput,
-    socialYoutube: profileYoutubeInput,
-    document: profileDocumentInput,
-    address: profileAddressInput,
-    addressNumber: profileAddressNumberInput,
-    addressComplement: profileAddressComplementInput,
-    addressDistrict: profileAddressDistrictInput,
-    addressCity: profileAddressCityInput,
-    addressState: profileAddressStateInput,
-    addressZip: profileAddressZipInput,
-    addressCountry: profileAddressCountryInput,
-    notes: profileNotesInput,
   };
 
-  function readFieldValue(fieldElement) {
-    if (!fieldElement) {
-      return '';
+  accountForm.addEventListener('submit', handleSubmit);
+  cleanupCallbacks.push(() => accountForm.removeEventListener('submit', handleSubmit));
+
+  const usersById = new Map();
+  let activeUserId = getActiveUserId();
+  let sessionSnapshot = null;
+  let activeUser = null;
+
+  const updateOverview = () => {
+    const user = activeUser;
+
+    if (user) {
+      sessionStat.valueElement.textContent = 'Ativa';
+      updatedStat.valueElement.textContent = formatDate(user.updatedAt ?? user.createdAt);
+      themeStat.valueElement.textContent = formatThemeLabel(user.preferences?.theme);
+      roleStat.valueElement.textContent = formatUserTypeLabel(user.userType);
+    } else {
+      sessionStat.valueElement.textContent = 'Desconectada';
+      updatedStat.valueElement.textContent = '—';
+      themeStat.valueElement.textContent = formatThemeLabel('system');
+      roleStat.valueElement.textContent = 'Visitante';
     }
-
-    if (fieldElement instanceof HTMLInputElement) {
-      if (fieldElement.type === 'date') {
-        return fieldElement.value;
-      }
-      return fieldElement.value.trim();
-    }
-
-    if (fieldElement instanceof HTMLTextAreaElement) {
-      return fieldElement.value.trim();
-    }
-
-    if ('value' in fieldElement) {
-      return String(fieldElement.value ?? '').trim();
-    }
-
-    return '';
-  }
-
-  function getActiveSessionUser() {
-    if (sessionUserId == null) {
-      return null;
-    }
-
-    return usersSnapshot.find((user) => user.id === sessionUserId) ?? null;
-  }
-
-  function hasActiveSessionUser() {
-    return Boolean(getActiveSessionUser());
-  }
-
-  function updateAccountActionsState() {
-    const hasActive = hasActiveSessionUser();
-
-    [logoffButton, logoutButton, deleteButton].forEach((button) => {
-      if (button) {
-        button.disabled = !hasActive;
-        if (!hasActive) {
-          button.removeAttribute('aria-busy');
-        }
-      }
-    });
-
-    if (!hasActive) {
-      logoffButton?.setAttribute('title', 'Nenhuma sessão ativa no momento.');
-      logoutButton?.setAttribute('title', 'Nenhuma sessão ativa no momento.');
-      deleteButton?.setAttribute('title', 'Nenhum usuário autenticado para excluir.');
-      return;
-    }
-
-    const activeUser = getActiveSessionUser();
-    const nameLabel = activeUser?.name ? activeUser.name.trim() : '';
-    const phoneLabel = activeUser?.phone ? activeUser.phone.trim() : '';
-
-    const labelComplement = nameLabel
-      ? ` de ${nameLabel}`
-      : phoneLabel
-      ? ` do usuário ${phoneLabel}`
-      : '';
-
-    logoffButton?.setAttribute('title', `Encerrar sessão atual${labelComplement}.`);
-    logoutButton?.setAttribute('title', `Encerrar sessão e retornar à tela de login${labelComplement}.`);
-    deleteButton?.setAttribute('title', `Remover definitivamente todos os dados${labelComplement}.`);
-  }
-
-  function updatePasswordVisibility() {
-    if (!primaryPasswordInput) {
-      return;
-    }
-
-    const action = isPasswordVisible ? 'hide' : 'show';
-    const label = isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha';
-
-    primaryPasswordInput.type = isPasswordVisible ? 'text' : 'password';
-    passwordToggleIcon.replaceChildren(createPasswordToggleIcon(action));
-    passwordToggleText.textContent = label;
-    passwordToggle.setAttribute('aria-label', label);
-    passwordToggle.setAttribute('title', label);
-    passwordToggle.setAttribute('aria-pressed', String(isPasswordVisible));
-  }
-
-  passwordToggle.addEventListener('click', (event) => {
-    event.preventDefault();
-    if (passwordToggle.disabled) {
-      return;
-    }
-
-    isPasswordVisible = !isPasswordVisible;
-    updatePasswordVisibility();
-  });
-
-  if (accessSummaryItems.phone.copyButton) {
-    accessSummaryItems.phone.copyButton.addEventListener('click', async (event) => {
-      event.preventDefault();
-      const button = accessSummaryItems.phone.copyButton;
-      if (!button || button.disabled) {
-        return;
-      }
-
-      const rawPhone = button.dataset.rawPhone || '';
-      if (!rawPhone) {
-        return;
-      }
-
-      resetPrimaryFeedback();
-
-      const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
-      if (!clipboard || typeof clipboard.writeText !== 'function') {
-        showPrimaryFeedback('Não foi possível copiar automaticamente. Copie manualmente.', {
-          isError: true,
-        });
-        return;
-      }
-
-      try {
-        await clipboard.writeText(rawPhone);
-        showPrimaryFeedback('Telefone copiado para a área de transferência.', { isError: false });
-      } catch (error) {
-        console.error('Erro ao copiar telefone do usuário pelo painel.', error);
-        showPrimaryFeedback('Falha ao copiar o telefone. Copie manualmente.', { isError: true });
-      }
-    });
-  }
-
-  function updateAccessSummary(user) {
-    const state = user ? 'ready' : 'idle';
-
-    if (accessSummary) {
-      accessSummary.hidden = !user;
-      accessSummary.dataset.state = state;
-    }
-
-    if (accessSummaryDescription) {
-      if (!user) {
-        accessSummaryDescription.textContent = defaultAccessSummaryDescription;
-      } else {
-        const nameLabel = typeof user.name === 'string' && user.name.trim() ? user.name.trim() : null;
-        accessSummaryDescription.textContent = nameLabel
-          ? `Dados principais de ${nameLabel}.`
-          : 'Dados principais do cadastro ativo.';
-      }
-    }
-
-    const { phone, userType, device, updatedAt } = accessSummaryItems;
-
-    function setSummaryText(item, text, { title, dataset } = {}) {
-      if (!item || !item.value) {
-        return;
-      }
-
-      const label = text && String(text).trim() ? String(text).trim() : '—';
-      item.value.textContent = label;
-
-      if (title) {
-        item.value.setAttribute('title', title);
-      } else {
-        item.value.removeAttribute('title');
-      }
-
-      if (dataset && typeof dataset === 'object') {
-        const normalizedEntries = Object.entries(dataset).filter(([, value]) => value != null && value !== '');
-        const allowedKeys = new Set(normalizedEntries.map(([key]) => `data-${key}`));
-
-        Array.from(item.value.attributes || [])
-          .map((attr) => (attr && typeof attr.name === 'string' ? attr.name : null))
-          .filter((name) => typeof name === 'string' && name.startsWith('data-') && !allowedKeys.has(name))
-          .forEach((name) => {
-            item.value.removeAttribute(name);
-          });
-
-        normalizedEntries.forEach(([key, value]) => {
-          item.value.dataset[key] = String(value);
-        });
-      } else {
-        Array.from(item.value.attributes || [])
-          .map((attr) => (attr && typeof attr.name === 'string' ? attr.name : null))
-          .filter((name) => typeof name === 'string' && name.startsWith('data-'))
-          .forEach((name) => {
-            item.value.removeAttribute(name);
-          });
-      }
-    }
-
-    if (!user) {
-      setSummaryText(phone, '—');
-      setSummaryText(userType, '—');
-      setSummaryText(device, '—');
-      setSummaryText(updatedAt, '—');
-
-      if (phone?.copyButton) {
-        phone.copyButton.disabled = true;
-        phone.copyButton.removeAttribute('title');
-        phone.copyButton.removeAttribute('aria-label');
-        delete phone.copyButton.dataset.rawPhone;
-      }
-
-      return;
-    }
-
-    const formattedPhone = formatPhoneNumberForDisplay(user.phone);
-    const rawPhone = typeof user.phone === 'string' ? user.phone.trim() : '';
-    const phoneLabel = formattedPhone || (rawPhone ? rawPhone : 'Não informado');
-    const phoneTitle = rawPhone ? `Telefone cadastrado: ${rawPhone}` : 'Nenhum telefone cadastrado';
-    setSummaryText(phone, phoneLabel, {
-      title: phoneTitle,
-      dataset: rawPhone ? { rawPhone } : null,
-    });
-
-    if (phone?.copyButton) {
-      const copyLabel = rawPhone ? 'Copiar telefone de login' : 'Nenhum telefone cadastrado';
-      phone.copyButton.disabled = !rawPhone;
-      if (rawPhone) {
-        phone.copyButton.dataset.rawPhone = rawPhone;
-      } else {
-        delete phone.copyButton.dataset.rawPhone;
-      }
-      phone.copyButton.setAttribute('title', copyLabel);
-      phone.copyButton.setAttribute('aria-label', copyLabel);
-    }
-
-    const userTypeLabel = formatUserTypeLabel(user.userType);
-    setSummaryText(userType, userTypeLabel);
-
-    const deviceLabel = typeof user.device === 'string' && user.device.trim()
-      ? user.device.trim()
-      : 'Não identificado';
-    setSummaryText(device, deviceLabel);
-
-    const updatedAtLabel = formatUpdatedAtLabel(user.updatedAt);
-    const updatedAtValue = user?.updatedAt instanceof Date
-      ? user.updatedAt.toISOString()
-      : user?.updatedAt;
-    setSummaryText(updatedAt, updatedAtLabel, {
-      dataset: updatedAtValue ? { updatedAt: updatedAtValue } : null,
-    });
-  }
-
-  function updateSelectionInfo(user) {
-    if (!selectionText || !selectionAction) {
-      return;
-    }
-
-    if (!user) {
-      selectionText.textContent = 'Nenhuma sessão ativa. Faça login para editar os dados.';
-      selectionAction.hidden = false;
-      selectionAction.disabled = false;
-      return;
-    }
-
-    const nameLabel = user.name?.trim() || 'Usuário sem nome';
-    selectionText.textContent = `Editando informações de ${nameLabel}.`;
-    selectionAction.hidden = true;
-    selectionAction.disabled = true;
-  }
-
-  function updateFormsState() {
-    const user = getActiveSessionUser();
-    updateAccessSummary(user);
-    updateSelectionInfo(user);
-
-    const shouldDisable = !user;
-
-    [primaryPhoneInput, primaryPasswordInput, passwordToggle].forEach((element) => {
-      if (element) {
-        element.disabled = shouldDisable;
-      }
-    });
-
-    if (themeFieldset && (hasHTMLFieldSetElement ? themeFieldset instanceof HTMLFieldSetElement : 'disabled' in themeFieldset)) {
-      themeFieldset.disabled = shouldDisable;
-      if (shouldDisable) {
-        themeFieldset.setAttribute('aria-disabled', 'true');
-      } else {
-        themeFieldset.removeAttribute('aria-disabled');
-      }
-    }
-
-    themePreferenceInputs.forEach((input) => {
-      if (input && (hasHTMLInputElement ? input instanceof HTMLInputElement : 'disabled' in input)) {
-        input.disabled = shouldDisable;
-      }
-    });
-
-    Object.values(profileFieldBindings).forEach((element) => {
-      if (element && (hasHTMLElement ? element instanceof HTMLElement : 'disabled' in element)) {
-        element.disabled = shouldDisable;
-      }
-    });
-
-    if (profileNameInput) {
-      profileNameInput.disabled = shouldDisable;
-    }
-
-    if (!user) {
-      selectThemePreference(defaultThemePreference);
-      resetThemeFeedback();
-      if (primaryPhoneInput) {
-        primaryPhoneInput.value = '';
-      }
-      if (primaryPasswordInput) {
-        primaryPasswordInput.value = '';
-      }
-      if (profileNameInput) {
-        profileNameInput.value = '';
-      }
-      Object.values(profileFieldBindings).forEach((element) => {
-        if (element && 'value' in element) {
-          element.value = '';
-        }
-      });
-      isPasswordVisible = false;
-      updatePasswordVisibility();
-      return;
-    }
-
-    if (primaryPhoneInput) {
-      primaryPhoneInput.value = user.phone;
-    }
-    if (primaryPasswordInput) {
-      primaryPasswordInput.value = user.password;
-    }
-    if (profileNameInput) {
-      profileNameInput.value = user.name;
-    }
-
-    selectThemePreference(user.preferences?.theme);
-
-    Object.entries(profileFieldBindings).forEach(([key, element]) => {
-      if (!element || !('value' in element)) {
-        return;
-      }
-
-      const profileValue = user.profile?.[key] ?? '';
-
-      if (key === 'birthDate') {
-        if (element instanceof HTMLInputElement) {
-          element.value = /^\d{4}-\d{2}-\d{2}$/.test(profileValue) ? profileValue : '';
-        } else {
-          element.value = '';
-        }
-        return;
-      }
-
-      element.value = profileValue;
-    });
-
-    updatePasswordVisibility();
-  }
-
-  updateAccountActionsState();
-  updateFormsState();
-
-  async function handlePrimaryPhoneCommit() {
-    if (!primaryPhoneInput) {
-      return;
-    }
-
-    const trimmedValue = primaryPhoneInput.value.trim();
-    if (primaryPhoneInput.value !== trimmedValue) {
-      primaryPhoneInput.value = trimmedValue;
-    }
-
-    const user = getActiveSessionUser();
-
-    if (!user) {
-      resetPrimaryFeedback();
-      showPrimaryFeedback('Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
-        isError: true,
-      });
-      return;
-    }
-
-    if (trimmedValue === user.phone) {
-      return;
-    }
-
-    const validation = validatePhoneNumber(trimmedValue);
-    if (!validation.isValid) {
-      resetPrimaryFeedback();
-      showPrimaryFeedback(
-        validation.message || 'Informe um telefone válido para atualizar o cadastro.',
-        { isError: true },
-      );
-      return;
-    }
-
-    const busyTargets = [primaryPhoneInput, primaryPasswordInput, passwordToggle].filter(Boolean);
-    await runPersistOperation('primary', { phone: trimmedValue }, {
-      feedback: {
-        reset: resetPrimaryFeedback,
-        show: showPrimaryFeedback,
-      },
-      busyTargets,
-      successMessage: 'Dados principais atualizados com sucesso!',
-      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
-      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.',
-    });
-  }
-
-  async function handlePrimaryPasswordCommit() {
-    if (!primaryPasswordInput) {
-      return;
-    }
-
-    const user = getActiveSessionUser();
-
-    if (!user) {
-      resetPrimaryFeedback();
-      showPrimaryFeedback('Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.', {
-        isError: true,
-      });
-      return;
-    }
-
-    const nextValue = primaryPasswordInput.value;
-
-    if (nextValue === user.password) {
-      return;
-    }
-
-    const validation = validatePasswordStrength(nextValue);
-    if (!validation.isValid) {
-      resetPrimaryFeedback();
-      showPrimaryFeedback(
-        validation.message || 'Informe uma senha válida para atualizar o cadastro.',
-        { isError: true },
-      );
-      return;
-    }
-
-    const busyTargets = [primaryPhoneInput, primaryPasswordInput, passwordToggle].filter(Boolean);
-    await runPersistOperation('primary', { password: nextValue }, {
-      feedback: {
-        reset: resetPrimaryFeedback,
-        show: showPrimaryFeedback,
-      },
-      busyTargets,
-      successMessage: 'Dados principais atualizados com sucesso!',
-      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
-      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para atualizar telefone ou senha.',
-    });
-  }
-
-  async function handleThemePreferenceChange(event) {
-    const target = event?.target;
-    if (!(target instanceof HTMLInputElement) || target.name !== 'user-theme-preference') {
-      return;
-    }
-
-    const user = getActiveSessionUser();
-    const selectedValue = sanitizeUserThemePreference(target.value);
-
-    selectThemePreference(selectedValue);
-
-    if (!user) {
-      resetThemeFeedback();
-      selectThemePreference(defaultThemePreference);
-      showThemeFeedback('Nenhuma sessão ativa. Faça login para alterar o tema do painel.', {
-        isError: true,
-      });
-      return;
-    }
-
-    const currentPreference = sanitizeUserThemePreference(user.preferences?.theme);
-
-    if (selectedValue === currentPreference) {
-      resetThemeFeedback();
-      return;
-    }
-
-    const busyTargets = Array.from(themePreferenceInputs.values()).filter(
-      (input) => input instanceof HTMLInputElement,
-    );
-    if (themeFieldset instanceof HTMLFieldSetElement) {
-      busyTargets.push(themeFieldset);
-    }
-
-    const previousPreference = currentPreference;
-
-    // Atualiza o tema imediatamente enquanto persiste a escolha no cadastro.
-    try {
-      setThemePreference(selectedValue);
-    } catch (error) {
-      console.error('Erro ao aplicar tema imediatamente no painel.', error);
-    }
-
-    const result = await runPersistOperation(
-      'preferences:theme',
-      { preferences: { theme: selectedValue } },
-      {
-        feedback: {
-          reset: resetThemeFeedback,
-          show: showThemeFeedback,
-        },
-        busyTargets,
-        successMessage: 'Tema atualizado com sucesso! O painel seguirá a sua preferência.',
-        errorMessage: 'Não foi possível atualizar o tema agora. Tente novamente.',
-        missingSessionMessage: 'Nenhuma sessão ativa. Faça login para alterar o tema.',
-      },
-    );
-
-    if (!result || result.status !== 'success') {
-      selectThemePreference(previousPreference);
-      try {
-        setThemePreference(previousPreference);
-      } catch (error) {
-        console.error('Não foi possível restaurar o tema anterior após falha na atualização.', error);
-      }
-    }
-  }
-
-  const profileGroupFields = {
-    personal: ['pronouns', 'birthDate', 'profession', 'company', 'bio'],
-    contact: [
-      'email',
-      'secondaryPhone',
-      'website',
-      'socialLinkedin',
-      'socialInstagram',
-      'socialFacebook',
-      'socialTwitter',
-      'socialYoutube',
-    ],
-    address: [
-      'document',
-      'address',
-      'addressNumber',
-      'addressComplement',
-      'addressDistrict',
-      'addressCity',
-      'addressState',
-      'addressZip',
-      'addressCountry',
-      'notes',
-    ],
   };
 
-  function collectProfileGroupUpdates(groupName, user) {
-    const keys = profileGroupFields[groupName];
-    if (!keys || !user) {
-      return {};
+  const updateForm = () => {
+    const user = activeUser;
+    const isEnabled = Boolean(user);
+
+    if (emptyState instanceof HTMLElement) {
+      emptyState.hidden = isEnabled;
     }
 
-    const profileUpdates = {};
+    const nextTheme = user?.preferences?.theme ?? 'system';
 
-    keys.forEach((key) => {
-      const element = profileFieldBindings[key];
-      if (!element) {
-        return;
-      }
+    if (nameInput) {
+      nameInput.value = user?.name ?? '';
+      nameInput.disabled = !isEnabled;
+    }
 
-      let nextValue = readFieldValue(element);
-      let currentValue = user.profile?.[key] ?? '';
+    if (phoneInput) {
+      phoneInput.value = user?.phone ? formatPhoneNumberForDisplay(user.phone) : '';
+      phoneInput.disabled = !isEnabled;
+    }
 
-      if (key === 'birthDate') {
-        const normalized = /^\d{4}-\d{2}-\d{2}$/.test(nextValue) ? nextValue : '';
-        if (element instanceof HTMLInputElement) {
-          element.value = normalized;
+    if (emailInput) {
+      emailInput.value = user?.profile?.email ?? '';
+      emailInput.disabled = !isEnabled;
+    }
+
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.disabled = !isEnabled;
+    }
+
+    if (themeSelect) {
+      themeSelect.value = nextTheme;
+      themeSelect.disabled = !isEnabled;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = !isEnabled;
+    }
+  };
+
+  const updateActionState = () => {
+    const hasUser = Boolean(activeUser);
+    editAction.button.disabled = !hasUser;
+    logoutAction.button.disabled = !hasUser;
+  };
+
+  const syncActiveUser = () => {
+    const source = (activeUserId != null && usersById.get(activeUserId)) || sessionSnapshot;
+    activeUser = normalizeUserData(source);
+
+    updateOverview();
+    updateForm();
+    updateActionState();
+  };
+
+  const unsubscribeSession = subscribeSession((user) => {
+    sessionSnapshot = user;
+    activeUserId = user?.id ?? activeUserId ?? null;
+    syncActiveUser();
+  });
+  unsubscribeCallbacks.push(unsubscribeSession);
+
+  const unsubscribeUsers = subscribeUsers((users) => {
+    usersById.clear();
+
+    if (Array.isArray(users)) {
+      users.forEach((user) => {
+        if (user && user.id != null) {
+          usersById.set(user.id, user);
         }
-        nextValue = normalized;
-      } else if (key === 'addressZip') {
-        const normalizedZip = normalizeCep(nextValue);
-        if (element.value !== normalizedZip) {
-          element.value = normalizedZip;
-        }
-        nextValue = normalizedZip;
-        currentValue = normalizeCep(typeof currentValue === 'string' ? currentValue : '');
-      }
-
-      if (nextValue !== currentValue) {
-        profileUpdates[key] = nextValue;
-      }
-    });
-
-    return profileUpdates;
-  }
-
-  async function persistProfileGroup(groupName) {
-    const user = getActiveSessionUser();
-
-    if (!user) {
-      resetProfileFeedback();
-      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
-        isError: true,
-      });
-      return { status: 'no-session' };
-    }
-
-    const profileUpdates = collectProfileGroupUpdates(groupName, user);
-
-    if (Object.keys(profileUpdates).length === 0) {
-      return { status: 'no-changes' };
-    }
-
-    const busyTargets = (profileGroupFields[groupName] || [])
-      .map((key) => profileFieldBindings[key])
-      .filter(Boolean);
-
-    return runPersistOperation(`profile:${groupName}`, { profile: profileUpdates }, {
-      feedback: {
-        reset: resetProfileFeedback,
-        show: showProfileFeedback,
-      },
-      busyTargets,
-      successMessage: 'Perfil completo atualizado com sucesso!',
-      errorMessage: 'Não foi possível salvar os dados do perfil. Tente novamente.',
-      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para complementar os dados.',
-    });
-  }
-
-  async function handleProfileNameCommit() {
-    if (!profileNameInput) {
-      return;
-    }
-
-    const user = getActiveSessionUser();
-
-    if (!user) {
-      resetProfileFeedback();
-      showProfileFeedback('Nenhuma sessão ativa. Faça login para complementar os dados.', {
-        isError: true,
-      });
-      return;
-    }
-
-    const nextValue = readFieldValue(profileNameInput);
-
-    if (nextValue === user.name) {
-      return;
-    }
-
-    if (!nextValue) {
-      resetProfileFeedback();
-      showProfileFeedback('O nome completo não pode ficar vazio.', { isError: true });
-      return;
-    }
-
-    await runPersistOperation('profile:name', { name: nextValue }, {
-      feedback: {
-        reset: resetProfileFeedback,
-        show: showProfileFeedback,
-      },
-      busyTargets: [profileNameInput],
-      successMessage: 'Perfil completo atualizado com sucesso!',
-      errorMessage: 'Não foi possível salvar os dados do perfil. Tente novamente.',
-      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para complementar os dados.',
-    });
-  }
-
-  function attachProfileGroupHandlers(groupName) {
-    const keys = profileGroupFields[groupName];
-    if (!keys) {
-      return;
-    }
-
-    const handler = () => {
-      persistProfileGroup(groupName);
-    };
-
-    keys
-      .filter((key) => key !== 'addressZip')
-      .forEach((key) => {
-        const element = profileFieldBindings[key];
-        if (!element) {
-          return;
-        }
-
-        element.addEventListener('blur', handler);
-        element.addEventListener('change', handler);
-      });
-  }
-
-  if (primaryPhoneInput) {
-    primaryPhoneInput.addEventListener('blur', handlePrimaryPhoneCommit);
-    primaryPhoneInput.addEventListener('change', handlePrimaryPhoneCommit);
-  }
-
-  if (primaryPasswordInput) {
-    primaryPasswordInput.addEventListener('blur', handlePrimaryPasswordCommit);
-    primaryPasswordInput.addEventListener('change', handlePrimaryPasswordCommit);
-  }
-
-  if (profileNameInput) {
-    profileNameInput.addEventListener('blur', handleProfileNameCommit);
-    profileNameInput.addEventListener('change', handleProfileNameCommit);
-  }
-
-  attachProfileGroupHandlers('personal');
-  attachProfileGroupHandlers('contact');
-  attachProfileGroupHandlers('address');
-
-  logoffButton.addEventListener('click', () => {
-    resetAccountFeedback();
-
-    if (!hasActiveSessionUser()) {
-      showAccountFeedback('Nenhuma sessão ativa para encerrar no momento.', { isError: true });
-      return;
-    }
-
-    clearActiveUser();
-    showAccountFeedback('Sessão finalizada. Faça login novamente para continuar.', {
-      isError: false,
-    });
-    isPasswordVisible = false;
-    updatePasswordVisibility();
-    resetPrimaryFeedback();
-    resetProfileFeedback();
-    updateFormsState();
-    updateAccountActionsState();
-  });
-
-  logoutButton.addEventListener('click', () => {
-    resetAccountFeedback();
-
-    if (!hasActiveSessionUser()) {
-      showAccountFeedback('Nenhuma sessão ativa para encerrar no momento.', { isError: true });
-      return;
-    }
-
-    clearActiveUser();
-    isPasswordVisible = false;
-    updatePasswordVisibility();
-    resetPrimaryFeedback();
-    resetProfileFeedback();
-    updateFormsState();
-    updateAccountActionsState();
-    navigateTo('login');
-  });
-
-  deleteButton.addEventListener('click', async () => {
-    resetAccountFeedback();
-
-    const activeUser = getActiveSessionUser();
-    if (!activeUser) {
-      showAccountFeedback('Nenhum usuário autenticado encontrado para exclusão.', {
-        isError: true,
-      });
-      return;
-    }
-
-    const confirmationMessage = activeUser.name
-      ? `Excluir todos os dados de ${activeUser.name}? Essa ação não pode ser desfeita.`
-      : 'Excluir todos os dados deste cadastro? Essa ação não pode ser desfeita.';
-
-    const shouldDelete = window.confirm(confirmationMessage);
-    if (!shouldDelete) {
-      return;
-    }
-
-    try {
-      deleteButton.disabled = true;
-      deleteButton.setAttribute('aria-busy', 'true');
-      await deleteUser(activeUser.id);
-      clearActiveUser();
-      showAccountFeedback('Todos os dados foram removidos com sucesso.', { isError: false });
-    } catch (error) {
-      console.error('Erro ao excluir cadastro pelo painel do usuário.', error);
-      showAccountFeedback('Não foi possível remover os dados armazenados. Tente novamente mais tarde.', {
-        isError: true,
       });
     }
 
-    deleteButton.removeAttribute('aria-busy');
-    isPasswordVisible = false;
-    updatePasswordVisibility();
-    resetPrimaryFeedback();
-    resetProfileFeedback();
-    updateAccountActionsState();
-    updateFormsState();
+    syncActiveUser();
   });
+  unsubscribeCallbacks.push(unsubscribeUsers);
 
-  const layout = document.createElement('div');
-  layout.className = 'user-panel__layout';
-  layout.append(primaryForm, profileForm);
-
-  const unsubscribe = subscribeUsers((users) => {
-    const hadActiveUser = hasActiveSessionUser();
-
-    usersSnapshot = Array.isArray(users) ? users.slice() : [];
-
-    const stillHasSessionUser =
-      sessionUserId != null && usersSnapshot.some((user) => user.id === sessionUserId);
-
-    if (!stillHasSessionUser) {
-      sessionUserId = null;
-    }
-
-    if (hadActiveUser && !hasActiveSessionUser()) {
-      isPasswordVisible = false;
-      updatePasswordVisibility();
-      resetPrimaryFeedback();
-      resetProfileFeedback();
-      resetThemeFeedback();
-    }
-
-    updateAccountActionsState();
-    updateFormsState();
-  });
-
-  const unsubscribeSession = subscribeSession((sessionUser) => {
-    const previousSessionUserId = sessionUserId;
-    sessionUserId = sessionUser?.id ?? null;
-
-    if (sessionUserId == null && previousSessionUserId != null) {
-      isPasswordVisible = false;
-      updatePasswordVisibility();
-      resetPrimaryFeedback();
-      resetProfileFeedback();
-      resetThemeFeedback();
-    }
-
-    if (sessionUserId != null) {
-      const hasSessionUser = usersSnapshot.some((user) => user.id === sessionUserId);
-      if (!hasSessionUser) {
-        sessionUserId = null;
-      } else if (sessionUserId !== previousSessionUserId) {
-        isPasswordVisible = false;
-        updatePasswordVisibility();
-        resetPrimaryFeedback();
-        resetProfileFeedback();
-        resetThemeFeedback();
-      }
-      resetAccountFeedback();
-    }
-
-    updateAccountActionsState();
-    updateFormsState();
-  });
+  syncActiveUser();
 
   registerViewCleanup(viewRoot, () => {
-    unsubscribe();
-    unsubscribeSession();
-    themeOptionsContainer.removeEventListener('change', handleThemePreferenceChange);
+    unsubscribeCallbacks.forEach((unsubscribe) => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('Erro ao remover assinatura do painel do usuário.', error);
+      }
+    });
+
+    cleanupCallbacks.forEach((cleanup) => {
+      try {
+        cleanup();
+      } catch (error) {
+        console.error('Erro ao limpar listeners do painel do usuário.', error);
+      }
+    });
   });
-
-  viewRoot.replaceChildren(heading, intro, layout);
 }
-

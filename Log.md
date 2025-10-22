@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.120 - 2025-10-22 16:50 BRT
+- Reconstrói o painel do usuário com layout inspirado no administrativo, trazendo resumo da sessão, atalhos rápidos e formulário
+  compacto para atualizar dados principais.
+- Simplifica os campos e feedbacks do painel, adicionando seletor de tema integrado e mensagens de sessão ausente no estado vazio.
+- Atualiza os testes de layout do painel, remove a dependência do CEP sobre a ordem anterior e ajusta estilos para os novos
+  componentes.
+- Atualiza o rodapé para exibir a versão v0.1.120 das 16h50.
+
 ## v0.1.119 - 2025-10-22 15:05 BRT
 - Corrige o cálculo dos offsets do cabeçalho e do rodapé usando arredondamento para cima e elimina a sobreposição do cartão de cadastro em telas baixas.
 - Atualiza o rodapé para exibir a versão v0.1.119 das 15h05.
