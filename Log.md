@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.118 - 2025-10-22 14:20 BRT
+- Alinha o título principal do painel administrativo aplicando o mesmo padding lateral dos widgets para que o texto acompanhe o restante do conteúdo.
+- Mantém os widgets de indicadores e da tabela empilhados em uma única coluna em qualquer largura para abrir mais espaço aos dados detalhados.
+- Atualiza o rodapé para exibir a versão v0.1.118 das 14h20.
+
 ## v0.1.117 - 2025-10-22 12:30 BRT
 - Acrescenta ao painel administrativo um widget de listagem com filtros, tabela expansível e edição automática dos dados principais, de perfil e preferências diretamente no painel.
 - Gera feedbacks visuais para o auto-save administrativo, mantendo a seleção ao filtrar e cobrindo o fluxo com testes usando DOM simulada.
