@@ -1600,12 +1600,38 @@ footer {
 }
 
 .miniapp-store-view .user-dashboard__summary-edit {
-  justify-self: end;
-  align-self: end;
   text-align: center;
-  margin-top: auto;
   font-size: calc(var(--panel-font-size-compact) * 0.95);
   padding: 0.35rem 0.7rem;
+}
+
+.miniapp-store__actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: clamp(0.35rem, 1.4vw, 0.6rem);
+}
+
+.miniapp-store__action-button {
+  margin-top: 0;
+  min-width: clamp(5.5rem, 18vw, 7.6rem);
+}
+
+.miniapp-store__action-button--primary {
+  font-weight: 700;
+}
+
+.miniapp-store__action-button[aria-pressed='true'] {
+  border-color: rgba(var(--color-accent-rgb), 0.6);
+  background: rgba(var(--color-accent-rgb), 0.22);
+  box-shadow: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.18);
+}
+
+.miniapp-store__action-button[aria-pressed='true']:hover,
+.miniapp-store__action-button[aria-pressed='true']:focus-visible {
+  border-color: rgba(var(--color-accent-rgb), 0.65);
+  background: rgba(var(--color-accent-rgb), 0.26);
 }
 
 @media (max-width: 48rem) {

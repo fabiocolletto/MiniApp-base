@@ -445,7 +445,7 @@ function createMiniAppsWidget() {
       const isExpanded = expandedMiniAppId === app.id;
 
       const row = document.createElement('tr');
-      row.className = 'admin-miniapp-table__row';
+      row.className = 'admin-user-table__row admin-miniapp-table__row';
       row.dataset.appId = app.id;
       row.dataset.state = isExpanded ? 'expanded' : 'collapsed';
 
@@ -521,13 +521,13 @@ function createMiniAppsWidget() {
       row.append(appCell, accessCell, statusCell, actionCell);
 
       const detailsRow = document.createElement('tr');
-      detailsRow.className = 'admin-miniapp-table__details-row';
+      detailsRow.className = 'admin-user-table__details-row admin-miniapp-table__details-row';
       detailsRow.dataset.appId = app.id;
       detailsRow.hidden = !isExpanded;
 
       const detailsCell = document.createElement('td');
       detailsCell.colSpan = 4;
-      detailsCell.className = 'admin-miniapp-table__details-cell';
+      detailsCell.className = 'admin-user-table__details-cell admin-miniapp-table__details-cell';
 
       const detailsPanel = document.createElement('div');
       detailsPanel.className = 'admin-miniapp-table__details';

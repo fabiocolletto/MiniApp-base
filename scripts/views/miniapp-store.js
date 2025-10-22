@@ -30,6 +30,62 @@ const MINI_APPS = [
   },
 ];
 
+const favoriteMiniAppIds = new Set();
+const subscribedMiniAppIds = new Set();
+
+function createToggleActionButton({
+  app,
+  stateSet,
+  defaultLabel,
+  activeLabel,
+  defaultTitle,
+  activeTitle,
+  eventName,
+  modifier,
+}) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'user-dashboard__summary-edit miniapp-store__action-button';
+
+  if (modifier) {
+    button.classList.add(`miniapp-store__action-button--${modifier}`);
+    button.dataset.action = modifier;
+  }
+
+  const applyState = (isActive) => {
+    const label = isActive ? activeLabel : defaultLabel;
+    const title = isActive ? activeTitle : defaultTitle;
+
+    button.textContent = label;
+    button.setAttribute('aria-label', title);
+    button.title = title;
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    button.dataset.state = isActive ? 'active' : 'idle';
+  };
+
+  const initialState = stateSet.has(app.id);
+  applyState(initialState);
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const currentState = button.getAttribute('aria-pressed') === 'true';
+    const nextState = !currentState;
+
+    if (nextState) {
+      stateSet.add(app.id);
+    } else {
+      stateSet.delete(app.id);
+    }
+
+    applyState(nextState);
+    eventBus.emit(eventName, { app, active: nextState, trigger: button });
+  });
+
+  return button;
+}
+
 function createSummaryEntry(term, value) {
   if (!term || !value) {
     return null;
@@ -82,18 +138,41 @@ function renderMiniAppListItem(app) {
       metaList.append(entry);
     });
 
-  const detailsButton = document.createElement('button');
-  detailsButton.type = 'button';
-  detailsButton.className = 'user-dashboard__summary-edit';
-  detailsButton.textContent = 'Saiba Mais';
-
   const openDetails = (trigger) => {
     const detail = trigger instanceof HTMLElement ? trigger : item;
     eventBus.emit('miniapp:details', { app, trigger: detail });
   };
 
+  const favoriteButton = createToggleActionButton({
+    app,
+    stateSet: favoriteMiniAppIds,
+    defaultLabel: 'Favoritar',
+    activeLabel: 'Favorito',
+    defaultTitle: `Adicionar ${app.name} aos favoritos`,
+    activeTitle: `Remover ${app.name} dos favoritos`,
+    eventName: 'miniapp:favorite',
+    modifier: 'favorite',
+  });
+
+  const subscribeButton = createToggleActionButton({
+    app,
+    stateSet: subscribedMiniAppIds,
+    defaultLabel: 'Assinar',
+    activeLabel: 'Assinado',
+    defaultTitle: `Assinar novidades do ${app.name}`,
+    activeTitle: `Cancelar assinatura do ${app.name}`,
+    eventName: 'miniapp:subscribe',
+    modifier: 'subscribe',
+  });
+
+  const detailsButton = document.createElement('button');
+  detailsButton.type = 'button';
+  detailsButton.className =
+    'user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
+  detailsButton.textContent = 'Saiba Mais';
+
   item.addEventListener('click', (event) => {
-    if (event?.target instanceof HTMLElement && detailsButton.contains(event.target)) {
+    if (event?.target instanceof HTMLElement && event.target.closest('.miniapp-store__action-button')) {
       return;
     }
     openDetails(item);
@@ -101,6 +180,10 @@ function renderMiniAppListItem(app) {
 
   item.addEventListener('keydown', (event) => {
     if (!(event instanceof KeyboardEvent)) {
+      return;
+    }
+
+    if (event.target !== item) {
       return;
     }
 
@@ -116,7 +199,11 @@ function renderMiniAppListItem(app) {
     openDetails(detailsButton);
   });
 
-  item.append(name, description, metaList, detailsButton);
+  const actions = document.createElement('div');
+  actions.className = 'miniapp-store__actions';
+  actions.append(favoriteButton, subscribeButton, detailsButton);
+
+  item.append(name, description, metaList, actions);
   return item;
 }
 
