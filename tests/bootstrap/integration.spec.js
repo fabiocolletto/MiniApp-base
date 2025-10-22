@@ -267,6 +267,7 @@ globalThis.CustomEvent = FakeCustomEvent;
 
 const { bootstrapApp } = await import('../../app/main.js');
 const { router } = await import('../../router/index.js');
+const { renderView } = await import('../../ui/app-shell.js');
 
 function resetDomState() {
   const { viewRoot, main, headerActions } = dom.elements;
@@ -354,6 +355,19 @@ test('bootstrap direciona para register quando validação falha', async () => {
 
   assert.equal(router.currentRoute, expected);
   assert.equal(dom.elements.viewRoot.__lastRendered, 'register');
+});
+
+test('router recarrega o painel inicial quando a rota já está ativa', () => {
+  resetDomState();
+
+  router.goTo('dashboard');
+  assert.equal(dom.elements.viewRoot.__lastRendered, 'home');
+
+  renderView('admin');
+  assert.equal(dom.elements.viewRoot.__lastRendered, 'admin');
+
+  router.goTo('dashboard');
+  assert.equal(dom.elements.viewRoot.__lastRendered, 'home');
 });
 
 test.after(() => {
