@@ -1627,10 +1627,8 @@ footer {
   font-size: var(--panel-font-size-base);
 }
 
-.miniapp-store-view .user-dashboard__summary-edit {
-  text-align: center;
+.miniapp-store-view .panel-action-tile.user-dashboard__summary-edit {
   font-size: calc(var(--panel-font-size-compact) * 0.95);
-  padding: 0.35rem 0.7rem;
 }
 
 .miniapp-store__actions {
@@ -1644,6 +1642,20 @@ footer {
 .miniapp-store__action-button {
   margin-top: 0;
   min-width: clamp(5.5rem, 18vw, 7.6rem);
+  --panel-action-gap: clamp(0.2rem, 1vw, 0.35rem);
+  --panel-action-padding-block: 0.35rem;
+  --panel-action-padding-inline: 0.7rem;
+  --panel-action-radius: 999px;
+  --panel-action-border-width: 0.08rem;
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.3);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.1);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.1);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.16);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.16);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-shadow: 0 0.4rem 1rem rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-text-color: var(--color-text-secondary);
 }
 
 .miniapp-store__action-button--primary {
@@ -1651,15 +1663,13 @@ footer {
 }
 
 .miniapp-store__action-button[aria-pressed='true'] {
-  border-color: rgba(var(--color-accent-rgb), 0.6);
-  background: rgba(var(--color-accent-rgb), 0.22);
-  box-shadow: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.18);
-}
-
-.miniapp-store__action-button[aria-pressed='true']:hover,
-.miniapp-store__action-button[aria-pressed='true']:focus-visible {
-  border-color: rgba(var(--color-accent-rgb), 0.65);
-  background: rgba(var(--color-accent-rgb), 0.26);
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.6);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.65);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.22);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.22);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.26);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.26);
+  --panel-action-shadow: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.18);
 }
 
 @media (max-width: 48rem) {
@@ -2199,33 +2209,100 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
   }
 }
 
-.home-dashboard__action-button {
+.panel-action-tile {
+  --panel-action-gap: 0.3rem;
+  --panel-action-padding-block: clamp(0.65rem, 2.1vw, 1rem);
+  --panel-action-padding-inline: clamp(0.95rem, 2.8vw, 1.4rem);
+  --panel-action-radius: 0.9rem;
+  --panel-action-border-width: 0.08rem;
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.28);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.12);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.04);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.08);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.55);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.55);
+  --panel-action-shadow: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.18);
+  --panel-action-text-color: var(--color-accent-deep);
   display: grid;
-  gap: 0.3rem;
-  padding: clamp(0.65rem, 2.1vw, 1rem) clamp(0.95rem, 2.8vw, 1.4rem);
-  border-radius: 0.9rem;
-  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.28);
-  background: rgba(var(--color-accent-rgb), 0.12);
-  color: var(--color-accent-deep);
+  gap: var(--panel-action-gap);
+  padding: var(--panel-action-padding-block) var(--panel-action-padding-inline);
+  border-radius: var(--panel-action-radius);
+  border: var(--panel-action-border-width) solid var(--panel-action-border-color);
+  background: linear-gradient(135deg, var(--panel-action-bg-start), var(--panel-action-bg-end));
+  color: var(--panel-action-text-color);
   font: inherit;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-.home-dashboard__action-button:hover,
-.home-dashboard__action-button:focus-visible {
+.panel-action-tile:hover,
+.panel-action-tile:focus-visible {
   transform: translateY(-1px);
-  background: rgba(var(--color-accent-rgb), 0.2);
-  border-color: rgba(var(--color-accent-rgb), 0.5);
-  box-shadow: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.18);
+  border-color: var(--panel-action-border-hover);
+  background: linear-gradient(135deg, var(--panel-action-hover-bg-start), var(--panel-action-hover-bg-end));
+  box-shadow: var(--panel-action-shadow);
   outline: none;
 }
 
-.home-dashboard__action-button:focus-visible {
-  outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.55);
+.panel-action-tile:focus-visible {
+  outline: 0.16rem solid var(--panel-action-outline);
   outline-offset: 0.08rem;
+}
+
+.panel-action-tile[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.panel-action-tile--secondary {
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.22);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.08);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.02);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.16);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.06);
+  --panel-action-text-color: var(--color-text-secondary);
+}
+
+.panel-action-tile--compact {
+  --panel-action-gap: clamp(0.2rem, 1vw, 0.35rem);
+  --panel-action-padding-block: 0.45rem;
+  --panel-action-padding-inline: 0.95rem;
+  --panel-action-radius: 999px;
+  --panel-action-shadow: 0 0.4rem 1rem rgba(var(--color-accent-rgb), 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.panel-action-tile--icon {
+  --panel-action-gap: 0;
+  --panel-action-padding-block: 0;
+  --panel-action-padding-inline: 0;
+  --panel-action-radius: 50%;
+  --panel-action-border-width: 0.06rem;
+  --panel-action-shadow: 0 0.45rem 1rem rgba(var(--color-accent-rgb), 0.22);
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  min-width: 2.2rem;
+  text-align: center;
+}
+
+.home-dashboard__action-button {
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.12);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.12);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.5);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.55);
+  --panel-action-text-color: var(--color-accent-deep);
 }
 
 .home-dashboard__action-label {
@@ -2381,32 +2458,20 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .admin-dashboard__user-action {
-  display: grid;
-  gap: 0.35rem;
-  padding: clamp(0.65rem, 2.1vw, 1rem) clamp(1rem, 3vw, 1.5rem);
-  border-radius: 0.95rem;
-  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.28);
-  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.04));
-  color: var(--color-accent-deep);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.admin-dashboard__user-action:hover,
-.admin-dashboard__user-action:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(var(--color-accent-rgb), 0.55);
-  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.2), rgba(var(--color-accent-rgb), 0.08));
-  box-shadow: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.18);
-  outline: none;
-}
-
-.admin-dashboard__user-action:focus-visible {
-  outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.55);
-  outline-offset: 0.08rem;
+  --panel-action-gap: 0.35rem;
+  --panel-action-padding-block: clamp(0.65rem, 2.1vw, 1rem);
+  --panel-action-padding-inline: clamp(1rem, 3vw, 1.5rem);
+  --panel-action-radius: 0.95rem;
+  --panel-action-border-width: 0.08rem;
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.28);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.12);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.04);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.08);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.55);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.55);
+  --panel-action-shadow: 0 0.6rem 1.4rem rgba(var(--color-accent-rgb), 0.18);
+  --panel-action-text-color: var(--color-accent-deep);
 }
 
 .admin-dashboard__user-action-label {
@@ -2542,24 +2607,26 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 }
 
 .admin-user-table__toggle {
+  --panel-action-gap: 0;
+  --panel-action-padding-block: 0;
+  --panel-action-padding-inline: 0;
+  --panel-action-radius: 50%;
+  --panel-action-border-width: 0.06rem;
+  --panel-action-border-color: var(--color-border-muted);
+  --panel-action-bg-start: var(--color-bg-card);
+  --panel-action-bg-end: var(--color-bg-card);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.12);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.04);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-shadow: 0 0.45rem 1rem rgba(var(--color-accent-rgb), 0.22);
+  --panel-action-text-color: var(--color-text-primary);
   width: 2.2rem;
   height: 2.2rem;
-  border-radius: 50%;
-  border: 0.06rem solid var(--color-border-muted);
-  background: var(--color-bg-card);
-  color: var(--color-text-primary);
+  min-width: 2.2rem;
   display: grid;
   place-items: center;
-  cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.admin-user-table__toggle:hover,
-.admin-user-table__toggle:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(var(--color-accent-rgb), 0.45);
-  box-shadow: 0 0.45rem 1rem rgba(var(--color-accent-rgb), 0.22);
-  outline: none;
 }
 
 .admin-user-table__toggle-icon {
@@ -3146,6 +3213,27 @@ main > :where(.card.view):not(.auth-view, .view--greeting) {
 .user-dashboard__summary-edit:focus-visible {
   outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.45);
   outline-offset: 0.08rem;
+}
+
+.panel-action-tile.user-dashboard__summary-edit {
+  --panel-action-gap: clamp(0.25rem, 1vw, 0.35rem);
+  --panel-action-padding-block: 0.45rem;
+  --panel-action-padding-inline: 0.95rem;
+  --panel-action-radius: 999px;
+  --panel-action-border-width: 0.08rem;
+  --panel-action-border-color: rgba(var(--color-accent-rgb), 0.3);
+  --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.1);
+  --panel-action-bg-end: rgba(var(--color-accent-rgb), 0.1);
+  --panel-action-hover-bg-start: rgba(var(--color-accent-rgb), 0.16);
+  --panel-action-hover-bg-end: rgba(var(--color-accent-rgb), 0.16);
+  --panel-action-border-hover: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-outline: rgba(var(--color-accent-rgb), 0.45);
+  --panel-action-shadow: 0 0.4rem 1rem rgba(var(--color-accent-rgb), 0.2);
+  --panel-action-text-color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .user-dashboard__summary-edit[disabled] {

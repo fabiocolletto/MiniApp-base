@@ -154,7 +154,7 @@ function renderMiniAppListItem(app) {
 
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
-  detailsButton.className = 'user-dashboard__summary-edit';
+  detailsButton.className = 'panel-action-tile panel-action-tile--compact user-dashboard__summary-edit';
   detailsButton.textContent = 'Ver detalhes';
   detailsButton.addEventListener('click', () => {
     eventBus.emit('miniapp:details', { app: detailApp, trigger: detailsButton });

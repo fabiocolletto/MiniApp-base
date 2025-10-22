@@ -1,5 +1,13 @@
 # Log
 
+-## v0.1.150 - 2025-10-23 16:20 BRT
+- Cria a classe base `.panel-action-tile` com variáveis compartilhadas para gradientes, bordas e transições, incluindo variantes
+  compacta e de ícone para estados específicos.
+- Refatora `.home-dashboard__action-button`, `.admin-dashboard__user-action`, `.miniapp-store__action-button` e botões de
+  resumo para utilizarem a nova base mantendo cores e dimensões originais.
+- Atualiza as views de Início, Administração e Mini App Store para aplicar a classe base aos botões de ação, garantindo hover e
+  foco consistentes após a alteração.
+
 ## v0.1.149 - 2025-10-23 15:10 BRT
 - Unifica os painéis de Início, Administração, Usuário e Mini App Store com a nova classe base `dashboard-view`, concentrando alinhamentos, preenchimentos e espaçamentos compartilhados.
 - Substitui sobrescritas diretas de padding por variáveis CSS específicas de cada painel para manter apenas diferenças reais como grades e espaçamentos laterais.

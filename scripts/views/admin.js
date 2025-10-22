@@ -219,7 +219,7 @@ function createUsersWidget() {
 
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
-      toggleButton.className = 'admin-user-table__toggle';
+      toggleButton.className = 'panel-action-tile panel-action-tile--icon admin-user-table__toggle';
       toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
       toggleButton.setAttribute(
         'aria-label',
@@ -500,7 +500,7 @@ function createMiniAppsWidget() {
 
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
-      toggleButton.className = 'admin-user-table__toggle';
+      toggleButton.className = 'panel-action-tile panel-action-tile--icon admin-user-table__toggle';
       toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
       toggleButton.setAttribute(
         'aria-label',
