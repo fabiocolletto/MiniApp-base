@@ -2,6 +2,7 @@ import { getUsers, subscribeUsers } from '../data/user-store.js';
 import {
   ACCESS_LEVEL_OPTIONS,
   MINI_APP_STATUS_OPTIONS,
+  getMiniAppsSnapshot,
   subscribeMiniApps,
   updateMiniApp as persistMiniAppUpdate,
 } from '../data/miniapp-store.js';
@@ -25,6 +26,15 @@ const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
   timeStyle: 'short',
 });
+
+const countFormatter = new Intl.NumberFormat('pt-BR');
+const USER_REGISTRATION_GOAL = 120;
+const DEPLOYMENT_STATUSES = new Set(['deployment', 'testing']);
+
+function formatCount(value) {
+  const numericValue = Number.isFinite(value) ? value : 0;
+  return countFormatter.format(Math.max(0, Math.trunc(numericValue)));
+}
 
 function formatDateTime(value) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -121,6 +131,215 @@ function createDefinitionItem(term, value) {
 
   item.append(termElement, valueElement);
   return item;
+}
+
+function createHighlightCard({ title, variant }) {
+  const card = document.createElement('article');
+  card.className = `admin-dashboard__highlight admin-dashboard__highlight--${variant}`;
+
+  const titleElement = document.createElement('h3');
+  titleElement.className = 'admin-dashboard__highlight-title';
+  titleElement.textContent = title;
+
+  const valueElement = document.createElement('p');
+  valueElement.className = 'admin-dashboard__highlight-value';
+  valueElement.textContent = formatCount(0);
+
+  const progressWrapper = document.createElement('div');
+  progressWrapper.className = 'admin-dashboard__highlight-progress-wrapper';
+
+  const progress = document.createElement('div');
+  progress.className = 'admin-dashboard__highlight-progress';
+  progress.setAttribute('role', 'progressbar');
+  progress.setAttribute('aria-valuemin', '0');
+  progress.setAttribute('aria-valuemax', '100');
+  progress.setAttribute('aria-valuenow', '0');
+
+  const progressBar = document.createElement('div');
+  progressBar.className = 'admin-dashboard__highlight-progress-bar';
+  progressBar.style.width = '0%';
+  progressBar.style.setProperty('inline-size', '0%');
+  progress.append(progressBar);
+
+  const percentageElement = document.createElement('span');
+  percentageElement.className = 'admin-dashboard__highlight-percentage';
+  percentageElement.textContent = '0%';
+
+  progressWrapper.append(progress, percentageElement);
+
+  const helperElement = document.createElement('p');
+  helperElement.className = 'admin-dashboard__highlight-helper';
+  helperElement.textContent = '—';
+
+  card.append(titleElement, valueElement, progressWrapper, helperElement);
+
+  function setData({ value = 0, total = 0, helper = '—' } = {}) {
+    const numericValue = Number.isFinite(value) ? value : 0;
+    const numericTotal = Number.isFinite(total) ? total : 0;
+    const denominator = numericTotal > 0 ? numericTotal : 0;
+    const ratio = denominator > 0 ? numericValue / denominator : numericValue > 0 ? 1 : 0;
+    const safeRatio = Math.min(Math.max(ratio, 0), 1);
+    const percentage = Math.round(safeRatio * 100);
+
+    valueElement.textContent = formatCount(numericValue);
+    percentageElement.textContent = `${percentage}%`;
+    const percentageValue = `${percentage}%`;
+    progressBar.style.width = percentageValue;
+    progressBar.style.setProperty('inline-size', percentageValue);
+    progress.setAttribute('aria-valuenow', String(percentage));
+    helperElement.textContent = helper;
+  }
+
+  function reset() {
+    setData({ value: 0, total: 0, helper: '—' });
+  }
+
+  reset();
+
+  return { element: card, setData, reset };
+}
+
+function createHighlightsWidget() {
+  let users = [];
+  let miniApps = [];
+
+  const widget = document.createElement('section');
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--highlights';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Indicadores gerais';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent = 'Acompanhe o pulso dos mini-apps e dos acessos ao painel.';
+
+  const grid = document.createElement('div');
+  grid.className = 'admin-dashboard__highlight-grid';
+
+  const cards = {
+    activeMiniApps: createHighlightCard({
+      title: 'Mini-apps ativos',
+      variant: 'miniapps-active',
+    }),
+    deployingMiniApps: createHighlightCard({
+      title: 'Implantações em andamento',
+      variant: 'miniapps-deploying',
+    }),
+    registeredUsers: createHighlightCard({
+      title: 'Usuários cadastrados',
+      variant: 'users-registered',
+    }),
+    activeAdmins: createHighlightCard({
+      title: 'Administradores ativos',
+      variant: 'users-admins',
+    }),
+  };
+
+  Object.values(cards).forEach((card) => {
+    grid.append(card.element);
+  });
+
+  widget.append(title, description, grid);
+
+  function normalizeUsers(entries) {
+    if (!Array.isArray(entries)) {
+      return [];
+    }
+
+    return entries.filter((user) => user && typeof user === 'object');
+  }
+
+  function normalizeMiniApps(entries) {
+    if (!Array.isArray(entries)) {
+      return [];
+    }
+
+    return entries.filter((entry) => entry && typeof entry === 'object');
+  }
+
+  function updateHighlights() {
+    const totalMiniApps = miniApps.length;
+    const activeMiniApps = miniApps.filter((app) => app && app.status === 'active').length;
+    const deployingMiniApps = miniApps.filter((app) => DEPLOYMENT_STATUSES.has(app?.status)).length;
+    const hasMiniApps = totalMiniApps > 0;
+
+    const totalUsers = users.length;
+    const adminUsers = users.filter((user) => {
+      const userType = String(user?.userType ?? '')
+        .trim()
+        .toLowerCase();
+      return userType === 'administrador';
+    }).length;
+
+    const activeHelper = hasMiniApps
+      ? activeMiniApps > 0
+        ? `${formatCount(activeMiniApps)} de ${formatCount(totalMiniApps)} mini-apps estão ativos.`
+        : 'Nenhum mini-app ativo até o momento.'
+      : 'Nenhum mini-app cadastrado no momento.';
+
+    const deploymentLabel = deployingMiniApps === 1 ? 'implantação segue' : 'implantações seguem';
+
+    const deploymentsHelper = hasMiniApps
+      ? deployingMiniApps > 0
+        ? `${formatCount(deployingMiniApps)} ${deploymentLabel} em preparação.`
+        : 'Todas as implantações estão concluídas.'
+      : 'Nenhum mini-app cadastrado no momento.';
+
+    cards.activeMiniApps.setData({
+      value: activeMiniApps,
+      total: totalMiniApps,
+      helper: activeHelper,
+    });
+
+    cards.deployingMiniApps.setData({
+      value: deployingMiniApps,
+      total: totalMiniApps,
+      helper: deploymentsHelper,
+    });
+
+    cards.registeredUsers.setData({
+      value: totalUsers,
+      total: USER_REGISTRATION_GOAL,
+      helper:
+        totalUsers > 0
+          ? `${formatCount(totalUsers)} de ${formatCount(USER_REGISTRATION_GOAL)} cadastros planejados.`
+          : 'Aguardando primeiros cadastros.',
+    });
+
+    const usersBase = totalUsers > 0 ? totalUsers : 1;
+    const adminLabel = adminUsers === 1 ? 'administrador ativo' : 'administradores ativos';
+    const userLabel = totalUsers === 1 ? 'usuário' : 'usuários';
+    cards.activeAdmins.setData({
+      value: adminUsers,
+      total: usersBase,
+      helper:
+        totalUsers > 0
+          ? `${formatCount(adminUsers)} ${adminLabel} para ${formatCount(totalUsers)} ${userLabel}.`
+          : 'Cadastre administradores para liberar acessos.',
+    });
+  }
+
+  function setUsers(nextUsers) {
+    users = normalizeUsers(nextUsers);
+    updateHighlights();
+  }
+
+  function setMiniApps(nextMiniApps) {
+    miniApps = normalizeMiniApps(nextMiniApps);
+    updateHighlights();
+  }
+
+  function teardown() {
+    users = [];
+    miniApps = [];
+    Object.values(cards).forEach((card) => card.reset());
+  }
+
+  updateHighlights();
+
+  return { widget, setUsers, setMiniApps, teardown };
 }
 
 function createUsersWidget() {
@@ -675,6 +894,10 @@ export function renderAdmin(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout';
 
+  const highlightsWidget = createHighlightsWidget();
+  cleanupHandlers.push(highlightsWidget.teardown);
+  layout.append(highlightsWidget.widget);
+
   const usersWidget = createUsersWidget();
   cleanupHandlers.push(usersWidget.teardown);
   layout.append(usersWidget.widget);
@@ -686,18 +909,37 @@ export function renderAdmin(viewRoot) {
   viewRoot.setAttribute('aria-label', 'Painel administrativo');
   viewRoot.replaceChildren(layout);
 
-  const unsubscribe = subscribeUsers((snapshot) => {
+  const unsubscribeUsers = subscribeUsers((snapshot) => {
     usersWidget.setUsers(snapshot);
+    highlightsWidget.setUsers(snapshot);
   });
 
-  if (typeof unsubscribe === 'function') {
-    cleanupHandlers.push(unsubscribe);
+  if (typeof unsubscribeUsers === 'function') {
+    cleanupHandlers.push(unsubscribeUsers);
+  }
+
+  const unsubscribeMiniApps = subscribeMiniApps((snapshot) => {
+    highlightsWidget.setMiniApps(snapshot);
+  });
+
+  if (typeof unsubscribeMiniApps === 'function') {
+    cleanupHandlers.push(unsubscribeMiniApps);
   }
 
   try {
-    usersWidget.setUsers(getUsers());
+    const initialUsers = getUsers();
+    usersWidget.setUsers(initialUsers);
+    highlightsWidget.setUsers(initialUsers);
   } catch (error) {
     console.error('Não foi possível carregar usuários iniciais para o painel administrativo.', error);
     usersWidget.setUsers([]);
+    highlightsWidget.setUsers([]);
+  }
+
+  try {
+    highlightsWidget.setMiniApps(getMiniAppsSnapshot());
+  } catch (error) {
+    console.error('Não foi possível carregar mini-apps iniciais para o painel administrativo.', error);
+    highlightsWidget.setMiniApps([]);
   }
 }
