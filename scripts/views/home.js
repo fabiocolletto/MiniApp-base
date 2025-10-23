@@ -349,20 +349,13 @@ function renderGuestPanel(ownerDocument) {
   const actions = doc.createElement('div');
   actions.className = 'home-guest__actions';
 
-  const loginButton = doc.createElement('button');
-  loginButton.type = 'button';
-  loginButton.className = 'button button--primary button--pill home-guest__action home-guest__action--primary';
-  loginButton.textContent = 'Fazer login';
-  loginButton.addEventListener('click', () => navigateTo('login'));
+  const userPanelButton = doc.createElement('button');
+  userPanelButton.type = 'button';
+  userPanelButton.className = 'button button--primary button--pill home-guest__action home-guest__action--primary';
+  userPanelButton.textContent = 'Ir para o painel do usuário';
+  userPanelButton.addEventListener('click', () => navigateTo('user'));
 
-  const registerButton = doc.createElement('button');
-  registerButton.type = 'button';
-  registerButton.className =
-    'button button--secondary button--pill home-guest__action home-guest__action--secondary';
-  registerButton.textContent = 'Criar conta';
-  registerButton.addEventListener('click', () => navigateTo('register'));
-
-  actions.append(loginButton, registerButton);
+  actions.append(userPanelButton);
 
   const registerRedirect = doc.createElement('p');
   registerRedirect.className = 'auth-panel__redirect home-guest__redirect';

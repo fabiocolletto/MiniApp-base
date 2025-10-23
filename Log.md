@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.186 - 2025-10-24 15:10 BRT
+- Substitui os botões de login e cadastro do painel Início por um único atalho que leva ao painel do usuário.
+- Atualiza os testes do painel Início para validar a nova navegação voltada ao painel do usuário.
+
 ## v0.1.185 - 2025-10-23 14:20 BRT
 - Simplifica os cards de mini-apps da loja mantendo apenas título, categoria e resumo compacto para cada item.
 - Adiciona o botão de atalho com ícone de mais para abrir a ficha técnica em modal com desfoque do plano de fundo.
