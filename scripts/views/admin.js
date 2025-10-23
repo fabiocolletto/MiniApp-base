@@ -7,25 +7,12 @@ import {
   updateMiniApp as persistMiniAppUpdate,
 } from '../data/miniapp-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
+import {
+  createSystemUsersWidget,
+  formatDateTime,
+} from './shared/system-users-widget.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
-
-const USER_TYPE_LABELS = {
-  administrador: 'Administrador',
-  colaborador: 'Colaborador',
-  usuario: 'Usuário',
-};
-
-const THEME_LABELS = {
-  dark: 'Tema escuro',
-  light: 'Tema claro',
-  system: 'Automático (sistema)',
-};
-
-const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-});
 
 const countFormatter = new Intl.NumberFormat('pt-BR');
 const USER_REGISTRATION_GOAL = 120;
@@ -36,101 +23,9 @@ function formatCount(value) {
   return countFormatter.format(Math.max(0, Math.trunc(numericValue)));
 }
 
-function formatDateTime(value) {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return dateTimeFormatter.format(value);
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    const date = new Date(value);
-    if (!Number.isNaN(date.getTime())) {
-      return dateTimeFormatter.format(date);
-    }
-  }
-
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return dateTimeFormatter.format(parsed);
-    }
-  }
-
-  return '—';
-}
-
-function formatUserType(type) {
-  const normalized = String(type ?? '')
-    .trim()
-    .toLowerCase();
-  return USER_TYPE_LABELS[normalized] ?? USER_TYPE_LABELS.usuario;
-}
-
-function formatThemePreference(theme) {
-  const normalized = String(theme ?? '')
-    .trim()
-    .toLowerCase();
-  if (normalized && THEME_LABELS[normalized]) {
-    return THEME_LABELS[normalized];
-  }
-  return 'Não informado';
-}
-
-function normalizeUser(user) {
-  if (!user || typeof user !== 'object') {
-    return null;
-  }
-
-  if (user.id == null) {
-    return null;
-  }
-
-  const id = String(user.id);
-  const name = typeof user.name === 'string' && user.name.trim() ? user.name.trim() : 'Usuário sem nome';
-  const phone = typeof user.phone === 'string' ? user.phone.trim() : '';
-  const userType = typeof user.userType === 'string' ? user.userType.trim().toLowerCase() : 'usuario';
-  const device = typeof user.device === 'string' ? user.device.trim() : '';
-
-  const profileEmail = typeof user?.profile?.email === 'string' ? user.profile.email.trim() : '';
-  const profileDocument = typeof user?.profile?.document === 'string' ? user.profile.document.trim() : '';
-  const profileCity = typeof user?.profile?.addressCity === 'string' ? user.profile.addressCity.trim() : '';
-  const profileState = typeof user?.profile?.addressState === 'string' ? user.profile.addressState.trim() : '';
-
-  const preferencesTheme = user?.preferences?.theme;
-
-  return {
-    id,
-    name,
-    phone,
-    userType,
-    device,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    profile: {
-      email: profileEmail,
-      document: profileDocument,
-      city: profileCity,
-      state: profileState,
-    },
-    preferences: {
-      theme: preferencesTheme,
-    },
-  };
-}
-
-function createDefinitionItem(term, value) {
-  const item = document.createElement('div');
-  item.className = 'user-dashboard__summary-item';
-
-  const termElement = document.createElement('dt');
-  termElement.className = 'user-dashboard__summary-label';
-  termElement.textContent = term;
-
-  const valueElement = document.createElement('dd');
-  valueElement.className = 'user-dashboard__summary-value';
-  valueElement.textContent = value;
-
-  item.append(termElement, valueElement);
-  return item;
+function formatMiniAppStatus(status) {
+  const option = MINI_APP_STATUS_OPTIONS.find((entry) => entry.value === status);
+  return option ? option.label : 'Status desconhecido';
 }
 
 function createHighlightCard({ title, variant }) {
@@ -344,199 +239,6 @@ function createHighlightsWidget() {
   updateHighlights();
 
   return { widget, setUsers, setMiniApps, teardown };
-}
-
-function createUsersWidget() {
-  let users = [];
-  let expandedUserId = null;
-
-  const widget = document.createElement('section');
-  widget.className =
-    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--users';
-
-  const title = document.createElement('h2');
-  title.className = 'user-widget__title';
-  title.textContent = 'Gestão de usuários do sistema';
-
-  const description = document.createElement('p');
-  description.className = 'user-widget__description';
-  description.textContent =
-    'Visualize todos os cadastros já sincronizados e expanda para consultar dados principais e preferências salvas.';
-
-  const tableContainer = document.createElement('div');
-  tableContainer.className = 'admin-user-table-container';
-
-  const table = document.createElement('table');
-  table.className = 'admin-user-table';
-
-  const thead = document.createElement('thead');
-  thead.className = 'admin-user-table__head';
-
-  const headRow = document.createElement('tr');
-
-  [
-    { label: 'Nome', className: 'admin-user-table__head-cell admin-user-table__head-cell--name' },
-    { label: 'Telefone', className: 'admin-user-table__head-cell' },
-    { label: 'Tipo', className: 'admin-user-table__head-cell' },
-    { label: 'Atualizado em', className: 'admin-user-table__head-cell' },
-    { label: 'Ações', className: 'admin-user-table__head-cell admin-user-table__head-cell--actions' },
-  ].forEach((column) => {
-    const cell = document.createElement('th');
-    cell.scope = 'col';
-    cell.className = column.className;
-    cell.textContent = column.label;
-    headRow.append(cell);
-  });
-
-  thead.append(headRow);
-
-  const tbody = document.createElement('tbody');
-  tbody.className = 'admin-user-table__body';
-
-  table.append(thead, tbody);
-  tableContainer.append(table);
-  widget.append(title, description, tableContainer);
-
-  function renderRows() {
-    tbody.replaceChildren();
-
-    if (users.length === 0) {
-      const emptyRow = document.createElement('tr');
-      emptyRow.className = 'admin-user-table__empty-row';
-
-      const emptyCell = document.createElement('td');
-      emptyCell.colSpan = 5;
-      emptyCell.className = 'admin-user-table__empty-cell';
-      emptyCell.textContent = 'Nenhum usuário cadastrado até o momento.';
-
-      emptyRow.append(emptyCell);
-      tbody.append(emptyRow);
-      return;
-    }
-
-    users.forEach((user) => {
-      const isExpanded = expandedUserId === user.id;
-
-      const row = document.createElement('tr');
-      row.className = 'admin-user-table__row';
-      row.dataset.state = isExpanded ? 'expanded' : 'collapsed';
-      row.dataset.userId = user.id;
-
-      const nameCell = document.createElement('td');
-      nameCell.className = 'admin-user-table__cell admin-user-table__cell--name';
-      nameCell.textContent = user.name;
-
-      const phoneCell = document.createElement('td');
-      phoneCell.className = 'admin-user-table__cell admin-user-table__cell--phone';
-      phoneCell.textContent = user.phone || '—';
-
-      const typeCell = document.createElement('td');
-      typeCell.className = 'admin-user-table__cell admin-user-table__cell--type';
-      typeCell.textContent = formatUserType(user.userType);
-
-      const updatedCell = document.createElement('td');
-      updatedCell.className = 'admin-user-table__cell';
-      updatedCell.textContent = formatDateTime(user.updatedAt);
-
-      const actionCell = document.createElement('td');
-      actionCell.className = 'admin-user-table__cell admin-user-table__cell--actions';
-
-      const toggleButton = document.createElement('button');
-      toggleButton.type = 'button';
-      toggleButton.className = 'button panel-action-tile panel-action-tile--icon admin-user-table__toggle';
-      toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-      toggleButton.setAttribute(
-        'aria-label',
-        isExpanded ? `Recolher dados de ${user.name}` : `Expandir dados de ${user.name}`,
-      );
-
-      const toggleIcon = document.createElement('span');
-      toggleIcon.className = 'admin-user-table__toggle-icon';
-      toggleButton.append(toggleIcon);
-
-      toggleButton.addEventListener('click', () => {
-        expandedUserId = isExpanded ? null : user.id;
-        renderRows();
-      });
-
-      actionCell.append(toggleButton);
-
-      row.append(nameCell, phoneCell, typeCell, updatedCell, actionCell);
-
-      const detailsRow = document.createElement('tr');
-      detailsRow.className = 'admin-user-table__details-row';
-      detailsRow.dataset.userId = user.id;
-      detailsRow.hidden = !isExpanded;
-
-      const detailsCell = document.createElement('td');
-      detailsCell.colSpan = 5;
-      detailsCell.className = 'admin-user-table__details-cell';
-
-      const detailsPanel = document.createElement('div');
-      detailsPanel.className = 'admin-user-table__details-panel user-dashboard__summary';
-
-      const detailsIntro = document.createElement('p');
-      detailsIntro.className = 'admin-user-table__details-intro';
-      detailsIntro.textContent = 'Resumo sincronizado com o painel do usuário.';
-
-      const detailsList = document.createElement('dl');
-      detailsList.className = 'user-dashboard__summary-list';
-
-      const cityState = [user.profile.city, user.profile.state].filter(Boolean).join(' · ');
-
-      [
-        ['E-mail principal', user.profile.email || '—'],
-        ['Documento', user.profile.document || '—'],
-        ['Localização', cityState || '—'],
-        ['Dispositivo reconhecido', user.device || '—'],
-        ['Preferência de tema', formatThemePreference(user.preferences.theme)],
-        ['Criado em', formatDateTime(user.createdAt)],
-        ['Atualizado em', formatDateTime(user.updatedAt)],
-      ]
-        .map(([term, value]) => createDefinitionItem(term, value))
-        .forEach((item) => {
-          detailsList.append(item);
-        });
-
-      detailsPanel.append(detailsIntro, detailsList);
-      detailsCell.append(detailsPanel);
-      detailsRow.append(detailsCell);
-
-      tbody.append(row, detailsRow);
-    });
-  }
-
-  function setUsers(nextUsers) {
-    if (!Array.isArray(nextUsers)) {
-      users = [];
-      expandedUserId = null;
-      renderRows();
-      return;
-    }
-
-    users = nextUsers
-      .map((user) => normalizeUser(user))
-      .filter((user) => user !== null)
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-
-    if (expandedUserId && !users.some((user) => user.id === expandedUserId)) {
-      expandedUserId = null;
-    }
-
-    renderRows();
-  }
-
-  function teardown() {
-    users = [];
-    expandedUserId = null;
-  }
-
-  return { widget, setUsers, teardown };
-}
-
-function formatMiniAppStatus(status) {
-  const option = MINI_APP_STATUS_OPTIONS.find((item) => item.value === status);
-  return option ? option.label : 'Status não definido';
 }
 
 function createMiniAppsWidget() {
@@ -902,7 +604,7 @@ export function renderAdmin(viewRoot) {
   cleanupHandlers.push(highlightsWidget.teardown);
   layout.append(highlightsWidget.widget);
 
-  const usersWidget = createUsersWidget();
+  const usersWidget = createSystemUsersWidget();
   cleanupHandlers.push(usersWidget.teardown);
   layout.append(usersWidget.widget);
 
