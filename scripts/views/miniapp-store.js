@@ -59,6 +59,24 @@ function createImageSlot(label, { variant = 'default', ariaHidden = false } = {}
   return slot;
 }
 
+function createCatalogAvatar(name) {
+  const avatar = document.createElement('div');
+  avatar.className = 'miniapp-store__catalog-avatar';
+  avatar.setAttribute('aria-hidden', 'true');
+
+  const label = document.createElement('span');
+  label.className = 'miniapp-store__catalog-avatar-label';
+
+  if (typeof name === 'string' && name.trim() !== '') {
+    label.textContent = name.trim().charAt(0).toUpperCase();
+  } else {
+    label.textContent = 'M';
+  }
+
+  avatar.append(label);
+  return avatar;
+}
+
 function mapMiniAppToEntry(app) {
   if (!app) {
     return null;
@@ -99,55 +117,72 @@ function mapMiniAppToEntry(app) {
 
 function renderMiniAppCatalogItem(entry) {
   const item = document.createElement('li');
-  item.className = 'home-dashboard__list-item carousel-item miniapp-store__catalog-item';
+  item.className = 'carousel-item miniapp-store__catalog-item';
   item.dataset.appId = entry.id;
-  item.tabIndex = 0;
-  item.setAttribute('role', 'button');
-  item.setAttribute('aria-label', `Abrir detalhes de ${entry.name}`);
 
-  const name = document.createElement('h3');
-  name.className = 'home-dashboard__action-label';
-  name.textContent = entry.name;
+  const card = document.createElement('article');
+  card.className = 'miniapp-store__catalog-card';
 
-  const description = document.createElement('p');
-  description.className = 'home-dashboard__action-description';
-  description.textContent = entry.description;
+  const header = document.createElement('div');
+  header.className = 'miniapp-store__catalog-header';
 
-  const metaList = document.createElement('dl');
-  metaList.className = 'user-dashboard__summary-list';
+  const avatar = createCatalogAvatar(entry.name);
 
-  [
-    ['Categoria', entry.category],
-    ['Status', entry.statusLabel],
-    ['Atualização', entry.updatedAtLabel],
-  ]
-    .map(([term, value]) => createSummaryEntry(term, value))
-    .filter(Boolean)
-    .forEach((element) => {
-      metaList.append(element);
-    });
+  const action = document.createElement('button');
+  action.type = 'button';
+  action.className = 'miniapp-store__catalog-action';
+  action.setAttribute('aria-label', `Abrir ficha técnica do miniapp ${entry.name}`);
+  action.title = `Abrir ficha técnica de ${entry.name}`;
+
+  const actionSymbol = document.createElement('span');
+  actionSymbol.setAttribute('aria-hidden', 'true');
+  actionSymbol.textContent = '+';
+  action.append(actionSymbol);
 
   const openDetails = (trigger) => {
-    const detailTrigger = trigger instanceof HTMLElement ? trigger : item;
+    const detailTrigger = trigger instanceof HTMLElement ? trigger : action;
     eventBus.emit('miniapp:details', { app: entry.details, trigger: detailTrigger });
   };
 
-  item.addEventListener('click', () => {
-    openDetails(item);
+  action.addEventListener('click', () => {
+    openDetails(action);
   });
 
-  item.addEventListener('keydown', (event) => {
-    if (!(event instanceof KeyboardEvent)) {
-      return;
-    }
+  header.append(avatar, action);
 
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openDetails(item);
-    }
-  });
+  const name = document.createElement('h3');
+  name.className = 'miniapp-store__catalog-name';
+  name.textContent = entry.name;
 
-  item.append(name, description, metaList);
+  const description = document.createElement('p');
+  description.className = 'miniapp-store__catalog-description';
+  description.textContent = entry.description;
+
+  const elements = [header, name];
+
+  const metaText = [entry.statusLabel, entry.updatedAtLabel]
+    .filter((value) => typeof value === 'string' && value.trim() !== '')
+    .join(' · ');
+
+  elements.push(description);
+
+  if (metaText) {
+    const meta = document.createElement('p');
+    meta.className = 'miniapp-store__catalog-meta';
+    meta.textContent = metaText;
+    elements.push(meta);
+  }
+
+  if (entry.category) {
+    const category = document.createElement('span');
+    category.className = 'miniapp-store__catalog-tag';
+    category.textContent = entry.category;
+    elements.push(category);
+  }
+
+  card.append(...elements);
+
+  item.append(card);
   return item;
 }
 
