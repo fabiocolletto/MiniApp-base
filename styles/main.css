@@ -3125,6 +3125,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: var(--panel-inner-gap);
 }
 
+.home-dashboard__widget--recent,
 .home-dashboard__widget--favorites,
 .home-dashboard__widget--saved,
 .home-dashboard__widget--miniapps {
@@ -3294,6 +3295,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   justify-items: stretch;
 }
 
+.home-dashboard__miniapps--recent,
 .home-dashboard__miniapps--favorites {
   padding: clamp(0.75rem, 2.1vw, 1.15rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3302,6 +3304,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-content: stretch;
 }
 
+.home-dashboard__miniapps-item--recent,
 .home-dashboard__miniapps-item--favorite {
   display: grid;
   place-items: center;

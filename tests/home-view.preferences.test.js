@@ -254,6 +254,7 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const { resetMiniApps } = await import('../scripts/data/miniapp-store.js');
   const { resetMiniAppPreferences } = await import('../scripts/data/miniapp-preferences-store.js');
+  const { resetMiniAppActivity } = await import('../scripts/data/miniapp-activity-store.js');
   const { resetUserStoreForTests, addUser } = await import('../scripts/data/user-store.js');
   const { setActiveUser, clearActiveUser } = await import('../scripts/data/session-store.js');
 
@@ -293,6 +294,16 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
     },
   });
 
+  resetMiniAppActivity({
+    [String(newUser.id)]: [
+      { appId: 'zeta', lastAccessedAt: '2025-10-18T12:00:00-03:00' },
+      { appId: 'epsilon', lastAccessedAt: '2025-10-18T11:50:00-03:00' },
+      { appId: 'delta', lastAccessedAt: '2025-10-18T11:40:00-03:00' },
+      { appId: 'gamma', lastAccessedAt: '2025-10-18T11:30:00-03:00' },
+      { appId: 'beta', lastAccessedAt: '2025-10-18T11:20:00-03:00' },
+    ],
+  });
+
   const { renderHome } = await import('../scripts/views/home.js');
 
   const viewRoot = fakeDocument.createElement('div');
@@ -300,9 +311,9 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const layout = viewRoot.querySelector('.home-dashboard__layout');
   assert.ok(layout, 'layout principal deve existir');
-  assert.equal(layout.children.length, 5, 'devem existir cinco widgets principais');
+  assert.equal(layout.children.length, 6, 'devem existir seis widgets principais');
 
-  const [introWidget, panelLabelWidget, favoritesWidget, savedWidget, availableWidget] = layout.children;
+  const [introWidget, panelLabelWidget, recentWidget, favoritesWidget, savedWidget, availableWidget] = layout.children;
 
   assert.ok(introWidget.classList.contains('home-dashboard__widget'), 'primeiro widget deve ser o introdutório');
 
@@ -355,8 +366,17 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
   assert.equal(preferenceInfo['Mini-apps salvos'], '5 mini-apps');
 
   assert.ok(
+    recentWidget.classList.contains('home-dashboard__widget--recent'),
+    'terceiro widget deve listar acessos recentes',
+  );
+  assert.ok(
+    !recentWidget.classList.contains('home-dashboard__widget-row'),
+    'widget de acessos recentes deve ocupar apenas metade da linha quando houver espaço',
+  );
+
+  assert.ok(
     favoritesWidget.classList.contains('home-dashboard__widget--favorites'),
-    'terceiro widget deve listar favoritos',
+    'quarto widget deve listar favoritos',
   );
   assert.ok(
     !favoritesWidget.classList.contains('home-dashboard__widget-row'),
@@ -364,11 +384,29 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
   );
   assert.ok(
     savedWidget.classList.contains('home-dashboard__widget--saved'),
-    'quarto widget deve listar mini-apps salvos',
+    'quinto widget deve listar mini-apps salvos',
   );
   assert.ok(
     availableWidget.classList.contains('home-dashboard__widget--miniapps'),
-    'quinto widget deve listar mini-apps liberados',
+    'sexto widget deve listar mini-apps liberados',
+  );
+
+  const recentList = recentWidget.querySelector('.home-dashboard__miniapps');
+  assert.ok(recentList, 'lista de acessos recentes deve estar presente');
+  assert.ok(
+    recentList.classList.contains('home-dashboard__miniapps--recent'),
+    'lista de acessos recentes deve usar layout em grade para ícones',
+  );
+  const recentIds = recentList.children.map((child) => child.dataset.appId);
+  assert.deepEqual(
+    recentIds,
+    ['zeta', 'delta', 'gamma', 'beta'],
+    'apenas mini-apps acessíveis devem ser exibidos e limitados aos quatro mais recentes',
+  );
+  const recentLabels = recentList.children.map((child) => child.querySelector('.sr-only')?.textContent ?? '');
+  assert.ok(
+    recentLabels.every((label) => label.includes('acessado')), // garante legenda com contexto temporal
+    'cada acesso recente deve informar data e hora no rótulo acessível',
   );
 
   const favoritesList = favoritesWidget.querySelector('.home-dashboard__miniapps');
@@ -421,6 +459,7 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
   t.after(async () => {
     clearActiveUser();
     resetMiniAppPreferences();
+    resetMiniAppActivity();
     resetMiniApps();
     await resetUserStoreForTests();
     delete globalThis.window;
