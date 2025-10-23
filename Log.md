@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.193 - 2025-10-24 20:00 BRT
+- Adiciona um indicador de atividade no rodapé para avisar quando existem alterações pendentes, salvamento em andamento, sucesso ou erros de sincronização.
+- Cria o módulo central de atividade e integra o painel do usuário para emitir estados consistentes durante entradas, autosave e perda de sessão.
+- Atualiza estilos, componentes do shell e testes automatizados para refletir o novo feedback consolidado e garantir cobertura do ciclo de salvamento.
+
 ## v0.1.192 - 2025-10-24 19:30 BRT
 - Remove o atalho "Kit de design" do menu principal do cabeçalho mantendo o acesso restrito às entradas internas do painel administrativo.
 - Atualiza o menu móvel para ocultar o acesso direto ao kit de design, preservando apenas o atalho principal do painel administrativo.

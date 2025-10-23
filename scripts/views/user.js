@@ -23,6 +23,13 @@ import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber } from './shared/validation.js';
 import { createSystemUsersWidget } from './shared/system-users-widget.js';
 import eventBus from '../events/event-bus.js';
+import {
+  markActivityDirty,
+  markActivitySaving,
+  markActivitySaved,
+  markActivityIdle,
+  markActivityError,
+} from '../system/activity-indicator.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
@@ -274,10 +281,61 @@ export function createPersistUserChanges(getUserFn, updateUserFn) {
       successMessage = 'Alterações salvas com sucesso!',
       errorMessage = 'Não foi possível salvar as alterações. Tente novamente.',
       missingSessionMessage = 'Nenhuma sessão ativa. Faça login para continuar.',
+      activity,
     } = {},
   ) {
+    const activityOptions = activity && typeof activity === 'object' ? activity : null;
+    const activitySource =
+      activityOptions && typeof activityOptions.source === 'string' && activityOptions.source.trim()
+        ? activityOptions.source.trim()
+        : 'global';
+
+    const buildActivityPayload = (messageKey, detailsKey) => {
+      const payload = { source: activitySource };
+
+      if (activityOptions && messageKey && Object.prototype.hasOwnProperty.call(activityOptions, messageKey)) {
+        const messageValue = activityOptions[messageKey];
+        if (typeof messageValue === 'string') {
+          payload.message = messageValue;
+        } else if (messageValue == null) {
+          payload.message = '';
+        }
+      }
+
+      if (activityOptions && detailsKey && Object.prototype.hasOwnProperty.call(activityOptions, detailsKey)) {
+        const detailsValue = activityOptions[detailsKey];
+        if (typeof detailsValue === 'string') {
+          payload.details = detailsValue;
+        } else if (detailsValue == null) {
+          payload.details = '';
+        }
+      }
+
+      return payload;
+    };
+
+    const runActivityCallback = (callbackName) => {
+      if (!activityOptions) {
+        return;
+      }
+
+      const callback = activityOptions[callbackName];
+      if (typeof callback === 'function') {
+        try {
+          callback();
+        } catch (error) {
+          console.error('Erro ao executar retorno do indicador de atividade.', error);
+        }
+      }
+    };
+
     const hasUpdates = updates && typeof updates === 'object' && Object.keys(updates).length > 0;
     if (!hasUpdates) {
+      if (activityOptions) {
+        markActivityIdle(buildActivityPayload('noChangesMessage', 'noChangesDetails'));
+        runActivityCallback('onNoChanges');
+        runActivityCallback('onComplete');
+      }
       return { status: 'no-changes' };
     }
 
@@ -288,6 +346,11 @@ export function createPersistUserChanges(getUserFn, updateUserFn) {
       }
       if (feedback?.show) {
         feedback.show(missingSessionMessage, { isError: true });
+      }
+      if (activityOptions) {
+        markActivityError(buildActivityPayload('missingSessionMessage', 'missingSessionDetails'));
+        runActivityCallback('onMissingSession');
+        runActivityCallback('onComplete');
       }
       return { status: 'no-session' };
     }
@@ -330,22 +393,33 @@ export function createPersistUserChanges(getUserFn, updateUserFn) {
       }
     };
 
+    if (activityOptions) {
+      markActivitySaving(buildActivityPayload('savingMessage', 'savingDetails'));
+    }
+
     toggleBusyState(true);
 
     try {
       await updateUserFn(activeUser.id, updates);
+      if (activityOptions) {
+        markActivitySaved(buildActivityPayload('savedMessage', 'savedDetails'));
+      }
       if (feedback?.show) {
         feedback.show(successMessage, { isError: false });
       }
       return { status: 'success' };
     } catch (error) {
       console.error('Erro ao persistir alterações no painel do usuário.', error);
+      if (activityOptions) {
+        markActivityError(buildActivityPayload('errorMessage', 'errorDetails'));
+      }
       if (feedback?.show) {
         feedback.show(errorMessage, { isError: true });
       }
       return { status: 'error', error };
     } finally {
       toggleBusyState(false);
+      runActivityCallback('onComplete');
     }
   };
 }
@@ -585,6 +659,129 @@ export function renderUserPanel(viewRoot) {
     .forEach((field) => {
       field.setAttribute('aria-describedby', feedbackElementId);
     });
+
+  const ACTIVITY_SOURCE = 'user-panel';
+  const activityLabels = {
+    dirtyMessage: 'Alterações pendentes no painel do usuário',
+    dirtyDetails: 'Suas edições serão salvas automaticamente.',
+    savingMessage: 'Sincronizando alterações do painel do usuário',
+    savingDetails: 'Estamos atualizando seus dados na memória local.',
+    savedMessage: 'Painel do usuário sincronizado',
+    savedDetails: 'As alterações foram salvas automaticamente.',
+    errorMessage: 'Não foi possível salvar alterações do painel do usuário',
+    errorDetails: 'Verifique os campos e tente novamente.',
+    missingSessionMessage: 'Sessão inativa para salvar alterações',
+    missingSessionDetails: 'Entre para sincronizar seus dados automaticamente.',
+    noChangesMessage: 'Nenhuma alteração pendente no painel do usuário',
+    noChangesDetails: 'Os dados exibidos correspondem à última sincronização.',
+  };
+
+  let hasPendingChanges = false;
+
+  const computeDirtyState = () => {
+    if (!activeUser) {
+      return false;
+    }
+
+    if (nameInput && nameInput.value.trim() !== (activeUser.name ?? '').trim()) {
+      return true;
+    }
+
+    if (phoneInput) {
+      const inputDigits = typeof phoneInput.value === 'string' ? phoneInput.value.replace(/\D+/g, '') : '';
+      const storedDigits = typeof activeUser.phone === 'string' ? activeUser.phone.replace(/\D+/g, '') : '';
+      if (inputDigits !== storedDigits) {
+        return true;
+      }
+    }
+
+    if (emailInput && emailInput.value.trim() !== (activeUser.profile?.email ?? '').trim()) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const forceActivityIdle = ({ message, details } = {}) => {
+    hasPendingChanges = false;
+    const payload = { source: ACTIVITY_SOURCE };
+    if (typeof message === 'string') {
+      payload.message = message;
+    }
+    if (typeof details === 'string') {
+      payload.details = details;
+    }
+    markActivityIdle(payload);
+  };
+
+  const refreshDirtyFlag = ({ allowIdle = true, force = false } = {}) => {
+    const dirty = computeDirtyState();
+
+    if (dirty) {
+      if (!hasPendingChanges || force) {
+        hasPendingChanges = true;
+        markActivityDirty({
+          source: ACTIVITY_SOURCE,
+          message: activityLabels.dirtyMessage,
+          details: activityLabels.dirtyDetails,
+        });
+      }
+      return true;
+    }
+
+    if (hasPendingChanges || force) {
+      hasPendingChanges = false;
+      if (allowIdle) {
+        forceActivityIdle({
+          message: activityLabels.noChangesMessage,
+          details: activityLabels.noChangesDetails,
+        });
+      }
+    }
+
+    return false;
+  };
+
+  const handleFieldInput = () => {
+    refreshDirtyFlag({ allowIdle: true, force: true });
+  };
+
+  [nameInput, phoneInput, emailInput]
+    .filter((field) => field instanceof HTMLElement)
+    .forEach((field) => {
+      field.addEventListener('input', handleFieldInput);
+      cleanupCallbacks.push(() => field.removeEventListener('input', handleFieldInput));
+    });
+
+  forceActivityIdle();
+
+  const activityConfig = {
+    source: ACTIVITY_SOURCE,
+    savingMessage: activityLabels.savingMessage,
+    savingDetails: activityLabels.savingDetails,
+    savedMessage: activityLabels.savedMessage,
+    savedDetails: activityLabels.savedDetails,
+    errorMessage: activityLabels.errorMessage,
+    errorDetails: activityLabels.errorDetails,
+    missingSessionMessage: activityLabels.missingSessionMessage,
+    missingSessionDetails: activityLabels.missingSessionDetails,
+    noChangesMessage: activityLabels.noChangesMessage,
+    noChangesDetails: activityLabels.noChangesDetails,
+    onComplete: () => {
+      refreshDirtyFlag({ allowIdle: false, force: true });
+    },
+    onNoChanges: () => {
+      refreshDirtyFlag({ allowIdle: true, force: true });
+    },
+    onMissingSession: () => {
+      hasPendingChanges = false;
+    },
+  };
+
+  cleanupCallbacks.push(() => {
+    hasPendingChanges = false;
+    markActivityIdle({ source: ACTIVITY_SOURCE });
+  });
 
   const accessActions = new Map();
   const busyButtons = new Set();
@@ -1013,6 +1210,7 @@ export function renderUserPanel(viewRoot) {
             : 'Tema claro ativado com sucesso!',
         errorMessage: 'Não foi possível atualizar o tema. Tente novamente.',
         missingSessionMessage: 'Nenhuma sessão ativa. Faça login para ajustar o tema.',
+        activity: activityConfig,
       },
     );
 
@@ -1067,6 +1265,7 @@ export function renderUserPanel(viewRoot) {
             : 'Indicadores exibidos com sucesso!',
         errorMessage: 'Não foi possível atualizar os indicadores. Tente novamente.',
         missingSessionMessage: 'Nenhuma sessão ativa. Faça login para ajustar os indicadores.',
+        activity: activityConfig,
       },
     );
 
@@ -1134,11 +1333,18 @@ export function renderUserPanel(viewRoot) {
   const persistUpdates = async (updates, { successMessage, busyTargets = [] } = {}) => {
     if (!activeUser) {
       showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      markActivityError({
+        source: ACTIVITY_SOURCE,
+        message: activityLabels.missingSessionMessage,
+        details: activityLabels.missingSessionDetails,
+      });
+      hasPendingChanges = false;
       return { status: 'no-session' };
     }
 
     const hasUpdates = updates && typeof updates === 'object' && Object.keys(updates).length > 0;
     if (!hasUpdates) {
+      refreshDirtyFlag({ allowIdle: true, force: true });
       return { status: 'no-changes' };
     }
 
@@ -1155,6 +1361,7 @@ export function renderUserPanel(viewRoot) {
       successMessage: successMessage ?? 'Alterações salvas com sucesso!',
       errorMessage: 'Não foi possível salvar as alterações. Tente novamente.',
       missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
+      activity: activityConfig,
     });
 
     if (result.status !== 'success') {
@@ -1162,7 +1369,7 @@ export function renderUserPanel(viewRoot) {
     }
 
     applySnapshotUpdates(updates);
-    updateForm();
+    updateForm({ allowIdleReset: false });
     updateActionState();
 
     return result;
@@ -1182,6 +1389,7 @@ export function renderUserPanel(viewRoot) {
     if (nextName === (activeUser.name ?? '')) {
       resetFeedback();
       updateSummary();
+      refreshDirtyFlag({ allowIdle: true, force: true });
       return;
     }
 
@@ -1223,6 +1431,7 @@ export function renderUserPanel(viewRoot) {
       phoneInput.value = formatPhoneNumberForDisplay(sanitizedPhone);
       resetFeedback();
       updateSummary();
+      refreshDirtyFlag({ allowIdle: true, force: true });
       return;
     }
 
@@ -1253,6 +1462,7 @@ export function renderUserPanel(viewRoot) {
     if (nextEmail === (activeUser.profile?.email ?? '')) {
       resetFeedback();
       updateSummary();
+      refreshDirtyFlag({ allowIdle: true, force: true });
       return;
     }
 
@@ -1268,6 +1478,12 @@ export function renderUserPanel(viewRoot) {
   const persistAllFields = async ({ showNoChangesFeedback = true } = {}) => {
     if (!activeUser) {
       showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      markActivityError({
+        source: ACTIVITY_SOURCE,
+        message: activityLabels.missingSessionMessage,
+        details: activityLabels.missingSessionDetails,
+      });
+      hasPendingChanges = false;
       return { status: 'no-session' };
     }
 
@@ -1317,6 +1533,7 @@ export function renderUserPanel(viewRoot) {
       if (showNoChangesFeedback) {
         showFeedback('Nenhuma alteração para salvar.', { isError: false });
       }
+      refreshDirtyFlag({ allowIdle: true, force: true });
       return { status: 'no-changes' };
     }
 
@@ -1366,7 +1583,7 @@ export function renderUserPanel(viewRoot) {
   });
   cleanupCallbacks.push(unsubscribeFooterIndicatorsListener);
 
-  const updateForm = () => {
+  const updateForm = ({ allowIdleReset = true } = {}) => {
     const user = activeUser;
     const isEnabled = Boolean(user);
 
@@ -1391,6 +1608,7 @@ export function renderUserPanel(viewRoot) {
 
     updateSummary();
     updateUserDataViewState();
+    refreshDirtyFlag({ allowIdle: allowIdleReset, force: true });
   };
 
   const updateActionState = () => {

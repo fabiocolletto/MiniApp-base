@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createPersistUserChanges } from '../scripts/views/user.js';
+import {
+  subscribeActivityStatus,
+  getActivityStatus,
+  __TEST_ONLY__ as activityTestUtils,
+} from '../scripts/system/activity-indicator.js';
 
 class FakeHTMLElement {}
 class FakeElement extends FakeHTMLElement {
@@ -25,6 +30,10 @@ globalThis.HTMLElement = FakeHTMLElement;
 function createFakeElement(options) {
   return new FakeElement(options);
 }
+
+test.beforeEach(() => {
+  activityTestUtils.reset();
+});
 
 test('persistUserChanges reports missing session without calling update', async () => {
   const feedbackLog = [];
@@ -129,4 +138,50 @@ test('persistUserChanges surfaces errors and clears busy state', async () => {
     message: 'Não foi possível salvar',
     options: { isError: true },
   });
+});
+
+test('persistUserChanges atualiza indicador de atividade durante salvamento', async () => {
+  const events = [];
+  const unsubscribe = subscribeActivityStatus((status) => {
+    events.push(status);
+  });
+
+  const helper = createPersistUserChanges(
+    () => ({ id: 11 }),
+    async () => {
+      return undefined;
+    },
+  );
+
+  const result = await helper(
+    { name: 'Usuário de Teste' },
+    {
+      activity: {
+        source: 'user-panel-test',
+        savingMessage: 'Salvando teste',
+        savingDetails: 'Sincronizando dados fictícios.',
+        savedMessage: 'Teste salvo',
+        savedDetails: 'Dados de teste sincronizados.',
+        errorMessage: 'Erro teste',
+        errorDetails: 'Falha fictícia.',
+        missingSessionMessage: 'Sessão ausente',
+        missingSessionDetails: 'Entre para continuar.',
+        noChangesMessage: 'Nenhuma alteração de teste',
+        noChangesDetails: 'Nada para salvar agora.',
+      },
+    },
+  );
+
+  unsubscribe();
+
+  assert.equal(result.status, 'success');
+  const savingEvent = events.find((entry) => entry.state === 'saving' && entry.source === 'user-panel-test');
+  assert.ok(savingEvent, 'deve registrar estado de salvamento');
+  assert.equal(savingEvent?.message, 'Salvando teste');
+  const savedEvent = events.find((entry) => entry.state === 'saved' && entry.source === 'user-panel-test');
+  assert.ok(savedEvent, 'deve registrar estado salvo');
+  assert.equal(savedEvent?.details, 'Dados de teste sincronizados.');
+  const snapshot = getActivityStatus();
+  assert.equal(snapshot.state, 'saved');
+  assert.equal(snapshot.source, 'user-panel-test');
 });

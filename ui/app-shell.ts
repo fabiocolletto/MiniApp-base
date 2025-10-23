@@ -16,6 +16,10 @@ import {
 } from '../scripts/data/session-store.js';
 import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
 import { getResolvedTheme, setThemePreference, subscribeThemeChange } from '../scripts/theme/theme-manager.js';
+import {
+  getActivityStatus as defaultGetActivityStatus,
+  subscribeActivityStatus as defaultSubscribeActivityStatus,
+} from '../scripts/system/activity-indicator.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -46,6 +50,9 @@ const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__t
 const sessionIndicatorAnnouncement = sessionIndicator?.querySelector(
   '.footer-session__announcement'
 );
+const activityIndicator = document.querySelector('.footer-activity');
+const activityIndicatorText = activityIndicator?.querySelector('.footer-activity__text');
+const activityIndicatorAnnouncement = activityIndicator?.querySelector('.footer-activity__announcement');
 
 const dimmedShellClass = 'app-shell--dimmed';
 
@@ -99,6 +106,8 @@ type UiHooks = Partial<{
   getActiveUser: typeof defaultGetActiveUser;
   getStorageStatus: typeof defaultGetStorageStatus;
   getSessionStatus: typeof defaultGetSessionStatus;
+  getActivityStatus: typeof defaultGetActivityStatus;
+  subscribeActivityStatus: typeof defaultSubscribeActivityStatus;
 }>;
 
 const rawHooks =
@@ -119,6 +128,14 @@ const getSessionStatusFn =
   rawHooks && typeof rawHooks.getSessionStatus === 'function'
     ? rawHooks.getSessionStatus
     : defaultGetSessionStatus;
+const getActivityStatusFn =
+  rawHooks && typeof rawHooks.getActivityStatus === 'function'
+    ? rawHooks.getActivityStatus
+    : defaultGetActivityStatus;
+const subscribeActivityStatusFn =
+  rawHooks && typeof rawHooks.subscribeActivityStatus === 'function'
+    ? rawHooks.subscribeActivityStatus
+    : defaultSubscribeActivityStatus;
 
 export type RouteName = 'dashboard' | 'login' | 'register';
 
@@ -943,6 +960,37 @@ function updateSessionStatus(status: unknown): void {
   }
 }
 
+function updateActivityStatus(status: unknown): void {
+  if (!(activityIndicator instanceof HTMLElement) || !(activityIndicatorText instanceof HTMLElement)) {
+    return;
+  }
+
+  const payload = (status ?? {}) as { state?: unknown; message?: unknown; details?: unknown; source?: unknown };
+  const state = typeof payload.state === 'string' ? payload.state : 'idle';
+  const message =
+    typeof payload.message === 'string' && payload.message.trim()
+      ? payload.message.trim()
+      : 'Nenhuma alteração pendente';
+  const details = typeof payload.details === 'string' ? payload.details.trim() : '';
+  const source = typeof payload.source === 'string' && payload.source.trim() ? payload.source.trim() : 'global';
+
+  activityIndicator.dataset.state = state;
+  activityIndicator.dataset.source = source;
+  activityIndicatorText.textContent = message;
+
+  if (activityIndicatorAnnouncement instanceof HTMLElement) {
+    activityIndicatorAnnouncement.textContent = details ? `${message}. ${details}` : message;
+  }
+
+  if (details) {
+    activityIndicator.setAttribute('title', details);
+    activityIndicator.setAttribute('aria-label', `${message}. ${details}`);
+  } else {
+    activityIndicator.removeAttribute('title');
+    activityIndicator.setAttribute('aria-label', message);
+  }
+}
+
 function focusViewRoot(): void {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -1184,6 +1232,13 @@ export function initializeAppShell(router: RouterBridge): void {
   eventBus.on('session:changed', (user) => {
     updateHeaderSession(user);
   });
+
+  if (activityIndicator instanceof HTMLElement && activityIndicatorText instanceof HTMLElement) {
+    updateActivityStatus(getActivityStatusFn());
+    subscribeActivityStatusFn((status) => {
+      updateActivityStatus(status);
+    });
+  }
 
   if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
     updateMemoryStatus(getStorageStatusFn());
