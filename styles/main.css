@@ -3061,6 +3061,38 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   text-align: center;
 }
 
+.admin-subscription-table__cell--plan {
+  min-width: 16rem;
+}
+
+.admin-subscription-table__plan {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-subscription-table__plan-name {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-subscription-table__plan-periodicity {
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
+.admin-subscription-table__miniapps-summary {
+  margin-top: 0.15rem;
+}
+
+.admin-subscription-table__cell--price {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-subscription-table__cell--category {
+  white-space: nowrap;
+}
+
 .admin-user-table__toggle {
   --panel-action-gap: 0;
   --panel-action-padding-block: 0;
@@ -3296,14 +3328,16 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   line-height: 1.55;
 }
 
-.admin-miniapp-table__controls {
+.admin-miniapp-table__controls,
+.admin-subscription-table__controls {
   display: grid;
   gap: clamp(0.75rem, 2vw, 1.2rem);
   align-items: start;
 }
 
 @media (min-width: 52rem) {
-  .admin-miniapp-table__controls {
+  .admin-miniapp-table__controls,
+  .admin-subscription-table__controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3420,7 +3454,8 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font-size: var(--panel-font-size-base);
 }
 
-.admin-miniapp-table__status-field {
+.admin-miniapp-table__status-field,
+.admin-subscription-table__field {
   display: grid;
   gap: 0.45rem;
   padding: clamp(0.6rem, 1.8vw, 1rem);
@@ -3429,7 +3464,8 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   background: rgba(var(--color-accent-rgb), 0.06);
 }
 
-.admin-miniapp-table__status-label {
+.admin-miniapp-table__status-label,
+.admin-subscription-table__field-label {
   font-size: var(--panel-font-size-compact);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -3437,7 +3473,9 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font-weight: 600;
 }
 
-.admin-miniapp-table__status-select {
+.admin-miniapp-table__status-select,
+.admin-subscription-table__input,
+.admin-subscription-table__select {
   width: 100%;
   padding: 0.55rem 0.85rem;
   border-radius: 0.65rem;
@@ -3447,7 +3485,9 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font: inherit;
 }
 
-.admin-miniapp-table__status-select:focus {
+.admin-miniapp-table__status-select:focus,
+.admin-subscription-table__input:focus,
+.admin-subscription-table__select:focus {
   outline: none;
   border-color: rgba(var(--color-accent-rgb), 0.45);
   box-shadow: 0 0 0 0.18rem rgba(var(--color-accent-rgb), 0.18);

@@ -6,6 +6,12 @@ import {
   subscribeMiniApps,
   updateMiniApp as persistMiniAppUpdate,
 } from '../data/miniapp-store.js';
+import {
+  SUBSCRIPTION_PERIODICITY_OPTIONS,
+  getSubscriptionPlansSnapshot,
+  subscribeSubscriptionPlans,
+  updateSubscriptionPlan as persistSubscriptionPlanUpdate,
+} from '../data/subscription-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import {
   createSystemUsersWidget,
@@ -24,6 +30,13 @@ const MINI_APP_AVATAR_REQUIREMENTS = {
   maxBytes: 128 * 1024,
 };
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' });
+const periodicityLabelMap = new Map(
+  SUBSCRIPTION_PERIODICITY_OPTIONS.map((option) => [option.value, option.label]),
+);
+const accessLevelLabelMap = new Map(ACCESS_LEVEL_OPTIONS.map((option) => [option.value, option.label]));
+
 function formatCount(value) {
   const numericValue = Number.isFinite(value) ? value : 0;
   return countFormatter.format(Math.max(0, Math.trunc(numericValue)));
@@ -32,6 +45,106 @@ function formatCount(value) {
 function formatMiniAppStatus(status) {
   const option = MINI_APP_STATUS_OPTIONS.find((entry) => entry.value === status);
   return option ? option.label : 'Status desconhecido';
+}
+
+function formatCurrency(value) {
+  const numericValue = typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  return currencyFormatter.format(numericValue);
+}
+
+function formatDateOnly(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return dateFormatter.format(value);
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return dateFormatter.format(date);
+    }
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return dateFormatter.format(parsed);
+    }
+  }
+
+  return '—';
+}
+
+function formatPlanPeriod(start, end) {
+  const startLabel = formatDateOnly(start);
+  const endLabel = formatDateOnly(end);
+
+  if (startLabel === '—' && endLabel === '—') {
+    return 'Período não definido';
+  }
+
+  if (startLabel === '—') {
+    return `Até ${endLabel}`;
+  }
+
+  if (endLabel === '—') {
+    return `A partir de ${startLabel}`;
+  }
+
+  return `${startLabel} — ${endLabel}`;
+}
+
+function formatPeriodicityLabel(value) {
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  return periodicityLabelMap.get(normalized) ?? 'Periodicidade não definida';
+}
+
+function formatUserCategoryLabel(value) {
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  return accessLevelLabelMap.get(normalized) ?? 'Categoria não definida';
+}
+
+function toDateInputValue(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const year = value.getUTCFullYear();
+    const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(value.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return toDateInputValue(new Date(value));
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return toDateInputValue(parsed);
+    }
+  }
+
+  return '';
+}
+
+function fromDateInputValue(value, fallback = null) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return fallback;
+  }
+
+  const [year, month, day] = value.split('-').map((part) => Number.parseInt(part, 10));
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return fallback;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return date.toISOString();
 }
 
 function createHighlightCard({ title, variant }) {
@@ -750,6 +863,518 @@ function createMiniAppsWidget() {
   return { widget, teardown };
 }
 
+function createSubscriptionPlansWidget() {
+  let plans = [];
+  let expandedPlanId = null;
+  const state = new Map();
+  let miniAppOptions = [];
+  const miniAppLabels = new Map();
+
+  const widget = document.createElement('section');
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--subscriptions';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Pacotes e assinaturas';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent =
+    'Configure vigência, valor e público de cada pacote antes de liberar os mini-apps para contratação.';
+
+  const tableContainer = document.createElement('div');
+  tableContainer.className = 'admin-user-table-container';
+
+  const table = document.createElement('table');
+  table.className = 'admin-user-table admin-subscription-table';
+
+  const thead = document.createElement('thead');
+  thead.className = 'admin-user-table__head';
+
+  const headRow = document.createElement('tr');
+
+  [
+    { label: 'Pacote', className: 'admin-user-table__head-cell admin-subscription-table__head-cell--plan' },
+    { label: 'Vigência', className: 'admin-user-table__head-cell' },
+    { label: 'Valor', className: 'admin-user-table__head-cell' },
+    { label: 'Categoria', className: 'admin-user-table__head-cell' },
+    { label: 'Ações', className: 'admin-user-table__head-cell admin-user-table__head-cell--actions' },
+  ].forEach((column) => {
+    const cell = document.createElement('th');
+    cell.scope = 'col';
+    cell.className = column.className;
+    cell.textContent = column.label;
+    headRow.append(cell);
+  });
+
+  thead.append(headRow);
+
+  const tbody = document.createElement('tbody');
+  tbody.className = 'admin-user-table__body';
+
+  table.append(thead, tbody);
+  tableContainer.append(table);
+  widget.append(title, description, tableContainer);
+
+  function normalizePlanEntry(entry) {
+    if (!entry || typeof entry !== 'object') {
+      return null;
+    }
+
+    const idSource = entry.id;
+    if (idSource == null) {
+      return null;
+    }
+
+    const id = String(idSource);
+    const name = typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : 'Pacote sem nome';
+    const descriptionText = typeof entry.description === 'string' ? entry.description.trim() : '';
+    const startDate = entry.startDate ?? '';
+    const endDate = entry.endDate ?? '';
+    const priceValue =
+      typeof entry.price === 'number' && Number.isFinite(entry.price)
+        ? entry.price
+        : Number.isFinite(Number.parseFloat(entry.price))
+        ? Number.parseFloat(entry.price)
+        : 0;
+    const periodicity = typeof entry.periodicity === 'string' ? entry.periodicity.trim().toLowerCase() : '';
+    const userCategory = typeof entry.userCategory === 'string' ? entry.userCategory.trim().toLowerCase() : 'usuario';
+    const createdAt = entry.createdAt ?? '';
+    const updatedAt = entry.updatedAt ?? '';
+
+    const miniApps = Array.isArray(entry.miniApps)
+      ? entry.miniApps
+          .map((value) => (value == null ? '' : String(value)))
+          .filter((value, index, array) => value && array.indexOf(value) === index)
+      : [];
+
+    return {
+      id,
+      name,
+      description: descriptionText,
+      startDate,
+      endDate,
+      price: Number.isFinite(priceValue) ? priceValue : 0,
+      periodicity,
+      miniApps,
+      userCategory,
+      createdAt,
+      updatedAt,
+    };
+  }
+
+  function setPlans(entries) {
+    const normalized = Array.isArray(entries)
+      ? entries
+          .map((entry) => normalizePlanEntry(entry))
+          .filter((entry) => entry !== null)
+      : [];
+
+    plans = normalized;
+    state.clear();
+    normalized.forEach((plan) => {
+      state.set(plan.id, plan);
+    });
+
+    if (expandedPlanId && !state.has(expandedPlanId)) {
+      expandedPlanId = null;
+    }
+
+    renderRows();
+  }
+
+  function setMiniApps(entries) {
+    miniAppLabels.clear();
+
+    if (!Array.isArray(entries)) {
+      miniAppOptions = [];
+      renderRows();
+      return;
+    }
+
+    miniAppOptions = entries
+      .filter((entry) => entry && typeof entry === 'object' && entry.id != null)
+      .map((entry) => {
+        const id = String(entry.id);
+        const name = typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : 'Mini-app sem nome';
+        miniAppLabels.set(id, name);
+        return { id, name };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+    renderRows();
+  }
+
+  function createMiniAppsSummary(plan) {
+    const summary = document.createElement('div');
+    summary.className = 'admin-miniapp-table__access-summary admin-subscription-table__miniapps-summary';
+
+    if (!plan.miniApps || plan.miniApps.length === 0) {
+      const emptyMessage = document.createElement('span');
+      emptyMessage.className = 'admin-miniapp-table__access-empty';
+      emptyMessage.textContent = 'Nenhum mini-app selecionado';
+      summary.append(emptyMessage);
+      return summary;
+    }
+
+    plan.miniApps.forEach((id) => {
+      const label = miniAppLabels.get(id) ?? id;
+      const chip = document.createElement('span');
+      chip.className = 'admin-miniapp-table__access-chip';
+      chip.textContent = label;
+      summary.append(chip);
+    });
+
+    return summary;
+  }
+
+  function applyPlanUpdate(id, updater) {
+    if (!state.has(id)) {
+      return;
+    }
+
+    persistSubscriptionPlanUpdate(id, (current) => {
+      const reference = current ?? state.get(id);
+      if (!reference) {
+        return current;
+      }
+
+      const patch = typeof updater === 'function' ? updater(reference) : updater;
+      if (!patch || typeof patch !== 'object') {
+        return reference;
+      }
+
+      return { ...reference, ...patch };
+    });
+  }
+
+  function renderRows() {
+    const rows = [];
+
+    if (plans.length === 0) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.className = 'admin-user-table__empty-row';
+
+      const emptyCell = document.createElement('td');
+      emptyCell.className = 'admin-user-table__empty-cell';
+      emptyCell.colSpan = 5;
+      emptyCell.textContent = 'Nenhum pacote cadastrado até o momento.';
+
+      emptyRow.append(emptyCell);
+      rows.push(emptyRow);
+      tbody.replaceChildren(...rows);
+      return;
+    }
+
+    const sortedPlans = plans.slice().sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+    sortedPlans.forEach((plan) => {
+      const isExpanded = expandedPlanId === plan.id;
+
+      const row = document.createElement('tr');
+      row.className = 'admin-user-table__row admin-subscription-table__row';
+      row.dataset.planId = plan.id;
+      if (isExpanded) {
+        row.dataset.state = 'expanded';
+      }
+
+      const planCell = document.createElement('td');
+      planCell.className = 'admin-user-table__cell admin-subscription-table__cell admin-subscription-table__cell--plan';
+
+      const planWrapper = document.createElement('div');
+      planWrapper.className = 'admin-subscription-table__plan';
+
+      const planName = document.createElement('span');
+      planName.className = 'admin-subscription-table__plan-name';
+      planName.textContent = plan.name;
+
+      const planPeriodicity = document.createElement('span');
+      planPeriodicity.className = 'admin-subscription-table__plan-periodicity';
+      planPeriodicity.textContent = formatPeriodicityLabel(plan.periodicity);
+
+      const planMiniApps = createMiniAppsSummary(plan);
+
+      planWrapper.append(planName, planPeriodicity, planMiniApps);
+      planCell.append(planWrapper);
+
+      const periodCell = document.createElement('td');
+      periodCell.className = 'admin-user-table__cell admin-subscription-table__cell admin-subscription-table__cell--period';
+      periodCell.textContent = formatPlanPeriod(plan.startDate, plan.endDate);
+
+      const priceCell = document.createElement('td');
+      priceCell.className = 'admin-user-table__cell admin-subscription-table__cell admin-subscription-table__cell--price';
+      priceCell.textContent = formatCurrency(plan.price);
+
+      const categoryCell = document.createElement('td');
+      categoryCell.className =
+        'admin-user-table__cell admin-subscription-table__cell admin-subscription-table__cell--category';
+      categoryCell.textContent = formatUserCategoryLabel(plan.userCategory);
+
+      const actionCell = document.createElement('td');
+      actionCell.className = 'admin-user-table__cell admin-user-table__cell--actions';
+
+      const toggleButton = document.createElement('button');
+      toggleButton.type = 'button';
+      toggleButton.className = 'button panel-action-tile panel-action-tile--icon admin-user-table__toggle';
+      toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      toggleButton.setAttribute(
+        'aria-label',
+        isExpanded ? `Recolher configurações de ${plan.name}` : `Expandir configurações de ${plan.name}`,
+      );
+
+      const toggleIcon = document.createElement('span');
+      toggleIcon.className = 'admin-user-table__toggle-icon';
+      toggleButton.append(toggleIcon);
+
+      toggleButton.addEventListener('click', () => {
+        expandedPlanId = isExpanded ? null : plan.id;
+        renderRows();
+      });
+
+      actionCell.append(toggleButton);
+
+      row.append(planCell, periodCell, priceCell, categoryCell, actionCell);
+
+      const detailsRow = document.createElement('tr');
+      detailsRow.className = 'admin-user-table__details-row admin-miniapp-table__details-row admin-subscription-table__details-row';
+      detailsRow.dataset.planId = plan.id;
+      detailsRow.hidden = !isExpanded;
+
+      const detailsCell = document.createElement('td');
+      detailsCell.colSpan = 5;
+      detailsCell.className = 'admin-user-table__details-cell admin-miniapp-table__details-cell';
+
+      const detailsPanel = document.createElement('div');
+      detailsPanel.className = 'admin-miniapp-table__details admin-subscription-table__details';
+
+      const detailsHeader = document.createElement('header');
+      detailsHeader.className = 'admin-miniapp-table__details-header';
+
+      const detailsTitle = document.createElement('h3');
+      detailsTitle.className = 'admin-miniapp-table__details-title';
+      detailsTitle.textContent = plan.name;
+
+      const detailsSubtitle = document.createElement('p');
+      detailsSubtitle.className = 'admin-miniapp-table__details-subtitle';
+      detailsSubtitle.textContent = `${formatPeriodicityLabel(plan.periodicity)} · Última atualização ${formatDateTime(
+        plan.updatedAt,
+      )}`;
+
+      detailsHeader.append(detailsTitle, detailsSubtitle);
+
+      const detailsDescription = document.createElement('p');
+      detailsDescription.className = 'admin-miniapp-table__details-description';
+      detailsDescription.textContent = plan.description || '—';
+
+      const controls = document.createElement('div');
+      controls.className = 'admin-miniapp-table__controls admin-subscription-table__controls';
+
+      const startField = document.createElement('label');
+      startField.className = 'admin-subscription-table__field';
+
+      const startLabel = document.createElement('span');
+      startLabel.className = 'admin-subscription-table__field-label';
+      startLabel.textContent = 'Data de início';
+
+      const startInput = document.createElement('input');
+      startInput.type = 'date';
+      startInput.className = 'admin-subscription-table__input admin-subscription-table__start-input';
+      startInput.dataset.field = 'start-date';
+      startInput.value = toDateInputValue(plan.startDate);
+
+      startInput.addEventListener('change', () => {
+        const nextValue = fromDateInputValue(startInput.value, plan.startDate);
+        if (!nextValue) {
+          startInput.value = toDateInputValue(plan.startDate);
+          return;
+        }
+
+        applyPlanUpdate(plan.id, { startDate: nextValue });
+      });
+
+      startField.append(startLabel, startInput);
+
+      const endField = document.createElement('label');
+      endField.className = 'admin-subscription-table__field';
+
+      const endLabel = document.createElement('span');
+      endLabel.className = 'admin-subscription-table__field-label';
+      endLabel.textContent = 'Data de término';
+
+      const endInput = document.createElement('input');
+      endInput.type = 'date';
+      endInput.className = 'admin-subscription-table__input admin-subscription-table__end-input';
+      endInput.dataset.field = 'end-date';
+      endInput.value = toDateInputValue(plan.endDate);
+
+      endInput.addEventListener('change', () => {
+        const nextValue = fromDateInputValue(endInput.value, plan.endDate);
+        if (!nextValue) {
+          endInput.value = toDateInputValue(plan.endDate);
+          return;
+        }
+
+        applyPlanUpdate(plan.id, { endDate: nextValue });
+      });
+
+      endField.append(endLabel, endInput);
+
+      const priceField = document.createElement('label');
+      priceField.className = 'admin-subscription-table__field';
+
+      const priceLabel = document.createElement('span');
+      priceLabel.className = 'admin-subscription-table__field-label';
+      priceLabel.textContent = 'Valor do pacote';
+
+      const priceInput = document.createElement('input');
+      priceInput.type = 'number';
+      priceInput.min = '0';
+      priceInput.step = '0.01';
+      priceInput.className = 'admin-subscription-table__input admin-subscription-table__price-input';
+      priceInput.dataset.field = 'price';
+      priceInput.value = plan.price.toFixed(2);
+
+      priceInput.addEventListener('change', () => {
+        const parsed = Number.parseFloat(priceInput.value.replace(',', '.'));
+        if (!Number.isFinite(parsed)) {
+          priceInput.value = plan.price.toFixed(2);
+          return;
+        }
+
+        const normalizedPrice = Math.max(0, Math.round(parsed * 100) / 100);
+        priceInput.value = normalizedPrice.toFixed(2);
+        applyPlanUpdate(plan.id, { price: normalizedPrice });
+      });
+
+      priceField.append(priceLabel, priceInput);
+
+      const periodicityField = document.createElement('label');
+      periodicityField.className = 'admin-subscription-table__field';
+
+      const periodicityLabel = document.createElement('span');
+      periodicityLabel.className = 'admin-subscription-table__field-label';
+      periodicityLabel.textContent = 'Periodicidade';
+
+      const periodicitySelect = document.createElement('select');
+      periodicitySelect.className =
+        'admin-miniapp-table__status-select admin-subscription-table__select admin-subscription-table__periodicity-select';
+      periodicitySelect.dataset.field = 'periodicity';
+
+      SUBSCRIPTION_PERIODICITY_OPTIONS.forEach((option) => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.label;
+        periodicitySelect.append(optionElement);
+      });
+
+      periodicitySelect.value = plan.periodicity || SUBSCRIPTION_PERIODICITY_OPTIONS[0].value;
+
+      periodicitySelect.addEventListener('change', () => {
+        applyPlanUpdate(plan.id, { periodicity: periodicitySelect.value });
+      });
+
+      periodicityField.append(periodicityLabel, periodicitySelect);
+
+      const miniAppsFieldset = document.createElement('fieldset');
+      miniAppsFieldset.className = 'admin-miniapp-table__access-fieldset admin-subscription-table__miniapps-fieldset';
+
+      const miniAppsLegend = document.createElement('legend');
+      miniAppsLegend.className = 'admin-miniapp-table__legend';
+      miniAppsLegend.textContent = 'Mini-apps incluídos';
+      miniAppsFieldset.append(miniAppsLegend);
+
+      if (miniAppOptions.length === 0) {
+        const emptyMessage = document.createElement('span');
+        emptyMessage.className = 'admin-miniapp-table__access-empty';
+        emptyMessage.textContent = 'Nenhum mini-app disponível no momento.';
+        miniAppsFieldset.append(emptyMessage);
+      } else {
+        miniAppOptions.forEach((option) => {
+          const optionLabel = document.createElement('label');
+          optionLabel.className = 'admin-miniapp-table__access-option';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'admin-miniapp-table__access-checkbox';
+          checkbox.value = option.id;
+          checkbox.checked = plan.miniApps.includes(option.id);
+          checkbox.dataset.miniappId = option.id;
+
+          checkbox.addEventListener('change', () => {
+            applyPlanUpdate(plan.id, (current) => {
+              const nextMiniApps = new Set(Array.isArray(current.miniApps) ? current.miniApps : []);
+              if (checkbox.checked) {
+                nextMiniApps.add(option.id);
+              } else {
+                nextMiniApps.delete(option.id);
+              }
+
+              return { ...current, miniApps: Array.from(nextMiniApps) };
+            });
+          });
+
+          const optionText = document.createElement('span');
+          optionText.className = 'admin-miniapp-table__access-label';
+          optionText.textContent = option.name;
+
+          optionLabel.append(checkbox, optionText);
+          miniAppsFieldset.append(optionLabel);
+        });
+      }
+
+      const categoryField = document.createElement('label');
+      categoryField.className = 'admin-subscription-table__field';
+
+      const categoryLabel = document.createElement('span');
+      categoryLabel.className = 'admin-subscription-table__field-label';
+      categoryLabel.textContent = 'Categoria habilitada';
+
+      const categorySelect = document.createElement('select');
+      categorySelect.className =
+        'admin-miniapp-table__status-select admin-subscription-table__select admin-subscription-table__category-select';
+      categorySelect.dataset.field = 'user-category';
+
+      ACCESS_LEVEL_OPTIONS.forEach((option) => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.label;
+        categorySelect.append(optionElement);
+      });
+
+      categorySelect.value = plan.userCategory || 'usuario';
+
+      categorySelect.addEventListener('change', () => {
+        applyPlanUpdate(plan.id, { userCategory: categorySelect.value });
+      });
+
+      categoryField.append(categoryLabel, categorySelect);
+
+      controls.append(startField, endField, priceField, periodicityField, miniAppsFieldset, categoryField);
+
+      detailsPanel.append(detailsHeader, detailsDescription, controls);
+      detailsCell.append(detailsPanel);
+      detailsRow.append(detailsCell);
+
+      rows.push(row, detailsRow);
+    });
+
+    tbody.replaceChildren(...rows);
+  }
+
+  function teardown() {
+    plans = [];
+    state.clear();
+    miniAppOptions = [];
+    miniAppLabels.clear();
+    expandedPlanId = null;
+  }
+
+  renderRows();
+
+  return { widget, setPlans, setMiniApps, teardown };
+}
+
 export function renderAdmin(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -784,6 +1409,10 @@ export function renderAdmin(viewRoot) {
   cleanupHandlers.push(usersWidget.teardown);
   layout.append(usersWidget.widget);
 
+  const subscriptionWidget = createSubscriptionPlansWidget();
+  cleanupHandlers.push(subscriptionWidget.teardown);
+  layout.append(subscriptionWidget.widget);
+
   const miniAppsWidget = createMiniAppsWidget();
   cleanupHandlers.push(miniAppsWidget.teardown);
   layout.append(miniAppsWidget.widget);
@@ -800,8 +1429,17 @@ export function renderAdmin(viewRoot) {
     cleanupHandlers.push(unsubscribeUsers);
   }
 
+  const unsubscribeSubscriptions = subscribeSubscriptionPlans((snapshot) => {
+    subscriptionWidget.setPlans(Array.isArray(snapshot) ? snapshot : []);
+  });
+
+  if (typeof unsubscribeSubscriptions === 'function') {
+    cleanupHandlers.push(unsubscribeSubscriptions);
+  }
+
   const unsubscribeMiniApps = subscribeMiniApps((snapshot) => {
     highlightsWidget.setMiniApps(snapshot);
+    subscriptionWidget.setMiniApps(snapshot);
   });
 
   if (typeof unsubscribeMiniApps === 'function') {
@@ -819,9 +1457,19 @@ export function renderAdmin(viewRoot) {
   }
 
   try {
-    highlightsWidget.setMiniApps(getMiniAppsSnapshot());
+    subscriptionWidget.setPlans(getSubscriptionPlansSnapshot());
+  } catch (error) {
+    console.error('Não foi possível carregar pacotes de assinatura iniciais para o painel administrativo.', error);
+    subscriptionWidget.setPlans([]);
+  }
+
+  try {
+    const miniAppsSnapshot = getMiniAppsSnapshot();
+    highlightsWidget.setMiniApps(miniAppsSnapshot);
+    subscriptionWidget.setMiniApps(miniAppsSnapshot);
   } catch (error) {
     console.error('Não foi possível carregar mini-apps iniciais para o painel administrativo.', error);
     highlightsWidget.setMiniApps([]);
+    subscriptionWidget.setMiniApps([]);
   }
 }
