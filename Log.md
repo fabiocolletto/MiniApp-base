@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.195 - 2025-10-24 21:00 BRT
+- Restaura o atalho do painel Kit Design no menu do cabeçalho, exibindo-o novamente aos administradores.
+- Atualiza o shell para abrir o painel Kit Design a partir do menu e cobre o comportamento em testes de sessão.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.195 das 21h00.
+
 ## v0.1.194 - 2025-10-24 20:30 BRT
 - Corrige a troca do logotipo do cabeçalho ao alternar o tema, garantindo que a imagem seja atualizada conforme o modo ativo.
 - Atualiza a versão exibida no rodapé para refletir a release v0.1.194 das 20h30.

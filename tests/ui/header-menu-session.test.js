@@ -69,6 +69,8 @@ test('header menu updates visibility by session and toggles theme for guests', a
   const themeToggle = createMenuButton('header-theme-toggle');
   const registerLink = createMenuButton('header-register-link');
   const loginLink = createMenuButton('header-login-link');
+  const designKitLink = createMenuButton('header-design-kit-link');
+  designKitLink.hidden = true;
   const adminLink = createMenuButton('header-admin-link');
   adminLink.hidden = true;
 
@@ -134,6 +136,7 @@ test('header menu updates visibility by session and toggles theme for guests', a
     'theme toggle should invite switching to dark theme initially'
   );
   assert.strictEqual(adminLink.hidden, true, 'admin link should be hidden for guests');
+  assert.strictEqual(designKitLink.hidden, true, 'design kit link should be hidden for guests');
   assert.strictEqual(loginLink.hidden, false, 'login must remain visible');
   assert.strictEqual(registerLink.hidden, false, 'register must remain visible');
 
@@ -157,6 +160,7 @@ test('header menu updates visibility by session and toggles theme for guests', a
   assert.strictEqual(homeLink.hidden, false, 'home link should appear for authenticated users');
   assert.strictEqual(themeToggle.hidden, true, 'theme toggle should hide for authenticated users');
   assert.strictEqual(adminLink.hidden, true, 'admin link remains hidden for non-admin users');
+  assert.strictEqual(designKitLink.hidden, true, 'design kit link remains hidden for non-admin users');
   assert.strictEqual(loginLink.hidden, false, 'login stays visible even when authenticated');
   assert.strictEqual(registerLink.hidden, false, 'register stays visible even when authenticated');
 
@@ -172,6 +176,11 @@ test('header menu updates visibility by session and toggles theme for guests', a
     adminLink.getAttribute('aria-hidden'),
     null,
     'admin link should remove aria-hidden when visible'
+  );
+  assert.strictEqual(
+    designKitLink.hidden,
+    false,
+    'design kit link should be visible for administrator accounts'
   );
 
   delete globalThis.__MINIAPP_UI_HOOKS__;

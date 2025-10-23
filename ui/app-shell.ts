@@ -31,6 +31,7 @@ const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
 const headerAdminLink = document.querySelector('.header-admin-link');
+const headerDesignKitLink = document.querySelector('.header-design-kit-link');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
@@ -597,6 +598,7 @@ function updateHeaderSession(user: unknown): void {
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminItems);
+  setLinkVisibility(headerDesignKitLink, showAdminItems);
 
   if (headerMenuAdminDivider) {
     headerMenuAdminDivider.hidden = !showAdminItems;
@@ -1122,6 +1124,12 @@ export function initializeAppShell(router: RouterBridge): void {
     event.preventDefault();
     closeHeaderMenu();
     renderView('admin');
+  });
+
+  headerDesignKitLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('admin-design-kit');
   });
 
   logo?.addEventListener('click', () => {
