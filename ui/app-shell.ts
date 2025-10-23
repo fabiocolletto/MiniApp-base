@@ -1,5 +1,6 @@
 import eventBus from '../scripts/events/event-bus.js';
 import { renderAdmin } from '../scripts/views/admin.js';
+import { renderAdminDesignKit } from '../scripts/views/admin-design-kit.js';
 import { renderLog } from '../scripts/views/log.js';
 import { renderHome } from '../scripts/views/home.js';
 import { renderNotFound } from '../scripts/views/not-found.js';
@@ -126,6 +127,7 @@ export interface RouterBridge {
 
 type ViewName =
   | 'admin'
+  | 'admin-design-kit'
   | 'log'
   | 'home'
   | 'user'
@@ -140,6 +142,7 @@ const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'splash']);
 
 const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   admin: 'Painel administrativo',
+  'admin-design-kit': 'Kit de design',
   miniapps: 'Mini App Store',
   user: 'Painel do usuário',
   login: 'Painel de Login',
@@ -153,6 +156,7 @@ type NavigationPayload = { view?: string } | string | null | undefined;
 
 const views: Record<string, (viewRoot: HTMLElement) => void> = {
   admin: renderAdmin,
+  'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
   user: renderUserPanel,
@@ -951,7 +955,7 @@ function focusViewRoot(): void {
 }
 
 function applyMainState(view: string): void {
-  const isAdminView = view === 'admin';
+  const isAdminView = view === 'admin' || view === 'admin-design-kit';
   const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';

@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.188 - 2025-10-24 16:00 BRT
+- Criação do painel "Kit de design" no menu administrativo com catálogo sequencial de botões padrões do aplicativo.
+- Navegação dedicada no menu de administradores para alternar entre o painel principal e o kit de design.
+- Restrição do acesso ao kit de design apenas para usuários administradores, exibindo aviso orientativo aos demais perfis.
+- Atualização da versão exibida no rodapé para refletir a release v0.1.188 das 16h00.
+
 ## v0.1.187 - 2025-10-24 15:40 BRT
 - Adiciona ao painel administrativo o widget de pacotes e planos de assinatura com edição de vigência, valor, periodicidade, mini-apps e categoria elegível.
 - Cria o data store de assinaturas com periodicidades configuráveis e sincronização com a tabela do painel.

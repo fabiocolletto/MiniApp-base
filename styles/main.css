@@ -2434,6 +2434,32 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   margin: 0 auto;
 }
 
+.admin-menu {
+  display: grid;
+  gap: var(--panel-gap);
+}
+
+.admin-menu__list {
+  display: grid;
+  gap: var(--panel-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+}
+
+.admin-menu__button {
+  inline-size: 100%;
+  justify-self: stretch;
+}
+
+.admin-menu__button-title {
+  font-size: var(--panel-font-size-strong);
+  font-weight: 600;
+}
+
+.admin-menu__button-description {
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
 .home-dashboard__intro,
 .admin-dashboard__intro {
   max-width: 46rem;
@@ -2498,6 +2524,102 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-dashboard__highlight-grid {
   display: grid;
   gap: var(--panel-inner-gap);
+}
+
+.admin-design-kit__layout {
+  display: grid;
+  gap: var(--panel-stack-gap);
+  max-width: min(86rem, 100%);
+  margin: 0 auto;
+}
+
+.admin-design-kit__section {
+  display: grid;
+  gap: var(--panel-gap);
+}
+
+.admin-design-kit__intro {
+  text-align: left;
+}
+
+.admin-design-kit__title {
+  margin: 0;
+  font-size: var(--panel-font-size-heading);
+}
+
+.admin-design-kit__section-title {
+  margin: 0;
+  font-size: var(--panel-font-size-title);
+}
+
+.admin-design-kit__paragraph {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.admin-design-kit__grid {
+  display: grid;
+  gap: var(--panel-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+}
+
+.admin-design-kit__item {
+  gap: var(--panel-inner-gap);
+  align-content: start;
+}
+
+.admin-design-kit__item-header {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.admin-design-kit__item-title {
+  margin: 0;
+  font-size: var(--panel-font-size-title);
+  color: var(--color-text-primary);
+}
+
+.admin-design-kit__item-description {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-muted);
+}
+
+.admin-design-kit__preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--panel-gap);
+  align-items: center;
+}
+
+.admin-design-kit__sample-button {
+  flex: 0 1 auto;
+  min-width: clamp(9rem, 28vw, 12rem);
+}
+
+.admin-design-kit__button-label {
+  display: block;
+  font-weight: 600;
+}
+
+.admin-design-kit__button-helper {
+  display: block;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
+.admin-design-kit__button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.admin-design-kit__restricted {
+  text-align: center;
+  align-content: center;
 }
 
 @media (min-width: 40rem) {
