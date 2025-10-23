@@ -2535,10 +2535,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 }
 
 .admin-design-kit__layout {
-  display: grid;
   gap: var(--panel-stack-gap);
-  max-width: min(86rem, 100%);
-  margin: 0 auto;
 }
 
 .admin-design-kit__section {
@@ -2623,6 +2620,125 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   justify-content: center;
   inline-size: 100%;
   block-size: 100%;
+}
+
+.admin-design-kit__table-card {
+  gap: var(--panel-inner-gap);
+}
+
+.admin-design-kit__table-wrapper {
+  overflow-x: auto;
+  border-radius: calc(var(--panel-radius) * 0.7);
+}
+
+.admin-design-kit__table {
+  width: 100%;
+  min-width: min(48rem, 100%);
+  border-collapse: collapse;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.admin-design-kit__table-head {
+  background: var(--color-bg-elevated);
+}
+
+.admin-design-kit__table-row {
+  border-bottom: 0.06rem solid var(--color-border-muted);
+}
+
+.admin-design-kit__table-row:last-child {
+  border-bottom: none;
+}
+
+.admin-design-kit__table-header,
+.admin-design-kit__table-cell {
+  padding: clamp(0.45rem, 1.2vw, 0.75rem);
+  text-align: left;
+}
+
+.admin-design-kit__table-header {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.admin-design-kit__table-cell--label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.admin-design-kit__table-cell {
+  vertical-align: top;
+}
+
+.admin-design-kit__table-cell + .admin-design-kit__table-cell {
+  min-width: clamp(9rem, 20vw, 12rem);
+}
+
+.admin-design-kit__table-field {
+  display: grid;
+  gap: var(--space-2xs);
+  align-content: start;
+}
+
+.admin-design-kit__table-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.admin-design-kit__table-label-text {
+  font-size: var(--panel-font-size-base);
+}
+
+.admin-design-kit__table-index {
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: var(--panel-font-size-compact);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-accent-deep);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.admin-design-kit__table-input {
+  font-size: var(--panel-font-size-base);
+  padding-block: clamp(0.35rem, 1vw, 0.6rem);
+  padding-inline: clamp(0.55rem, 1.6vw, 0.85rem);
+}
+
+.admin-design-kit__table-input::placeholder {
+  color: rgba(var(--color-warm-rgb), 0.7);
+}
+
+.admin-design-kit__table-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space-2xs) * 0.75);
+}
+
+.admin-design-kit__table-token {
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: var(--panel-font-size-compact);
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-text-secondary);
+  border-radius: 0.65rem;
+  padding: 0.15rem 0.55rem;
+}
+
+.admin-design-kit__table-helper {
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.admin-design-kit__table-body tr:nth-child(even) {
+  background: rgba(var(--color-accent-rgb), 0.04);
 }
 
 .admin-design-kit__restricted {

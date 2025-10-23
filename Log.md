@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.190 - 2025-10-24 18:30 BRT
+- Alinha o layout do Kit de Design ao grid compartilhado dos painéis administrativos aplicando as classes utilitárias de painel.
+- Simplifica os estilos do layout do Kit de Design para herdar o comportamento responsivo padrão do grid global.
+- Converte a ficha técnica em uma tabela editável indexada por campo, sincronizando os valores digitados com os botões de exemplo e expondo tokens de estilo para experimentação.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.190 das 18h30.
+
 ## v0.1.189 - 2025-10-24 16:30 BRT
 - Reorganiza os itens do menu de painéis do cabeçalho priorizando atalhos gerais antes das opções administrativas.
 - Acrescenta um espaçador visual no menu e garante que ele só apareça quando houver links exclusivos de administradores.
