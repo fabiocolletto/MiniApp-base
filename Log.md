@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.185 - 2025-10-23 14:20 BRT
+- Simplifica os cards de mini-apps da loja mantendo apenas título, categoria e resumo compacto para cada item.
+- Adiciona o botão de atalho com ícone de mais para abrir a ficha técnica em modal com desfoque do plano de fundo.
+- Reposiciona o placeholder de avatar no cabeçalho do cartão, deslocando o título para a área central e a categoria para o rodapé.
+- Ajusta o carrossel horizontal para espaçar melhor os cartões e acompanhar qualquer quantidade de mini-apps renderizados.
+- Atualiza o rodapé para refletir a versão v0.1.185 das 14h20.
+
 ## v0.1.184 - 2025-10-23 13:19 BRT
 - Amplia o widget de etiqueta do painel para mostrar nome, contatos e perfil do usuário logado junto da identificação do painel.
 - Indica no mesmo widget quantos mini-apps o usuário favoritou e salvou, reutilizando o sumário padrão de dados.
