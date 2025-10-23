@@ -373,25 +373,22 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   );
   assert.equal(
     editButton.getAttribute('aria-expanded'),
-    null,
-    'botão de edição não deve controlar a expansão direta do formulário',
+    'false',
+    'botão de edição deve iniciar indicando o formulário recolhido',
+  );
+  assert.ok(
+    editButton.classList.contains('button'),
+    'botão de edição deve seguir o padrão global de botões',
+  );
+  assert.ok(
+    editButton.classList.contains('button--primary'),
+    'botão de edição deve utilizar a variação primária do padrão de botões',
   );
 
   const toggleButton = findElement(userDataActions, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-toggle'),
   );
-  assert.ok(toggleButton, 'botão de "mais opções" deve estar presente para abrir o formulário');
-  assert.equal(toggleButton.disabled, true, 'o botão de expansão deve iniciar desabilitado sem sessão ativa');
-  assert.equal(
-    toggleButton.getAttribute('aria-expanded'),
-    'false',
-    'o botão de expansão deve indicar o estado recolhido inicialmente',
-  );
-  assert.equal(
-    toggleButton.getAttribute('aria-controls'),
-    'user-dashboard-form',
-    'o botão de expansão deve controlar a visibilidade do formulário principal',
-  );
+  assert.equal(toggleButton, null, 'o botão "Mais opções" deve ser removido da área de ações');
 
   const emptyState = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__empty-state'),

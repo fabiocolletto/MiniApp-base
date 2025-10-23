@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.174 - 2025-10-24 09:10 BRT
+- Remove o botão "Mais opções" do widget de dados do usuário e centraliza a alternância de edição no botão "Editar dados" com estados ARIA.
+- Converte o botão de edição para o padrão `.button button--primary`, ajustando estilos associados e eliminando seletores específicos do controle antigo.
+- Atualiza a lógica e os testes do painel do usuário para abrir e recolher o formulário diretamente pelo botão de edição, alinhando estados ocupados e feedback.
+
 ## v0.1.173 - 2025-10-24 08:40 BRT
 - Acrescenta a variação `user-dashboard__widget--full` para permitir widgets em largura total no dashboard.
 - Ajusta o catálogo da Mini App Store para usar a nova variação e ocupar toda a linha disponível.
