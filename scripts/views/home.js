@@ -360,6 +360,69 @@ function renderMiniAppsWidget(user, accessibleMiniApps) {
   return widget;
 }
 
+function renderHomeIntroWidget() {
+  const widget = document.createElement('section');
+  widget.className =
+    [
+      'surface-card',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+    ].join(' ');
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Painel inicial';
+
+  const subtitle = document.createElement('p');
+  subtitle.className = 'user-widget__description';
+  subtitle.textContent = 'Seu ponto de partida para acompanhar miniapps e usuários.';
+
+  const intro = document.createElement('p');
+  intro.className = 'user-widget__description';
+  intro.textContent =
+    'Centralize destaques, favoritos e novidades da plataforma em um único lugar.';
+
+  widget.append(title, subtitle, intro);
+  return widget;
+}
+
+function renderHomePanelLabelWidget(user) {
+  const widget = document.createElement('section');
+  widget.className =
+    [
+      'surface-card',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+    ].join(' ');
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Etiqueta do painel';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent =
+    'Compartilhe esta etiqueta para facilitar o acesso rápido ao painel.';
+
+  const labelGroup = document.createElement('div');
+  labelGroup.className = 'miniapp-details__highlights';
+
+  const panelLabel = document.createElement('span');
+  panelLabel.className = 'miniapp-details__chip';
+  panelLabel.textContent = 'Painel Início';
+  labelGroup.append(panelLabel);
+
+  const profileLabel = document.createElement('span');
+  profileLabel.className = 'miniapp-details__chip';
+  profileLabel.textContent = `Perfil ${formatUserTypeLabel(user)}`;
+  labelGroup.append(profileLabel);
+
+  widget.append(title, description, labelGroup);
+  return widget;
+}
+
 export function renderHome(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -421,6 +484,8 @@ export function renderHome(viewRoot) {
     const accessibleMiniApps = filterMiniAppsForUser(state.miniApps, state.user);
 
     layout.append(
+      renderHomeIntroWidget(),
+      renderHomePanelLabelWidget(state.user),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),
