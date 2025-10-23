@@ -47,6 +47,7 @@
   --panel-border-strong: 0.06rem solid rgba(var(--color-accent-rgb), 0.28);
   --panel-input-padding-block: 0.55rem;
   --panel-input-padding-inline: 0.8rem;
+  --system-interaction-auto-focus-open: 0;
   --color-bg-body: #fffaf3;
   --color-bg-surface: #f4d3a1;
   --color-bg-surface-alt: #fff4d6;

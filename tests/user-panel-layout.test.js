@@ -367,36 +367,11 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   const userDataActions = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-actions'),
   );
-  assert.ok(userDataActions, 'o widget precisa expor a área de ações abaixo do resumo');
-
-  const editButton = findElement(userDataActions, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-edit'),
-  );
-  assert.ok(editButton, 'botão de edição deve existir na área de ações');
-  assert.equal(editButton.disabled, true, 'botão de edição deve permanecer desabilitado sem sessão ativa');
   assert.equal(
-    editButton.getAttribute('aria-controls'),
-    'user-dashboard-form',
-    'botão de edição deve apontar para o formulário de dados do usuário',
+    userDataActions,
+    null,
+    'o widget não deve mais renderizar uma área separada de ações para editar os dados',
   );
-  assert.equal(
-    editButton.getAttribute('aria-expanded'),
-    'false',
-    'botão de edição deve iniciar indicando o formulário recolhido',
-  );
-  assert.ok(
-    editButton.classList.contains('button'),
-    'botão de edição deve seguir o padrão global de botões',
-  );
-  assert.ok(
-    editButton.classList.contains('button--primary'),
-    'botão de edição deve utilizar a variação primária do padrão de botões',
-  );
-
-  const toggleButton = findElement(userDataActions, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-toggle'),
-  );
-  assert.equal(toggleButton, null, 'o botão "Mais opções" deve ser removido da área de ações');
 
   const emptyState = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__empty-state'),
