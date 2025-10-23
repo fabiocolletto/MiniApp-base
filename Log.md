@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.173 - 2025-10-24 08:40 BRT
+- Acrescenta a variação `user-dashboard__widget--full` para permitir widgets em largura total no dashboard.
+- Ajusta o catálogo da Mini App Store para usar a nova variação e ocupar toda a linha disponível.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.173.
+
+## v0.1.172 - 2025-10-24 08:10 BRT
+- Remove o limitador `.card` da view da Mini App Store para que o catálogo ocupe toda a malha do dashboard.
+- Estende a aplicação de `main--user` à view Mini App Store, alinhando offsets e largura com os demais painéis do usuário.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.172.
+
 ## v0.1.171 - 2025-10-24 07:40 BRT
 - Substitui o widget "Dados Principais" por "Dados do Usuário" com resumo sempre visível e botões dedicados de edição e expansão.
 - Implementa o salvamento automático por campo, validando telefone, e-mail e senha ao sair do foco e atualizando o snapshot ativo em memória.

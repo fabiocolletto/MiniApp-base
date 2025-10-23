@@ -1821,7 +1821,7 @@ footer {
   background: transparent;
 }
 
-main > :where(.card.view):not(.auth-view) {
+main > :where(.card.view, .dashboard-view):not(.auth-view) {
   width: 100%;
   max-width: none;
   padding: 0;
@@ -3338,6 +3338,10 @@ main > :where(.card.view):not(.auth-view) {
   max-width: min(86rem, 100%);
   margin: 0 auto;
   grid-template-columns: minmax(0, 1fr);
+}
+
+.user-dashboard__widget--full {
+  grid-column: 1 / -1;
 }
 
 .user-dashboard__widget--user-data {

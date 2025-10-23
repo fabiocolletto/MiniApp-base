@@ -283,7 +283,7 @@ export function renderMiniAppStore(viewRoot) {
     }
   });
 
-  viewRoot.className = 'card view dashboard-view view--user miniapp-store-view';
+  viewRoot.className = 'view dashboard-view view--user miniapp-store-view';
   viewRoot.dataset.view = 'miniapps';
 
   const layout = document.createElement('div');
@@ -291,7 +291,7 @@ export function renderMiniAppStore(viewRoot) {
 
   const catalogSection = document.createElement('section');
   catalogSection.className =
-    'surface-card user-panel__widget user-dashboard__widget layout-stack layout-stack--lg';
+    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--full layout-stack layout-stack--lg';
 
   const catalogTitle = document.createElement('h2');
   catalogTitle.className = 'user-widget__title';
