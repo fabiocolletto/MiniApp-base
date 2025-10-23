@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.209 - 2025-10-25 12:00 BRT
+- Substitui o fundo dos widgets de miniapps favoritados, salvos e liberados por transparência, mantendo a estrutura do painel Início.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.209 das 12h00.
+
 ## v0.1.208 - 2025-10-25 11:30 BRT
 - Acrescenta ao painel administrativo o widget Pacote de produtos com indicadores de vigência, cobertura do catálogo e ticket médio.
 - Organiza os widgets de pacotes e mini-apps na mesma linha para facilitar a análise conjunta dos dados operacionais.

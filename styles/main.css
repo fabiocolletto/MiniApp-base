@@ -3125,6 +3125,14 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: var(--panel-inner-gap);
 }
 
+.home-dashboard__widget--favorites,
+.home-dashboard__widget--saved,
+.home-dashboard__widget--miniapps {
+  --card-border: 0;
+  --card-background: transparent;
+  --card-shadow: none;
+}
+
 .home-dashboard__actions {
   display: grid;
   gap: var(--panel-cluster-gap);
