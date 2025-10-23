@@ -14,6 +14,7 @@ import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/sess
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
+import { createSystemUsersWidget } from './shared/system-users-widget.js';
 import eventBus from '../events/event-bus.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
@@ -375,26 +376,8 @@ export function renderUserPanel(viewRoot) {
   accessSectionControls.content.append(accessActionsWrapper, accessFeedback);
 
   const userDataSectionIdentifier = 'dados do usuário';
-
-  const userDataWidget = document.createElement('section');
-  userDataWidget.className =
-    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--user-data';
-  userDataWidget.dataset.sectionId = 'user-data';
-  userDataWidget.dataset.sectionState = 'empty';
-
-  const userDataHeader = document.createElement('div');
-  userDataHeader.className = 'user-panel__widget-header user-dashboard__user-data-header';
-
-  const userDataTitle = document.createElement('span');
-  userDataTitle.className = 'user-widget__title';
-  userDataTitle.textContent = 'Dados do Usuário';
-
-  userDataHeader.append(userDataTitle);
-  userDataWidget.append(userDataHeader);
-
   const userDataContent = document.createElement('div');
   userDataContent.className = 'user-panel__widget-content user-dashboard__user-data-content';
-  userDataWidget.append(userDataContent);
 
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
@@ -498,14 +481,39 @@ export function renderUserPanel(viewRoot) {
   accountForm.hidden = true;
   tagFormElement(userDataSectionIdentifier, accountForm);
 
+  userDataContent.append(accountSummary, emptyState, userDataActions, feedbackElement, accountForm);
+
+  const userDataWidgetInstance = createSystemUsersWidget({
+    title: 'Dados do usuário',
+    description:
+      'Visualize e mantenha sincronizados os dados principais da sua conta com o painel administrativo.',
+    emptyStateMessage: 'Nenhuma sessão ativa. Faça login para atualizar seus dados.',
+    extraClasses: ['user-dashboard__widget', 'user-dashboard__widget--user-data'],
+    renderDetails: () => {
+      const panel = document.createElement('div');
+      panel.className =
+        'admin-user-table__details-panel user-panel__widget-content user-dashboard__user-data-content';
+
+      const intro = document.createElement('p');
+      intro.className = 'admin-user-table__details-intro';
+      intro.textContent = 'Gerencie seus dados principais sincronizados com o painel administrativo.';
+
+      panel.append(intro, userDataContent);
+      return panel;
+    },
+  });
+
+  const userDataWidget = userDataWidgetInstance.widget;
+  userDataWidget.dataset.sectionId = 'user-data';
+  userDataWidget.dataset.sectionState = 'empty';
+  userDataWidget.append(userDataContent);
+
   const findFieldEntry = (key) => accountFields.find((field) => field.key === key) ?? { field: null, input: null };
 
   const nameField = findFieldEntry('name').field;
   const phoneField = findFieldEntry('phone').field;
   const emailField = findFieldEntry('email').field;
   const passwordField = findFieldEntry('password').field;
-
-  userDataContent.append(accountSummary, emptyState, userDataActions, feedbackElement, accountForm);
 
   const themeWidget = themeSectionControls.section;
   const accessWidget = accessSectionControls.section;
@@ -515,10 +523,40 @@ export function renderUserPanel(viewRoot) {
   viewRoot.replaceChildren(layout);
 
   const cleanupCallbacks = [];
+  cleanupCallbacks.push(userDataWidgetInstance.teardown);
   [themeSectionControls, accessSectionControls]
     .map((controls) => controls?.cleanup)
     .filter((cleanup) => typeof cleanup === 'function')
     .forEach((cleanup) => cleanupCallbacks.push(cleanup));
+
+  const handleUserWidgetToggle = (event) => {
+    const detail = event?.detail ?? {};
+    const { user, expanded } = detail;
+    const eventUserId = user?.id != null ? String(user.id) : null;
+    const activeId = activeUser?.id != null ? String(activeUser.id) : null;
+    const matchesActive = Boolean(eventUserId && activeId && eventUserId === activeId);
+
+    if (expanded && !matchesActive) {
+      return;
+    }
+
+    const previousExpanded = userDataExpanded;
+    userDataExpanded = Boolean(expanded && matchesActive);
+    updateUserDataViewState();
+
+    if (userDataExpanded && !previousExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
+      try {
+        nameInput.focus();
+      } catch (error) {
+        // Ignora navegadores ou ambientes sem suporte a foco programático.
+      }
+    }
+  };
+
+  userDataWidget.addEventListener('system-users-widget:toggle', handleUserWidgetToggle);
+  cleanupCallbacks.push(() =>
+    userDataWidget.removeEventListener('system-users-widget:toggle', handleUserWidgetToggle),
+  );
   const unsubscribeCallbacks = [];
 
   const usersById = new Map();
@@ -785,11 +823,22 @@ export function renderUserPanel(viewRoot) {
     clearFieldValidity();
   };
 
+  const restoreUserDataContentToRoot = () => {
+    if (!(userDataContent instanceof HTMLElement)) {
+      return;
+    }
+
+    if (userDataContent.parentElement !== userDataWidget) {
+      userDataWidget.append(userDataContent);
+    }
+  };
+
   const updateUserDataViewState = () => {
     const hasUser = Boolean(activeUser);
 
     if (!hasUser) {
       userDataExpanded = false;
+      restoreUserDataContentToRoot();
     }
 
     if (accountSummary instanceof HTMLElement) {
@@ -827,17 +876,14 @@ export function renderUserPanel(viewRoot) {
   };
 
   const toggleUserDataExpanded = (nextState) => {
-    const hasUser = Boolean(activeUser);
-    userDataExpanded = Boolean(nextState) && hasUser;
-    updateUserDataViewState();
-
-    if (userDataExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
-      try {
-        nameInput.focus();
-      } catch (error) {
-        // Ignora navegadores ou ambientes sem suporte a foco programático.
-      }
+    const hasUser = Boolean(activeUser && activeUser.id != null);
+    if (!hasUser) {
+      userDataExpanded = false;
+      updateUserDataViewState();
+      return;
     }
+
+    userDataWidgetInstance.setExpandedUser(activeUser.id, Boolean(nextState));
   };
 
   const handleEditShortcut = () => {
@@ -1357,6 +1403,12 @@ export function renderUserPanel(viewRoot) {
 
     if (!activeUser) {
       userDataExpanded = false;
+    }
+
+    if (source) {
+      userDataWidgetInstance.setUsers([source]);
+    } else {
+      userDataWidgetInstance.setUsers([]);
     }
 
     updateForm();
