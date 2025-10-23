@@ -31,6 +31,7 @@ const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
 const headerMenuPanel = document.getElementById('header-navigation-menu');
+const headerMenuAdminDivider = document.querySelector<HTMLElement>('.header-menu__separator');
 const footerElement = document.querySelector<HTMLElement>('footer');
 const footerToggleButton = footerElement?.querySelector<HTMLButtonElement>('[data-footer-toggle]');
 const footerBrandIcon = footerElement?.querySelector<HTMLElement>('.footer-brand__icon');
@@ -571,13 +572,18 @@ function updateHeaderSession(user: unknown): void {
       ? ((user as { userType?: string }).userType ?? '').trim().toLowerCase()
       : '';
   const isAdmin = normalizedType === 'administrador';
+  const showAdminItems = isAuthenticated && isAdmin;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
-  setLinkVisibility(headerAdminLink, isAuthenticated && isAdmin);
+  setLinkVisibility(headerAdminLink, showAdminItems);
+
+  if (headerMenuAdminDivider) {
+    headerMenuAdminDivider.hidden = !showAdminItems;
+  }
 
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';

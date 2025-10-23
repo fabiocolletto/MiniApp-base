@@ -48,6 +48,7 @@ const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
 const headerMenuPanel = document.getElementById('header-navigation-menu');
+const headerMenuAdminDivider = document.querySelector('.header-menu__separator');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -1191,13 +1192,18 @@ function updateHeaderSession(user) {
   const normalizedType =
     typeof user?.userType === 'string' ? user.userType.trim().toLowerCase() : '';
   const isAdmin = normalizedType === 'administrador';
+  const showAdminItems = isAuthenticated && isAdmin;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
-  setLinkVisibility(headerAdminLink, isAuthenticated && isAdmin);
+  setLinkVisibility(headerAdminLink, showAdminItems);
+
+  if (headerMenuAdminDivider instanceof HTMLElement) {
+    headerMenuAdminDivider.hidden = !showAdminItems;
+  }
 
   const panel = ensureHeaderMobileMenu();
   if (panel instanceof HTMLElement) {
@@ -1206,7 +1212,7 @@ function updateHeaderSession(user) {
     setLinkVisibility(mobileRegisterAction, true);
     setLinkVisibility(mobileLoginAction, true);
     setLinkVisibility(mobileThemeAction, !isAuthenticated);
-    setLinkVisibility(mobileAdminAction, isAuthenticated && isAdmin);
+    setLinkVisibility(mobileAdminAction, showAdminItems);
   }
 
   if (menuControls) {
