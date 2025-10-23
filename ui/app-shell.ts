@@ -14,6 +14,7 @@ import {
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
 import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
+import { getResolvedTheme, setThemePreference, subscribeThemeChange } from '../scripts/theme/theme-manager.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -23,6 +24,8 @@ const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerThemeToggle = document.querySelector('.header-theme-toggle');
+const headerAdminLink = document.querySelector('.header-admin-link');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector<HTMLButtonElement>('.header-menu__trigger');
@@ -290,7 +293,18 @@ function getHeaderMenuItems(): HTMLElement[] {
   }
 
   return Array.from(headerMenuPanel.querySelectorAll<HTMLElement>('.header-menu__item')).filter(
-    (item): item is HTMLElement => item instanceof HTMLElement
+    (item): item is HTMLElement => {
+      if (!(item instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (item.hidden || item.getAttribute('aria-hidden') === 'true') {
+        return false;
+      }
+
+      const display = typeof item.style?.display === 'string' ? item.style.display.trim() : '';
+      return display !== 'none';
+    }
   );
 }
 
@@ -505,7 +519,11 @@ function setLinkVisibility(link: Element | null, isVisible: boolean): void {
     link.hidden = false;
     link.removeAttribute('aria-hidden');
     link.removeAttribute('tabindex');
-    link.style.removeProperty('display');
+    if (typeof link.style?.removeProperty === 'function') {
+      link.style.removeProperty('display');
+    } else {
+      link.style.display = '';
+    }
     return;
   }
 
@@ -515,12 +533,47 @@ function setLinkVisibility(link: Element | null, isVisible: boolean): void {
   link.style.display = 'none';
 }
 
+function normalizeTheme(theme: unknown): 'light' | 'dark' {
+  return theme === 'dark' ? 'dark' : 'light';
+}
+
+function getThemeToggleLabel(theme: unknown): string {
+  return normalizeTheme(theme) === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro';
+}
+
+function updateThemeToggleState(theme: unknown): void {
+  const label = getThemeToggleLabel(theme);
+  const pressed = normalizeTheme(theme) === 'dark';
+
+  if (headerThemeToggle instanceof HTMLElement) {
+    headerThemeToggle.textContent = label;
+    headerThemeToggle.setAttribute('aria-label', label);
+    headerThemeToggle.setAttribute('title', label);
+    headerThemeToggle.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  }
+}
+
+function toggleThemePreference(): void {
+  const currentTheme = normalizeTheme(getResolvedTheme());
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setThemePreference(nextTheme);
+  updateThemeToggleState(nextTheme);
+}
+
 function updateHeaderSession(user: unknown): void {
   const isAuthenticated = Boolean(user);
+  const normalizedType =
+    typeof (user as { userType?: string | null })?.userType === 'string'
+      ? ((user as { userType?: string }).userType ?? '').trim().toLowerCase()
+      : '';
+  const isAdmin = normalizedType === 'administrador';
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
-  setLinkVisibility(loginLink, !isAuthenticated);
-  setLinkVisibility(registerLink, !isAuthenticated);
+  setLinkVisibility(loginLink, true);
+  setLinkVisibility(registerLink, true);
+  setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerThemeToggle, !isAuthenticated);
+  setLinkVisibility(headerAdminLink, isAuthenticated && isAdmin);
 
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
@@ -530,6 +583,7 @@ function updateHeaderSession(user: unknown): void {
     if (headerUserButton?.isConnected) {
       headerUserButton.remove();
     }
+    updateThemeToggleState(getResolvedTheme());
     return;
   }
 
@@ -541,13 +595,11 @@ function updateHeaderSession(user: unknown): void {
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
 
-  if (button.isConnected) {
-    return;
-  }
-
-  if (menuControls) {
+  if (!button.isConnected && menuControls) {
     menuControls.append(button);
   }
+
+  updateThemeToggleState(getResolvedTheme());
 }
 
 function ensureSessionPopover(): HTMLDivElement | null {
@@ -1002,6 +1054,18 @@ export function initializeAppShell(router: RouterBridge): void {
     closeHeaderMenu();
   });
 
+  headerThemeToggle?.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleThemePreference();
+    closeHeaderMenu();
+  });
+
+  headerAdminLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('admin');
+  });
+
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
 
@@ -1095,6 +1159,16 @@ export function initializeAppShell(router: RouterBridge): void {
     }
   });
 
+  updateThemeToggleState(getResolvedTheme());
+  subscribeThemeChange((payload) => {
+    const theme =
+      typeof (payload as { theme?: unknown })?.theme === 'string'
+        ? ((payload as { theme?: string }).theme ?? '')
+        : undefined;
+    const resolvedTheme = theme ?? getResolvedTheme();
+    updateThemeToggleState(resolvedTheme);
+  });
+
   updateHeaderSession(getActiveUserFn());
 
   eventBus.on('session:changed', (user) => {
@@ -1118,3 +1192,9 @@ export function initializeAppShell(router: RouterBridge): void {
   syncHomeToggleStateFromDom();
   syncHeaderMenuTriggerLabelFromDom();
 }
+
+export const __TEST_ONLY__ = {
+  updateHeaderSession,
+  toggleThemePreference,
+  updateThemeToggleState,
+};
