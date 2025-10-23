@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.212 - 2025-10-23 20:10 BRT
+- Deixa transparentes os cartões de itens do painel Kit de Design para destacar apenas os conteúdos homologados.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.212 das 20h10.
+
 ## v0.1.211 - 2025-10-23 19:50 BRT
 - Reestrutura o widget MiniApps Favoritos do painel inicial para ocupar meia linha com grade de quatro ícones em duas colunas.
 - Exibe apenas os ícones dos favoritos com rótulos acessíveis e placeholders consistentes reutilizando o estilo global dos avatares.
