@@ -32,6 +32,10 @@ import {
   subscribeFooterIndicatorsChange,
   sanitizeFooterIndicatorsPreference,
 } from '../scripts/preferences/footer-indicators.js';
+import {
+  getActivityStatus as defaultGetActivityStatus,
+  subscribeActivityStatus as defaultSubscribeActivityStatus,
+} from '../scripts/system/activity-indicator.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -55,6 +59,9 @@ const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text
 const sessionIndicator = document.querySelector('.footer-session');
 const sessionIndicatorText = sessionIndicator?.querySelector('.footer-session__text');
 const sessionIndicatorAnnouncement = sessionIndicator?.querySelector('.footer-session__announcement');
+const activityIndicator = document.querySelector('.footer-activity');
+const activityIndicatorText = activityIndicator?.querySelector('.footer-activity__text');
+const activityIndicatorAnnouncement = activityIndicator?.querySelector('.footer-activity__announcement');
 const footerElement = document.querySelector('footer');
 const footerToggleButton = footerElement?.querySelector('[data-footer-toggle]');
 const footerBrandIcon = footerElement?.querySelector('.footer-brand__icon');
@@ -365,6 +372,14 @@ const getSessionStatusFn =
   rawHooks && typeof rawHooks.getSessionStatus === 'function'
     ? rawHooks.getSessionStatus
     : defaultGetSessionStatus;
+const getActivityStatusFn =
+  rawHooks && typeof rawHooks.getActivityStatus === 'function'
+    ? rawHooks.getActivityStatus
+    : defaultGetActivityStatus;
+const subscribeActivityStatusFn =
+  rawHooks && typeof rawHooks.subscribeActivityStatus === 'function'
+    ? rawHooks.subscribeActivityStatus
+    : defaultSubscribeActivityStatus;
 
 const views = {
   admin: renderAdmin,
@@ -1579,6 +1594,37 @@ function updateSessionStatus(status) {
   highlightSessionLegendState(state);
 }
 
+function updateActivityStatus(status) {
+  if (!(activityIndicator instanceof HTMLElement) || !(activityIndicatorText instanceof HTMLElement)) {
+    return;
+  }
+
+  const state = typeof status?.state === 'string' ? status.state : 'idle';
+  const message =
+    typeof status?.message === 'string' && status.message.trim()
+      ? status.message.trim()
+      : 'Nenhuma alteração pendente';
+  const details = typeof status?.details === 'string' ? status.details.trim() : '';
+  const source =
+    typeof status?.source === 'string' && status.source.trim() ? status.source.trim() : 'global';
+
+  activityIndicator.dataset.state = state;
+  activityIndicator.dataset.source = source;
+  activityIndicatorText.textContent = message;
+
+  if (activityIndicatorAnnouncement instanceof HTMLElement) {
+    activityIndicatorAnnouncement.textContent = details ? `${message}. ${details}` : message;
+  }
+
+  if (details) {
+    activityIndicator.setAttribute('title', details);
+    activityIndicator.setAttribute('aria-label', `${message}. ${details}`);
+  } else {
+    activityIndicator.removeAttribute('title');
+    activityIndicator.setAttribute('aria-label', message);
+  }
+}
+
 function focusViewRoot() {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -1832,6 +1878,13 @@ export function initializeAppShell(router) {
 
   applySessionThemePreference(getActiveUserFn());
   applySessionFooterIndicatorsPreference(getActiveUserFn());
+
+  if (activityIndicator instanceof HTMLElement && activityIndicatorText instanceof HTMLElement) {
+    updateActivityStatus(getActivityStatusFn());
+    subscribeActivityStatusFn((status) => {
+      updateActivityStatus(status);
+    });
+  }
 
   if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
     updateMemoryStatus(getStorageStatusFn());
