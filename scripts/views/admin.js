@@ -17,6 +17,7 @@ import {
   createSystemUsersWidget,
   formatDateTime,
 } from './shared/system-users-widget.js';
+import { createAdminNavigation } from './shared/admin-navigation.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
 
@@ -1400,6 +1401,10 @@ export function renderAdmin(viewRoot) {
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout';
+
+  const navigation = createAdminNavigation({ active: 'overview' });
+  cleanupHandlers.push(navigation.cleanup);
+  layout.append(navigation.element);
 
   const highlightsWidget = createHighlightsWidget();
   cleanupHandlers.push(highlightsWidget.teardown);

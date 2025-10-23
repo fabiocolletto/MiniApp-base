@@ -1,5 +1,6 @@
 import eventBus from '../scripts/events/event-bus.js';
 import { renderAdmin } from '../scripts/views/admin.js';
+import { renderAdminDesignKit } from '../scripts/views/admin-design-kit.js';
 import { renderLog } from '../scripts/views/log.js';
 import { renderHome } from '../scripts/views/home.js';
 import { renderNotFound } from '../scripts/views/not-found.js';
@@ -366,6 +367,7 @@ const getSessionStatusFn =
 
 const views = {
   admin: renderAdmin,
+  'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
   user: renderUserPanel,
@@ -387,6 +389,7 @@ const NEUTRAL_MENU_VIEWS = new Set(['home', 'splash']);
 
 const MENU_LABEL_FALLBACKS = {
   admin: 'Painel administrativo',
+  'admin-design-kit': 'Kit de design',
   miniapps: 'Mini App Store',
   user: 'Painel do usuário',
   login: 'Painel de Login',
@@ -1581,7 +1584,7 @@ function focusViewRoot() {
 }
 
 function applyMainState(view) {
-  const isAdminView = view === 'admin';
+  const isAdminView = view === 'admin' || view === 'admin-design-kit';
   const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
