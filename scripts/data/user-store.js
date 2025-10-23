@@ -8,6 +8,7 @@ import {
 } from './indexed-user-store.js';
 import eventBus from '../events/event-bus.js';
 import { replaceAccounts } from '../../core/account-store.js';
+import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
 
 const listeners = new Set();
 const statusListeners = new Set();
@@ -253,6 +254,7 @@ function normalizeProfile(profile) {
 
 const VALID_THEME_PREFERENCES = ['light', 'dark', 'system'];
 const DEFAULT_THEME_PREFERENCE = 'system';
+const DEFAULT_FOOTER_INDICATORS_PREFERENCE = 'visible';
 
 function sanitizeThemePreference(value) {
   if (typeof value !== 'string') {
@@ -266,6 +268,7 @@ function sanitizeThemePreference(value) {
 function createEmptyPreferences() {
   return {
     theme: DEFAULT_THEME_PREFERENCE,
+    footerIndicators: DEFAULT_FOOTER_INDICATORS_PREFERENCE,
   };
 }
 
@@ -278,6 +281,10 @@ function normalizePreferences(rawPreferences) {
 
   if (Object.prototype.hasOwnProperty.call(rawPreferences, 'theme')) {
     normalized.theme = sanitizeThemePreference(rawPreferences.theme);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(rawPreferences, 'footerIndicators')) {
+    normalized.footerIndicators = sanitizeFooterIndicatorsPreference(rawPreferences.footerIndicators);
   }
 
   return normalized;
@@ -296,6 +303,10 @@ function sanitizePreferencesUpdates(updates = {}) {
 
   if (Object.prototype.hasOwnProperty.call(updates, 'theme')) {
     sanitized.theme = sanitizeThemePreference(updates.theme);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'footerIndicators')) {
+    sanitized.footerIndicators = sanitizeFooterIndicatorsPreference(updates.footerIndicators);
   }
 
   return sanitized;
@@ -668,6 +679,10 @@ export function normalizeUserPreferences(preferences) {
 
 export function sanitizeUserThemePreference(preference) {
   return sanitizeThemePreference(preference);
+}
+
+export function sanitizeUserFooterIndicatorsPreference(preference) {
+  return sanitizeFooterIndicatorsPreference(preference);
 }
 
 export async function resetUserStoreForTests() {

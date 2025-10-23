@@ -16,6 +16,7 @@ import {
 import {
   getStorageStatus as defaultGetStorageStatus,
   sanitizeUserThemePreference,
+  updateUser as updateUserRecord,
 } from '../scripts/data/user-store.js';
 import {
   getResolvedTheme,
@@ -23,6 +24,13 @@ import {
   setThemePreference,
   subscribeThemeChange,
 } from '../scripts/theme/theme-manager.js';
+import {
+  initializeFooterIndicatorsPreference,
+  getFooterIndicatorsPreference,
+  setFooterIndicatorsPreference,
+  subscribeFooterIndicatorsChange,
+  sanitizeFooterIndicatorsPreference,
+} from '../scripts/preferences/footer-indicators.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -48,6 +56,7 @@ const sessionIndicatorAnnouncement = sessionIndicator?.querySelector('.footer-se
 const footerElement = document.querySelector('footer');
 const footerToggleButton = footerElement?.querySelector('[data-footer-toggle]');
 const footerBrandIcon = footerElement?.querySelector('.footer-brand__icon');
+const footerActions = footerElement?.querySelector('.footer-actions');
 
 const rootElement = typeof document === 'object' && document ? document.documentElement : null;
 
@@ -203,6 +212,8 @@ let headerUserButton = null;
 let allowPreventScrollOption = true;
 let shellRouter = null;
 
+let lastSessionFooterIndicatorsPreference = null;
+
 let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
 let mobileStoreAction = null;
@@ -307,6 +318,30 @@ function applySessionThemePreference(user) {
   lastSessionThemePreference = preference;
   if (getThemePreference() !== preference) {
     setThemePreference(preference);
+  }
+}
+
+function resolveUserFooterIndicatorsPreference(user) {
+  if (!user || typeof user !== 'object') {
+    return sanitizeFooterIndicatorsPreference(getFooterIndicatorsPreference());
+  }
+
+  const rawPreference =
+    user.preferences && typeof user.preferences === 'object' ? user.preferences.footerIndicators : undefined;
+  return sanitizeFooterIndicatorsPreference(rawPreference);
+}
+
+function applySessionFooterIndicatorsPreference(user) {
+  const preference = resolveUserFooterIndicatorsPreference(user);
+  const currentPreference = sanitizeFooterIndicatorsPreference(getFooterIndicatorsPreference());
+
+  if (lastSessionFooterIndicatorsPreference === preference && currentPreference === preference) {
+    return;
+  }
+
+  lastSessionFooterIndicatorsPreference = preference;
+  if (currentPreference !== preference) {
+    setFooterIndicatorsPreference(preference);
   }
 }
 
@@ -703,56 +738,47 @@ function handleHeaderMenuItemKeydown(event) {
   }
 }
 
-function updateFooterMobileAccessibility() {
+function updateFooterMobileAccessibility(currentPreference) {
   if (!(footerToggleButton instanceof HTMLButtonElement)) {
     return;
   }
 
-  const isMobile = Boolean(mobileFooterMediaQuery?.matches);
-
-  if (!(footerElement instanceof HTMLElement) || !isMobile) {
-    footerToggleButton.removeAttribute('aria-expanded');
-    footerToggleButton.removeAttribute('aria-label');
-    footerToggleButton.removeAttribute('aria-controls');
-    return;
-  }
-
-  const isExpanded = footerElement.dataset.mobileState === 'expanded';
-  footerToggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-  footerToggleButton.setAttribute(
-    'aria-label',
-    isExpanded ? 'Recolher detalhes do rodapé' : 'Expandir detalhes do rodapé'
+  const normalizedPreference = sanitizeFooterIndicatorsPreference(
+    currentPreference ?? getFooterIndicatorsPreference(),
   );
+  const isVisible = normalizedPreference === 'visible';
+  const label = isVisible ? 'Ocultar indicadores do rodapé' : 'Exibir indicadores do rodapé';
+
   footerToggleButton.setAttribute('aria-controls', 'footer-actions');
+  footerToggleButton.setAttribute('aria-expanded', isVisible ? 'true' : 'false');
+  footerToggleButton.setAttribute('aria-label', label);
+  footerToggleButton.setAttribute('title', label);
+  footerToggleButton.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+  footerToggleButton.dataset.footerIndicatorsPreference = normalizedPreference;
 }
 
-function setFooterMobileState(state) {
+function applyFooterIndicatorsVisibility(preference) {
   if (!(footerElement instanceof HTMLElement)) {
     return;
   }
 
-  const normalized = state === 'expanded' ? 'expanded' : 'collapsed';
-  footerElement.dataset.mobileState = normalized;
-  updateFooterMobileAccessibility();
-  scheduleLayoutOffsetUpdate();
-}
+  const normalizedPreference = sanitizeFooterIndicatorsPreference(preference);
+  const isVisible = normalizedPreference === 'visible';
 
-function applyFooterMobileMode() {
-  if (!(footerElement instanceof HTMLElement)) {
-    return;
+  footerElement.dataset.footerIndicators = normalizedPreference;
+
+  if (footerActions instanceof HTMLElement) {
+    footerActions.hidden = !isVisible;
+    footerActions.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
   }
 
-  const isMobile = Boolean(mobileFooterMediaQuery?.matches);
-
-  if (!isMobile) {
+  if (mobileFooterMediaQuery?.matches) {
+    footerElement.dataset.mobileState = isVisible ? 'expanded' : 'collapsed';
+  } else {
     footerElement.removeAttribute('data-mobile-state');
-    updateFooterMobileAccessibility();
-    return;
   }
 
-  const normalized = footerElement.dataset.mobileState === 'expanded' ? 'expanded' : 'collapsed';
-  footerElement.dataset.mobileState = normalized;
-  updateFooterMobileAccessibility();
+  updateFooterMobileAccessibility(normalizedPreference);
   scheduleLayoutOffsetUpdate();
 }
 
@@ -761,22 +787,30 @@ function registerFooterMobileToggle() {
     return;
   }
 
-  const handleToggle = (event) => {
+  const handleToggle = async (event) => {
     if (!(event instanceof Event)) {
       return;
     }
 
-    if (!mobileFooterMediaQuery?.matches) {
-      return;
-    }
-
     event.preventDefault();
-    const isExpanded = footerElement.dataset.mobileState === 'expanded';
-    setFooterMobileState(isExpanded ? 'collapsed' : 'expanded');
+    const currentPreference = sanitizeFooterIndicatorsPreference(getFooterIndicatorsPreference());
+    const nextPreference = currentPreference === 'visible' ? 'hidden' : 'visible';
+    setFooterIndicatorsPreference(nextPreference);
+
+    const activeUser = getActiveUserFn();
+    const activeUserId = activeUser && typeof activeUser === 'object' ? activeUser.id : null;
+
+    if (activeUserId != null) {
+      try {
+        await updateUserRecord(activeUserId, { preferences: { footerIndicators: nextPreference } });
+      } catch (error) {
+        console.error('Não foi possível atualizar a preferência de indicadores do rodapé.', error);
+      }
+    }
   };
 
   const handleMediaChange = () => {
-    applyFooterMobileMode();
+    applyFooterIndicatorsVisibility(getFooterIndicatorsPreference());
   };
 
   footerToggleButton.addEventListener('click', handleToggle);
@@ -788,8 +822,6 @@ function registerFooterMobileToggle() {
       mobileFooterMediaQuery.addListener(handleMediaChange);
     }
   }
-
-  applyFooterMobileMode();
 }
 
 function openAppModal({
@@ -1641,6 +1673,16 @@ export function initializeAppShell(router) {
   initialized = true;
   shellRouter = router;
 
+  const initialFooterPreference = sanitizeFooterIndicatorsPreference(
+    getActiveUserFn()?.preferences?.footerIndicators ?? getFooterIndicatorsPreference(),
+  );
+  initializeFooterIndicatorsPreference({ preference: initialFooterPreference });
+
+  subscribeFooterIndicatorsChange((payload) => {
+    const preference = sanitizeFooterIndicatorsPreference(payload?.preference);
+    applyFooterIndicatorsVisibility(preference);
+  });
+
   homeLink?.addEventListener('click', (event) => {
     event.preventDefault();
     toggleHomePanel();
@@ -1736,46 +1778,6 @@ export function initializeAppShell(router) {
 
   registerFooterMobileToggle();
 
-  const handleFooterBrandShortcut = (event) => {
-    if (!(event instanceof Event)) {
-      return;
-    }
-
-    const isMobile = Boolean(mobileFooterMediaQuery?.matches);
-    if (isMobile) {
-      return;
-    }
-
-    const target = event.target;
-    let isFromBrandIcon = false;
-
-    if (footerBrandIcon instanceof HTMLElement && target && typeof target === 'object') {
-      const isNode =
-        (typeof Node === 'function' && target instanceof Node) ||
-        (typeof Node !== 'function' && 'nodeType' in target);
-
-      if (isNode) {
-        isFromBrandIcon = footerBrandIcon.contains(target);
-      }
-    }
-
-    if (isFromBrandIcon) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    closeHeaderMenu();
-    renderView('admin');
-  };
-
-  if (footerBrandIcon instanceof HTMLElement) {
-    footerBrandIcon.addEventListener('click', handleFooterBrandShortcut);
-  }
-
-  if (footerToggleButton instanceof HTMLButtonElement) {
-    footerToggleButton.addEventListener('click', handleFooterBrandShortcut);
-  }
-
   document.addEventListener('app:navigate', (event) => {
     const detail = event && typeof event === 'object' ? event.detail : undefined;
     const viewName = resolveViewName(detail);
@@ -1809,9 +1811,11 @@ export function initializeAppShell(router) {
   eventBus.on('session:changed', (user) => {
     updateHeaderSession(user);
     applySessionThemePreference(user);
+    applySessionFooterIndicatorsPreference(user);
   });
 
   applySessionThemePreference(getActiveUserFn());
+  applySessionFooterIndicatorsPreference(getActiveUserFn());
 
   if (memoryIndicator instanceof HTMLElement && memoryIndicatorText instanceof HTMLElement) {
     updateMemoryStatus(getStorageStatusFn());
