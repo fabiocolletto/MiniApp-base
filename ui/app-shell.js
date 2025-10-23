@@ -37,6 +37,7 @@ import {
   getActivityStatus as defaultGetActivityStatus,
   subscribeActivityStatus as defaultSubscribeActivityStatus,
 } from '../scripts/system/activity-indicator.js';
+import { recordMiniAppAccess } from '../scripts/data/miniapp-activity-store.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
@@ -1875,6 +1876,15 @@ export function initializeAppShell(router) {
   });
 
   eventBus.on('miniapp:details', (payload) => {
+    const app = payload && typeof payload === 'object' ? payload.app : null;
+    const appId = typeof app?.id === 'string' ? app.id : null;
+    const activeUser = getActiveUserFn();
+    const userId = activeUser && 'id' in activeUser ? activeUser.id : null;
+
+    if (appId && userId !== null && userId !== undefined) {
+      recordMiniAppAccess(userId, appId);
+    }
+
     openMiniAppDetailsModal(payload);
   });
 

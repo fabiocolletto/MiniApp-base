@@ -10,6 +10,10 @@ import {
   getUserMiniAppPreferences,
   subscribeMiniAppPreferences,
 } from '../data/miniapp-preferences-store.js';
+import {
+  getUserMiniAppActivity,
+  subscribeMiniAppActivity,
+} from '../data/miniapp-activity-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--home';
@@ -209,10 +213,25 @@ function createSummaryEntry(term, value) {
   return wrapper;
 }
 
-function renderMiniAppIconItem(app) {
+function renderMiniAppIconItem(app, options = {}) {
+  const modifier =
+    typeof options?.modifier === 'string' && options.modifier.trim() !== ''
+      ? options.modifier.trim()
+      : 'favorite';
+  const srLabelText =
+    typeof options?.srLabelText === 'string' && options.srLabelText.trim() !== ''
+      ? options.srLabelText.trim()
+      : null;
+  const title = typeof options?.title === 'string' && options.title.trim() !== '' ? options.title.trim() : null;
+
   const item = document.createElement('li');
-  item.className = 'home-dashboard__miniapps-item home-dashboard__miniapps-item--favorite';
+  item.className = `home-dashboard__miniapps-item home-dashboard__miniapps-item--${modifier}`;
   item.dataset.appId = app?.id ?? '';
+
+  if (title) {
+    item.title = title;
+    item.setAttribute('aria-label', title);
+  }
 
   const iconWrapper = document.createElement('span');
   iconWrapper.className = 'admin-miniapp-table__avatar home-dashboard__miniapps-icon';
@@ -236,7 +255,11 @@ function renderMiniAppIconItem(app) {
 
   const srLabel = document.createElement('span');
   srLabel.className = 'sr-only';
-  srLabel.textContent = app?.name ?? 'Mini-app favoritado';
+  if (srLabelText) {
+    srLabel.textContent = srLabelText;
+  } else {
+    srLabel.textContent = app?.name ?? 'Mini-app favoritado';
+  }
 
   item.append(iconWrapper, srLabel);
   return item;
@@ -349,6 +372,72 @@ function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
     .forEach((app) => {
       list.append(renderMiniAppIconItem(app));
     });
+
+  widget.append(title, description, list);
+  return widget;
+}
+
+function renderRecentMiniAppsWidget(user, accessibleMiniApps, activity) {
+  const widget = document.createElement('section');
+  widget.className =
+    [
+      'surface-card',
+      'surface-card--transparent',
+      'user-panel__widget',
+      'user-dashboard__widget',
+      'home-dashboard__widget',
+      'home-dashboard__widget--recent',
+    ].join(' ');
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Últimos acessos';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent = `Reveja os mini-apps que você abriu recentemente no perfil ${formatUserTypeLabel(user)}.`;
+
+  const list = createMiniAppListContainer(
+    'Os mini-apps acessados recentemente aparecerão aqui.',
+    'recent',
+  );
+
+  const accessibleMap = new Map(accessibleMiniApps.map((app) => [app.id, app]));
+
+  const recentEntries = [];
+  activity.forEach((entry) => {
+    if (!entry || typeof entry !== 'object') {
+      return;
+    }
+
+    const appId = typeof entry.appId === 'string' ? entry.appId : '';
+    const app = accessibleMap.get(appId);
+    if (!app) {
+      return;
+    }
+
+    recentEntries.push({
+      app,
+      lastAccessedAt: entry.lastAccessedAt,
+    });
+  });
+
+  recentEntries.slice(0, MAX_FAVORITE_MINI_APPS).forEach(({ app, lastAccessedAt }) => {
+    const formattedAccess = formatUpdatedAt(lastAccessedAt);
+    const label = app?.name
+      ? formattedAccess !== '—'
+        ? `${app.name} (acessado em ${formattedAccess})`
+        : app.name
+      : 'Mini-app acessado recentemente';
+
+    list.append(
+      renderMiniAppIconItem(app, {
+        modifier: 'recent',
+        srLabelText: label,
+        title: label,
+      }),
+    );
+  });
 
   widget.append(title, description, list);
   return widget;
@@ -627,6 +716,7 @@ export function renderHome(viewRoot) {
     user: getActiveUser(),
     miniApps: getMiniAppsSnapshot(),
     preferences: { favorites: [], saved: [] },
+    activity: [],
   };
 
   function refreshPreferences() {
@@ -638,7 +728,17 @@ export function renderHome(viewRoot) {
     state.preferences = getUserMiniAppPreferences(state.user.id);
   }
 
+  function refreshActivity() {
+    if (!state.user) {
+      state.activity = [];
+      return;
+    }
+
+    state.activity = getUserMiniAppActivity(state.user.id);
+  }
+
   refreshPreferences();
+  refreshActivity();
 
   function updateLayout() {
     if (!state.user) {
@@ -661,6 +761,7 @@ export function renderHome(viewRoot) {
     layout.append(
       renderHomeIntroWidget(),
       renderHomePanelLabelWidget(state.user, state.preferences, accessibleMiniApps),
+      renderRecentMiniAppsWidget(state.user, accessibleMiniApps, state.activity),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),
@@ -676,6 +777,7 @@ export function renderHome(viewRoot) {
   const unsubscribeSession = subscribeSession((user) => {
     state.user = user;
     refreshPreferences();
+    refreshActivity();
     updateLayout();
   });
 
@@ -712,5 +814,27 @@ export function renderHome(viewRoot) {
 
   if (typeof unsubscribePreferences === 'function') {
     cleanupHandlers.push(unsubscribePreferences);
+  }
+
+  const unsubscribeActivity = subscribeMiniAppActivity((event) => {
+    if (!state.user) {
+      return;
+    }
+
+    const normalizedUserId = String(state.user.id ?? '').trim();
+    if (!normalizedUserId) {
+      return;
+    }
+
+    if (event?.userId && event.userId !== normalizedUserId) {
+      return;
+    }
+
+    refreshActivity();
+    updateLayout();
+  });
+
+  if (typeof unsubscribeActivity === 'function') {
+    cleanupHandlers.push(unsubscribeActivity);
   }
 }
