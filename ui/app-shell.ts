@@ -900,7 +900,7 @@ function focusViewRoot(): void {
 
 function applyMainState(view: string): void {
   const isAdminView = view === 'admin';
-  const isUserView = view === 'user';
+  const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
 
