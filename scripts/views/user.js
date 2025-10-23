@@ -20,13 +20,34 @@ import {
 import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
-import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
+import { formatPhoneNumberForDisplay, validatePhoneNumber } from './shared/validation.js';
 import { createSystemUsersWidget } from './shared/system-users-widget.js';
 import eventBus from '../events/event-bus.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
 const HTMLElementRef = typeof HTMLElement === 'undefined' ? null : HTMLElement;
+
+const AUTO_FOCUS_ON_OPEN = (() => {
+  if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
+    return false;
+  }
+
+  const root = document.documentElement;
+  if (!root || (HTMLElementRef && !(root instanceof HTMLElementRef))) {
+    return false;
+  }
+
+  try {
+    const computed = window.getComputedStyle(root);
+    const rawValue = computed.getPropertyValue('--system-interaction-auto-focus-open');
+    const normalized = typeof rawValue === 'string' ? rawValue.trim().toLowerCase() : '';
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+  } catch (error) {
+    console.error('Não foi possível ler o padrão de auto foco do sistema.', error);
+    return false;
+  }
+})();
 
 function isElement(node) {
   if (!HTMLElementRef) {
@@ -412,20 +433,6 @@ export function renderUserPanel(viewRoot) {
   emptyState.className = 'user-dashboard__empty-state';
   emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
 
-  const userDataActions = document.createElement('div');
-  userDataActions.className = 'user-dashboard__user-data-actions';
-
-  const editButton = document.createElement('button');
-  editButton.type = 'button';
-  editButton.className =
-    'button button--primary user-dashboard__summary-edit user-dashboard__user-data-edit';
-  editButton.textContent = 'Editar dados';
-  editButton.setAttribute('aria-controls', 'user-dashboard-form');
-  editButton.setAttribute('aria-expanded', 'false');
-  editButton.disabled = true;
-
-  userDataActions.append(editButton);
-
   const feedbackElement = document.createElement('p');
   feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
   feedbackElement.hidden = true;
@@ -474,18 +481,6 @@ export function renderUserPanel(viewRoot) {
           required: false,
         },
       },
-      {
-        key: 'password',
-        size: 'medium',
-        input: {
-          id: 'user-dashboard-password',
-          label: 'Nova senha (opcional)',
-          type: 'password',
-          placeholder: 'Mínimo de 8 caracteres',
-          autocomplete: 'new-password',
-          required: false,
-        },
-      },
     ],
     extras: [],
   });
@@ -493,7 +488,7 @@ export function renderUserPanel(viewRoot) {
   accountForm.hidden = true;
   tagFormElement(userDataSectionIdentifier, accountForm);
 
-  userDataContent.append(accountSummary, emptyState, userDataActions, feedbackElement, accountForm);
+  userDataContent.append(accountSummary, emptyState, feedbackElement, accountForm);
 
   const userDataWidgetInstance = createSystemUsersWidget({
     title: 'Dados do usuário',
@@ -525,7 +520,6 @@ export function renderUserPanel(viewRoot) {
   const nameField = findFieldEntry('name').field;
   const phoneField = findFieldEntry('phone').field;
   const emailField = findFieldEntry('email').field;
-  const passwordField = findFieldEntry('password').field;
 
   const themeWidget = themeSectionControls.section;
   const accessWidget = accessSectionControls.section;
@@ -556,7 +550,13 @@ export function renderUserPanel(viewRoot) {
     userDataExpanded = Boolean(expanded && matchesActive);
     updateUserDataViewState();
 
-    if (userDataExpanded && !previousExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
+    if (
+      AUTO_FOCUS_ON_OPEN &&
+      userDataExpanded &&
+      !previousExpanded &&
+      nameInput instanceof HTMLElement &&
+      typeof nameInput.focus === 'function'
+    ) {
       try {
         nameInput.focus();
       } catch (error) {
@@ -580,9 +580,7 @@ export function renderUserPanel(viewRoot) {
   const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
   const emailInput = emailField.querySelector('input');
-  const passwordInput = passwordField.querySelector('input');
-
-  [nameInput, phoneInput, emailInput, passwordInput]
+  [nameInput, phoneInput, emailInput]
     .filter((field) => field instanceof HTMLElement)
     .forEach((field) => {
       field.setAttribute('aria-describedby', feedbackElementId);
@@ -823,7 +821,7 @@ export function renderUserPanel(viewRoot) {
   };
 
   const clearFieldValidity = () => {
-    [phoneInput, passwordInput]
+    [phoneInput]
       .filter((field) => field instanceof HTMLElement)
       .forEach((field) => {
         field.removeAttribute('aria-invalid');
@@ -878,44 +876,8 @@ export function renderUserPanel(viewRoot) {
       }
     }
 
-    if (editButton instanceof HTMLElement) {
-      const isBusy = typeof editButton.hasAttribute === 'function' && editButton.hasAttribute('aria-busy');
-      editButton.disabled = isBusy || !hasUser;
-      editButton.setAttribute('aria-expanded', hasUser ? String(Boolean(userDataExpanded)) : 'false');
-    }
-
     accountWidget.dataset.sectionState = hasUser ? (userDataExpanded ? 'expanded' : 'collapsed') : 'empty';
   };
-
-  const toggleUserDataExpanded = (nextState) => {
-    const hasUser = Boolean(activeUser && activeUser.id != null);
-    if (!hasUser) {
-      userDataExpanded = false;
-      updateUserDataViewState();
-      return;
-    }
-
-    userDataWidgetInstance.setExpandedUser(activeUser.id, Boolean(nextState));
-  };
-
-  const handleEditShortcut = () => {
-    if (!activeUser) {
-      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
-    }
-
-    const nextExpanded = !userDataExpanded;
-    if (nextExpanded) {
-      resetFeedback();
-    } else {
-      clearFieldValidity();
-    }
-
-    toggleUserDataExpanded(nextExpanded);
-  };
-
-  editButton.addEventListener('click', handleEditShortcut);
-  cleanupCallbacks.push(() => editButton.removeEventListener('click', handleEditShortcut));
 
   const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
 
@@ -1227,7 +1189,7 @@ export function renderUserPanel(viewRoot) {
       { name: nextName },
       {
         successMessage: 'Nome atualizado com sucesso!',
-        busyTargets: [nameInput, editButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [nameInput].filter((element) => element instanceof HTMLElement),
       },
     );
   };
@@ -1268,7 +1230,7 @@ export function renderUserPanel(viewRoot) {
       { phone: sanitizedPhone },
       {
         successMessage: 'Telefone atualizado com sucesso!',
-        busyTargets: [phoneInput, editButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [phoneInput].filter((element) => element instanceof HTMLElement),
       },
     );
 
@@ -1298,53 +1260,9 @@ export function renderUserPanel(viewRoot) {
       { profile: { email: nextEmail } },
       {
         successMessage: 'E-mail atualizado com sucesso!',
-        busyTargets: [emailInput, editButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [emailInput].filter((element) => element instanceof HTMLElement),
       },
     );
-  };
-
-  const handlePasswordChange = async () => {
-    if (!passwordInput) {
-      return;
-    }
-
-    if (!activeUser) {
-      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
-    }
-
-    const passwordValue = passwordInput.value;
-    if (!passwordValue) {
-      passwordInput.removeAttribute('aria-invalid');
-      resetFeedback();
-      return;
-    }
-
-    const passwordValidation = validatePasswordStrength(passwordValue);
-    if (!passwordValidation.isValid) {
-      showFeedback(passwordValidation.message ?? 'Informe uma senha válida.', { isError: true });
-      passwordInput.setAttribute('aria-invalid', 'true');
-      try {
-        passwordInput.focus();
-      } catch (error) {
-        // Ignora ambientes sem suporte a foco programático.
-      }
-      return;
-    }
-
-    passwordInput.removeAttribute('aria-invalid');
-
-    const result = await persistUpdates(
-      { password: passwordValue },
-      {
-        successMessage: 'Senha atualizada com sucesso!',
-        busyTargets: [passwordInput, editButton].filter((element) => element instanceof HTMLElement),
-      },
-    );
-
-    if (result.status === 'success') {
-      passwordInput.value = '';
-    }
   };
 
   const persistAllFields = async ({ showNoChangesFeedback = true } = {}) => {
@@ -1391,27 +1309,6 @@ export function renderUserPanel(viewRoot) {
       }
     }
 
-    if (passwordInput) {
-      const passwordValue = passwordInput.value;
-      if (passwordValue) {
-        const passwordValidation = validatePasswordStrength(passwordValue);
-        if (!passwordValidation.isValid) {
-          showFeedback(passwordValidation.message ?? 'Informe uma senha válida.', { isError: true });
-          passwordInput.setAttribute('aria-invalid', 'true');
-          try {
-            passwordInput.focus();
-          } catch (error) {
-            // Ignora ambientes sem suporte a foco programático.
-          }
-          return { status: 'invalid', field: 'password' };
-        }
-        updates.password = passwordValue;
-        passwordInput.removeAttribute('aria-invalid');
-      } else {
-        passwordInput.removeAttribute('aria-invalid');
-      }
-    }
-
     if (Object.keys(profileUpdates).length > 0) {
       updates.profile = profileUpdates;
     }
@@ -1423,9 +1320,7 @@ export function renderUserPanel(viewRoot) {
       return { status: 'no-changes' };
     }
 
-    const busyTargets = [nameInput, phoneInput, emailInput, passwordInput, editButton].filter(
-      (element) => element instanceof HTMLElement,
-    );
+    const busyTargets = [nameInput, phoneInput, emailInput].filter((element) => element instanceof HTMLElement);
 
     return persistUpdates(updates, {
       successMessage: 'Alterações salvas com sucesso!',
@@ -1461,11 +1356,6 @@ export function renderUserPanel(viewRoot) {
     cleanupCallbacks.push(() => emailInput.removeEventListener('change', handleEmailChange));
   }
 
-  if (passwordInput) {
-    passwordInput.addEventListener('change', handlePasswordChange);
-    cleanupCallbacks.push(() => passwordInput.removeEventListener('change', handlePasswordChange));
-  }
-
   const unsubscribeThemeListener = subscribeThemeChange(() => {
     updateThemeActionContent();
   });
@@ -1493,11 +1383,6 @@ export function renderUserPanel(viewRoot) {
     if (emailInput) {
       emailInput.value = user?.profile?.email ?? '';
       emailInput.disabled = !isEnabled;
-    }
-
-    if (passwordInput) {
-      passwordInput.value = '';
-      passwordInput.disabled = !isEnabled;
     }
 
     if (!isEnabled) {

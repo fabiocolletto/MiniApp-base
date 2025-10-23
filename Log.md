@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.177 - 2025-10-24 10:40 BRT
+- Remove o botão "Editar dados" do widget de dados do usuário e simplifica o layout mantendo apenas o resumo e o formulário.
+- Elimina o campo de senha do formulário do usuário, preservando apenas nome, telefone e e-mail para edição.
+- Adiciona o token `--system-interaction-auto-focus-open` ao sistema de estilos e aplica o padrão para evitar auto foco ao expandir widgets.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.177.
+
 ## v0.1.176 - 2025-10-24 10:10 BRT
 - Remove o atalho do rodapé para o painel administrativo e transforma o botão da marca em controle de visibilidade dos indicadores.
 - Persiste a preferência de exibir ou ocultar indicadores do rodapé tanto no armazenamento local quanto no cadastro do usuário ativo, com sincronização automática.
