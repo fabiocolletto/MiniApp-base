@@ -277,27 +277,6 @@ function createDesignKitIdFactory() {
   };
 }
 
-function createTokenBadges(tokens) {
-  if (!Array.isArray(tokens) || tokens.length === 0) {
-    return null;
-  }
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'admin-design-kit__token-list';
-
-  tokens.forEach((token) => {
-    if (!token) {
-      return;
-    }
-    const badge = document.createElement('span');
-    badge.className = 'admin-design-kit__token';
-    badge.textContent = token;
-    wrapper.append(badge);
-  });
-
-  return wrapper;
-}
-
 function createSurfacePreview(model) {
   const preview = document.createElement('div');
   preview.className = 'admin-design-kit__preview admin-design-kit__preview--surface';
@@ -358,17 +337,6 @@ function createLabelPreview(model) {
   return preview;
 }
 
-function appendTokensIfAvailable(card, tokens) {
-  if (!(card instanceof HTMLElement)) {
-    return;
-  }
-
-  const tokenBadges = createTokenBadges(tokens);
-  if (tokenBadges) {
-    card.append(tokenBadges);
-  }
-}
-
 function createSurfaceShowcase() {
   const section = document.createElement('section');
   section.className = 'admin-design-kit__section';
@@ -396,16 +364,11 @@ function createSurfaceShowcase() {
     title.className = 'admin-design-kit__item-title';
     title.textContent = `${model.id} — ${model.title}`;
 
-    const helper = document.createElement('p');
-    helper.className = 'admin-design-kit__item-description';
-    helper.textContent = model.description;
-
-    header.append(title, helper);
+    header.append(title);
 
     const preview = createSurfacePreview(model);
 
     card.append(header, preview);
-    appendTokensIfAvailable(card, model.tokens);
     grid.append(card);
   });
 
@@ -441,16 +404,11 @@ function createFormShowcase() {
     title.className = 'admin-design-kit__item-title';
     title.textContent = `${model.id} — ${model.title}`;
 
-    const helper = document.createElement('p');
-    helper.className = 'admin-design-kit__item-description';
-    helper.textContent = model.description;
-
-    header.append(title, helper);
+    header.append(title);
 
     const preview = createFormPreview(model, idFactory);
 
     card.append(header, preview);
-    appendTokensIfAvailable(card, model.tokens);
     grid.append(card);
   });
 
@@ -485,16 +443,11 @@ function createFeedbackShowcase() {
     title.className = 'admin-design-kit__item-title';
     title.textContent = `${model.id} — ${model.title}`;
 
-    const helper = document.createElement('p');
-    helper.className = 'admin-design-kit__item-description';
-    helper.textContent = model.description;
-
-    header.append(title, helper);
+    header.append(title);
 
     const preview = createFeedbackPreview(model);
 
     card.append(header, preview);
-    appendTokensIfAvailable(card, model.tokens);
     grid.append(card);
   });
 
@@ -529,16 +482,11 @@ function createLabelShowcase() {
     title.className = 'admin-design-kit__item-title';
     title.textContent = `${model.id} — ${model.title}`;
 
-    const helper = document.createElement('p');
-    helper.className = 'admin-design-kit__item-description';
-    helper.textContent = model.description;
-
-    header.append(title, helper);
+    header.append(title);
 
     const preview = createLabelPreview(model);
 
     card.append(header, preview);
-    appendTokensIfAvailable(card, model.tokens);
     grid.append(card);
   });
 
@@ -1140,11 +1088,7 @@ function createButtonShowcase() {
     title.className = 'admin-design-kit__item-title';
     title.textContent = `Botão ${model.id} — ${model.title}`;
 
-    const helper = document.createElement('p');
-    helper.className = 'admin-design-kit__item-description';
-    helper.textContent = model.description;
-
-    header.append(title, helper);
+    header.append(title);
 
     const preview = createButtonPreview(model);
 
@@ -1153,211 +1097,6 @@ function createButtonShowcase() {
   });
 
   section.append(heading, description, grid);
-  return section;
-}
-
-function registerCleanupHandler(cleanupHandlers, handler) {
-  if (!Array.isArray(cleanupHandlers) || typeof handler !== 'function') {
-    return;
-  }
-
-  cleanupHandlers.push(handler);
-}
-
-function createButtonSpecsSection(cleanupHandlers) {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
-
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Ficha técnica dos botões';
-
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Detalhes consolidados das cores, dimensões e cantos aplicados em cada variação do catálogo.';
-
-  const card = document.createElement('article');
-  card.className = 'surface-card admin-design-kit__table-card';
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'admin-design-kit__table-wrapper';
-
-  const table = document.createElement('table');
-  table.className = 'admin-design-kit__table';
-
-  const caption = document.createElement('caption');
-  caption.className = 'sr-only';
-  caption.textContent = 'Tabela técnica com parâmetros de cores e dimensões dos botões do kit de design.';
-  table.append(caption);
-
-  const tableHead = document.createElement('thead');
-  tableHead.className = 'admin-design-kit__table-head';
-  const headRow = document.createElement('tr');
-  headRow.className = 'admin-design-kit__table-row';
-
-  const columns = [
-    'Botão',
-    ...BUTTON_SPEC_INDEX.map((column) => column.label),
-  ];
-
-  columns.forEach((label) => {
-    const cell = document.createElement('th');
-    cell.scope = 'col';
-    cell.className = 'admin-design-kit__table-header';
-    cell.textContent = label;
-    headRow.append(cell);
-  });
-
-  tableHead.append(headRow);
-  table.append(tableHead);
-
-  const tableBody = document.createElement('tbody');
-  tableBody.className = 'admin-design-kit__table-body';
-
-  BUTTON_MODELS.forEach((model) => {
-    const specs = ensureButtonSpecState(model.id);
-
-    const row = document.createElement('tr');
-    row.className = 'admin-design-kit__table-row';
-
-    const buttonCell = document.createElement('th');
-    buttonCell.scope = 'row';
-    buttonCell.className = 'admin-design-kit__table-cell admin-design-kit__table-cell--label';
-    buttonCell.textContent = `Botão ${model.id} — ${model.title}`;
-    row.append(buttonCell);
-
-    BUTTON_SPEC_INDEX.forEach((column, columnIndex) => {
-      const value = specs?.[column.key] ?? '';
-      const cell = document.createElement('td');
-      cell.className = 'admin-design-kit__table-cell';
-
-      const field = document.createElement('div');
-      field.className = 'admin-design-kit__table-field';
-
-      const inputId = `admin-design-kit__spec-${model.id}-${columnIndex}`;
-
-      const label = document.createElement('label');
-      label.className = 'admin-design-kit__table-label';
-      label.setAttribute('for', inputId);
-
-      const indexBadge = document.createElement('span');
-      indexBadge.className = 'admin-design-kit__table-index';
-      indexBadge.textContent = `#${column.key}`;
-      label.append(indexBadge);
-
-      const labelText = document.createElement('span');
-      labelText.className = 'admin-design-kit__table-label-text';
-      labelText.textContent = column.label;
-      label.append(labelText);
-
-      const hasOptions = Array.isArray(column.options) && column.options.length > 0;
-      const control = hasOptions
-        ? document.createElement('select')
-        : document.createElement('input');
-
-      control.id = inputId;
-      control.className = 'form-input admin-design-kit__table-input';
-      control.dataset.buttonId = model.id;
-      control.dataset.specKey = column.key;
-
-      if (Array.isArray(column.tokens) && column.tokens.length > 0) {
-        control.dataset.specTokens = column.tokens.join(' ');
-      }
-
-      if (hasOptions) {
-        const selectControl = /** @type {HTMLSelectElement} */ (control);
-        column.options.forEach(({ value: optionValue, label: optionLabel }) => {
-          const option = document.createElement('option');
-          option.value = optionValue;
-          option.textContent = optionLabel;
-          selectControl.append(option);
-        });
-
-        if (
-          value &&
-          !column.options.some((option) => {
-            return option.value === value;
-          })
-        ) {
-          const fallbackOption = document.createElement('option');
-          fallbackOption.value = value;
-          fallbackOption.textContent = value;
-          fallbackOption.hidden = true;
-          selectControl.append(fallbackOption);
-        }
-
-        selectControl.value = value || column.options[0]?.value || '';
-      } else {
-        const inputControl = /** @type {HTMLInputElement} */ (control);
-        inputControl.type = 'text';
-        inputControl.value = value;
-        inputControl.placeholder = column.placeholder ?? '';
-      }
-
-      const eventName = hasOptions ? 'change' : 'input';
-
-      const handleInput = (event) => {
-        if (!(event instanceof Event)) {
-          return;
-        }
-
-        const target = event.currentTarget;
-        if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) {
-          return;
-        }
-
-        const { buttonId, specKey } = target.dataset;
-        updateButtonSpec(buttonId, specKey, target.value);
-      };
-
-      control.addEventListener(eventName, handleInput);
-
-      const helperId = `${inputId}-helper`;
-      let helper;
-      if (column.helper) {
-        helper = document.createElement('span');
-        helper.id = helperId;
-        helper.className = 'admin-design-kit__table-helper';
-        helper.textContent = column.helper;
-        control.setAttribute('aria-describedby', helperId);
-      }
-
-      if (Array.isArray(column.tokens) && column.tokens.length > 0) {
-        const tokensWrapper = document.createElement('div');
-        tokensWrapper.className = 'admin-design-kit__table-tokens';
-
-        column.tokens.forEach((token) => {
-          const tokenBadge = document.createElement('span');
-          tokenBadge.className = 'admin-design-kit__table-token';
-          tokenBadge.textContent = token;
-          tokensWrapper.append(tokenBadge);
-        });
-
-        field.append(label, control, tokensWrapper);
-      } else {
-        field.append(label, control);
-      }
-
-      if (helper) {
-        field.append(helper);
-      }
-
-      cell.append(field);
-      row.append(cell);
-
-      registerCleanupHandler(cleanupHandlers, () => {
-        control.removeEventListener(eventName, handleInput);
-      });
-    });
-
-    tableBody.append(row);
-  });
-
-  table.append(tableBody);
-  wrapper.append(table);
-  card.append(wrapper);
-  section.append(heading, description, card);
   return section;
 }
 
@@ -1432,7 +1171,6 @@ export function renderAdminDesignKit(viewRoot) {
   layout.append(createFeedbackShowcase());
   layout.append(createLabelShowcase());
   layout.append(createButtonShowcase());
-  layout.append(createButtonSpecsSection(cleanupHandlers));
 
   viewRoot.replaceChildren(layout);
 }

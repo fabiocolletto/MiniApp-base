@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.210 - 2025-10-23 19:42 BRT
+- Limpa o painel do Kit Design removendo as descrições e os tokens exibidos nos modelos de superfícies, formulários, feedbacks, etiquetas e botões.
+- Remove o widget de ficha técnica dos botões para deixar o catálogo mais enxuto.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.210 das 19h42.
+
 ## v0.1.209 - 2025-10-25 12:00 BRT
 - Substitui o fundo dos widgets de miniapps favoritados, salvos e liberados por transparência, mantendo a estrutura do painel Início.
 - Atualiza a versão exibida no rodapé para comunicar a release v0.1.209 das 12h00.
