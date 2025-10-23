@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.171 - 2025-10-24 07:40 BRT
+- Substitui o widget "Dados Principais" por "Dados do Usuário" com resumo sempre visível e botões dedicados de edição e expansão.
+- Implementa o salvamento automático por campo, validando telefone, e-mail e senha ao sair do foco e atualizando o snapshot ativo em memória.
+- Remove o seletor de tema do formulário, reorganiza os estilos para o novo agrupamento de ações e ajusta os testes do painel do usuário ao fluxo com botão de "mais".
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.171.
+
 ## v0.1.170 - 2025-10-24 06:50 BRT
 - Refatora o painel do usuário para montar seções a partir de metadados configuráveis, criando acordeões independentes com estados `data-section-state` por bloco.
 - Extrai helpers reutilizáveis para construção de formulários dos dados do usuário, permitindo identificar grupos como "dados pessoais" e reutilizar os campos.
