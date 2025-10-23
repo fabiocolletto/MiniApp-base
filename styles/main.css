@@ -3289,6 +3289,38 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
 }
 
+.home-dashboard__miniapps-item {
+  display: grid;
+  justify-items: stretch;
+}
+
+.home-dashboard__miniapps--favorites {
+  padding: clamp(0.75rem, 2.1vw, 1.15rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  justify-items: center;
+  align-content: stretch;
+}
+
+.home-dashboard__miniapps-item--favorite {
+  display: grid;
+  place-items: center;
+}
+
+.home-dashboard__miniapps-icon {
+  inline-size: clamp(2.6rem, 8vw, 3.1rem);
+  block-size: clamp(2.6rem, 8vw, 3.1rem);
+  box-shadow: inset 0 0 0 0.08rem rgba(var(--color-accent-rgb), 0.28);
+}
+
+.home-dashboard__miniapps-icon[data-state='image'] {
+  background: var(--color-bg-card);
+}
+
+.home-dashboard__miniapps-icon-placeholder {
+  font-size: var(--panel-font-size-strong);
+}
+
 .home-dashboard__miniapps:empty {
   align-content: center;
   justify-items: center;

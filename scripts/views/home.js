@@ -172,6 +172,39 @@ function createSummaryEntry(term, value) {
   return wrapper;
 }
 
+function renderMiniAppIconItem(app) {
+  const item = document.createElement('li');
+  item.className = 'home-dashboard__miniapps-item home-dashboard__miniapps-item--favorite';
+  item.dataset.appId = app?.id ?? '';
+
+  const iconWrapper = document.createElement('span');
+  iconWrapper.className = 'admin-miniapp-table__avatar home-dashboard__miniapps-icon';
+
+  if (typeof app?.icon === 'string' && app.icon.trim() !== '') {
+    const image = document.createElement('img');
+    image.className = 'admin-miniapp-table__avatar-image';
+    image.alt = '';
+    image.src = app.icon.trim();
+    iconWrapper.dataset.state = 'image';
+    iconWrapper.append(image);
+  } else {
+    const placeholder = document.createElement('span');
+    placeholder.className =
+      'admin-miniapp-table__avatar-placeholder home-dashboard__miniapps-icon-placeholder';
+    const fallbackInitial = app?.name?.trim().charAt(0).toUpperCase();
+    placeholder.textContent = fallbackInitial || 'M';
+    iconWrapper.dataset.state = 'placeholder';
+    iconWrapper.append(placeholder);
+  }
+
+  const srLabel = document.createElement('span');
+  srLabel.className = 'sr-only';
+  srLabel.textContent = app?.name ?? 'Mini-app favoritado';
+
+  item.append(iconWrapper, srLabel);
+  return item;
+}
+
 function renderMiniAppListItem(app) {
   const item = document.createElement('li');
   item.className = 'surface-card home-dashboard__list-item';
@@ -255,7 +288,6 @@ function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
       'user-dashboard__widget',
       'home-dashboard__widget',
       'home-dashboard__widget--favorites',
-      'home-dashboard__widget-row',
     ].join(' ');
 
   const title = document.createElement('h2');
@@ -278,7 +310,7 @@ function renderFavoriteMiniAppsWidget(user, accessibleMiniApps, preferences) {
     .map((id) => accessibleMap.get(id))
     .filter(Boolean)
     .forEach((app) => {
-      list.append(renderMiniAppListItem(app));
+      list.append(renderMiniAppIconItem(app));
     });
 
   widget.append(title, description, list);
