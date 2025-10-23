@@ -1220,18 +1220,19 @@ function updateHeaderSession(user) {
   const normalizedType =
     typeof user?.userType === 'string' ? user.userType.trim().toLowerCase() : '';
   const isAdmin = normalizedType === 'administrador';
-  const showAdminItems = isAuthenticated && isAdmin;
+  const showAdminLink = isAuthenticated && isAdmin;
+  const showDesignKitLink = isAuthenticated;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
-  setLinkVisibility(headerAdminLink, showAdminItems);
-  setLinkVisibility(headerDesignKitLink, showAdminItems);
+  setLinkVisibility(headerAdminLink, showAdminLink);
+  setLinkVisibility(headerDesignKitLink, showDesignKitLink);
 
   if (headerMenuAdminDivider instanceof HTMLElement) {
-    headerMenuAdminDivider.hidden = !showAdminItems;
+    headerMenuAdminDivider.hidden = !(showDesignKitLink || showAdminLink);
   }
 
   const panel = ensureHeaderMobileMenu();
@@ -1241,7 +1242,7 @@ function updateHeaderSession(user) {
     setLinkVisibility(mobileRegisterAction, true);
     setLinkVisibility(mobileLoginAction, true);
     setLinkVisibility(mobileThemeAction, !isAuthenticated);
-    setLinkVisibility(mobileAdminAction, showAdminItems);
+    setLinkVisibility(mobileAdminAction, showAdminLink);
   }
 
   if (menuControls) {

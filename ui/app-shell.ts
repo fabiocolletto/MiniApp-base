@@ -590,18 +590,19 @@ function updateHeaderSession(user: unknown): void {
       ? ((user as { userType?: string }).userType ?? '').trim().toLowerCase()
       : '';
   const isAdmin = normalizedType === 'administrador';
-  const showAdminItems = isAuthenticated && isAdmin;
+  const showAdminLink = isAuthenticated && isAdmin;
+  const showDesignKitLink = isAuthenticated;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
-  setLinkVisibility(headerAdminLink, showAdminItems);
-  setLinkVisibility(headerDesignKitLink, showAdminItems);
+  setLinkVisibility(headerAdminLink, showAdminLink);
+  setLinkVisibility(headerDesignKitLink, showDesignKitLink);
 
   if (headerMenuAdminDivider) {
-    headerMenuAdminDivider.hidden = !showAdminItems;
+    headerMenuAdminDivider.hidden = !(showDesignKitLink || showAdminLink);
   }
 
   if (menuControls) {
