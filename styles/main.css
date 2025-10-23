@@ -1632,6 +1632,8 @@ footer {
 
 .miniapp-store-view .miniapp-store__catalog {
   gap: var(--panel-stack-gap);
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .miniapp-store__feedback {
@@ -1673,8 +1675,8 @@ footer {
   gap: var(--space-md);
   justify-items: stretch;
   align-content: stretch;
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
+  grid-auto-rows: 1fr;
 }
 
 .miniapp-store-view .home-dashboard__list-item {
@@ -2608,7 +2610,8 @@ main > :where(.card.view):not(.auth-view) {
 }
 
 @media (min-width: 64rem) {
-  .home-dashboard__miniapps {
+  .home-dashboard__miniapps,
+  .miniapp-store-view .home-dashboard__miniapps {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
