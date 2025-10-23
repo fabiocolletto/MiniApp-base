@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.178 - 2025-10-24 11:10 BRT
+- Simplifica a Mini App Store para um único widget em largura total exibindo todos os miniapps disponíveis na mesma linha com espaçamento uniforme.
+- Remove seções paralelas e controles de favoritos/salvos, mantendo apenas a lista horizontal navegável dos miniapps.
+- Ajusta a renderização para atualizar automaticamente a vitrine ao assinar o catálogo e exibir estado vazio quando necessário.
+
 ## v0.1.177 - 2025-10-24 10:40 BRT
 - Remove o botão "Editar dados" do widget de dados do usuário e simplifica o layout mantendo apenas o resumo e o formulário.
 - Elimina o campo de senha do formulário do usuário, preservando apenas nome, telefone e e-mail para edição.
