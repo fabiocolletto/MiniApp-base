@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.201 - 2025-10-24 23:59 BRT
+- Corrige o painel Kit de Design garantindo que a limpeza dos eventos dos campos seja registrada com segurança, eliminando o erro que impedia administradores de abrir o conteúdo.
+- Valida visualmente o painel atualizado confirmando a renderização completa do Kit de Design após o acesso pelo menu do cabeçalho.
+
 ## v0.1.200 - 2025-10-24 23:30 BRT
 - Simplifica a Mini App Store mantendo apenas o widget de miniapps disponíveis e removendo as seções de MiniAppPages e ilustração.
 - Remove estilos associados às seções retiradas para manter o layout enxuto.

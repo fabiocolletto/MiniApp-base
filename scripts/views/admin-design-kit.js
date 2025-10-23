@@ -460,7 +460,15 @@ function createButtonShowcase() {
   return section;
 }
 
-function createButtonSpecsSection() {
+function registerCleanupHandler(cleanupHandlers, handler) {
+  if (!Array.isArray(cleanupHandlers) || typeof handler !== 'function') {
+    return;
+  }
+
+  cleanupHandlers.push(handler);
+}
+
+function createButtonSpecsSection(cleanupHandlers) {
   const section = document.createElement('section');
   section.className = 'admin-design-kit__section';
 
@@ -608,7 +616,7 @@ function createButtonSpecsSection() {
       cell.append(field);
       row.append(cell);
 
-      cleanupHandlers.push(() => {
+      registerCleanupHandler(cleanupHandlers, () => {
         input.removeEventListener('input', handleInput);
       });
     });
@@ -690,7 +698,7 @@ export function renderAdminDesignKit(viewRoot) {
 
   layout.append(createIntroSection());
   layout.append(createButtonShowcase());
-  layout.append(createButtonSpecsSection());
+  layout.append(createButtonSpecsSection(cleanupHandlers));
 
   viewRoot.replaceChildren(layout);
 }
