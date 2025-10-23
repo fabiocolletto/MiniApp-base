@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.184 - 2025-10-23 13:19 BRT
+- Amplia o widget de etiqueta do painel para mostrar nome, contatos e perfil do usuário logado junto da identificação do painel.
+- Indica no mesmo widget quantos mini-apps o usuário favoritou e salvou, reutilizando o sumário padrão de dados.
+- Atualiza os testes do painel Início para validar o novo sumário e a ordem dos widgets renderizados.
+
 ## v0.1.183 - 2025-10-23 13:05 BRT
 - Cria na Mini App Store cards dedicados às MiniAppPages, incluindo espaço reservado para a lista e para a arte destacada.
 - Conecta o widget das MiniAppPages ao catálogo de miniapps para exibir automaticamente os três modelos disponíveis.
