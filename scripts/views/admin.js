@@ -158,7 +158,9 @@ function createHighlightCard({ title, variant }) {
   const progressBar = document.createElement('div');
   progressBar.className = 'admin-dashboard__highlight-progress-bar';
   progressBar.style.width = '0%';
-  progressBar.style.setProperty('inline-size', '0%');
+  if (progressBar?.style && typeof progressBar.style.setProperty === 'function') {
+    progressBar.style.setProperty('inline-size', '0%');
+  }
   progress.append(progressBar);
 
   const percentageElement = document.createElement('span');
@@ -185,7 +187,9 @@ function createHighlightCard({ title, variant }) {
     percentageElement.textContent = `${percentage}%`;
     const percentageValue = `${percentage}%`;
     progressBar.style.width = percentageValue;
-    progressBar.style.setProperty('inline-size', percentageValue);
+    if (progressBar?.style && typeof progressBar.style.setProperty === 'function') {
+      progressBar.style.setProperty('inline-size', percentageValue);
+    }
     progress.setAttribute('aria-valuenow', String(percentage));
     helperElement.textContent = helper;
   }
