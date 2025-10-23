@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.208 - 2025-10-25 11:30 BRT
+- Acrescenta ao painel administrativo o widget Pacote de produtos com indicadores de vigência, cobertura do catálogo e ticket médio.
+- Organiza os widgets de pacotes e mini-apps na mesma linha para facilitar a análise conjunta dos dados operacionais.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.208 das 11h30.
+
 ## v0.1.207 - 2025-10-25 11:00 BRT
 - Amplia o painel do Kit Design com seções dedicadas a superfícies, formulários, feedbacks e etiquetas cobrindo todos os padrões presentes nos painéis atuais.
 - Insere visualizações exemplificadas com tokens homologados para campos, grupos de checkbox e chips, garantindo referência única para novos widgets.
