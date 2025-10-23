@@ -1,4 +1,5 @@
 import eventBus from '../../events/event-bus.js';
+import { getSystemReleaseInfo, formatSystemReleaseDate } from '../../data/system-info.js';
 
 const NAVIGATION_ITEMS = [
   {
@@ -6,12 +7,6 @@ const NAVIGATION_ITEMS = [
     view: 'admin',
     label: 'Painel do Admin',
     description: 'Indicadores em tempo real e gestão de recursos.',
-  },
-  {
-    key: 'design-kit',
-    view: 'admin-design-kit',
-    label: 'Kit de Design',
-    description: 'Catálogo de componentes padrões para o dia de design.',
   },
 ];
 
@@ -67,6 +62,37 @@ export function createAdminNavigation(options = {}) {
     container.append(button);
     cleanups.push(cleanup);
   });
+
+  const releaseInfo = getSystemReleaseInfo();
+  const metaGroup = document.createElement('div');
+  metaGroup.className = 'admin-menu__meta miniapp-details__highlights';
+  metaGroup.setAttribute('aria-label', 'Informações do sistema');
+
+  const kitChip = document.createElement('span');
+  kitChip.className = 'miniapp-details__chip';
+  kitChip.textContent = 'Kit de Design';
+  metaGroup.append(kitChip);
+
+  const versionLabel = typeof releaseInfo?.version === 'string' ? releaseInfo.version.trim() : '';
+  if (versionLabel) {
+    const normalizedVersion = versionLabel.replace(/^v/i, '');
+    const versionChip = document.createElement('span');
+    versionChip.className = 'miniapp-details__chip';
+    versionChip.textContent = `Versão v${normalizedVersion}`;
+    metaGroup.append(versionChip);
+  }
+
+  const publishedLabel = formatSystemReleaseDate(releaseInfo?.publishedAt);
+  if (publishedLabel) {
+    const publishedChip = document.createElement('span');
+    publishedChip.className = 'miniapp-details__chip';
+    publishedChip.textContent = `Publicado em ${publishedLabel}`;
+    metaGroup.append(publishedChip);
+  }
+
+  if (metaGroup.childElementCount > 0) {
+    nav.append(metaGroup);
+  }
 
   return {
     element: nav,

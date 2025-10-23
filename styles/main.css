@@ -2534,6 +2534,10 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   justify-self: stretch;
 }
 
+.admin-menu__meta {
+  margin-block-start: calc(var(--panel-gap) * 0.5);
+}
+
 .admin-menu__button-title {
   font-size: var(--panel-font-size-strong);
   font-weight: 600;
