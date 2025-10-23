@@ -48,6 +48,71 @@ function formatUserTypeLabel(user) {
   return USER_TYPE_LABELS[type] ?? USER_TYPE_LABELS.usuario;
 }
 
+function formatUserName(user) {
+  if (typeof user?.name === 'string') {
+    const trimmed = user.name.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function formatUserEmail(user) {
+  if (typeof user?.profile?.email === 'string') {
+    const trimmed = user.profile.email.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function formatUserPhone(user) {
+  if (typeof user?.phone === 'string') {
+    const trimmed = user.phone.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  if (typeof user?.profile?.secondaryPhone === 'string') {
+    const trimmed = user.profile.secondaryPhone.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function getPreferenceCount(preferences, key) {
+  if (!preferences || typeof preferences !== 'object') {
+    return 0;
+  }
+
+  const collection = preferences[key];
+  if (!Array.isArray(collection)) {
+    return 0;
+  }
+
+  return collection.length;
+}
+
+function formatMiniAppCountLabel(count) {
+  if (!Number.isFinite(count) || count <= 0) {
+    return 'Nenhum mini-app';
+  }
+
+  if (count === 1) {
+    return '1 mini-app';
+  }
+
+  return `${count} mini-apps`;
+}
+
 function filterMiniAppsForUser(miniApps, user) {
   const type = normalizeUserType(user);
 
@@ -387,7 +452,7 @@ function renderHomeIntroWidget() {
   return widget;
 }
 
-function renderHomePanelLabelWidget(user) {
+function renderHomePanelLabelWidget(user, preferences) {
   const widget = document.createElement('section');
   widget.className =
     [
@@ -420,6 +485,52 @@ function renderHomePanelLabelWidget(user) {
   labelGroup.append(profileLabel);
 
   widget.append(title, description, labelGroup);
+
+  const summary = document.createElement('div');
+  summary.className = 'user-dashboard__summary';
+
+  const userInfoList = document.createElement('dl');
+  userInfoList.className = 'user-dashboard__summary-list';
+
+  [
+    ['Nome', formatUserName(user)],
+    ['E-mail', formatUserEmail(user)],
+    ['Telefone', formatUserPhone(user)],
+  ]
+    .map(([term, value]) => createSummaryEntry(term, value))
+    .filter(Boolean)
+    .forEach((entry) => {
+      userInfoList.append(entry);
+    });
+
+  if (userInfoList.children.length > 0) {
+    summary.append(userInfoList);
+  }
+
+  const preferencesList = document.createElement('dl');
+  preferencesList.className = 'user-dashboard__summary-list';
+
+  const favoriteCount = getPreferenceCount(preferences, 'favorites');
+  const savedCount = getPreferenceCount(preferences, 'saved');
+
+  [
+    ['Mini-apps favoritados', formatMiniAppCountLabel(favoriteCount)],
+    ['Mini-apps salvos', formatMiniAppCountLabel(savedCount)],
+  ]
+    .map(([term, value]) => createSummaryEntry(term, value))
+    .filter(Boolean)
+    .forEach((entry) => {
+      preferencesList.append(entry);
+    });
+
+  if (preferencesList.children.length > 0) {
+    summary.append(preferencesList);
+  }
+
+  if (summary.children.length > 0) {
+    widget.append(summary);
+  }
+
   return widget;
 }
 
@@ -485,7 +596,7 @@ export function renderHome(viewRoot) {
 
     layout.append(
       renderHomeIntroWidget(),
-      renderHomePanelLabelWidget(state.user),
+      renderHomePanelLabelWidget(state.user, state.preferences),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),

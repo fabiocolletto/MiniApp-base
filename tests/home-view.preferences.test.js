@@ -300,20 +300,71 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const layout = viewRoot.querySelector('.home-dashboard__layout');
   assert.ok(layout, 'layout principal deve existir');
-  assert.equal(layout.children.length, 3, 'devem existir três widgets principais');
+  assert.equal(layout.children.length, 5, 'devem existir cinco widgets principais');
 
-  const [favoritesWidget, savedWidget, availableWidget] = layout.children;
+  const [introWidget, panelLabelWidget, favoritesWidget, savedWidget, availableWidget] = layout.children;
+
+  assert.ok(introWidget.classList.contains('home-dashboard__widget'), 'primeiro widget deve ser o introdutório');
+
+  assert.ok(
+    panelLabelWidget.classList.contains('home-dashboard__widget'),
+    'segundo widget deve exibir informações da etiqueta do painel',
+  );
+
+  const labelChips = panelLabelWidget.querySelectorAll('.miniapp-details__chip');
+  assert.deepEqual(
+    labelChips.map((chip) => chip.textContent),
+    ['Painel Início', 'Perfil Colaborador'],
+    'etiquetas principais devem estar presentes',
+  );
+
+  const userSummary = panelLabelWidget.querySelector('.user-dashboard__summary');
+  assert.ok(userSummary, 'sumário do usuário deve ser exibido na etiqueta');
+
+  const summaryLists = userSummary.querySelectorAll('.user-dashboard__summary-list');
+  assert.equal(summaryLists.length, 2, 'sumário deve conter dados pessoais e indicadores de mini-apps');
+
+  const [userInfoList, preferenceList] = summaryLists;
+
+  const userInfo = userInfoList.querySelectorAll('.user-dashboard__summary-item').reduce((acc, item) => {
+    const label = item.querySelector('.user-dashboard__summary-label')?.textContent ?? '';
+    const value = item.querySelector('.user-dashboard__summary-value')?.textContent ?? '';
+    if (label) {
+      acc[label] = value;
+    }
+    return acc;
+  }, {});
+
+  assert.equal(userInfo.Nome, 'Colaborador');
+  assert.equal(userInfo['E-mail'], '—');
+  assert.equal(userInfo.Telefone, '+5511999999999');
+
+  const preferenceInfo = preferenceList.querySelectorAll('.user-dashboard__summary-item').reduce(
+    (acc, item) => {
+      const label = item.querySelector('.user-dashboard__summary-label')?.textContent ?? '';
+      const value = item.querySelector('.user-dashboard__summary-value')?.textContent ?? '';
+      if (label) {
+        acc[label] = value;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  assert.equal(preferenceInfo['Mini-apps favoritados'], '5 mini-apps');
+  assert.equal(preferenceInfo['Mini-apps salvos'], '6 mini-apps');
+
   assert.ok(
     favoritesWidget.classList.contains('home-dashboard__widget--favorites'),
-    'primeiro widget deve listar favoritos',
+    'terceiro widget deve listar favoritos',
   );
   assert.ok(
     savedWidget.classList.contains('home-dashboard__widget--saved'),
-    'segundo widget deve listar mini-apps salvos',
+    'quarto widget deve listar mini-apps salvos',
   );
   assert.ok(
     availableWidget.classList.contains('home-dashboard__widget--miniapps'),
-    'terceiro widget deve listar mini-apps liberados',
+    'quinto widget deve listar mini-apps liberados',
   );
 
   const favoritesList = favoritesWidget.querySelector('.home-dashboard__miniapps');
