@@ -1037,7 +1037,14 @@ function ensureHeaderMobileMenu() {
     renderView('admin');
   });
 
-  actions.append(homeAction, storeAction, registerAction, loginAction, themeAction, adminAction);
+  actions.append(
+    homeAction,
+    storeAction,
+    registerAction,
+    loginAction,
+    themeAction,
+    adminAction,
+  );
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
