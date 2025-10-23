@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.211 - 2025-10-23 19:50 BRT
+- Reestrutura o widget MiniApps Favoritos do painel inicial para ocupar meia linha com grade de quatro ícones em duas colunas.
+- Exibe apenas os ícones dos favoritos com rótulos acessíveis e placeholders consistentes reutilizando o estilo global dos avatares.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.211 das 19h50.
+
 ## v0.1.210 - 2025-10-23 19:42 BRT
 - Limpa o painel do Kit Design removendo as descrições e os tokens exibidos nos modelos de superfícies, formulários, feedbacks, etiquetas e botões.
 - Remove o widget de ficha técnica dos botões para deixar o catálogo mais enxuto.

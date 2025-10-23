@@ -359,6 +359,10 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
     'terceiro widget deve listar favoritos',
   );
   assert.ok(
+    !favoritesWidget.classList.contains('home-dashboard__widget-row'),
+    'widget de favoritos deve ocupar apenas metade da linha quando houver espaço',
+  );
+  assert.ok(
     savedWidget.classList.contains('home-dashboard__widget--saved'),
     'quarto widget deve listar mini-apps salvos',
   );
@@ -369,9 +373,27 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const favoritesList = favoritesWidget.querySelector('.home-dashboard__miniapps');
   assert.ok(favoritesList, 'lista de favoritos deve estar presente');
+  assert.ok(
+    favoritesList.classList.contains('home-dashboard__miniapps--favorites'),
+    'lista de favoritos deve usar layout em grade para ícones',
+  );
   assert.equal(favoritesList.children.length, 4, 'apenas quatro favoritos devem ser exibidos');
   const favoriteIds = favoritesList.children.map((child) => child.dataset.appId);
   assert.deepEqual(favoriteIds, ['alpha', 'beta', 'gamma', 'delta']);
+  const favoriteLabels = favoritesList.children.map((child) =>
+    child.querySelector('.sr-only')?.textContent ?? '',
+  );
+  assert.deepEqual(
+    favoriteLabels,
+    ['Alpha', 'Beta', 'Gamma', 'Delta'],
+    'cada favorito deve expor o nome apenas para leitores de tela',
+  );
+  favoritesList.children.forEach((child) => {
+    assert.ok(
+      child.querySelector('.home-dashboard__miniapps-icon'),
+      'cada favorito deve renderizar somente o ícone',
+    );
+  });
   assert.equal(
     favoritesList.dataset.emptyMessage,
     'Você ainda não favoritou mini-apps.',
