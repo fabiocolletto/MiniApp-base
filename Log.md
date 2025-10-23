@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.163 - 2025-10-23 21:00 BRT
+- Substitui o callout de convidado do painel Início por um painel dedicado alinhado às classes do layout de autenticação.
+- Estende os estilos do painel de convidado para replicar largura, centralização e espaçamentos do formulário de login com botões responsivos.
+- Atualiza o rodapé para comunicar a versão v0.1.163 das 21h00.
+
 ## v0.1.162 - 2025-10-23 20:30 BRT
 - Reorganiza a grade do formulário do painel do usuário com colunas responsivas baseadas em atributos de tamanho para cada campo.
 - Ajusta os elementos do painel do usuário para definir `data-field-size` compatível com a nova malha e garantir mensagens e envio em largura total.

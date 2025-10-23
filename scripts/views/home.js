@@ -13,6 +13,7 @@ import {
 import { registerViewCleanup } from '../view-cleanup.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--home';
+const GUEST_CLASSES = 'card view auth-view view--home view--home-guest';
 
 const USER_TYPE_LABELS = {
   administrador: 'Administrador',
@@ -257,41 +258,69 @@ function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
   return widget;
 }
 
-function renderGuestCallout() {
-  const sessionCallout = document.createElement('section');
-  sessionCallout.className =
-    [
-      'surface-card',
-      'surface-card--subtle',
-      'home-dashboard__callout',
-      'home-dashboard__widget-row',
-      'user-dashboard__feedback',
-    ].join(' ');
+function renderGuestPanel(ownerDocument) {
+  const doc = ownerDocument && typeof ownerDocument.createElement === 'function'
+    ? ownerDocument
+    : typeof document !== 'undefined' && typeof document.createElement === 'function'
+      ? document
+      : null;
 
-  const sessionText = document.createElement('p');
-  sessionText.className = 'user-widget__description';
-  sessionText.textContent = 'Nenhuma sessão ativa. Escolha um painel para começar a navegar.';
+  if (!doc) {
+    return null;
+  }
 
-  const sessionActions = document.createElement('div');
-  sessionActions.className = 'home-dashboard__callout-actions';
+  const panel = doc.createElement('section');
+  panel.className = 'auth-panel__form home-guest__panel';
 
-  const loginButton = document.createElement('button');
+  const title = doc.createElement('h2');
+  title.className = 'auth-panel__title home-guest__title';
+  title.textContent = 'Acesse sua conta';
+
+  const intro = doc.createElement('p');
+  intro.className = 'auth-panel__intro home-guest__intro';
+  intro.textContent =
+    'Entre ou crie uma conta para sincronizar seus mini-apps favoritos e salvos com qualquer dispositivo.';
+
+  const actions = doc.createElement('div');
+  actions.className = 'home-guest__actions';
+
+  const loginButton = doc.createElement('button');
   loginButton.type = 'button';
-  loginButton.className = 'button button--primary button--pill home-dashboard__callout-button';
+  loginButton.className = 'button button--primary button--pill home-guest__action home-guest__action--primary';
   loginButton.textContent = 'Fazer login';
   loginButton.addEventListener('click', () => navigateTo('login'));
 
-  const registerButton = document.createElement('button');
+  const registerButton = doc.createElement('button');
   registerButton.type = 'button';
   registerButton.className =
-    'button button--secondary button--pill home-dashboard__callout-button home-dashboard__callout-button--secondary';
+    'button button--secondary button--pill home-guest__action home-guest__action--secondary';
   registerButton.textContent = 'Criar conta';
   registerButton.addEventListener('click', () => navigateTo('register'));
 
-  sessionActions.append(loginButton, registerButton);
-  sessionCallout.append(sessionText, sessionActions);
+  actions.append(loginButton, registerButton);
 
-  return sessionCallout;
+  const registerRedirect = doc.createElement('p');
+  registerRedirect.className = 'auth-panel__redirect home-guest__redirect';
+
+  const registerRedirectText = doc.createElement('span');
+  registerRedirectText.className = 'auth-panel__redirect-text';
+  registerRedirectText.textContent = 'É novo por aqui?';
+
+  const registerLink = doc.createElement('a');
+  registerLink.className = 'auth-panel__redirect-link';
+  registerLink.href = '#register';
+  registerLink.title = 'Ir para o painel de cadastro';
+  registerLink.textContent = 'Crie sua conta agora';
+  registerLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigateTo('register');
+  });
+
+  registerRedirect.append(registerRedirectText, ' ', registerLink, '.');
+
+  panel.append(title, intro, actions, registerRedirect);
+
+  return panel;
 }
 
 function renderMiniAppsWidget(user, accessibleMiniApps) {
@@ -351,14 +380,10 @@ export function renderHome(viewRoot) {
     }
   });
 
-  viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'home';
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout user-dashboard__layout home-dashboard__layout';
-
-  viewRoot.setAttribute('aria-label', 'Painel Início');
-  viewRoot.replaceChildren(layout);
 
   const state = {
     user: getActiveUser(),
@@ -378,12 +403,20 @@ export function renderHome(viewRoot) {
   refreshPreferences();
 
   function updateLayout() {
-    layout.replaceChildren();
-
     if (!state.user) {
-      layout.append(renderGuestCallout());
+      viewRoot.className = GUEST_CLASSES;
+      viewRoot.setAttribute('aria-label', 'Acesso aos mini-apps');
+      const guestPanel = renderGuestPanel(viewRoot.ownerDocument);
+      if (guestPanel) {
+        viewRoot.replaceChildren(guestPanel);
+      }
       return;
     }
+
+    viewRoot.className = BASE_CLASSES;
+    viewRoot.setAttribute('aria-label', 'Painel Início');
+
+    layout.replaceChildren();
 
     const accessibleMiniApps = filterMiniAppsForUser(state.miniApps, state.user);
 
@@ -392,6 +425,10 @@ export function renderHome(viewRoot) {
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),
     );
+
+    if (viewRoot.firstChild !== layout) {
+      viewRoot.replaceChildren(layout);
+    }
   }
 
   updateLayout();
