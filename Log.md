@@ -1,6 +1,11 @@
 # Log
 
--## v0.1.199 - 2025-10-24 23:00 BRT
+## v0.1.200 - 2025-10-24 23:30 BRT
+- Simplifica a Mini App Store mantendo apenas o widget de miniapps disponíveis e removendo as seções de MiniAppPages e ilustração.
+- Remove estilos associados às seções retiradas para manter o layout enxuto.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.200 das 23h30.
+
+## v0.1.199 - 2025-10-24 23:00 BRT
 - Simplifica o menu de painéis mantendo um único atalho de autenticação que alterna entre Login e Logout conforme o estado da sessão.
 - Limpa a sessão ativa ao acionar o Logout e redireciona para o painel de login tanto no menu principal quanto na navegação móvel.
 - Atualiza os testes automatizados e a versão do rodapé para refletir a release v0.1.199 das 23h00.
