@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.194 - 2025-10-24 20:30 BRT
+- Corrige a troca do logotipo do cabeçalho ao alternar o tema, garantindo que a imagem seja atualizada conforme o modo ativo.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.194 das 20h30.
+
 ## v0.1.193 - 2025-10-24 20:00 BRT
 - Adiciona um indicador de atividade no rodapé para avisar quando existem alterações pendentes, salvamento em andamento, sucesso ou erros de sincronização.
 - Cria o módulo central de atividade e integra o painel do usuário para emitir estados consistentes durante entradas, autosave e perda de sessão.

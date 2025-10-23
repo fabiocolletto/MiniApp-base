@@ -41,6 +41,10 @@ const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
 const headerElement = document.querySelector('header');
 const logo = document.querySelector('.header-logo');
+const logoImage =
+  (logo && typeof logo.querySelector === 'function'
+    ? logo.querySelector('.header-logo__image')
+    : null) || document.querySelector('.header-logo__image');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
@@ -251,13 +255,14 @@ function updateBrandAssets(theme) {
   currentBrandTheme = normalizedTheme;
   const assets = THEME_ASSETS[normalizedTheme];
 
-  if (assets?.logo && logo) {
-    const currentLogo = typeof logo.getAttribute === 'function' ? logo.getAttribute('src') : null;
+  if (assets?.logo && logoImage) {
+    const currentLogo =
+      typeof logoImage.getAttribute === 'function' ? logoImage.getAttribute('src') : null;
     if (currentLogo !== assets.logo) {
-      if (typeof logo.setAttribute === 'function') {
-        logo.setAttribute('src', assets.logo);
-      } else if ('src' in logo) {
-        logo.src = assets.logo;
+      if (typeof logoImage.setAttribute === 'function') {
+        logoImage.setAttribute('src', assets.logo);
+      } else if ('src' in logoImage) {
+        logoImage.src = assets.logo;
       }
     }
   }
