@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.202 - 2025-10-23 18:21 BRT
+- Ajusta os widgets introdutórios do painel Início para remover o fundo opaco e destacar o degradê base.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.202 das 18h21.
+
 ## v0.1.201 - 2025-10-24 23:59 BRT
 - Corrige o painel Kit de Design garantindo que a limpeza dos eventos dos campos seja registrada com segurança, eliminando o erro que impedia administradores de abrir o conteúdo.
 - Valida visualmente o painel atualizado confirmando a renderização completa do Kit de Design após o acesso pelo menu do cabeçalho.

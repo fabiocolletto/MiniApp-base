@@ -543,6 +543,12 @@ p {
   --card-shadow: none;
 }
 
+.surface-card--transparent {
+  --card-border: 0;
+  --card-background: transparent;
+  --card-shadow: none;
+}
+
 header,
 footer {
   position: fixed;

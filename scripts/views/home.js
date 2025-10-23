@@ -423,6 +423,7 @@ function renderHomeIntroWidget() {
   widget.className =
     [
       'surface-card',
+      'surface-card--transparent',
       'user-panel__widget',
       'user-dashboard__widget',
       'home-dashboard__widget',
@@ -450,6 +451,7 @@ function renderHomePanelLabelWidget(user, preferences) {
   widget.className =
     [
       'surface-card',
+      'surface-card--transparent',
       'user-panel__widget',
       'user-dashboard__widget',
       'home-dashboard__widget',
