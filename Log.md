@@ -1,5 +1,30 @@
 # Log
 
+## v0.1.207 - 2025-10-25 11:00 BRT
+- Amplia o painel do Kit Design com seções dedicadas a superfícies, formulários, feedbacks e etiquetas cobrindo todos os padrões presentes nos painéis atuais.
+- Insere visualizações exemplificadas com tokens homologados para campos, grupos de checkbox e chips, garantindo referência única para novos widgets.
+- Atualiza `docs/design-kit-tokens.md` com as categorias recém-homologadas e referencia a release no rodapé da aplicação.
+
+## v0.1.206 - 2025-10-25 10:30 BRT
+- Padroniza a elevação dos botões com tokens globais para sombras base e hover, reduzindo variações no kit.
+- Adiciona a coluna de elevação no painel do Kit Design para limitar escolhas às opções homologadas.
+- Documenta em `docs/design-kit-tokens.md` todas as categorias de variáveis do painel e atualiza a versão no rodapé para a release v0.1.206 das 10h30.
+
+## v0.1.205 - 2025-10-25 10:00 BRT
+- Estrutura uma paleta oficial de cores do kit com tokens para preenchimentos primários e cores de texto.
+- Limita o painel do Kit Design às combinações homologadas de cor primária e cor de texto para os modelos de botão.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.205 das 10h00.
+
+## v0.1.204 - 2025-10-25 09:30 BRT
+- Cria tokens globais para larguras (compacta, padrão e fluida) e alturas (compacta, padrão e quadrada) do kit de controles.
+- Ajusta botões e o painel do Kit Design para consumir os tamanhos homologados e limitar as opções configuráveis.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.204 das 09h30.
+
+## v0.1.203 - 2025-10-25 09:00 BRT
+- Padroniza o kit de design com três tokens de raio (`sm`, `md`, `lg`) e mantém variantes pill e circular para casos especiais.
+- Substitui valores diretos de `border-radius` na folha principal para reutilizar as novas categorias em cartões, botões e painéis.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.203 das 09h00.
+
 ## v0.1.202 - 2025-10-23 18:21 BRT
 - Ajusta os widgets introdutórios do painel Início para remover o fundo opaco e destacar o degradê base.
 - Atualiza a versão exibida no rodapé para comunicar a release v0.1.202 das 18h21.
