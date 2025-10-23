@@ -7,37 +7,77 @@ import {
   toggleMiniAppFavorite,
   toggleMiniAppSaved,
 } from '../data/miniapp-preferences-store.js';
+import {
+  getTopMiniAppsByDownloads,
+  getTopMiniAppsByFavorites,
+  getLatestMiniApps,
+  getMiniAppsByFeaturedCategories,
+  getMiniAppStatusLabel,
+  subscribeMiniApps as subscribeMiniAppCatalog,
+} from '../data/miniapp-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
-const MINI_APPS = [
+const MINI_APP_SECTIONS = [
   {
-    id: 'time-tracker',
-    name: 'Time Tracker',
-    category: 'Produtividade',
-    description: 'Monitore jornadas, exporte relatórios completos e integre com o painel administrativo.',
-    version: '1.8.0',
-    status: 'Disponível',
-    updatedAt: 'Atualizado em 12/10/2025',
+    id: 'top-downloads',
+    title: 'Mais baixados',
+    description: 'Explore os miniapps com maior volume de instalações nesta semana.',
+    limit: 12,
+    selectMiniApps: ({ limit }) => getTopMiniAppsByDownloads(limit ?? 12),
   },
   {
-    id: 'field-forms',
-    name: 'Field Forms',
-    category: 'Operações',
-    description: 'Colete dados em campo mesmo offline, sincronizando automaticamente quando a sessão estiver ativa.',
-    version: '3.2.1',
-    status: 'Em validação',
-    updatedAt: 'Atualizado em 18/10/2025',
+    id: 'top-favorites',
+    title: 'Mais favoritados',
+    description: 'Confira os miniapps que estão nas listas de favoritos das equipes.',
+    limit: 12,
+    selectMiniApps: ({ limit }) => getTopMiniAppsByFavorites(limit ?? 12),
   },
   {
-    id: 'insights-hub',
-    name: 'Insights Hub',
-    category: 'Analytics',
-    description: 'Combine métricas de diferentes miniapps em dashboards compartilhados e alertas inteligentes.',
-    version: '0.9.5',
-    status: 'Pré-lançamento',
-    updatedAt: 'Atualizado em 20/10/2025',
+    id: 'new-arrivals',
+    title: 'Novidades',
+    description: 'Descubra os lançamentos mais recentes adicionados ao catálogo.',
+    limit: 12,
+    selectMiniApps: ({ limit }) => getLatestMiniApps(limit ?? 12),
+  },
+  {
+    id: 'featured-categories',
+    title: 'Destaques por categoria',
+    description: 'Passeie pelas principais categorias para encontrar a solução ideal.',
+    limit: 12,
+    selectMiniApps: ({ limit }) => getMiniAppsByFeaturedCategories({ limit: limit ?? 12 }),
   },
 ];
+
+const UPDATED_AT_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+function formatUpdatedAtLabel(value) {
+  if (!value) {
+    return 'Atualização pendente';
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return 'Atualização pendente';
+  }
+
+  return `Atualizado em ${UPDATED_AT_FORMATTER.format(date)}`;
+}
+
+function mapMiniAppToCatalogEntry(app) {
+  if (!app) {
+    return null;
+  }
+
+  return {
+    ...app,
+    status: getMiniAppStatusLabel(app.status),
+    updatedAt: formatUpdatedAtLabel(app.updatedAt ?? app.releaseDate),
+  };
+}
 
 function createToggleActionButton({
   defaultLabel,
@@ -51,10 +91,9 @@ function createToggleActionButton({
   const button = document.createElement('button');
   button.type = 'button';
   button.className =
-    'button panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button';
+    'button panel-action-tile panel-action-tile--compact panel-action-tile--secondary user-dashboard__summary-edit';
 
   if (modifier) {
-    button.classList.add(`miniapp-store__action-button--${modifier}`);
     button.dataset.action = modifier;
   }
 
@@ -113,7 +152,7 @@ function renderMiniAppListItem({
   onToggleSaved,
 }) {
   const item = document.createElement('li');
-  item.className = 'home-dashboard__list-item';
+  item.className = 'home-dashboard__list-item carousel-item';
   item.dataset.appId = app.id;
   item.tabIndex = 0;
   item.setAttribute('role', 'button');
@@ -179,11 +218,11 @@ function renderMiniAppListItem({
   const detailsButton = document.createElement('button');
   detailsButton.type = 'button';
   detailsButton.className =
-    'button panel-action-tile panel-action-tile--compact user-dashboard__summary-edit miniapp-store__action-button miniapp-store__action-button--details miniapp-store__action-button--primary';
+    'button button--primary panel-action-tile panel-action-tile--compact user-dashboard__summary-edit';
   detailsButton.textContent = 'Saiba Mais';
 
   item.addEventListener('click', (event) => {
-    if (event?.target instanceof HTMLElement && event.target.closest('.miniapp-store__action-button')) {
+    if (event?.target instanceof HTMLElement && event.target.closest('.panel-action-tile')) {
       return;
     }
     openDetails(item);
@@ -211,7 +250,7 @@ function renderMiniAppListItem({
   });
 
   const actions = document.createElement('div');
-  actions.className = 'miniapp-store__actions';
+  actions.className = 'card-actions';
   actions.append(favoriteControl.button, savedControl.button, detailsButton);
 
   item.append(name, description, metaList, actions);
@@ -248,11 +287,11 @@ export function renderMiniAppStore(viewRoot) {
   viewRoot.dataset.view = 'miniapps';
 
   const layout = document.createElement('div');
-  layout.className = 'user-panel__layout user-dashboard__layout miniapp-store__layout';
+  layout.className = 'user-panel__layout user-dashboard__layout';
 
   const catalogSection = document.createElement('section');
   catalogSection.className =
-    'surface-card user-panel__widget user-dashboard__widget miniapp-store__catalog';
+    'surface-card user-panel__widget user-dashboard__widget layout-stack layout-stack--lg';
 
   const catalogTitle = document.createElement('h2');
   catalogTitle.className = 'user-widget__title';
@@ -261,18 +300,19 @@ export function renderMiniAppStore(viewRoot) {
   const catalogDescription = document.createElement('p');
   catalogDescription.className = 'user-widget__description';
   catalogDescription.textContent =
-    'Veja os principais dados de cada miniapp disponível. Toque em um cartão para abrir a ficha técnica com as informações completas.';
+    'Veja os principais dados de cada miniapp disponível. Navegue pelas coleções temáticas e toque em um cartão para abrir a ficha técnica completa.';
 
   const feedback = document.createElement('p');
-  feedback.className = 'miniapp-store__feedback';
+  feedback.className = 'feedback-banner';
   feedback.setAttribute('role', 'status');
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
-  const list = document.createElement('ul');
-  list.className = 'home-dashboard__miniapps';
+  const catalogSections = document.createElement('div');
+  catalogSections.className = 'layout-stack layout-stack--xl';
 
-  const controlsByAppId = new Map();
+  const controlsBySection = new Map();
+  const sectionsRegistry = new Map();
 
   const state = {
     user: getActiveUser(),
@@ -307,25 +347,83 @@ export function renderMiniAppStore(viewRoot) {
   function showFeedback(message, type = 'info') {
     if (typeof message !== 'string' || message.trim() === '') {
       feedback.textContent = '';
-      feedback.dataset.state = 'idle';
+      delete feedback.dataset.variant;
       feedback.hidden = true;
       return;
     }
 
     feedback.textContent = message.trim();
-    feedback.dataset.state = type;
+    feedback.dataset.variant = ['success', 'warning', 'error'].includes(type) ? type : 'info';
     feedback.hidden = false;
   }
 
   function refreshControls() {
-    controlsByAppId.forEach((registry) => {
-      try {
-        registry?.favorite?.refresh?.();
-        registry?.saved?.refresh?.();
-      } catch (error) {
-        console.error('Não foi possível atualizar o estado dos controles de mini-app.', error);
+    controlsBySection.forEach((appsRegistry) => {
+      if (!(appsRegistry instanceof Map)) {
+        return;
       }
+
+      appsRegistry.forEach((registry) => {
+        try {
+          registry?.favorite?.refresh?.();
+          registry?.saved?.refresh?.();
+        } catch (error) {
+          console.error('Não foi possível atualizar o estado dos controles de mini-app.', error);
+        }
+      });
     });
+  }
+
+  function refreshSection(sectionId) {
+    const registry = sectionsRegistry.get(sectionId);
+    if (!registry) {
+      return;
+    }
+
+    const { config, list } = registry;
+    const limit = typeof config.limit === 'number' ? config.limit : 12;
+    const controlsByApp = new Map();
+
+    const apps =
+      typeof config.selectMiniApps === 'function'
+        ? config.selectMiniApps({
+            limit,
+            user: state.user,
+            preferences: state.preferences,
+          }) || []
+        : [];
+
+    list.replaceChildren();
+
+    apps
+      .map((app) => mapMiniAppToCatalogEntry(app))
+      .filter((app) => app !== null)
+      .forEach((app) => {
+        const { element, controls } = renderMiniAppListItem({
+          app,
+          getIsFavorite: getIsFavorite,
+          getIsSaved: getIsSaved,
+          onToggleFavorite: handleFavoriteToggle,
+          onToggleSaved: handleSavedToggle,
+        });
+
+        controlsByApp.set(app.id, controls);
+        list.append(element);
+      });
+
+    controlsBySection.set(config.id, controlsByApp);
+    registry.controls = controlsByApp;
+
+    if (typeof registry.updateNavigationState === 'function') {
+      registry.updateNavigationState();
+    }
+  }
+
+  function refreshAllSections() {
+    MINI_APP_SECTIONS.forEach((section) => {
+      refreshSection(section.id);
+    });
+    refreshControls();
   }
 
   function handleFavoriteToggle({ app, applyState, button }) {
@@ -381,22 +479,131 @@ export function renderMiniAppStore(viewRoot) {
 
   refreshUserPreferences();
 
-  MINI_APPS.forEach((app) => {
-    const { element, controls } = renderMiniAppListItem({
-      app,
-      getIsFavorite: getIsFavorite,
-      getIsSaved: getIsSaved,
-      onToggleFavorite: handleFavoriteToggle,
-      onToggleSaved: handleSavedToggle,
+  MINI_APP_SECTIONS.forEach((sectionConfig) => {
+    const sectionElement = document.createElement('article');
+    sectionElement.className = 'layout-stack layout-stack--md';
+    sectionElement.dataset.sectionId = sectionConfig.id;
+
+    const sectionHeader = document.createElement('header');
+    sectionHeader.className = 'section-header';
+
+    const sectionInfo = document.createElement('div');
+    sectionInfo.className = 'section-header__info';
+
+    const sectionTitle = document.createElement('h3');
+    sectionTitle.className = 'section-title';
+    sectionTitle.textContent = sectionConfig.title;
+
+    const sectionDescription = document.createElement('p');
+    sectionDescription.className = 'section-description';
+    sectionDescription.textContent = sectionConfig.description;
+
+    sectionInfo.append(sectionTitle, sectionDescription);
+
+    const navigation = document.createElement('div');
+    navigation.className = 'section-header__actions';
+
+    const createNavButton = (direction, label) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button button--icon';
+      button.setAttribute('aria-label', label);
+      button.title = label;
+      button.textContent = direction === 'prev' ? '‹' : '›';
+      button.disabled = true;
+      return button;
+    };
+
+    const prevButton = createNavButton('prev', `Ver miniapps anteriores em ${sectionConfig.title}`);
+    const nextButton = createNavButton('next', `Avançar miniapps em ${sectionConfig.title}`);
+
+    navigation.append(prevButton, nextButton);
+    sectionHeader.append(sectionInfo, navigation);
+
+    const list = document.createElement('ul');
+    list.className = 'home-dashboard__miniapps carousel-list';
+    list.dataset.sectionId = sectionConfig.id;
+    list.setAttribute('aria-label', sectionConfig.title);
+    list.dataset.emptyMessage = 'Nenhum miniapp disponível nesta seção no momento.';
+
+    const controlsByApp = new Map();
+    controlsBySection.set(sectionConfig.id, controlsByApp);
+
+    const schedule =
+      typeof window === 'object' && window && typeof window.requestAnimationFrame === 'function'
+        ? window.requestAnimationFrame.bind(window)
+        : (callback) => {
+            setTimeout(() => {
+              if (typeof callback === 'function') {
+                callback();
+              }
+            }, 0);
+          };
+
+    const updateNavigationState = () => {
+      const maxScrollLeft = Math.max(0, list.scrollWidth - list.clientWidth);
+      const currentScroll = list.scrollLeft;
+
+      prevButton.disabled = maxScrollLeft === 0 || currentScroll <= 1;
+      nextButton.disabled = maxScrollLeft === 0 || currentScroll >= maxScrollLeft - 1;
+
+      const shouldHideNavigation = maxScrollLeft === 0;
+      navigation.hidden = shouldHideNavigation;
+    };
+
+    const scrollByAmount = (direction) => {
+      const distance = list.clientWidth > 0 ? list.clientWidth * 0.9 : 320;
+      const offset = direction === 'prev' ? -distance : distance;
+      list.scrollBy({ left: offset, behavior: 'smooth' });
+    };
+
+    prevButton.addEventListener('click', () => {
+      scrollByAmount('prev');
     });
 
-    controlsByAppId.set(app.id, controls);
-    list.append(element);
+    nextButton.addEventListener('click', () => {
+      scrollByAmount('next');
+    });
+
+    const handleScroll = () => {
+      updateNavigationState();
+    };
+
+    list.addEventListener('scroll', handleScroll, { passive: true });
+    cleanupHandlers.push(() => {
+      list.removeEventListener('scroll', handleScroll);
+    });
+
+    const handleResize = () => {
+      schedule(updateNavigationState);
+    };
+
+    if (typeof window === 'object' && window) {
+      window.addEventListener('resize', handleResize);
+      cleanupHandlers.push(() => {
+        window.removeEventListener('resize', handleResize);
+      });
+    }
+
+    sectionsRegistry.set(sectionConfig.id, {
+      config: sectionConfig,
+      element: sectionElement,
+      list,
+      controls: controlsByApp,
+      updateNavigationState: () => {
+        schedule(updateNavigationState);
+      },
+    });
+
+    schedule(updateNavigationState);
+
+    sectionElement.append(sectionHeader, list);
+    catalogSections.append(sectionElement);
   });
 
-  refreshControls();
+  refreshAllSections();
 
-  catalogSection.append(catalogTitle, catalogDescription, feedback, list);
+  catalogSection.append(catalogTitle, catalogDescription, feedback, catalogSections);
   layout.append(catalogSection);
 
   viewRoot.replaceChildren(layout);
@@ -432,5 +639,13 @@ export function renderMiniAppStore(viewRoot) {
 
   if (typeof unsubscribePreferences === 'function') {
     cleanupHandlers.push(unsubscribePreferences);
+  }
+
+  const unsubscribeCatalog = subscribeMiniAppCatalog(() => {
+    refreshAllSections();
+  });
+
+  if (typeof unsubscribeCatalog === 'function') {
+    cleanupHandlers.push(unsubscribeCatalog);
   }
 }
