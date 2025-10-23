@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.213 - 2025-10-23 20:16 BRT
+- Ajusta a etiqueta do painel para considerar apenas mini-apps favoritados disponíveis ao perfil ativo.
+- Sincroniza os contadores de favoritos e salvos com os mini-apps acessíveis exibidos nos widgets correspondentes.
+
 ## v0.1.212 - 2025-10-23 20:10 BRT
 - Deixa transparentes os cartões de itens do painel Kit de Design para destacar apenas os conteúdos homologados.
 - Atualiza a versão exibida no rodapé para comunicar a release v0.1.212 das 20h10.

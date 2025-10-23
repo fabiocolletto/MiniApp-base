@@ -351,8 +351,8 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
     {},
   );
 
-  assert.equal(preferenceInfo['Mini-apps favoritados'], '5 mini-apps');
-  assert.equal(preferenceInfo['Mini-apps salvos'], '6 mini-apps');
+  assert.equal(preferenceInfo['Mini-apps favoritados'], '4 mini-apps');
+  assert.equal(preferenceInfo['Mini-apps salvos'], '5 mini-apps');
 
   assert.ok(
     favoritesWidget.classList.contains('home-dashboard__widget--favorites'),
