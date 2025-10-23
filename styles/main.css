@@ -3344,21 +3344,70 @@ main > :where(.card.view):not(.auth-view) {
   grid-column: 1 / -1;
 }
 
-.user-dashboard__widget--account[data-state='collapsed'] {
+.user-panel__widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  margin-bottom: var(--panel-stack-gap);
+}
+
+.user-panel__section-toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--panel-stack-gap);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-panel__section-toggle::after {
+  content: '';
+  display: inline-block;
+  width: 0.95rem;
+  aspect-ratio: 1;
+  border-right: 0.16rem solid currentColor;
+  border-bottom: 0.16rem solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  align-self: center;
+  justify-self: end;
+}
+
+.user-panel__widget[data-section-state='expanded'] .user-panel__section-toggle::after {
+  transform: rotate(-135deg);
+}
+
+.user-panel__section-toggle:focus-visible {
+  outline: 0.18rem solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 0.24rem;
+  border-radius: clamp(0.65rem, 2vw, 1rem);
+}
+
+.user-panel__widget-content {
+  display: grid;
+  gap: var(--panel-stack-gap);
+}
+
+.user-dashboard__widget--account[data-section-state='collapsed'] {
   --card-gap: clamp(0.45rem, 1.4vw, 0.8rem);
   --card-padding-block: clamp(0.6rem, 1.6vw, 0.95rem);
   --card-padding-inline: clamp(0.65rem, 1.8vw, 1.1rem);
 }
 
-.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary {
+.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary {
   gap: clamp(0.45rem, 1.5vw, 0.85rem);
 }
 
-.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary-list {
+.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary-list {
   gap: clamp(0.3rem, 1.2vw, 0.55rem);
 }
 
-.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary-edit {
+.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary-edit {
   padding-block: 0.35rem;
   padding-inline: 0.85rem;
 }

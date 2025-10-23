@@ -279,19 +279,42 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     firstWidget instanceof FakeElement && firstWidget.classList.contains('user-dashboard__widget--theme'),
     'o widget de preferências de tema deve ser o primeiro item do painel',
   );
+  assert.equal(
+    firstWidget.dataset.sectionId,
+    'theme',
+    'a seção de tema deve indicar identificador semântico',
+  );
+  assert.equal(
+    firstWidget.dataset.sectionState,
+    'expanded',
+    'a seção de tema deve iniciar expandida para destacar as ações rápidas',
+  );
   assert.ok(
     secondWidget instanceof FakeElement && secondWidget.classList.contains('user-panel__widget--access'),
     'o widget de acesso e sessão deve ocupar a segunda posição do painel',
   );
+  assert.equal(
+    secondWidget.dataset.sectionId,
+    'access',
+    'a seção de acesso deve indicar identificador semântico',
+  );
   assert.ok(
     thirdWidget instanceof FakeElement && thirdWidget.classList.contains('user-dashboard__widget--account'),
     'o widget de dados principais deve ocupar a terceira posição do painel',
+  );
+  assert.equal(
+    thirdWidget.dataset.sectionId,
+    'account',
+    'a seção de dados principais deve indicar identificador semântico',
   );
 
   const themeWidget = layout.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--theme'),
   );
   assert.ok(themeWidget, 'widget de preferências de tema não foi renderizado');
+
+  const themeAccordionToggle = themeWidget.querySelector('.user-panel__section-toggle');
+  assert.ok(themeAccordionToggle, 'o widget de tema deve expor controle de acordeão');
 
   const actionList = themeWidget.querySelector('.user-dashboard__action-list');
   assert.ok(actionList, 'a lista de ações rápidas deve estar visível no widget de tema');
@@ -309,10 +332,13 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(accountWidget, 'widget de dados principais não foi renderizado');
 
   assert.equal(
-    accountWidget.dataset.state,
+    accountWidget.dataset.sectionState,
     'empty',
     'o widget de dados principais deve iniciar no estado "empty" sem sessão ativa',
   );
+
+  const accountToggle = accountWidget.querySelector('.user-panel__section-toggle');
+  assert.ok(accountToggle, 'a seção de dados principais deve permitir expansão via cabeçalho');
 
   const summary = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__summary'),
@@ -342,7 +368,7 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   );
   assert.equal(
     editButton.getAttribute('aria-controls'),
-    'user-dashboard-summary-list user-dashboard-form',
+    'user-dashboard-summary-list user-dashboard-form user-dashboard-cancel user-dashboard-save',
     'botão de edição deve referenciar o resumo e o formulário controlados',
   );
 
@@ -362,7 +388,11 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__widget--access'),
   );
   assert.ok(accessWidget, 'widget de controle de acesso não foi renderizado');
-  assert.equal(accessWidget.dataset.state, 'empty', 'widget de acesso deve iniciar no estado "empty" sem sessão ativa');
+  assert.equal(
+    accessWidget.dataset.state,
+    'empty',
+    'widget de acesso deve iniciar no estado "empty" sem sessão ativa',
+  );
 
   const accessActionList = findElement(
     accessWidget,

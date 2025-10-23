@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.170 - 2025-10-24 06:50 BRT
+- Refatora o painel do usuário para montar seções a partir de metadados configuráveis, criando acordeões independentes com estados `data-section-state` por bloco.
+- Extrai helpers reutilizáveis para construção de formulários dos dados do usuário, permitindo identificar grupos como "dados pessoais" e reutilizar os campos.
+- Atualiza estilos e testes garantindo botões de cabeçalho, indicadores visuais dos acordeões e datasets sincronizados com os novos estados.
+
 ## v0.1.169 - 2025-10-24 05:44 BRT
 - Inclui botões dedicados de Cancelar e Salvar no formulário de dados do usuário com estados ARIA alinhados ao feedback.
 - Ajusta o botão de resumo para apenas abrir ou fechar a edição sem acionar salvamento automático.
