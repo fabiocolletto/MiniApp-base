@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.169 - 2025-10-24 05:44 BRT
+- Inclui botões dedicados de Cancelar e Salvar no formulário de dados do usuário com estados ARIA alinhados ao feedback.
+- Ajusta o botão de resumo para apenas abrir ou fechar a edição sem acionar salvamento automático.
+- Atualiza mensagens informativas e fluxos de feedback para refletir o novo controle manual de persistência.
+
 ## v0.1.168 - 2025-10-23 23:40 BRT
 - Recolhe o widget de dados principais ocultando descrição e feedback quando resumido e reduzindo os espaçamentos via estado `collapsed`.
 - Garante que o estado expandido continue exibindo o formulário completo e restaurando mensagens ao reabrir a edição.

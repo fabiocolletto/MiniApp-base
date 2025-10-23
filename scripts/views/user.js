@@ -260,7 +260,7 @@ export function renderUserPanel(viewRoot) {
   const accountDescription = document.createElement('p');
   accountDescription.className = 'user-widget__description';
   accountDescription.textContent =
-    'Atualize telefone, e-mail, senha e preferências de tema. Todas as alterações são salvas em poucos segundos.';
+    'Atualize telefone, e-mail, senha e preferências de tema. Use Salvar para aplicar ou Cancelar para descartar mudanças.';
 
   const accessWidget = document.createElement('section');
   accessWidget.className =
@@ -309,7 +309,10 @@ export function renderUserPanel(viewRoot) {
   summaryEditButton.className = 'user-dashboard__summary-edit';
   summaryEditButton.textContent = 'Editar dados';
   summaryEditButton.setAttribute('aria-expanded', 'false');
-  summaryEditButton.setAttribute('aria-controls', 'user-dashboard-summary-list user-dashboard-form');
+  summaryEditButton.setAttribute(
+    'aria-controls',
+    'user-dashboard-summary-list user-dashboard-form user-dashboard-cancel user-dashboard-save',
+  );
 
   accountSummary.append(accountSummaryList, summaryEditButton);
 
@@ -397,6 +400,27 @@ export function renderUserPanel(viewRoot) {
   feedbackElement.id = feedbackElementId;
   feedbackElement.setAttribute('data-field-size', 'full');
 
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.className = 'button button--ghost button--block user-dashboard__form-cancel';
+  cancelButton.id = 'user-dashboard-cancel';
+  cancelButton.textContent = 'Cancelar';
+  cancelButton.setAttribute('data-field-size', 'full');
+  cancelButton.setAttribute('aria-controls', 'user-dashboard-summary-list user-dashboard-form');
+  cancelButton.setAttribute('aria-expanded', 'false');
+  cancelButton.setAttribute('aria-describedby', feedbackElementId);
+  cancelButton.disabled = true;
+
+  const saveButton = document.createElement('button');
+  saveButton.type = 'submit';
+  saveButton.className =
+    'button button--primary button--block user-form__submit user-dashboard__form-save';
+  saveButton.id = 'user-dashboard-save';
+  saveButton.textContent = 'Salvar alterações';
+  saveButton.setAttribute('data-field-size', 'full');
+  saveButton.setAttribute('aria-describedby', feedbackElementId);
+  saveButton.disabled = true;
+
   accountForm.append(
     nameField,
     phoneField,
@@ -404,6 +428,8 @@ export function renderUserPanel(viewRoot) {
     passwordField,
     themeField,
     feedbackElement,
+    cancelButton,
+    saveButton,
   );
 
   accountWidget.append(accountTitle, accountDescription, accountSummary, emptyState, accountForm);
@@ -676,8 +702,17 @@ export function renderUserPanel(viewRoot) {
 
     if (summaryEditButton instanceof HTMLElement) {
       summaryEditButton.disabled = !hasUser;
-      summaryEditButton.textContent = hasUser && accountExpanded ? 'Ocultar edição' : 'Editar dados';
+      summaryEditButton.textContent = hasUser && accountExpanded ? 'Fechar formulário' : 'Editar dados';
       summaryEditButton.setAttribute('aria-expanded', hasUser ? String(Boolean(accountExpanded)) : 'false');
+    }
+
+    if (cancelButton instanceof HTMLElement) {
+      cancelButton.disabled = !hasUser || !accountExpanded;
+      cancelButton.setAttribute('aria-expanded', hasUser ? String(Boolean(accountExpanded)) : 'false');
+    }
+
+    if (saveButton instanceof HTMLElement) {
+      saveButton.disabled = !hasUser || !accountExpanded;
     }
 
     if (accountWidget instanceof HTMLElement) {
@@ -700,7 +735,29 @@ export function renderUserPanel(viewRoot) {
     }
   };
 
-  const handleEditToggle = async () => {
+  const handleCancelEdit = (event) => {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (!accountExpanded) {
+      return;
+    }
+
+    resetFeedback();
+    updateForm();
+    toggleAccountExpanded(false);
+
+    if (summaryEditButton instanceof HTMLElement && typeof summaryEditButton.focus === 'function') {
+      try {
+        summaryEditButton.focus();
+      } catch (error) {
+        // Ignora ambientes que não suportam foco programático.
+      }
+    }
+  };
+
+  const handleEditToggle = () => {
     if (!activeUser) {
       showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
       return;
@@ -712,14 +769,14 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    const result = await persistFormChanges();
-    if (result.status === 'success' || result.status === 'no-changes') {
-      toggleAccountExpanded(false);
-    }
+    handleCancelEdit();
   };
 
   summaryEditButton.addEventListener('click', handleEditToggle);
   cleanupCallbacks.push(() => summaryEditButton.removeEventListener('click', handleEditToggle));
+
+  cancelButton.addEventListener('click', handleCancelEdit);
+  cleanupCallbacks.push(() => cancelButton.removeEventListener('click', handleCancelEdit));
 
   const showFeedback = (message, { isError = false } = {}) => {
     if (!(feedbackElement instanceof HTMLElement)) {
@@ -972,6 +1029,8 @@ export function renderUserPanel(viewRoot) {
 
     const busyTargets = [
       summaryEditButton,
+      cancelButton,
+      saveButton,
       nameInput,
       phoneInput,
       emailInput,
@@ -987,8 +1046,8 @@ export function renderUserPanel(viewRoot) {
         },
       },
       busyTargets,
-      successMessage: 'Dados atualizados automaticamente!',
-      errorMessage: 'Não foi possível atualizar os dados automaticamente. Tente novamente.',
+      successMessage: 'Alterações salvas com sucesso!',
+      errorMessage: 'Não foi possível salvar as alterações. Tente novamente.',
       missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
     });
 
