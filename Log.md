@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.168 - 2025-10-23 23:40 BRT
+- Recolhe o widget de dados principais ocultando descrição e feedback quando resumido e reduzindo os espaçamentos via estado `collapsed`.
+- Garante que o estado expandido continue exibindo o formulário completo e restaurando mensagens ao reabrir a edição.
+
 ## v0.1.167 - 2025-10-23 06:20 BRT
 - Reestrutura a Mini App Store em seções temáticas com listas independentes, navegação horizontal e feedback reativo para cada carrossel.
 - Amplia o data store dos miniapps com metadados de downloads, favoritos, datas de lançamento e categorias destacadas, expondo utilitários de ranking.

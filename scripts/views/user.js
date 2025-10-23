@@ -654,12 +654,24 @@ export function renderUserPanel(viewRoot) {
       accountSummaryList.hidden = !shouldShowSummaryList;
     }
 
+    if (accountDescription instanceof HTMLElement) {
+      const shouldShowDescription = hasUser && accountExpanded;
+      accountDescription.hidden = !shouldShowDescription;
+    }
+
     if (emptyState instanceof HTMLElement) {
       emptyState.hidden = hasUser;
     }
 
     if (accountForm instanceof HTMLElement) {
       accountForm.hidden = !(hasUser && accountExpanded);
+    }
+
+    if (feedbackElement instanceof HTMLElement) {
+      const hasFeedbackContent =
+        typeof feedbackElement.textContent === 'string' && feedbackElement.textContent.trim().length > 0;
+      const shouldShowFeedback = hasUser && accountExpanded && hasFeedbackContent;
+      feedbackElement.hidden = !shouldShowFeedback;
     }
 
     if (summaryEditButton instanceof HTMLElement) {

@@ -3344,6 +3344,25 @@ main > :where(.card.view):not(.auth-view) {
   grid-column: 1 / -1;
 }
 
+.user-dashboard__widget--account[data-state='collapsed'] {
+  --card-gap: clamp(0.45rem, 1.4vw, 0.8rem);
+  --card-padding-block: clamp(0.6rem, 1.6vw, 0.95rem);
+  --card-padding-inline: clamp(0.65rem, 1.8vw, 1.1rem);
+}
+
+.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary {
+  gap: clamp(0.45rem, 1.5vw, 0.85rem);
+}
+
+.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary-list {
+  gap: clamp(0.3rem, 1.2vw, 0.55rem);
+}
+
+.user-dashboard__widget--account[data-state='collapsed'] .user-dashboard__summary-edit {
+  padding-block: 0.35rem;
+  padding-inline: 0.85rem;
+}
+
 .user-dashboard__widget {
   align-content: start;
 }
