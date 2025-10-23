@@ -88,7 +88,7 @@ function formatUserPhone(user) {
   return '—';
 }
 
-function getPreferenceCount(preferences, key) {
+function getPreferenceCount(preferences, key, options = {}) {
   if (!preferences || typeof preferences !== 'object') {
     return 0;
   }
@@ -98,7 +98,44 @@ function getPreferenceCount(preferences, key) {
     return 0;
   }
 
-  return collection.length;
+  const { accessibleMiniApps, limit } = options;
+
+  let ids = collection;
+  if (Number.isFinite(limit) && limit > 0) {
+    ids = ids.slice(0, limit);
+  }
+
+  if (!Array.isArray(accessibleMiniApps) || accessibleMiniApps.length === 0) {
+    return ids.length;
+  }
+
+  const accessibleIds = new Set();
+
+  accessibleMiniApps.forEach((app) => {
+    if (app && typeof app.id === 'string') {
+      const trimmed = app.id.trim();
+      if (trimmed !== '') {
+        accessibleIds.add(trimmed);
+      }
+    }
+  });
+
+  if (accessibleIds.size === 0) {
+    return 0;
+  }
+
+  return ids.reduce((count, id) => {
+    if (typeof id !== 'string') {
+      return count;
+    }
+
+    const trimmed = id.trim();
+    if (trimmed === '') {
+      return count;
+    }
+
+    return accessibleIds.has(trimmed) ? count + 1 : count;
+  }, 0);
 }
 
 function formatMiniAppCountLabel(count) {
@@ -478,7 +515,7 @@ function renderHomeIntroWidget() {
   return widget;
 }
 
-function renderHomePanelLabelWidget(user, preferences) {
+function renderHomePanelLabelWidget(user, preferences, accessibleMiniApps) {
   const widget = document.createElement('section');
   widget.className =
     [
@@ -537,8 +574,8 @@ function renderHomePanelLabelWidget(user, preferences) {
   const preferencesList = document.createElement('dl');
   preferencesList.className = 'user-dashboard__summary-list';
 
-  const favoriteCount = getPreferenceCount(preferences, 'favorites');
-  const savedCount = getPreferenceCount(preferences, 'saved');
+  const favoriteCount = getPreferenceCount(preferences, 'favorites', { accessibleMiniApps });
+  const savedCount = getPreferenceCount(preferences, 'saved', { accessibleMiniApps });
 
   [
     ['Mini-apps favoritados', formatMiniAppCountLabel(favoriteCount)],
@@ -623,7 +660,7 @@ export function renderHome(viewRoot) {
 
     layout.append(
       renderHomeIntroWidget(),
-      renderHomePanelLabelWidget(state.user, state.preferences),
+      renderHomePanelLabelWidget(state.user, state.preferences, accessibleMiniApps),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),
