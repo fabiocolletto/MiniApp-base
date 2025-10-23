@@ -422,20 +422,14 @@ export function renderUserPanel(viewRoot) {
 
   const editButton = document.createElement('button');
   editButton.type = 'button';
-  editButton.className = 'panel-action-tile user-dashboard__summary-edit user-dashboard__user-data-edit';
+  editButton.className =
+    'button button--primary user-dashboard__summary-edit user-dashboard__user-data-edit';
   editButton.textContent = 'Editar dados';
   editButton.setAttribute('aria-controls', 'user-dashboard-form');
+  editButton.setAttribute('aria-expanded', 'false');
   editButton.disabled = true;
 
-  const moreButton = document.createElement('button');
-  moreButton.type = 'button';
-  moreButton.className = 'panel-action-tile user-dashboard__user-data-toggle';
-  moreButton.textContent = 'Mais opções';
-  moreButton.setAttribute('aria-controls', 'user-dashboard-form');
-  moreButton.setAttribute('aria-expanded', 'false');
-  moreButton.disabled = true;
-
-  userDataActions.append(editButton, moreButton);
+  userDataActions.append(editButton);
 
   const feedbackElement = document.createElement('p');
   feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
@@ -825,13 +819,8 @@ export function renderUserPanel(viewRoot) {
 
     if (editButton instanceof HTMLElement) {
       const isBusy = typeof editButton.hasAttribute === 'function' && editButton.hasAttribute('aria-busy');
-      editButton.disabled = isBusy || !hasUser || !userDataExpanded;
-    }
-
-    if (moreButton instanceof HTMLElement) {
-      const isBusy = typeof moreButton.hasAttribute === 'function' && moreButton.hasAttribute('aria-busy');
-      moreButton.disabled = isBusy || !hasUser;
-      moreButton.setAttribute('aria-expanded', hasUser ? String(Boolean(userDataExpanded)) : 'false');
+      editButton.disabled = isBusy || !hasUser;
+      editButton.setAttribute('aria-expanded', hasUser ? String(Boolean(userDataExpanded)) : 'false');
     }
 
     accountWidget.dataset.sectionState = hasUser ? (userDataExpanded ? 'expanded' : 'collapsed') : 'empty';
@@ -857,31 +846,11 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
-    if (!userDataExpanded) {
-      showFeedback('Use o botão de mais para abrir o formulário de edição.', { isError: false });
-      return;
-    }
-
-    resetFeedback();
-
-    if (nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
-      try {
-        nameInput.focus();
-      } catch (error) {
-        // Ignora ambientes sem suporte a foco programático.
-      }
-    }
-  };
-
-  const handleToggleMore = () => {
-    if (!activeUser) {
-      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
-    }
-
     const nextExpanded = !userDataExpanded;
     if (nextExpanded) {
       resetFeedback();
+    } else {
+      clearFieldValidity();
     }
 
     toggleUserDataExpanded(nextExpanded);
@@ -889,9 +858,6 @@ export function renderUserPanel(viewRoot) {
 
   editButton.addEventListener('click', handleEditShortcut);
   cleanupCallbacks.push(() => editButton.removeEventListener('click', handleEditShortcut));
-
-  moreButton.addEventListener('click', handleToggleMore);
-  cleanupCallbacks.push(() => moreButton.removeEventListener('click', handleToggleMore));
 
   const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
 
@@ -1092,7 +1058,7 @@ export function renderUserPanel(viewRoot) {
       { name: nextName },
       {
         successMessage: 'Nome atualizado com sucesso!',
-        busyTargets: [nameInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [nameInput, editButton].filter((element) => element instanceof HTMLElement),
       },
     );
   };
@@ -1133,7 +1099,7 @@ export function renderUserPanel(viewRoot) {
       { phone: sanitizedPhone },
       {
         successMessage: 'Telefone atualizado com sucesso!',
-        busyTargets: [phoneInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [phoneInput, editButton].filter((element) => element instanceof HTMLElement),
       },
     );
 
@@ -1163,7 +1129,7 @@ export function renderUserPanel(viewRoot) {
       { profile: { email: nextEmail } },
       {
         successMessage: 'E-mail atualizado com sucesso!',
-        busyTargets: [emailInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [emailInput, editButton].filter((element) => element instanceof HTMLElement),
       },
     );
   };
@@ -1203,7 +1169,7 @@ export function renderUserPanel(viewRoot) {
       { password: passwordValue },
       {
         successMessage: 'Senha atualizada com sucesso!',
-        busyTargets: [passwordInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+        busyTargets: [passwordInput, editButton].filter((element) => element instanceof HTMLElement),
       },
     );
 
@@ -1288,7 +1254,7 @@ export function renderUserPanel(viewRoot) {
       return { status: 'no-changes' };
     }
 
-    const busyTargets = [nameInput, phoneInput, emailInput, passwordInput, editButton, moreButton].filter(
+    const busyTargets = [nameInput, phoneInput, emailInput, passwordInput, editButton].filter(
       (element) => element instanceof HTMLElement,
     );
 
