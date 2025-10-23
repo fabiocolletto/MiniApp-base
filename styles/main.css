@@ -3340,7 +3340,7 @@ main > :where(.card.view):not(.auth-view) {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.user-dashboard__widget--account {
+.user-dashboard__widget--user-data {
   grid-column: 1 / -1;
 }
 
@@ -3393,21 +3393,21 @@ main > :where(.card.view):not(.auth-view) {
   gap: var(--panel-stack-gap);
 }
 
-.user-dashboard__widget--account[data-section-state='collapsed'] {
+.user-dashboard__widget--user-data[data-section-state='collapsed'] {
   --card-gap: clamp(0.45rem, 1.4vw, 0.8rem);
   --card-padding-block: clamp(0.6rem, 1.6vw, 0.95rem);
   --card-padding-inline: clamp(0.65rem, 1.8vw, 1.1rem);
 }
 
-.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary {
+.user-dashboard__widget--user-data[data-section-state='collapsed'] .user-dashboard__summary {
   gap: clamp(0.45rem, 1.5vw, 0.85rem);
 }
 
-.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary-list {
+.user-dashboard__widget--user-data[data-section-state='collapsed'] .user-dashboard__summary-list {
   gap: clamp(0.3rem, 1.2vw, 0.55rem);
 }
 
-.user-dashboard__widget--account[data-section-state='collapsed'] .user-dashboard__summary-edit {
+.user-dashboard__widget--user-data[data-section-state='collapsed'] .user-dashboard__summary-edit {
   padding-block: 0.35rem;
   padding-inline: 0.85rem;
 }
@@ -3611,6 +3611,48 @@ main > :where(.card.view):not(.auth-view) {
   background: rgba(var(--color-accent-rgb), 0.04);
   border-color: rgba(var(--color-accent-rgb), 0.18);
   color: var(--color-text-soft);
+}
+
+.user-dashboard__user-data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.45rem, 1.4vw, 0.8rem);
+}
+
+.user-dashboard__user-data-actions > .panel-action-tile {
+  flex: 1 1 12rem;
+}
+
+.user-dashboard__user-data-edit {
+  justify-content: center;
+}
+
+.user-dashboard__user-data-toggle {
+  --panel-action-gap: clamp(0.3rem, 1vw, 0.45rem);
+  --panel-action-padding-block: clamp(0.4rem, 1.2vw, 0.65rem);
+  --panel-action-padding-inline: clamp(0.8rem, 2.2vw, 1.2rem);
+  --panel-action-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1vw, 0.55rem);
+  text-transform: none;
+}
+
+.user-dashboard__user-data-toggle::before {
+  content: '+';
+  font-size: 1.2em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.user-dashboard__user-data-toggle[aria-expanded='true']::before {
+  content: '−';
+}
+
+.user-dashboard__user-data-toggle[disabled] {
+  cursor: not-allowed;
 }
 
 .user-dashboard__empty-state[hidden] {

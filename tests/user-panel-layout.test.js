@@ -299,13 +299,13 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     'a seção de acesso deve indicar identificador semântico',
   );
   assert.ok(
-    thirdWidget instanceof FakeElement && thirdWidget.classList.contains('user-dashboard__widget--account'),
-    'o widget de dados principais deve ocupar a terceira posição do painel',
+    thirdWidget instanceof FakeElement && thirdWidget.classList.contains('user-dashboard__widget--user-data'),
+    'o widget de dados do usuário deve ocupar a terceira posição do painel',
   );
   assert.equal(
     thirdWidget.dataset.sectionId,
-    'account',
-    'a seção de dados principais deve indicar identificador semântico',
+    'user-data',
+    'a seção de dados do usuário deve indicar identificador semântico',
   );
 
   const themeWidget = layout.children.find(
@@ -327,18 +327,18 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(themeToggleButton, 'botão de alternância de tema deve estar disponível no painel');
 
   const accountWidget = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--account'),
+    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--user-data'),
   );
-  assert.ok(accountWidget, 'widget de dados principais não foi renderizado');
+  assert.ok(accountWidget, 'widget de dados do usuário não foi renderizado');
 
   assert.equal(
     accountWidget.dataset.sectionState,
     'empty',
-    'o widget de dados principais deve iniciar no estado "empty" sem sessão ativa',
+    'o widget de dados do usuário deve iniciar no estado "empty" sem sessão ativa',
   );
 
   const accountToggle = accountWidget.querySelector('.user-panel__section-toggle');
-  assert.ok(accountToggle, 'a seção de dados principais deve permitir expansão via cabeçalho');
+  assert.equal(accountToggle, null, 'o widget de dados do usuário não deve expor controle de acordeão no cabeçalho');
 
   const summary = findElement(accountWidget, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__summary'),
@@ -356,20 +356,41 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     'a lista do resumo deve permanecer oculta enquanto não houver sessão ativa',
   );
 
-  const editButton = findElement(summary, (node) =>
-    node instanceof FakeElement && node.classList.contains('user-dashboard__summary-edit'),
+  const userDataActions = findElement(accountWidget, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-actions'),
   );
-  assert.ok(editButton, 'botão de edição do resumo deve existir');
+  assert.ok(userDataActions, 'o widget precisa expor a área de ações abaixo do resumo');
+
+  const editButton = findElement(userDataActions, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-edit'),
+  );
+  assert.ok(editButton, 'botão de edição deve existir na área de ações');
   assert.equal(editButton.disabled, true, 'botão de edição deve permanecer desabilitado sem sessão ativa');
   assert.equal(
-    editButton.getAttribute('aria-expanded'),
-    'false',
-    'botão de edição deve indicar estado recolhido enquanto o formulário estiver oculto',
+    editButton.getAttribute('aria-controls'),
+    'user-dashboard-form',
+    'botão de edição deve apontar para o formulário de dados do usuário',
   );
   assert.equal(
-    editButton.getAttribute('aria-controls'),
-    'user-dashboard-summary-list user-dashboard-form user-dashboard-cancel user-dashboard-save',
-    'botão de edição deve referenciar o resumo e o formulário controlados',
+    editButton.getAttribute('aria-expanded'),
+    null,
+    'botão de edição não deve controlar a expansão direta do formulário',
+  );
+
+  const toggleButton = findElement(userDataActions, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__user-data-toggle'),
+  );
+  assert.ok(toggleButton, 'botão de "mais opções" deve estar presente para abrir o formulário');
+  assert.equal(toggleButton.disabled, true, 'o botão de expansão deve iniciar desabilitado sem sessão ativa');
+  assert.equal(
+    toggleButton.getAttribute('aria-expanded'),
+    'false',
+    'o botão de expansão deve indicar o estado recolhido inicialmente',
+  );
+  assert.equal(
+    toggleButton.getAttribute('aria-controls'),
+    'user-dashboard-form',
+    'o botão de expansão deve controlar a visibilidade do formulário principal',
   );
 
   const emptyState = findElement(accountWidget, (node) =>
@@ -380,9 +401,6 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   const form = accountWidget.querySelector('form.user-form');
   assert.ok(form, 'formulário principal não foi encontrado');
   assert.equal(form.hidden, true, 'formulário deve iniciar oculto até que a edição seja acionada');
-
-  const themeSelect = findElement(form, (node) => node instanceof FakeElement && node.tagName === 'SELECT');
-  assert.ok(themeSelect, 'seletor de tema precisa fazer parte do formulário');
 
   const accessWidget = layout.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__widget--access'),

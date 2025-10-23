@@ -330,9 +330,6 @@ export function renderUserPanel(viewRoot) {
 
   let themeAction = null;
 
-  const accountDescriptionText =
-    'Atualize telefone, e-mail, senha e preferências de tema. Use Salvar para aplicar ou Cancelar para descartar mudanças.';
-
   const themeSectionControls = createCollapsibleSection({
     id: 'theme',
     title: 'Preferências de tema',
@@ -377,26 +374,27 @@ export function renderUserPanel(viewRoot) {
 
   accessSectionControls.content.append(accessActionsWrapper, accessFeedback);
 
-  const accountSectionIdentifier = 'dados pessoais';
-  const accountSectionControls = createCollapsibleSection({
-    id: 'account',
-    title: 'Dados principais',
-    description: accountDescriptionText,
-    classes: ['user-dashboard__widget', 'user-dashboard__widget--account'],
-    onToggle: (nextExpanded) => {
-      if (!activeUser) {
-        showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-        return false;
-      }
+  const userDataSectionIdentifier = 'dados do usuário';
 
-      if (nextExpanded) {
-        resetFeedback();
-      }
+  const userDataWidget = document.createElement('section');
+  userDataWidget.className =
+    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--user-data';
+  userDataWidget.dataset.sectionId = 'user-data';
+  userDataWidget.dataset.sectionState = 'empty';
 
-      toggleAccountExpanded(nextExpanded);
-      return false;
-    },
-  });
+  const userDataHeader = document.createElement('div');
+  userDataHeader.className = 'user-panel__widget-header user-dashboard__user-data-header';
+
+  const userDataTitle = document.createElement('span');
+  userDataTitle.className = 'user-widget__title';
+  userDataTitle.textContent = 'Dados do Usuário';
+
+  userDataHeader.append(userDataTitle);
+  userDataWidget.append(userDataHeader);
+
+  const userDataContent = document.createElement('div');
+  userDataContent.className = 'user-panel__widget-content user-dashboard__user-data-content';
+  userDataWidget.append(userDataContent);
 
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
@@ -413,50 +411,31 @@ export function renderUserPanel(viewRoot) {
   const summaryEmail = createSummaryItem('E-mail de contato');
 
   accountSummaryList.append(summaryName.wrapper, summaryPhone.wrapper, summaryEmail.wrapper);
-
-  const summaryEditButton = document.createElement('button');
-  summaryEditButton.type = 'button';
-  summaryEditButton.className = 'user-dashboard__summary-edit';
-  summaryEditButton.textContent = 'Editar dados';
-  summaryEditButton.setAttribute('aria-expanded', 'false');
-  summaryEditButton.setAttribute(
-    'aria-controls',
-    'user-dashboard-summary-list user-dashboard-form user-dashboard-cancel user-dashboard-save',
-  );
-
-  accountSummary.append(accountSummaryList, summaryEditButton);
+  accountSummary.append(accountSummaryList);
 
   const emptyState = document.createElement('p');
   emptyState.className = 'user-dashboard__empty-state';
   emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
 
-  const themeField = document.createElement('label');
-  themeField.className = 'form-field user-form__field';
-  themeField.setAttribute('for', 'user-dashboard-theme');
-  themeField.setAttribute('data-field-size', 'compact');
-  tagFormElement(accountSectionIdentifier, themeField);
+  const userDataActions = document.createElement('div');
+  userDataActions.className = 'user-dashboard__user-data-actions';
 
-  const themeLabel = document.createElement('span');
-  themeLabel.className = 'form-label user-form__label';
-  themeLabel.textContent = 'Tema da interface';
+  const editButton = document.createElement('button');
+  editButton.type = 'button';
+  editButton.className = 'panel-action-tile user-dashboard__summary-edit user-dashboard__user-data-edit';
+  editButton.textContent = 'Editar dados';
+  editButton.setAttribute('aria-controls', 'user-dashboard-form');
+  editButton.disabled = true;
 
-  const themeSelect = document.createElement('select');
-  themeSelect.id = 'user-dashboard-theme';
-  themeSelect.name = 'user-dashboard-theme';
-  themeSelect.className = 'form-input form-select user-form__select';
+  const moreButton = document.createElement('button');
+  moreButton.type = 'button';
+  moreButton.className = 'panel-action-tile user-dashboard__user-data-toggle';
+  moreButton.textContent = 'Mais opções';
+  moreButton.setAttribute('aria-controls', 'user-dashboard-form');
+  moreButton.setAttribute('aria-expanded', 'false');
+  moreButton.disabled = true;
 
-  [
-    { value: 'system', label: 'Automático (seguir sistema)' },
-    { value: 'light', label: 'Tema claro' },
-    { value: 'dark', label: 'Tema escuro' },
-  ].forEach((option) => {
-    const optionElement = document.createElement('option');
-    optionElement.value = option.value;
-    optionElement.textContent = option.label;
-    themeSelect.append(optionElement);
-  });
-
-  themeField.append(themeLabel, themeSelect);
+  userDataActions.append(editButton, moreButton);
 
   const feedbackElement = document.createElement('p');
   feedbackElement.className = 'form-message user-form__feedback user-dashboard__feedback';
@@ -465,32 +444,9 @@ export function renderUserPanel(viewRoot) {
   const feedbackElementId = 'user-dashboard-feedback';
   feedbackElement.id = feedbackElementId;
   feedbackElement.setAttribute('data-field-size', 'full');
-  tagFormElement(accountSectionIdentifier, feedbackElement);
+  tagFormElement(userDataSectionIdentifier, feedbackElement);
 
-  const cancelButton = document.createElement('button');
-  cancelButton.type = 'button';
-  cancelButton.className = 'button button--ghost button--block user-dashboard__form-cancel';
-  cancelButton.id = 'user-dashboard-cancel';
-  cancelButton.textContent = 'Cancelar';
-  cancelButton.setAttribute('data-field-size', 'full');
-  cancelButton.setAttribute('aria-controls', 'user-dashboard-summary-list user-dashboard-form');
-  cancelButton.setAttribute('aria-expanded', 'false');
-  cancelButton.setAttribute('aria-describedby', feedbackElementId);
-  cancelButton.disabled = true;
-  tagFormElement(accountSectionIdentifier, cancelButton);
-
-  const saveButton = document.createElement('button');
-  saveButton.type = 'submit';
-  saveButton.className =
-    'button button--primary button--block user-form__submit user-dashboard__form-save';
-  saveButton.id = 'user-dashboard-save';
-  saveButton.textContent = 'Salvar alterações';
-  saveButton.setAttribute('data-field-size', 'full');
-  saveButton.setAttribute('aria-describedby', feedbackElementId);
-  saveButton.disabled = true;
-  tagFormElement(accountSectionIdentifier, saveButton);
-
-  const { form: accountForm, fields: accountFields } = createUserForm(accountSectionIdentifier, {
+  const { form: accountForm, fields: accountFields } = createUserForm(userDataSectionIdentifier, {
     id: 'user-dashboard-form',
     className: 'form user-form user-dashboard__form',
     fieldConfigs: [
@@ -542,10 +498,11 @@ export function renderUserPanel(viewRoot) {
         },
       },
     ],
-    extras: [themeField, feedbackElement, cancelButton, saveButton],
+    extras: [],
   });
 
   accountForm.hidden = true;
+  tagFormElement(userDataSectionIdentifier, accountForm);
 
   const findFieldEntry = (key) => accountFields.find((field) => field.key === key) ?? { field: null, input: null };
 
@@ -554,19 +511,17 @@ export function renderUserPanel(viewRoot) {
   const emailField = findFieldEntry('email').field;
   const passwordField = findFieldEntry('password').field;
 
-  accountSectionControls.content.append(accountSummary, emptyState, accountForm);
+  userDataContent.append(accountSummary, emptyState, userDataActions, feedbackElement, accountForm);
 
   const themeWidget = themeSectionControls.section;
   const accessWidget = accessSectionControls.section;
-  const accountWidget = accountSectionControls.section;
-  const accountDescription = accountSectionControls.descriptionElement;
+  const accountWidget = userDataWidget;
 
   layout.append(themeWidget, accessWidget, accountWidget);
-  accountSectionControls.setSectionState('empty');
   viewRoot.replaceChildren(layout);
 
   const cleanupCallbacks = [];
-  [themeSectionControls, accessSectionControls, accountSectionControls]
+  [themeSectionControls, accessSectionControls]
     .map((controls) => controls?.cleanup)
     .filter((cleanup) => typeof cleanup === 'function')
     .forEach((cleanup) => cleanupCallbacks.push(cleanup));
@@ -576,14 +531,14 @@ export function renderUserPanel(viewRoot) {
   let activeUserId = getActiveUserId();
   let sessionSnapshot = null;
   let activeUser = null;
-  let accountExpanded = false;
+  let userDataExpanded = false;
 
   const nameInput = nameField.querySelector('input');
   const phoneInput = phoneField.querySelector('input');
   const emailInput = emailField.querySelector('input');
   const passwordInput = passwordField.querySelector('input');
 
-  [nameInput, phoneInput, emailInput, passwordInput, themeSelect]
+  [nameInput, phoneInput, emailInput, passwordInput]
     .filter((field) => field instanceof HTMLElement)
     .forEach((field) => {
       field.setAttribute('aria-describedby', feedbackElementId);
@@ -793,114 +748,6 @@ export function renderUserPanel(viewRoot) {
     }
   };
 
-  const updateAccountViewState = () => {
-    const hasUser = Boolean(activeUser);
-
-    if (accountSummary instanceof HTMLElement) {
-      accountSummary.hidden = !hasUser;
-    }
-
-    if (accountSummaryList instanceof HTMLElement) {
-      const shouldShowSummaryList = hasUser && !accountExpanded;
-      accountSummaryList.hidden = !shouldShowSummaryList;
-    }
-
-    if (accountDescription instanceof HTMLElement) {
-      const shouldShowDescription = hasUser && accountExpanded;
-      accountDescription.hidden = !shouldShowDescription;
-    }
-
-    if (emptyState instanceof HTMLElement) {
-      emptyState.hidden = hasUser;
-    }
-
-    if (accountForm instanceof HTMLElement) {
-      accountForm.hidden = !(hasUser && accountExpanded);
-    }
-
-    if (feedbackElement instanceof HTMLElement) {
-      const hasFeedbackContent =
-        typeof feedbackElement.textContent === 'string' && feedbackElement.textContent.trim().length > 0;
-      const shouldShowFeedback = hasUser && accountExpanded && hasFeedbackContent;
-      feedbackElement.hidden = !shouldShowFeedback;
-    }
-
-    if (summaryEditButton instanceof HTMLElement) {
-      summaryEditButton.disabled = !hasUser;
-      summaryEditButton.textContent = hasUser && accountExpanded ? 'Fechar formulário' : 'Editar dados';
-      summaryEditButton.setAttribute('aria-expanded', hasUser ? String(Boolean(accountExpanded)) : 'false');
-    }
-
-    if (cancelButton instanceof HTMLElement) {
-      cancelButton.disabled = !hasUser || !accountExpanded;
-      cancelButton.setAttribute('aria-expanded', hasUser ? String(Boolean(accountExpanded)) : 'false');
-    }
-
-    if (saveButton instanceof HTMLElement) {
-      saveButton.disabled = !hasUser || !accountExpanded;
-    }
-
-    const sectionState = hasUser ? (accountExpanded ? 'expanded' : 'collapsed') : 'empty';
-    accountSectionControls.setSectionState(sectionState);
-  };
-
-  const toggleAccountExpanded = (nextState) => {
-    const hasUser = Boolean(activeUser);
-    accountExpanded = Boolean(nextState) && hasUser;
-    updateAccountViewState();
-
-    if (accountExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
-      try {
-        nameInput.focus();
-      } catch (error) {
-        // Ignora navegadores ou ambientes sem suporte a foco programático.
-      }
-    }
-  };
-
-  const handleCancelEdit = (event) => {
-    if (event) {
-      event.preventDefault();
-    }
-
-    if (!accountExpanded) {
-      return;
-    }
-
-    resetFeedback();
-    updateForm();
-    toggleAccountExpanded(false);
-
-    if (summaryEditButton instanceof HTMLElement && typeof summaryEditButton.focus === 'function') {
-      try {
-        summaryEditButton.focus();
-      } catch (error) {
-        // Ignora ambientes que não suportam foco programático.
-      }
-    }
-  };
-
-  const handleEditToggle = () => {
-    if (!activeUser) {
-      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
-    }
-
-    if (!accountExpanded) {
-      resetFeedback();
-      toggleAccountExpanded(true);
-      return;
-    }
-
-    handleCancelEdit();
-  };
-
-  summaryEditButton.addEventListener('click', handleEditToggle);
-  cleanupCallbacks.push(() => summaryEditButton.removeEventListener('click', handleEditToggle));
-
-  cancelButton.addEventListener('click', handleCancelEdit);
-  cleanupCallbacks.push(() => cancelButton.removeEventListener('click', handleCancelEdit));
-
   const showFeedback = (message, { isError = false } = {}) => {
     if (!(feedbackElement instanceof HTMLElement)) {
       return;
@@ -943,6 +790,108 @@ export function renderUserPanel(viewRoot) {
     showFeedback('', {});
     clearFieldValidity();
   };
+
+  const updateUserDataViewState = () => {
+    const hasUser = Boolean(activeUser);
+
+    if (!hasUser) {
+      userDataExpanded = false;
+    }
+
+    if (accountSummary instanceof HTMLElement) {
+      accountSummary.hidden = !hasUser;
+    }
+
+    if (accountSummaryList instanceof HTMLElement) {
+      accountSummaryList.hidden = !hasUser;
+    }
+
+    if (emptyState instanceof HTMLElement) {
+      emptyState.hidden = hasUser;
+    }
+
+    if (accountForm instanceof HTMLElement) {
+      accountForm.hidden = !(hasUser && userDataExpanded);
+    }
+
+    if (feedbackElement instanceof HTMLElement) {
+      const hasFeedbackContent =
+        typeof feedbackElement.textContent === 'string' && feedbackElement.textContent.trim().length > 0;
+      if (!hasFeedbackContent) {
+        feedbackElement.hidden = true;
+        feedbackElement.removeAttribute('role');
+      }
+    }
+
+    if (editButton instanceof HTMLElement) {
+      const isBusy = typeof editButton.hasAttribute === 'function' && editButton.hasAttribute('aria-busy');
+      editButton.disabled = isBusy || !hasUser || !userDataExpanded;
+    }
+
+    if (moreButton instanceof HTMLElement) {
+      const isBusy = typeof moreButton.hasAttribute === 'function' && moreButton.hasAttribute('aria-busy');
+      moreButton.disabled = isBusy || !hasUser;
+      moreButton.setAttribute('aria-expanded', hasUser ? String(Boolean(userDataExpanded)) : 'false');
+    }
+
+    accountWidget.dataset.sectionState = hasUser ? (userDataExpanded ? 'expanded' : 'collapsed') : 'empty';
+  };
+
+  const toggleUserDataExpanded = (nextState) => {
+    const hasUser = Boolean(activeUser);
+    userDataExpanded = Boolean(nextState) && hasUser;
+    updateUserDataViewState();
+
+    if (userDataExpanded && nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
+      try {
+        nameInput.focus();
+      } catch (error) {
+        // Ignora navegadores ou ambientes sem suporte a foco programático.
+      }
+    }
+  };
+
+  const handleEditShortcut = () => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    if (!userDataExpanded) {
+      showFeedback('Use o botão de mais para abrir o formulário de edição.', { isError: false });
+      return;
+    }
+
+    resetFeedback();
+
+    if (nameInput instanceof HTMLElement && typeof nameInput.focus === 'function') {
+      try {
+        nameInput.focus();
+      } catch (error) {
+        // Ignora ambientes sem suporte a foco programático.
+      }
+    }
+  };
+
+  const handleToggleMore = () => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    const nextExpanded = !userDataExpanded;
+    if (nextExpanded) {
+      resetFeedback();
+    }
+
+    toggleUserDataExpanded(nextExpanded);
+  };
+
+  editButton.addEventListener('click', handleEditShortcut);
+  cleanupCallbacks.push(() => editButton.removeEventListener('click', handleEditShortcut));
+
+  moreButton.addEventListener('click', handleToggleMore);
+  cleanupCallbacks.push(() => moreButton.removeEventListener('click', handleToggleMore));
 
   const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
 
@@ -1043,10 +992,6 @@ export function renderUserPanel(viewRoot) {
       activeUser.updatedAt = new Date();
     }
 
-    if (themeSelect) {
-      themeSelect.value = nextPreference;
-    }
-
     updateForm();
     updateActionState();
     updateThemeActionContent();
@@ -1063,13 +1008,215 @@ export function renderUserPanel(viewRoot) {
   cleanupCallbacks.push(themeAction.cleanup);
   updateThemeActionContent();
 
-  const persistFormChanges = async ({ showNoChangesFeedback = true } = {}) => {
+  const applySnapshotUpdates = (updates) => {
+    if (!activeUser || !updates || typeof updates !== 'object') {
+      return;
+    }
+
+    if (updates.name !== undefined) {
+      activeUser.name = updates.name;
+    }
+
+    if (updates.phone !== undefined) {
+      activeUser.phone = updates.phone;
+    }
+
+    if (updates.profile?.email !== undefined) {
+      activeUser.profile.email = updates.profile.email ?? '';
+    }
+
+    if (updates.preferences?.theme) {
+      activeUser.preferences.theme = updates.preferences.theme;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      activeUser.updatedAt = new Date();
+    }
+  };
+
+  const persistUpdates = async (updates, { successMessage, busyTargets = [] } = {}) => {
     if (!activeUser) {
       showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
       return { status: 'no-session' };
     }
 
+    const hasUpdates = updates && typeof updates === 'object' && Object.keys(updates).length > 0;
+    if (!hasUpdates) {
+      return { status: 'no-changes' };
+    }
+
     resetFeedback();
+
+    const result = await persistUserChanges(updates, {
+      feedback: {
+        reset: resetFeedback,
+        show: (message, options = {}) => {
+          showFeedback(message, options);
+        },
+      },
+      busyTargets,
+      successMessage: successMessage ?? 'Alterações salvas com sucesso!',
+      errorMessage: 'Não foi possível salvar as alterações. Tente novamente.',
+      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
+    });
+
+    if (result.status !== 'success') {
+      return result;
+    }
+
+    applySnapshotUpdates(updates);
+    updateForm();
+    updateActionState();
+
+    return result;
+  };
+
+  const handleNameChange = async () => {
+    if (!nameInput) {
+      return;
+    }
+
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    const nextName = nameInput.value.trim();
+    if (nextName === (activeUser.name ?? '')) {
+      resetFeedback();
+      updateSummary();
+      return;
+    }
+
+    await persistUpdates(
+      { name: nextName },
+      {
+        successMessage: 'Nome atualizado com sucesso!',
+        busyTargets: [nameInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+      },
+    );
+  };
+
+  const handlePhoneChange = async () => {
+    if (!phoneInput) {
+      return;
+    }
+
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    const phoneValidation = validatePhoneNumber(phoneInput.value);
+    if (!phoneValidation.isValid) {
+      showFeedback(phoneValidation.message ?? 'Informe um telefone válido.', { isError: true });
+      phoneInput.setAttribute('aria-invalid', 'true');
+      try {
+        phoneInput.focus();
+      } catch (error) {
+        // Ignora ambientes sem suporte a foco programático.
+      }
+      return;
+    }
+
+    phoneInput.removeAttribute('aria-invalid');
+
+    const sanitizedPhone = phoneValidation.sanitized ?? phoneValidation.localNumber ?? '';
+    if (sanitizedPhone === (activeUser.phone ?? '')) {
+      phoneInput.value = formatPhoneNumberForDisplay(sanitizedPhone);
+      resetFeedback();
+      updateSummary();
+      return;
+    }
+
+    const result = await persistUpdates(
+      { phone: sanitizedPhone },
+      {
+        successMessage: 'Telefone atualizado com sucesso!',
+        busyTargets: [phoneInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+      },
+    );
+
+    if (result.status === 'success') {
+      phoneInput.value = formatPhoneNumberForDisplay(sanitizedPhone);
+    }
+  };
+
+  const handleEmailChange = async () => {
+    if (!emailInput) {
+      return;
+    }
+
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    const nextEmail = emailInput.value.trim();
+    if (nextEmail === (activeUser.profile?.email ?? '')) {
+      resetFeedback();
+      updateSummary();
+      return;
+    }
+
+    await persistUpdates(
+      { profile: { email: nextEmail } },
+      {
+        successMessage: 'E-mail atualizado com sucesso!',
+        busyTargets: [emailInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+      },
+    );
+  };
+
+  const handlePasswordChange = async () => {
+    if (!passwordInput) {
+      return;
+    }
+
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    const passwordValue = passwordInput.value;
+    if (!passwordValue) {
+      passwordInput.removeAttribute('aria-invalid');
+      resetFeedback();
+      return;
+    }
+
+    const passwordValidation = validatePasswordStrength(passwordValue);
+    if (!passwordValidation.isValid) {
+      showFeedback(passwordValidation.message ?? 'Informe uma senha válida.', { isError: true });
+      passwordInput.setAttribute('aria-invalid', 'true');
+      try {
+        passwordInput.focus();
+      } catch (error) {
+        // Ignora ambientes sem suporte a foco programático.
+      }
+      return;
+    }
+
+    passwordInput.removeAttribute('aria-invalid');
+
+    const result = await persistUpdates(
+      { password: passwordValue },
+      {
+        successMessage: 'Senha atualizada com sucesso!',
+        busyTargets: [passwordInput, editButton, moreButton].filter((element) => element instanceof HTMLElement),
+      },
+    );
+
+    if (result.status === 'success') {
+      passwordInput.value = '';
+    }
+  };
+
+  const persistAllFields = async ({ showNoChangesFeedback = true } = {}) => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return { status: 'no-session' };
+    }
 
     const updates = {};
     const profileUpdates = {};
@@ -1097,7 +1244,7 @@ export function renderUserPanel(viewRoot) {
       phoneInput.removeAttribute('aria-invalid');
 
       const sanitizedPhone = phoneValidation.sanitized ?? phoneValidation.localNumber ?? '';
-      if (sanitizedPhone && sanitizedPhone !== (activeUser.phone ?? '')) {
+      if (sanitizedPhone !== (activeUser.phone ?? '')) {
         updates.phone = sanitizedPhone;
       }
     }
@@ -1130,15 +1277,6 @@ export function renderUserPanel(viewRoot) {
       }
     }
 
-    let nextThemePreference = activeUser.preferences?.theme ?? 'system';
-    if (themeSelect) {
-      const selected = sanitizeUserThemePreference(themeSelect.value);
-      if (selected !== (activeUser.preferences?.theme ?? 'system')) {
-        updates.preferences = { ...(updates.preferences ?? {}), theme: selected };
-      }
-      nextThemePreference = selected;
-    }
-
     if (Object.keys(profileUpdates).length > 0) {
       updates.profile = profileUpdates;
     }
@@ -1150,86 +1288,48 @@ export function renderUserPanel(viewRoot) {
       return { status: 'no-changes' };
     }
 
-    const busyTargets = [
-      summaryEditButton,
-      cancelButton,
-      saveButton,
-      nameInput,
-      phoneInput,
-      emailInput,
-      passwordInput,
-      themeSelect,
-    ].filter((element) => element instanceof HTMLElement);
+    const busyTargets = [nameInput, phoneInput, emailInput, passwordInput, editButton, moreButton].filter(
+      (element) => element instanceof HTMLElement,
+    );
 
-    const result = await persistUserChanges(updates, {
-      feedback: {
-        reset: resetFeedback,
-        show: (message, options = {}) => {
-          showFeedback(message, options);
-        },
-      },
-      busyTargets,
+    return persistUpdates(updates, {
       successMessage: 'Alterações salvas com sucesso!',
-      errorMessage: 'Não foi possível salvar as alterações. Tente novamente.',
-      missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
+      busyTargets,
     });
-
-    if (result.status !== 'success') {
-      return result;
-    }
-
-    if (updates.phone && phoneInput) {
-      phoneInput.value = formatPhoneNumberForDisplay(updates.phone);
-    }
-
-    if (passwordInput) {
-      passwordInput.value = '';
-    }
-
-    if (updates.preferences?.theme) {
-      setThemePreference(updates.preferences.theme);
-      if (themeSelect) {
-        themeSelect.value = updates.preferences.theme;
-      }
-    } else if (themeSelect) {
-      themeSelect.value = nextThemePreference;
-    }
-
-    if (activeUser) {
-      if (updates.name !== undefined) {
-        activeUser.name = updates.name;
-      }
-      if (updates.phone !== undefined) {
-        activeUser.phone = updates.phone;
-      }
-      if (updates.profile?.email !== undefined) {
-        activeUser.profile.email = updates.profile.email ?? '';
-      }
-      if (updates.preferences?.theme) {
-        activeUser.preferences.theme = updates.preferences.theme;
-      }
-      activeUser.updatedAt = new Date();
-    }
-
-    updateForm();
-    updateActionState();
-    updateThemeActionContent();
-
-    return result;
   };
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
-    if (!accountExpanded) {
+    if (!userDataExpanded) {
       return;
     }
 
-    await persistFormChanges();
+    await persistAllFields();
   };
 
   accountForm.addEventListener('submit', handleFormSubmit);
   cleanupCallbacks.push(() => accountForm.removeEventListener('submit', handleFormSubmit));
+
+  if (nameInput) {
+    nameInput.addEventListener('change', handleNameChange);
+    cleanupCallbacks.push(() => nameInput.removeEventListener('change', handleNameChange));
+  }
+
+  if (phoneInput) {
+    phoneInput.addEventListener('change', handlePhoneChange);
+    cleanupCallbacks.push(() => phoneInput.removeEventListener('change', handlePhoneChange));
+  }
+
+  if (emailInput) {
+    emailInput.addEventListener('change', handleEmailChange);
+    cleanupCallbacks.push(() => emailInput.removeEventListener('change', handleEmailChange));
+  }
+
+  if (passwordInput) {
+    passwordInput.addEventListener('change', handlePasswordChange);
+    cleanupCallbacks.push(() => passwordInput.removeEventListener('change', handlePasswordChange));
+  }
 
   const unsubscribeThemeListener = subscribeThemeChange(() => {
     updateThemeActionContent();
@@ -1239,8 +1339,6 @@ export function renderUserPanel(viewRoot) {
   const updateForm = () => {
     const user = activeUser;
     const isEnabled = Boolean(user);
-
-    const nextTheme = user?.preferences?.theme ?? 'system';
 
     if (nameInput) {
       nameInput.value = user?.name ?? '';
@@ -1262,17 +1360,12 @@ export function renderUserPanel(viewRoot) {
       passwordInput.disabled = !isEnabled;
     }
 
-    if (themeSelect) {
-      themeSelect.value = nextTheme;
-      themeSelect.disabled = !isEnabled;
-    }
-
     if (!isEnabled) {
-      accountExpanded = false;
+      userDataExpanded = false;
     }
 
     updateSummary();
-    updateAccountViewState();
+    updateUserDataViewState();
   };
 
   const updateActionState = () => {
@@ -1297,7 +1390,7 @@ export function renderUserPanel(viewRoot) {
     activeUser = normalizeUserData(source);
 
     if (!activeUser) {
-      accountExpanded = false;
+      userDataExpanded = false;
     }
 
     updateForm();
