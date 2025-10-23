@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.180 - 2025-10-24 12:10 BRT
+- Adiciona ao widget de gestão de mini-apps o upload de avatar com validações para PNG 128 × 128 px até 128 KB e instruções claras no painel.
+- Exibe a prévia do avatar na tabela administrativa e permite limpar a imagem com atualização automática do cadastro.
+- Normaliza o campo de ícone no data store dos mini-apps para persistir o avatar enviado pelo painel administrativo.
+
 ## v0.1.179 - 2025-10-24 11:40 BRT
 - Adiciona uma linha inicial ao painel Início com widgets dedicados à apresentação e à etiqueta do painel, reforçando contexto e identificação rápidos.
 - Reaproveita estilos globais de cartões, descrições e chips para alinhar a nova saudação sem criar utilitários inéditos.

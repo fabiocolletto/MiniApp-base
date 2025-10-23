@@ -27,6 +27,7 @@ const DEFAULT_MINI_APPS = [
     favorites: 9420,
     releaseDate: '2024-05-10T09:00:00-03:00',
     featuredCategories: ['Produtividade', 'Gestão de tempo'],
+    icon: null,
   },
   {
     id: 'field-forms',
@@ -42,6 +43,7 @@ const DEFAULT_MINI_APPS = [
     favorites: 5120,
     releaseDate: '2023-11-03T11:30:00-03:00',
     featuredCategories: ['Operações', 'Coleta em campo'],
+    icon: null,
   },
   {
     id: 'insights-hub',
@@ -57,6 +59,7 @@ const DEFAULT_MINI_APPS = [
     favorites: 3980,
     releaseDate: '2024-07-22T15:15:00-03:00',
     featuredCategories: ['Analytics', 'Gestão'],
+    icon: null,
   },
 ];
 
@@ -226,6 +229,20 @@ function normalizeFeaturedCategories(values) {
   return normalized;
 }
 
+function normalizeMiniAppIcon(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const isPngDataUrl = /^data:image\/png;base64,/i.test(trimmed);
+  return isPngDataUrl ? trimmed : null;
+}
+
 function normalizeMiniAppEntry(app) {
   if (!app || typeof app !== 'object') {
     return null;
@@ -253,6 +270,7 @@ function normalizeMiniAppEntry(app) {
   const favorites = normalizePositiveInteger(app.favorites);
   const releaseDate = normalizeReleaseDate(app.releaseDate);
   const featuredCategories = normalizeFeaturedCategories(app.featuredCategories);
+  const icon = normalizeMiniAppIcon(app.icon);
 
   return {
     id,
@@ -267,6 +285,7 @@ function normalizeMiniAppEntry(app) {
     favorites,
     releaseDate,
     featuredCategories,
+    icon,
   };
 }
 
@@ -286,6 +305,7 @@ function cloneMiniAppEntry(entry) {
     featuredCategories: Array.isArray(entry.featuredCategories)
       ? [...entry.featuredCategories]
       : [],
+    icon: entry.icon ?? null,
   };
 }
 

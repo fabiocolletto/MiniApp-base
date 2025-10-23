@@ -17,6 +17,12 @@ const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
 const countFormatter = new Intl.NumberFormat('pt-BR');
 const USER_REGISTRATION_GOAL = 120;
 const DEPLOYMENT_STATUSES = new Set(['deployment', 'testing']);
+const MINI_APP_AVATAR_REQUIREMENTS = {
+  mimeType: 'image/png',
+  width: 128,
+  height: 128,
+  maxBytes: 128 * 1024,
+};
 
 function formatCount(value) {
   const numericValue = Number.isFinite(value) ? value : 0;
@@ -337,7 +343,7 @@ function createMiniAppsWidget() {
       }
 
       const access = Array.isArray(entry.access) ? [...entry.access] : [];
-      state.set(id, { ...entry, id, access });
+      state.set(id, { ...entry, id, access, icon: entry.icon ?? null });
     });
 
     if (previousExpanded && !state.has(previousExpanded)) {
@@ -353,6 +359,30 @@ function createMiniAppsWidget() {
     const apps = Array.from(state.values()).sort((a, b) =>
       a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }),
     );
+
+    const buildAvatarElement = (iconValue, nameValue) => {
+      const container = document.createElement('div');
+      container.className = 'admin-miniapp-table__avatar';
+      container.setAttribute('aria-hidden', 'true');
+
+      if (typeof iconValue === 'string' && iconValue.trim() !== '') {
+        const image = document.createElement('img');
+        image.className = 'admin-miniapp-table__avatar-image';
+        image.alt = '';
+        image.src = iconValue;
+        container.dataset.state = 'image';
+        container.append(image);
+      } else {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'admin-miniapp-table__avatar-placeholder';
+        const fallbackInitial = nameValue ? nameValue.trim().charAt(0).toUpperCase() : 'M';
+        placeholder.textContent = fallbackInitial || 'M';
+        container.dataset.state = 'placeholder';
+        container.append(placeholder);
+      }
+
+      return container;
+    };
 
     if (apps.length === 0) {
       const emptyRow = document.createElement('tr');
@@ -379,6 +409,14 @@ function createMiniAppsWidget() {
       const appCell = document.createElement('td');
       appCell.className = 'admin-user-table__cell admin-miniapp-table__cell admin-miniapp-table__cell--app';
 
+      const appContent = document.createElement('div');
+      appContent.className = 'admin-miniapp-table__app-content';
+
+      const avatarContainer = buildAvatarElement(app.icon, app.name);
+
+      const appDetails = document.createElement('div');
+      appDetails.className = 'admin-miniapp-table__app-details';
+
       const appName = document.createElement('span');
       appName.className = 'admin-miniapp-table__app-name';
       appName.textContent = app.name;
@@ -387,7 +425,9 @@ function createMiniAppsWidget() {
       appMeta.className = 'admin-miniapp-table__app-meta';
       appMeta.textContent = `${app.category} · Atualizado ${formatDateTime(app.updatedAt)}`;
 
-      appCell.append(appName, appMeta);
+      appDetails.append(appName, appMeta);
+      appContent.append(avatarContainer, appDetails);
+      appCell.append(appContent);
 
       const accessCell = document.createElement('td');
       accessCell.className = 'admin-user-table__cell admin-miniapp-table__cell admin-miniapp-table__cell--access';
@@ -522,6 +562,142 @@ function createMiniAppsWidget() {
         accessFieldset.append(optionLabel);
       });
 
+      const avatarField = document.createElement('div');
+      avatarField.className = 'admin-miniapp-table__avatar-field';
+
+      const avatarLabel = document.createElement('span');
+      avatarLabel.className = 'admin-miniapp-table__avatar-label';
+      avatarLabel.textContent = 'Avatar do mini-app';
+
+      const avatarPreview = document.createElement('div');
+      avatarPreview.className = 'admin-miniapp-table__avatar-preview';
+      avatarPreview.append(buildAvatarElement(app.icon, app.name));
+
+      const avatarHint = document.createElement('p');
+      avatarHint.className = 'admin-miniapp-table__avatar-hint';
+      avatarHint.textContent = 'Envie um PNG quadrado de 128 × 128 px com até 128 KB.';
+
+      const avatarUpload = document.createElement('div');
+      avatarUpload.className = 'admin-miniapp-table__avatar-upload';
+
+      const avatarInput = document.createElement('input');
+      avatarInput.type = 'file';
+      avatarInput.accept = MINI_APP_AVATAR_REQUIREMENTS.mimeType;
+      avatarInput.className = 'admin-miniapp-table__avatar-input';
+
+      const normalizedId = typeof app.id === 'string' ? app.id.toLowerCase().replace(/[^a-z0-9-]+/gi, '-') : 'miniapp';
+      const feedbackId = `miniapp-avatar-feedback-${normalizedId}`;
+
+      const avatarFeedback = document.createElement('p');
+      avatarFeedback.className = 'admin-miniapp-table__avatar-feedback';
+      avatarFeedback.id = feedbackId;
+
+      avatarInput.setAttribute('aria-describedby', feedbackId);
+
+      const resetButton = document.createElement('button');
+      resetButton.type = 'button';
+      resetButton.className = 'button button--secondary admin-miniapp-table__avatar-reset';
+      resetButton.textContent = 'Remover avatar';
+      resetButton.disabled = !(typeof app.icon === 'string' && app.icon.trim() !== '');
+
+      function setAvatarFeedback(message, status = 'info') {
+        avatarFeedback.textContent = message;
+        if (!message) {
+          avatarFeedback.removeAttribute('data-status');
+          return;
+        }
+
+        avatarFeedback.dataset.status = status;
+      }
+
+      avatarInput.addEventListener('change', () => {
+        setAvatarFeedback('');
+
+        const [file] = avatarInput.files ?? [];
+        if (!file) {
+          return;
+        }
+
+        const isValidType =
+          file.type === MINI_APP_AVATAR_REQUIREMENTS.mimeType ||
+          file.name?.toLowerCase?.().endsWith('.png');
+        if (!isValidType) {
+          setAvatarFeedback('Selecione um arquivo PNG.', 'error');
+          avatarInput.value = '';
+          return;
+        }
+
+        if (file.size > MINI_APP_AVATAR_REQUIREMENTS.maxBytes) {
+          setAvatarFeedback('O arquivo deve ter no máximo 128 KB.', 'error');
+          avatarInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.addEventListener('error', () => {
+          setAvatarFeedback('Não foi possível ler o arquivo selecionado.', 'error');
+          avatarInput.value = '';
+        });
+
+        reader.addEventListener('load', () => {
+          const result = typeof reader.result === 'string' ? reader.result : '';
+          if (!result) {
+            setAvatarFeedback('Não foi possível carregar o arquivo escolhido.', 'error');
+            avatarInput.value = '';
+            return;
+          }
+
+          const previewImage = new Image();
+
+          previewImage.addEventListener('error', () => {
+            setAvatarFeedback('O arquivo precisa ser uma imagem PNG válida.', 'error');
+            avatarInput.value = '';
+          });
+
+          previewImage.addEventListener('load', () => {
+            if (
+              previewImage.naturalWidth !== MINI_APP_AVATAR_REQUIREMENTS.width ||
+              previewImage.naturalHeight !== MINI_APP_AVATAR_REQUIREMENTS.height
+            ) {
+              setAvatarFeedback('O PNG deve ter exatamente 128 × 128 px.', 'error');
+              avatarInput.value = '';
+              return;
+            }
+
+            setAvatarFeedback('Avatar enviado. Atualizando mini-app...', 'success');
+            applyMiniAppUpdate(app.id, (current) => ({
+              ...current,
+              icon: result,
+              updatedAt: new Date().toISOString(),
+            }));
+          });
+
+          previewImage.src = result;
+        });
+
+        reader.readAsDataURL(file);
+      });
+
+      resetButton.addEventListener('click', () => {
+        setAvatarFeedback('');
+        avatarInput.value = '';
+        if (!(typeof app.icon === 'string' && app.icon.trim() !== '')) {
+          return;
+        }
+
+        setAvatarFeedback('Avatar removido. Atualizando mini-app...', 'success');
+        applyMiniAppUpdate(app.id, (current) => ({
+          ...current,
+          icon: null,
+          updatedAt: new Date().toISOString(),
+        }));
+      });
+
+      avatarUpload.append(avatarInput, resetButton);
+
+      avatarField.append(avatarLabel, avatarPreview, avatarHint, avatarUpload, avatarFeedback);
+
       const statusField = document.createElement('label');
       statusField.className = 'admin-miniapp-table__status-field';
 
@@ -551,7 +727,7 @@ function createMiniAppsWidget() {
 
       statusField.append(statusLabel, statusSelect);
 
-      controls.append(accessFieldset, statusField);
+      controls.append(accessFieldset, avatarField, statusField);
 
       detailsPanel.append(detailsHeader, detailsDescription, controls);
       detailsCell.append(detailsPanel);
