@@ -12,11 +12,112 @@ import {
 } from '../theme/theme-manager.js';
 import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
-import { createInputField } from './shared/form-fields.js';
+import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber, validatePasswordStrength } from './shared/validation.js';
 import eventBus from '../events/event-bus.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
+
+const HTMLElementRef = typeof HTMLElement === 'undefined' ? null : HTMLElement;
+
+function isElement(node) {
+  if (!HTMLElementRef) {
+    return Boolean(node) && typeof node === 'object' && 'ownerDocument' in node;
+  }
+
+  return node instanceof HTMLElementRef;
+}
+
+function createCollapsibleSection({
+  id,
+  title,
+  description = '',
+  defaultExpanded = false,
+  classes = [],
+  onToggle,
+}) {
+  const section = document.createElement('section');
+  section.className = ['surface-card', 'user-panel__widget', ...classes].filter(Boolean).join(' ');
+  section.dataset.sectionId = id;
+
+  const header = document.createElement('div');
+  header.className = 'user-panel__widget-header';
+
+  const toggleButton = document.createElement('button');
+  toggleButton.type = 'button';
+  toggleButton.className = 'user-panel__section-toggle';
+
+  const titleElement = document.createElement('span');
+  titleElement.className = 'user-widget__title';
+  titleElement.textContent = title;
+
+  const contentId = `user-panel-section-${id}`;
+  toggleButton.setAttribute('aria-controls', contentId);
+  toggleButton.append(titleElement);
+
+  header.append(toggleButton);
+  section.append(header);
+
+  const content = document.createElement('div');
+  content.className = 'user-panel__widget-content';
+  content.id = contentId;
+
+  let descriptionElement = null;
+  if (description) {
+    descriptionElement = document.createElement('p');
+    descriptionElement.className = 'user-widget__description';
+    descriptionElement.textContent = description;
+    content.append(descriptionElement);
+  }
+
+  section.append(content);
+
+  const setSectionState = (state) => {
+    const normalized = state === 'expanded' ? 'expanded' : state === 'empty' ? 'empty' : 'collapsed';
+    section.dataset.sectionState = normalized;
+    const isExpanded = normalized === 'expanded';
+    toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    content.hidden = !isExpanded;
+    if (descriptionElement) {
+      descriptionElement.hidden = !isExpanded;
+    }
+  };
+
+  const setExpanded = (value) => setSectionState(value ? 'expanded' : 'collapsed');
+
+  setSectionState(defaultExpanded ? 'expanded' : 'collapsed');
+
+  const handleToggle = () => {
+    const nextExpanded = section.dataset.sectionState !== 'expanded';
+    if (typeof onToggle === 'function') {
+      const result = onToggle(nextExpanded, {
+        setSectionState,
+        setExpanded,
+      });
+
+      if (result === false) {
+        return;
+      }
+    }
+
+    setExpanded(nextExpanded);
+  };
+
+  toggleButton.addEventListener('click', handleToggle);
+
+  const cleanup = () => toggleButton.removeEventListener('click', handleToggle);
+
+  return {
+    section,
+    header,
+    toggleButton,
+    content,
+    descriptionElement,
+    setSectionState,
+    setExpanded,
+    cleanup,
+  };
+}
 
 function normalizePreferences(preferences) {
   const defaults = getDefaultUserPreferences();
@@ -227,18 +328,19 @@ export function renderUserPanel(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
-  const themeWidget = document.createElement('section');
-  themeWidget.className =
-    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--theme';
+  let themeAction = null;
 
-  const themeTitle = document.createElement('h2');
-  themeTitle.className = 'user-widget__title';
-  themeTitle.textContent = 'Preferências de tema';
+  const accountDescriptionText =
+    'Atualize telefone, e-mail, senha e preferências de tema. Use Salvar para aplicar ou Cancelar para descartar mudanças.';
 
-  const themeDescription = document.createElement('p');
-  themeDescription.className = 'user-widget__description';
-  themeDescription.textContent =
-    'Alterne rapidamente entre tema claro e escuro e mantenha sua escolha sincronizada em todos os acessos.';
+  const themeSectionControls = createCollapsibleSection({
+    id: 'theme',
+    title: 'Preferências de tema',
+    description:
+      'Alterne rapidamente entre tema claro e escuro e mantenha sua escolha sincronizada em todos os acessos.',
+    defaultExpanded: true,
+    classes: ['user-dashboard__widget', 'user-dashboard__widget--theme'],
+  });
 
   const actionsWrapper = document.createElement('div');
   actionsWrapper.className = 'user-dashboard__actions';
@@ -247,34 +349,17 @@ export function renderUserPanel(viewRoot) {
   actionList.className = 'user-dashboard__action-list';
   actionList.setAttribute('role', 'list');
 
-  let themeAction = null;
+  actionsWrapper.append(actionList);
+  themeSectionControls.content.append(actionsWrapper);
 
-  const accountWidget = document.createElement('section');
-  accountWidget.className =
-    'surface-card user-panel__widget user-dashboard__widget user-dashboard__widget--account';
-
-  const accountTitle = document.createElement('h2');
-  accountTitle.className = 'user-widget__title';
-  accountTitle.textContent = 'Dados principais';
-
-  const accountDescription = document.createElement('p');
-  accountDescription.className = 'user-widget__description';
-  accountDescription.textContent =
-    'Atualize telefone, e-mail, senha e preferências de tema. Use Salvar para aplicar ou Cancelar para descartar mudanças.';
-
-  const accessWidget = document.createElement('section');
-  accessWidget.className =
-    'surface-card user-panel__widget user-dashboard__widget user-panel__widget--access';
-  accessWidget.dataset.state = 'empty';
-
-  const accessTitle = document.createElement('h2');
-  accessTitle.className = 'user-widget__title';
-  accessTitle.textContent = 'Sessão e acesso';
-
-  const accessDescription = document.createElement('p');
-  accessDescription.className = 'user-widget__description';
-  accessDescription.textContent =
-    'Gerencie a sessão rapidamente: faça logoff, troque de usuário ou remova os dados salvos deste dispositivo.';
+  const accessSectionControls = createCollapsibleSection({
+    id: 'access',
+    title: 'Sessão e acesso',
+    description:
+      'Gerencie a sessão rapidamente: faça logoff, troque de usuário ou remova os dados salvos deste dispositivo.',
+    defaultExpanded: true,
+    classes: ['user-dashboard__widget', 'user-panel__widget--access'],
+  });
 
   const accessActionsWrapper = document.createElement('div');
   accessActionsWrapper.className = 'user-dashboard__actions';
@@ -283,10 +368,35 @@ export function renderUserPanel(viewRoot) {
   accessActionList.className = 'user-dashboard__action-list';
   accessActionList.setAttribute('role', 'list');
 
+  accessActionsWrapper.append(accessActionList);
+
   const accessFeedback = document.createElement('p');
   accessFeedback.className = 'form-message user-form__feedback user-dashboard__feedback';
   accessFeedback.hidden = true;
   accessFeedback.setAttribute('aria-live', 'polite');
+
+  accessSectionControls.content.append(accessActionsWrapper, accessFeedback);
+
+  const accountSectionIdentifier = 'dados pessoais';
+  const accountSectionControls = createCollapsibleSection({
+    id: 'account',
+    title: 'Dados principais',
+    description: accountDescriptionText,
+    classes: ['user-dashboard__widget', 'user-dashboard__widget--account'],
+    onToggle: (nextExpanded) => {
+      if (!activeUser) {
+        showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+        return false;
+      }
+
+      if (nextExpanded) {
+        resetFeedback();
+      }
+
+      toggleAccountExpanded(nextExpanded);
+      return false;
+    },
+  });
 
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
@@ -320,55 +430,11 @@ export function renderUserPanel(viewRoot) {
   emptyState.className = 'user-dashboard__empty-state';
   emptyState.textContent = 'Nenhuma sessão ativa. Faça login para atualizar seus dados.';
 
-  const accountForm = document.createElement('form');
-  accountForm.className = 'form user-form user-dashboard__form';
-  accountForm.id = 'user-dashboard-form';
-  accountForm.noValidate = true;
-  accountForm.hidden = true;
-
-  const nameField = createInputField({
-    id: 'user-dashboard-name',
-    label: 'Nome completo',
-    type: 'text',
-    placeholder: 'Informe como deseja ser identificado',
-    autocomplete: 'name',
-  });
-  nameField.setAttribute('data-field-size', 'full');
-
-  const phoneField = createInputField({
-    id: 'user-dashboard-phone',
-    label: 'Telefone principal',
-    type: 'tel',
-    placeholder: 'Inclua DDD ou código internacional',
-    autocomplete: 'tel',
-    inputMode: 'tel',
-  });
-  phoneField.setAttribute('data-field-size', 'compact');
-
-  const emailField = createInputField({
-    id: 'user-dashboard-email',
-    label: 'E-mail de contato',
-    type: 'email',
-    placeholder: 'nome@exemplo.com',
-    autocomplete: 'email',
-    required: false,
-  });
-  emailField.setAttribute('data-field-size', 'wide');
-
-  const passwordField = createInputField({
-    id: 'user-dashboard-password',
-    label: 'Nova senha (opcional)',
-    type: 'password',
-    placeholder: 'Mínimo de 8 caracteres',
-    autocomplete: 'new-password',
-    required: false,
-  });
-  passwordField.setAttribute('data-field-size', 'medium');
-
   const themeField = document.createElement('label');
   themeField.className = 'form-field user-form__field';
   themeField.setAttribute('for', 'user-dashboard-theme');
   themeField.setAttribute('data-field-size', 'compact');
+  tagFormElement(accountSectionIdentifier, themeField);
 
   const themeLabel = document.createElement('span');
   themeLabel.className = 'form-label user-form__label';
@@ -399,6 +465,7 @@ export function renderUserPanel(viewRoot) {
   const feedbackElementId = 'user-dashboard-feedback';
   feedbackElement.id = feedbackElementId;
   feedbackElement.setAttribute('data-field-size', 'full');
+  tagFormElement(accountSectionIdentifier, feedbackElement);
 
   const cancelButton = document.createElement('button');
   cancelButton.type = 'button';
@@ -410,6 +477,7 @@ export function renderUserPanel(viewRoot) {
   cancelButton.setAttribute('aria-expanded', 'false');
   cancelButton.setAttribute('aria-describedby', feedbackElementId);
   cancelButton.disabled = true;
+  tagFormElement(accountSectionIdentifier, cancelButton);
 
   const saveButton = document.createElement('button');
   saveButton.type = 'submit';
@@ -420,31 +488,88 @@ export function renderUserPanel(viewRoot) {
   saveButton.setAttribute('data-field-size', 'full');
   saveButton.setAttribute('aria-describedby', feedbackElementId);
   saveButton.disabled = true;
+  tagFormElement(accountSectionIdentifier, saveButton);
 
-  accountForm.append(
-    nameField,
-    phoneField,
-    emailField,
-    passwordField,
-    themeField,
-    feedbackElement,
-    cancelButton,
-    saveButton,
-  );
+  const { form: accountForm, fields: accountFields } = createUserForm(accountSectionIdentifier, {
+    id: 'user-dashboard-form',
+    className: 'form user-form user-dashboard__form',
+    fieldConfigs: [
+      {
+        key: 'name',
+        size: 'full',
+        input: {
+          id: 'user-dashboard-name',
+          label: 'Nome completo',
+          type: 'text',
+          placeholder: 'Informe como deseja ser identificado',
+          autocomplete: 'name',
+        },
+      },
+      {
+        key: 'phone',
+        size: 'compact',
+        input: {
+          id: 'user-dashboard-phone',
+          label: 'Telefone principal',
+          type: 'tel',
+          placeholder: 'Inclua DDD ou código internacional',
+          autocomplete: 'tel',
+          inputMode: 'tel',
+        },
+      },
+      {
+        key: 'email',
+        size: 'wide',
+        input: {
+          id: 'user-dashboard-email',
+          label: 'E-mail de contato',
+          type: 'email',
+          placeholder: 'nome@exemplo.com',
+          autocomplete: 'email',
+          required: false,
+        },
+      },
+      {
+        key: 'password',
+        size: 'medium',
+        input: {
+          id: 'user-dashboard-password',
+          label: 'Nova senha (opcional)',
+          type: 'password',
+          placeholder: 'Mínimo de 8 caracteres',
+          autocomplete: 'new-password',
+          required: false,
+        },
+      },
+    ],
+    extras: [themeField, feedbackElement, cancelButton, saveButton],
+  });
 
-  accountWidget.append(accountTitle, accountDescription, accountSummary, emptyState, accountForm);
+  accountForm.hidden = true;
 
-  accessActionsWrapper.append(accessActionList);
+  const findFieldEntry = (key) => accountFields.find((field) => field.key === key) ?? { field: null, input: null };
 
-  accessWidget.append(accessTitle, accessDescription, accessActionsWrapper, accessFeedback);
+  const nameField = findFieldEntry('name').field;
+  const phoneField = findFieldEntry('phone').field;
+  const emailField = findFieldEntry('email').field;
+  const passwordField = findFieldEntry('password').field;
 
-  themeWidget.append(themeTitle, themeDescription, actionsWrapper);
-  actionsWrapper.append(actionList);
+  accountSectionControls.content.append(accountSummary, emptyState, accountForm);
+
+  const themeWidget = themeSectionControls.section;
+  const accessWidget = accessSectionControls.section;
+  const accountWidget = accountSectionControls.section;
+  const accountDescription = accountSectionControls.descriptionElement;
 
   layout.append(themeWidget, accessWidget, accountWidget);
+  accountSectionControls.setSectionState('empty');
   viewRoot.replaceChildren(layout);
 
   const cleanupCallbacks = [];
+  [themeSectionControls, accessSectionControls, accountSectionControls]
+    .map((controls) => controls?.cleanup)
+    .filter((cleanup) => typeof cleanup === 'function')
+    .forEach((cleanup) => cleanupCallbacks.push(cleanup));
   const unsubscribeCallbacks = [];
 
   const usersById = new Map();
@@ -715,10 +840,8 @@ export function renderUserPanel(viewRoot) {
       saveButton.disabled = !hasUser || !accountExpanded;
     }
 
-    if (accountWidget instanceof HTMLElement) {
-      const state = hasUser ? (accountExpanded ? 'expanded' : 'collapsed') : 'empty';
-      accountWidget.dataset.state = state;
-    }
+    const sectionState = hasUser ? (accountExpanded ? 'expanded' : 'collapsed') : 'empty';
+    accountSectionControls.setSectionState(sectionState);
   };
 
   const toggleAccountExpanded = (nextState) => {
