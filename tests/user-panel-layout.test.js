@@ -319,12 +319,20 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   const actionList = themeWidget.querySelector('.user-dashboard__action-list');
   assert.ok(actionList, 'a lista de ações rápidas deve estar visível no widget de tema');
 
-  assert.equal(actionList.children.length, 1, 'o widget de tema deve exibir apenas o atalho de alternância');
+  assert.equal(actionList.children.length, 2, 'o widget de tema deve exibir dois atalhos principais');
 
   const themeToggleButton = findElement(actionList, (node) =>
     node instanceof FakeElement && node.classList.contains('user-dashboard__quick-action-button--theme'),
   );
   assert.ok(themeToggleButton, 'botão de alternância de tema deve estar disponível no painel');
+
+  const footerIndicatorsButton = findElement(actionList, (node) =>
+    node instanceof FakeElement && node.classList.contains('user-dashboard__quick-action-button--footer'),
+  );
+  assert.ok(
+    footerIndicatorsButton,
+    'botão para alternar indicadores do rodapé deve estar disponível no painel',
+  );
 
   const accountWidget = layout.children.find(
     (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--user-data'),

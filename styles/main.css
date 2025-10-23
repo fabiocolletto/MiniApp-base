@@ -937,7 +937,7 @@ footer {
   padding: 0;
   font: inherit;
   color: inherit;
-  cursor: default;
+  cursor: pointer;
   text-decoration: none;
   appearance: none;
 }
@@ -974,6 +974,22 @@ footer {
   align-items: center;
   gap: clamp(0.4rem, 1.1vw, 0.85rem);
   flex: 0 0 auto;
+}
+
+footer[data-footer-indicators='hidden'] {
+  justify-content: center;
+}
+
+footer[data-footer-indicators='hidden'] .footer-brand {
+  justify-content: center;
+}
+
+footer[data-footer-indicators='hidden'] .footer-brand__text {
+  text-align: center;
+}
+
+footer[data-footer-indicators='hidden'] .footer-actions {
+  display: none;
 }
 
 .footer-memory,

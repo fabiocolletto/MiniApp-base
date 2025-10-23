@@ -3,6 +3,7 @@ import {
   updateUser,
   deleteUser,
   sanitizeUserThemePreference,
+  sanitizeUserFooterIndicatorsPreference,
   getDefaultUserPreferences,
 } from '../data/user-store.js';
 import {
@@ -10,6 +11,12 @@ import {
   getResolvedTheme,
   subscribeThemeChange,
 } from '../theme/theme-manager.js';
+import {
+  setFooterIndicatorsPreference,
+  getFooterIndicatorsPreference,
+  subscribeFooterIndicatorsChange,
+  sanitizeFooterIndicatorsPreference,
+} from '../preferences/footer-indicators.js';
 import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/session-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
@@ -127,6 +134,10 @@ function normalizePreferences(preferences) {
   if (preferences && typeof preferences === 'object') {
     if (Object.prototype.hasOwnProperty.call(preferences, 'theme')) {
       normalized.theme = sanitizeUserThemePreference(preferences.theme);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(preferences, 'footerIndicators')) {
+      normalized.footerIndicators = sanitizeUserFooterIndicatorsPreference(preferences.footerIndicators);
     }
   }
 
@@ -330,6 +341,7 @@ export function renderUserPanel(viewRoot) {
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
   let themeAction = null;
+  let footerIndicatorsAction = null;
 
   const themeSectionControls = createCollapsibleSection({
     id: 'theme',
@@ -957,6 +969,57 @@ export function renderUserPanel(viewRoot) {
     themeAction.button.dataset.themeActive = currentTheme;
   };
 
+  const resolveFooterIndicatorsPreference = () => {
+    if (activeUser?.preferences?.footerIndicators) {
+      return sanitizeUserFooterIndicatorsPreference(activeUser.preferences.footerIndicators);
+    }
+
+    return sanitizeFooterIndicatorsPreference(getFooterIndicatorsPreference());
+  };
+
+  const computeNextFooterIndicatorsPreference = () =>
+    resolveFooterIndicatorsPreference() === 'visible' ? 'hidden' : 'visible';
+
+  const formatFooterIndicatorsActionTitle = () => {
+    const currentPreference = resolveFooterIndicatorsPreference();
+
+    if (!activeUser) {
+      return currentPreference === 'hidden'
+        ? 'Indicadores ocultos no rodapé'
+        : 'Indicadores visíveis no rodapé';
+    }
+
+    return currentPreference === 'hidden'
+      ? 'Indicadores do rodapé ocultos'
+      : 'Indicadores do rodapé visíveis';
+  };
+
+  const formatFooterIndicatorsActionDescription = () => {
+    if (!activeUser) {
+      return 'Inicie uma sessão para sincronizar sua preferência de indicadores.';
+    }
+
+    const nextPreference = computeNextFooterIndicatorsPreference();
+    return nextPreference === 'hidden'
+      ? 'Clique para ocultar os indicadores de status e versão do rodapé.'
+      : 'Clique para exibir novamente os indicadores de status e versão.';
+  };
+
+  const updateFooterIndicatorsActionContent = () => {
+    if (!footerIndicatorsAction) {
+      return;
+    }
+
+    const currentPreference = resolveFooterIndicatorsPreference();
+    const nextPreference = computeNextFooterIndicatorsPreference();
+
+    footerIndicatorsAction.labelElement.textContent = formatFooterIndicatorsActionTitle();
+    footerIndicatorsAction.descriptionElement.textContent = formatFooterIndicatorsActionDescription();
+    footerIndicatorsAction.button.dataset.footerIndicatorsPreference = currentPreference;
+    footerIndicatorsAction.button.dataset.footerIndicatorsTarget = nextPreference;
+    footerIndicatorsAction.button.setAttribute('aria-pressed', currentPreference === 'visible' ? 'true' : 'false');
+  };
+
   const persistUserChanges = createPersistUserChanges(
     () => (activeUser ? { id: activeUser.id } : null),
     updateUser,
@@ -1016,9 +1079,63 @@ export function renderUserPanel(viewRoot) {
     extraClass: 'user-dashboard__quick-action-button--theme',
   });
 
-  actionList.append(themeAction.item);
-  cleanupCallbacks.push(themeAction.cleanup);
+  const handleFooterIndicatorsToggle = async () => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para ajustar os indicadores.', { isError: true });
+      return;
+    }
+
+    const nextPreference = computeNextFooterIndicatorsPreference();
+
+    resetFeedback();
+
+    const result = await persistUserChanges(
+      { preferences: { footerIndicators: nextPreference } },
+      {
+        feedback: {
+          reset: resetFeedback,
+          show: (message, options = {}) => {
+            showFeedback(message, options);
+          },
+        },
+        busyTargets: [footerIndicatorsAction?.button].filter(Boolean),
+        successMessage:
+          nextPreference === 'hidden'
+            ? 'Indicadores ocultados com sucesso!'
+            : 'Indicadores exibidos com sucesso!',
+        errorMessage: 'Não foi possível atualizar os indicadores. Tente novamente.',
+        missingSessionMessage: 'Nenhuma sessão ativa. Faça login para ajustar os indicadores.',
+      },
+    );
+
+    if (result.status !== 'success') {
+      return;
+    }
+
+    setFooterIndicatorsPreference(nextPreference);
+
+    if (activeUser?.preferences) {
+      activeUser.preferences.footerIndicators = nextPreference;
+    }
+    if (activeUser) {
+      activeUser.updatedAt = new Date();
+    }
+
+    updateActionState();
+    updateFooterIndicatorsActionContent();
+  };
+
+  footerIndicatorsAction = createQuickAction({
+    label: 'Indicadores visíveis no rodapé',
+    description: 'Clique para controlar os indicadores de status e versão.',
+    onClick: handleFooterIndicatorsToggle,
+    extraClass: 'user-dashboard__quick-action-button--footer',
+  });
+
+  actionList.append(themeAction.item, footerIndicatorsAction.item);
+  cleanupCallbacks.push(themeAction.cleanup, footerIndicatorsAction.cleanup);
   updateThemeActionContent();
+  updateFooterIndicatorsActionContent();
 
   const applySnapshotUpdates = (updates) => {
     if (!activeUser || !updates || typeof updates !== 'object') {
@@ -1039,6 +1156,12 @@ export function renderUserPanel(viewRoot) {
 
     if (updates.preferences?.theme) {
       activeUser.preferences.theme = updates.preferences.theme;
+    }
+
+    if (updates.preferences?.footerIndicators) {
+      activeUser.preferences.footerIndicators = sanitizeUserFooterIndicatorsPreference(
+        updates.preferences.footerIndicators,
+      );
     }
 
     if (Object.keys(updates).length > 0) {
@@ -1348,6 +1471,11 @@ export function renderUserPanel(viewRoot) {
   });
   cleanupCallbacks.push(unsubscribeThemeListener);
 
+  const unsubscribeFooterIndicatorsListener = subscribeFooterIndicatorsChange(() => {
+    updateFooterIndicatorsActionContent();
+  });
+  cleanupCallbacks.push(unsubscribeFooterIndicatorsListener);
+
   const updateForm = () => {
     const user = activeUser;
     const isEnabled = Boolean(user);
@@ -1387,6 +1515,11 @@ export function renderUserPanel(viewRoot) {
       themeAction.button.disabled = shouldDisable;
     }
 
+    if (footerIndicatorsAction) {
+      const shouldDisable = !hasUser || busyButtons.has(footerIndicatorsAction.button);
+      footerIndicatorsAction.button.disabled = shouldDisable;
+    }
+
     accessActions.forEach(({ button, requiresSession }) => {
       const shouldDisable = (requiresSession && !hasUser) || busyButtons.has(button);
       button.disabled = shouldDisable;
@@ -1414,6 +1547,7 @@ export function renderUserPanel(viewRoot) {
     updateForm();
     updateActionState();
     updateThemeActionContent();
+    updateFooterIndicatorsActionContent();
   };
 
   const unsubscribeSession = subscribeSession((user) => {

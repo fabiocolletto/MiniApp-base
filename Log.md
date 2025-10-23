@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.176 - 2025-10-24 10:10 BRT
+- Remove o atalho do rodapé para o painel administrativo e transforma o botão da marca em controle de visibilidade dos indicadores.
+- Persiste a preferência de exibir ou ocultar indicadores do rodapé tanto no armazenamento local quanto no cadastro do usuário ativo, com sincronização automática.
+- Acrescenta ao painel do usuário um atalho dedicado para alternar os indicadores do rodapé ao lado do controle de tema, mantendo feedbacks e estados alinhados.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.176.
+
 ## v0.1.175 - 2025-10-24 09:40 BRT
 - Reorganiza o menu do cabeçalho para exibir somente Mini App Store, Cadastro, Login e alternância de tema a visitantes, liberando o Início e o painel administrativo conforme o tipo de usuário autenticado.
 - Atualiza o toggle de tema com rótulos dinâmicos, suporte às ações móveis e remoção de itens ocultos da navegação por foco.
