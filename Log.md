@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.196 - 2025-10-24 21:30 BRT
+- Consolida as instruções do `AGENTS.md` para eliminar redundâncias e reforça o uso do horário de Brasília no registro do log.
+
 ## v0.1.195 - 2025-10-24 21:00 BRT
 - Restaura o atalho do painel Kit Design no menu do cabeçalho, exibindo-o novamente aos administradores.
 - Atualiza o shell para abrir o painel Kit Design a partir do menu e cobre o comportamento em testes de sessão.
