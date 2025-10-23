@@ -118,7 +118,7 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
   renderAdmin(viewRoot);
 
   const widgets = viewRoot.querySelectorAll('.user-panel__widget');
-  assert.equal(widgets.length, 2, 'painel deve começar com dois widgets principais');
+  assert.equal(widgets.length, 3, 'painel deve começar com três widgets principais');
 
   const usersWidget = viewRoot.querySelector('.admin-dashboard__widget--users');
   assert.ok(usersWidget, 'widget de usuários deve existir');

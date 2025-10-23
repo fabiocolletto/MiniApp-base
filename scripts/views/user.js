@@ -397,12 +397,6 @@ export function renderUserPanel(viewRoot) {
   feedbackElement.id = feedbackElementId;
   feedbackElement.setAttribute('data-field-size', 'full');
 
-  const submitButton = document.createElement('button');
-  submitButton.type = 'submit';
-  submitButton.className = 'button form-submit user-form__submit';
-  submitButton.textContent = 'Salvar alterações';
-  submitButton.setAttribute('data-field-size', 'full');
-
   accountForm.append(
     nameField,
     phoneField,
@@ -410,7 +404,6 @@ export function renderUserPanel(viewRoot) {
     passwordField,
     themeField,
     feedbackElement,
-    submitButton,
   );
 
   accountWidget.append(accountTitle, accountDescription, accountSummary, emptyState, accountForm);
@@ -695,8 +688,22 @@ export function renderUserPanel(viewRoot) {
     }
   };
 
-  const handleEditToggle = () => {
-    toggleAccountExpanded(!accountExpanded);
+  const handleEditToggle = async () => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      return;
+    }
+
+    if (!accountExpanded) {
+      resetFeedback();
+      toggleAccountExpanded(true);
+      return;
+    }
+
+    const result = await persistFormChanges();
+    if (result.status === 'success' || result.status === 'no-changes') {
+      toggleAccountExpanded(false);
+    }
   };
 
   summaryEditButton.addEventListener('click', handleEditToggle);
@@ -864,12 +871,10 @@ export function renderUserPanel(viewRoot) {
   cleanupCallbacks.push(themeAction.cleanup);
   updateThemeActionContent();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const persistFormChanges = async ({ showNoChangesFeedback = true } = {}) => {
     if (!activeUser) {
       showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
+      return { status: 'no-session' };
     }
 
     resetFeedback();
@@ -894,7 +899,7 @@ export function renderUserPanel(viewRoot) {
         } catch (error) {
           // Ignora ambientes sem suporte a foco programático.
         }
-        return;
+        return { status: 'invalid', field: 'phone' };
       }
 
       phoneInput.removeAttribute('aria-invalid');
@@ -924,7 +929,7 @@ export function renderUserPanel(viewRoot) {
           } catch (error) {
             // Ignora ambientes sem suporte a foco programático.
           }
-          return;
+          return { status: 'invalid', field: 'password' };
         }
         updates.password = passwordValue;
         passwordInput.removeAttribute('aria-invalid');
@@ -946,6 +951,22 @@ export function renderUserPanel(viewRoot) {
       updates.profile = profileUpdates;
     }
 
+    if (Object.keys(updates).length === 0) {
+      if (showNoChangesFeedback) {
+        showFeedback('Nenhuma alteração para salvar.', { isError: false });
+      }
+      return { status: 'no-changes' };
+    }
+
+    const busyTargets = [
+      summaryEditButton,
+      nameInput,
+      phoneInput,
+      emailInput,
+      passwordInput,
+      themeSelect,
+    ].filter((element) => element instanceof HTMLElement);
+
     const result = await persistUserChanges(updates, {
       feedback: {
         reset: resetFeedback,
@@ -953,59 +974,68 @@ export function renderUserPanel(viewRoot) {
           showFeedback(message, options);
         },
       },
-      busyTargets: [submitButton],
-      successMessage: 'Dados atualizados com sucesso!',
-      errorMessage: 'Não foi possível atualizar os dados. Tente novamente.',
+      busyTargets,
+      successMessage: 'Dados atualizados automaticamente!',
+      errorMessage: 'Não foi possível atualizar os dados automaticamente. Tente novamente.',
       missingSessionMessage: 'Nenhuma sessão ativa. Faça login para continuar.',
     });
 
-    if (result.status === 'no-changes') {
-      showFeedback('Nenhuma alteração para salvar.', { isError: false });
+    if (result.status !== 'success') {
+      return result;
+    }
+
+    if (updates.phone && phoneInput) {
+      phoneInput.value = formatPhoneNumberForDisplay(updates.phone);
+    }
+
+    if (passwordInput) {
+      passwordInput.value = '';
+    }
+
+    if (updates.preferences?.theme) {
+      setThemePreference(updates.preferences.theme);
+      if (themeSelect) {
+        themeSelect.value = updates.preferences.theme;
+      }
+    } else if (themeSelect) {
+      themeSelect.value = nextThemePreference;
+    }
+
+    if (activeUser) {
+      if (updates.name !== undefined) {
+        activeUser.name = updates.name;
+      }
+      if (updates.phone !== undefined) {
+        activeUser.phone = updates.phone;
+      }
+      if (updates.profile?.email !== undefined) {
+        activeUser.profile.email = updates.profile.email ?? '';
+      }
+      if (updates.preferences?.theme) {
+        activeUser.preferences.theme = updates.preferences.theme;
+      }
+      activeUser.updatedAt = new Date();
+    }
+
+    updateForm();
+    updateActionState();
+    updateThemeActionContent();
+
+    return result;
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!accountExpanded) {
       return;
     }
 
-    if (result.status === 'success') {
-      if (updates.phone && phoneInput) {
-        phoneInput.value = formatPhoneNumberForDisplay(updates.phone);
-      }
-
-      if (passwordInput) {
-        passwordInput.value = '';
-      }
-
-      if (updates.preferences?.theme) {
-        setThemePreference(updates.preferences.theme);
-        if (themeSelect) {
-          themeSelect.value = updates.preferences.theme;
-        }
-      } else if (themeSelect) {
-        themeSelect.value = nextThemePreference;
-      }
-
-      if (activeUser) {
-        if (updates.name !== undefined) {
-          activeUser.name = updates.name;
-        }
-        if (updates.phone !== undefined) {
-          activeUser.phone = updates.phone;
-        }
-        if (updates.profile?.email !== undefined) {
-          activeUser.profile.email = updates.profile.email ?? '';
-        }
-        if (updates.preferences?.theme) {
-          activeUser.preferences.theme = updates.preferences.theme;
-        }
-        activeUser.updatedAt = new Date();
-      }
-
-      updateForm();
-      updateActionState();
-      updateThemeActionContent();
-    }
+    await persistFormChanges();
   };
 
-  accountForm.addEventListener('submit', handleSubmit);
-  cleanupCallbacks.push(() => accountForm.removeEventListener('submit', handleSubmit));
+  accountForm.addEventListener('submit', handleFormSubmit);
+  cleanupCallbacks.push(() => accountForm.removeEventListener('submit', handleFormSubmit));
 
   const unsubscribeThemeListener = subscribeThemeChange(() => {
     updateThemeActionContent();
@@ -1041,10 +1071,6 @@ export function renderUserPanel(viewRoot) {
     if (themeSelect) {
       themeSelect.value = nextTheme;
       themeSelect.disabled = !isEnabled;
-    }
-
-    if (submitButton) {
-      submitButton.disabled = !isEnabled;
     }
 
     if (!isEnabled) {

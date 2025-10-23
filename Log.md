@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.165 - 2025-10-23 22:00 BRT
+- Ajusta o painel do usuário para exibir os campos de edição somente após o clique em "Editar dados" e recolhê-los ao ocultar.
+- Remove o botão de salvar manual e aplica salvamento automático ao finalizar a edição com validações e feedback preservados.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.165 das 22h00.
+
 ## v0.1.164 - 2025-10-23 21:30 BRT
 - Adiciona o widget de indicadores ao painel administrativo com quatro cards acompanhando mini-apps ativos, implantações e base de usuários.
 - Estiliza os cards destacados em uma grade responsiva, com barras de progresso e cores alinhadas ao padrão visual do dashboard.
