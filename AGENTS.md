@@ -8,6 +8,8 @@
   entrada já existente (atualizando data e hora) em vez de criar um novo número de versão. Quando uma nova edição começar, siga
   a sequência numérica de versões.
 - Mantenha o README atualizado apenas com informações aprovadas pelo usuário.
+- Priorize o reaproveitamento de estilos globais existentes. Caso um novo padrão visual seja indispensável, implemente-o como
+  utilitário compartilhado para que futuros painéis, widgets ou miniapps possam reutilizá-lo.
 
 ## Requisitos do Aplicativo
 - O aplicativo deve ser responsivo, entregando uma experiência consistente em diferentes tamanhos de tela.

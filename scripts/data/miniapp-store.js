@@ -22,6 +22,11 @@ const DEFAULT_MINI_APPS = [
     status: 'active',
     updatedAt: '2025-10-12T18:00:00-03:00',
     access: ['administrador', 'colaborador'],
+    version: '1.8.0',
+    downloads: 12840,
+    favorites: 9420,
+    releaseDate: '2024-05-10T09:00:00-03:00',
+    featuredCategories: ['Produtividade', 'Gestão de tempo'],
   },
   {
     id: 'field-forms',
@@ -32,6 +37,11 @@ const DEFAULT_MINI_APPS = [
     status: 'testing',
     updatedAt: '2025-10-18T09:30:00-03:00',
     access: ['administrador'],
+    version: '3.2.1',
+    downloads: 8640,
+    favorites: 5120,
+    releaseDate: '2023-11-03T11:30:00-03:00',
+    featuredCategories: ['Operações', 'Coleta em campo'],
   },
   {
     id: 'insights-hub',
@@ -42,11 +52,19 @@ const DEFAULT_MINI_APPS = [
     status: 'deployment',
     updatedAt: '2025-10-20T14:45:00-03:00',
     access: ['administrador', 'colaborador', 'usuario'],
+    version: '0.9.5',
+    downloads: 4760,
+    favorites: 3980,
+    releaseDate: '2024-07-22T15:15:00-03:00',
+    featuredCategories: ['Analytics', 'Gestão'],
   },
 ];
 
 const listeners = new Set();
 let miniApps = null;
+const MINI_APP_STATUS_LABELS = new Map(
+  MINI_APP_STATUS_OPTIONS.map((option) => [option.value, option.label]),
+);
 
 function getLocalStorage() {
   if (typeof window !== 'object' || !window) {
@@ -136,6 +154,78 @@ function normalizeAccessLevels(access) {
   return normalized;
 }
 
+function normalizeVersion(value) {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value.trim();
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return '1.0.0';
+}
+
+function normalizePositiveInteger(value, fallback = 0) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const normalized = Math.max(0, Math.round(value));
+    return normalized;
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number.parseInt(value.trim(), 10);
+    if (Number.isFinite(parsed)) {
+      return Math.max(0, parsed);
+    }
+  }
+
+  return fallback;
+}
+
+function normalizeReleaseDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  return null;
+}
+
+function normalizeFeaturedCategories(values) {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  const normalized = [];
+  values.forEach((value) => {
+    const normalizedValue = String(value ?? '')
+      .trim()
+      .replace(/\s+/g, ' ');
+    if (!normalizedValue) {
+      return;
+    }
+
+    if (!normalized.includes(normalizedValue)) {
+      normalized.push(normalizedValue);
+    }
+  });
+
+  return normalized;
+}
+
 function normalizeMiniAppEntry(app) {
   if (!app || typeof app !== 'object') {
     return null;
@@ -158,8 +248,26 @@ function normalizeMiniAppEntry(app) {
 
   const updatedAt = normalizeUpdatedAt(app.updatedAt);
   const access = normalizeAccessLevels(app.access);
+  const version = normalizeVersion(app.version);
+  const downloads = normalizePositiveInteger(app.downloads);
+  const favorites = normalizePositiveInteger(app.favorites);
+  const releaseDate = normalizeReleaseDate(app.releaseDate);
+  const featuredCategories = normalizeFeaturedCategories(app.featuredCategories);
 
-  return { id, name, category, description, status, updatedAt, access };
+  return {
+    id,
+    name,
+    category,
+    description,
+    status,
+    updatedAt,
+    access,
+    version,
+    downloads,
+    favorites,
+    releaseDate,
+    featuredCategories,
+  };
 }
 
 function cloneMiniAppEntry(entry) {
@@ -171,6 +279,13 @@ function cloneMiniAppEntry(entry) {
     status: entry.status,
     updatedAt: entry.updatedAt,
     access: Array.isArray(entry.access) ? [...entry.access] : [],
+    version: entry.version,
+    downloads: entry.downloads,
+    favorites: entry.favorites,
+    releaseDate: entry.releaseDate,
+    featuredCategories: Array.isArray(entry.featuredCategories)
+      ? [...entry.featuredCategories]
+      : [],
   };
 }
 
@@ -204,6 +319,116 @@ function notifyListeners() {
 export function getMiniAppsSnapshot() {
   ensureInitialized();
   return Array.isArray(miniApps) ? miniApps.map((entry) => cloneMiniAppEntry(entry)) : [];
+}
+
+function sortMiniAppsByMetric(metric, limit = 10) {
+  const apps = getMiniAppsSnapshot();
+  return apps
+    .slice()
+    .sort((a, b) => {
+      const aValue = typeof a?.[metric] === 'number' ? a[metric] : 0;
+      const bValue = typeof b?.[metric] === 'number' ? b[metric] : 0;
+      return bValue - aValue;
+    })
+    .slice(0, Math.max(0, limit));
+}
+
+function sortMiniAppsByDate(field, limit = 10, direction = 'desc', fallbackField = null) {
+  const apps = getMiniAppsSnapshot();
+  const multiplier = direction === 'asc' ? 1 : -1;
+
+  return apps
+    .slice()
+    .sort((a, b) => {
+      const getDateValue = (entry) => {
+        const primaryValue = entry?.[field];
+        const fallbackValue = fallbackField ? entry?.[fallbackField] : null;
+        const candidate = primaryValue ?? fallbackValue;
+        if (!candidate) {
+          return 0;
+        }
+
+        const parsed = new Date(candidate);
+        if (parsed instanceof Date && !Number.isNaN(parsed.getTime())) {
+          return parsed.getTime();
+        }
+
+        return 0;
+      };
+
+      const aTime = getDateValue(a);
+      const bTime = getDateValue(b);
+
+      if (aTime === bTime) {
+        return 0;
+      }
+
+      return aTime > bTime ? multiplier : -multiplier;
+    })
+    .slice(0, Math.max(0, limit));
+}
+
+export function getTopMiniAppsByDownloads(limit = 10) {
+  return sortMiniAppsByMetric('downloads', limit);
+}
+
+export function getTopMiniAppsByFavorites(limit = 10) {
+  return sortMiniAppsByMetric('favorites', limit);
+}
+
+export function getLatestMiniApps(limit = 10) {
+  return sortMiniAppsByDate('releaseDate', limit, 'desc', 'updatedAt');
+}
+
+export function getMiniAppsByFeaturedCategories({ limit = 12 } = {}) {
+  const apps = getMiniAppsSnapshot();
+  const grouped = new Map();
+
+  apps.forEach((app) => {
+    const featured = Array.isArray(app.featuredCategories) && app.featuredCategories.length > 0
+      ? app.featuredCategories
+      : [app.category];
+
+    featured
+      .map((category) => String(category ?? '').trim())
+      .filter((category) => category.length > 0)
+      .forEach((category) => {
+        if (!grouped.has(category)) {
+          grouped.set(category, []);
+        }
+
+        grouped.get(category).push(app);
+      });
+  });
+
+  const orderedCategories = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const result = [];
+
+  orderedCategories.forEach((category) => {
+    if (result.length >= limit) {
+      return;
+    }
+
+    const appsInCategory = grouped.get(category) ?? [];
+    appsInCategory
+      .slice()
+      .sort((a, b) => {
+        const aDownloads = typeof a?.downloads === 'number' ? a.downloads : 0;
+        const bDownloads = typeof b?.downloads === 'number' ? b.downloads : 0;
+        return bDownloads - aDownloads;
+      })
+      .forEach((app) => {
+        if (result.length < limit) {
+          result.push(app);
+        }
+      });
+  });
+
+  return result.slice(0, Math.max(0, limit));
+}
+
+export function getMiniAppStatusLabel(status) {
+  return MINI_APP_STATUS_LABELS.get(status) ?? MINI_APP_STATUS_LABELS.get('deployment') ?? 'Em implantação';
 }
 
 export function subscribeMiniApps(listener) {

@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.167 - 2025-10-23 06:20 BRT
+- Reestrutura a Mini App Store em seções temáticas com listas independentes, navegação horizontal e feedback reativo para cada carrossel.
+- Amplia o data store dos miniapps com metadados de downloads, favoritos, datas de lançamento e categorias destacadas, expondo utilitários de ranking.
+- Implementa controles de navegação, estados vazios e estilos de carrossel inspirados em catálogos de streaming para destacar os miniapps.
+- Adiciona testes automatizados garantindo a normalização dos novos campos e a ordenação das coleções por métricas e categorias.
+- Refatora o painel para reutilizar utilitários globais de layout, feedback e botões, convertendo o carrossel em componente compartilhado e removendo seletores específicos da Mini App Store.
+
 ## v0.1.166 - 2025-10-23 22:30 BRT
 - Expande o catálogo da Mini App Store para ocupar toda a largura da malha do painel do usuário.
 - Restaura a grade responsiva dos miniapps na view da loja com altura automática por cartão.
