@@ -300,20 +300,49 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const layout = viewRoot.querySelector('.home-dashboard__layout');
   assert.ok(layout, 'layout principal deve existir');
-  assert.equal(layout.children.length, 3, 'devem existir três widgets principais');
+  assert.equal(layout.children.length, 5, 'devem existir cinco widgets principais');
 
-  const [favoritesWidget, savedWidget, availableWidget] = layout.children;
+  const [introWidget, tagWidget, favoritesWidget, savedWidget, availableWidget] = layout.children;
+
+  assert.ok(
+    introWidget.classList.contains('home-dashboard__widget--intro'),
+    'primeiro widget deve apresentar boas-vindas',
+  );
+  const introHeading = introWidget.querySelector('.home-dashboard__heading');
+  assert.ok(introHeading, 'widget de boas-vindas deve exibir título');
+  assert.equal(introHeading.textContent, 'Bem-vindo ao painel inicial');
+  const introPresentation = introWidget.querySelector('.home-dashboard__presentation');
+  assert.ok(introPresentation, 'widget de boas-vindas deve possuir texto de apresentação');
+  assert.match(
+    introPresentation.textContent,
+    /Olá, Colaborador! Você está autenticado como colaborador\./,
+    'apresentação deve saudar o usuário autenticado',
+  );
+  assert.match(
+    introPresentation.textContent,
+    /No momento você acompanha 5 mini-apps favoritados e 6 mini-apps salvos\./,
+    'apresentação deve resumir favoritos e salvos do usuário',
+  );
+
+  assert.ok(tagWidget.classList.contains('home-dashboard__widget--tag'), 'segundo widget deve ser a etiqueta');
+  const tagBadge = tagWidget.querySelector('.home-dashboard__tag-badge');
+  assert.ok(tagBadge, 'etiqueta deve ter o rótulo principal');
+  assert.equal(tagBadge.textContent, 'Início');
+  const tagHelper = tagWidget.querySelector('.home-dashboard__tag-helper');
+  assert.ok(tagHelper, 'etiqueta deve indicar o perfil ativo');
+  assert.equal(tagHelper.textContent, 'Perfil colaborador');
+
   assert.ok(
     favoritesWidget.classList.contains('home-dashboard__widget--favorites'),
-    'primeiro widget deve listar favoritos',
+    'terceiro widget deve listar favoritos',
   );
   assert.ok(
     savedWidget.classList.contains('home-dashboard__widget--saved'),
-    'segundo widget deve listar mini-apps salvos',
+    'quarto widget deve listar mini-apps salvos',
   );
   assert.ok(
     availableWidget.classList.contains('home-dashboard__widget--miniapps'),
-    'terceiro widget deve listar mini-apps liberados',
+    'quinto widget deve listar mini-apps liberados',
   );
 
   const favoritesList = favoritesWidget.querySelector('.home-dashboard__miniapps');

@@ -29,6 +29,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+const countFormatter = new Intl.NumberFormat('pt-BR');
 
 function navigateTo(view) {
   if (!view) {
@@ -164,6 +165,91 @@ function renderMiniAppListItem(app) {
 
   item.append(name, description, metaList, detailsButton);
   return item;
+}
+
+function renderIntroWidget(user, preferences) {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'user-panel__widget',
+    'user-dashboard__widget',
+    'home-dashboard__widget',
+    'home-dashboard__widget--intro',
+  ].join(' ');
+
+  const heading = document.createElement('h2');
+  heading.className = 'home-dashboard__heading';
+  heading.textContent = 'Bem-vindo ao painel inicial';
+
+  const subtitle = document.createElement('p');
+  subtitle.className = 'home-dashboard__subtitle';
+  subtitle.textContent = 'Organize seus mini-apps favoritos e liberados em um só lugar.';
+
+  const presentation = document.createElement('p');
+  presentation.className = 'home-dashboard__presentation';
+
+  const normalizedName = typeof user?.name === 'string' ? user.name.trim() : '';
+  const profileLabel = formatUserTypeLabel(user).toLowerCase();
+  const favoritesCount = Array.isArray(preferences?.favorites) ? preferences.favorites.length : 0;
+  const savedCount = Array.isArray(preferences?.saved) ? preferences.saved.length : 0;
+
+  const summaryParts = [];
+
+  if (favoritesCount > 0) {
+    const formattedFavorites = countFormatter.format(favoritesCount);
+    summaryParts.push(
+      favoritesCount === 1
+        ? `${formattedFavorites} mini-app favoritado`
+        : `${formattedFavorites} mini-apps favoritados`,
+    );
+  }
+
+  if (savedCount > 0) {
+    const formattedSaved = countFormatter.format(savedCount);
+    summaryParts.push(
+      savedCount === 1 ? `${formattedSaved} mini-app salvo` : `${formattedSaved} mini-apps salvos`,
+    );
+  }
+
+  const highlightsText =
+    summaryParts.length > 0
+      ? `No momento você acompanha ${summaryParts.join(' e ')}.`
+      : 'Acompanhe seus destaques pessoais e descubra novidades conforme elas forem liberadas.';
+
+  if (normalizedName) {
+    presentation.textContent = `Olá, ${normalizedName}! Você está autenticado como ${profileLabel}. ${highlightsText}`;
+  } else {
+    presentation.textContent = `Você está autenticado como ${profileLabel}. ${highlightsText}`;
+  }
+
+  widget.append(heading, subtitle, presentation);
+  return widget;
+}
+
+function renderPanelTagWidget(user) {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'user-panel__widget',
+    'user-dashboard__widget',
+    'home-dashboard__widget',
+    'home-dashboard__widget--tag',
+  ].join(' ');
+
+  const label = document.createElement('p');
+  label.className = 'home-dashboard__tag-label';
+  label.textContent = 'Painel';
+
+  const badge = document.createElement('p');
+  badge.className = 'home-dashboard__tag-badge';
+  badge.textContent = 'Início';
+
+  const helper = document.createElement('p');
+  helper.className = 'home-dashboard__tag-helper';
+  helper.textContent = `Perfil ${formatUserTypeLabel(user).toLowerCase()}`;
+
+  widget.append(label, badge, helper);
+  return widget;
 }
 
 function createMiniAppListContainer(emptyMessage, modifier) {
@@ -421,6 +507,8 @@ export function renderHome(viewRoot) {
     const accessibleMiniApps = filterMiniAppsForUser(state.miniApps, state.user);
 
     layout.append(
+      renderIntroWidget(state.user, state.preferences),
+      renderPanelTagWidget(state.user),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderMiniAppsWidget(state.user, accessibleMiniApps),

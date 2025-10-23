@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.178 - 2025-10-24 11:10 BRT
+- Estrutura a primeira linha do painel Início com widgets dedicados para boas-vindas e etiqueta do painel, dividindo o espaço em duas colunas quando houver largura disponível.
+- Acrescenta textos dinâmicos de saudação e resumo de favoritos/salvos para usuários autenticados, reforçando o contexto do perfil ativo.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.178.
+
 ## v0.1.177 - 2025-10-24 10:40 BRT
 - Remove o botão "Editar dados" do widget de dados do usuário e simplifica o layout mantendo apenas o resumo e o formulário.
 - Elimina o campo de senha do formulário do usuário, preservando apenas nome, telefone e e-mail para edição.

@@ -2314,6 +2314,72 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   grid-column: 1 / -1;
 }
 
+.home-dashboard__widget--intro,
+.home-dashboard__widget--tag {
+  display: grid;
+  gap: var(--panel-inner-gap);
+  align-content: start;
+}
+
+.home-dashboard__widget--tag {
+  justify-items: center;
+  text-align: center;
+  gap: var(--panel-cluster-gap);
+}
+
+.home-dashboard__heading {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.home-dashboard__subtitle {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 600;
+  color: var(--color-accent-deep);
+}
+
+.home-dashboard__presentation {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+  line-height: 1.6;
+}
+
+.home-dashboard__tag-label {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: clamp(0.08rem, 0.3vw, 0.14rem);
+  color: var(--color-text-muted);
+}
+
+.home-dashboard__tag-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.45rem, 1.4vw, 0.65rem) clamp(1.15rem, 3vw, 1.6rem);
+  border-radius: 999px;
+  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.4);
+  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.06));
+  color: var(--color-accent-deep);
+  font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.06rem, 0.24vw, 0.1rem);
+  text-transform: uppercase;
+  min-width: clamp(6.5rem, 18vw, 8.5rem);
+}
+
+.home-dashboard__tag-helper {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}
+
 .admin-dashboard__layout {
   max-width: min(86rem, 100%);
   margin: 0 auto;
