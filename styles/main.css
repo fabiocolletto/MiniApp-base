@@ -1731,9 +1731,9 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 }
 
 .dashboard-view {
-  --dashboard-padding-inline: clamp(1.25rem, 4vw, 3.5rem);
   --dashboard-padding-block-start: clamp(1.25rem, 3.6vw, 2.5rem);
-  --dashboard-padding-block-end: calc(var(--dashboard-padding-block-start) + var(--panel-gap));
+  --dashboard-padding-inline: var(--dashboard-padding-block-start);
+  --dashboard-padding-block-end: var(--dashboard-padding-block-start);
   --dashboard-grid-template-rows: auto;
   align-content: start;
   align-items: start;
@@ -1886,12 +1886,12 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 }
 
 .view--admin {
-  --dashboard-padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+  --dashboard-padding-block-start: clamp(0.9rem, 2.8vw, 2.5rem);
   --dashboard-grid-template-rows: auto auto minmax(0, 1fr);
 }
 
 .view--user {
-  --dashboard-padding-inline: clamp(0.9rem, 2.8vw, 2.5rem);
+  --dashboard-padding-block-start: clamp(0.9rem, 2.8vw, 2.5rem);
   --dashboard-grid-template-rows: minmax(0, 1fr);
 }
 

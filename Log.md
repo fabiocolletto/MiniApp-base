@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.181 - 2025-10-24 12:40 BRT
+- Harmoniza o afastamento externo dos painéis aplicando o mesmo padding nas laterais, topo e base nas telas grandes.
+- Ajusta a configuração padrão das views administrativas e do usuário para reaproveitar o novo espaçamento unificado.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.181 das 12h40.
+
 ## v0.1.180 - 2025-10-24 12:10 BRT
 - Adiciona ao widget de gestão de mini-apps o upload de avatar com validações para PNG 128 × 128 px até 128 KB e instruções claras no painel.
 - Exibe a prévia do avatar na tabela administrativa e permite limpar a imagem com atualização automática do cadastro.
