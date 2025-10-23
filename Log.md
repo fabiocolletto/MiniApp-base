@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.187 - 2025-10-24 15:40 BRT
+- Adiciona ao painel administrativo o widget de pacotes e planos de assinatura com edição de vigência, valor, periodicidade, mini-apps e categoria elegível.
+- Cria o data store de assinaturas com periodicidades configuráveis e sincronização com a tabela do painel.
+- Atualiza os testes do painel administrativo para cobrir o novo widget de assinaturas e os ajustes de contagem de widgets.
+
 ## v0.1.186 - 2025-10-24 15:10 BRT
 - Substitui os botões de login e cadastro do painel Início por um único atalho que leva ao painel do usuário.
 - Atualiza os testes do painel Início para validar a nova navegação voltada ao painel do usuário.

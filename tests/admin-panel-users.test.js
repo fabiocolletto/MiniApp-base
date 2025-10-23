@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { setupFakeDom } from './helpers/fake-dom.js';
 import { runViewCleanup } from '../scripts/view-cleanup.js';
 import { resetMiniApps } from '../scripts/data/miniapp-store.js';
+import { resetSubscriptionPlans } from '../scripts/data/subscription-store.js';
 
 const initialUsers = [
   {
@@ -78,7 +79,7 @@ const initialUsers = [
   },
 ];
 
-test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) => {
+test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps', async (t) => {
   const teardownDom = setupFakeDom();
   let viewRoot;
 
@@ -87,6 +88,7 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
       runViewCleanup(viewRoot);
     }
     resetMiniApps();
+    resetSubscriptionPlans();
     teardownDom();
   });
 
@@ -111,6 +113,7 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
   }
 
   resetMiniApps();
+  resetSubscriptionPlans();
 
   const { renderAdmin } = await import('../scripts/views/admin.js');
 
@@ -118,7 +121,7 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
   renderAdmin(viewRoot);
 
   const widgets = viewRoot.querySelectorAll('.user-panel__widget');
-  assert.equal(widgets.length, 3, 'painel deve começar com três widgets principais');
+  assert.equal(widgets.length, 4, 'painel deve começar com quatro widgets principais');
 
   const usersWidget = viewRoot.querySelector('.admin-dashboard__widget--users');
   assert.ok(usersWidget, 'widget de usuários deve existir');
@@ -222,4 +225,99 @@ test('renderAdmin exibe widgets de gestão de usuários e miniapps', async (t) =
       assert.ok(emptyState, 'estado vazio de acesso precisa informar ausência de permissões');
     }
   }
+
+  const subscriptionWidget = viewRoot.querySelector('.admin-dashboard__widget--subscriptions');
+  assert.ok(subscriptionWidget, 'widget de assinaturas deve ser exibido');
+
+  const subscriptionTable = subscriptionWidget.querySelector('.admin-subscription-table');
+  assert.ok(subscriptionTable, 'tabela de assinaturas deve ser renderizada');
+
+  const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const accessLevelLabels = new Map([
+    ['administrador', 'Administradores'],
+    ['colaborador', 'Colaboradores'],
+    ['usuario', 'Usuários finais'],
+  ]);
+
+  const targetPlanId = 'field-expansion';
+  let subscriptionRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  assert.ok(subscriptionRow, 'linha do pacote de expansão deve existir');
+
+  const subscriptionToggle = subscriptionRow.querySelector('.admin-user-table__toggle');
+  assert.ok(subscriptionToggle, 'botão de expansão do pacote não encontrado');
+  subscriptionToggle.dispatchEvent({ type: 'click' });
+
+  let subscriptionDetailsRow = Array.from(
+    subscriptionTable.querySelectorAll('.admin-subscription-table__details-row'),
+  ).find((row) => row.dataset.planId === targetPlanId);
+  assert.ok(subscriptionDetailsRow, 'detalhes do pacote não foram renderizados');
+  assert.equal(subscriptionDetailsRow.hidden, false, 'detalhes do pacote devem ficar visíveis');
+
+  const priceInput = subscriptionDetailsRow.querySelector('.admin-subscription-table__price-input');
+  assert.ok(priceInput, 'campo de valor do pacote é obrigatório');
+  const currentPrice = Number.parseFloat(priceInput.value || '0');
+  const updatedPrice = Math.max(0, (Number.isFinite(currentPrice) ? currentPrice : 0) + 10);
+  priceInput.value = updatedPrice.toFixed(2);
+  priceInput.dispatchEvent({ type: 'change', target: priceInput });
+
+  subscriptionRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  assert.ok(subscriptionRow, 'linha do pacote deve persistir após atualizar valor');
+  const priceCell = subscriptionRow.querySelector('.admin-subscription-table__cell--price');
+  assert.equal(
+    priceCell?.textContent,
+    currencyFormatter.format(updatedPrice),
+    'valor do pacote deve refletir a atualização',
+  );
+
+  subscriptionDetailsRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__details-row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  assert.ok(subscriptionDetailsRow, 'detalhes do pacote devem permanecer acessíveis após atualização de valor');
+
+  const miniAppCheckbox = subscriptionDetailsRow.querySelector('.admin-miniapp-table__access-checkbox');
+  assert.ok(miniAppCheckbox, 'é esperado ao menos um mini-app configurável no pacote');
+  const wasChecked = miniAppCheckbox.checked;
+  miniAppCheckbox.checked = !wasChecked;
+  miniAppCheckbox.dispatchEvent({ type: 'change', target: miniAppCheckbox });
+
+  subscriptionRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  const miniAppsSummary = subscriptionRow?.querySelector('.admin-miniapp-table__access-summary');
+  const emptySummary = miniAppsSummary?.querySelector('.admin-miniapp-table__access-empty');
+  if (wasChecked) {
+    assert.ok(emptySummary, 'sumário do pacote deve indicar ausência de mini-apps após remoção');
+  } else {
+    const chipsAfter = miniAppsSummary
+      ? Array.from(miniAppsSummary.querySelectorAll('.admin-miniapp-table__access-chip'))
+      : [];
+    assert.ok(chipsAfter.length > 0, 'sumário do pacote deve listar mini-apps ativos após inclusão');
+  }
+
+  subscriptionDetailsRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__details-row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  assert.ok(subscriptionDetailsRow, 'detalhes do pacote devem continuar disponíveis para atualizar categoria');
+
+  const categorySelect = subscriptionDetailsRow.querySelector('.admin-subscription-table__category-select');
+  assert.ok(categorySelect, 'campo de categoria habilitada é obrigatório');
+  const availableCategories = Array.from(categorySelect.querySelectorAll('option'));
+  const nextCategory = availableCategories.find((option) => option.value !== categorySelect.value);
+  assert.ok(nextCategory, 'é necessário possuir ao menos duas categorias disponíveis');
+  categorySelect.value = nextCategory.value;
+  categorySelect.dispatchEvent({ type: 'change', target: categorySelect });
+
+  subscriptionRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  const categoryCell = subscriptionRow?.querySelector('.admin-subscription-table__cell--category');
+  assert.equal(
+    categoryCell?.textContent,
+    accessLevelLabels.get(nextCategory.value),
+    'categoria exibida deve acompanhar a atualização do pacote',
+  );
 });
