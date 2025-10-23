@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.192 - 2025-10-24 19:30 BRT
+- Remove o atalho "Kit de design" do menu principal do cabeçalho mantendo o acesso restrito às entradas internas do painel administrativo.
+- Atualiza o menu móvel para ocultar o acesso direto ao kit de design, preservando apenas o atalho principal do painel administrativo.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.192 das 19h30.
+
+## v0.1.191 - 2025-10-24 19:00 BRT
+- Adiciona o atalho "Kit de design" ao menu principal do cabeçalho e o agrupa com as opções exclusivas de administradores.
+- Sincroniza o menu móvel do cabeçalho para incluir o novo acesso e respeitar a visibilidade condicional para administradores.
+- Atualiza a versão exibida no rodapé para refletir a release v0.1.191 das 19h00.
+
 ## v0.1.190 - 2025-10-24 18:30 BRT
 - Alinha o layout do Kit de Design ao grid compartilhado dos painéis administrativos aplicando as classes utilitárias de painel.
 - Simplifica os estilos do layout do Kit de Design para herdar o comportamento responsivo padrão do grid global.
