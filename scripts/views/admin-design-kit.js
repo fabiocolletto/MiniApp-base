@@ -355,7 +355,7 @@ function createSurfaceShowcase() {
 
   SURFACE_MODELS.forEach((model) => {
     const card = document.createElement('article');
-    card.className = 'surface-card admin-design-kit__item';
+    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
 
     const header = document.createElement('div');
     header.className = 'admin-design-kit__item-header';
@@ -395,7 +395,7 @@ function createFormShowcase() {
 
   FORM_MODELS.forEach((model) => {
     const card = document.createElement('article');
-    card.className = 'surface-card admin-design-kit__item';
+    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
 
     const header = document.createElement('div');
     header.className = 'admin-design-kit__item-header';
@@ -434,7 +434,7 @@ function createFeedbackShowcase() {
 
   FEEDBACK_MODELS.forEach((model) => {
     const card = document.createElement('article');
-    card.className = 'surface-card admin-design-kit__item';
+    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
 
     const header = document.createElement('div');
     header.className = 'admin-design-kit__item-header';
@@ -473,7 +473,7 @@ function createLabelShowcase() {
 
   LABEL_MODELS.forEach((model) => {
     const card = document.createElement('article');
-    card.className = 'surface-card admin-design-kit__item';
+    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
 
     const header = document.createElement('div');
     header.className = 'admin-design-kit__item-header';
@@ -1079,7 +1079,7 @@ function createButtonShowcase() {
 
   BUTTON_MODELS.forEach((model) => {
     const card = document.createElement('article');
-    card.className = 'surface-card admin-design-kit__item';
+    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
 
     const header = document.createElement('div');
     header.className = 'admin-design-kit__item-header';
