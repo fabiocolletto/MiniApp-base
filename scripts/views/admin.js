@@ -361,6 +361,230 @@ function createHighlightsWidget() {
   return { widget, setUsers, setMiniApps, teardown };
 }
 
+function createProductPackagesWidget() {
+  let plans = [];
+  let miniApps = [];
+
+  const widget = document.createElement('section');
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--packages';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Pacote de produtos';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent =
+    'Acompanhe o portfólio comercial para cruzar vigências, cobertura e valores dos pacotes.';
+
+  const statsList = document.createElement('dl');
+  statsList.className = 'admin-dashboard__stat-list';
+
+  function createStatItem(label) {
+    const term = document.createElement('dt');
+    term.className = 'admin-dashboard__stat-term';
+    term.textContent = label;
+
+    const definition = document.createElement('dd');
+    definition.className = 'admin-dashboard__stat-definition';
+
+    const valueElement = document.createElement('span');
+    valueElement.className = 'admin-dashboard__stat-value';
+    valueElement.textContent = formatCount(0);
+
+    const helperElement = document.createElement('span');
+    helperElement.className = 'admin-dashboard__stat-helper';
+    helperElement.textContent = 'Aguardando dados.';
+
+    definition.append(valueElement, helperElement);
+
+    function setValue(value, helper) {
+      if (typeof value === 'string' && value.trim() !== '') {
+        valueElement.textContent = value.trim();
+      } else {
+        valueElement.textContent = formatCount(0);
+      }
+
+      if (typeof helper === 'string' && helper.trim() !== '') {
+        helperElement.textContent = helper.trim();
+      } else {
+        helperElement.textContent = 'Aguardando dados.';
+      }
+    }
+
+    function reset() {
+      valueElement.textContent = formatCount(0);
+      helperElement.textContent = 'Aguardando dados.';
+    }
+
+    return { term, definition, setValue, reset };
+  }
+
+  const stats = {
+    activePackages: createStatItem('Pacotes ativos'),
+    coveredMiniApps: createStatItem('Mini-apps cobertos'),
+    averageTicket: createStatItem('Ticket médio'),
+    nextRenewal: createStatItem('Renovação mais próxima'),
+  };
+
+  Object.values(stats).forEach((stat) => {
+    statsList.append(stat.term, stat.definition);
+  });
+
+  widget.append(title, description, statsList);
+
+  function toDate(value) {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return new Date(value.getTime());
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    return null;
+  }
+
+  function isPlanActive(plan, referenceDate = new Date()) {
+    const start = toDate(plan?.startDate) ?? toDate(plan?.createdAt);
+    const end = toDate(plan?.endDate);
+    const pivot = referenceDate instanceof Date && !Number.isNaN(referenceDate.getTime()) ? referenceDate : new Date();
+
+    if (start && pivot < start) {
+      return false;
+    }
+
+    if (end && pivot > end) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function updateStats() {
+    const totalPlans = plans.length;
+    const referenceDate = new Date();
+    const activePlans = plans.filter((plan) => isPlanActive(plan, referenceDate)).length;
+
+    if (totalPlans === 0) {
+      stats.activePackages.setValue(formatCount(0), 'Cadastre pacotes para iniciar o acompanhamento.');
+      stats.coveredMiniApps.setValue(formatCount(0), 'O portfólio ainda não cobre nenhum mini-app.');
+      stats.averageTicket.setValue(formatCurrency(0), 'Defina valores para calcular o ticket médio.');
+      stats.nextRenewal.setValue('—', 'Nenhum pacote possui vigência cadastrada.');
+      return;
+    }
+
+    stats.activePackages.setValue(
+      formatCount(activePlans),
+      `${formatCount(activePlans)} de ${formatCount(totalPlans)} vigências em andamento.`,
+    );
+
+    const uniqueMiniApps = new Set();
+    plans.forEach((plan) => {
+      if (Array.isArray(plan?.miniApps)) {
+        plan.miniApps.forEach((id) => {
+          if (typeof id === 'string' && id.trim() !== '') {
+            uniqueMiniApps.add(id.trim());
+          }
+        });
+      }
+    });
+
+    const totalCatalogMiniApps = miniApps.length;
+    const coveredCount = uniqueMiniApps.size;
+    const coverageRatio = totalCatalogMiniApps > 0 ? (coveredCount / totalCatalogMiniApps) * 100 : 0;
+    const coverageLabel = `${Math.round(coverageRatio)}% do catálogo`;
+
+    stats.coveredMiniApps.setValue(
+      formatCount(coveredCount),
+      totalCatalogMiniApps > 0
+        ? `${coverageLabel} (${formatCount(totalCatalogMiniApps)} mini-apps disponíveis).`
+        : 'Catálogo de mini-apps ainda não disponível.',
+    );
+
+    const pricedPlans = plans
+      .map((plan) => (typeof plan?.price === 'number' && Number.isFinite(plan.price) ? plan : null))
+      .filter(Boolean);
+
+    if (pricedPlans.length === 0) {
+      stats.averageTicket.setValue(formatCurrency(0), 'Defina valores para calcular o ticket médio.');
+    } else {
+      const totalPrice = pricedPlans.reduce((total, plan) => total + plan.price, 0);
+      const averagePrice = totalPrice / pricedPlans.length;
+
+      const highestPlan = pricedPlans.reduce((currentHighest, plan) =>
+        !currentHighest || plan.price > currentHighest.price ? plan : currentHighest,
+      );
+
+      stats.averageTicket.setValue(
+        formatCurrency(averagePrice),
+        highestPlan
+          ? `${highestPlan.name} é o pacote mais alto (${formatCurrency(highestPlan.price)}).`
+          : 'Ticket médio calculado com os pacotes cadastrados.',
+      );
+    }
+
+    const plansWithEndDate = plans
+      .map((plan) => ({ plan, end: toDate(plan?.endDate) }))
+      .filter((entry) => entry.end);
+
+    const upcomingRenewals = plansWithEndDate.filter((entry) => entry.end >= referenceDate);
+
+    if (upcomingRenewals.length > 0) {
+      upcomingRenewals.sort((a, b) => a.end - b.end);
+      const next = upcomingRenewals[0];
+      stats.nextRenewal.setValue(
+        formatDateOnly(next.end),
+        `Encerramento previsto do ${next.plan.name}.`,
+      );
+      return;
+    }
+
+    if (plansWithEndDate.length > 0) {
+      plansWithEndDate.sort((a, b) => b.end - a.end);
+      const last = plansWithEndDate[0];
+      stats.nextRenewal.setValue(
+        formatDateOnly(last.end),
+        `Última vigência encerrada: ${last.plan.name}.`,
+      );
+      return;
+    }
+
+    stats.nextRenewal.setValue('Sem término', 'Nenhum pacote possui data final cadastrada.');
+  }
+
+  function setPlans(nextPlans) {
+    plans = Array.isArray(nextPlans)
+      ? nextPlans.filter((plan) => plan && typeof plan === 'object')
+      : [];
+    updateStats();
+  }
+
+  function setMiniApps(nextMiniApps) {
+    miniApps = Array.isArray(nextMiniApps)
+      ? nextMiniApps.filter((app) => app && typeof app === 'object')
+      : [];
+    updateStats();
+  }
+
+  function teardown() {
+    plans = [];
+    miniApps = [];
+    Object.values(stats).forEach((stat) => stat.reset());
+  }
+
+  updateStats();
+
+  return { widget, setPlans, setMiniApps, teardown };
+}
+
 function createMiniAppsWidget() {
   let expandedMiniAppId = null;
   const state = new Map();
@@ -1418,9 +1642,16 @@ export function renderAdmin(viewRoot) {
   cleanupHandlers.push(subscriptionWidget.teardown);
   layout.append(subscriptionWidget.widget);
 
+  const productPackagesWidget = createProductPackagesWidget();
+  cleanupHandlers.push(productPackagesWidget.teardown);
+
   const miniAppsWidget = createMiniAppsWidget();
   cleanupHandlers.push(miniAppsWidget.teardown);
-  layout.append(miniAppsWidget.widget);
+
+  const miniAppsRow = document.createElement('div');
+  miniAppsRow.className = 'admin-dashboard__widget-row admin-dashboard__widget-row--split';
+  miniAppsRow.append(productPackagesWidget.widget, miniAppsWidget.widget);
+  layout.append(miniAppsRow);
 
   viewRoot.setAttribute('aria-label', 'Painel administrativo');
   viewRoot.replaceChildren(layout);
@@ -1435,7 +1666,9 @@ export function renderAdmin(viewRoot) {
   }
 
   const unsubscribeSubscriptions = subscribeSubscriptionPlans((snapshot) => {
-    subscriptionWidget.setPlans(Array.isArray(snapshot) ? snapshot : []);
+    const plans = Array.isArray(snapshot) ? snapshot : [];
+    subscriptionWidget.setPlans(plans);
+    productPackagesWidget.setPlans(plans);
   });
 
   if (typeof unsubscribeSubscriptions === 'function') {
@@ -1445,6 +1678,7 @@ export function renderAdmin(viewRoot) {
   const unsubscribeMiniApps = subscribeMiniApps((snapshot) => {
     highlightsWidget.setMiniApps(snapshot);
     subscriptionWidget.setMiniApps(snapshot);
+    productPackagesWidget.setMiniApps(snapshot);
   });
 
   if (typeof unsubscribeMiniApps === 'function') {
@@ -1462,19 +1696,24 @@ export function renderAdmin(viewRoot) {
   }
 
   try {
-    subscriptionWidget.setPlans(getSubscriptionPlansSnapshot());
+    const plansSnapshot = getSubscriptionPlansSnapshot();
+    subscriptionWidget.setPlans(plansSnapshot);
+    productPackagesWidget.setPlans(plansSnapshot);
   } catch (error) {
     console.error('Não foi possível carregar pacotes de assinatura iniciais para o painel administrativo.', error);
     subscriptionWidget.setPlans([]);
+    productPackagesWidget.setPlans([]);
   }
 
   try {
     const miniAppsSnapshot = getMiniAppsSnapshot();
     highlightsWidget.setMiniApps(miniAppsSnapshot);
     subscriptionWidget.setMiniApps(miniAppsSnapshot);
+    productPackagesWidget.setMiniApps(miniAppsSnapshot);
   } catch (error) {
     console.error('Não foi possível carregar mini-apps iniciais para o painel administrativo.', error);
     highlightsWidget.setMiniApps([]);
     subscriptionWidget.setMiniApps([]);
+    productPackagesWidget.setMiniApps([]);
   }
 }
