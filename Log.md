@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.189 - 2025-10-24 16:30 BRT
+- Reorganiza os itens do menu de painéis do cabeçalho priorizando atalhos gerais antes das opções administrativas.
+- Acrescenta um espaçador visual no menu e garante que ele só apareça quando houver links exclusivos de administradores.
+- Ajusta os estilos do menu para acomodar o novo separador mantendo a hierarquia visual entre as seções.
+
 ## v0.1.188 - 2025-10-24 16:00 BRT
 - Criação do painel "Kit de design" no menu administrativo com catálogo sequencial de botões padrões do aplicativo.
 - Navegação dedicada no menu de administradores para alternar entre o painel principal e o kit de design.

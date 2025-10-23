@@ -747,6 +747,14 @@ header {
   z-index: 20;
 }
 
+.header-menu__separator {
+  inline-size: 100%;
+  block-size: 0.1rem;
+  margin-block: 0.35rem;
+  border-radius: 999px;
+  background: rgba(var(--color-warm-rgb), 0.18);
+}
+
 .header-menu__panel[hidden] {
   display: none;
 }
