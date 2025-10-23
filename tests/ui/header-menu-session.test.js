@@ -160,7 +160,12 @@ test('header menu updates visibility by session and toggles theme for guests', a
   assert.strictEqual(homeLink.hidden, false, 'home link should appear for authenticated users');
   assert.strictEqual(themeToggle.hidden, true, 'theme toggle should hide for authenticated users');
   assert.strictEqual(adminLink.hidden, true, 'admin link remains hidden for non-admin users');
-  assert.strictEqual(designKitLink.hidden, true, 'design kit link remains hidden for non-admin users');
+  assert.strictEqual(designKitLink.hidden, false, 'design kit link should be visible for authenticated users');
+  assert.strictEqual(
+    designKitLink.getAttribute('aria-hidden'),
+    null,
+    'design kit link should remove aria-hidden when visible'
+  );
   assert.strictEqual(loginLink.hidden, false, 'login stays visible even when authenticated');
   assert.strictEqual(registerLink.hidden, false, 'register stays visible even when authenticated');
 
@@ -177,11 +182,7 @@ test('header menu updates visibility by session and toggles theme for guests', a
     null,
     'admin link should remove aria-hidden when visible'
   );
-  assert.strictEqual(
-    designKitLink.hidden,
-    false,
-    'design kit link should be visible for administrator accounts'
-  );
+  assert.strictEqual(designKitLink.hidden, false, 'design kit link should remain visible for administrators');
 
   delete globalThis.__MINIAPP_UI_HOOKS__;
   delete globalThis.window;

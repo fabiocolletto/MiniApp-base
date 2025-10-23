@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.197 - 2025-10-24 22:00 BRT
+- Libera o atalho "Kit Design" para qualquer usuário autenticado, mantendo o conteúdo restrito aos administradores quando necessário.
+- Ajusta o shell para manter o separador do menu apenas quando houver itens especiais e preserva o acesso exclusivo do painel administrativo.
+- Atualiza testes automatizados do menu e a versão exibida no rodapé para refletir a release v0.1.197 das 22h00.
+
 ## v0.1.196 - 2025-10-24 21:30 BRT
 - Consolida as instruções do `AGENTS.md` para eliminar redundâncias e reforça o uso do horário de Brasília no registro do log.
 
