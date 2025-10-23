@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.175 - 2025-10-24 09:40 BRT
+- Reorganiza o menu do cabeçalho para exibir somente Mini App Store, Cadastro, Login e alternância de tema a visitantes, liberando o Início e o painel administrativo conforme o tipo de usuário autenticado.
+- Atualiza o toggle de tema com rótulos dinâmicos, suporte às ações móveis e remoção de itens ocultos da navegação por foco.
+- Adiciona testes automatizados cobrindo as regras de sessão do menu e a alternância de tema.
+
 ## v0.1.174 - 2025-10-24 09:10 BRT
 - Remove o botão "Mais opções" do widget de dados do usuário e centraliza a alternância de edição no botão "Editar dados" com estados ARIA.
 - Converte o botão de edição para o padrão `.button button--primary`, ajustando estilos associados e eliminando seletores específicos do controle antigo.

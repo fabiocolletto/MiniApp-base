@@ -33,6 +33,8 @@ const loginLink = document.querySelector('.header-login-link');
 const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerThemeToggle = document.querySelector('.header-theme-toggle');
+const headerAdminLink = document.querySelector('.header-admin-link');
 const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
@@ -203,6 +205,11 @@ let shellRouter = null;
 
 let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
+let mobileStoreAction = null;
+let mobileRegisterAction = null;
+let mobileLoginAction = null;
+let mobileThemeAction = null;
+let mobileAdminAction = null;
 
 let headerMenuOpen = false;
 let removeHeaderMenuListeners = null;
@@ -246,6 +253,40 @@ function updateBrandAssets(theme) {
       }
     }
   }
+}
+
+function normalizeTheme(theme) {
+  return theme === 'dark' ? 'dark' : 'light';
+}
+
+function getThemeToggleLabel(theme) {
+  return normalizeTheme(theme) === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro';
+}
+
+function updateThemeToggleState(theme) {
+  const label = getThemeToggleLabel(theme);
+  const pressed = normalizeTheme(theme) === 'dark';
+
+  if (headerThemeToggle instanceof HTMLElement) {
+    headerThemeToggle.textContent = label;
+    headerThemeToggle.setAttribute('aria-label', label);
+    headerThemeToggle.setAttribute('title', label);
+    headerThemeToggle.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  }
+
+  if (mobileThemeAction instanceof HTMLElement) {
+    mobileThemeAction.textContent = label;
+    mobileThemeAction.setAttribute('aria-label', label);
+    mobileThemeAction.setAttribute('title', label);
+    mobileThemeAction.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  }
+}
+
+function toggleThemePreference() {
+  const currentTheme = normalizeTheme(getResolvedTheme());
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setThemePreference(nextTheme);
+  updateThemeToggleState(nextTheme);
 }
 
 function resolveUserThemePreference(user) {
@@ -435,9 +476,18 @@ function getHeaderMenuItems() {
     return [];
   }
 
-  return Array.from(headerMenuPanel.querySelectorAll('.header-menu__item')).filter(
-    (item) => item instanceof HTMLElement
-  );
+  return Array.from(headerMenuPanel.querySelectorAll('.header-menu__item')).filter((item) => {
+    if (!(item instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (item.hidden || item.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+
+    const display = item.style?.display;
+    return typeof display !== 'string' || display.trim() !== 'none';
+  });
 }
 
 function extractViewHeading() {
@@ -930,12 +980,39 @@ function ensureHeaderMobileMenu() {
     shellRouter?.goTo?.('login');
   });
 
-  actions.append(homeAction, storeAction, registerAction, loginAction);
+  const themeAction = document.createElement('button');
+  themeAction.type = 'button';
+  themeAction.id = 'mobile-access-menu-theme';
+  themeAction.className = 'app-modal__action header-mobile-menu__action';
+  themeAction.setAttribute('aria-pressed', 'false');
+  themeAction.textContent = 'Alternar tema';
+  themeAction.addEventListener('click', () => {
+    toggleThemePreference();
+    closeHeaderMobileMenu();
+  });
+
+  const adminAction = document.createElement('button');
+  adminAction.type = 'button';
+  adminAction.id = 'mobile-access-menu-admin';
+  adminAction.className = 'app-modal__action header-mobile-menu__action';
+  adminAction.textContent = 'Painel administrativo';
+  adminAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('admin');
+  });
+
+  actions.append(homeAction, storeAction, registerAction, loginAction, themeAction, adminAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
   mobileHomeAction = homeAction;
+  mobileStoreAction = storeAction;
+  mobileRegisterAction = registerAction;
+  mobileLoginAction = loginAction;
+  mobileThemeAction = themeAction;
+  mobileAdminAction = adminAction;
   syncHomeToggleStateFromDom();
+  updateThemeToggleState(getResolvedTheme());
 
   return headerMobileMenuPanel;
 }
@@ -1058,22 +1135,44 @@ function setLinkVisibility(link, isVisible) {
     link.hidden = false;
     link.removeAttribute('aria-hidden');
     link.removeAttribute('tabindex');
-    link.style.removeProperty('display');
+    if (link.style && typeof link.style.removeProperty === 'function') {
+      link.style.removeProperty('display');
+    } else if (link.style) {
+      link.style.display = '';
+    }
     return;
   }
 
   link.hidden = true;
   link.setAttribute('aria-hidden', 'true');
   link.setAttribute('tabindex', '-1');
-  link.style.display = 'none';
+  if (link.style) {
+    link.style.display = 'none';
+  }
 }
 
 function updateHeaderSession(user) {
   const isAuthenticated = Boolean(user);
+  const normalizedType =
+    typeof user?.userType === 'string' ? user.userType.trim().toLowerCase() : '';
+  const isAdmin = normalizedType === 'administrador';
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
-  setLinkVisibility(loginLink, !isAuthenticated);
-  setLinkVisibility(registerLink, !isAuthenticated);
+  setLinkVisibility(loginLink, true);
+  setLinkVisibility(registerLink, true);
+  setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerThemeToggle, !isAuthenticated);
+  setLinkVisibility(headerAdminLink, isAuthenticated && isAdmin);
+
+  const panel = ensureHeaderMobileMenu();
+  if (panel instanceof HTMLElement) {
+    setLinkVisibility(mobileHomeAction, isAuthenticated);
+    setLinkVisibility(mobileStoreAction, true);
+    setLinkVisibility(mobileRegisterAction, true);
+    setLinkVisibility(mobileLoginAction, true);
+    setLinkVisibility(mobileThemeAction, !isAuthenticated);
+    setLinkVisibility(mobileAdminAction, isAuthenticated && isAdmin);
+  }
 
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
@@ -1096,6 +1195,8 @@ function updateHeaderSession(user) {
     if (headerUserButton?.isConnected) {
       headerUserButton.remove();
     }
+
+    updateThemeToggleState(getResolvedTheme());
     scheduleLayoutOffsetUpdate();
     return;
   }
@@ -1112,6 +1213,7 @@ function updateHeaderSession(user) {
     menuControls.append(button);
   }
 
+  updateThemeToggleState(getResolvedTheme());
   scheduleLayoutOffsetUpdate();
 }
 
@@ -1550,6 +1652,18 @@ export function initializeAppShell(router) {
     closeHeaderMenu();
   });
 
+  headerThemeToggle?.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleThemePreference();
+    closeHeaderMenu();
+  });
+
+  headerAdminLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('admin');
+  });
+
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
 
@@ -1682,9 +1796,12 @@ export function initializeAppShell(router) {
   });
 
   updateBrandAssets(getResolvedTheme());
+  updateThemeToggleState(getResolvedTheme());
   subscribeThemeChange((payload) => {
     const theme = payload && typeof payload === 'object' ? payload.theme : undefined;
-    updateBrandAssets(theme ?? getResolvedTheme());
+    const resolvedTheme = theme ?? getResolvedTheme();
+    updateBrandAssets(resolvedTheme);
+    updateThemeToggleState(resolvedTheme);
   });
 
   updateHeaderSession(getActiveUserFn());
@@ -1724,3 +1841,9 @@ export function initializeAppShell(router) {
     window.addEventListener('orientationchange', scheduleLayoutOffsetUpdate);
   }
 }
+
+export const __TEST_ONLY__ = {
+  updateHeaderSession,
+  toggleThemePreference,
+  updateThemeToggleState,
+};
