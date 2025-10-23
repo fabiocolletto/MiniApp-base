@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.179 - 2025-10-24 11:40 BRT
+- Adiciona uma linha inicial ao painel Início com widgets dedicados à apresentação e à etiqueta do painel, reforçando contexto e identificação rápidos.
+- Reaproveita estilos globais de cartões, descrições e chips para alinhar a nova saudação sem criar utilitários inéditos.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.179 das 11h40.
+
 ## v0.1.178 - 2025-10-24 11:10 BRT
 - Simplifica a Mini App Store para um único widget em largura total exibindo todos os miniapps disponíveis na mesma linha com espaçamento uniforme.
 - Remove seções paralelas e controles de favoritos/salvos, mantendo apenas a lista horizontal navegável dos miniapps.
