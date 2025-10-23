@@ -14,7 +14,7 @@ async function resetSession() {
   clearActiveUser();
 }
 
-test('renderHome exibe painel de convidado com navegação para login e cadastro', async (t) => {
+test('renderHome exibe painel de convidado com atalho para o painel do usuário', async (t) => {
   const restoreDom = setupFakeDom();
   globalThis.window = {};
 
@@ -35,19 +35,16 @@ test('renderHome exibe painel de convidado com navegação para login e cadastro
   const guestPanel = viewRoot.querySelector('.home-guest__panel');
   assert.ok(guestPanel, 'painel de convidado deve ser renderizado');
 
-  const loginButton = guestPanel.querySelector('.home-guest__action--primary');
-  const registerButton = guestPanel.querySelector('.home-guest__action--secondary');
+  const userPanelButton = guestPanel.querySelector('.home-guest__action--primary');
   const registerLink = guestPanel.querySelector('.auth-panel__redirect-link');
 
-  assert.ok(loginButton, 'botão de login deve estar presente');
-  assert.ok(registerButton, 'botão de cadastro deve estar presente');
+  assert.ok(userPanelButton, 'botão do painel do usuário deve estar presente');
   assert.ok(registerLink, 'link de cadastro adicional deve estar presente');
 
   const emittedEvents = [];
   const unsubscribe = eventBus.on('app:navigate', (payload) => emittedEvents.push(payload));
 
-  loginButton.dispatchEvent({ type: 'click' });
-  registerButton.dispatchEvent({ type: 'click' });
+  userPanelButton.dispatchEvent({ type: 'click' });
   registerLink.dispatchEvent({
     type: 'click',
     preventDefault() {},
@@ -55,8 +52,8 @@ test('renderHome exibe painel de convidado com navegação para login e cadastro
 
   assert.deepEqual(
     emittedEvents,
-    [{ view: 'login' }, { view: 'register' }, { view: 'register' }],
-    'ações de convidado devem emitir navegação para login e cadastro',
+    [{ view: 'user' }, { view: 'register' }],
+    'ações de convidado devem emitir navegação para o painel do usuário e para cadastro',
   );
 
   unsubscribe?.();
