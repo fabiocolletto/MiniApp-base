@@ -2102,6 +2102,50 @@ main > :where(.card.view):not(.auth-view) {
   border-radius: 0.25rem;
 }
 
+.view--home-guest {
+  align-content: center;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.home-guest__panel {
+  display: grid;
+  gap: var(--panel-stack-gap);
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  text-align: center;
+  justify-items: center;
+}
+
+.home-guest__intro {
+  text-align: center;
+}
+
+.home-guest__actions {
+  display: grid;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.home-guest__action {
+  justify-self: stretch;
+}
+
+.home-guest__redirect {
+  margin: 0;
+}
+
+@media (min-width: 30rem) {
+  .home-guest__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+  }
+
+  .home-guest__action {
+    min-width: 0;
+  }
+}
+
 .register-view--success {
   text-align: center;
   gap: clamp(1.1rem, 3vw, 1.8rem);
