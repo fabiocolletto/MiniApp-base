@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.198 - 2025-10-24 22:30 BRT
+- Substitui o botão do kit de design no painel administrativo por uma etiqueta no padrão de chips usado no painel do usuário.
+- Exibe na nova etiqueta a versão atual do sistema e a data da última publicação para facilitar a conferência rápida.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.198 das 22h30.
+
 ## v0.1.197 - 2025-10-24 22:00 BRT
 - Libera o atalho "Kit Design" para qualquer usuário autenticado, mantendo o conteúdo restrito aos administradores quando necessário.
 - Ajusta o shell para manter o separador do menu apenas quando houver itens especiais e preserva o acesso exclusivo do painel administrativo.
