@@ -11,6 +11,7 @@ import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
+  clearActiveUser as defaultClearActiveUser,
   getActiveUser as defaultGetActiveUser,
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
@@ -47,7 +48,6 @@ const logoImage =
     : null) || document.querySelector('.header-logo__image');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
-const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
@@ -231,7 +231,6 @@ let lastSessionFooterIndicatorsPreference = null;
 let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
 let mobileStoreAction = null;
-let mobileRegisterAction = null;
 let mobileLoginAction = null;
 let mobileThemeAction = null;
 let mobileAdminAction = null;
@@ -386,6 +385,10 @@ const subscribeActivityStatusFn =
   rawHooks && typeof rawHooks.subscribeActivityStatus === 'function'
     ? rawHooks.subscribeActivityStatus
     : defaultSubscribeActivityStatus;
+const clearActiveUserFn =
+  rawHooks && typeof rawHooks.clearActiveUser === 'function'
+    ? rawHooks.clearActiveUser
+    : defaultClearActiveUser;
 
 const views = {
   admin: renderAdmin,
@@ -1017,23 +1020,19 @@ function ensureHeaderMobileMenu() {
     renderView('miniapps');
   });
 
-  const registerAction = document.createElement('button');
-  registerAction.type = 'button';
-  registerAction.id = 'mobile-access-menu-register';
-  registerAction.className =
-    'app-modal__action app-modal__action--primary header-mobile-menu__action header-mobile-menu__action--primary';
-  registerAction.textContent = 'Cadastro';
-  registerAction.addEventListener('click', () => {
-    closeHeaderMobileMenu();
-    shellRouter?.goTo?.('register');
-  });
-
   const loginAction = document.createElement('button');
   loginAction.type = 'button';
-  loginAction.className = 'app-modal__action header-mobile-menu__action';
+  loginAction.id = 'mobile-access-menu-auth';
+  loginAction.className =
+    'app-modal__action app-modal__action--primary header-mobile-menu__action header-mobile-menu__action--primary';
   loginAction.textContent = 'Login';
+  loginAction.setAttribute('aria-label', 'Gerenciar sessão');
+  loginAction.setAttribute('title', 'Gerenciar sessão');
   loginAction.addEventListener('click', () => {
     closeHeaderMobileMenu();
+    if (headerMenuControls instanceof HTMLElement && headerMenuControls.dataset.session === 'authenticated') {
+      clearActiveUserFn();
+    }
     shellRouter?.goTo?.('login');
   });
 
@@ -1058,20 +1057,12 @@ function ensureHeaderMobileMenu() {
     renderView('admin');
   });
 
-  actions.append(
-    homeAction,
-    storeAction,
-    registerAction,
-    loginAction,
-    themeAction,
-    adminAction,
-  );
+  actions.append(homeAction, storeAction, loginAction, themeAction, adminAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
   mobileHomeAction = homeAction;
   mobileStoreAction = storeAction;
-  mobileRegisterAction = registerAction;
   mobileLoginAction = loginAction;
   mobileThemeAction = themeAction;
   mobileAdminAction = adminAction;
@@ -1096,7 +1087,7 @@ function openHeaderMobileMenu() {
     panel,
     labelledBy: 'mobile-access-menu-title',
     describedBy: 'mobile-access-menu-description',
-    focusSelector: '#mobile-access-menu-register',
+    focusSelector: '#mobile-access-menu-auth',
     trigger: headerMobileToggle instanceof HTMLElement ? headerMobileToggle : null,
     onClose: () => {
       headerMobileToggle?.setAttribute('aria-expanded', 'false');
@@ -1225,7 +1216,6 @@ function updateHeaderSession(user) {
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
-  setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminLink);
@@ -1239,7 +1229,6 @@ function updateHeaderSession(user) {
   if (panel instanceof HTMLElement) {
     setLinkVisibility(mobileHomeAction, isAuthenticated);
     setLinkVisibility(mobileStoreAction, true);
-    setLinkVisibility(mobileRegisterAction, true);
     setLinkVisibility(mobileLoginAction, true);
     setLinkVisibility(mobileThemeAction, !isAuthenticated);
     setLinkVisibility(mobileAdminAction, showAdminLink);
@@ -1247,6 +1236,23 @@ function updateHeaderSession(user) {
 
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
+  }
+
+  const authLabel = isAuthenticated ? 'Logout' : 'Login';
+  const authDescription = isAuthenticated
+    ? 'Encerrar sessão e voltar para o painel de login'
+    : 'Ir para o painel de login';
+
+  if (loginLink instanceof HTMLElement) {
+    loginLink.textContent = authLabel;
+    loginLink.setAttribute('aria-label', authDescription);
+    loginLink.setAttribute('title', authDescription);
+  }
+
+  if (mobileLoginAction instanceof HTMLElement) {
+    mobileLoginAction.textContent = authLabel;
+    mobileLoginAction.setAttribute('aria-label', authDescription);
+    mobileLoginAction.setAttribute('title', authDescription);
   }
 
   if (headerMobileToggle instanceof HTMLElement) {
@@ -1702,6 +1708,7 @@ function handleNavigationRequest(viewName, router) {
   }
 
   if (viewName === 'login') {
+    clearActiveUserFn();
     router.goTo('login');
     return;
   }
@@ -1799,12 +1806,10 @@ export function initializeAppShell(router) {
   loginLink?.addEventListener('click', (event) => {
     event.preventDefault();
     closeHeaderMenu();
+    if (headerMenuControls instanceof HTMLElement && headerMenuControls.dataset.session === 'authenticated') {
+      clearActiveUserFn();
+    }
     router.goTo('login');
-  });
-  registerLink?.addEventListener('click', (event) => {
-    event.preventDefault();
-    closeHeaderMenu();
-    router.goTo('register');
   });
 
   if (headerMenuTrigger instanceof HTMLElement) {

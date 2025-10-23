@@ -67,7 +67,6 @@ test('header menu updates visibility by session and toggles theme for guests', a
   const homeLink = createMenuButton('header-home-link');
   const storeLink = createMenuButton('header-store-link');
   const themeToggle = createMenuButton('header-theme-toggle');
-  const registerLink = createMenuButton('header-register-link');
   const loginLink = createMenuButton('header-login-link');
   const designKitLink = createMenuButton('header-design-kit-link');
   designKitLink.hidden = true;
@@ -137,8 +136,14 @@ test('header menu updates visibility by session and toggles theme for guests', a
   );
   assert.strictEqual(adminLink.hidden, true, 'admin link should be hidden for guests');
   assert.strictEqual(designKitLink.hidden, true, 'design kit link should be hidden for guests');
+  assert.strictEqual(headerMenuControls.dataset.session, 'guest', 'menu dataset must reflect guest session');
   assert.strictEqual(loginLink.hidden, false, 'login must remain visible');
-  assert.strictEqual(registerLink.hidden, false, 'register must remain visible');
+  assert.strictEqual(loginLink.textContent, 'Login', 'login label should invite authentication for guests');
+  assert.strictEqual(
+    loginLink.getAttribute('aria-label'),
+    'Ir para o painel de login',
+    'login aria-label must describe the guest action'
+  );
 
   __TEST_ONLY__.toggleThemePreference();
 
@@ -166,8 +171,18 @@ test('header menu updates visibility by session and toggles theme for guests', a
     null,
     'design kit link should remove aria-hidden when visible'
   );
+  assert.strictEqual(
+    headerMenuControls.dataset.session,
+    'authenticated',
+    'menu dataset must reflect authenticated session'
+  );
   assert.strictEqual(loginLink.hidden, false, 'login stays visible even when authenticated');
-  assert.strictEqual(registerLink.hidden, false, 'register stays visible even when authenticated');
+  assert.strictEqual(loginLink.textContent, 'Logout', 'login label should switch to logout for authenticated users');
+  assert.strictEqual(
+    loginLink.getAttribute('aria-label'),
+    'Encerrar sessão e voltar para o painel de login',
+    'logout aria-label must describe the sign-out action'
+  );
 
   const adminUser = { name: 'Ana Admin', userType: 'Administrador' };
   __TEST_ONLY__.updateHeaderSession(adminUser);

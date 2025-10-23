@@ -11,6 +11,7 @@ import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
+  clearActiveUser as defaultClearActiveUser,
   getActiveUser as defaultGetActiveUser,
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
@@ -26,7 +27,6 @@ const mainElement = document.querySelector('main');
 const logo = document.querySelector('.header-logo');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
-const registerLink = document.querySelector('.header-register-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
@@ -109,6 +109,7 @@ type UiHooks = Partial<{
   getSessionStatus: typeof defaultGetSessionStatus;
   getActivityStatus: typeof defaultGetActivityStatus;
   subscribeActivityStatus: typeof defaultSubscribeActivityStatus;
+  clearActiveUser: typeof defaultClearActiveUser;
 }>;
 
 const rawHooks =
@@ -129,6 +130,10 @@ const getSessionStatusFn =
   rawHooks && typeof rawHooks.getSessionStatus === 'function'
     ? rawHooks.getSessionStatus
     : defaultGetSessionStatus;
+const clearActiveUserFn =
+  rawHooks && typeof rawHooks.clearActiveUser === 'function'
+    ? rawHooks.clearActiveUser
+    : defaultClearActiveUser;
 const getActivityStatusFn =
   rawHooks && typeof rawHooks.getActivityStatus === 'function'
     ? rawHooks.getActivityStatus
@@ -595,7 +600,6 @@ function updateHeaderSession(user: unknown): void {
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
-  setLinkVisibility(registerLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminLink);
@@ -607,6 +611,17 @@ function updateHeaderSession(user: unknown): void {
 
   if (menuControls) {
     menuControls.dataset.session = isAuthenticated ? 'authenticated' : 'guest';
+  }
+
+  if (loginLink instanceof HTMLElement) {
+    const label = isAuthenticated ? 'Logout' : 'Login';
+    const description = isAuthenticated
+      ? 'Encerrar sessão e voltar para o painel de login'
+      : 'Ir para o painel de login';
+
+    loginLink.textContent = label;
+    loginLink.setAttribute('aria-label', description);
+    loginLink.setAttribute('title', description);
   }
 
   if (!isAuthenticated) {
@@ -1062,6 +1077,7 @@ function handleNavigationRequest(viewName: string, router: RouterBridge): void {
   }
 
   if (viewName === 'login') {
+    clearActiveUserFn();
     router.goTo('login');
     return;
   }
@@ -1150,12 +1166,15 @@ export function initializeAppShell(router: RouterBridge): void {
   loginLink?.addEventListener('click', (event) => {
     event.preventDefault();
     closeHeaderMenu();
+
+    if (
+      headerMenuControls instanceof HTMLElement &&
+      headerMenuControls.dataset.session === 'authenticated'
+    ) {
+      clearActiveUserFn();
+    }
+
     router.goTo('login');
-  });
-  registerLink?.addEventListener('click', (event) => {
-    event.preventDefault();
-    closeHeaderMenu();
-    router.goTo('register');
   });
 
   if (headerMenuTrigger instanceof HTMLElement) {

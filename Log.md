@@ -1,5 +1,10 @@
 # Log
 
+-## v0.1.199 - 2025-10-24 23:00 BRT
+- Simplifica o menu de painéis mantendo um único atalho de autenticação que alterna entre Login e Logout conforme o estado da sessão.
+- Limpa a sessão ativa ao acionar o Logout e redireciona para o painel de login tanto no menu principal quanto na navegação móvel.
+- Atualiza os testes automatizados e a versão do rodapé para refletir a release v0.1.199 das 23h00.
+
 ## v0.1.198 - 2025-10-24 22:30 BRT
 - Substitui o botão do kit de design no painel administrativo por uma etiqueta no padrão de chips usado no painel do usuário.
 - Exibe na nova etiqueta a versão atual do sistema e a data da última publicação para facilitar a conferência rápida.

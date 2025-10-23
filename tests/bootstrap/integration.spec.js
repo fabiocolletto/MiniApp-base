@@ -200,7 +200,6 @@ function createAppDom() {
   const headerTitle = new FakeElement('span');
   const versionButton = new FakeElement('button');
   const loginLink = new FakeElement('a');
-  const registerLink = new FakeElement('a');
   const headerActions = new FakeElement('nav');
   const memoryIndicator = new FakeElement('span');
   const memoryIndicatorText = new FakeElement('span');
@@ -211,7 +210,6 @@ function createAppDom() {
   document.registerElement(headerTitle, { selectors: ['.header-title'] });
   document.registerElement(versionButton, { selectors: ['.footer-version'] });
   document.registerElement(loginLink, { selectors: ['.header-login-link'] });
-  document.registerElement(registerLink, { selectors: ['.header-register-link'] });
   document.registerElement(headerActions, { selectors: ['.header-actions'] });
   document.registerElement(memoryIndicator, { selectors: ['.footer-memory'] });
   memoryIndicator.registerSelector('.footer-memory__text', memoryIndicatorText);
@@ -225,7 +223,6 @@ function createAppDom() {
       headerTitle,
       versionButton,
       loginLink,
-      registerLink,
       headerActions,
       memoryIndicator,
       memoryIndicatorText,
