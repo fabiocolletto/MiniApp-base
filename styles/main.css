@@ -41,7 +41,18 @@
   --space-md: clamp(0.55rem, 1.8vw, 1rem);
   --space-lg: clamp(0.75rem, 2.4vw, 1.25rem);
   --space-xl: clamp(0.95rem, 2.8vw, 1.4rem);
-  --panel-radius: 0.85rem;
+  --radius-sm: clamp(0.3rem, 0.9vw, 0.45rem);
+  --radius-md: clamp(0.6rem, 1.4vw, 0.85rem);
+  --radius-lg: clamp(0.9rem, 2vw, 1.25rem);
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+  --size-inline-sm: clamp(2.25rem, 6vw, 2.85rem);
+  --size-inline-md: clamp(9rem, 28vw, 12rem);
+  --size-inline-lg: 100%;
+  --size-block-sm: 0.35rem;
+  --size-block-md: clamp(0.55rem, 1.9vw, 0.9rem);
+  --size-block-lg: clamp(2.25rem, 6vw, 2.85rem);
+  --panel-radius: var(--radius-md);
   --panel-shadow: 0 0.45rem 1.2rem rgba(61, 44, 16, 0.08);
   --panel-border: 0.06rem solid rgba(var(--color-warm-rgb), 0.12);
   --panel-border-strong: 0.06rem solid rgba(var(--color-accent-rgb), 0.28);
@@ -88,6 +99,36 @@
   --color-neutral-bg: #f8f9fa;
   --color-neutral-border: #dadce0;
   --color-neutral-text: #3c4043;
+  --kit-color-primary-strong-base: linear-gradient(
+    135deg,
+    rgba(var(--color-accent-rgb), 0.22),
+    rgba(var(--color-accent-deep-rgb), 0.14)
+  );
+  --kit-color-primary-strong-hover: linear-gradient(
+    135deg,
+    rgba(var(--color-accent-rgb), 0.28),
+    rgba(var(--color-accent-deep-rgb), 0.22)
+  );
+  --kit-color-primary-soft-base: rgba(var(--color-accent-rgb), 0.08);
+  --kit-color-primary-soft-hover: rgba(var(--color-accent-rgb), 0.14);
+  --kit-color-primary-highlight-base: rgba(var(--color-accent-rgb), 0.12);
+  --kit-color-primary-highlight-hover: rgba(var(--color-accent-rgb), 0.2);
+  --kit-color-primary-ghost-base: transparent;
+  --kit-color-primary-ghost-hover: rgba(var(--color-accent-rgb), 0.12);
+  --kit-color-text-contrast-base: var(--color-accent-deep);
+  --kit-color-text-contrast-hover: var(--color-accent-deep);
+  --kit-color-text-standard-base: var(--color-text-secondary);
+  --kit-color-text-standard-hover: var(--color-accent-deep);
+  --kit-color-text-inverse-base: var(--color-text-inverse);
+  --kit-color-text-inverse-hover: var(--color-text-inverse);
+  --kit-elevation-button-flat-base: none;
+  --kit-elevation-button-flat-hover: none;
+  --kit-elevation-button-soft-base: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.16);
+  --kit-elevation-button-soft-hover: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.16);
+  --kit-elevation-button-regular-base: 0 0.45rem 1.15rem rgba(var(--color-accent-rgb), 0.15);
+  --kit-elevation-button-regular-hover: 0 0.55rem 1.3rem rgba(var(--color-accent-rgb), 0.2);
+  --kit-elevation-button-strong-base: 0 0.55rem 1.35rem rgba(var(--color-accent-rgb), 0.2);
+  --kit-elevation-button-strong-hover: 0 0.65rem 1.5rem rgba(var(--color-accent-rgb), 0.26);
 }
 
 :root[data-theme='light'] {
@@ -136,6 +177,36 @@
   --color-neutral-bg: rgba(255, 255, 255, 0.06);
   --color-neutral-border: rgba(242, 191, 115, 0.18);
   --color-neutral-text: rgba(250, 235, 215, 0.8);
+  --kit-color-primary-strong-base: linear-gradient(
+    135deg,
+    rgba(var(--color-accent-rgb), 0.32),
+    rgba(var(--color-accent-deep-rgb), 0.18)
+  );
+  --kit-color-primary-strong-hover: linear-gradient(
+    135deg,
+    rgba(var(--color-accent-rgb), 0.4),
+    rgba(var(--color-accent-deep-rgb), 0.28)
+  );
+  --kit-color-primary-soft-base: rgba(var(--color-accent-rgb), 0.18);
+  --kit-color-primary-soft-hover: rgba(var(--color-accent-rgb), 0.28);
+  --kit-color-primary-highlight-base: rgba(var(--color-accent-rgb), 0.26);
+  --kit-color-primary-highlight-hover: rgba(var(--color-accent-rgb), 0.36);
+  --kit-color-primary-ghost-base: transparent;
+  --kit-color-primary-ghost-hover: rgba(var(--color-accent-rgb), 0.22);
+  --kit-color-text-contrast-base: var(--color-accent-deep);
+  --kit-color-text-contrast-hover: var(--color-accent-deep);
+  --kit-color-text-standard-base: var(--color-text-secondary);
+  --kit-color-text-standard-hover: var(--color-accent-deep);
+  --kit-color-text-inverse-base: var(--color-text-inverse);
+  --kit-color-text-inverse-hover: var(--color-text-inverse);
+  --kit-elevation-button-flat-base: none;
+  --kit-elevation-button-flat-hover: none;
+  --kit-elevation-button-soft-base: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.2);
+  --kit-elevation-button-soft-hover: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.2);
+  --kit-elevation-button-regular-base: 0 0.45rem 1.15rem rgba(var(--color-accent-rgb), 0.24);
+  --kit-elevation-button-regular-hover: 0 0.55rem 1.35rem rgba(var(--color-accent-rgb), 0.3);
+  --kit-elevation-button-strong-base: 0 0.55rem 1.45rem rgba(var(--color-accent-rgb), 0.32);
+  --kit-elevation-button-strong-hover: 0 0.7rem 1.65rem rgba(var(--color-accent-rgb), 0.38);
 }
 @media (orientation: landscape) {
   :root {
@@ -314,7 +385,7 @@ footer {
 .card {
   width: min(90vw, 40rem);
   background-color: transparent;
-  border-radius: 1.5rem;
+  border-radius: var(--radius-lg);
   box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.2);
   text-align: center;
 }
@@ -348,9 +419,9 @@ p {
 
 .button {
   --button-gap: clamp(0.3rem, 1.1vw, 0.5rem);
-  --button-padding-block: clamp(0.55rem, 1.9vw, 0.9rem);
+  --button-padding-block: var(--size-block-md);
   --button-padding-inline: clamp(0.95rem, 2.8vw, 1.4rem);
-  --button-radius: 0.85rem;
+  --button-radius: var(--radius-md);
   --button-border-width: 0.08rem;
   --button-border-color: rgba(var(--color-accent-rgb), 0.32);
   --button-bg: rgba(var(--color-accent-rgb), 0.12);
@@ -419,21 +490,13 @@ p {
 
 .button--primary {
   --button-border-color: rgba(var(--color-accent-rgb), 0.55);
-  --button-bg: linear-gradient(
-    135deg,
-    rgba(var(--color-accent-rgb), 0.22),
-    rgba(var(--color-accent-deep-rgb), 0.14)
-  );
-  --button-hover-bg: linear-gradient(
-    135deg,
-    rgba(var(--color-accent-rgb), 0.28),
-    rgba(var(--color-accent-deep-rgb), 0.22)
-  );
+  --button-bg: var(--kit-color-primary-strong-base);
+  --button-hover-bg: var(--kit-color-primary-strong-hover);
   --button-hover-border-color: rgba(var(--color-accent-rgb), 0.65);
-  --button-text-color: var(--color-accent-deep);
-  --button-hover-text-color: var(--color-accent-deep);
-  --button-shadow: 0 0.55rem 1.35rem rgba(var(--color-accent-rgb), 0.2);
-  --button-hover-shadow: 0 0.65rem 1.5rem rgba(var(--color-accent-rgb), 0.26);
+  --button-text-color: var(--kit-color-text-contrast-base);
+  --button-hover-text-color: var(--kit-color-text-contrast-hover);
+  --button-shadow: var(--kit-elevation-button-strong-base);
+  --button-hover-shadow: var(--kit-elevation-button-strong-hover);
   --button-disabled-bg: rgba(var(--color-accent-rgb), 0.18);
   --button-disabled-border: rgba(var(--color-accent-rgb), 0.32);
   --button-disabled-text: rgba(var(--color-accent-deep-rgb), 0.75);
@@ -441,13 +504,13 @@ p {
 
 .button--secondary {
   --button-border-color: rgba(var(--color-accent-rgb), 0.3);
-  --button-bg: rgba(var(--color-accent-rgb), 0.08);
-  --button-hover-bg: rgba(var(--color-accent-rgb), 0.14);
+  --button-bg: var(--kit-color-primary-soft-base);
+  --button-hover-bg: var(--kit-color-primary-soft-hover);
   --button-hover-border-color: rgba(var(--color-accent-rgb), 0.45);
-  --button-text-color: var(--color-text-secondary);
-  --button-hover-text-color: var(--color-accent-deep);
-  --button-shadow: 0 0.45rem 1.15rem rgba(var(--color-accent-rgb), 0.15);
-  --button-hover-shadow: 0 0.55rem 1.3rem rgba(var(--color-accent-rgb), 0.2);
+  --button-text-color: var(--kit-color-text-standard-base);
+  --button-hover-text-color: var(--kit-color-text-standard-hover);
+  --button-shadow: var(--kit-elevation-button-regular-base);
+  --button-hover-shadow: var(--kit-elevation-button-regular-hover);
   --button-disabled-bg: rgba(var(--color-accent-rgb), 0.05);
   --button-disabled-border: rgba(var(--color-accent-rgb), 0.18);
 }
@@ -455,40 +518,41 @@ p {
 .button--ghost {
   --button-border-width: 0.06rem;
   --button-border-color: transparent;
-  --button-bg: transparent;
-  --button-hover-bg: rgba(var(--color-accent-rgb), 0.12);
+  --button-bg: var(--kit-color-primary-ghost-base);
+  --button-hover-bg: var(--kit-color-primary-ghost-hover);
   --button-hover-border-color: rgba(var(--color-accent-rgb), 0.22);
-  --button-text-color: var(--color-text-secondary);
-  --button-hover-text-color: var(--color-accent-deep);
-  --button-shadow: none;
-  --button-hover-shadow: none;
+  --button-text-color: var(--kit-color-text-standard-base);
+  --button-hover-text-color: var(--kit-color-text-standard-hover);
+  --button-shadow: var(--kit-elevation-button-flat-base);
+  --button-hover-shadow: var(--kit-elevation-button-flat-hover);
   --button-disabled-bg: transparent;
   --button-disabled-border: transparent;
 }
 
 .button--pill {
-  --button-radius: 999px;
+  --button-radius: var(--radius-pill);
 }
 
 .button--block {
-  width: 100%;
+  width: var(--size-inline-lg);
 }
 
 .button--icon {
   --button-gap: 0;
-  --button-padding-block: 0.35rem;
-  --button-padding-inline: 0.35rem;
-  --button-radius: 999px;
+  --button-padding-block: var(--size-block-sm);
+  --button-padding-inline: var(--size-block-sm);
+  --button-radius: var(--radius-pill);
   --button-border-width: 0.08rem;
   --button-border-color: rgba(var(--color-accent-rgb), 0.25);
-  --button-bg: rgba(var(--color-accent-rgb), 0.12);
-  --button-hover-bg: rgba(var(--color-accent-rgb), 0.2);
-  --button-text-color: var(--color-text-secondary);
-  --button-hover-text-color: var(--color-accent-deep);
+  --button-bg: var(--kit-color-primary-highlight-base);
+  --button-hover-bg: var(--kit-color-primary-highlight-hover);
+  --button-text-color: var(--kit-color-text-standard-base);
+  --button-hover-text-color: var(--kit-color-text-standard-hover);
   --button-outline-color: rgba(var(--color-accent-rgb), 0.55);
-  --button-hover-shadow: 0 0.35rem 0.9rem rgba(var(--color-accent-rgb), 0.16);
-  width: clamp(2.25rem, 6vw, 2.85rem);
-  height: clamp(2.25rem, 6vw, 2.85rem);
+  --button-shadow: var(--kit-elevation-button-soft-base);
+  --button-hover-shadow: var(--kit-elevation-button-soft-hover);
+  width: var(--size-inline-sm);
+  height: var(--size-block-lg);
   padding: 0;
   font-size: clamp(1.3rem, 3vw, 1.6rem);
   line-height: 1;
@@ -578,7 +642,7 @@ header {
 }
 
 .header-logo {
-  --header-logo-radius: clamp(0.9rem, 2vw, 1.25rem);
+  --header-logo-radius: var(--radius-lg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -612,7 +676,7 @@ header {
 }
 
 .header-menu__controls {
-  --header-menu-radius: clamp(1.05rem, 2.4vw, 1.35rem);
+  --header-menu-radius: var(--radius-lg);
   --header-action-bg: var(--color-bg-card);
   --header-action-bg-hover: var(--header-action-bg);
   --header-action-border: rgba(var(--color-warm-rgb), 0.35);
@@ -701,7 +765,7 @@ header {
   display: inline-block;
   width: clamp(0.85rem, 2vw, 1.05rem);
   height: 0.14rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: currentColor;
 }
 
@@ -746,7 +810,7 @@ header {
   flex-direction: column;
   gap: 0.25rem;
   padding: clamp(0.35rem, 1.2vw, 0.6rem);
-  border-radius: 1rem;
+  border-radius: var(--radius-lg);
   border: 0.1rem solid rgba(var(--color-warm-rgb), 0.18);
   background: var(--color-bg-card);
   box-shadow: 0 1.2rem 2.6rem rgba(var(--color-warm-rgb), 0.18);
@@ -757,7 +821,7 @@ header {
   inline-size: 100%;
   block-size: 0.1rem;
   margin-block: 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-warm-rgb), 0.18);
 }
 
@@ -772,7 +836,7 @@ header {
   gap: 0.5rem;
   padding: clamp(0.5rem, 1.6vw, 0.75rem) clamp(0.75rem, 2vw, 1.2rem);
   border: none;
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-text-secondary);
   font: inherit;
@@ -826,7 +890,7 @@ header {
   justify-content: center;
   padding-block: clamp(0.4rem, 1vw, 0.6rem);
   padding-inline: clamp(0.9rem, 2vw, 1.4rem);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0.12rem solid var(--header-action-border);
   background: var(--header-action-bg);
   color: var(--header-action-color);
@@ -960,13 +1024,13 @@ footer {
 .footer-brand:focus-visible {
   outline: 0.15rem solid rgba(var(--color-warm-rgb), 0.55);
   outline-offset: 0.2rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
 }
 
 .footer-brand__icon {
   width: clamp(1.75rem, 4vw, 2.25rem);
   height: clamp(1.75rem, 4vw, 2.25rem);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   object-fit: contain;
 }
 
@@ -1016,7 +1080,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   gap: clamp(0.3rem, 0.9vw, 0.55rem);
   padding-inline: clamp(0.45rem, 1.4vw, 0.85rem);
   padding-block: clamp(0.15rem, 0.6vw, 0.35rem);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-warm-rgb), 0.14);
   font-size: clamp(0.64rem, 1.1vw, 0.85rem);
   font-weight: 600;
@@ -1054,7 +1118,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   gap: clamp(0.3rem, 0.9vw, 0.55rem);
   padding-inline: clamp(0.45rem, 1.4vw, 0.85rem);
   padding-block: clamp(0.15rem, 0.6vw, 0.35rem);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-warm-rgb), 0.14);
   font-size: clamp(0.64rem, 1.1vw, 0.85rem);
   font-weight: 600;
@@ -1077,7 +1141,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .footer-version__dot {
   width: clamp(0.35rem, 0.9vw, 0.45rem);
   height: clamp(0.35rem, 0.9vw, 0.45rem);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(var(--color-warm-rgb), 0.78);
   box-shadow: 0 0 0 0.18rem rgba(var(--color-warm-rgb), 0.18);
 }
@@ -1093,7 +1157,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .footer-memory__dot {
   width: clamp(0.4rem, 1vw, 0.55rem);
   height: clamp(0.4rem, 1vw, 0.55rem);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(208, 143, 15, 0.85);
   box-shadow: 0 0 0 0.15rem rgba(208, 143, 15, 0.25);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -1102,7 +1166,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .footer-activity__dot {
   width: clamp(0.4rem, 1vw, 0.55rem);
   height: clamp(0.4rem, 1vw, 0.55rem);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(25, 118, 210, 0.78);
   box-shadow: 0 0 0 0.15rem rgba(25, 118, 210, 0.2);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -1125,7 +1189,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .footer-session__dot {
   width: clamp(0.4rem, 1vw, 0.55rem);
   height: clamp(0.4rem, 1vw, 0.55rem);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(25, 118, 210, 0.85);
   box-shadow: 0 0 0 0.15rem rgba(25, 118, 210, 0.25);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -1187,7 +1251,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 
 .app-modal__panel {
   width: min(90vw, 22rem);
-  border-radius: 1.1rem;
+  border-radius: var(--radius-lg);
   background: var(--color-bg-card);
   box-shadow: 0 1.35rem 3rem rgba(62, 48, 24, 0.28), 0 0 0 0.08rem rgba(var(--color-warm-rgb), 0.16);
   padding: clamp(1.2rem, 4vw, 1.8rem);
@@ -1241,7 +1305,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   align-items: center;
   justify-content: center;
   padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-accent-rgb), 0.16);
   border: 0.08rem solid rgba(var(--color-accent-rgb), 0.32);
   font-size: var(--panel-font-size-compact);
@@ -1343,7 +1407,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   border: none;
   background: rgba(var(--color-warm-rgb), 0.12);
   color: rgba(var(--color-warm-rgb), 0.85);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: clamp(0.25rem, 0.9vw, 0.4rem);
   line-height: 1;
   cursor: pointer;
@@ -1379,7 +1443,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.6rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0.12rem solid rgba(var(--color-warm-rgb), 0.35);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
@@ -1438,7 +1502,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   border: none;
   background: rgba(25, 118, 210, 0.08);
   color: rgba(17, 82, 147, 0.92);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: clamp(0.25rem, 1vw, 0.4rem);
   line-height: 1;
   cursor: pointer;
@@ -1480,7 +1544,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   grid-template-columns: auto 1fr;
   gap: clamp(0.35rem, 1vw, 0.6rem);
   align-items: flex-start;
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   padding: clamp(0.45rem, 1.35vw, 0.65rem);
   background: rgba(var(--color-warm-rgb), 0.08);
   color: rgba(62, 48, 24, 0.85);
@@ -1496,7 +1560,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .footer-session__legend-dot {
   width: clamp(0.45rem, 1.1vw, 0.6rem);
   height: clamp(0.45rem, 1.1vw, 0.6rem);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   box-shadow: 0 0 0 0.18rem rgba(25, 118, 210, 0.18);
   background: rgba(25, 118, 210, 0.85);
   flex: 0 0 auto;
@@ -1855,7 +1919,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   inline-size: 100%;
   min-block-size: clamp(7.5rem, 22vw, 9.5rem);
   padding: clamp(0.85rem, 2.6vw, 1.15rem);
-  border-radius: clamp(0.85rem, 2.6vw, 1.2rem);
+  border-radius: var(--radius-lg);
   border: 0.08rem solid rgba(var(--color-accent-rgb), 0.24);
   background: linear-gradient(160deg, rgba(var(--color-accent-rgb), 0.12), rgba(var(--color-accent-rgb), 0.18));
   box-shadow: 0 0.75rem 1.65rem rgba(var(--color-accent-rgb), 0.18);
@@ -1874,7 +1938,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .miniapp-store__catalog-avatar {
   inline-size: clamp(2.4rem, 7vw, 2.9rem);
   aspect-ratio: 1;
-  border-radius: 0.9rem;
+  border-radius: var(--radius-md);
   border: 0.1rem dashed rgba(var(--color-accent-rgb), 0.35);
   background: rgba(var(--color-accent-rgb), 0.18);
   display: grid;
@@ -1899,7 +1963,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 .miniapp-store__catalog-action {
   inline-size: clamp(2.25rem, 6vw, 2.6rem);
   aspect-ratio: 1;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0.12rem solid rgba(var(--color-accent-rgb), 0.35);
   background: rgba(var(--color-accent-rgb), 0.16);
   color: var(--color-accent-deep);
@@ -1930,7 +1994,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   font-size: calc(var(--panel-font-size-compact) * 0.92);
   color: var(--color-accent-deep);
   padding: 0.25rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-accent-rgb), 0.15);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1964,7 +2028,7 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 
 .view::-webkit-scrollbar-thumb {
   background-color: var(--color-bg-card);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .view::-webkit-scrollbar-track {
@@ -2172,7 +2236,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   height: clamp(1rem, 1.2vw + 0.7rem, 1.25rem);
   margin: 0.15rem 0 0;
   border: 0.12rem solid var(--color-border-strong);
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
   background-color: var(--color-bg-card);
   display: grid;
   place-items: center;
@@ -2229,7 +2293,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .register-panel__legal-link:focus-visible {
   outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.5);
   outline-offset: 0.1rem;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
 }
 
 .auth-panel__form .user-form__submit {
@@ -2267,7 +2331,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .auth-panel__redirect-link:focus-visible {
   outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.5);
   outline-offset: 0.1rem;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
 }
 
 .view--home-guest {
@@ -2360,7 +2424,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --button-gap: var(--space-xs);
   --button-padding-block: clamp(0.5rem, 1.4vw, 0.75rem);
   --button-padding-inline: clamp(1.1rem, 2.5vw, 1.6rem);
-  --button-radius: 999px;
+  --button-radius: var(--radius-pill);
   --button-border-width: 0.12rem;
   --button-border-color: rgba(var(--color-warm-rgb), 0.35);
   --button-hover-border-color: rgba(var(--color-accent-rgb), 0.6);
@@ -2612,9 +2676,19 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-items: center;
 }
 
+.admin-design-kit__preview--surface {
+  align-items: stretch;
+}
+
+.admin-design-kit__preview--form,
+.admin-design-kit__preview--feedback,
+.admin-design-kit__preview--labels {
+  align-items: stretch;
+}
+
 .admin-design-kit__sample-button {
   flex: 0 1 auto;
-  min-width: clamp(9rem, 28vw, 12rem);
+  min-width: var(--size-inline-md);
 }
 
 .admin-design-kit__button-label {
@@ -2636,13 +2710,146 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   block-size: 100%;
 }
 
+.admin-design-kit__surface-sample {
+  display: grid;
+  gap: var(--panel-inner-gap);
+  min-width: min(18rem, 100%);
+}
+
+.admin-design-kit__surface-heading {
+  margin: 0;
+  font-size: var(--panel-font-size-title);
+  color: var(--color-text-primary);
+}
+
+.admin-design-kit__surface-text {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.admin-design-kit__token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space-2xs) * 0.75);
+}
+
+.admin-design-kit__token {
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: var(--panel-font-size-compact);
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.55rem;
+}
+
+.admin-design-kit__form-check-group {
+  display: grid;
+  gap: var(--space-xs);
+  padding: clamp(0.6rem, 1.8vw, 1rem);
+  border-radius: var(--radius-md);
+  border: 0.06rem solid var(--color-border-strong);
+  background: rgba(var(--color-accent-rgb), 0.08);
+  min-width: min(18rem, 100%);
+}
+
+.admin-design-kit__form-check-legend {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.admin-design-kit__form-check-options {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.admin-design-kit__form-check-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.admin-design-kit__form-checkbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: rgba(var(--color-accent-rgb), 0.85);
+  flex-shrink: 0;
+}
+
+.admin-design-kit__feedback-sample {
+  margin: 0;
+  padding: clamp(0.6rem, 1.8vw, 1rem);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: var(--panel-font-size-base);
+  line-height: 1.4;
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral-text);
+  border: 0.06rem solid var(--color-neutral-border);
+}
+
+.admin-design-kit__feedback-sample[data-variant='success'] {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success-text);
+}
+
+.admin-design-kit__feedback-sample[data-variant='error'] {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: rgba(var(--color-error-rgb), 0.45);
+}
+
+.admin-design-kit__feedback-sample[data-variant='info'] {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: var(--color-info-text);
+}
+
+.admin-design-kit__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--panel-font-size-compact);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.admin-design-kit__chip[data-variant='accent'] {
+  background: var(--color-chip-bg);
+  border: 0.08rem solid var(--color-chip-border);
+  color: var(--color-accent-deep);
+}
+
+.admin-design-kit__chip[data-variant='neutral'] {
+  background: var(--color-neutral-bg);
+  border: 0.08rem solid var(--color-neutral-border);
+  color: var(--color-neutral-text);
+}
+
+.admin-design-kit__chip[data-variant='success'] {
+  background: var(--color-success-bg);
+  border: 0.08rem solid var(--color-success-text);
+  color: var(--color-success-text);
+}
+
 .admin-design-kit__table-card {
   gap: var(--panel-inner-gap);
 }
 
 .admin-design-kit__table-wrapper {
   overflow-x: auto;
-  border-radius: calc(var(--panel-radius) * 0.7);
+  border-radius: var(--radius-sm);
 }
 
 .admin-design-kit__table {
@@ -2714,7 +2921,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font-size: var(--panel-font-size-compact);
   background: rgba(var(--color-accent-rgb), 0.12);
   color: var(--color-accent-deep);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.1rem 0.55rem;
   letter-spacing: normal;
   text-transform: none;
@@ -2741,7 +2948,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font-size: var(--panel-font-size-compact);
   background: rgba(var(--color-accent-rgb), 0.1);
   color: var(--color-text-secondary);
-  border-radius: 0.65rem;
+  border-radius: var(--radius-sm);
   padding: 0.15rem 0.55rem;
 }
 
@@ -2777,7 +2984,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   display: grid;
   gap: var(--panel-cluster-gap);
   padding: clamp(0.75rem, 2vw, 1.1rem);
-  border-radius: calc(var(--panel-radius) * 0.9);
+  border-radius: var(--radius-md);
   border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
   background: var(--color-bg-elevated);
   box-shadow: var(--panel-shadow);
@@ -2809,7 +3016,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   position: relative;
   inline-size: 100%;
   block-size: clamp(0.45rem, 0.9vw, 0.6rem);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-warm-rgb), 0.2);
   overflow: hidden;
 }
@@ -2880,7 +3087,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: 0.3rem;
   --panel-action-padding-block: clamp(0.65rem, 2.1vw, 1rem);
   --panel-action-padding-inline: clamp(0.95rem, 2.8vw, 1.4rem);
-  --panel-action-radius: 0.9rem;
+  --panel-action-radius: var(--radius-md);
   --panel-action-border-width: 0.08rem;
   --panel-action-border-color: rgba(var(--color-accent-rgb), 0.28);
   --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.12);
@@ -2933,7 +3140,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: clamp(0.2rem, 1vw, 0.35rem);
   --panel-action-padding-block: 0.45rem;
   --panel-action-padding-inline: 0.95rem;
-  --panel-action-radius: 999px;
+  --panel-action-radius: var(--radius-pill);
   --panel-action-shadow: 0 0.4rem 1rem rgba(var(--color-accent-rgb), 0.2);
   display: inline-flex;
   align-items: center;
@@ -2945,7 +3152,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: 0;
   --panel-action-padding-block: 0;
   --panel-action-padding-inline: 0;
-  --panel-action-radius: 50%;
+  --panel-action-radius: var(--radius-circle);
   --panel-action-border-width: 0.06rem;
   --panel-action-shadow: 0 0.45rem 1rem rgba(var(--color-accent-rgb), 0.22);
   display: grid;
@@ -3008,7 +3215,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   margin: 0;
   padding: clamp(0.9rem, 2.4vw, 1.35rem);
   list-style: none;
-  border-radius: 0.95rem;
+  border-radius: var(--radius-lg);
   border: 0.08rem dashed rgba(var(--color-accent-rgb), 0.38);
   background: rgba(var(--color-accent-rgb), 0.08);
   min-height: clamp(5.5rem, 18vw, 7.5rem);
@@ -3048,7 +3255,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: clamp(0.5rem, 2vw, 0.75rem);
-  border-radius: clamp(0.9rem, 2.5vw, 1.3rem);
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, rgba(var(--color-accent-rgb), 0.05), rgba(var(--color-accent-rgb), 0.02));
   scrollbar-width: thin;
   grid-template-columns: none;
@@ -3060,7 +3267,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .carousel-list::-webkit-scrollbar-thumb {
   background: rgba(var(--color-accent-rgb), 0.25);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .carousel-item {
@@ -3079,7 +3286,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .home-dashboard__list-item {
   --card-padding-block: var(--space-md);
   --card-padding-inline: var(--space-md);
-  --card-radius: 0.85rem;
+  --card-radius: var(--radius-md);
   --card-border: 0.06rem solid rgba(var(--color-accent-rgb), 0.18);
   --card-background: rgba(var(--color-accent-rgb), 0.1);
   --card-gap: var(--space-2xs);
@@ -3145,7 +3352,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   display: grid;
   gap: 0.25rem;
   padding: clamp(0.6rem, 1.9vw, 0.95rem);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.2);
   background: rgba(var(--color-accent-rgb), 0.08);
 }
@@ -3176,7 +3383,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: 0.35rem;
   --panel-action-padding-block: clamp(0.65rem, 2.1vw, 1rem);
   --panel-action-padding-inline: clamp(1rem, 3vw, 1.5rem);
-  --panel-action-radius: 0.95rem;
+  --panel-action-radius: var(--radius-md);
   --panel-action-border-width: 0.08rem;
   --panel-action-border-color: rgba(var(--color-accent-rgb), 0.28);
   --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.12);
@@ -3237,7 +3444,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-user-toolbar__select {
   width: 100%;
   padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
-  border-radius: 0.7rem;
+  border-radius: var(--radius-sm);
   border: 0.06rem solid var(--color-input-border);
   background: var(--color-input-bg);
   color: var(--color-text-primary);
@@ -3357,7 +3564,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: 0;
   --panel-action-padding-block: 0;
   --panel-action-padding-inline: 0;
-  --panel-action-radius: 50%;
+  --panel-action-radius: var(--radius-circle);
   --panel-action-border-width: 0.06rem;
   --panel-action-border-color: var(--color-border-muted);
   --panel-action-bg-start: var(--color-bg-card);
@@ -3414,7 +3621,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .admin-user-table__details-panel {
   padding: clamp(0.85rem, 2.4vw, 1.35rem);
-  border-radius: 0.95rem;
+  border-radius: var(--radius-lg);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.2);
   background: rgba(var(--color-accent-rgb), 0.08);
 }
@@ -3477,7 +3684,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-miniapp-table__avatar {
   width: clamp(2.75rem, 6vw, 3.25rem);
   height: clamp(2.75rem, 6vw, 3.25rem);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   background: rgba(var(--color-accent-rgb), 0.18);
   display: inline-flex;
   align-items: center;
@@ -3526,7 +3733,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-accent-rgb), 0.12);
   color: var(--color-text-secondary);
   font-size: var(--panel-font-size-compact);
@@ -3543,7 +3750,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-items: center;
   justify-content: center;
   padding: 0.25rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-accent-rgb), 0.12);
   color: var(--color-text-secondary);
   font-size: var(--panel-font-size-compact);
@@ -3606,7 +3813,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   display: grid;
   gap: clamp(0.4rem, 1.2vw, 0.8rem);
   padding: clamp(0.6rem, 1.8vw, 1rem);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
   background: rgba(var(--color-accent-rgb), 0.06);
 }
@@ -3648,7 +3855,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   color: var(--color-text-primary);
   background: rgba(var(--color-accent-rgb), 0.12);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   padding: 0.4rem 0.75rem;
   cursor: pointer;
 }
@@ -3679,7 +3886,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-miniapp-table__access-fieldset {
   margin: 0;
   padding: clamp(0.6rem, 1.8vw, 1rem);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
   background: rgba(var(--color-accent-rgb), 0.06);
   display: grid;
@@ -3719,7 +3926,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   display: grid;
   gap: 0.45rem;
   padding: clamp(0.6rem, 1.8vw, 1rem);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   border: 0.06rem solid rgba(var(--color-accent-rgb), 0.24);
   background: rgba(var(--color-accent-rgb), 0.06);
 }
@@ -3738,7 +3945,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-subscription-table__select {
   width: 100%;
   padding: 0.55rem 0.85rem;
-  border-radius: 0.65rem;
+  border-radius: var(--radius-sm);
   border: 0.06rem solid var(--color-border-muted);
   background: var(--color-bg-card);
   color: var(--color-text-primary);
@@ -3780,7 +3987,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   font-size: var(--panel-font-size-compact);
   font-weight: 600;
   padding: 0.45rem 0.75rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   background: rgba(var(--color-accent-rgb), 0.12);
   color: var(--color-text-secondary);
   transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
@@ -3832,7 +4039,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-user-details__select {
   width: 100%;
   padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
-  border-radius: 0.7rem;
+  border-radius: var(--radius-sm);
   border: 0.06rem solid var(--color-input-border);
   background: var(--color-input-bg);
   color: var(--color-text-primary);
@@ -3935,7 +4142,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .user-panel__section-toggle:focus-visible {
   outline: 0.18rem solid rgba(var(--color-accent-rgb), 0.5);
   outline-offset: 0.24rem;
-  border-radius: clamp(0.65rem, 2vw, 1rem);
+  border-radius: var(--radius-md);
 }
 
 .user-panel__widget-content {
@@ -3999,7 +4206,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --button-gap: var(--space-2xs);
   --button-padding-block: clamp(0.45rem, 1.5vw, 0.75rem);
   --button-padding-inline: clamp(0.85rem, 2.4vw, 1.25rem);
-  --button-radius: 0.75rem;
+  --button-radius: var(--radius-md);
   --button-border-width: 0.06rem;
   --button-border-color: rgba(var(--color-accent-rgb), 0.24);
   --button-hover-border-color: rgba(var(--color-accent-rgb), 0.45);
@@ -4113,7 +4320,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .user-dashboard__summary-edit:not(.button) {
   padding: 0.45rem 0.95rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0.08rem solid rgba(var(--color-accent-rgb), 0.3);
   background: rgba(var(--color-accent-rgb), 0.1);
   color: var(--color-text-secondary);
@@ -4141,7 +4348,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   --panel-action-gap: clamp(0.25rem, 1vw, 0.35rem);
   --panel-action-padding-block: 0.45rem;
   --panel-action-padding-inline: 0.95rem;
-  --panel-action-radius: 999px;
+  --panel-action-radius: var(--radius-pill);
   --panel-action-border-width: 0.08rem;
   --panel-action-border-color: rgba(var(--color-accent-rgb), 0.3);
   --panel-action-bg-start: rgba(var(--color-accent-rgb), 0.1);
@@ -4168,7 +4375,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 }
 
 .user-dashboard__summary-edit.button {
-  --button-radius: 999px;
+  --button-radius: var(--radius-pill);
   --button-padding-block: clamp(0.55rem, 1.8vw, 0.85rem);
   --button-padding-inline: clamp(1.1rem, 3vw, 1.6rem);
   --button-gap: clamp(0.25rem, 1vw, 0.45rem);
@@ -4296,7 +4503,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .user-details__collapsible-summary:focus-visible {
   outline: 0.16rem solid rgba(var(--color-accent-rgb), 0.5);
   outline-offset: 0.08rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
 }
 
 .user-details__collapsible-summary::-webkit-details-marker,
@@ -4313,7 +4520,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .user-details__collapsible-icon {
   width: 1.6rem;
   height: 1.6rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(var(--color-accent-rgb), 0.18);
   display: grid;
   place-items: center;
@@ -4395,7 +4602,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-items: start;
   padding: 0.6rem 0.8rem;
   border: 0.08rem solid var(--color-border-muted);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   background: var(--color-bg-card);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -4434,7 +4641,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .user-preferences__theme-input:focus-visible + .user-preferences__theme-option-label {
   outline: 0.12rem solid var(--color-focus-outline);
   outline-offset: 0.2rem;
-  border-radius: 0.65rem;
+  border-radius: var(--radius-sm);
 }
 
 .user-details__group-title {
@@ -4480,7 +4687,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .user-account__action {
   padding: 0.4rem 1.05rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0.08rem solid rgba(var(--color-warm-rgb), 0.18);
   background: var(--color-bg-card);
   color: var(--color-text-soft);
@@ -4637,7 +4844,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .form-select,
 .form-textarea {
   padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   border: 0.08rem solid var(--form-border-color, rgba(var(--color-warm-rgb), 0.3));
   font: inherit;
   color: inherit;
@@ -4669,7 +4876,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .form-submit {
   --button-padding-block: var(--space-sm);
   --button-padding-inline: clamp(1.6rem, 4.5vw, 2.2rem);
-  --button-radius: 1.6rem;
+  --button-radius: var(--radius-lg);
   --button-border-width: 0.1rem;
   --button-border-color: rgba(var(--color-accent-rgb), 0.5);
   --button-bg: var(--color-bg-card);
@@ -4746,7 +4953,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .user-details__access-summary {
   margin: 0;
   padding: clamp(0.95rem, 2.6vw, 1.35rem);
-  border-radius: 1.1rem;
+  border-radius: var(--radius-lg);
   border: 0.06rem solid rgba(var(--color-warm-rgb), 0.12);
   background: var(--color-bg-card);
   display: grid;
@@ -4825,7 +5032,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .user-details__access-summary-copy {
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.35rem 0.9rem;
   font-size: var(--panel-font-size-compact);
   font-weight: 600;
@@ -4874,7 +5081,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   color: var(--color-accent-strong);
   cursor: pointer;
   padding: 0.25rem;
-  border-radius: 0.45rem;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5092,7 +5299,7 @@ main > .view--log {
   position: relative;
   width: 100%;
   min-height: clamp(18rem, 60vh, 30rem);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--color-bg-card);
   border: 1px solid rgba(var(--color-warm-rgb), 0.18);
@@ -5198,7 +5405,7 @@ main > .view--log {
 }
 .user-details__access-state {
   padding: clamp(0.9rem, 2.5vw, 1.35rem);
-  border-radius: 1.1rem;
+  border-radius: var(--radius-lg);
   border: 0.08rem solid rgba(var(--color-accent-rgb), 0.3);
   background: rgba(255, 248, 236, 0.92);
   display: grid;
