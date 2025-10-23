@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.164 - 2025-10-23 21:30 BRT
+- Adiciona o widget de indicadores ao painel administrativo com quatro cards acompanhando mini-apps ativos, implantações e base de usuários.
+- Estiliza os cards destacados em uma grade responsiva, com barras de progresso e cores alinhadas ao padrão visual do dashboard.
+- Atualiza as assinaturas de usuários e mini-apps para sincronizar os indicadores e carregar os snapshots iniciais na renderização.
+
 ## v0.1.163 - 2025-10-23 21:00 BRT
 - Substitui o callout de convidado do painel Início por um painel dedicado alinhado às classes do layout de autenticação.
 - Estende os estilos do painel de convidado para replicar largura, centralização e espaçamentos do formulário de login com botões responsivos.

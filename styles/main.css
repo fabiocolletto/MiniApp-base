@@ -2341,6 +2341,115 @@ main > :where(.card.view):not(.auth-view) {
   align-content: start;
 }
 
+.admin-dashboard__widget--highlights {
+  gap: var(--panel-inner-gap);
+}
+
+.admin-dashboard__highlight-grid {
+  display: grid;
+  gap: var(--panel-inner-gap);
+}
+
+@media (min-width: 40rem) {
+  .admin-dashboard__highlight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-dashboard__highlight-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.admin-dashboard__highlight {
+  --highlight-color: var(--color-accent);
+  display: grid;
+  gap: var(--panel-cluster-gap);
+  padding: clamp(0.75rem, 2vw, 1.1rem);
+  border-radius: calc(var(--panel-radius) * 0.9);
+  border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--panel-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-dashboard__highlight-title {
+  margin: 0;
+  font-size: var(--panel-font-size-title);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-dashboard__highlight-value {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.3vw, 1.7rem);
+  font-weight: 700;
+  color: var(--highlight-color);
+}
+
+.admin-dashboard__highlight-progress-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.admin-dashboard__highlight-progress {
+  position: relative;
+  inline-size: 100%;
+  block-size: clamp(0.45rem, 0.9vw, 0.6rem);
+  border-radius: 999px;
+  background: rgba(var(--color-warm-rgb), 0.2);
+  overflow: hidden;
+}
+
+.admin-dashboard__highlight-progress-bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  block-size: 100%;
+  inline-size: 0%;
+  border-radius: inherit;
+  background: var(--highlight-color);
+  transition: inline-size 0.3s ease;
+}
+
+.admin-dashboard__highlight-percentage {
+  font-size: var(--panel-font-size-base);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-dashboard__highlight-helper {
+  margin: 0;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.admin-dashboard__highlight--miniapps-active {
+  --highlight-color: var(--color-success-text);
+}
+
+.admin-dashboard__highlight--miniapps-deploying {
+  --highlight-color: var(--color-info-text);
+}
+
+.admin-dashboard__highlight--users-registered {
+  --highlight-color: var(--color-accent);
+}
+
+.admin-dashboard__highlight--users-admins {
+  --highlight-color: var(--color-accent-deep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-dashboard__highlight-progress-bar {
+    transition: none;
+  }
+}
+
 .home-dashboard__widget--miniapps {
   display: grid;
   gap: var(--panel-inner-gap);
