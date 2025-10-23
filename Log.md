@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.183 - 2025-10-23 13:05 BRT
+- Cria na Mini App Store cards dedicados às MiniAppPages, incluindo espaço reservado para a lista e para a arte destacada.
+- Conecta o widget das MiniAppPages ao catálogo de miniapps para exibir automaticamente os três modelos disponíveis.
+- Mantém o placeholder preparado enquanto nenhuma MiniAppPage estiver publicada e atualiza o rodapé para a release v0.1.183 das 13h05.
+
 ## v0.1.181 - 2025-10-24 12:40 BRT
 - Harmoniza o afastamento externo dos painéis aplicando o mesmo padding nas laterais, topo e base nas telas grandes.
 - Ajusta a configuração padrão das views administrativas e do usuário para reaproveitar o novo espaçamento unificado.
