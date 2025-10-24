@@ -26,6 +26,10 @@ Este documento consolida as variáveis homologadas para o painel Kit Design. Tod
 
 As classes `.main--admin` e `.main--user` ativam esses tokens automaticamente, garantindo que os widgets respeitem o espaço livre entre header e footer em qualquer painel. Em cenários de tela cheia ou splash, remova essas classes e zere manualmente os offsets para liberar 100dvh para o conteúdo temporário; ao retornar ao layout padrão, restaure os offsets chamando novamente o cálculo do app shell.
 
+## Pré-visualizações e pitch
+- As janelas `panel-preview-widget__frame` exibidas no Kit de Design devem expandir em altura conforme o conteúdo renderizado, sem ativar barras de rolagem internas.
+- No pitch da galeria de painéis, ajuste a malha para exibir um item por linha quando houver apenas uma prévia, duas colunas equilibradas para dois itens e três colunas quando existir um conjunto maior.
+
 ## Cores primárias de botão
 Cada opção combina valores para o estado base e hover.
 - `--kit-color-primary-strong-base` | `--kit-color-primary-strong-hover` — degradê âmbar intenso.

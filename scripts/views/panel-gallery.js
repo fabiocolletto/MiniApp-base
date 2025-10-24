@@ -312,6 +312,26 @@ export function renderPanelGallery(viewRoot) {
   const panelWidgetRecords = [];
   const miniAppWidgetRecords = [];
 
+  function applyPitchColumns(grid, itemCount) {
+    if (!(grid instanceof HTMLElement)) {
+      return;
+    }
+
+    if (!Number.isFinite(itemCount) || itemCount <= 0) {
+      grid.removeAttribute('data-pitch-columns');
+      return;
+    }
+
+    let columns = 1;
+    if (itemCount >= 3) {
+      columns = 3;
+    } else if (itemCount === 2) {
+      columns = 2;
+    }
+
+    grid.dataset.pitchColumns = String(columns);
+  }
+
   function clearRecords(records) {
     while (records.length > 0) {
       const record = records.pop();
@@ -396,11 +416,13 @@ export function renderPanelGallery(viewRoot) {
   function destroyPanelWidgets() {
     clearRecords(panelWidgetRecords);
     panelsSection.grid.replaceChildren();
+    panelsSection.grid.removeAttribute('data-pitch-columns');
   }
 
   function destroyMiniAppWidgets() {
     clearRecords(miniAppWidgetRecords);
     miniAppsSection.grid.replaceChildren();
+    miniAppsSection.grid.removeAttribute('data-pitch-columns');
   }
 
   function renderPanels() {
@@ -412,6 +434,7 @@ export function renderPanelGallery(viewRoot) {
       panelsSection.emptyState.textContent = state.user
         ? 'Nenhum painel está habilitado para o seu perfil no momento.'
         : 'Entre na sua conta para visualizar os painéis disponíveis.';
+      applyPitchColumns(panelsSection.grid, 0);
       return;
     }
 
@@ -440,6 +463,8 @@ export function renderPanelGallery(viewRoot) {
         },
       });
     });
+
+    applyPitchColumns(panelsSection.grid, panels.length);
   }
 
   function renderMiniApps() {
@@ -451,6 +476,7 @@ export function renderPanelGallery(viewRoot) {
       miniAppsSection.emptyState.hidden = false;
       miniAppsSection.emptyState.textContent =
         'Faça login para carregar os miniapps salvos no seu painel.';
+      applyPitchColumns(miniAppsSection.grid, 0);
       return;
     }
 
@@ -458,6 +484,7 @@ export function renderPanelGallery(viewRoot) {
       miniAppsSection.emptyState.hidden = false;
       miniAppsSection.emptyState.textContent =
         'Salve miniapps na loja para visualizar as prévias aqui.';
+      applyPitchColumns(miniAppsSection.grid, 0);
       return;
     }
 
@@ -486,6 +513,8 @@ export function renderPanelGallery(viewRoot) {
         },
       });
     });
+
+    applyPitchColumns(miniAppsSection.grid, savedApps.length);
   }
 
   function updateLayout() {

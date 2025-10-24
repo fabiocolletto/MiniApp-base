@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.223 - 2025-10-24 09:57 BRT
+- Elimina a rolagem vertical dos widgets de pré-visualização no Kit de Design permitindo que cada modelo expanda na altura completa.
+- Ajusta a galeria de painéis para redistribuir o pitch em uma, duas ou três colunas conforme a quantidade de miniaturas exibidas.
+- Atualiza a documentação do Kit de Design e o guia de MiniApps com as novas regras de pitch e registro de logs dedicados.
+
 ## v0.1.222 - 2025-10-24 08:28 BRT
 - Cria o catálogo `APP_SHELL_LAYOUT_MODELS` descrevendo a composição do cabeçalho, painel central com `--view-max-block-size` e rodapé para painéis administrativos e de usuário.
 - Adiciona a vitrine "Layouts do app shell" ao Kit de Design administrativo exibindo os novos modelos ao lado das demais categorias.
