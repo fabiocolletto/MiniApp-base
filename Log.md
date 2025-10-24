@@ -1,7 +1,8 @@
 # Log
 
-## v0.1.225 - 2025-10-24 11:00 BRT
+## v0.1.225 - 2025-10-24 11:32 BRT
 - Remove as restrições de altura herdadas do shell no painel Kit de Design, permitindo que os widgets se ajustem ao conteúdo.
+- Ajusta o modelo UD02 no painel de design para ocupar uma linha exclusiva com largura integral e destaque individual.
 
 ## v0.1.224 - 2025-10-24 10:55 BRT
 - Persiste a última view acessada no armazenamento local e restaura o painel correspondente após recarregamentos.
