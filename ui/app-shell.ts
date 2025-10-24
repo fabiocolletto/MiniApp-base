@@ -9,6 +9,7 @@ import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
+import { renderPanelGallery } from '../scripts/views/panel-gallery.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -200,6 +201,7 @@ type ViewName =
   | 'admin-design-kit'
   | 'log'
   | 'home'
+  | 'panel-gallery'
   | 'user'
   | 'miniapps'
   | 'login'
@@ -208,11 +210,12 @@ type ViewName =
 
 type MenuViewName = ViewName | 'splash' | 'not-found';
 
-const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'splash']);
+const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'panel-gallery', 'splash']);
 
 const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Kit de design',
+  'panel-gallery': 'Galeria de painéis',
   miniapps: 'MiniApps',
   user: 'Painel do usuário',
   login: 'Painel de Login',
@@ -229,6 +232,7 @@ const views: Record<string, (viewRoot: HTMLElement) => void> = {
   'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
+  'panel-gallery': renderPanelGallery,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -1223,13 +1227,7 @@ export function initializeAppShell(router: RouterBridge): void {
 
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
-
-    if (shellRouter && typeof shellRouter.goTo === 'function') {
-      shellRouter.goTo('dashboard');
-      return;
-    }
-
-    renderView('home');
+    renderView('panel-gallery');
   });
   versionButton?.addEventListener('click', () => {
     closeHeaderMenu();
