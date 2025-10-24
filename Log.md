@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.226 - 2025-10-24 12:06 BRT
+- Simplifica o widget de identidade visual do painel administrativo com um único botão de modo, upload centralizado e prévia compacta no tamanho aplicado.
+- Atualiza os metadados do sistema para comunicar a versão v0.1.226 no rodapé e demais indicadores do painel.
+
 ## v0.1.225 - 2025-10-24 11:40 BRT
 - Remove as restrições de altura herdadas do shell no painel Kit de Design, permitindo que os widgets se ajustem ao conteúdo.
 - Ajusta o modelo UD02 no painel de design para ocupar uma linha exclusiva com largura integral e destaque individual.

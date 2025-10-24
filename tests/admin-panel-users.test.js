@@ -126,8 +126,14 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
   const brandingWidget = viewRoot.querySelector('.admin-dashboard__widget--branding');
   assert.ok(brandingWidget, 'widget de identidade visual deve existir');
 
-  const brandingControls = brandingWidget.querySelectorAll('.admin-branding__item');
-  assert.ok(brandingControls.length > 0, 'widget de identidade visual deve exibir controles de logo');
+  const brandingModeToggle = brandingWidget.querySelector('.admin-branding__mode-toggle');
+  assert.ok(brandingModeToggle, 'widget de identidade visual deve exibir o controle de modo compacto');
+
+  const brandingFileInput = brandingWidget.querySelector('.admin-branding__file-input');
+  assert.ok(brandingFileInput, 'widget de identidade visual deve oferecer campo de upload de logo');
+
+  const brandingPreviewImage = brandingWidget.querySelector('.admin-branding__preview-image');
+  assert.ok(brandingPreviewImage, 'widget de identidade visual deve renderizar uma pré-visualização da logo');
 
   const storageWidget = viewRoot.querySelector('.admin-dashboard__widget--storage');
   assert.ok(storageWidget, 'widget de monitoramento do IndexedDB deve existir');
