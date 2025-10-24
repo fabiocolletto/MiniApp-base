@@ -1980,11 +1980,11 @@ export function initializeAppShell(router) {
     closeHeaderMenu();
 
     if (shellRouter && typeof shellRouter.goTo === 'function') {
-      shellRouter.goTo('dashboard');
+      shellRouter.goTo('catalog');
       return;
     }
 
-    renderView('home');
+    renderView('panel-gallery');
   });
   versionButton?.addEventListener('click', () => {
     closeHeaderMenu();
