@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.215 - 2025-10-24 04:00 BRT
+- Complementa a release v0.1.215 reestruturando o painel do Kit Design com widgets de título e etiqueta alinhados ao modelo do painel Início.
+- Atualiza o resumo para destacar dados do administrador ativo e remove o cabeçalho anterior do painel.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.215 das 04h00.
+
 ## v0.1.215 - 2025-10-25 13:30 BRT
 - Remove do painel inicial o widget "Miniapps liberados" para simplificar a visão principal dos usuários.
 - Atualiza a versão exibida no rodapé para comunicar a release v0.1.215 das 13h30.
