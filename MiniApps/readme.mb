@@ -22,5 +22,6 @@
 
 ## Comunicação
 - Registre no `Log.md` o resumo das alterações realizadas em cada MiniApp junto com data e horário em BRT.
+- Durante o desenvolvimento, mantenha um log dedicado dentro do diretório do MiniApp e utilize o `Log.md` principal apenas para anunciar lançamentos ou atualizações efetivamente publicados.
 - Inclua instruções claras para QA e publicação quando preparar um MiniApp para release.
 - Utilize descrições consistentes nas pull requests para facilitar o acompanhamento histórico das evoluções dos MiniApps.
