@@ -2669,9 +2669,14 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: var(--panel-stack-gap);
 }
 
-.admin-design-kit__section {
+.admin-design-kit__widget {
   display: grid;
-  gap: var(--panel-gap);
+  gap: var(--panel-inner-gap);
+}
+
+.admin-design-kit__widget-header {
+  display: grid;
+  gap: var(--space-xs);
 }
 
 .admin-design-kit__section-title {
@@ -2685,15 +2690,33 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   color: var(--color-text-secondary);
 }
 
-.admin-design-kit__grid {
-  display: grid;
+.admin-design-kit__models {
+  display: flex;
   gap: var(--panel-gap);
-  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  overflow-x: auto;
+  padding-block-end: var(--space-2xs);
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.admin-design-kit__models::-webkit-scrollbar {
+  height: 0.5rem;
+}
+
+.admin-design-kit__models::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-accent-rgb), 0.35);
+  border-radius: var(--radius-pill);
 }
 
 .admin-design-kit__item {
   gap: var(--panel-inner-gap);
   align-content: start;
+  flex: 0 0 clamp(16rem, 45vw, 22rem);
+  min-inline-size: clamp(16rem, 45vw, 22rem);
+  max-inline-size: 100%;
+  scroll-snap-align: start;
 }
 
 .admin-design-kit__item-header {
