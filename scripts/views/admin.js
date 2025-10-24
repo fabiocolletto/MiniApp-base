@@ -1619,6 +1619,8 @@ function createSubscriptionPlansWidget() {
 
 function createBrandingWidget() {
   let currentBranding = getBrandingSnapshot();
+  let currentPreviewTheme =
+    document.documentElement?.dataset?.theme === 'dark' ? 'dark' : 'light';
 
   const widget = document.createElement('section');
   widget.className =
@@ -1631,398 +1633,277 @@ function createBrandingWidget() {
   const description = document.createElement('p');
   description.className = 'user-widget__description';
   description.textContent =
-    'Atualize os logotipos exibidos no topo do painel para cada tema disponível no aplicativo.';
+    'Atualize rapidamente o logotipo exibido no cabeçalho do painel.';
 
   widget.append(title, description);
 
-  const modeFieldset = document.createElement('fieldset');
-  modeFieldset.className = 'form-field admin-branding__mode';
+  const container = document.createElement('div');
+  container.className = 'admin-branding';
+  widget.append(container);
 
-  const legend = document.createElement('legend');
-  legend.className = 'form-label';
-  legend.textContent = 'Modo de exibição';
-  modeFieldset.append(legend);
+  const modeToggle = document.createElement('button');
+  modeToggle.type = 'button';
+  modeToggle.className = 'button button--secondary admin-branding__mode-toggle';
+  modeToggle.setAttribute('aria-pressed', 'false');
+  container.append(modeToggle);
 
-  const modeOptions = document.createElement('div');
-  modeOptions.className = 'admin-branding__mode-options';
+  const modeHint = document.createElement('p');
+  modeHint.className = 'form-helper admin-branding__mode-hint';
+  modeHint.id = `admin-branding-mode-hint-${++brandingControlId}`;
+  container.append(modeHint);
 
-  function createModeOption(value, heading, helper) {
-    const option = document.createElement('label');
-    option.className = 'admin-branding__mode-option';
-    option.dataset.variant = value;
-    option.dataset.state = 'inactive';
+  const uploadField = document.createElement('div');
+  uploadField.className = 'form-field admin-branding__field';
 
-    const input = document.createElement('input');
-    input.type = 'radio';
-    input.name = 'admin-branding-mode';
-    input.value = value;
-    input.className = 'admin-branding__mode-input';
+  const uploadLabel = document.createElement('label');
+  uploadLabel.className = 'form-label';
+  uploadLabel.textContent = 'Selecione a nova logo';
 
-    const accent = document.createElement('span');
-    accent.className = 'admin-branding__mode-accent';
-    accent.setAttribute('aria-hidden', 'true');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/png,image/jpeg,image/webp,image/svg+xml';
+  fileInput.id = `admin-branding-upload-${++brandingControlId}`;
+  fileInput.className = 'form-input admin-branding__file-input';
+  fileInput.setAttribute('aria-describedby', modeHint.id);
 
-    const accentNumber = document.createElement('span');
-    accentNumber.className = 'admin-branding__mode-accent-number';
-    accentNumber.textContent = value === 'individual' ? '2' : '1';
+  const uploadHelper = document.createElement('p');
+  uploadHelper.className = 'form-helper admin-branding__helper';
+  uploadHelper.textContent =
+    'Use imagens PNG, JPG, SVG ou WebP de até 1 MB. Para logos diferentes, envie até dois arquivos na ordem claro e escuro.';
 
-    const accentCaption = document.createElement('span');
-    accentCaption.className = 'admin-branding__mode-accent-caption';
-    accentCaption.textContent = value === 'individual' ? 'logos' : 'logo';
+  uploadField.append(uploadLabel, fileInput, uploadHelper);
+  container.append(uploadField);
 
-    accent.append(accentNumber, accentCaption);
+  const feedback = document.createElement('p');
+  feedback.className = 'form-helper admin-branding__feedback';
+  feedback.setAttribute('aria-live', 'polite');
+  feedback.hidden = true;
+  container.append(feedback);
 
-    const content = document.createElement('span');
-    content.className = 'admin-branding__mode-content';
+  const preview = document.createElement('figure');
+  preview.className = 'admin-branding__preview';
+  preview.dataset.theme = currentPreviewTheme;
 
-    const titleElement = document.createElement('span');
-    titleElement.className = 'admin-branding__mode-title';
-    titleElement.textContent = heading;
+  const previewImage = document.createElement('img');
+  previewImage.className = 'admin-branding__preview-image';
+  previewImage.alt = 'Pré-visualização da logo aplicada no painel';
 
-    const helperElement = document.createElement('span');
-    helperElement.className = 'admin-branding__mode-hint';
-    helperElement.textContent = helper;
+  const previewCaption = document.createElement('figcaption');
+  previewCaption.className = 'admin-branding__preview-caption';
 
-    content.append(titleElement, helperElement);
-    option.append(input, accent, content);
+  preview.append(previewImage, previewCaption);
+  container.append(preview);
 
-    function setState(isActive) {
-      option.dataset.state = isActive ? 'active' : 'inactive';
+  function setFeedback(message, tone = 'neutral') {
+    const text = typeof message === 'string' ? message.trim() : '';
+    if (text) {
+      feedback.textContent = text;
+      feedback.hidden = false;
+      feedback.dataset.tone = tone;
+    } else {
+      feedback.textContent = '';
+      feedback.hidden = true;
+      feedback.removeAttribute('data-tone');
     }
-
-    return { element: option, input, setState };
   }
 
-  const individualOption = createModeOption(
-    'individual',
-    'Logos independentes',
-    'Defina uma imagem específica para os temas claro e escuro.',
-  );
-  const sharedOption = createModeOption(
-    'shared',
-    'Mesma logo nos dois temas',
-    'A mesma imagem será utilizada simultaneamente no claro e no escuro.',
-  );
+  function updateModeToggle() {
+    const mode = currentBranding.mode === 'shared' ? 'shared' : 'individual';
+    container.dataset.mode = mode;
+    modeToggle.dataset.mode = mode;
+    const isShared = mode === 'shared';
+    modeToggle.setAttribute('aria-pressed', String(isShared));
+    modeToggle.textContent = isShared
+      ? 'Usar a mesma logo nos dois temas'
+      : 'Usar logos diferentes para claro e escuro';
+    modeHint.textContent = isShared
+      ? 'A mesma imagem será aplicada automaticamente em todos os temas.'
+      : 'Envie até dois arquivos para definir logotipos independentes (claro e escuro).';
+    fileInput.multiple = !isShared;
+  }
 
-  modeOptions.append(individualOption.element, sharedOption.element);
-  modeFieldset.append(modeOptions);
-  widget.append(modeFieldset);
-
-  const controls = document.createElement('div');
-  controls.className = 'admin-branding__controls';
-  widget.append(controls);
-
-  function createLogoBlock({ key, label, helper }) {
-    const element = document.createElement('article');
-    element.className = 'admin-branding__item';
-    element.dataset.variant = key;
-
-    const preview = document.createElement('div');
-    preview.className = 'admin-branding__preview';
-    preview.dataset.variant = key;
-
-    const previewScene = document.createElement('div');
-    previewScene.className = 'admin-branding__preview-scene';
-
-    const previewHeader = document.createElement('div');
-    previewHeader.className = 'admin-branding__preview-header';
-
-    const previewLogo = document.createElement('div');
-    previewLogo.className = 'admin-branding__preview-logo';
-    previewLogo.dataset.state = 'placeholder';
-
-    const previewImage = document.createElement('img');
-    previewImage.className = 'admin-branding__preview-image';
-    previewImage.alt = `${label} – pré-visualização da logo`;
-    previewImage.decoding = 'async';
-    previewImage.loading = 'lazy';
-
-    const previewPlaceholder = document.createElement('span');
-    previewPlaceholder.className = 'admin-branding__preview-logo-placeholder';
-    previewPlaceholder.textContent = 'Logo';
-
-    previewLogo.append(previewImage, previewPlaceholder);
-
-    const previewBadge = document.createElement('span');
-    previewBadge.className = 'admin-branding__preview-badge';
-    previewBadge.textContent =
-      key === 'shared' ? 'Modo sincronizado' : key === 'light' ? 'Tema claro' : 'Tema escuro';
-
-    previewHeader.append(previewLogo, previewBadge);
-
-    const previewBody = document.createElement('div');
-    previewBody.className = 'admin-branding__preview-body';
-
-    const previewTitle = document.createElement('span');
-    previewTitle.className = 'admin-branding__preview-title';
-    previewTitle.textContent = label;
-
-    const previewSubtitle = document.createElement('span');
-    previewSubtitle.className = 'admin-branding__preview-subtitle';
-    previewSubtitle.textContent = 'Pré-visualização da logo';
-
-    const previewMeta = document.createElement('span');
-    previewMeta.className = 'admin-branding__preview-meta';
-    previewMeta.textContent =
-      key === 'shared'
-        ? 'Aplicada simultaneamente nos modos claro e escuro.'
-        : key === 'light'
-          ? 'Visão exibida quando o modo claro está ativo.'
-          : 'Visão exibida quando o modo escuro está ativo.';
-
-    previewBody.append(previewTitle, previewSubtitle, previewMeta);
-
-    const previewGraphic = document.createElement('div');
-    previewGraphic.className = 'admin-branding__preview-graphic';
-    previewGraphic.setAttribute('aria-hidden', 'true');
-
-    previewScene.append(previewHeader, previewBody, previewGraphic);
-    preview.append(previewScene);
-
-    const form = document.createElement('div');
-    form.className = 'admin-branding__form form-field';
-
-    const labelElement = document.createElement('span');
-    labelElement.className = 'form-label';
-    labelElement.textContent = label;
-
-    const helperElement = document.createElement('p');
-    helperElement.className = 'form-helper';
-    helperElement.textContent = helper;
-
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/png,image/jpeg,image/webp,image/svg+xml';
-    fileInput.id = `admin-branding-file-${key}-${++brandingControlId}`;
-    fileInput.hidden = true;
-
-    const uploadButton = document.createElement('button');
-    uploadButton.type = 'button';
-    uploadButton.className = 'button button--secondary admin-branding__action';
-    uploadButton.textContent = 'Carregar logo';
-
-    const resetButton = document.createElement('button');
-    resetButton.type = 'button';
-    resetButton.className = 'button button--ghost admin-branding__action';
-    resetButton.textContent = 'Restaurar padrão';
-
-    const actions = document.createElement('div');
-    actions.className = 'admin-branding__actions';
-    actions.append(uploadButton, resetButton);
-
-    const feedback = document.createElement('p');
-    feedback.className = 'form-helper admin-branding__feedback';
-    feedback.setAttribute('aria-live', 'polite');
-    feedback.hidden = true;
-
-    form.append(labelElement, helperElement, fileInput, actions, feedback);
-
-    element.append(preview, form);
-
-    function setPreview(src) {
-      if (typeof src === 'string' && src.trim() !== '') {
-        previewImage.src = src;
-        previewImage.hidden = false;
-        previewPlaceholder.hidden = true;
-        previewLogo.dataset.state = 'image';
-      } else {
-        previewImage.src = '';
-        previewImage.hidden = true;
-        previewPlaceholder.hidden = false;
-        previewLogo.dataset.state = 'placeholder';
-      }
-    }
-
-    function setFeedback(message, tone = 'info') {
-      const text = typeof message === 'string' ? message.trim() : '';
-      if (text) {
-        feedback.textContent = text;
-        feedback.hidden = false;
-        feedback.dataset.tone = tone;
-      } else {
-        feedback.textContent = '';
-        feedback.hidden = true;
-        feedback.removeAttribute('data-tone');
-      }
-    }
-
-    function setVisibility(isVisible) {
-      if (isVisible) {
-        element.hidden = false;
-        element.removeAttribute('aria-hidden');
-        element.dataset.visibility = 'visible';
-        fileInput.disabled = false;
-        uploadButton.disabled = false;
-        resetButton.disabled = false;
-      } else {
-        element.hidden = true;
-        element.setAttribute('aria-hidden', 'true');
-        element.dataset.visibility = 'hidden';
-        fileInput.disabled = true;
-        uploadButton.disabled = true;
-        resetButton.disabled = true;
-      }
-    }
+  function resolveLogos() {
+    const fallbackLight =
+      typeof currentBranding?.logos?.light === 'string' && currentBranding.logos.light
+        ? currentBranding.logos.light
+        : DEFAULT_BRANDING_LOGOS.light;
+    const fallbackDark =
+      typeof currentBranding?.logos?.dark === 'string' && currentBranding.logos.dark
+        ? currentBranding.logos.dark
+        : DEFAULT_BRANDING_LOGOS.dark;
+    const fallbackShared =
+      typeof currentBranding?.logos?.shared === 'string' && currentBranding.logos.shared
+        ? currentBranding.logos.shared
+        : fallbackLight;
 
     return {
-      element,
-      fileInput,
-      uploadButton,
-      resetButton,
-      setPreview,
-      setFeedback,
-      setVisibility,
+      light: fallbackLight,
+      dark: fallbackDark,
+      shared: fallbackShared,
     };
   }
 
-  const logoBlocks = {
-    light: createLogoBlock({
-      key: 'light',
-      label: 'Tema claro',
-      helper: 'Imagem exibida quando o painel estiver no modo claro.',
-    }),
-    dark: createLogoBlock({
-      key: 'dark',
-      label: 'Tema escuro',
-      helper: 'Imagem exibida quando o painel estiver no modo escuro.',
-    }),
-    shared: createLogoBlock({
-      key: 'shared',
-      label: 'Logo compartilhada',
-      helper: 'Usada simultaneamente nos temas claro e escuro.',
-    }),
-  };
+  function updatePreview() {
+    const mode = currentBranding.mode === 'shared' ? 'shared' : 'individual';
+    const logos = resolveLogos();
 
-  controls.append(logoBlocks.light.element, logoBlocks.dark.element, logoBlocks.shared.element);
+    if (mode === 'shared') {
+      currentPreviewTheme = 'shared';
+    } else if (currentPreviewTheme !== 'dark') {
+      currentPreviewTheme = 'light';
+    }
 
-  function syncModeOptions() {
-    individualOption.setState(individualOption.input.checked);
-    sharedOption.setState(sharedOption.input.checked);
+    preview.dataset.theme = currentPreviewTheme;
+
+    let previewSrc = logos.shared;
+    let caption = 'Aplicada em todos os temas';
+
+    if (mode === 'individual') {
+      if (currentPreviewTheme === 'dark') {
+        previewSrc = logos.dark;
+        caption = 'Prévia no modo escuro';
+      } else {
+        previewSrc = logos.light;
+        caption = 'Prévia no modo claro';
+      }
+    }
+
+    previewImage.src = previewSrc;
+    previewCaption.textContent = caption;
   }
 
-  function handleUpload(variant, block, fileList) {
-    const files = Array.from(fileList ?? []).filter((entry) => entry instanceof File);
-    const file = files.length > 0 ? files[0] : null;
-    if (!file) {
-      block.setFeedback('Nenhum arquivo selecionado.', 'neutral');
-      return;
+  function applySnapshot(snapshot) {
+    currentBranding = snapshot && typeof snapshot === 'object' ? snapshot : getBrandingSnapshot();
+    updateModeToggle();
+    updatePreview();
+  }
+
+  function validateFile(file) {
+    if (!(file instanceof File)) {
+      return 'Nenhum arquivo selecionado.';
     }
 
     const type = String(file.type ?? '').toLowerCase();
     if (type && !BRANDING_ALLOWED_MIME_TYPES.has(type)) {
-      block.setFeedback('Formato não suportado. Use PNG, JPG, SVG ou WebP.', 'error');
-      return;
+      return 'Formato não suportado. Use PNG, JPG, SVG ou WebP.';
     }
 
     if (Number.isFinite(file.size) && file.size > BRANDING_MAX_FILE_SIZE) {
-      block.setFeedback('Arquivo muito grande. Utilize imagens de até 1 MB.', 'error');
+      return 'Arquivo muito grande. Utilize imagens de até 1 MB.';
+    }
+
+    return null;
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error('empty-result'));
+        }
+      });
+      reader.addEventListener('error', () => {
+        reject(new Error('read-error'));
+      });
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList ?? []).filter((entry) => entry instanceof File);
+    const mode = currentBranding.mode === 'shared' ? 'shared' : 'individual';
+
+    if (files.length === 0) {
+      setFeedback('Nenhum arquivo selecionado.', 'neutral');
       return;
     }
 
-    block.setFeedback('Carregando logo...', 'info');
-
-    const reader = new FileReader();
-    reader.addEventListener('error', () => {
-      block.setFeedback('Não foi possível carregar a imagem selecionada.', 'error');
-    });
-    reader.addEventListener('load', () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
-      if (!result) {
-        block.setFeedback('Não foi possível carregar a imagem selecionada.', 'error');
+    if (mode === 'shared') {
+      const [file] = files;
+      const error = validateFile(file);
+      if (error) {
+        setFeedback(error, 'error');
         return;
       }
 
-      persistBrandingUpdate({ logos: { [variant]: result } });
-      block.setFeedback('Logo atualizada com sucesso!', 'success');
-    });
-    reader.readAsDataURL(file);
-  }
+      setFeedback('Carregando logo...', 'info');
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        persistBrandingUpdate({ mode: 'shared', logos: { shared: dataUrl } });
+        setFeedback('Logo atualizada com sucesso!', 'success');
+      } catch (error) {
+        console.error('Falha ao processar logo compartilhada.', error);
+        setFeedback('Não foi possível carregar a imagem selecionada.', 'error');
+      }
+      return;
+    }
 
-  const logoEntries = [
-    ['light', logoBlocks.light, DEFAULT_BRANDING_LOGOS.light],
-    ['dark', logoBlocks.dark, DEFAULT_BRANDING_LOGOS.dark],
-    ['shared', logoBlocks.shared, DEFAULT_BRANDING_LOGOS.light],
-  ];
+    const targets = ['light', 'dark'];
+    const selected = files.slice(0, targets.length);
 
-  logoEntries.forEach(([variant, block, defaultLogo]) => {
-    block.uploadButton.addEventListener('click', () => {
-      block.fileInput.click();
-    });
+    for (const file of selected) {
+      const error = validateFile(file);
+      if (error) {
+        setFeedback(error, 'error');
+        return;
+      }
+    }
 
-    block.fileInput.addEventListener('change', () => {
-      handleUpload(variant, block, block.fileInput.files);
-      block.fileInput.value = '';
-    });
+    setFeedback('Carregando logos...', 'info');
 
-    block.resetButton.addEventListener('click', () => {
-      persistBrandingUpdate({ logos: { [variant]: defaultLogo } });
-      block.setFeedback('Logo restaurada para o padrão.', 'success');
-    });
-  });
+    try {
+      const payload = {};
+      const results = await Promise.all(selected.map((file) => readFileAsDataUrl(file)));
+      results.forEach((result, index) => {
+        const target = targets[index];
+        if (target) {
+          payload[target] = result;
+        }
+      });
 
-  function applySnapshot(snapshot) {
-    currentBranding = snapshot && typeof snapshot === 'object' ? snapshot : getBrandingSnapshot();
-    const mode = currentBranding.mode === 'shared' ? 'shared' : 'individual';
-
-    controls.dataset.mode = mode;
-
-    individualOption.input.checked = mode === 'individual';
-    sharedOption.input.checked = mode === 'shared';
-    syncModeOptions();
-
-    const lightLogo =
-      typeof currentBranding?.logos?.light === 'string' && currentBranding.logos.light
-        ? currentBranding.logos.light
-        : DEFAULT_BRANDING_LOGOS.light;
-    const darkLogo =
-      typeof currentBranding?.logos?.dark === 'string' && currentBranding.logos.dark
-        ? currentBranding.logos.dark
-        : DEFAULT_BRANDING_LOGOS.dark;
-    const sharedLogo =
-      typeof currentBranding?.logos?.shared === 'string' && currentBranding.logos.shared
-        ? currentBranding.logos.shared
-        : lightLogo;
-
-    if (mode === 'shared') {
-      logoBlocks.shared.setVisibility(true);
-      logoBlocks.light.setVisibility(false);
-      logoBlocks.dark.setVisibility(false);
-      logoBlocks.shared.setPreview(sharedLogo);
-    } else {
-      logoBlocks.shared.setVisibility(false);
-      logoBlocks.light.setVisibility(true);
-      logoBlocks.dark.setVisibility(true);
-      logoBlocks.light.setPreview(lightLogo);
-      logoBlocks.dark.setPreview(darkLogo);
-      logoBlocks.shared.setPreview(sharedLogo);
+      if (Object.keys(payload).length > 0) {
+        persistBrandingUpdate({ mode: 'individual', logos: payload });
+        const successMessage = selected.length > 1
+          ? 'Logos atualizadas com sucesso!'
+          : 'Logo atualizada com sucesso!';
+        setFeedback(successMessage, 'success');
+      } else {
+        setFeedback('Nenhum arquivo válido foi processado.', 'neutral');
+      }
+    } catch (error) {
+      console.error('Falha ao processar logos individuais.', error);
+      setFeedback('Não foi possível carregar as imagens selecionadas.', 'error');
     }
   }
+
+  modeToggle.addEventListener('click', () => {
+    const nextMode = currentBranding.mode === 'shared' ? 'individual' : 'shared';
+    if (nextMode === 'shared') {
+      const logos = resolveLogos();
+      persistBrandingUpdate({ mode: 'shared', logos: { shared: logos.shared } });
+    } else {
+      const logos = resolveLogos();
+      persistBrandingUpdate({
+        mode: 'individual',
+        logos: { light: logos.light, dark: logos.dark },
+      });
+    }
+    setFeedback('Modo de exibição atualizado.', 'success');
+  });
+
+  fileInput.addEventListener('change', () => {
+    handleFiles(fileInput.files);
+    fileInput.value = '';
+  });
 
   applySnapshot(currentBranding);
 
   const unsubscribe = subscribeBranding((snapshot) => {
     applySnapshot(snapshot);
-  });
-
-  individualOption.input.addEventListener('change', () => {
-    if (individualOption.input.checked) {
-      persistBrandingUpdate({ mode: 'individual' });
-    }
-    syncModeOptions();
-  });
-
-  sharedOption.input.addEventListener('change', () => {
-    if (sharedOption.input.checked) {
-      const fallbackShared =
-        (currentBranding?.logos?.shared && typeof currentBranding.logos.shared === 'string'
-          ? currentBranding.logos.shared
-          : null) ||
-        (currentBranding?.logos?.light && typeof currentBranding.logos.light === 'string'
-          ? currentBranding.logos.light
-          : DEFAULT_BRANDING_LOGOS.light);
-      persistBrandingUpdate({ mode: 'shared', logos: { shared: fallbackShared } });
-    }
-    syncModeOptions();
   });
 
   function teardown() {
@@ -2033,6 +1914,7 @@ function createBrandingWidget() {
 
   return { widget, teardown };
 }
+
 
 export function renderAdmin(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
