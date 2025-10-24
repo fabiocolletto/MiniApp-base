@@ -1,5 +1,17 @@
 # Log
 
+## v0.1.221 - 2025-10-24 07:20 BRT
+- Torna o widget padrão de pré-visualização interativo, abrindo o painel correspondente ao ser clicado ou acionado pelo teclado.
+- Destaca o estado interativo das miniaturas com foco visível, facilitando a navegação pela galeria e pelo kit de design.
+
+## v0.1.220 - 2025-10-24 07:08 BRT
+- Introduz o widget padrão de pré-visualização com título e janela bloqueada para embutir telas no Kit de Design.
+- Adiciona o painel "Galeria de painéis" acessado pelo logotipo exibindo miniaturas de todas as telas liberadas ao usuário.
+- Renderiza as prévias dos miniapps salvos pelo usuário utilizando o novo widget para mostrar a tela inicial de cada miniapp.
+
+## v0.1.219 - 2025-10-24 07:05 BRT
+- Remove o limite de altura dos widgets de modelos do painel Kit de Design para exibir cada prévia completa.
+
 ## v0.1.218 - 2025-10-24 06:34 BRT
 - Atualiza metadados do sistema para comunicar a release final v0.1.218 no rodapé e nos botões de versão.
 - Reforça as diretrizes do projeto registrando que conteúdos já publicados devem permanecer intactos até nova instrução.
