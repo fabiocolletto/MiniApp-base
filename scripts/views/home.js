@@ -539,43 +539,6 @@ function renderGuestPanel(ownerDocument) {
   return panel;
 }
 
-function renderMiniAppsWidget(user, accessibleMiniApps) {
-  const widget = document.createElement('section');
-  widget.className =
-    [
-      'surface-card',
-      'user-panel__widget',
-      'user-dashboard__widget',
-      'home-dashboard__widget',
-      'home-dashboard__widget--miniapps',
-      'home-dashboard__widget-row',
-    ].join(' ');
-
-  const title = document.createElement('h2');
-  title.className = 'user-widget__title';
-  title.textContent = 'Miniapps liberados';
-
-  const description = document.createElement('p');
-  description.className = 'user-widget__description';
-
-  const label = formatUserTypeLabel(user);
-
-  if (accessibleMiniApps.length > 0) {
-    description.textContent = `Estes mini-apps estão liberados para o perfil ${label}.`;
-  } else {
-    description.textContent = `Nenhum mini-app foi liberado para o perfil ${label} até o momento.`;
-  }
-
-  const list = createMiniAppListContainer('Os mini-apps liberados para você aparecerão aqui.', 'available');
-
-  accessibleMiniApps.forEach((app) => {
-    list.append(renderMiniAppListItem(app));
-  });
-
-  widget.append(title, description, list);
-  return widget;
-}
-
 function renderHomeIntroWidget() {
   const widget = document.createElement('section');
   widget.className =
@@ -764,7 +727,6 @@ export function renderHome(viewRoot) {
       renderRecentMiniAppsWidget(state.user, accessibleMiniApps, state.activity),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
-      renderMiniAppsWidget(state.user, accessibleMiniApps),
     );
 
     if (viewRoot.firstChild !== layout) {
