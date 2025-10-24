@@ -12,7 +12,6 @@ const ROUTE_BY_VIEW = {
   home: 'dashboard',
   login: 'login',
   register: 'register',
-  'panel-gallery': 'catalog',
 };
 
 function restorePersistedView(persistedView) {
@@ -23,6 +22,12 @@ function restorePersistedView(persistedView) {
   const viewRoot = document.getElementById('view-root');
   const activeView = viewRoot instanceof HTMLElement ? viewRoot.dataset.view ?? null : null;
   if (activeView === persistedView) {
+    return;
+  }
+
+  if (persistedView === 'panel-gallery') {
+    router.goTo('dashboard');
+    logInfo('app.bootstrap.restore', 'View "panel-gallery" removida. Painel inicial aberto no lugar da galeria.');
     return;
   }
 

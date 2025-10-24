@@ -28,7 +28,6 @@ As classes `.main--admin` e `.main--user` ativam esses tokens automaticamente, g
 
 ## Pré-visualizações e pitch
 - As janelas `panel-preview-widget__frame` exibidas no Painel de design devem expandir em altura conforme o conteúdo renderizado, sem ativar barras de rolagem internas.
-- No pitch da galeria de painéis, ajuste a malha para exibir um item por linha quando houver apenas uma prévia, duas colunas equilibradas para dois itens e três colunas quando existir um conjunto maior.
 
 ## Cores primárias de botão
 Cada opção combina valores para o estado base e hover.
@@ -90,4 +89,4 @@ Tokens responsáveis pela sombra aplicada ao estado base e ao foco/hover.
 - `--color-info-bg` | `--color-info-text` — base informativa padrão.
 - `--color-neutral-bg` | `--color-neutral-border` | `--color-neutral-text` — estados neutros e avisos genéricos.
 
-> Última atualização: v0.1.222 (24/10/2025 07h47 BRT).
+> Última atualização: v0.1.226 (24/10/2025 15h45 BRT).

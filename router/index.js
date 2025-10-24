@@ -5,7 +5,6 @@ const routeToView = {
   dashboard: 'home',
   login: 'login',
   register: 'register',
-  catalog: 'panel-gallery',
 };
 
 class Router {
