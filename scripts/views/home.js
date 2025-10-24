@@ -491,58 +491,6 @@ function renderSavedMiniAppsWidget(user, accessibleMiniApps, preferences) {
   return widget;
 }
 
-function renderAvailableMiniAppsWidget(accessibleMiniApps) {
-  const widget = document.createElement('section');
-  widget.className =
-    [
-      'surface-card',
-      'user-panel__widget',
-      'user-dashboard__widget',
-      'home-dashboard__widget',
-      'home-dashboard__widget--miniapps',
-    ].join(' ');
-
-  const title = document.createElement('h2');
-  title.className = 'user-widget__title';
-  title.textContent = 'Miniapps liberados';
-
-  const description = document.createElement('p');
-  description.className = 'user-widget__description';
-  description.textContent = 'Confira todos os mini-apps liberados para o seu perfil.';
-
-  const list = createMiniAppListContainer(
-    'Os mini-apps liberados para você aparecerão aqui.',
-    'miniapps',
-  );
-
-  const sortedMiniApps = Array.isArray(accessibleMiniApps)
-    ? accessibleMiniApps
-        .filter((app) => app && typeof app === 'object')
-        .slice()
-        .sort((a, b) => {
-          const nameA = typeof a?.name === 'string' ? a.name.trim().toLowerCase() : '';
-          const nameB = typeof b?.name === 'string' ? b.name.trim().toLowerCase() : '';
-          if (nameA && nameB) {
-            return nameA.localeCompare(nameB, 'pt-BR');
-          }
-          if (nameA) {
-            return -1;
-          }
-          if (nameB) {
-            return 1;
-          }
-          return 0;
-        })
-    : [];
-
-  sortedMiniApps.forEach((app) => {
-    list.append(renderMiniAppListItem(app));
-  });
-
-  widget.append(title, description, list);
-  return widget;
-}
-
 function renderGuestPanel(ownerDocument) {
   const doc = ownerDocument && typeof ownerDocument.createElement === 'function'
     ? ownerDocument
@@ -789,7 +737,6 @@ export function renderHome(viewRoot) {
       renderRecentMiniAppsWidget(state.user, accessibleMiniApps, state.activity),
       renderFavoriteMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
       renderSavedMiniAppsWidget(state.user, accessibleMiniApps, state.preferences),
-      renderAvailableMiniAppsWidget(accessibleMiniApps),
     );
 
     if (viewRoot.firstChild !== layout) {

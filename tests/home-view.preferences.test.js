@@ -311,9 +311,9 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
 
   const layout = viewRoot.querySelector('.home-dashboard__layout');
   assert.ok(layout, 'layout principal deve existir');
-  assert.equal(layout.children.length, 6, 'devem existir seis widgets principais');
+  assert.equal(layout.children.length, 5, 'devem existir cinco widgets principais');
 
-  const [introWidget, panelLabelWidget, recentWidget, favoritesWidget, savedWidget, availableWidget] = layout.children;
+  const [introWidget, panelLabelWidget, recentWidget, favoritesWidget, savedWidget] = layout.children;
 
   assert.ok(introWidget.classList.contains('home-dashboard__widget'), 'primeiro widget deve ser o introdutório');
 
@@ -386,10 +386,6 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
     savedWidget.classList.contains('home-dashboard__widget--saved'),
     'quinto widget deve listar mini-apps salvos',
   );
-  assert.ok(
-    availableWidget.classList.contains('home-dashboard__widget--miniapps'),
-    'sexto widget deve listar mini-apps liberados',
-  );
 
   const recentList = recentWidget.querySelector('.home-dashboard__miniapps');
   assert.ok(recentList, 'lista de acessos recentes deve estar presente');
@@ -443,17 +439,9 @@ test('renderHome posiciona widgets de favoritos e salvos antes do catálogo gera
   const savedIds = savedList.children.map((child) => child.dataset.appId);
   assert.deepEqual(savedIds, ['alpha', 'zeta', 'theta', 'kappa', 'iota']);
 
-  const availableList = availableWidget.querySelector('.home-dashboard__miniapps');
-  assert.ok(availableList, 'lista de liberados deve estar presente');
-  assert.equal(
-    availableList.dataset.emptyMessage,
-    'Os mini-apps liberados para você aparecerão aqui.',
-  );
-  const availableIds = availableList.children.map((child) => child.dataset.appId);
-  assert.deepEqual(
-    availableIds,
-    ['alpha', 'beta', 'delta', 'gamma', 'iota', 'kappa', 'theta', 'zeta'],
-    'lista geral deve ordenar mini-apps acessíveis alfabeticamente',
+  assert.ok(
+    !layout.querySelector('.home-dashboard__widget--miniapps'),
+    'painel inicial não deve exibir o widget de mini-apps liberados',
   );
 
   t.after(async () => {

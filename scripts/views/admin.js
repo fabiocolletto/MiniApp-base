@@ -1649,12 +1649,31 @@ function createBrandingWidget() {
   function createModeOption(value, heading, helper) {
     const option = document.createElement('label');
     option.className = 'admin-branding__mode-option';
+    option.dataset.variant = value;
+    option.dataset.state = 'inactive';
 
     const input = document.createElement('input');
     input.type = 'radio';
     input.name = 'admin-branding-mode';
     input.value = value;
     input.className = 'admin-branding__mode-input';
+
+    const accent = document.createElement('span');
+    accent.className = 'admin-branding__mode-accent';
+    accent.setAttribute('aria-hidden', 'true');
+
+    const accentNumber = document.createElement('span');
+    accentNumber.className = 'admin-branding__mode-accent-number';
+    accentNumber.textContent = value === 'individual' ? '2' : '1';
+
+    const accentCaption = document.createElement('span');
+    accentCaption.className = 'admin-branding__mode-accent-caption';
+    accentCaption.textContent = value === 'individual' ? 'logos' : 'logo';
+
+    accent.append(accentNumber, accentCaption);
+
+    const content = document.createElement('span');
+    content.className = 'admin-branding__mode-content';
 
     const titleElement = document.createElement('span');
     titleElement.className = 'admin-branding__mode-title';
@@ -1664,9 +1683,14 @@ function createBrandingWidget() {
     helperElement.className = 'admin-branding__mode-hint';
     helperElement.textContent = helper;
 
-    option.append(input, titleElement, helperElement);
+    content.append(titleElement, helperElement);
+    option.append(input, accent, content);
 
-    return { element: option, input };
+    function setState(isActive) {
+      option.dataset.state = isActive ? 'active' : 'inactive';
+    }
+
+    return { element: option, input, setState };
   }
 
   const individualOption = createModeOption(
@@ -1697,12 +1721,63 @@ function createBrandingWidget() {
     preview.className = 'admin-branding__preview';
     preview.dataset.variant = key;
 
+    const previewScene = document.createElement('div');
+    previewScene.className = 'admin-branding__preview-scene';
+
+    const previewHeader = document.createElement('div');
+    previewHeader.className = 'admin-branding__preview-header';
+
+    const previewLogo = document.createElement('div');
+    previewLogo.className = 'admin-branding__preview-logo';
+    previewLogo.dataset.state = 'placeholder';
+
     const previewImage = document.createElement('img');
     previewImage.className = 'admin-branding__preview-image';
     previewImage.alt = `${label} – pré-visualização da logo`;
     previewImage.decoding = 'async';
     previewImage.loading = 'lazy';
-    preview.append(previewImage);
+
+    const previewPlaceholder = document.createElement('span');
+    previewPlaceholder.className = 'admin-branding__preview-logo-placeholder';
+    previewPlaceholder.textContent = 'Logo';
+
+    previewLogo.append(previewImage, previewPlaceholder);
+
+    const previewBadge = document.createElement('span');
+    previewBadge.className = 'admin-branding__preview-badge';
+    previewBadge.textContent =
+      key === 'shared' ? 'Modo sincronizado' : key === 'light' ? 'Tema claro' : 'Tema escuro';
+
+    previewHeader.append(previewLogo, previewBadge);
+
+    const previewBody = document.createElement('div');
+    previewBody.className = 'admin-branding__preview-body';
+
+    const previewTitle = document.createElement('span');
+    previewTitle.className = 'admin-branding__preview-title';
+    previewTitle.textContent = label;
+
+    const previewSubtitle = document.createElement('span');
+    previewSubtitle.className = 'admin-branding__preview-subtitle';
+    previewSubtitle.textContent = 'Pré-visualização da logo';
+
+    const previewMeta = document.createElement('span');
+    previewMeta.className = 'admin-branding__preview-meta';
+    previewMeta.textContent =
+      key === 'shared'
+        ? 'Aplicada simultaneamente nos modos claro e escuro.'
+        : key === 'light'
+          ? 'Visão exibida quando o modo claro está ativo.'
+          : 'Visão exibida quando o modo escuro está ativo.';
+
+    previewBody.append(previewTitle, previewSubtitle, previewMeta);
+
+    const previewGraphic = document.createElement('div');
+    previewGraphic.className = 'admin-branding__preview-graphic';
+    previewGraphic.setAttribute('aria-hidden', 'true');
+
+    previewScene.append(previewHeader, previewBody, previewGraphic);
+    preview.append(previewScene);
 
     const form = document.createElement('div');
     form.className = 'admin-branding__form form-field';
@@ -1748,9 +1823,13 @@ function createBrandingWidget() {
       if (typeof src === 'string' && src.trim() !== '') {
         previewImage.src = src;
         previewImage.hidden = false;
+        previewPlaceholder.hidden = true;
+        previewLogo.dataset.state = 'image';
       } else {
         previewImage.src = '';
         previewImage.hidden = true;
+        previewPlaceholder.hidden = false;
+        previewLogo.dataset.state = 'placeholder';
       }
     }
 
@@ -1771,12 +1850,14 @@ function createBrandingWidget() {
       if (isVisible) {
         element.hidden = false;
         element.removeAttribute('aria-hidden');
+        element.dataset.visibility = 'visible';
         fileInput.disabled = false;
         uploadButton.disabled = false;
         resetButton.disabled = false;
       } else {
         element.hidden = true;
         element.setAttribute('aria-hidden', 'true');
+        element.dataset.visibility = 'hidden';
         fileInput.disabled = true;
         uploadButton.disabled = true;
         resetButton.disabled = true;
@@ -1813,6 +1894,11 @@ function createBrandingWidget() {
   };
 
   controls.append(logoBlocks.light.element, logoBlocks.dark.element, logoBlocks.shared.element);
+
+  function syncModeOptions() {
+    individualOption.setState(individualOption.input.checked);
+    sharedOption.setState(sharedOption.input.checked);
+  }
 
   function handleUpload(variant, block, fileList) {
     const files = Array.from(fileList ?? []).filter((entry) => entry instanceof File);
@@ -1882,6 +1968,7 @@ function createBrandingWidget() {
 
     individualOption.input.checked = mode === 'individual';
     sharedOption.input.checked = mode === 'shared';
+    syncModeOptions();
 
     const lightLogo =
       typeof currentBranding?.logos?.light === 'string' && currentBranding.logos.light
@@ -1921,6 +2008,7 @@ function createBrandingWidget() {
     if (individualOption.input.checked) {
       persistBrandingUpdate({ mode: 'individual' });
     }
+    syncModeOptions();
   });
 
   sharedOption.input.addEventListener('change', () => {
@@ -1934,6 +2022,7 @@ function createBrandingWidget() {
           : DEFAULT_BRANDING_LOGOS.light);
       persistBrandingUpdate({ mode: 'shared', logos: { shared: fallbackShared } });
     }
+    syncModeOptions();
   });
 
   function teardown() {

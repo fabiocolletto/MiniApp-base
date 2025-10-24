@@ -4,7 +4,6 @@ import {
   getDesignKitReleaseInfo,
   formatDesignKitReleaseDate,
 } from '../data/design-kit-store.js';
-import { createAdminNavigation } from './shared/admin-navigation.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 import { SYSTEM_LOG_WIDGET_MODELS } from './shared/system-log-widgets.js';
 
@@ -544,9 +543,11 @@ function createDesignKitModelsWidget({ title, description, models, renderModel }
   const widget = document.createElement('section');
   widget.className = [
     'surface-card',
+    'surface-card--transparent',
     'user-panel__widget',
     'admin-dashboard__widget',
     'admin-design-kit__widget',
+    'admin-design-kit__widget--transparent',
   ].join(' ');
 
   const header = document.createElement('div');
@@ -598,7 +599,7 @@ function createSurfaceShowcase() {
     models: SURFACE_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -631,7 +632,7 @@ function createFormShowcase() {
     models: FORM_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -663,7 +664,7 @@ function createFeedbackShowcase() {
     models: FEEDBACK_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -695,7 +696,7 @@ function createLabelShowcase() {
     models: LABEL_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -727,7 +728,7 @@ function createSystemWidgetShowcase() {
     models: SYSTEM_LOG_WIDGET_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -773,7 +774,7 @@ function createColorPaletteShowcase() {
     models: COLOR_PALETTE_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -805,7 +806,7 @@ function createTypographyShowcase() {
     models: TYPOGRAPHY_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -1403,7 +1404,7 @@ function createButtonShowcase() {
     models: BUTTON_MODELS,
     renderModel(model) {
       const card = document.createElement('article');
-      card.className = 'surface-card surface-card--transparent';
+      card.className = 'surface-card admin-design-kit__item-card';
       card.dataset.modelId = model.id;
 
       if (model.description) {
@@ -1638,10 +1639,6 @@ export function renderAdminDesignKit(viewRoot) {
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout admin-design-kit__layout';
-
-  const navigation = createAdminNavigation({ active: 'design-kit' });
-  cleanupHandlers.push(navigation.cleanup);
-  layout.append(navigation.element);
 
   const activeUser = getActiveUser();
   if (!isAdminUser(activeUser)) {

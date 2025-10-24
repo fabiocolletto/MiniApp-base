@@ -1,6 +1,11 @@
 # Log
 
-## v0.1.217 - 2025-10-24 05:31 BRT
+## v0.1.218 - 2025-10-24 06:34 BRT
+- Atualiza metadados do sistema para comunicar a release final v0.1.218 no rodapé e nos botões de versão.
+- Reforça as diretrizes do projeto registrando que conteúdos já publicados devem permanecer intactos até nova instrução.
+- Acrescenta o atalho "Painel do usuário" ao menu do cabeçalho e ao menu móvel, abrindo diretamente a view de conta quando autenticado.
+
+## v0.1.217 - 2025-10-24 06:25 BRT
 - Acrescenta widgets iniciais de título e etiqueta com cartões transparentes ao painel Log do projeto.
 - Remove os parágrafos anteriores ao título do Kit Design e garante cartões transparentes nos widgets de abertura.
 - Expõe na etiqueta do painel a data e versão da última publicação do Kit Design utilizando store dedicado.
@@ -9,6 +14,11 @@
 - Converte os widgets iniciais do painel Log em modelos do sistema e adiciona a categoria Widgets ao Kit de Design.
 - Centraliza a versão do sistema em store dedicada e sincroniza o rodapé, navegação e metadados com a mesma fonte de verdade.
 - Inclui no painel administrativo o widget de monitoramento do IndexedDB com contagem de registros, tamanho estimado e status de cada banco.
+- Torna os widgets do Kit de Design transparentes por padrão, mantendo o fundo apenas nos cartões de exemplos e removendo o menu anterior ao título.
+- Remove o widget "Miniapps liberados" do painel Início para simplificar a visão principal do usuário autenticado.
+- Redesenha o widget de identidade visual do painel administrativo com pré-visualizações temáticas e estados mais descritivos.
+- Torna os cartões do painel administrativo totalmente transparentes para evidenciar apenas o conteúdo de cada widget.
+- Adiciona o atalho "Painel do projeto" ao menu do cabeçalho e ao menu mobile para acesso direto ao log do produto.
 
 ## v0.1.216 - 2025-10-24 04:47 BRT
 - Reorganiza o painel do Kit de Design agrupando cada categoria em um widget padrão com cabeçalho e carrossel horizontal de modelos.
