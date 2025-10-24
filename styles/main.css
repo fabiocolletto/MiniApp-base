@@ -2086,7 +2086,11 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 }
 
 main > .admin-design-kit {
+  min-height: auto;
   max-height: none;
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
 }
 
 .card.auth-view {
