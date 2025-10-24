@@ -9,7 +9,6 @@ import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
-import { renderPanelGallery } from '../scripts/views/panel-gallery.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -549,7 +548,6 @@ const views = {
   'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
-  'panel-gallery': renderPanelGallery,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -568,7 +566,6 @@ if (viewOverrides) {
 const MENU_LABEL_FALLBACKS = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Painel de design',
-  'panel-gallery': 'Galeria de painéis',
   miniapps: 'MiniApps',
   user: 'Painel do usuário',
   login: 'Painel de Login',
@@ -2055,11 +2052,11 @@ export function initializeAppShell(router) {
     closeHeaderMenu();
 
     if (shellRouter && typeof shellRouter.goTo === 'function') {
-      shellRouter.goTo('catalog');
+      shellRouter.goTo('dashboard');
       return;
     }
 
-    renderView('panel-gallery');
+    renderView('home');
   });
   versionButton?.addEventListener('click', () => {
     closeHeaderMenu();
