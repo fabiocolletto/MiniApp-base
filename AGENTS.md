@@ -4,6 +4,8 @@
 - Leia este arquivo antes de executar qualquer solicitação.
 - Antes de qualquer planejamento ou ação, consulte o `README.md` para instruções e o `Log.md` para contexto atualizado.
 - Siga as demandas do usuário de forma literal e priorize respostas objetivas.
+- Preserve integralmente o que já estiver publicado no painel, evitando apagar ou sobrescrever conteúdos consolidados salvo
+  instrução expressa do usuário.
 - Mantenha o README atualizado apenas com informações aprovadas pelo usuário.
 - Priorize o reaproveitamento de estilos globais existentes. Caso um novo padrão visual seja indispensável, implemente-o como
   utilitário compartilhado para que futuros painéis, widgets ou miniapps possam reutilizá-lo.

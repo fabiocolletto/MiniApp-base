@@ -39,6 +39,8 @@ const versionButtonText =
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerProjectLink = document.querySelector('.header-project-link');
+const headerUserLink = document.querySelector('.header-user-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
 const headerAdminLink = document.querySelector('.header-admin-link');
 const headerDesignKitLink = document.querySelector('.header-design-kit-link');
@@ -215,7 +217,7 @@ const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   user: 'Painel do usuário',
   login: 'Painel de Login',
   register: 'Crie sua conta',
-  log: 'Log do Projeto',
+  log: 'Painel do projeto',
   legal: 'Documentos legais',
   'not-found': 'Conteúdo não disponível',
 };
@@ -645,6 +647,8 @@ function updateHeaderSession(user: unknown): void {
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerProjectLink, true);
+  setLinkVisibility(headerUserLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminLink);
   setLinkVisibility(headerDesignKitLink, showDesignKitLink);
@@ -669,6 +673,11 @@ function updateHeaderSession(user: unknown): void {
   }
 
   if (!isAuthenticated) {
+    if (headerUserLink instanceof HTMLElement) {
+      headerUserLink.setAttribute('aria-label', 'Abrir painel do usuário');
+      headerUserLink.setAttribute('title', 'Abrir painel do usuário');
+    }
+
     if (headerUserButton?.isConnected) {
       headerUserButton.remove();
     }
@@ -683,6 +692,11 @@ function updateHeaderSession(user: unknown): void {
   button.textContent = initials;
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
+
+  if (headerUserLink instanceof HTMLElement) {
+    headerUserLink.setAttribute('aria-label', label);
+    headerUserLink.setAttribute('title', label);
+  }
 
   if (!button.isConnected && menuControls) {
     menuControls.append(button);
@@ -1175,6 +1189,18 @@ export function initializeAppShell(router: RouterBridge): void {
     event.preventDefault();
     renderView('miniapps');
     closeHeaderMenu();
+  });
+
+  headerProjectLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('log');
+  });
+
+  headerUserLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('user');
   });
 
   headerThemeToggle?.addEventListener('click', (event) => {

@@ -66,6 +66,9 @@ test('header menu updates visibility by session and toggles theme for guests', a
 
   const homeLink = createMenuButton('header-home-link');
   const storeLink = createMenuButton('header-store-link');
+  const projectLink = createMenuButton('header-project-link');
+  const userLink = createMenuButton('header-user-link');
+  userLink.hidden = true;
   const themeToggle = createMenuButton('header-theme-toggle');
   const loginLink = createMenuButton('header-login-link');
   const designKitLink = createMenuButton('header-design-kit-link');
@@ -128,6 +131,13 @@ test('header menu updates visibility by session and toggles theme for guests', a
   __TEST_ONLY__.updateHeaderSession(null);
 
   assert.strictEqual(homeLink.hidden, true, 'home link should be hidden for guests');
+  assert.strictEqual(projectLink.hidden, false, 'project link should be visible for guests');
+  assert.strictEqual(userLink.hidden, true, 'user link should stay hidden for guests');
+  assert.strictEqual(
+    userLink.getAttribute('aria-label'),
+    'Abrir painel do usuário',
+    'user link aria-label should describe guest action',
+  );
   assert.strictEqual(themeToggle.hidden, false, 'theme toggle should be visible for guests');
   assert.strictEqual(
     themeToggle.textContent,
@@ -163,6 +173,13 @@ test('header menu updates visibility by session and toggles theme for guests', a
   __TEST_ONLY__.updateHeaderSession(user);
 
   assert.strictEqual(homeLink.hidden, false, 'home link should appear for authenticated users');
+  assert.strictEqual(projectLink.hidden, false, 'project link should remain visible for authenticated users');
+  assert.strictEqual(userLink.hidden, false, 'user link should appear for authenticated users');
+  assert.strictEqual(
+    userLink.getAttribute('aria-label'),
+    'Abrir painel do usuário Maria Teste',
+    'user link aria-label should personalize with user name',
+  );
   assert.strictEqual(themeToggle.hidden, true, 'theme toggle should hide for authenticated users');
   assert.strictEqual(adminLink.hidden, true, 'admin link remains hidden for non-admin users');
   assert.strictEqual(designKitLink.hidden, false, 'design kit link should be visible for authenticated users');
@@ -192,6 +209,7 @@ test('header menu updates visibility by session and toggles theme for guests', a
     false,
     'admin link should be visible for administrator accounts'
   );
+  assert.strictEqual(projectLink.hidden, false, 'project link stays visible for administrators');
   assert.strictEqual(
     adminLink.getAttribute('aria-hidden'),
     null,

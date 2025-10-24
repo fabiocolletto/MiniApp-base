@@ -2631,6 +2631,12 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-content: start;
 }
 
+.admin-dashboard__widget.surface-card {
+  --card-border: 0;
+  --card-background: transparent;
+  --card-shadow: none;
+}
+
 .admin-dashboard__widget--highlights {
   gap: var(--panel-inner-gap);
 }
@@ -2761,7 +2767,7 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .admin-branding__mode-options {
   display: grid;
-  gap: var(--space-sm);
+  gap: clamp(0.85rem, 2.4vw, 1.2rem);
 }
 
 @media (min-width: 48rem) {
@@ -2771,26 +2777,78 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 }
 
 .admin-branding__mode-option {
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-xs);
-  align-items: start;
-  padding: clamp(0.75rem, 2vw, 1rem);
-  border-radius: var(--radius-lg);
-  border: 0.08rem solid rgba(var(--color-warm-rgb), 0.22);
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: clamp(0.65rem, 2vw, 1rem);
+  align-items: center;
+  padding: clamp(0.85rem, 2.6vw, 1.2rem);
+  border-radius: var(--radius-xl);
+  border: 0.1rem solid rgba(var(--color-warm-rgb), 0.22);
   background: rgba(var(--color-warm-rgb), 0.08);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .admin-branding__mode-option:hover,
 .admin-branding__mode-option:focus-within {
   border-color: rgba(var(--color-warm-rgb), 0.4);
-  box-shadow: 0 0.45rem 1.1rem rgba(var(--color-warm-rgb), 0.18);
+  box-shadow: 0 0.55rem 1.2rem rgba(var(--color-warm-rgb), 0.2);
   background: rgba(var(--color-warm-rgb), 0.12);
 }
 
+.admin-branding__mode-option[data-state='active'] {
+  border-color: rgba(var(--color-accent-rgb), 0.55);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  box-shadow: 0 0.75rem 1.8rem rgba(var(--color-accent-rgb), 0.22);
+  transform: translateY(-0.1rem);
+}
+
+.admin-branding__mode-option[data-state='active']:hover,
+.admin-branding__mode-option[data-state='active']:focus-within {
+  border-color: rgba(var(--color-accent-rgb), 0.65);
+  background: rgba(var(--color-accent-rgb), 0.16);
+  box-shadow: 0 0.85rem 1.9rem rgba(var(--color-accent-rgb), 0.26);
+}
+
 .admin-branding__mode-input {
-  margin: 0.1rem 0 0;
+  margin: 0;
+  align-self: start;
+  accent-color: var(--color-accent-deep);
+}
+
+.admin-branding__mode-accent {
+  display: grid;
+  gap: clamp(0.1rem, 0.5vw, 0.2rem);
+  padding: clamp(0.4rem, 1.2vw, 0.55rem) clamp(0.75rem, 2vw, 0.95rem);
+  border-radius: var(--radius-lg);
+  background: rgba(var(--color-warm-rgb), 0.2);
+  color: var(--color-text-primary);
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-width: clamp(3.1rem, 7vw, 3.9rem);
+}
+
+.admin-branding__mode-option[data-variant='shared'] .admin-branding__mode-accent {
+  background: rgba(var(--color-accent-rgb), 0.2);
+  color: var(--color-accent-deep);
+}
+
+.admin-branding__mode-accent-number {
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  line-height: 1;
+}
+
+.admin-branding__mode-accent-caption {
+  font-size: clamp(0.55rem, 1.2vw, 0.72rem);
+  letter-spacing: 0.1em;
+}
+
+.admin-branding__mode-content {
+  display: grid;
+  gap: clamp(0.2rem, 0.8vw, 0.35rem);
 }
 
 .admin-branding__mode-title {
@@ -2830,34 +2888,164 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 
 .admin-branding__item {
   display: grid;
-  gap: clamp(0.75rem, 2vw, 1rem);
+  gap: clamp(0.85rem, 2.4vw, 1.2rem);
 }
 
 .admin-branding__preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: clamp(6rem, 18vw, 8.5rem);
-  border-radius: var(--radius-xl);
-  border: 0.08rem solid rgba(var(--color-warm-rgb), 0.25);
-  background: linear-gradient(135deg, rgba(var(--color-warm-rgb), 0.08), rgba(var(--color-warm-rgb), 0.16));
+  --branding-preview-border: rgba(var(--color-warm-rgb), 0.25);
+  --branding-preview-background: linear-gradient(
+    135deg,
+    rgba(var(--color-warm-rgb), 0.16),
+    rgba(var(--color-warm-rgb), 0.22)
+  );
+  --branding-preview-text: rgba(50, 40, 32, 0.92);
+  --branding-preview-badge-bg: rgba(var(--color-warm-rgb), 0.24);
+  --branding-preview-badge-color: rgba(48, 34, 24, 0.92);
+  --branding-preview-graphic: rgba(var(--color-accent-rgb), 0.32);
+  --branding-preview-logo-bg: rgba(255, 255, 255, 0.92);
+  display: grid;
+  gap: clamp(0.85rem, 2.6vw, 1.2rem);
+  padding: clamp(1rem, 3vw, 1.4rem);
+  border-radius: var(--radius-2xl);
+  border: 0.1rem solid var(--branding-preview-border);
+  background: var(--branding-preview-background);
+  color: var(--branding-preview-text);
   overflow: hidden;
+  position: relative;
+}
+
+.admin-branding__preview[data-variant='light'] {
+  --branding-preview-border: rgba(224, 198, 166, 0.6);
+  --branding-preview-background: linear-gradient(
+    135deg,
+    rgba(254, 241, 226, 0.92),
+    rgba(251, 225, 197, 0.9)
+  );
+  --branding-preview-text: rgba(60, 42, 30, 0.92);
+  --branding-preview-badge-bg: rgba(255, 255, 255, 0.45);
+  --branding-preview-badge-color: rgba(60, 42, 30, 0.92);
+  --branding-preview-graphic: rgba(var(--color-accent-rgb), 0.28);
+  --branding-preview-logo-bg: rgba(255, 255, 255, 0.95);
 }
 
 .admin-branding__preview[data-variant='dark'] {
-  background: linear-gradient(135deg, rgba(20, 24, 38, 0.85), rgba(38, 42, 58, 0.65));
-  border-color: rgba(18, 22, 36, 0.9);
+  --branding-preview-border: rgba(18, 22, 36, 0.7);
+  --branding-preview-background: linear-gradient(
+    135deg,
+    rgba(24, 28, 44, 0.92),
+    rgba(38, 42, 58, 0.85)
+  );
+  --branding-preview-text: rgba(246, 248, 255, 0.94);
+  --branding-preview-badge-bg: rgba(255, 163, 92, 0.22);
+  --branding-preview-badge-color: rgba(255, 232, 210, 0.94);
+  --branding-preview-graphic: rgba(255, 172, 110, 0.55);
+  --branding-preview-logo-bg: rgba(28, 32, 52, 0.92);
 }
 
 .admin-branding__preview[data-variant='shared'] {
-  background: linear-gradient(135deg, rgba(var(--color-warm-rgb), 0.12), rgba(38, 42, 58, 0.35));
-  border-color: rgba(var(--color-warm-rgb), 0.35);
+  --branding-preview-border: rgba(68, 52, 44, 0.55);
+  --branding-preview-background: linear-gradient(
+    135deg,
+    rgba(244, 221, 200, 0.85),
+    rgba(32, 36, 54, 0.8)
+  );
+  --branding-preview-text: rgba(253, 245, 238, 0.94);
+  --branding-preview-badge-bg: rgba(253, 245, 238, 0.35);
+  --branding-preview-badge-color: rgba(48, 34, 24, 0.92);
+  --branding-preview-graphic: rgba(255, 191, 132, 0.62);
+  --branding-preview-logo-bg: rgba(30, 34, 52, 0.9);
+}
+
+.admin-branding__preview-scene {
+  display: grid;
+  gap: clamp(0.65rem, 2vw, 0.9rem);
+}
+
+.admin-branding__preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.75rem, 2.4vw, 1rem);
+  flex-wrap: wrap;
+}
+
+.admin-branding__preview-logo {
+  display: grid;
+  place-items: center;
+  padding: clamp(0.55rem, 1.6vw, 0.75rem) clamp(0.9rem, 2.4vw, 1.25rem);
+  min-width: clamp(4.6rem, 13vw, 6.2rem);
+  min-height: clamp(2.4rem, 6vw, 2.9rem);
+  border-radius: var(--radius-xl);
+  background: var(--branding-preview-logo-bg);
+  box-shadow: 0 0.65rem 1.45rem rgba(12, 16, 28, 0.18);
+  transition: transform 0.3s ease;
+}
+
+.admin-branding__preview-logo[data-state='image'] {
+  transform: translateY(-0.1rem);
 }
 
 .admin-branding__preview-image {
-  max-width: min(100%, clamp(10rem, 32vw, 20rem));
+  max-width: min(100%, clamp(9rem, 28vw, 18rem));
   height: auto;
   object-fit: contain;
+}
+
+.admin-branding__preview-logo-placeholder {
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.admin-branding__preview-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.35rem, 1vw, 0.45rem) clamp(0.6rem, 1.4vw, 0.85rem);
+  border-radius: 999px;
+  font-size: clamp(0.62rem, 1.3vw, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--branding-preview-badge-bg);
+  color: var(--branding-preview-badge-color);
+}
+
+.admin-branding__preview-body {
+  display: grid;
+  gap: clamp(0.25rem, 0.9vw, 0.4rem);
+}
+
+.admin-branding__preview-title {
+  font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+  font-weight: 700;
+}
+
+.admin-branding__preview-subtitle {
+  font-size: clamp(0.74rem, 1.6vw, 0.88rem);
+  letter-spacing: 0.02em;
+}
+
+.admin-branding__preview-meta {
+  font-size: var(--panel-font-size-compact);
+  opacity: 0.82;
+}
+
+.admin-branding__preview-graphic {
+  justify-self: end;
+  width: clamp(2.9rem, 8vw, 3.9rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.65),
+      transparent 60%
+    ),
+    var(--branding-preview-graphic);
+  box-shadow: inset 0 0 0.45rem rgba(255, 255, 255, 0.2);
+  opacity: 0.85;
 }
 
 .admin-branding__actions {
@@ -2990,6 +3178,11 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   min-inline-size: clamp(16rem, 45vw, 22rem);
   max-inline-size: 100%;
   scroll-snap-align: start;
+}
+
+.admin-design-kit__item-card {
+  --card-gap: var(--panel-inner-gap);
+  height: 100%;
 }
 
 .admin-design-kit__item-header {

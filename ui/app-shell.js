@@ -71,6 +71,8 @@ const versionButtonText =
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerProjectLink = document.querySelector('.header-project-link');
+const headerUserLink = document.querySelector('.header-user-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
 const headerAdminLink = document.querySelector('.header-admin-link');
 const headerDesignKitLink = document.querySelector('.header-design-kit-link');
@@ -290,6 +292,8 @@ let lastSessionFooterIndicatorsPreference = null;
 let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
 let mobileStoreAction = null;
+let mobileProjectAction = null;
+let mobileUserAction = null;
 let mobileLoginAction = null;
 let mobileThemeAction = null;
 let mobileAdminAction = null;
@@ -496,7 +500,7 @@ const MENU_LABEL_FALLBACKS = {
   user: 'Painel do usuário',
   login: 'Painel de Login',
   register: 'Crie sua conta',
-  log: 'Log do Projeto',
+  log: 'Painel do projeto',
   legal: 'Documentos legais',
   home: 'Início',
   dashboard: 'Início',
@@ -1122,6 +1126,27 @@ function ensureHeaderMobileMenu() {
     renderView('miniapps');
   });
 
+  const projectAction = document.createElement('button');
+  projectAction.type = 'button';
+  projectAction.id = 'mobile-access-menu-project';
+  projectAction.className = 'app-modal__action header-mobile-menu__action';
+  projectAction.textContent = 'Painel do projeto';
+  projectAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('log');
+  });
+
+  const userAction = document.createElement('button');
+  userAction.type = 'button';
+  userAction.id = 'mobile-access-menu-user';
+  userAction.className = 'app-modal__action header-mobile-menu__action';
+  userAction.textContent = 'Painel do usuário';
+  userAction.hidden = true;
+  userAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('user');
+  });
+
   const loginAction = document.createElement('button');
   loginAction.type = 'button';
   loginAction.id = 'mobile-access-menu-auth';
@@ -1159,12 +1184,14 @@ function ensureHeaderMobileMenu() {
     renderView('admin');
   });
 
-  actions.append(homeAction, storeAction, loginAction, themeAction, adminAction);
+  actions.append(homeAction, storeAction, projectAction, userAction, loginAction, themeAction, adminAction);
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
   mobileHomeAction = homeAction;
   mobileStoreAction = storeAction;
+  mobileProjectAction = projectAction;
+  mobileUserAction = userAction;
   mobileLoginAction = loginAction;
   mobileThemeAction = themeAction;
   mobileAdminAction = adminAction;
@@ -1319,6 +1346,8 @@ function updateHeaderSession(user) {
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerProjectLink, true);
+  setLinkVisibility(headerUserLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminLink);
   setLinkVisibility(headerDesignKitLink, showDesignKitLink);
@@ -1346,6 +1375,8 @@ function updateHeaderSession(user) {
   if (panel instanceof HTMLElement) {
     setLinkVisibility(mobileHomeAction, isAuthenticated);
     setLinkVisibility(mobileStoreAction, true);
+    setLinkVisibility(mobileProjectAction, true);
+    setLinkVisibility(mobileUserAction, isAuthenticated);
     setLinkVisibility(mobileLoginAction, true);
     setLinkVisibility(mobileThemeAction, !isAuthenticated);
     setLinkVisibility(mobileAdminAction, showAdminLink);
@@ -1386,6 +1417,17 @@ function updateHeaderSession(user) {
   }
 
   if (!isAuthenticated) {
+    if (headerUserLink instanceof HTMLElement) {
+      headerUserLink.setAttribute('aria-label', 'Abrir painel do usuário');
+      headerUserLink.setAttribute('title', 'Abrir painel do usuário');
+    }
+
+    if (mobileUserAction instanceof HTMLElement) {
+      mobileUserAction.textContent = 'Painel do usuário';
+      mobileUserAction.setAttribute('aria-label', 'Abrir painel do usuário');
+      mobileUserAction.setAttribute('title', 'Abrir painel do usuário');
+    }
+
     if (headerUserButton?.isConnected) {
       headerUserButton.remove();
     }
@@ -1402,6 +1444,17 @@ function updateHeaderSession(user) {
   button.textContent = initials;
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);
+
+  if (headerUserLink instanceof HTMLElement) {
+    headerUserLink.setAttribute('aria-label', label);
+    headerUserLink.setAttribute('title', label);
+  }
+
+  if (mobileUserAction instanceof HTMLElement) {
+    mobileUserAction.textContent = 'Painel do usuário';
+    mobileUserAction.setAttribute('aria-label', label);
+    mobileUserAction.setAttribute('title', label);
+  }
 
   if (!button.isConnected && menuControls) {
     menuControls.append(button);
@@ -1891,6 +1944,18 @@ export function initializeAppShell(router) {
     event.preventDefault();
     renderView('miniapps');
     closeHeaderMenu();
+  });
+
+  headerProjectLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('log');
+  });
+
+  headerUserLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('user');
   });
 
   headerThemeToggle?.addEventListener('click', (event) => {
