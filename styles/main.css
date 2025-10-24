@@ -3204,6 +3204,9 @@ main > .admin-design-kit {
 
 .admin-design-kit__item-card {
   --card-gap: var(--panel-inner-gap);
+  --card-border: 0;
+  --card-background: transparent;
+  --card-shadow: none;
   height: 100%;
 }
 
