@@ -581,14 +581,31 @@ function createDesignKitModelsWidget({ title, description, models, renderModel }
     }
   }
 
+  let requiresWrap = false;
+
   models
     .map((model) => renderModel(model))
     .filter((element) => element instanceof HTMLElement)
     .forEach((modelElement) => {
       modelElement.classList.add('admin-design-kit__item');
       modelElement.setAttribute('role', 'listitem');
+
+      const layoutPreference =
+        modelElement.dataset && typeof modelElement.dataset.layout === 'string'
+          ? modelElement.dataset.layout
+          : '';
+
+      if (layoutPreference === 'solo-line') {
+        modelElement.classList.add('admin-design-kit__item--solo-line');
+        requiresWrap = true;
+      }
+
       modelsRow.append(modelElement);
     });
+
+  if (requiresWrap) {
+    modelsRow.classList.add('admin-design-kit__models--wrap');
+  }
 
   widget.append(header, modelsRow);
   return widget;
@@ -803,6 +820,10 @@ function createUserDashboardWidgetShowcase() {
         fallback.className = 'admin-design-kit__paragraph';
         fallback.textContent = 'Prévia indisponível para este modelo.';
         preview.append(fallback);
+      }
+
+      if (model.id === 'UD02') {
+        card.dataset.layout = 'solo-line';
       }
 
       card.append(header, preview);

@@ -3174,6 +3174,10 @@ main > .admin-design-kit {
   overscroll-behavior-x: contain;
 }
 
+.admin-design-kit__models--wrap {
+  flex-wrap: wrap;
+}
+
 .admin-design-kit__models::-webkit-scrollbar {
   height: 0.5rem;
 }
@@ -3190,6 +3194,12 @@ main > .admin-design-kit {
   min-inline-size: clamp(16rem, 45vw, 22rem);
   max-inline-size: 100%;
   scroll-snap-align: start;
+}
+
+.admin-design-kit__item--solo-line {
+  flex: 1 1 100%;
+  min-inline-size: min(100%, 32rem);
+  max-inline-size: 100%;
 }
 
 .admin-design-kit__item-card {
