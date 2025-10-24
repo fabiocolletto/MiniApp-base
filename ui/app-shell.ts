@@ -190,7 +190,7 @@ function applySystemVersionMetadata(): void {
 
 applySystemVersionMetadata();
 
-export type RouteName = 'dashboard' | 'login' | 'register';
+export type RouteName = 'dashboard' | 'login' | 'register' | 'catalog';
 
 export interface RouterBridge {
   goTo(route: RouteName): void;
@@ -1227,6 +1227,12 @@ export function initializeAppShell(router: RouterBridge): void {
 
   logo?.addEventListener('click', () => {
     closeHeaderMenu();
+
+    if (shellRouter && typeof shellRouter.goTo === 'function') {
+      shellRouter.goTo('catalog');
+      return;
+    }
+
     renderView('panel-gallery');
   });
   versionButton?.addEventListener('click', () => {

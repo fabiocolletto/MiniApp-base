@@ -1,14 +1,15 @@
 import { renderView } from '../ui/app-shell.js';
 import { logInfo, logWarn } from '../sys/log.js';
 
-export type RouteName = 'dashboard' | 'login' | 'register';
+export type RouteName = 'dashboard' | 'login' | 'register' | 'catalog';
 
-type ViewName = 'home' | 'login' | 'register';
+type ViewName = 'home' | 'login' | 'register' | 'panel-gallery';
 
 const routeToView: Record<RouteName, ViewName> = {
   dashboard: 'home',
   login: 'login',
   register: 'register',
+  catalog: 'panel-gallery',
 };
 
 class Router {
