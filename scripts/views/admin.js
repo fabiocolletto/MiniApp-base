@@ -24,6 +24,7 @@ import {
   formatDateTime,
 } from './shared/system-users-widget.js';
 import { createAdminNavigation } from './shared/admin-navigation.js';
+import { createSystemStorageWidget } from './shared/system-storage-widget.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
 
@@ -1981,6 +1982,10 @@ export function renderAdmin(viewRoot) {
   const brandingWidget = createBrandingWidget();
   cleanupHandlers.push(brandingWidget.teardown);
   layout.append(brandingWidget.widget);
+
+  const storageWidget = createSystemStorageWidget();
+  cleanupHandlers.push(storageWidget.teardown);
+  layout.append(storageWidget.widget);
 
   const usersWidget = createSystemUsersWidget();
   cleanupHandlers.push(usersWidget.teardown);

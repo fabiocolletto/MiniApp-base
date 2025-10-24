@@ -1,7 +1,4 @@
-const SYSTEM_RELEASE_INFO = Object.freeze({
-  version: '0.1.198',
-  publishedAt: '2025-10-24T22:30:00-03:00',
-});
+import { getSystemMetadata, getSystemVersion } from './system-metadata.js';
 
 const releaseDateFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
@@ -10,7 +7,14 @@ const releaseDateFormatter = new Intl.DateTimeFormat('pt-BR', {
 });
 
 export function getSystemReleaseInfo() {
-  return { ...SYSTEM_RELEASE_INFO };
+  const metadata = getSystemMetadata();
+  const version = typeof metadata?.version === 'string' ? metadata.version : getSystemVersion();
+
+  return {
+    version,
+    publishedAt: metadata?.publishedAt ?? null,
+    changelogPath: metadata?.changelogPath ?? './Log.md',
+  };
 }
 
 export function formatSystemReleaseDate(value) {

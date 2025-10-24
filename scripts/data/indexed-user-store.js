@@ -4,6 +4,14 @@ const DB_NAME = 'miniapp-user-store';
 const DB_VERSION = 1;
 const STORE_NAME = 'users';
 
+export function getIndexedUserDbMetadata() {
+  return {
+    name: DB_NAME,
+    version: DB_VERSION,
+    stores: [STORE_NAME],
+  };
+}
+
 const PROFILE_FIELDS = [
   'email',
   'secondaryPhone',

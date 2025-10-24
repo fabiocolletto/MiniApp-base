@@ -2655,6 +2655,104 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: clamp(1rem, 3vw, 1.6rem);
 }
 
+.admin-dashboard__widget--storage {
+  display: grid;
+  gap: var(--panel-inner-gap);
+}
+
+.admin-storage__summary {
+  margin: 0;
+}
+
+.admin-storage__status-message {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-soft);
+}
+
+.admin-storage__list {
+  display: grid;
+  gap: var(--panel-inner-gap);
+}
+
+@media (min-width: 62rem) {
+  .admin-storage__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-storage__card {
+  display: grid;
+  gap: calc(var(--panel-inner-gap) * 0.75);
+  padding: clamp(0.85rem, 2.4vw, 1.2rem);
+  border-radius: var(--radius-lg);
+  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.16);
+  background: rgba(var(--color-accent-rgb), 0.06);
+}
+
+.admin-storage__card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+}
+
+.admin-storage__card-title {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.admin-storage__card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.admin-storage__card-status {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-secondary);
+}
+
+.admin-storage__stores {
+  display: grid;
+  gap: calc(var(--panel-inner-gap) * 0.75);
+}
+
+.admin-storage__store {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.admin-storage__store-title {
+  margin: 0;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin-storage__store-summary .user-dashboard__summary-item {
+  margin: 0;
+}
+
+.admin-storage__store-empty {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-soft);
+}
+
+.admin-storage__empty {
+  margin: 0;
+  padding: clamp(0.85rem, 2.4vw, 1.2rem);
+  border-radius: var(--radius-lg);
+  border: 0.08rem dashed rgba(var(--color-accent-rgb), 0.24);
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
 .admin-branding__mode {
   margin: 0;
   padding: 0;

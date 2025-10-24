@@ -6,6 +6,14 @@ const ACCOUNTS_STORE = 'accounts';
 const SESSION_STORE = 'session';
 const SESSION_KEY = 'active';
 
+export function getGlobalDbMetadata() {
+  return {
+    name: GLOBAL_DB_NAME,
+    version: GLOBAL_DB_VERSION,
+    stores: [ACCOUNTS_STORE, SESSION_STORE],
+  };
+}
+
 const useMemoryStore = typeof indexedDB === 'undefined';
 
 const memoryState = {

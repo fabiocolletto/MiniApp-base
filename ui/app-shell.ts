@@ -16,6 +16,12 @@ import {
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
 import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
+import {
+  getSystemMetadata,
+  getSystemReleaseDate,
+  getSystemVersionLabel,
+} from '../scripts/data/system-metadata.js';
+import { formatSystemReleaseDate } from '../scripts/data/system-info.js';
 import { getResolvedTheme, setThemePreference, subscribeThemeChange } from '../scripts/theme/theme-manager.js';
 import {
   getActivityStatus as defaultGetActivityStatus,
@@ -26,6 +32,10 @@ const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
 const logo = document.querySelector('.header-logo');
 const versionButton = document.querySelector('.footer-version');
+const versionButtonText =
+  (versionButton && typeof (versionButton as HTMLElement).querySelector === 'function'
+    ? (versionButton as HTMLElement).querySelector('.footer-version__text')
+    : null) || null;
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
@@ -142,6 +152,40 @@ const subscribeActivityStatusFn =
   rawHooks && typeof rawHooks.subscribeActivityStatus === 'function'
     ? rawHooks.subscribeActivityStatus
     : defaultSubscribeActivityStatus;
+
+function applySystemVersionMetadata(): void {
+  if (!(versionButton instanceof HTMLElement)) {
+    return;
+  }
+
+  const versionLabel = getSystemVersionLabel();
+  if (versionButtonText instanceof HTMLElement) {
+    versionButtonText.textContent = versionLabel;
+  }
+
+  const metadata = getSystemMetadata();
+  const releaseDate = getSystemReleaseDate();
+  const formattedDate = formatSystemReleaseDate(releaseDate);
+
+  const labelParts = [`versão ${versionLabel}`];
+  if (formattedDate) {
+    labelParts.push(`publicada em ${formattedDate}`);
+  }
+
+  const accessibleLabel = labelParts.join(' ');
+  versionButton.setAttribute('aria-label', `Abrir registro de alterações da ${accessibleLabel}`);
+  versionButton.setAttribute('title', `Exibir mudanças da ${accessibleLabel}`);
+  versionButton.dataset.version = versionLabel;
+
+  const changelogPath = typeof metadata?.changelogPath === 'string' ? metadata.changelogPath.trim() : '';
+  if (changelogPath) {
+    versionButton.dataset.changelog = changelogPath;
+  } else {
+    delete versionButton.dataset.changelog;
+  }
+}
+
+applySystemVersionMetadata();
 
 export type RouteName = 'dashboard' | 'login' | 'register';
 
@@ -1119,6 +1163,8 @@ export function initializeAppShell(router: RouterBridge): void {
 
   initialized = true;
   shellRouter = router;
+
+  applySystemVersionMetadata();
 
   homeLink?.addEventListener('click', (event) => {
     event.preventDefault();
