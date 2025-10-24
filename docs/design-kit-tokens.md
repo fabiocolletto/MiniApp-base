@@ -19,6 +19,13 @@ Este documento consolida as variáveis homologadas para o painel Kit Design. Tod
 - `--size-block-md` — altura padrão equilibrando conforto e economia de espaço.
 - `--size-block-lg` — altura quadrada para botões icônicos ou controles de destaque.
 
+## Layout do app shell
+- `--layout-header-offset` — deslocamento aplicado no topo do `<main>` para compensar a altura real do cabeçalho fixo.
+- `--layout-footer-offset` — deslocamento aplicado na base do `<main>` evitando sobreposição pelo rodapé fixo.
+- `--view-max-block-size` — altura máxima dinâmica do conteúdo central calculada a partir da viewport subtraindo os offsets ativos.
+
+As classes `.main--admin` e `.main--user` ativam esses tokens automaticamente, garantindo que os widgets respeitem o espaço livre entre header e footer em qualquer painel. Em cenários de tela cheia ou splash, remova essas classes e zere manualmente os offsets para liberar 100dvh para o conteúdo temporário; ao retornar ao layout padrão, restaure os offsets chamando novamente o cálculo do app shell.
+
 ## Cores primárias de botão
 Cada opção combina valores para o estado base e hover.
 - `--kit-color-primary-strong-base` | `--kit-color-primary-strong-hover` — degradê âmbar intenso.
@@ -79,4 +86,4 @@ Tokens responsáveis pela sombra aplicada ao estado base e ao foco/hover.
 - `--color-info-bg` | `--color-info-text` — base informativa padrão.
 - `--color-neutral-bg` | `--color-neutral-border` | `--color-neutral-text` — estados neutros e avisos genéricos.
 
-> Última atualização: v0.1.207 (25/10/2025 11h00 BRT).
+> Última atualização: v0.1.222 (24/10/2025 07h47 BRT).
