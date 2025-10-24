@@ -2674,15 +2674,6 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: var(--panel-gap);
 }
 
-.admin-design-kit__intro {
-  text-align: left;
-}
-
-.admin-design-kit__title {
-  margin: 0;
-  font-size: var(--panel-font-size-heading);
-}
-
 .admin-design-kit__section-title {
   margin: 0;
   font-size: var(--panel-font-size-title);

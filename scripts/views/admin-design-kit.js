@@ -1100,26 +1100,171 @@ function createButtonShowcase() {
   return section;
 }
 
-function createIntroSection() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section admin-design-kit__intro';
+const USER_TYPE_LABELS = Object.freeze({
+  administrador: 'Administrador',
+  colaborador: 'Colaborador',
+  usuario: 'Usuário',
+});
 
-  const heading = document.createElement('h1');
-  heading.className = 'admin-design-kit__title';
-  heading.textContent = 'Kit de design 5Horas';
+function normalizeUserType(user) {
+  if (!user || typeof user !== 'object') {
+    return 'usuario';
+  }
 
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Centralizamos aqui os componentes padrão do aplicativo para acelerar o dia de design e garantir consistência.';
+  const rawType = typeof user.userType === 'string' ? user.userType.trim().toLowerCase() : '';
+  return USER_TYPE_LABELS[rawType] ? rawType : 'usuario';
+}
+
+function formatUserTypeLabel(user) {
+  const normalized = normalizeUserType(user);
+  return USER_TYPE_LABELS[normalized] ?? USER_TYPE_LABELS.usuario;
+}
+
+function formatUserName(user) {
+  if (typeof user?.name === 'string') {
+    const trimmed = user.name.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function formatUserEmail(user) {
+  if (typeof user?.profile?.email === 'string') {
+    const trimmed = user.profile.email.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function formatUserPhone(user) {
+  if (typeof user?.phone === 'string') {
+    const trimmed = user.phone.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  if (typeof user?.profile?.secondaryPhone === 'string') {
+    const trimmed = user.profile.secondaryPhone.trim();
+    if (trimmed !== '') {
+      return trimmed;
+    }
+  }
+
+  return '—';
+}
+
+function createSummaryEntry(term, value) {
+  if (!term || !value) {
+    return null;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'user-dashboard__summary-item';
+
+  const termElement = document.createElement('dt');
+  termElement.className = 'user-dashboard__summary-label';
+  termElement.textContent = term;
+
+  const valueElement = document.createElement('dd');
+  valueElement.className = 'user-dashboard__summary-value';
+  valueElement.textContent = value;
+
+  wrapper.append(termElement, valueElement);
+  return wrapper;
+}
+
+function createDesignKitTitleWidget() {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'surface-card--transparent',
+    'user-panel__widget',
+    'admin-dashboard__widget',
+  ].join(' ');
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Kit de design 5Horas';
+
+  const subtitle = document.createElement('p');
+  subtitle.className = 'user-widget__description';
+  subtitle.textContent =
+    'Centralize os componentes homologados para evoluir painéis e mini-apps com consistência.';
 
   const helper = document.createElement('p');
-  helper.className = 'admin-design-kit__paragraph';
+  helper.className = 'user-widget__description';
   helper.textContent =
-    'Atualize esta referência sempre que um novo padrão for aprovado para garantir que todos os times estejam alinhados.';
+    'Revise esta base sempre que um novo padrão for aprovado para manter todos os times alinhados.';
 
-  section.append(heading, description, helper);
-  return section;
+  widget.append(title, subtitle, helper);
+  return widget;
+}
+
+function createDesignKitPanelLabelWidget(user) {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'surface-card--transparent',
+    'user-panel__widget',
+    'admin-dashboard__widget',
+  ].join(' ');
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Etiqueta do painel';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent = 'Compartilhe esta etiqueta para facilitar o acesso rápido ao kit.';
+
+  const labelGroup = document.createElement('div');
+  labelGroup.className = 'miniapp-details__highlights';
+
+  const panelLabel = document.createElement('span');
+  panelLabel.className = 'miniapp-details__chip';
+  panelLabel.textContent = 'Painel Kit Design';
+  labelGroup.append(panelLabel);
+
+  const profileLabel = document.createElement('span');
+  profileLabel.className = 'miniapp-details__chip';
+  profileLabel.textContent = `Perfil ${formatUserTypeLabel(user)}`;
+  labelGroup.append(profileLabel);
+
+  widget.append(title, description, labelGroup);
+
+  const summary = document.createElement('div');
+  summary.className = 'user-dashboard__summary';
+
+  const userInfoList = document.createElement('dl');
+  userInfoList.className = 'user-dashboard__summary-list';
+
+  [
+    ['Nome', formatUserName(user)],
+    ['E-mail', formatUserEmail(user)],
+    ['Telefone', formatUserPhone(user)],
+  ]
+    .map(([term, value]) => createSummaryEntry(term, value))
+    .filter(Boolean)
+    .forEach((entry) => {
+      userInfoList.append(entry);
+    });
+
+  if (userInfoList.children.length > 0) {
+    summary.append(userInfoList);
+  }
+
+  if (summary.children.length > 0) {
+    widget.append(summary);
+  }
+
+  return widget;
 }
 
 export function renderAdminDesignKit(viewRoot) {
@@ -1165,7 +1310,8 @@ export function renderAdminDesignKit(viewRoot) {
     return;
   }
 
-  layout.append(createIntroSection());
+  layout.append(createDesignKitTitleWidget());
+  layout.append(createDesignKitPanelLabelWidget(activeUser));
   layout.append(createSurfaceShowcase());
   layout.append(createFormShowcase());
   layout.append(createFeedbackShowcase());
