@@ -2843,6 +2843,12 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   gap: var(--panel-inner-gap);
 }
 
+.admin-design-kit__widget--transparent {
+  --card-border: 0;
+  --card-background: transparent;
+  --card-shadow: none;
+}
+
 .admin-design-kit__widget-header {
   display: grid;
   gap: var(--space-xs);
@@ -2912,6 +2918,46 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-items: center;
 }
 
+.admin-design-kit__preview--colors {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-design-kit__swatch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--panel-gap);
+}
+
+.admin-design-kit__swatch {
+  display: grid;
+  gap: var(--space-2xs);
+  flex: 1 1 clamp(8rem, 24vw, 12rem);
+  min-inline-size: clamp(8rem, 24vw, 12rem);
+}
+
+.admin-design-kit__swatch-sample {
+  display: grid;
+  place-items: center;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--swatch-fill, transparent);
+  color: var(--swatch-text, var(--color-text-primary));
+  border: 0.08rem solid rgba(var(--color-accent-rgb), 0.18);
+  font-size: var(--panel-font-size-strong);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-design-kit__swatch-caption {
+  margin: 0;
+  text-align: center;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+  word-break: break-word;
+}
+
 .admin-design-kit__preview--surface {
   align-items: stretch;
 }
@@ -2920,6 +2966,26 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
 .admin-design-kit__preview--feedback,
 .admin-design-kit__preview--labels {
   align-items: stretch;
+}
+
+.admin-design-kit__preview--typography {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-xs);
+}
+
+.admin-design-kit__type-sample {
+  margin: 0;
+  font-size: var(--type-font-size, var(--panel-font-size-title));
+  font-weight: var(--type-font-weight, 600);
+  line-height: var(--type-line-height, 1.35);
+  color: var(--color-text-primary);
+}
+
+.admin-design-kit__type-helper {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
 }
 
 .admin-design-kit__sample-button {

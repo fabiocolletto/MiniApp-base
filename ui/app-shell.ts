@@ -167,7 +167,7 @@ const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'splash']);
 const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Kit de design',
-  miniapps: 'Mini App Store',
+  miniapps: 'MiniApps',
   user: 'Painel do usuário',
   login: 'Painel de Login',
   register: 'Crie sua conta',

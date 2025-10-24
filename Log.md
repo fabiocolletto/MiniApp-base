@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.217 - 2025-10-24 05:07 BRT
+- Remove os parágrafos anteriores ao título do Kit Design e garante cartões transparentes nos widgets de abertura.
+- Expõe na etiqueta do painel a data e versão da última publicação do Kit Design utilizando store dedicado.
+- Acrescenta widgets de paleta de cores e gabarito tipográfico ao painel do Kit Design com visualizações homologadas.
+- Renomeia o painel Mini App Store para MiniApps nos rótulos e atalhos do cabeçalho.
+
 ## v0.1.216 - 2025-10-24 04:47 BRT
 - Reorganiza o painel do Kit de Design agrupando cada categoria em um widget padrão com cabeçalho e carrossel horizontal de modelos.
 - Implementa um template compartilhado para renderizar os modelos homologados e ajusta os estilos para o novo comportamento em linha.
