@@ -1,9 +1,11 @@
 # Log
 
-## v0.1.216 - 2025-10-25 14:45 BRT
+## v0.1.216 - 2025-10-25 04:27 BRT
 - Reorganiza o painel do Kit de Design agrupando cada categoria em um widget padrão com cabeçalho e carrossel horizontal de modelos.
 - Implementa um template compartilhado para renderizar os modelos homologados e ajusta os estilos para o novo comportamento em linha.
-- Atualiza a versão exibida no rodapé para comunicar a release v0.1.216 das 14h45.
+- Ajusta o widget de miniapps salvos no painel inicial para exibir apenas ícones organizados em duas linhas com altura compacta.
+- Implementa rolagem vertical e limites de altura reutilizando o estilo de ícones para acomodar listas extensas sem expandir o painel.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.216 das 04h27.
 
 ## v0.1.215 - 2025-10-24 04:00 BRT
 - Complementa a release v0.1.215 reestruturando o painel do Kit Design com widgets de título e etiqueta alinhados ao modelo do painel Início.
