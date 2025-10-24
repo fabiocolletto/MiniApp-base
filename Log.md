@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.222 - 2025-10-24 07:47 BRT
+- Cria o catálogo `APP_SHELL_LAYOUT_MODELS` descrevendo a composição do cabeçalho, painel central com `--view-max-block-size` e rodapé para painéis administrativos e de usuário.
+- Adiciona a vitrine "Layouts do app shell" ao Kit de Design administrativo exibindo os novos modelos ao lado das demais categorias.
+- Atualiza a documentação de tokens com offsets de layout, orientações de tela cheia e o registro da versão v0.1.222.
+
 ## v0.1.221 - 2025-10-24 07:40 BRT
 - Torna o widget padrão de pré-visualização interativo, abrindo o painel correspondente ao ser clicado ou acionado pelo teclado.
 - Reúne os widgets do painel do usuário em módulo compartilhado com catálogo homologado no Kit de Design e atualiza os testes.

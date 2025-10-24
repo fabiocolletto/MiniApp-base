@@ -8,6 +8,7 @@ import { createInputField, createTextareaField } from './shared/form-fields.js';
 import { PANEL_PREVIEW_WIDGET_MODELS } from './shared/panel-preview-widget.js';
 import { SYSTEM_LOG_WIDGET_MODELS } from './shared/system-log-widgets.js';
 import { USER_DASHBOARD_WIDGET_MODELS } from './shared/user-dashboard-widgets.js';
+import { APP_SHELL_LAYOUT_MODELS } from './shared/app-shell-models.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-design-kit';
 
@@ -847,6 +848,108 @@ function createPanelPreviewShowcase() {
         fallback.textContent = 'Prévia indisponível para este modelo.';
         preview.append(fallback);
       }
+
+      card.append(header, preview);
+      return card;
+    },
+  });
+}
+
+function createAppShellPreview(model) {
+  const preview = document.createElement('div');
+  preview.className = 'admin-design-kit__preview';
+
+  if (Array.isArray(model.composition) && model.composition.length > 0) {
+    const compositionLabel = document.createElement('p');
+    compositionLabel.className = 'admin-design-kit__paragraph';
+    compositionLabel.textContent = 'Composição base:';
+    preview.append(compositionLabel);
+
+    model.composition.forEach((piece) => {
+      if (!piece || typeof piece !== 'object') {
+        return;
+      }
+
+      const entry = document.createElement('p');
+      entry.className = 'admin-design-kit__paragraph';
+
+      const slot = document.createElement('strong');
+      slot.textContent = `${piece.slot ?? 'Seção'}: `;
+      entry.append(slot);
+
+      const description = document.createTextNode(piece.description ?? 'Descrição indisponível.');
+      entry.append(description);
+
+      preview.append(entry);
+    });
+  }
+
+  if (Array.isArray(model.tokens) && model.tokens.length > 0) {
+    const tokensParagraph = document.createElement('p');
+    tokensParagraph.className = 'admin-design-kit__paragraph';
+    tokensParagraph.textContent = `Tokens de layout: ${model.tokens.join(', ')}`;
+    preview.append(tokensParagraph);
+  }
+
+  if (Array.isArray(model.notes) && model.notes.length > 0) {
+    const notesLabel = document.createElement('p');
+    notesLabel.className = 'admin-design-kit__paragraph';
+    notesLabel.textContent = 'Notas de implementação:';
+    preview.append(notesLabel);
+
+    const notesList = document.createElement('ul');
+    notesList.setAttribute('role', 'list');
+
+    model.notes.forEach((note) => {
+      if (typeof note !== 'string' || note.trim() === '') {
+        return;
+      }
+
+      const item = document.createElement('li');
+      item.className = 'admin-design-kit__paragraph';
+      item.textContent = note;
+      notesList.append(item);
+    });
+
+    if (notesList.children.length > 0) {
+      preview.append(notesList);
+    }
+  }
+
+  return preview;
+}
+
+function createAppShellShowcase() {
+  return createDesignKitModelsWidget({
+    title: 'Layouts do app shell',
+    description:
+      'Modelos oficiais do container principal com offsets de cabeçalho e rodapé fixos para painéis administrativos e de usuário.',
+    models: APP_SHELL_LAYOUT_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card admin-design-kit__item-card';
+      card.dataset.modelId = model.id;
+
+      if (model.description) {
+        card.title = model.description;
+      }
+
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
+
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
+      header.append(title);
+
+      if (model.description) {
+        const description = document.createElement('p');
+        description.className = 'admin-design-kit__item-description';
+        description.textContent = model.description;
+        header.append(description);
+      }
+
+      const preview = createAppShellPreview(model);
 
       card.append(header, preview);
       return card;
@@ -1742,6 +1845,7 @@ export function renderAdminDesignKit(viewRoot) {
   layout.append(createSystemWidgetShowcase());
   layout.append(createUserDashboardWidgetShowcase());
   layout.append(createPanelPreviewShowcase());
+  layout.append(createAppShellShowcase());
   layout.append(createColorPaletteShowcase());
   layout.append(createTypographyShowcase());
   layout.append(createSurfaceShowcase());
