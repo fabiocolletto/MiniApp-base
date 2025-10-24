@@ -21,7 +21,11 @@ import { getActiveUserId, subscribeSession, clearActiveUser } from '../data/sess
 import { registerViewCleanup } from '../view-cleanup.js';
 import { createUserForm, tagFormElement } from './shared/user-form-sections.js';
 import { formatPhoneNumberForDisplay, validatePhoneNumber } from './shared/validation.js';
-import { createSystemUsersWidget } from './shared/system-users-widget.js';
+import {
+  createQuickAction,
+  createQuickActionsWidget,
+  createUserDashboardUsersWidget,
+} from './shared/user-dashboard-widgets.js';
 import eventBus from '../events/event-bus.js';
 import {
   markActivityDirty,
@@ -55,105 +59,6 @@ const AUTO_FOCUS_ON_OPEN = (() => {
     return false;
   }
 })();
-
-function isElement(node) {
-  if (!HTMLElementRef) {
-    return Boolean(node) && typeof node === 'object' && 'ownerDocument' in node;
-  }
-
-  return node instanceof HTMLElementRef;
-}
-
-function createCollapsibleSection({
-  id,
-  title,
-  description = '',
-  defaultExpanded = false,
-  classes = [],
-  onToggle,
-}) {
-  const section = document.createElement('section');
-  section.className = ['surface-card', 'user-panel__widget', ...classes].filter(Boolean).join(' ');
-  section.dataset.sectionId = id;
-
-  const header = document.createElement('div');
-  header.className = 'user-panel__widget-header';
-
-  const toggleButton = document.createElement('button');
-  toggleButton.type = 'button';
-  toggleButton.className = 'user-panel__section-toggle';
-
-  const titleElement = document.createElement('span');
-  titleElement.className = 'user-widget__title';
-  titleElement.textContent = title;
-
-  const contentId = `user-panel-section-${id}`;
-  toggleButton.setAttribute('aria-controls', contentId);
-  toggleButton.append(titleElement);
-
-  header.append(toggleButton);
-  section.append(header);
-
-  const content = document.createElement('div');
-  content.className = 'user-panel__widget-content';
-  content.id = contentId;
-
-  let descriptionElement = null;
-  if (description) {
-    descriptionElement = document.createElement('p');
-    descriptionElement.className = 'user-widget__description';
-    descriptionElement.textContent = description;
-    content.append(descriptionElement);
-  }
-
-  section.append(content);
-
-  const setSectionState = (state) => {
-    const normalized = state === 'expanded' ? 'expanded' : state === 'empty' ? 'empty' : 'collapsed';
-    section.dataset.sectionState = normalized;
-    const isExpanded = normalized === 'expanded';
-    toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-    content.hidden = !isExpanded;
-    if (descriptionElement) {
-      descriptionElement.hidden = !isExpanded;
-    }
-  };
-
-  const setExpanded = (value) => setSectionState(value ? 'expanded' : 'collapsed');
-
-  setSectionState(defaultExpanded ? 'expanded' : 'collapsed');
-
-  const handleToggle = () => {
-    const nextExpanded = section.dataset.sectionState !== 'expanded';
-    if (typeof onToggle === 'function') {
-      const result = onToggle(nextExpanded, {
-        setSectionState,
-        setExpanded,
-      });
-
-      if (result === false) {
-        return;
-      }
-    }
-
-    setExpanded(nextExpanded);
-  };
-
-  toggleButton.addEventListener('click', handleToggle);
-
-  const cleanup = () => toggleButton.removeEventListener('click', handleToggle);
-
-  return {
-    section,
-    header,
-    toggleButton,
-    content,
-    descriptionElement,
-    setSectionState,
-    setExpanded,
-    cleanup,
-  };
-}
 
 function normalizePreferences(preferences) {
   const defaults = getDefaultUserPreferences();
@@ -204,47 +109,6 @@ function normalizeUserData(user) {
     createdAt,
     updatedAt,
   };
-}
-
-function createQuickAction({ label, description, onClick, extraClass = '' }) {
-  const item = document.createElement('li');
-  item.className = 'user-dashboard__quick-action';
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className =
-    [
-      'button',
-      'button--secondary',
-      'button--stacked',
-      'button--block',
-      'user-dashboard__quick-action-button',
-      extraClass,
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-  const labelElement = document.createElement('span');
-  labelElement.className = 'user-dashboard__quick-action-title';
-  labelElement.textContent = label;
-
-  const descriptionElement = document.createElement('span');
-  descriptionElement.className = 'user-dashboard__quick-action-description';
-  descriptionElement.textContent = description;
-
-  button.append(labelElement, descriptionElement);
-  item.append(button);
-
-  let cleanup = () => {};
-
-  if (typeof onClick === 'function') {
-    button.addEventListener('click', onClick);
-    cleanup = () => {
-      button.removeEventListener('click', onClick);
-    };
-  }
-
-  return { item, button, labelElement, descriptionElement, cleanup };
 }
 
 function createSummaryItem(label) {
@@ -438,49 +302,32 @@ export function renderUserPanel(viewRoot) {
   let themeAction = null;
   let footerIndicatorsAction = null;
 
-  const themeSectionControls = createCollapsibleSection({
+  const themeSectionControls = createQuickActionsWidget({
     id: 'theme',
     title: 'Preferências de tema',
     description:
       'Alterne rapidamente entre tema claro e escuro e mantenha sua escolha sincronizada em todos os acessos.',
     defaultExpanded: true,
-    classes: ['user-dashboard__widget', 'user-dashboard__widget--theme'],
+    extraClasses: ['user-dashboard__widget--theme'],
   });
+  const themeActionList = themeSectionControls.actionList;
 
-  const actionsWrapper = document.createElement('div');
-  actionsWrapper.className = 'user-dashboard__actions';
-
-  const actionList = document.createElement('ul');
-  actionList.className = 'user-dashboard__action-list';
-  actionList.setAttribute('role', 'list');
-
-  actionsWrapper.append(actionList);
-  themeSectionControls.content.append(actionsWrapper);
-
-  const accessSectionControls = createCollapsibleSection({
+  const accessSectionControls = createQuickActionsWidget({
     id: 'access',
     title: 'Sessão e acesso',
     description:
       'Gerencie a sessão rapidamente: faça logoff, troque de usuário ou remova os dados salvos deste dispositivo.',
     defaultExpanded: true,
-    classes: ['user-dashboard__widget', 'user-panel__widget--access'],
+    extraClasses: ['user-panel__widget--access'],
   });
-
-  const accessActionsWrapper = document.createElement('div');
-  accessActionsWrapper.className = 'user-dashboard__actions';
-
-  const accessActionList = document.createElement('ul');
-  accessActionList.className = 'user-dashboard__action-list';
-  accessActionList.setAttribute('role', 'list');
-
-  accessActionsWrapper.append(accessActionList);
+  const accessActionList = accessSectionControls.actionList;
 
   const accessFeedback = document.createElement('p');
   accessFeedback.className = 'form-message user-form__feedback user-dashboard__feedback';
   accessFeedback.hidden = true;
   accessFeedback.setAttribute('aria-live', 'polite');
 
-  accessSectionControls.content.append(accessActionsWrapper, accessFeedback);
+  accessSectionControls.content.append(accessFeedback);
 
   const userDataSectionIdentifier = 'dados do usuário';
   const userDataContent = document.createElement('div');
@@ -564,12 +411,11 @@ export function renderUserPanel(viewRoot) {
 
   userDataContent.append(accountSummary, emptyState, feedbackElement, accountForm);
 
-  const userDataWidgetInstance = createSystemUsersWidget({
+  const userDataWidgetInstance = createUserDashboardUsersWidget({
     title: 'Dados do usuário',
     description:
       'Visualize e mantenha sincronizados os dados principais da sua conta com o painel administrativo.',
     emptyStateMessage: 'Nenhuma sessão ativa. Faça login para atualizar seus dados.',
-    extraClasses: ['user-dashboard__widget', 'user-dashboard__widget--user-data'],
     renderDetails: () => {
       const panel = document.createElement('div');
       panel.className =
@@ -1293,7 +1139,7 @@ export function renderUserPanel(viewRoot) {
     extraClass: 'user-dashboard__quick-action-button--footer',
   });
 
-  actionList.append(themeAction.item, footerIndicatorsAction.item);
+  themeActionList.append(themeAction.item, footerIndicatorsAction.item);
   cleanupCallbacks.push(themeAction.cleanup, footerIndicatorsAction.cleanup);
   updateThemeActionContent();
   updateFooterIndicatorsActionContent();

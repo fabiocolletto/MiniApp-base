@@ -1,7 +1,8 @@
 # Log
 
-## v0.1.221 - 2025-10-24 07:20 BRT
+## v0.1.221 - 2025-10-24 07:40 BRT
 - Torna o widget padrão de pré-visualização interativo, abrindo o painel correspondente ao ser clicado ou acionado pelo teclado.
+- Reúne os widgets do painel do usuário em módulo compartilhado com catálogo homologado no Kit de Design e atualiza os testes.
 - Destaca o estado interativo das miniaturas com foco visível, facilitando a navegação pela galeria e pelo kit de design.
 
 ## v0.1.220 - 2025-10-24 07:08 BRT

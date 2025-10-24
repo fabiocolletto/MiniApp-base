@@ -159,6 +159,27 @@ class FakeElement {
     this.eventListeners.get(eventName).add(handler);
   }
 
+  dispatchEvent(event) {
+    if (!event || typeof event.type !== 'string') {
+      return false;
+    }
+
+    if (!this.eventListeners.has(event.type)) {
+      return false;
+    }
+
+    const listeners = Array.from(this.eventListeners.get(event.type));
+    listeners.forEach((listener) => {
+      try {
+        listener.call(this, event);
+      } catch (error) {
+        // Ignora erros em handlers simulados.
+      }
+    });
+
+    return !event.defaultPrevented;
+  }
+
   querySelector(selector) {
     return this._query(selector, true) ?? null;
   }
@@ -242,14 +263,106 @@ function findElement(root, predicate) {
   return null;
 }
 
-test('renderUserPanel monta preferências de tema e formulário principais com atalho ativo', async (t) => {
+test('USER_DASHBOARD_WIDGET_MODELS expõe os widgets homologados do painel do usuário', async (t) => {
   const fakeDocument = new FakeDocument();
   globalThis.document = fakeDocument;
   globalThis.HTMLElement = FakeElement;
+  globalThis.CustomEvent = class FakeCustomEvent {
+    constructor(type, options = {}) {
+      this.type = type;
+      this.detail = options.detail ?? null;
+      this.bubbles = Boolean(options.bubbles);
+      this.cancelable = Boolean(options.cancelable);
+      this.defaultPrevented = false;
+    }
+
+    preventDefault() {
+      if (this.cancelable) {
+        this.defaultPrevented = true;
+      }
+    }
+  };
 
   t.after(() => {
     delete globalThis.document;
     delete globalThis.HTMLElement;
+    delete globalThis.CustomEvent;
+  });
+
+  const { USER_DASHBOARD_WIDGET_MODELS } = await import(
+    '../scripts/views/shared/user-dashboard-widgets.js'
+  );
+
+  assert.ok(Array.isArray(USER_DASHBOARD_WIDGET_MODELS), 'os modelos devem ser expostos em array imutável');
+  assert.ok(USER_DASHBOARD_WIDGET_MODELS.length >= 2, 'os widgets do painel do usuário precisam ter ao menos dois modelos');
+
+  const [quickActionsModel, userDataModel] = USER_DASHBOARD_WIDGET_MODELS;
+
+  const quickActionsPreview =
+    typeof quickActionsModel.create === 'function' ? quickActionsModel.create() : null;
+
+  assert.ok(
+    quickActionsPreview instanceof FakeElement,
+    'o modelo de ações rápidas deve produzir elementos renderizáveis',
+  );
+
+  const themePreview = findElement(
+    quickActionsPreview,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__widget--theme'),
+  );
+  assert.ok(themePreview, 'a prévia deve incluir o widget de tema com a classe homologada');
+
+  const accessPreview = findElement(
+    quickActionsPreview,
+    (node) => node instanceof FakeElement && node.classList.contains('user-panel__widget--access'),
+  );
+  assert.ok(accessPreview, 'a prévia deve incluir o widget de acesso com a classe homologada');
+
+  const quickActionLists = quickActionsPreview.querySelectorAll('.user-dashboard__action-list');
+  assert.equal(
+    quickActionLists.length,
+    2,
+    'a prévia de ações rápidas deve renderizar duas listas com atalhos padrão',
+  );
+
+  const userDataPreview =
+    typeof userDataModel.create === 'function' ? userDataModel.create() : null;
+
+  assert.ok(
+    userDataPreview instanceof FakeElement,
+    'o modelo de dados do usuário deve produzir um widget renderizável',
+  );
+
+  assert.ok(
+    userDataPreview.classList.contains('user-dashboard__widget--user-data'),
+    'o modelo de dados precisa aplicar a classe padronizada do widget',
+  );
+});
+
+test('renderUserPanel monta preferências de tema e formulário principais com atalho ativo', async (t) => {
+  const fakeDocument = new FakeDocument();
+  globalThis.document = fakeDocument;
+  globalThis.HTMLElement = FakeElement;
+  globalThis.CustomEvent = class FakeCustomEvent {
+    constructor(type, options = {}) {
+      this.type = type;
+      this.detail = options.detail ?? null;
+      this.bubbles = Boolean(options.bubbles);
+      this.cancelable = Boolean(options.cancelable);
+      this.defaultPrevented = false;
+    }
+
+    preventDefault() {
+      if (this.cancelable) {
+        this.defaultPrevented = true;
+      }
+    }
+  };
+
+  t.after(() => {
+    delete globalThis.document;
+    delete globalThis.HTMLElement;
+    delete globalThis.CustomEvent;
   });
 
   const { renderUserPanel } = await import('../scripts/views/user.js');
