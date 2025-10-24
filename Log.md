@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.224 - 2025-10-24 10:55 BRT
+- Persiste a última view acessada no armazenamento local e restaura o painel correspondente após recarregamentos.
+- Renomeia o painel para "Painel de design" em rótulos, mensagens e documentação dedicada.
+- Corrige a restauração da Galeria de painéis carregando a view persistida quando ela é reaberta após o refresh.
+- Atualiza os metadados do sistema para publicar a versão v0.1.224 no rodapé e na navegação administrativa.
+
 ## v0.1.223 - 2025-10-24 09:57 BRT
 - Elimina a rolagem vertical dos widgets de pré-visualização no Kit de Design permitindo que cada modelo expanda na altura completa.
 - Ajusta a galeria de painéis para redistribuir o pitch em uma, duas ou três colunas conforme a quantidade de miniaturas exibidas.

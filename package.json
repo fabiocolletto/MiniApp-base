@@ -1,6 +1,6 @@
 {
   "name": "miniapp-base",
-  "version": "0.1.221",
+  "version": "0.1.224",
   "private": true,
   "type": "module",
   "scripts": {

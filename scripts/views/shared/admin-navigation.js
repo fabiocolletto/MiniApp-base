@@ -70,7 +70,7 @@ export function createAdminNavigation(options = {}) {
 
   const kitChip = document.createElement('span');
   kitChip.className = 'miniapp-details__chip';
-  kitChip.textContent = 'Kit de Design';
+  kitChip.textContent = 'Painel de design';
   metaGroup.append(kitChip);
 
   const versionLabel = typeof releaseInfo?.version === 'string' ? releaseInfo.version.trim() : '';

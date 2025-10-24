@@ -9,6 +9,7 @@ import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
+import { renderPanelGallery } from '../scripts/views/panel-gallery.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -473,11 +474,82 @@ const clearActiveUserFn =
     ? rawHooks.clearActiveUser
     : defaultClearActiveUser;
 
+const LAST_VIEW_STORAGE_KEY = 'miniapp:last-view';
+
+function getNavigationStorage() {
+  if (typeof window !== 'object' || !window) {
+    return null;
+  }
+
+  try {
+    return window.localStorage ?? null;
+  } catch (error) {
+    console.error('Não foi possível acessar o armazenamento de navegação.', error);
+    return null;
+  }
+}
+
+function sanitizePersistedViewName(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function persistActiveViewName(viewName) {
+  const sanitized = sanitizePersistedViewName(viewName);
+  if (!sanitized) {
+    return;
+  }
+
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.setItem(LAST_VIEW_STORAGE_KEY, sanitized);
+  } catch (error) {
+    console.error('Não foi possível persistir a última view ativa.', error);
+  }
+}
+
+function clearPersistedViewName() {
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.removeItem(LAST_VIEW_STORAGE_KEY);
+  } catch (error) {
+    console.error('Não foi possível limpar a última view ativa persistida.', error);
+  }
+}
+
+export function getPersistedViewName() {
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return null;
+  }
+
+  try {
+    const storedValue = storage.getItem(LAST_VIEW_STORAGE_KEY);
+    return sanitizePersistedViewName(storedValue);
+  } catch (error) {
+    console.error('Não foi possível ler a última view ativa persistida.', error);
+    return null;
+  }
+}
+
 const views = {
   admin: renderAdmin,
   'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
+  'panel-gallery': renderPanelGallery,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -495,7 +567,8 @@ if (viewOverrides) {
 
 const MENU_LABEL_FALLBACKS = {
   admin: 'Painel administrativo',
-  'admin-design-kit': 'Kit de design',
+  'admin-design-kit': 'Painel de design',
+  'panel-gallery': 'Galeria de painéis',
   miniapps: 'MiniApps',
   user: 'Painel do usuário',
   login: 'Painel de Login',
@@ -1855,6 +1928,7 @@ export function renderView(name) {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
+    clearPersistedViewName();
     const activeViewName = viewRoot.dataset.view ?? name;
     updateHomeToggleStateForView(activeViewName);
     updateHeaderMenuTriggerLabel();
@@ -1866,6 +1940,7 @@ export function renderView(name) {
   viewRoot.dataset.view = name;
   view(viewRoot);
   const activeViewName = viewRoot.dataset.view ?? name;
+  persistActiveViewName(activeViewName);
   updateHomeToggleStateForView(activeViewName);
   updateHeaderMenuTriggerLabel();
   updateHeaderTitle(activeViewName);
