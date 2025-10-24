@@ -121,7 +121,13 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
   renderAdmin(viewRoot);
 
   const widgets = viewRoot.querySelectorAll('.user-panel__widget');
-  assert.equal(widgets.length, 5, 'painel deve começar com cinco widgets principais');
+  assert.equal(widgets.length, 6, 'painel deve começar com seis widgets principais incluindo identidade visual');
+
+  const brandingWidget = viewRoot.querySelector('.admin-dashboard__widget--branding');
+  assert.ok(brandingWidget, 'widget de identidade visual deve existir');
+
+  const brandingControls = brandingWidget.querySelectorAll('.admin-branding__item');
+  assert.ok(brandingControls.length > 0, 'widget de identidade visual deve exibir controles de logo');
 
   const usersWidget = viewRoot.querySelector('.admin-dashboard__widget--users');
   assert.ok(usersWidget, 'widget de usuários deve existir');

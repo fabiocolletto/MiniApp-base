@@ -37,6 +37,11 @@ import {
   getActivityStatus as defaultGetActivityStatus,
   subscribeActivityStatus as defaultSubscribeActivityStatus,
 } from '../scripts/system/activity-indicator.js';
+import {
+  DEFAULT_BRANDING_LOGOS,
+  getBrandingSnapshot,
+  subscribeBranding,
+} from '../scripts/data/branding-store.js';
 import { recordMiniAppAccess } from '../scripts/data/miniapp-activity-store.js';
 
 const viewRoot = document.getElementById('view-root');
@@ -47,6 +52,11 @@ const logoImage =
   (logo && typeof logo.querySelector === 'function'
     ? logo.querySelector('.header-logo__image')
     : null) || document.querySelector('.header-logo__image');
+const headerTitle = document.querySelector('.header-title');
+const headerTitleText =
+  (headerTitle && typeof headerTitle.querySelector === 'function'
+    ? headerTitle.querySelector('.header-title__text')
+    : null) || document.querySelector('.header-title__text');
 const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
@@ -58,7 +68,8 @@ const headerMenu = document.querySelector('.header-menu');
 const headerMenuControls = document.querySelector('.header-menu__controls');
 const headerMenuTrigger = document.querySelector('.header-menu__trigger');
 const headerMenuPanel = document.getElementById('header-navigation-menu');
-const headerMenuAdminDivider = document.querySelector('.header-menu__separator');
+const headerMenuPrimarySeparator = document.querySelector('.header-menu__separator--primary');
+const headerMenuSecondarySeparator = document.querySelector('.header-menu__separator--secondary');
 const headerMobileToggle = document.querySelector('.header-mobile-toggle');
 const memoryIndicator = document.querySelector('.footer-memory');
 const memoryIndicatorText = memoryIndicator?.querySelector('.footer-memory__text');
@@ -183,7 +194,7 @@ function scheduleLayoutOffsetUpdate() {
 
 const dimmedShellClass = 'app-shell--dimmed';
 
-const THEME_ASSETS = {
+const DEFAULT_THEME_ASSETS = {
   light: {
     logo: 'https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp',
     icon: 'https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp',
@@ -196,6 +207,9 @@ const THEME_ASSETS = {
 
 let currentBrandTheme = null;
 let lastSessionThemePreference = null;
+let brandingAssets = getBrandingSnapshot();
+let lastAppliedLogo = null;
+let lastAppliedIcon = null;
 
 const SESSION_LEGEND_ITEMS = [
   {
@@ -247,38 +261,58 @@ let activeModalId = null;
 let modalActiveTrigger = null;
 let modalCleanup = null;
 
+function resolveBrandLogo(theme) {
+  const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+  const mode = brandingAssets?.mode === 'shared' ? 'shared' : 'individual';
+  const logos = brandingAssets?.logos && typeof brandingAssets.logos === 'object' ? brandingAssets.logos : {};
+
+  if (mode === 'shared') {
+    const sharedLogo = typeof logos.shared === 'string' ? logos.shared.trim() : '';
+    if (sharedLogo) {
+      return sharedLogo;
+    }
+
+    return DEFAULT_BRANDING_LOGOS.light;
+  }
+
+  const themedLogo = typeof logos[normalizedTheme] === 'string' ? logos[normalizedTheme].trim() : '';
+  if (themedLogo) {
+    return themedLogo;
+  }
+
+  return DEFAULT_BRANDING_LOGOS[normalizedTheme] ?? DEFAULT_BRANDING_LOGOS.light;
+}
+
+function resolveBrandIcon(theme) {
+  const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+  const assets = DEFAULT_THEME_ASSETS[normalizedTheme];
+  return assets?.icon ?? null;
+}
+
 function updateBrandAssets(theme) {
   const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
-  if (currentBrandTheme === normalizedTheme) {
-    return;
+  const nextLogo = resolveBrandLogo(normalizedTheme);
+  const nextIcon = resolveBrandIcon(normalizedTheme);
+
+  if (logoImage && typeof nextLogo === 'string' && nextLogo && nextLogo !== lastAppliedLogo) {
+    if (typeof logoImage.setAttribute === 'function') {
+      logoImage.setAttribute('src', nextLogo);
+    } else if ('src' in logoImage) {
+      logoImage.src = nextLogo;
+    }
+    lastAppliedLogo = nextLogo;
+  }
+
+  if (footerBrandIcon && typeof nextIcon === 'string' && nextIcon && nextIcon !== lastAppliedIcon) {
+    if (typeof footerBrandIcon.setAttribute === 'function') {
+      footerBrandIcon.setAttribute('src', nextIcon);
+    } else if ('src' in footerBrandIcon) {
+      footerBrandIcon.src = nextIcon;
+    }
+    lastAppliedIcon = nextIcon;
   }
 
   currentBrandTheme = normalizedTheme;
-  const assets = THEME_ASSETS[normalizedTheme];
-
-  if (assets?.logo && logoImage) {
-    const currentLogo =
-      typeof logoImage.getAttribute === 'function' ? logoImage.getAttribute('src') : null;
-    if (currentLogo !== assets.logo) {
-      if (typeof logoImage.setAttribute === 'function') {
-        logoImage.setAttribute('src', assets.logo);
-      } else if ('src' in logoImage) {
-        logoImage.src = assets.logo;
-      }
-    }
-  }
-
-  if (assets?.icon && footerBrandIcon) {
-    const currentIcon =
-      typeof footerBrandIcon.getAttribute === 'function' ? footerBrandIcon.getAttribute('src') : null;
-    if (currentIcon !== assets.icon) {
-      if (typeof footerBrandIcon.setAttribute === 'function') {
-        footerBrandIcon.setAttribute('src', assets.icon);
-      } else if ('src' in footerBrandIcon) {
-        footerBrandIcon.src = assets.icon;
-      }
-    }
-  }
 }
 
 function normalizeTheme(theme) {
@@ -411,8 +445,6 @@ if (viewOverrides) {
   });
 }
 
-const NEUTRAL_MENU_VIEWS = new Set(['home', 'splash']);
-
 const MENU_LABEL_FALLBACKS = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Kit de design',
@@ -422,6 +454,9 @@ const MENU_LABEL_FALLBACKS = {
   register: 'Crie sua conta',
   log: 'Log do Projeto',
   legal: 'Documentos legais',
+  home: 'Início',
+  dashboard: 'Início',
+  splash: 'Carregando painel',
   'not-found': 'Conteúdo não disponível',
 };
 
@@ -568,7 +603,44 @@ function extractViewHeading() {
   return typeof text === 'string' ? text.trim() : '';
 }
 
-function updateHeaderMenuTriggerLabel(viewName) {
+function resolveHeaderTitle(viewName) {
+  const headingText = extractViewHeading();
+  if (headingText) {
+    return headingText;
+  }
+
+  const normalizedView = typeof viewName === 'string' ? viewName.trim() : '';
+  if (normalizedView) {
+    const fallback = MENU_LABEL_FALLBACKS[normalizedView];
+    if (typeof fallback === 'string' && fallback.trim() !== '') {
+      return fallback.trim();
+    }
+  }
+
+  return MENU_LABEL_FALLBACKS.home;
+}
+
+function updateHeaderTitle(viewName) {
+  if (!(headerTitleText instanceof HTMLElement)) {
+    return;
+  }
+
+  const title = resolveHeaderTitle(viewName);
+  headerTitleText.textContent = title;
+
+  const container = headerTitleText.closest('.header-title');
+  if (container instanceof HTMLElement) {
+    if (title) {
+      container.hidden = false;
+      container.removeAttribute('aria-hidden');
+    } else {
+      container.hidden = true;
+      container.setAttribute('aria-hidden', 'true');
+    }
+  }
+}
+
+function updateHeaderMenuTriggerLabel() {
   if (!(headerMenuTrigger instanceof HTMLElement)) {
     return;
   }
@@ -578,29 +650,14 @@ function updateHeaderMenuTriggerLabel(viewName) {
     return;
   }
 
-  const normalizedView = typeof viewName === 'string' ? viewName.trim() : '';
-  const isNeutral = NEUTRAL_MENU_VIEWS.has(normalizedView);
-
-  let labelText = '';
-  if (!isNeutral) {
-    const headingText = extractViewHeading();
-    labelText = headingText || MENU_LABEL_FALLBACKS[normalizedView] || '';
-
-    if (!labelText) {
-      labelText = 'Painéis';
-    }
-  }
-
-  const normalizedLabel = typeof labelText === 'string' ? labelText.trim() : '';
-  const hasLabel = !isNeutral && Boolean(normalizedLabel);
-
-  labelElement.textContent = hasLabel ? normalizedLabel : '';
-  headerMenuTrigger.dataset.hasLabel = hasLabel ? 'true' : 'false';
+  labelElement.textContent = 'Painéis';
+  headerMenuTrigger.dataset.hasLabel = 'true';
 }
 
 function syncHeaderMenuTriggerLabelFromDom() {
   const currentView = viewRoot instanceof HTMLElement ? viewRoot.dataset.view ?? '' : '';
-  updateHeaderMenuTriggerLabel(currentView);
+  updateHeaderMenuTriggerLabel();
+  updateHeaderTitle(currentView);
 }
 
 function setHeaderMenuState(isOpen) {
@@ -1222,8 +1279,23 @@ function updateHeaderSession(user) {
   setLinkVisibility(headerAdminLink, showAdminLink);
   setLinkVisibility(headerDesignKitLink, showDesignKitLink);
 
-  if (headerMenuAdminDivider instanceof HTMLElement) {
-    headerMenuAdminDivider.hidden = !(showDesignKitLink || showAdminLink);
+  const shouldShowAdminSection = showDesignKitLink || showAdminLink;
+  if (headerMenuPrimarySeparator instanceof HTMLElement) {
+    headerMenuPrimarySeparator.hidden = !shouldShowAdminSection;
+    if (shouldShowAdminSection) {
+      headerMenuPrimarySeparator.removeAttribute('aria-hidden');
+    } else {
+      headerMenuPrimarySeparator.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (headerMenuSecondarySeparator instanceof HTMLElement) {
+    headerMenuSecondarySeparator.hidden = !shouldShowAdminSection;
+    if (shouldShowAdminSection) {
+      headerMenuSecondarySeparator.removeAttribute('aria-hidden');
+    } else {
+      headerMenuSecondarySeparator.setAttribute('aria-hidden', 'true');
+    }
   }
 
   const panel = ensureHeaderMobileMenu();
@@ -1688,7 +1760,8 @@ export function renderView(name) {
     renderNotFound(viewRoot, name);
     const activeViewName = viewRoot.dataset.view ?? name;
     updateHomeToggleStateForView(activeViewName);
-    updateHeaderMenuTriggerLabel(activeViewName);
+    updateHeaderMenuTriggerLabel();
+    updateHeaderTitle(activeViewName);
     focusViewRoot();
     return;
   }
@@ -1697,7 +1770,8 @@ export function renderView(name) {
   view(viewRoot);
   const activeViewName = viewRoot.dataset.view ?? name;
   updateHomeToggleStateForView(activeViewName);
-  updateHeaderMenuTriggerLabel(activeViewName);
+  updateHeaderMenuTriggerLabel();
+  updateHeaderTitle(activeViewName);
   focusViewRoot();
   scheduleLayoutOffsetUpdate();
 }
@@ -1738,7 +1812,8 @@ export function showSplash(message = 'Carregando painel...') {
   loader.textContent = message;
 
   viewRoot.replaceChildren(loader);
-  updateHeaderMenuTriggerLabel('splash');
+  updateHeaderMenuTriggerLabel();
+  updateHeaderTitle('splash');
 }
 
 let initialized = false;
@@ -1890,6 +1965,11 @@ export function initializeAppShell(router) {
 
   updateBrandAssets(getResolvedTheme());
   updateThemeToggleState(getResolvedTheme());
+  subscribeBranding((snapshot) => {
+    brandingAssets = snapshot;
+    const theme = currentBrandTheme ?? getResolvedTheme();
+    updateBrandAssets(theme);
+  });
   subscribeThemeChange((payload) => {
     const theme = payload && typeof payload === 'object' ? payload.theme : undefined;
     const resolvedTheme = theme ?? getResolvedTheme();

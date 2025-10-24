@@ -12,6 +12,12 @@ import {
   subscribeSubscriptionPlans,
   updateSubscriptionPlan as persistSubscriptionPlanUpdate,
 } from '../data/subscription-store.js';
+import {
+  DEFAULT_BRANDING_LOGOS,
+  getBrandingSnapshot,
+  subscribeBranding,
+  updateBranding as persistBrandingUpdate,
+} from '../data/branding-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import {
   createSystemUsersWidget,
@@ -37,6 +43,16 @@ const periodicityLabelMap = new Map(
   SUBSCRIPTION_PERIODICITY_OPTIONS.map((option) => [option.value, option.label]),
 );
 const accessLevelLabelMap = new Map(ACCESS_LEVEL_OPTIONS.map((option) => [option.value, option.label]));
+
+const BRANDING_ALLOWED_MIME_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/svg+xml',
+]);
+const BRANDING_MAX_FILE_SIZE = 1024 * 1024; // 1 MB
+let brandingControlId = 0;
 
 function formatCount(value) {
   const numericValue = Number.isFinite(value) ? value : 0;
@@ -1600,6 +1616,334 @@ function createSubscriptionPlansWidget() {
   return { widget, setPlans, setMiniApps, teardown };
 }
 
+function createBrandingWidget() {
+  let currentBranding = getBrandingSnapshot();
+
+  const widget = document.createElement('section');
+  widget.className =
+    'surface-card user-panel__widget admin-dashboard__widget admin-dashboard__widget--branding';
+
+  const title = document.createElement('h2');
+  title.className = 'user-widget__title';
+  title.textContent = 'Identidade visual';
+
+  const description = document.createElement('p');
+  description.className = 'user-widget__description';
+  description.textContent =
+    'Atualize os logotipos exibidos no topo do painel para cada tema disponível no aplicativo.';
+
+  widget.append(title, description);
+
+  const modeFieldset = document.createElement('fieldset');
+  modeFieldset.className = 'form-field admin-branding__mode';
+
+  const legend = document.createElement('legend');
+  legend.className = 'form-label';
+  legend.textContent = 'Modo de exibição';
+  modeFieldset.append(legend);
+
+  const modeOptions = document.createElement('div');
+  modeOptions.className = 'admin-branding__mode-options';
+
+  function createModeOption(value, heading, helper) {
+    const option = document.createElement('label');
+    option.className = 'admin-branding__mode-option';
+
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'admin-branding-mode';
+    input.value = value;
+    input.className = 'admin-branding__mode-input';
+
+    const titleElement = document.createElement('span');
+    titleElement.className = 'admin-branding__mode-title';
+    titleElement.textContent = heading;
+
+    const helperElement = document.createElement('span');
+    helperElement.className = 'admin-branding__mode-hint';
+    helperElement.textContent = helper;
+
+    option.append(input, titleElement, helperElement);
+
+    return { element: option, input };
+  }
+
+  const individualOption = createModeOption(
+    'individual',
+    'Logos independentes',
+    'Defina uma imagem específica para os temas claro e escuro.',
+  );
+  const sharedOption = createModeOption(
+    'shared',
+    'Mesma logo nos dois temas',
+    'A mesma imagem será utilizada simultaneamente no claro e no escuro.',
+  );
+
+  modeOptions.append(individualOption.element, sharedOption.element);
+  modeFieldset.append(modeOptions);
+  widget.append(modeFieldset);
+
+  const controls = document.createElement('div');
+  controls.className = 'admin-branding__controls';
+  widget.append(controls);
+
+  function createLogoBlock({ key, label, helper }) {
+    const element = document.createElement('article');
+    element.className = 'admin-branding__item';
+    element.dataset.variant = key;
+
+    const preview = document.createElement('div');
+    preview.className = 'admin-branding__preview';
+    preview.dataset.variant = key;
+
+    const previewImage = document.createElement('img');
+    previewImage.className = 'admin-branding__preview-image';
+    previewImage.alt = `${label} – pré-visualização da logo`;
+    previewImage.decoding = 'async';
+    previewImage.loading = 'lazy';
+    preview.append(previewImage);
+
+    const form = document.createElement('div');
+    form.className = 'admin-branding__form form-field';
+
+    const labelElement = document.createElement('span');
+    labelElement.className = 'form-label';
+    labelElement.textContent = label;
+
+    const helperElement = document.createElement('p');
+    helperElement.className = 'form-helper';
+    helperElement.textContent = helper;
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/png,image/jpeg,image/webp,image/svg+xml';
+    fileInput.id = `admin-branding-file-${key}-${++brandingControlId}`;
+    fileInput.hidden = true;
+
+    const uploadButton = document.createElement('button');
+    uploadButton.type = 'button';
+    uploadButton.className = 'button button--secondary admin-branding__action';
+    uploadButton.textContent = 'Carregar logo';
+
+    const resetButton = document.createElement('button');
+    resetButton.type = 'button';
+    resetButton.className = 'button button--ghost admin-branding__action';
+    resetButton.textContent = 'Restaurar padrão';
+
+    const actions = document.createElement('div');
+    actions.className = 'admin-branding__actions';
+    actions.append(uploadButton, resetButton);
+
+    const feedback = document.createElement('p');
+    feedback.className = 'form-helper admin-branding__feedback';
+    feedback.setAttribute('aria-live', 'polite');
+    feedback.hidden = true;
+
+    form.append(labelElement, helperElement, fileInput, actions, feedback);
+
+    element.append(preview, form);
+
+    function setPreview(src) {
+      if (typeof src === 'string' && src.trim() !== '') {
+        previewImage.src = src;
+        previewImage.hidden = false;
+      } else {
+        previewImage.src = '';
+        previewImage.hidden = true;
+      }
+    }
+
+    function setFeedback(message, tone = 'info') {
+      const text = typeof message === 'string' ? message.trim() : '';
+      if (text) {
+        feedback.textContent = text;
+        feedback.hidden = false;
+        feedback.dataset.tone = tone;
+      } else {
+        feedback.textContent = '';
+        feedback.hidden = true;
+        feedback.removeAttribute('data-tone');
+      }
+    }
+
+    function setVisibility(isVisible) {
+      if (isVisible) {
+        element.hidden = false;
+        element.removeAttribute('aria-hidden');
+        fileInput.disabled = false;
+        uploadButton.disabled = false;
+        resetButton.disabled = false;
+      } else {
+        element.hidden = true;
+        element.setAttribute('aria-hidden', 'true');
+        fileInput.disabled = true;
+        uploadButton.disabled = true;
+        resetButton.disabled = true;
+      }
+    }
+
+    return {
+      element,
+      fileInput,
+      uploadButton,
+      resetButton,
+      setPreview,
+      setFeedback,
+      setVisibility,
+    };
+  }
+
+  const logoBlocks = {
+    light: createLogoBlock({
+      key: 'light',
+      label: 'Tema claro',
+      helper: 'Imagem exibida quando o painel estiver no modo claro.',
+    }),
+    dark: createLogoBlock({
+      key: 'dark',
+      label: 'Tema escuro',
+      helper: 'Imagem exibida quando o painel estiver no modo escuro.',
+    }),
+    shared: createLogoBlock({
+      key: 'shared',
+      label: 'Logo compartilhada',
+      helper: 'Usada simultaneamente nos temas claro e escuro.',
+    }),
+  };
+
+  controls.append(logoBlocks.light.element, logoBlocks.dark.element, logoBlocks.shared.element);
+
+  function handleUpload(variant, block, fileList) {
+    const files = Array.from(fileList ?? []).filter((entry) => entry instanceof File);
+    const file = files.length > 0 ? files[0] : null;
+    if (!file) {
+      block.setFeedback('Nenhum arquivo selecionado.', 'neutral');
+      return;
+    }
+
+    const type = String(file.type ?? '').toLowerCase();
+    if (type && !BRANDING_ALLOWED_MIME_TYPES.has(type)) {
+      block.setFeedback('Formato não suportado. Use PNG, JPG, SVG ou WebP.', 'error');
+      return;
+    }
+
+    if (Number.isFinite(file.size) && file.size > BRANDING_MAX_FILE_SIZE) {
+      block.setFeedback('Arquivo muito grande. Utilize imagens de até 1 MB.', 'error');
+      return;
+    }
+
+    block.setFeedback('Carregando logo...', 'info');
+
+    const reader = new FileReader();
+    reader.addEventListener('error', () => {
+      block.setFeedback('Não foi possível carregar a imagem selecionada.', 'error');
+    });
+    reader.addEventListener('load', () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (!result) {
+        block.setFeedback('Não foi possível carregar a imagem selecionada.', 'error');
+        return;
+      }
+
+      persistBrandingUpdate({ logos: { [variant]: result } });
+      block.setFeedback('Logo atualizada com sucesso!', 'success');
+    });
+    reader.readAsDataURL(file);
+  }
+
+  const logoEntries = [
+    ['light', logoBlocks.light, DEFAULT_BRANDING_LOGOS.light],
+    ['dark', logoBlocks.dark, DEFAULT_BRANDING_LOGOS.dark],
+    ['shared', logoBlocks.shared, DEFAULT_BRANDING_LOGOS.light],
+  ];
+
+  logoEntries.forEach(([variant, block, defaultLogo]) => {
+    block.uploadButton.addEventListener('click', () => {
+      block.fileInput.click();
+    });
+
+    block.fileInput.addEventListener('change', () => {
+      handleUpload(variant, block, block.fileInput.files);
+      block.fileInput.value = '';
+    });
+
+    block.resetButton.addEventListener('click', () => {
+      persistBrandingUpdate({ logos: { [variant]: defaultLogo } });
+      block.setFeedback('Logo restaurada para o padrão.', 'success');
+    });
+  });
+
+  function applySnapshot(snapshot) {
+    currentBranding = snapshot && typeof snapshot === 'object' ? snapshot : getBrandingSnapshot();
+    const mode = currentBranding.mode === 'shared' ? 'shared' : 'individual';
+
+    controls.dataset.mode = mode;
+
+    individualOption.input.checked = mode === 'individual';
+    sharedOption.input.checked = mode === 'shared';
+
+    const lightLogo =
+      typeof currentBranding?.logos?.light === 'string' && currentBranding.logos.light
+        ? currentBranding.logos.light
+        : DEFAULT_BRANDING_LOGOS.light;
+    const darkLogo =
+      typeof currentBranding?.logos?.dark === 'string' && currentBranding.logos.dark
+        ? currentBranding.logos.dark
+        : DEFAULT_BRANDING_LOGOS.dark;
+    const sharedLogo =
+      typeof currentBranding?.logos?.shared === 'string' && currentBranding.logos.shared
+        ? currentBranding.logos.shared
+        : lightLogo;
+
+    if (mode === 'shared') {
+      logoBlocks.shared.setVisibility(true);
+      logoBlocks.light.setVisibility(false);
+      logoBlocks.dark.setVisibility(false);
+      logoBlocks.shared.setPreview(sharedLogo);
+    } else {
+      logoBlocks.shared.setVisibility(false);
+      logoBlocks.light.setVisibility(true);
+      logoBlocks.dark.setVisibility(true);
+      logoBlocks.light.setPreview(lightLogo);
+      logoBlocks.dark.setPreview(darkLogo);
+      logoBlocks.shared.setPreview(sharedLogo);
+    }
+  }
+
+  applySnapshot(currentBranding);
+
+  const unsubscribe = subscribeBranding((snapshot) => {
+    applySnapshot(snapshot);
+  });
+
+  individualOption.input.addEventListener('change', () => {
+    if (individualOption.input.checked) {
+      persistBrandingUpdate({ mode: 'individual' });
+    }
+  });
+
+  sharedOption.input.addEventListener('change', () => {
+    if (sharedOption.input.checked) {
+      const fallbackShared =
+        (currentBranding?.logos?.shared && typeof currentBranding.logos.shared === 'string'
+          ? currentBranding.logos.shared
+          : null) ||
+        (currentBranding?.logos?.light && typeof currentBranding.logos.light === 'string'
+          ? currentBranding.logos.light
+          : DEFAULT_BRANDING_LOGOS.light);
+      persistBrandingUpdate({ mode: 'shared', logos: { shared: fallbackShared } });
+    }
+  });
+
+  function teardown() {
+    if (typeof unsubscribe === 'function') {
+      unsubscribe();
+    }
+  }
+
+  return { widget, teardown };
+}
+
 export function renderAdmin(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -1633,6 +1977,10 @@ export function renderAdmin(viewRoot) {
   const highlightsWidget = createHighlightsWidget();
   cleanupHandlers.push(highlightsWidget.teardown);
   layout.append(highlightsWidget.widget);
+
+  const brandingWidget = createBrandingWidget();
+  cleanupHandlers.push(brandingWidget.teardown);
+  layout.append(brandingWidget.widget);
 
   const usersWidget = createSystemUsersWidget();
   cleanupHandlers.push(usersWidget.teardown);
