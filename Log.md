@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.225 - 2025-10-24 11:00 BRT
+- Remove as restrições de altura herdadas do shell no painel Kit de Design, permitindo que os widgets se ajustem ao conteúdo.
+
 ## v0.1.224 - 2025-10-24 10:55 BRT
 - Persiste a última view acessada no armazenamento local e restaura o painel correspondente após recarregamentos.
 - Renomeia o painel para "Painel de design" em rótulos, mensagens e documentação dedicada.
