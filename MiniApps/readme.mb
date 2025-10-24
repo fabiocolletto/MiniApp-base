@@ -1,0 +1,26 @@
+# Guia de contribuição para MiniApps
+
+## Estrutura
+- Cada novo MiniApp deve ser criado em um subdiretório próprio dentro de `MiniApps/`.
+- Armazene códigos-fonte, assets, testes e documentação específica do MiniApp dentro do respectivo subdiretório.
+- Utilize nomes descritivos em caixa camelCase ou kebab-case para facilitar a identificação dos MiniApps.
+
+## Padronização de desenvolvimento
+- Reaproveite componentes, estilos e utilitários globais já existentes no projeto sempre que possível.
+- Siga as convenções de lint, formatação e organização estabelecidas no restante do repositório.
+- Documente dependências externas e scripts de build necessários em um `README.md` localizado dentro da pasta do MiniApp.
+
+## Fluxo de trabalho
+- Antes de implementar ou editar um MiniApp, registre o planejamento e impactos esperados no `Log.md` conforme as diretrizes gerais do projeto.
+- Mantenha testes automatizados atualizados e crie novos testes sempre que adicionar funcionalidades ou corrigir bugs.
+- Atualize o versionamento e quaisquer painéis ou listagens que referenciem o MiniApp alterado.
+
+## Revisões e manutenção
+- Revise código, estilos e acessibilidade garantindo responsividade em diferentes tamanhos de tela.
+- Remova documentação ou arquivos obsoletos movendo-os para `Arquivados/` quando apropriado, anotando a mudança no `Log.md`.
+- Centralize materiais de design, especificações e assets compartilhados em subpastas dentro de `MiniApps/` para evitar dispersão pelo repositório.
+
+## Comunicação
+- Registre no `Log.md` o resumo das alterações realizadas em cada MiniApp junto com data e horário em BRT.
+- Inclua instruções claras para QA e publicação quando preparar um MiniApp para release.
+- Utilize descrições consistentes nas pull requests para facilitar o acompanhamento histórico das evoluções dos MiniApps.
