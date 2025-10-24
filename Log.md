@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.215 - 2025-10-25 13:30 BRT
+- Remove do painel inicial o widget "Miniapps liberados" para simplificar a visão principal dos usuários.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.215 das 13h30.
+
 ## v0.1.214 - 2025-10-23 20:45 BRT
 - Adiciona ao painel inicial o widget de acessos recentes exibindo ícones dos quatro mini-apps abertos pelo usuário.
 - Registra cada abertura de mini-app no histórico local para manter a lista sincronizada em tempo real.
