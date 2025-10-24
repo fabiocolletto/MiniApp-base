@@ -3318,8 +3318,35 @@ main > :where(.card.view, .dashboard-view):not(.auth-view) {
   align-content: stretch;
 }
 
+.home-dashboard__miniapps--saved {
+  --home-dashboard-miniapps-saved-padding: clamp(0.75rem, 2.1vw, 1.15rem);
+  --home-dashboard-miniapps-saved-icon-size: clamp(2.6rem, 8vw, 3.1rem);
+  padding: var(--home-dashboard-miniapps-saved-padding);
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--home-dashboard-miniapps-saved-icon-size)), 1fr)
+  );
+  grid-auto-rows: var(--home-dashboard-miniapps-saved-icon-size);
+  grid-auto-flow: row dense;
+  justify-items: center;
+  align-content: start;
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+  overscroll-behavior: contain;
+  max-block-size: calc(
+    (2 * var(--home-dashboard-miniapps-saved-icon-size)) +
+      var(--panel-inner-gap) +
+      (2 * var(--home-dashboard-miniapps-saved-padding))
+  );
+  min-block-size: calc(
+    var(--home-dashboard-miniapps-saved-icon-size) +
+      (2 * var(--home-dashboard-miniapps-saved-padding))
+  );
+}
+
 .home-dashboard__miniapps-item--recent,
-.home-dashboard__miniapps-item--favorite {
+.home-dashboard__miniapps-item--favorite,
+.home-dashboard__miniapps-item--saved {
   display: grid;
   place-items: center;
 }
