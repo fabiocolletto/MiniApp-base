@@ -1,10 +1,12 @@
 # Log
 
-## v0.1.217 - 2025-10-24 05:07 BRT
+## v0.1.217 - 2025-10-24 05:18 BRT
+- Acrescenta widgets iniciais de título e etiqueta com cartões transparentes ao painel Log do projeto.
 - Remove os parágrafos anteriores ao título do Kit Design e garante cartões transparentes nos widgets de abertura.
 - Expõe na etiqueta do painel a data e versão da última publicação do Kit Design utilizando store dedicado.
 - Acrescenta widgets de paleta de cores e gabarito tipográfico ao painel do Kit Design com visualizações homologadas.
 - Renomeia o painel Mini App Store para MiniApps nos rótulos e atalhos do cabeçalho.
+- Converte os widgets iniciais do painel Log em modelos do sistema e adiciona a categoria Widgets ao Kit de Design.
 
 ## v0.1.216 - 2025-10-24 04:47 BRT
 - Reorganiza o painel do Kit de Design agrupando cada categoria em um widget padrão com cabeçalho e carrossel horizontal de modelos.
