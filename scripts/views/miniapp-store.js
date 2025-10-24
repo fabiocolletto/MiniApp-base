@@ -159,7 +159,7 @@ export function renderMiniAppStore(viewRoot) {
           cleanup();
         }
       } catch (error) {
-        console.error('Erro ao limpar a Mini App Store.', error);
+        console.error('Erro ao limpar o painel MiniApps.', error);
       }
     }
   });

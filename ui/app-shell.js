@@ -448,7 +448,7 @@ if (viewOverrides) {
 const MENU_LABEL_FALLBACKS = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Kit de design',
-  miniapps: 'Mini App Store',
+  miniapps: 'MiniApps',
   user: 'Painel do usuário',
   login: 'Painel de Login',
   register: 'Crie sua conta',
@@ -1072,7 +1072,7 @@ function ensureHeaderMobileMenu() {
   storeAction.type = 'button';
   storeAction.id = 'mobile-access-menu-store';
   storeAction.className = 'app-modal__action header-mobile-menu__action';
-  storeAction.textContent = 'Mini App Store';
+  storeAction.textContent = 'MiniApps';
   storeAction.addEventListener('click', () => {
     closeHeaderMobileMenu();
     renderView('miniapps');

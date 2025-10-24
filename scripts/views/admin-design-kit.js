@@ -1,5 +1,9 @@
 import { registerViewCleanup } from '../view-cleanup.js';
 import { getActiveUser } from '../data/session-store.js';
+import {
+  getDesignKitReleaseInfo,
+  formatDesignKitReleaseDate,
+} from '../data/design-kit-store.js';
 import { createAdminNavigation } from './shared/admin-navigation.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
 
@@ -267,6 +271,105 @@ const LABEL_MODELS = Object.freeze([
   },
 ]);
 
+const COLOR_PALETTE_MODELS = Object.freeze([
+  {
+    id: 'C01',
+    title: 'Primária intensa',
+    description:
+      'Gradiente âmbar de maior contraste utilizado em botões de destaque e ações críticas.',
+    baseToken: '--kit-color-primary-strong-base',
+    hoverToken: '--kit-color-primary-strong-hover',
+    textToken: '--kit-color-text-contrast-base',
+    tokens: [
+      '--kit-color-primary-strong-base',
+      '--kit-color-primary-strong-hover',
+      '--kit-color-text-contrast-base',
+    ],
+  },
+  {
+    id: 'C02',
+    title: 'Primária suave',
+    description:
+      'Preenchimento translúcido adotado em botões secundários e superfícies de apoio.',
+    baseToken: '--kit-color-primary-soft-base',
+    hoverToken: '--kit-color-primary-soft-hover',
+    textToken: '--kit-color-text-standard-base',
+    tokens: [
+      '--kit-color-primary-soft-base',
+      '--kit-color-primary-soft-hover',
+      '--kit-color-text-standard-base',
+    ],
+  },
+  {
+    id: 'C03',
+    title: 'Destaque para pills',
+    description:
+      'Realce aplicado em etiquetas e ícones, mantendo contraste suave em fundos claros.',
+    baseToken: '--kit-color-primary-highlight-base',
+    hoverToken: '--kit-color-primary-highlight-hover',
+    textToken: '--kit-color-text-standard-base',
+    tokens: [
+      '--kit-color-primary-highlight-base',
+      '--kit-color-primary-highlight-hover',
+      '--kit-color-text-standard-base',
+    ],
+  },
+  {
+    id: 'C04',
+    title: 'Fantasma com contorno',
+    description:
+      'Alternativa com foco no contorno para botões fantasma sobre superfícies coloridas.',
+    baseToken: '--kit-color-primary-ghost-base',
+    hoverToken: '--kit-color-primary-ghost-hover',
+    textToken: '--kit-color-text-standard-base',
+    tokens: [
+      '--kit-color-primary-ghost-base',
+      '--kit-color-primary-ghost-hover',
+      '--kit-color-text-standard-base',
+    ],
+  },
+]);
+
+const TYPOGRAPHY_MODELS = Object.freeze([
+  {
+    id: 'T01',
+    title: 'Cabeçalho do painel',
+    description:
+      'Utilizado nos títulos principais de widgets e seções do dashboard administrativo.',
+    sample: 'Título do widget',
+    fontSizeToken: '--panel-font-size-heading',
+    fontWeight: '600',
+    lineHeight: '1.32',
+  },
+  {
+    id: 'T02',
+    title: 'Título de bloco',
+    description: 'Aplica hierarquia intermediária em chamadas e cards secundários.',
+    sample: 'Subtítulo destacado',
+    fontSizeToken: '--panel-font-size-title',
+    fontWeight: '600',
+    lineHeight: '1.3',
+  },
+  {
+    id: 'T03',
+    title: 'Texto base',
+    description: 'Parágrafos e descrições padrão distribuídas pelos painéis.',
+    sample: 'Corpo do conteúdo principal',
+    fontSizeToken: '--panel-font-size-base',
+    fontWeight: '500',
+    lineHeight: '1.5',
+  },
+  {
+    id: 'T04',
+    title: 'Texto compacto',
+    description: 'Detalhes de apoio, legendas e metadados em chips ou indicadores.',
+    sample: 'Legenda auxiliar e metadados',
+    fontSizeToken: '--panel-font-size-compact',
+    fontWeight: '500',
+    lineHeight: '1.45',
+  },
+]);
+
 function createDesignKitIdFactory() {
   let counter = 0;
   return function designKitIdFactory(prefix, suffix) {
@@ -334,6 +437,105 @@ function createLabelPreview(model) {
   chip.textContent = model.label ?? 'Etiqueta';
 
   preview.append(chip);
+  return preview;
+}
+
+function createColorSwatchSample({ label, token, textToken }) {
+  if (!token) {
+    return null;
+  }
+
+  const swatch = document.createElement('figure');
+  swatch.className = 'admin-design-kit__swatch';
+
+  const sample = document.createElement('span');
+  sample.className = 'admin-design-kit__swatch-sample';
+  sample.textContent = label ?? '';
+  sample.style.setProperty('--swatch-fill', `var(${token})`);
+  if (textToken) {
+    sample.style.setProperty('--swatch-text', `var(${textToken})`);
+  }
+
+  const caption = document.createElement('figcaption');
+  caption.className = 'admin-design-kit__swatch-caption';
+  caption.textContent = `${label ?? ''} — ${token}`;
+
+  swatch.append(sample, caption);
+  return swatch;
+}
+
+function createColorPalettePreview(model) {
+  const preview = document.createElement('div');
+  preview.className = 'admin-design-kit__preview admin-design-kit__preview--colors';
+
+  const swatchList = document.createElement('div');
+  swatchList.className = 'admin-design-kit__swatch-list';
+
+  const baseSwatch = createColorSwatchSample({
+    label: 'Base',
+    token: model.baseToken,
+    textToken: model.textToken,
+  });
+  if (baseSwatch) {
+    swatchList.append(baseSwatch);
+  }
+
+  const hoverSwatch = createColorSwatchSample({
+    label: 'Hover',
+    token: model.hoverToken,
+    textToken: model.textToken,
+  });
+  if (hoverSwatch) {
+    swatchList.append(hoverSwatch);
+  }
+
+  preview.append(swatchList);
+  return preview;
+}
+
+function createTypographyPreview(model) {
+  const preview = document.createElement('div');
+  preview.className = 'admin-design-kit__preview admin-design-kit__preview--typography';
+
+  const sample = document.createElement('p');
+  sample.className = 'admin-design-kit__type-sample';
+  sample.textContent = model.sample ?? '';
+
+  if (model.fontSizeToken) {
+    sample.style.setProperty('--type-font-size', `var(${model.fontSizeToken})`);
+  }
+
+  if (model.fontWeight) {
+    sample.style.setProperty('--type-font-weight', String(model.fontWeight));
+  }
+
+  if (model.lineHeight) {
+    sample.style.setProperty('--type-line-height', String(model.lineHeight));
+  }
+
+  const helper = document.createElement('p');
+  helper.className = 'admin-design-kit__type-helper';
+  const helperParts = [];
+
+  if (model.fontSizeToken) {
+    helperParts.push(model.fontSizeToken);
+  }
+
+  if (model.fontWeight) {
+    helperParts.push(`peso ${model.fontWeight}`);
+  }
+
+  if (model.lineHeight) {
+    helperParts.push(`lh ${model.lineHeight}`);
+  }
+
+  if (model.description) {
+    helperParts.push(model.description);
+  }
+
+  helper.textContent = helperParts.join(' • ');
+
+  preview.append(sample, helper);
   return preview;
 }
 
@@ -516,6 +718,71 @@ function createLabelShowcase() {
   });
 }
 
+
+
+function createColorPaletteShowcase() {
+  return createDesignKitModelsWidget({
+    title: 'Paleta de cores',
+    description:
+      'Combinações homologadas para preenchimentos primários e variações translúcidas utilizadas em botões e etiquetas.',
+    models: COLOR_PALETTE_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
+
+      if (model.description) {
+        card.title = model.description;
+      }
+
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
+
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
+
+      header.append(title);
+
+      const preview = createColorPalettePreview(model);
+
+      card.append(header, preview);
+      return card;
+    },
+  });
+}
+
+function createTypographyShowcase() {
+  return createDesignKitModelsWidget({
+    title: 'Gabarito tipográfico',
+    description:
+      'Escala de fontes e pesos aplicados nos painéis administrativos para assegurar hierarquia e legibilidade.',
+    models: TYPOGRAPHY_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
+
+      if (model.description) {
+        card.title = model.description;
+      }
+
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
+
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
+
+      header.append(title);
+
+      const preview = createTypographyPreview(model);
+
+      card.append(header, preview);
+      return card;
+    },
+  });
+}
 
 const BUTTON_SPEC_INDEX = Object.freeze([
   {
@@ -1202,23 +1469,15 @@ function createDesignKitTitleWidget() {
     'surface-card--transparent',
     'user-panel__widget',
     'admin-dashboard__widget',
+    'admin-design-kit__widget',
+    'admin-design-kit__widget--transparent',
   ].join(' ');
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
   title.textContent = 'Kit de design 5Horas';
 
-  const subtitle = document.createElement('p');
-  subtitle.className = 'user-widget__description';
-  subtitle.textContent =
-    'Centralize os componentes homologados para evoluir painéis e mini-apps com consistência.';
-
-  const helper = document.createElement('p');
-  helper.className = 'user-widget__description';
-  helper.textContent =
-    'Revise esta base sempre que um novo padrão for aprovado para manter todos os times alinhados.';
-
-  widget.append(title, subtitle, helper);
+  widget.append(title);
   return widget;
 }
 
@@ -1229,6 +1488,8 @@ function createDesignKitPanelLabelWidget(user) {
     'surface-card--transparent',
     'user-panel__widget',
     'admin-dashboard__widget',
+    'admin-design-kit__widget',
+    'admin-design-kit__widget--transparent',
   ].join(' ');
 
   const title = document.createElement('h2');
@@ -1246,6 +1507,25 @@ function createDesignKitPanelLabelWidget(user) {
   panelLabel.className = 'miniapp-details__chip';
   panelLabel.textContent = 'Painel Kit Design';
   labelGroup.append(panelLabel);
+
+  const releaseInfo = getDesignKitReleaseInfo();
+  const releaseDetails = [];
+
+  const formattedRelease = formatDesignKitReleaseDate(releaseInfo.publishedAt);
+  if (formattedRelease) {
+    releaseDetails.push(`Atualizado em ${formattedRelease}`);
+  }
+
+  if (releaseInfo.version) {
+    releaseDetails.push(releaseInfo.version);
+  }
+
+  if (releaseDetails.length > 0) {
+    const releaseChip = document.createElement('span');
+    releaseChip.className = 'miniapp-details__chip';
+    releaseChip.textContent = releaseDetails.join(' • ');
+    labelGroup.append(releaseChip);
+  }
 
   const profileLabel = document.createElement('span');
   profileLabel.className = 'miniapp-details__chip';
@@ -1327,6 +1607,8 @@ export function renderAdminDesignKit(viewRoot) {
 
   layout.append(createDesignKitTitleWidget());
   layout.append(createDesignKitPanelLabelWidget(activeUser));
+  layout.append(createColorPaletteShowcase());
+  layout.append(createTypographyShowcase());
   layout.append(createSurfaceShowcase());
   layout.append(createFormShowcase());
   layout.append(createFeedbackShowcase());
