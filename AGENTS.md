@@ -3,6 +3,7 @@
 ## Instruções Gerais
 - Leia este arquivo antes de executar qualquer solicitação.
 - Antes de qualquer planejamento ou ação, consulte o `README.md` para instruções e o `Log.md` para contexto atualizado.
+- Ao trabalhar em tarefas relacionadas a miniapps, consulte também o `MiniApps/readme.mb` antes de iniciar as ações.
 - Siga as demandas do usuário de forma literal e priorize respostas objetivas.
 - Preserve integralmente o que já estiver publicado no painel, evitando apagar ou sobrescrever conteúdos consolidados salvo
   instrução expressa do usuário.
