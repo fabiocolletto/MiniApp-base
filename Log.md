@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.216 - 2025-10-25 14:45 BRT
+- Reorganiza o painel do Kit de Design agrupando cada categoria em um widget padrão com cabeçalho e carrossel horizontal de modelos.
+- Implementa um template compartilhado para renderizar os modelos homologados e ajusta os estilos para o novo comportamento em linha.
+- Atualiza a versão exibida no rodapé para comunicar a release v0.1.216 das 14h45.
+
 ## v0.1.215 - 2025-10-24 04:00 BRT
 - Complementa a release v0.1.215 reestruturando o painel do Kit Design com widgets de título e etiqueta alinhados ao modelo do painel Início.
 - Atualiza o resumo para destacar dados do administrador ativo e remove o cabeçalho anterior do painel.

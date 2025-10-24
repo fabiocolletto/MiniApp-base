@@ -337,161 +337,183 @@ function createLabelPreview(model) {
   return preview;
 }
 
+function createDesignKitModelsWidget({ title, description, models, renderModel }) {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'user-panel__widget',
+    'admin-dashboard__widget',
+    'admin-design-kit__widget',
+  ].join(' ');
+
+  const header = document.createElement('div');
+  header.className = 'admin-design-kit__widget-header';
+
+  if (title) {
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'user-widget__title';
+    titleElement.textContent = title;
+    header.append(titleElement);
+  }
+
+  if (description) {
+    const descriptionElement = document.createElement('p');
+    descriptionElement.className = 'user-widget__description';
+    descriptionElement.textContent = description;
+    header.append(descriptionElement);
+  }
+
+  const modelsRow = document.createElement('div');
+  modelsRow.className = 'admin-design-kit__models';
+  modelsRow.setAttribute('role', 'list');
+
+  if (title) {
+    const normalized = String(title).trim();
+    if (normalized) {
+      modelsRow.setAttribute('aria-label', `Modelos de ${normalized.toLocaleLowerCase('pt-BR')}`);
+    }
+  }
+
+  models
+    .map((model) => renderModel(model))
+    .filter((element) => element instanceof HTMLElement)
+    .forEach((modelElement) => {
+      modelElement.classList.add('admin-design-kit__item');
+      modelElement.setAttribute('role', 'listitem');
+      modelsRow.append(modelElement);
+    });
+
+  widget.append(header, modelsRow);
+  return widget;
+}
+
 function createSurfaceShowcase() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
+  return createDesignKitModelsWidget({
+    title: 'Superfícies e cartões',
+    description:
+      'Estruturas base que organizam conteúdo em blocos reutilizáveis. Mantêm tokens de padding, raio e sombra alinhados.',
+    models: SURFACE_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
 
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Superfícies e cartões';
+      if (model.description) {
+        card.title = model.description;
+      }
 
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Estruturas base que organizam conteúdo em blocos reutilizáveis. Mantêm tokens de padding, raio e sombra alinhados.';
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
 
-  const grid = document.createElement('div');
-  grid.className = 'admin-design-kit__grid';
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
 
-  SURFACE_MODELS.forEach((model) => {
-    const card = document.createElement('article');
-    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
+      header.append(title);
 
-    const header = document.createElement('div');
-    header.className = 'admin-design-kit__item-header';
+      const preview = createSurfacePreview(model);
 
-    const title = document.createElement('h3');
-    title.className = 'admin-design-kit__item-title';
-    title.textContent = `${model.id} — ${model.title}`;
-
-    header.append(title);
-
-    const preview = createSurfacePreview(model);
-
-    card.append(header, preview);
-    grid.append(card);
+      card.append(header, preview);
+      return card;
+    },
   });
-
-  section.append(heading, description, grid);
-  return section;
 }
 
 function createFormShowcase() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
-
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Campos de formulário';
-
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Controles de entrada homologados para coleta de dados. Todos reutilizam o mesmo espaçamento interno e bordas.';
-
-  const grid = document.createElement('div');
-  grid.className = 'admin-design-kit__grid';
   const idFactory = createDesignKitIdFactory();
+  return createDesignKitModelsWidget({
+    title: 'Campos de formulário',
+    description:
+      'Controles de entrada homologados para coleta de dados. Todos reutilizam o mesmo espaçamento interno e bordas.',
+    models: FORM_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
 
-  FORM_MODELS.forEach((model) => {
-    const card = document.createElement('article');
-    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
+      if (model.description) {
+        card.title = model.description;
+      }
 
-    const header = document.createElement('div');
-    header.className = 'admin-design-kit__item-header';
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
 
-    const title = document.createElement('h3');
-    title.className = 'admin-design-kit__item-title';
-    title.textContent = `${model.id} — ${model.title}`;
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
 
-    header.append(title);
+      header.append(title);
 
-    const preview = createFormPreview(model, idFactory);
+      const preview = createFormPreview(model, idFactory);
 
-    card.append(header, preview);
-    grid.append(card);
+      card.append(header, preview);
+      return card;
+    },
   });
-
-  section.append(heading, description, grid);
-  return section;
 }
 
 function createFeedbackShowcase() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
+  return createDesignKitModelsWidget({
+    title: 'Mensagens de feedback',
+    description:
+      'Estados visuais para comunicar sucesso, erro, avisos e neutralidade em formulários ou fluxos do sistema.',
+    models: FEEDBACK_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
 
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Mensagens de feedback';
+      if (model.description) {
+        card.title = model.description;
+      }
 
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Estados visuais para comunicar sucesso, erro, avisos e neutralidade em formulários ou fluxos do sistema.';
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
 
-  const grid = document.createElement('div');
-  grid.className = 'admin-design-kit__grid';
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
 
-  FEEDBACK_MODELS.forEach((model) => {
-    const card = document.createElement('article');
-    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
+      header.append(title);
 
-    const header = document.createElement('div');
-    header.className = 'admin-design-kit__item-header';
+      const preview = createFeedbackPreview(model);
 
-    const title = document.createElement('h3');
-    title.className = 'admin-design-kit__item-title';
-    title.textContent = `${model.id} — ${model.title}`;
-
-    header.append(title);
-
-    const preview = createFeedbackPreview(model);
-
-    card.append(header, preview);
-    grid.append(card);
+      card.append(header, preview);
+      return card;
+    },
   });
-
-  section.append(heading, description, grid);
-  return section;
 }
 
 function createLabelShowcase() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
+  return createDesignKitModelsWidget({
+    title: 'Etiquetas e chips',
+    description:
+      'Etiquetas em formato pill com opções de contraste para destacar categorias e estados.',
+    models: LABEL_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
 
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Etiquetas e badges';
+      if (model.description) {
+        card.title = model.description;
+      }
 
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Chips reutilizáveis para categorias, estados e indicadores rápidos. Mantêm raio pill e contrastes aprovados.';
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
 
-  const grid = document.createElement('div');
-  grid.className = 'admin-design-kit__grid';
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
 
-  LABEL_MODELS.forEach((model) => {
-    const card = document.createElement('article');
-    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
+      header.append(title);
 
-    const header = document.createElement('div');
-    header.className = 'admin-design-kit__item-header';
+      const preview = createLabelPreview(model);
 
-    const title = document.createElement('h3');
-    title.className = 'admin-design-kit__item-title';
-    title.textContent = `${model.id} — ${model.title}`;
-
-    header.append(title);
-
-    const preview = createLabelPreview(model);
-
-    card.append(header, preview);
-    grid.append(card);
+      card.append(header, preview);
+      return card;
+    },
   });
-
-  section.append(heading, description, grid);
-  return section;
 }
 
 
@@ -1062,42 +1084,35 @@ function createButtonPreview(model) {
 }
 
 function createButtonShowcase() {
-  const section = document.createElement('section');
-  section.className = 'admin-design-kit__section';
+  return createDesignKitModelsWidget({
+    title: 'Modelos de botões',
+    description:
+      'Referencie os modelos abaixo pelo identificador sequencial ao solicitar novos componentes.',
+    models: BUTTON_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
 
-  const heading = document.createElement('h2');
-  heading.className = 'admin-design-kit__section-title';
-  heading.textContent = 'Modelos de botões';
+      if (model.description) {
+        card.title = model.description;
+      }
 
-  const description = document.createElement('p');
-  description.className = 'admin-design-kit__paragraph';
-  description.textContent =
-    'Referencie os modelos abaixo pelo identificador sequencial ao solicitar novos componentes.';
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
 
-  const grid = document.createElement('div');
-  grid.className = 'admin-design-kit__grid';
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `Botão ${model.id} — ${model.title}`;
 
-  BUTTON_MODELS.forEach((model) => {
-    const card = document.createElement('article');
-    card.className = 'surface-card surface-card--transparent admin-design-kit__item';
+      header.append(title);
 
-    const header = document.createElement('div');
-    header.className = 'admin-design-kit__item-header';
+      const preview = createButtonPreview(model);
 
-    const title = document.createElement('h3');
-    title.className = 'admin-design-kit__item-title';
-    title.textContent = `Botão ${model.id} — ${model.title}`;
-
-    header.append(title);
-
-    const preview = createButtonPreview(model);
-
-    card.append(header, preview);
-    grid.append(card);
+      card.append(header, preview);
+      return card;
+    },
   });
-
-  section.append(heading, description, grid);
-  return section;
 }
 
 const USER_TYPE_LABELS = Object.freeze({
