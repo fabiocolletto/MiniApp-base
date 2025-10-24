@@ -1480,7 +1480,7 @@ function createRestrictedMessage() {
 
   const message = document.createElement('p');
   message.className = 'admin-design-kit__paragraph';
-  message.textContent = 'Somente administradores podem visualizar o kit de design.';
+  message.textContent = 'Somente administradores podem visualizar o painel de design.';
 
   const hint = document.createElement('p');
   hint.className = 'admin-design-kit__paragraph';
@@ -1714,7 +1714,7 @@ function createDesignKitTitleWidget() {
 
   const title = document.createElement('h2');
   title.className = 'user-widget__title';
-  title.textContent = 'Kit de design 5Horas';
+  title.textContent = 'Painel de design 5Horas';
 
   widget.append(title);
   return widget;
@@ -1737,14 +1737,14 @@ function createDesignKitPanelLabelWidget(user) {
 
   const description = document.createElement('p');
   description.className = 'user-widget__description';
-  description.textContent = 'Compartilhe esta etiqueta para facilitar o acesso rápido ao kit.';
+  description.textContent = 'Compartilhe esta etiqueta para facilitar o acesso rápido ao painel.';
 
   const labelGroup = document.createElement('div');
   labelGroup.className = 'miniapp-details__highlights';
 
   const panelLabel = document.createElement('span');
   panelLabel.className = 'miniapp-details__chip';
-  panelLabel.textContent = 'Painel Kit Design';
+  panelLabel.textContent = 'Painel de design';
   labelGroup.append(panelLabel);
 
   const releaseInfo = getDesignKitReleaseInfo();
@@ -1821,14 +1821,14 @@ export function renderAdminDesignKit(viewRoot) {
           cleanup();
         }
       } catch (error) {
-        console.error('Erro ao limpar o kit de design.', error);
+        console.error('Erro ao limpar o painel de design.', error);
       }
     }
   });
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'admin-design-kit';
-  viewRoot.setAttribute('aria-label', 'Kit de design do administrador');
+  viewRoot.setAttribute('aria-label', 'Painel de design do administrador');
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout admin-design-kit__layout';

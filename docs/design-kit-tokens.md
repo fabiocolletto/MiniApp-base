@@ -1,6 +1,6 @@
-# Fonte de verdade do Kit Design
+# Fonte de verdade do Painel de design
 
-Este documento consolida as variáveis homologadas para o painel Kit Design. Todas as opções apresentadas na interface devem utilizar exclusivamente os tokens listados aqui, garantindo consistência entre modelos, temas e novas evoluções do sistema.
+Este documento consolida as variáveis homologadas para o painel de design. Todas as opções apresentadas na interface devem utilizar exclusivamente os tokens listados aqui, garantindo consistência entre modelos, temas e novas evoluções do sistema.
 
 ## Raios de borda
 - `--radius-sm` — canto suave para cartões compactos e controles menores.
@@ -11,7 +11,7 @@ Este documento consolida as variáveis homologadas para o painel Kit Design. Tod
 
 ## Larguras de controle
 - `--size-inline-sm` — largura compacta para ícones e ações secundárias.
-- `--size-inline-md` — largura padrão utilizada na maioria dos botões do kit.
+- `--size-inline-md` — largura padrão utilizada na maioria dos botões do painel.
 - `--size-inline-lg` — largura fluida que ocupa todo o espaço disponível.
 
 ## Alturas de controle
@@ -27,7 +27,7 @@ Este documento consolida as variáveis homologadas para o painel Kit Design. Tod
 As classes `.main--admin` e `.main--user` ativam esses tokens automaticamente, garantindo que os widgets respeitem o espaço livre entre header e footer em qualquer painel. Em cenários de tela cheia ou splash, remova essas classes e zere manualmente os offsets para liberar 100dvh para o conteúdo temporário; ao retornar ao layout padrão, restaure os offsets chamando novamente o cálculo do app shell.
 
 ## Pré-visualizações e pitch
-- As janelas `panel-preview-widget__frame` exibidas no Kit de Design devem expandir em altura conforme o conteúdo renderizado, sem ativar barras de rolagem internas.
+- As janelas `panel-preview-widget__frame` exibidas no Painel de design devem expandir em altura conforme o conteúdo renderizado, sem ativar barras de rolagem internas.
 - No pitch da galeria de painéis, ajuste a malha para exibir um item por linha quando houver apenas uma prévia, duas colunas equilibradas para dois itens e três colunas quando existir um conjunto maior.
 
 ## Cores primárias de botão

@@ -156,6 +156,76 @@ const subscribeActivityStatusFn =
     ? rawHooks.subscribeActivityStatus
     : defaultSubscribeActivityStatus;
 
+const LAST_VIEW_STORAGE_KEY = 'miniapp:last-view';
+
+function getNavigationStorage(): Storage | null {
+  if (typeof window !== 'object' || !window) {
+    return null;
+  }
+
+  try {
+    return window.localStorage ?? null;
+  } catch (error) {
+    console.error('Não foi possível acessar o armazenamento de navegação.', error);
+    return null;
+  }
+}
+
+function sanitizePersistedViewName(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function persistActiveViewName(viewName: string): void {
+  const sanitized = sanitizePersistedViewName(viewName);
+  if (!sanitized) {
+    return;
+  }
+
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.setItem(LAST_VIEW_STORAGE_KEY, sanitized);
+  } catch (error) {
+    console.error('Não foi possível persistir a última view ativa.', error);
+  }
+}
+
+function clearPersistedViewName(): void {
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.removeItem(LAST_VIEW_STORAGE_KEY);
+  } catch (error) {
+    console.error('Não foi possível limpar a última view ativa persistida.', error);
+  }
+}
+
+export function getPersistedViewName(): string | null {
+  const storage = getNavigationStorage();
+  if (!storage) {
+    return null;
+  }
+
+  try {
+    const storedValue = storage.getItem(LAST_VIEW_STORAGE_KEY);
+    return sanitizePersistedViewName(storedValue);
+  } catch (error) {
+    console.error('Não foi possível ler a última view ativa persistida.', error);
+    return null;
+  }
+}
+
 function applySystemVersionMetadata(): void {
   if (!(versionButton instanceof HTMLElement)) {
     return;
@@ -214,7 +284,7 @@ const NEUTRAL_MENU_VIEWS = new Set<MenuViewName>(['home', 'panel-gallery', 'spla
 
 const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   admin: 'Painel administrativo',
-  'admin-design-kit': 'Kit de design',
+  'admin-design-kit': 'Painel de design',
   'panel-gallery': 'Galeria de painéis',
   miniapps: 'MiniApps',
   user: 'Painel do usuário',
@@ -1117,6 +1187,7 @@ export function renderView(name: ViewName): void {
   if (typeof view !== 'function') {
     console.warn(`View "${name}" não encontrada.`);
     renderNotFound(viewRoot, name);
+    clearPersistedViewName();
     const activeViewName = viewRoot.dataset.view ?? name;
     updateHomeToggleStateForView(activeViewName);
     updateHeaderMenuTriggerLabel(activeViewName);
@@ -1127,6 +1198,7 @@ export function renderView(name: ViewName): void {
   viewRoot.dataset.view = name;
   view(viewRoot);
   const activeViewName = viewRoot.dataset.view ?? name;
+  persistActiveViewName(activeViewName);
   updateHomeToggleStateForView(activeViewName);
   updateHeaderMenuTriggerLabel(activeViewName);
   focusViewRoot();

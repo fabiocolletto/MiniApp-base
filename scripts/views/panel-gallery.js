@@ -61,7 +61,7 @@ const PANEL_DEFINITIONS = [
   {
     id: 'admin-design-kit',
     view: 'admin-design-kit',
-    title: 'Kit de Design',
+    title: 'Painel de design',
     label: 'design-kit',
     description: 'Catálogo de modelos homologados para superfícies, controles e feedbacks.',
     roles: ['administrador'],
