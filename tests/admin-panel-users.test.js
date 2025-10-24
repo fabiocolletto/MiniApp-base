@@ -121,13 +121,26 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
   renderAdmin(viewRoot);
 
   const widgets = viewRoot.querySelectorAll('.user-panel__widget');
-  assert.equal(widgets.length, 6, 'painel deve começar com seis widgets principais incluindo identidade visual');
+  assert.equal(widgets.length, 7, 'painel deve começar com sete widgets principais incluindo armazenamento e identidade visual');
 
   const brandingWidget = viewRoot.querySelector('.admin-dashboard__widget--branding');
   assert.ok(brandingWidget, 'widget de identidade visual deve existir');
 
   const brandingControls = brandingWidget.querySelectorAll('.admin-branding__item');
   assert.ok(brandingControls.length > 0, 'widget de identidade visual deve exibir controles de logo');
+
+  const storageWidget = viewRoot.querySelector('.admin-dashboard__widget--storage');
+  assert.ok(storageWidget, 'widget de monitoramento do IndexedDB deve existir');
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+
+  const storageCards = storageWidget.querySelectorAll('.admin-storage__card');
+  assert.ok(storageCards.length > 0, 'widget de monitoramento deve listar os bancos IndexedDB disponíveis');
+
+  const storageStatus = storageWidget.querySelector('.admin-storage__status-message');
+  assert.ok(storageStatus?.textContent, 'widget de monitoramento deve exibir o status atual do armazenamento');
 
   const usersWidget = viewRoot.querySelector('.admin-dashboard__widget--users');
   assert.ok(usersWidget, 'widget de usuários deve existir');
