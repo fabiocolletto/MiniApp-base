@@ -6,6 +6,7 @@ import {
 } from '../data/design-kit-store.js';
 import { createAdminNavigation } from './shared/admin-navigation.js';
 import { createInputField, createTextareaField } from './shared/form-fields.js';
+import { SYSTEM_LOG_WIDGET_MODELS } from './shared/system-log-widgets.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-design-kit';
 
@@ -711,6 +712,50 @@ function createLabelShowcase() {
       header.append(title);
 
       const preview = createLabelPreview(model);
+
+      card.append(header, preview);
+      return card;
+    },
+  });
+}
+
+function createSystemWidgetShowcase() {
+  return createDesignKitModelsWidget({
+    title: 'Widgets do sistema',
+    description:
+      'Modelos homologados para abertura de painéis com cartões transparentes e hierarquia padronizada.',
+    models: SYSTEM_LOG_WIDGET_MODELS,
+    renderModel(model) {
+      const card = document.createElement('article');
+      card.className = 'surface-card surface-card--transparent';
+      card.dataset.modelId = model.id;
+
+      if (model.description) {
+        card.title = model.description;
+      }
+
+      const header = document.createElement('div');
+      header.className = 'admin-design-kit__item-header';
+
+      const title = document.createElement('h3');
+      title.className = 'admin-design-kit__item-title';
+      title.textContent = `${model.id} — ${model.title}`;
+
+      header.append(title);
+
+      const preview = document.createElement('div');
+      preview.className = 'admin-design-kit__preview admin-design-kit__preview--widgets';
+
+      const widgetElement = typeof model.create === 'function' ? model.create() : null;
+
+      if (widgetElement instanceof HTMLElement) {
+        preview.append(widgetElement);
+      } else {
+        const fallback = document.createElement('p');
+        fallback.className = 'admin-design-kit__paragraph';
+        fallback.textContent = 'Prévia indisponível para este modelo.';
+        preview.append(fallback);
+      }
 
       card.append(header, preview);
       return card;
@@ -1607,6 +1652,7 @@ export function renderAdminDesignKit(viewRoot) {
 
   layout.append(createDesignKitTitleWidget());
   layout.append(createDesignKitPanelLabelWidget(activeUser));
+  layout.append(createSystemWidgetShowcase());
   layout.append(createColorPaletteShowcase());
   layout.append(createTypographyShowcase());
   layout.append(createSurfaceShowcase());

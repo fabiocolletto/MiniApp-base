@@ -1,3 +1,8 @@
+import {
+  createSystemLogPanelLabelWidget,
+  createSystemLogTitleWidget,
+} from './shared/system-log-widgets.js';
+
 const BASE_CLASSES = 'card view dashboard-view view--log log-panel';
 const LOG_PATH = 'Log.md';
 
@@ -12,22 +17,14 @@ export function renderLog(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'log-panel__layout';
 
-  const widget = document.createElement('section');
-  widget.className = 'surface-card log-panel__widget';
-
-  const logContent = document.createElement('pre');
-  logContent.className = 'log-content';
-  logContent.setAttribute('role', 'region');
-  logContent.setAttribute('aria-live', 'polite');
-  logContent.setAttribute('aria-label', 'Histórico de versões do projeto');
-  logContent.setAttribute('tabindex', '0');
-  logContent.dataset.state = 'loading';
-  logContent.textContent = 'Carregando histórico do projeto…';
+  const titleWidget = createSystemLogTitleWidget();
+  const panelLabelWidget = createSystemLogPanelLabelWidget();
+  const { widget: logWidget, content: logContent } = createLogContentWidget();
 
   viewRoot.setAttribute('aria-busy', 'true');
   viewRoot.setAttribute('aria-label', 'Histórico de versões do MiniApp Base');
-  widget.append(logContent);
-  layout.append(widget);
+
+  layout.append(titleWidget, panelLabelWidget, logWidget);
   viewRoot.replaceChildren(layout);
 
   (async () => {
@@ -50,4 +47,21 @@ export function renderLog(viewRoot) {
       viewRoot.removeAttribute('aria-busy');
     }
   })();
+}
+
+function createLogContentWidget() {
+  const widget = document.createElement('section');
+  widget.className = ['surface-card', 'log-panel__widget', 'log-panel__widget--full'].join(' ');
+
+  const logContent = document.createElement('pre');
+  logContent.className = 'log-content';
+  logContent.setAttribute('role', 'region');
+  logContent.setAttribute('aria-live', 'polite');
+  logContent.setAttribute('aria-label', 'Histórico de versões do projeto');
+  logContent.setAttribute('tabindex', '0');
+  logContent.dataset.state = 'loading';
+  logContent.textContent = 'Carregando histórico do projeto…';
+
+  widget.append(logContent);
+  return { widget, content: logContent };
 }
