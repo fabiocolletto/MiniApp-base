@@ -1,5 +1,70 @@
 import { createSystemUsersWidget } from './system-users-widget.js';
 
+function buildTransparentWidget(classes = []) {
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'surface-card--transparent',
+    'user-panel__widget',
+    'user-dashboard__widget',
+    ...classes.filter(Boolean),
+  ].join(' ');
+  return widget;
+}
+
+export function createUserDashboardIntroWidget({
+  title = 'Painel do usuário',
+  description = 'Gerencie preferências e dados sincronizados com o painel administrativo.',
+  extraClasses = [],
+} = {}) {
+  const widget = buildTransparentWidget(['user-dashboard__widget--intro', ...extraClasses]);
+
+  const titleElement = document.createElement('h2');
+  titleElement.className = 'user-widget__title';
+  titleElement.textContent = title;
+
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'user-widget__description';
+  descriptionElement.textContent = description;
+
+  widget.append(titleElement, descriptionElement);
+  return widget;
+}
+
+export function createUserDashboardLabelWidget({
+  title = 'Etiqueta do painel',
+  description = 'Compartilhe esta etiqueta para facilitar o acesso rápido ao painel.',
+  panelLabel = 'Painel do usuário',
+  projectLabel = 'MiniApp Base',
+  extraLabels = [],
+  extraClasses = [],
+} = {}) {
+  const widget = buildTransparentWidget(['user-dashboard__widget--label', ...extraClasses]);
+
+  const titleElement = document.createElement('h2');
+  titleElement.className = 'user-widget__title';
+  titleElement.textContent = title;
+
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'user-widget__description';
+  descriptionElement.textContent = description;
+
+  const labelGroup = document.createElement('div');
+  labelGroup.className = 'miniapp-details__highlights';
+
+  [panelLabel, projectLabel, ...extraLabels]
+    .filter((label) => typeof label === 'string' && label.trim() !== '')
+    .forEach((label) => {
+      const chip = document.createElement('span');
+      chip.className = 'miniapp-details__chip';
+      chip.textContent = label;
+      labelGroup.append(chip);
+    });
+
+  widget.append(titleElement, descriptionElement, labelGroup);
+  return widget;
+}
+
 export function createCollapsibleSection({
   id,
   title,
@@ -170,6 +235,16 @@ export function createUserDashboardUsersWidget(options = {}) {
   });
 }
 
+function createIntroPreview() {
+  return createUserDashboardIntroWidget();
+}
+
+function createLabelPreview() {
+  return createUserDashboardLabelWidget({
+    extraLabels: ['Perfil sincronizado'],
+  });
+}
+
 function createQuickActionsPreview() {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
@@ -281,6 +356,20 @@ function createUserDataPreview() {
 export const USER_DASHBOARD_WIDGET_MODELS = Object.freeze([
   Object.freeze({
     id: 'UD01',
+    title: 'Widget de introdução do painel do usuário',
+    description: 'Apresentação textual destacando objetivos e contexto do painel de conta.',
+    tokens: ['--panel-gap', '--panel-padding', '--panel-stack-gap'],
+    create: () => createIntroPreview(),
+  }),
+  Object.freeze({
+    id: 'UD02',
+    title: 'Widget de etiqueta do painel do usuário',
+    description: 'Etiqueta com chips destacando painel, projeto e estado da sessão ativa.',
+    tokens: ['--panel-gap', '--panel-padding', '--panel-stack-gap'],
+    create: () => createLabelPreview(),
+  }),
+  Object.freeze({
+    id: 'UD03',
     title: 'Widget de ações rápidas do painel do usuário',
     description:
       'Seção colapsável com atalhos para preferências de tema, indicadores e gerenciamento de sessão.',
@@ -288,7 +377,7 @@ export const USER_DASHBOARD_WIDGET_MODELS = Object.freeze([
     create: () => createQuickActionsPreview(),
   }),
   Object.freeze({
-    id: 'UD02',
+    id: 'UD04',
     title: 'Widget de dados do usuário',
     description: 'Tabela com resumo expandível sincronizado ao painel administrativo.',
     tokens: ['--panel-gap', '--panel-padding', '--panel-stack-gap'],

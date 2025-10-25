@@ -4800,8 +4800,18 @@ main > .admin-design-kit {
   padding-inline: 0.85rem;
 }
 
-.user-dashboard__widget {
+.user-dashboard__widget { 
   align-content: start;
+}
+
+.user-dashboard__widget--intro,
+.user-dashboard__widget--label {
+  display: grid;
+  gap: var(--panel-stack-gap);
+}
+
+.user-dashboard__widget--label .miniapp-details__highlights {
+  justify-content: flex-start;
 }
 
 .user-dashboard__actions {

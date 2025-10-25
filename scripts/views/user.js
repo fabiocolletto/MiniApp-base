@@ -24,6 +24,8 @@ import { formatPhoneNumberForDisplay, validatePhoneNumber } from './shared/valid
 import {
   createQuickAction,
   createQuickActionsWidget,
+  createUserDashboardIntroWidget,
+  createUserDashboardLabelWidget,
   createUserDashboardUsersWidget,
 } from './shared/user-dashboard-widgets.js';
 import eventBus from '../events/event-bus.js';
@@ -299,6 +301,16 @@ export function renderUserPanel(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
 
+  const introWidget = createUserDashboardIntroWidget({
+    description: 'Gerencie preferências e dados sincronizados com o painel administrativo.',
+  });
+
+  const labelWidget = createUserDashboardLabelWidget({
+    panelLabel: 'Painel do usuário',
+    projectLabel: 'MiniApp Base',
+    extraLabels: ['Sessão sincronizada'],
+  });
+
   let themeAction = null;
   let footerIndicatorsAction = null;
 
@@ -445,7 +457,7 @@ export function renderUserPanel(viewRoot) {
   const accessWidget = accessSectionControls.section;
   const accountWidget = userDataWidget;
 
-  layout.append(themeWidget, accessWidget, accountWidget);
+  layout.append(introWidget, labelWidget, themeWidget, accessWidget, accountWidget);
   viewRoot.replaceChildren(layout);
 
   const cleanupCallbacks = [];
