@@ -5862,7 +5862,7 @@ main > .view--log {
   margin: 0 auto;
   align-content: start;
   justify-items: stretch;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
 }
 
 .log-panel__widget {
@@ -5873,6 +5873,62 @@ main > .view--log {
 
 .log-panel__widget--full {
   grid-column: 1 / -1;
+}
+
+.log-panel__widget--deployments {
+  grid-column: auto;
+}
+
+.log-panel__deployments-table-wrapper {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.log-panel__deployments-table {
+  width: 100%;
+  min-width: 22rem;
+  border-collapse: collapse;
+  font-size: var(--panel-font-size-base);
+  line-height: 1.5;
+}
+
+.log-panel__deployments-header,
+.log-panel__deployments-cell {
+  padding-block: var(--space-xs);
+  padding-inline: var(--space-sm);
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--color-warm-rgb), 0.16);
+}
+
+.log-panel__deployments-header {
+  font-size: var(--panel-font-size-strong);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: rgba(var(--color-accent-rgb), 0.08);
+}
+
+.log-panel__deployments-table tbody tr:last-child .log-panel__deployments-cell {
+  border-bottom-color: transparent;
+}
+
+.log-panel__deployments-cell--version {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.log-panel__deployments-cell--updated {
+  white-space: nowrap;
+}
+
+@media (max-width: 38rem) {
+  .log-panel__deployments-table {
+    min-width: 0;
+  }
+
+  .log-panel__deployments-header,
+  .log-panel__deployments-cell {
+    padding-inline: var(--space-xs);
+  }
 }
 
 .view--legal {
