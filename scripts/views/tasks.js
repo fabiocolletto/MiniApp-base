@@ -929,6 +929,7 @@ function createTaskFormElements() {
   form.className = 'task-dashboard__form layout-stack layout-stack--md';
   form.hidden = true;
   form.dataset.mode = 'create';
+  form.id = `task-dashboard-form-${Math.random().toString(36).slice(2, 10)}`;
 
   const title = document.createElement('h4');
   title.className = 'task-dashboard__form-title';
@@ -1202,12 +1203,16 @@ export function renderTaskDashboard(viewRoot) {
   addButton.type = 'button';
   addButton.className = 'task-dashboard__add-button';
   addButton.textContent = 'Nova tarefa';
+  addButton.setAttribute('aria-expanded', 'false');
   listActions.append(addButton);
 
   const listMessage = createMessageElement('task-dashboard__list-message');
 
   const formElements = createTaskFormElements();
   const { form, fields, message: formMessage, cancelButton, submitButton, title: formTitle } = formElements;
+  if (form.id) {
+    addButton.setAttribute('aria-controls', form.id);
+  }
 
   const listContent = document.createElement('div');
   listContent.className = 'task-dashboard__list-content layout-stack layout-stack--md';
@@ -1262,6 +1267,7 @@ export function renderTaskDashboard(viewRoot) {
   function hideTaskForm() {
     resetTaskForm();
     form.hidden = true;
+    addButton.setAttribute('aria-expanded', 'false');
   }
 
   function showTaskForm(mode, task) {
@@ -1294,6 +1300,7 @@ export function renderTaskDashboard(viewRoot) {
     }
 
     form.hidden = false;
+    addButton.setAttribute('aria-expanded', mode === 'create' ? 'true' : 'false');
     if (mode !== 'edit' && typeof fields.title.focus === 'function') {
       try {
         fields.title.focus();

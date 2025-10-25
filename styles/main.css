@@ -6287,6 +6287,10 @@ main > .view--log {
   padding: var(--panel-padding);
 }
 
+.task-dashboard__form[hidden] {
+  display: none;
+}
+
 .task-dashboard__form-title {
   margin: 0;
   font-size: var(--panel-font-size-heading);
