@@ -1,5 +1,15 @@
 import eventBus from '../events/event-bus.js';
 import { registerViewCleanup } from '../view-cleanup.js';
+import {
+  seedTaskStore,
+  listTasks as listStoredTasks,
+  subscribeTasks,
+  createTask as createTaskRecord,
+  updateTask as updateTaskRecord,
+  removeTask as removeTaskRecord,
+  TASK_STATUS_OPTIONS,
+  TASK_PRIORITY_OPTIONS,
+} from '../../core/task-store.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--tasks task-dashboard';
 
@@ -454,6 +464,27 @@ function mapTaskToEntry(task) {
     completedChecklist,
     activities,
     focus,
+    source: {
+      id,
+      title,
+      status,
+      priority,
+      dueDate:
+        dueDate
+          ? dueDate.toISOString().slice(0, 10)
+          : typeof task.dueDate === 'string' && task.dueDate.trim()
+            ? task.dueDate.trim()
+            : null,
+      lastUpdate: typeof task.lastUpdate === 'string' ? task.lastUpdate : null,
+      owner: { name: ownerName, role: ownerRole },
+      summary,
+      description,
+      tags: tags.slice(),
+      focus,
+      progress,
+      checklist: checklist.map((item) => ({ ...item })),
+      activity: activities.map((item) => ({ label: item.label, at: item.at ?? null })),
+    },
     details: {
       id,
       title,
@@ -571,7 +602,8 @@ function createLegend(entries) {
   return legend;
 }
 
-function createTaskListItem(entry, cleanupCallbacks) {
+function createTaskListItem(entry, cleanupCallbacks, options = {}) {
+  const { onEdit, onDelete } = options;
   const item = document.createElement('li');
   item.className = 'task-dashboard__task-item';
   item.dataset.status = entry.status;
@@ -648,6 +680,55 @@ function createTaskListItem(entry, cleanupCallbacks) {
   button.append(content);
   item.append(button);
 
+  const actions = document.createElement('div');
+  actions.className = 'task-dashboard__task-actions';
+
+  if (typeof onEdit === 'function') {
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'task-dashboard__task-action task-dashboard__task-action--edit';
+    editButton.textContent = 'Editar';
+    editButton.setAttribute('aria-label', `Editar tarefa ${entry.title}`);
+
+    const handleEdit = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onEdit(entry);
+    };
+
+    editButton.addEventListener('click', handleEdit);
+    cleanupCallbacks.push(() => {
+      editButton.removeEventListener('click', handleEdit);
+    });
+
+    actions.append(editButton);
+  }
+
+  if (typeof onDelete === 'function') {
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'task-dashboard__task-action task-dashboard__task-action--delete';
+    deleteButton.textContent = 'Excluir';
+    deleteButton.setAttribute('aria-label', `Excluir tarefa ${entry.title}`);
+
+    const handleDelete = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onDelete(entry);
+    };
+
+    deleteButton.addEventListener('click', handleDelete);
+    cleanupCallbacks.push(() => {
+      deleteButton.removeEventListener('click', handleDelete);
+    });
+
+    actions.append(deleteButton);
+  }
+
+  if (actions.childElementCount > 0) {
+    item.append(actions);
+  }
+
   const handleClick = () => {
     eventBus.emit('tasks:details', { task: entry.details, trigger: button });
   };
@@ -660,7 +741,7 @@ function createTaskListItem(entry, cleanupCallbacks) {
   return item;
 }
 
-function buildTaskList(entries, cleanupCallbacks) {
+function buildTaskList(entries, cleanupCallbacks, options = {}) {
   const list = document.createElement('ul');
   list.className = 'task-dashboard__task-list';
   list.setAttribute('role', 'list');
@@ -681,7 +762,7 @@ function buildTaskList(entries, cleanupCallbacks) {
       return a.title.localeCompare(b.title, 'pt-BR');
     })
     .forEach((entry) => {
-      const item = createTaskListItem(entry, cleanupCallbacks);
+      const item = createTaskListItem(entry, cleanupCallbacks, options);
       list.append(item);
     });
 
@@ -736,13 +817,319 @@ function buildTimeline(entries) {
   return container;
 }
 
+function createMessageElement(baseClass) {
+  const message = document.createElement('p');
+  message.className = `form-message ${baseClass}`;
+  message.hidden = true;
+  return message;
+}
+
+function updateMessageElement(element, type, text) {
+  if (!(element instanceof HTMLElement)) {
+    return;
+  }
+
+  element.classList.remove('form-message--error', 'form-message--success');
+
+  if (!text) {
+    element.hidden = true;
+    element.textContent = '';
+    return;
+  }
+
+  element.hidden = false;
+  element.textContent = text;
+  if (type === 'error') {
+    element.classList.add('form-message--error');
+  } else if (type === 'success') {
+    element.classList.add('form-message--success');
+  }
+}
+
+function createInputField(options) {
+  const {
+    name,
+    label,
+    type = 'text',
+    required = false,
+    placeholder = '',
+    span = null,
+  } = options;
+
+  const field = document.createElement('div');
+  field.className = 'form-field';
+  if (span) {
+    field.dataset.fieldSpan = span;
+  }
+
+  const inputId = `task-form-${name}-${Math.random().toString(36).slice(2, 10)}`;
+
+  const labelElement = document.createElement('label');
+  labelElement.className = 'form-label';
+  labelElement.setAttribute('for', inputId);
+  labelElement.textContent = label;
+
+  let control;
+  if (type === 'textarea') {
+    control = document.createElement('textarea');
+    control.className = 'form-textarea';
+  } else {
+    control = document.createElement('input');
+    control.type = type;
+    control.className = 'form-input';
+  }
+
+  control.id = inputId;
+  control.name = name;
+  if (placeholder) {
+    control.placeholder = placeholder;
+  }
+
+  if (required) {
+    control.required = true;
+  }
+
+  field.append(labelElement, control);
+  return { field, control };
+}
+
+function createSelectField(options) {
+  const { name, label, values, labels, span = null } = options;
+  const field = document.createElement('div');
+  field.className = 'form-field';
+  if (span) {
+    field.dataset.fieldSpan = span;
+  }
+
+  const inputId = `task-form-${name}-${Math.random().toString(36).slice(2, 10)}`;
+
+  const labelElement = document.createElement('label');
+  labelElement.className = 'form-label';
+  labelElement.setAttribute('for', inputId);
+  labelElement.textContent = label;
+
+  const select = document.createElement('select');
+  select.className = 'form-select';
+  select.id = inputId;
+  select.name = name;
+
+  values.forEach((value) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = labels[value] ?? value;
+    select.append(option);
+  });
+
+  field.append(labelElement, select);
+  return { field, control: select };
+}
+
+function createTaskFormElements() {
+  const form = document.createElement('form');
+  form.className = 'task-dashboard__form layout-stack layout-stack--md';
+  form.hidden = true;
+  form.dataset.mode = 'create';
+
+  const title = document.createElement('h4');
+  title.className = 'task-dashboard__form-title';
+  title.textContent = 'Adicionar tarefa';
+
+  const fieldsGrid = document.createElement('div');
+  fieldsGrid.className = 'task-dashboard__form-grid';
+
+  const { field: titleField, control: titleInput } = createInputField({
+    name: 'title',
+    label: 'Título',
+    required: true,
+    span: 'full',
+  });
+
+  const { field: statusField, control: statusSelect } = createSelectField({
+    name: 'status',
+    label: 'Status',
+    values: TASK_STATUS_OPTIONS,
+    labels: TASK_STATUS_LABELS,
+  });
+
+  const { field: priorityField, control: prioritySelect } = createSelectField({
+    name: 'priority',
+    label: 'Prioridade',
+    values: TASK_PRIORITY_OPTIONS,
+    labels: TASK_PRIORITY_LABELS,
+  });
+
+  const { field: dueDateField, control: dueDateInput } = createInputField({
+    name: 'dueDate',
+    label: 'Prazo',
+    type: 'date',
+  });
+
+  const { field: progressField, control: progressInput } = createInputField({
+    name: 'progress',
+    label: 'Progresso (%)',
+    type: 'number',
+  });
+  progressInput.min = '0';
+  progressInput.max = '100';
+  progressInput.step = '1';
+
+  const { field: ownerNameField, control: ownerNameInput } = createInputField({
+    name: 'ownerName',
+    label: 'Responsável',
+    placeholder: 'Nome completo',
+  });
+
+  const { field: ownerRoleField, control: ownerRoleInput } = createInputField({
+    name: 'ownerRole',
+    label: 'Função',
+    placeholder: 'Cargo ou papel',
+  });
+
+  const { field: tagsField, control: tagsInput } = createInputField({
+    name: 'tags',
+    label: 'Etiquetas',
+    placeholder: 'Separe por vírgulas',
+    span: 'full',
+  });
+
+  const { field: summaryField, control: summaryInput } = createInputField({
+    name: 'summary',
+    label: 'Resumo',
+    type: 'textarea',
+    span: 'full',
+  });
+
+  const { field: descriptionField, control: descriptionInput } = createInputField({
+    name: 'description',
+    label: 'Descrição detalhada',
+    type: 'textarea',
+    span: 'full',
+  });
+
+  const { field: focusField, control: focusInput } = createInputField({
+    name: 'focus',
+    label: 'Contexto ou foco',
+    type: 'textarea',
+    span: 'full',
+  });
+
+  fieldsGrid.append(
+    titleField,
+    statusField,
+    priorityField,
+    dueDateField,
+    progressField,
+    ownerNameField,
+    ownerRoleField,
+    tagsField,
+    summaryField,
+    descriptionField,
+    focusField,
+  );
+
+  const message = createMessageElement('task-dashboard__form-message');
+
+  const actions = document.createElement('div');
+  actions.className = 'task-dashboard__form-actions';
+
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.className = 'task-dashboard__form-cancel';
+  cancelButton.textContent = 'Cancelar';
+
+  const submitButton = document.createElement('button');
+  submitButton.type = 'submit';
+  submitButton.className = 'form-submit task-dashboard__form-submit';
+  submitButton.textContent = 'Salvar tarefa';
+
+  actions.append(cancelButton, submitButton);
+
+  form.append(title, fieldsGrid, message, actions);
+
+  return {
+    form,
+    title,
+    fields: {
+      title: titleInput,
+      status: statusSelect,
+      priority: prioritySelect,
+      dueDate: dueDateInput,
+      progress: progressInput,
+      ownerName: ownerNameInput,
+      ownerRole: ownerRoleInput,
+      tags: tagsInput,
+      summary: summaryInput,
+      description: descriptionInput,
+      focus: focusInput,
+    },
+    message,
+    cancelButton,
+    submitButton,
+  };
+}
+
+function readTaskFormPayload(form) {
+  const formData = new FormData(form);
+
+  const getValue = (name) => {
+    const value = formData.get(name);
+    return typeof value === 'string' ? value.trim() : '';
+  };
+
+  const progressValue = Number.parseInt(getValue('progress'), 10);
+  const dueDateValue = getValue('dueDate');
+
+  return {
+    title: getValue('title'),
+    status: getValue('status') || 'backlog',
+    priority: getValue('priority') || 'medium',
+    dueDate: dueDateValue || null,
+    progress: Number.isFinite(progressValue) ? progressValue : 0,
+    summary: getValue('summary'),
+    description: getValue('description'),
+    focus: getValue('focus'),
+    owner: {
+      name: getValue('ownerName'),
+      role: getValue('ownerRole'),
+    },
+    tags: getValue('tags'),
+  };
+}
+
+function formatTagsInput(tags) {
+  if (!Array.isArray(tags)) {
+    return '';
+  }
+
+  return tags.join(', ');
+}
+
 export function renderTaskDashboard(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
   }
 
   const cleanupCallbacks = [];
+  const listCleanupCallbacks = [];
+  let listMessageTimeout;
+  let currentEntries = [];
+  let submitting = false;
+
+  function clearListCleanup() {
+    while (listCleanupCallbacks.length > 0) {
+      const cleanup = listCleanupCallbacks.pop();
+      try {
+        if (typeof cleanup === 'function') {
+          cleanup();
+        }
+      } catch (error) {
+        console.error('Erro ao limpar eventos da lista de tarefas.', error);
+      }
+    }
+  }
+
   registerViewCleanup(viewRoot, () => {
+    clearListCleanup();
     while (cleanupCallbacks.length > 0) {
       const cleanup = cleanupCallbacks.pop();
       try {
@@ -753,10 +1140,11 @@ export function renderTaskDashboard(viewRoot) {
         console.error('Erro ao limpar o painel de tarefas.', error);
       }
     }
+    if (typeof window !== 'undefined' && typeof window.clearTimeout === 'function' && listMessageTimeout) {
+      window.clearTimeout(listMessageTimeout);
+      listMessageTimeout = undefined;
+    }
   });
-
-  const entries = RAW_TASKS.map((task) => mapTaskToEntry(task)).filter(Boolean);
-  const indicators = buildTaskIndicators(entries);
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'tasks';
@@ -785,19 +1173,19 @@ export function renderTaskDashboard(viewRoot) {
 
   headerInfo.append(title, description);
 
-  const legend = createLegend(entries);
-  overviewHeader.append(headerInfo, legend);
+  const legendContainer = document.createElement('div');
+  legendContainer.className = 'task-dashboard__legend-container';
+  legendContainer.append(createLegend([]));
+
+  overviewHeader.append(headerInfo, legendContainer);
 
   const indicatorsContainer = document.createElement('div');
   indicatorsContainer.className = 'task-dashboard__indicators';
-  indicators.forEach((indicator) => {
-    indicatorsContainer.append(createIndicatorCard(indicator));
-  });
 
   overview.append(overviewHeader, indicatorsContainer);
 
   const listSection = document.createElement('section');
-  listSection.className = 'surface-card task-dashboard__widget task-dashboard__widget--list';
+  listSection.className = 'surface-card task-dashboard__widget task-dashboard__widget--list layout-stack layout-stack--md';
 
   const listTitle = document.createElement('h3');
   listTitle.className = 'task-dashboard__widget-title';
@@ -807,9 +1195,27 @@ export function renderTaskDashboard(viewRoot) {
   listDescription.className = 'task-dashboard__widget-description';
   listDescription.textContent = 'Selecione uma tarefa para visualizar detalhes, subtarefas e atualizações recentes.';
 
-  const taskList = buildTaskList(entries, cleanupCallbacks);
+  const listActions = document.createElement('div');
+  listActions.className = 'task-dashboard__list-actions';
 
-  listSection.append(listTitle, listDescription, taskList);
+  const addButton = document.createElement('button');
+  addButton.type = 'button';
+  addButton.className = 'task-dashboard__add-button';
+  addButton.textContent = 'Nova tarefa';
+  listActions.append(addButton);
+
+  const listMessage = createMessageElement('task-dashboard__list-message');
+
+  const formElements = createTaskFormElements();
+  const { form, fields, message: formMessage, cancelButton, submitButton, title: formTitle } = formElements;
+
+  const listContent = document.createElement('div');
+  listContent.className = 'task-dashboard__list-content layout-stack layout-stack--md';
+
+  const loadingMessage = document.createElement('p');
+  loadingMessage.className = 'task-dashboard__list-empty';
+  loadingMessage.textContent = 'Carregando tarefas...';
+  listContent.append(loadingMessage);
 
   const timelineSection = document.createElement('section');
   timelineSection.className = 'surface-card task-dashboard__widget task-dashboard__widget--timeline layout-stack layout-stack--sm';
@@ -822,11 +1228,250 @@ export function renderTaskDashboard(viewRoot) {
   timelineDescription.className = 'task-dashboard__widget-description';
   timelineDescription.textContent = 'Resumo das tarefas que chegam ao prazo nos próximos dias.';
 
-  const timeline = buildTimeline(entries);
+  const timelineContent = document.createElement('div');
+  timelineContent.className = 'task-dashboard__timeline-wrapper';
+  timelineContent.append(buildTimeline([]));
 
-  timelineSection.append(timelineTitle, timelineDescription, timeline);
+  listSection.append(listTitle, listDescription, listActions, listMessage, form, listContent);
+  timelineSection.append(timelineTitle, timelineDescription, timelineContent);
 
   layout.append(overview, listSection, timelineSection);
   viewRoot.replaceChildren(layout);
+
+  function resetTaskForm() {
+    form.reset();
+    form.dataset.mode = 'create';
+    delete form.dataset.taskId;
+    formTitle.textContent = 'Adicionar tarefa';
+    submitButton.textContent = 'Salvar tarefa';
+    const defaultStatus = TASK_STATUS_OPTIONS[0] ?? fields.status.options?.[0]?.value ?? '';
+    const defaultPriority =
+      TASK_PRIORITY_OPTIONS[1] ?? TASK_PRIORITY_OPTIONS[0] ?? fields.priority.options?.[0]?.value ?? '';
+    fields.status.value = defaultStatus;
+    if (!fields.status.value && fields.status.options?.length) {
+      fields.status.selectedIndex = 0;
+    }
+    fields.priority.value = defaultPriority;
+    if (!fields.priority.value && fields.priority.options?.length) {
+      fields.priority.selectedIndex = 0;
+    }
+    fields.progress.value = '0';
+    updateMessageElement(formMessage, null, '');
+  }
+
+  function hideTaskForm() {
+    resetTaskForm();
+    form.hidden = true;
+  }
+
+  function showTaskForm(mode, task) {
+    resetTaskForm();
+    if (mode === 'edit' && task) {
+      form.dataset.mode = 'edit';
+      form.dataset.taskId = task.id;
+      formTitle.textContent = 'Editar tarefa';
+      submitButton.textContent = 'Atualizar tarefa';
+      fields.title.value = task.title ?? '';
+      if (TASK_STATUS_OPTIONS.includes(task.status)) {
+        fields.status.value = task.status;
+      }
+      if (TASK_PRIORITY_OPTIONS.includes(task.priority)) {
+        fields.priority.value = task.priority;
+      }
+      if (task.dueDate) {
+        fields.dueDate.value = task.dueDate;
+      }
+      fields.progress.value = Number.isFinite(task.progress) ? String(task.progress) : '0';
+      fields.ownerName.value = typeof task.owner?.name === 'string' ? task.owner.name : '';
+      fields.ownerRole.value = typeof task.owner?.role === 'string' ? task.owner.role : '';
+      fields.tags.value = formatTagsInput(task.tags);
+      fields.summary.value = typeof task.summary === 'string' ? task.summary : '';
+      fields.description.value = typeof task.description === 'string' ? task.description : '';
+      fields.focus.value = typeof task.focus === 'string' ? task.focus : '';
+    } else {
+      formTitle.textContent = 'Adicionar tarefa';
+      submitButton.textContent = 'Salvar tarefa';
+    }
+
+    form.hidden = false;
+    if (mode !== 'edit' && typeof fields.title.focus === 'function') {
+      try {
+        fields.title.focus();
+      } catch (error) {
+        // ignore focus errors
+      }
+    }
+    if (typeof form.scrollIntoView === 'function') {
+      try {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (error) {
+        // ignore scroll errors
+      }
+    }
+  }
+
+  function setListMessage(type, text) {
+    updateMessageElement(listMessage, type, text);
+    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+      if (listMessageTimeout) {
+        window.clearTimeout(listMessageTimeout);
+        listMessageTimeout = undefined;
+      }
+      if (text && type === 'success') {
+        listMessageTimeout = window.setTimeout(() => {
+          updateMessageElement(listMessage, null, '');
+          listMessageTimeout = undefined;
+        }, 4000);
+      }
+    }
+  }
+
+  function applyEntries(tasks) {
+    const mappedEntries = tasks.map((task) => mapTaskToEntry(task)).filter(Boolean);
+    currentEntries = mappedEntries;
+
+    const indicators = buildTaskIndicators(mappedEntries);
+    indicatorsContainer.replaceChildren(...indicators.map((indicator) => createIndicatorCard(indicator)));
+
+    legendContainer.replaceChildren(createLegend(mappedEntries));
+
+    clearListCleanup();
+
+    if (mappedEntries.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'task-dashboard__list-empty';
+      empty.textContent = 'Nenhuma tarefa cadastrada ainda.';
+      listContent.replaceChildren(empty);
+    } else {
+      const list = buildTaskList(mappedEntries, listCleanupCallbacks, {
+        onEdit: (entry) => {
+          if (entry?.source) {
+            showTaskForm('edit', entry.source);
+          }
+        },
+        onDelete: async (entry) => {
+          if (!entry?.id) {
+            return;
+          }
+
+          let confirmed = true;
+          if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+            confirmed = window.confirm(`Deseja excluir a tarefa "${entry.title}"?`);
+          }
+
+          if (!confirmed) {
+            return;
+          }
+
+          try {
+            await removeTaskRecord(entry.id);
+            if (form.dataset.taskId === entry.id) {
+              hideTaskForm();
+            }
+            setListMessage('success', 'Tarefa excluída com sucesso.');
+          } catch (error) {
+            console.error('Erro ao excluir tarefa.', error);
+            setListMessage('error', 'Não foi possível excluir a tarefa. Tente novamente.');
+          }
+        },
+      });
+
+      listContent.replaceChildren(list);
+    }
+
+    timelineContent.replaceChildren(buildTimeline(mappedEntries));
+  }
+
+  async function handleTaskFormSubmit(event) {
+    event.preventDefault();
+    if (submitting) {
+      return;
+    }
+
+    const mode = form.dataset.mode === 'edit' ? 'edit' : 'create';
+    const payload = readTaskFormPayload(form);
+    if (!payload.title) {
+      updateMessageElement(formMessage, 'error', 'Informe um título para a tarefa.');
+      return;
+    }
+
+    submitting = true;
+    submitButton.disabled = true;
+    cancelButton.disabled = true;
+    addButton.disabled = true;
+    updateMessageElement(formMessage, null, '');
+
+    try {
+      if (mode === 'edit') {
+        const taskId = form.dataset.taskId;
+        if (!taskId) {
+          throw new Error('Identificador da tarefa ausente.');
+        }
+        await updateTaskRecord(taskId, payload);
+        setListMessage('success', 'Tarefa atualizada com sucesso.');
+      } else {
+        await createTaskRecord(payload);
+        setListMessage('success', 'Tarefa adicionada com sucesso.');
+      }
+      hideTaskForm();
+    } catch (error) {
+      console.error('Erro ao salvar tarefa.', error);
+      updateMessageElement(formMessage, 'error', 'Não foi possível salvar a tarefa. Tente novamente.');
+    } finally {
+      submitting = false;
+      submitButton.disabled = false;
+      cancelButton.disabled = false;
+      addButton.disabled = false;
+    }
+  }
+
+  function handleAddTaskClick(event) {
+    event.preventDefault();
+    if (!form.hidden && form.dataset.mode === 'create') {
+      hideTaskForm();
+      return;
+    }
+    showTaskForm('create');
+  }
+
+  addButton.addEventListener('click', handleAddTaskClick);
+  cleanupCallbacks.push(() => {
+    addButton.removeEventListener('click', handleAddTaskClick);
+  });
+
+  form.addEventListener('submit', handleTaskFormSubmit);
+  cleanupCallbacks.push(() => {
+    form.removeEventListener('submit', handleTaskFormSubmit);
+  });
+
+  const handleCancelClick = (event) => {
+    event.preventDefault();
+    hideTaskForm();
+  };
+
+  cancelButton.addEventListener('click', handleCancelClick);
+  cleanupCallbacks.push(() => {
+    cancelButton.removeEventListener('click', handleCancelClick);
+  });
+
+  const unsubscribe = subscribeTasks((tasks) => {
+    applyEntries(tasks);
+  });
+  cleanupCallbacks.push(() => {
+    if (typeof unsubscribe === 'function') {
+      unsubscribe();
+    }
+  });
+
+  (async () => {
+    try {
+      await seedTaskStore(RAW_TASKS);
+      const tasks = await listStoredTasks();
+      applyEntries(tasks);
+    } catch (error) {
+      console.error('Erro ao carregar tarefas do painel.', error);
+      updateMessageElement(formMessage, 'error', 'Não foi possível carregar as tarefas.');
+    }
+  })();
 }
 

@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.235 - 2025-10-25 15:49 BRT
+- Conecta o painel de tarefas a um store persistente com IndexedDB e fallback em memória, permitindo cadastrar, editar e remover itens.
+- Acrescenta formulário interativo com validações, feedbacks e botões de ação nos cards do backlog para abrir edições rápidas.
+- Atualiza o layout e os estilos do painel para acomodar o formulário, mensagens contextuais e o botão "Nova tarefa".
+
 ## v0.1.234 - 2025-10-25 15:03 BRT
 - Cria o painel de tarefas com indicadores de andamento e backlog priorizado.
 - Permite abrir os detalhes de cada tarefa em modal com o shell desfocado e checklist contextual.
