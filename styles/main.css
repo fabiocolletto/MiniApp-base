@@ -4512,6 +4512,7 @@ main > .admin-design-kit {
 
 .user-dashboard__widget--user-data {
   grid-column: 1 / -1;
+  --card-border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
 }
 
 .user-panel__widget-header {
