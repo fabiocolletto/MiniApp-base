@@ -21,21 +21,17 @@ import {
   getSystemReleaseDate,
   getSystemVersionLabel,
 } from '../scripts/data/system-metadata.js';
-import { formatSystemReleaseDate } from '../scripts/data/system-info.js';
 import { getResolvedTheme, setThemePreference, subscribeThemeChange } from '../scripts/theme/theme-manager.js';
 import {
   getActivityStatus as defaultGetActivityStatus,
   subscribeActivityStatus as defaultSubscribeActivityStatus,
 } from '../scripts/system/activity-indicator.js';
+import { syncSystemReleaseIndicators } from '../sys/tools/log.js';
 
 const viewRoot = document.getElementById('view-root');
 const mainElement = document.querySelector('main');
 const logo = document.querySelector('.header-logo');
 const versionButton = document.querySelector('.footer-version');
-const versionButtonText =
-  (versionButton && typeof (versionButton as HTMLElement).querySelector === 'function'
-    ? (versionButton as HTMLElement).querySelector('.footer-version__text')
-    : null) || null;
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
@@ -226,35 +222,12 @@ export function getPersistedViewName(): string | null {
 }
 
 function applySystemVersionMetadata(): void {
-  if (!(versionButton instanceof HTMLElement)) {
-    return;
-  }
-
-  const versionLabel = getSystemVersionLabel();
-  if (versionButtonText instanceof HTMLElement) {
-    versionButtonText.textContent = versionLabel;
-  }
-
   const metadata = getSystemMetadata();
-  const releaseDate = getSystemReleaseDate();
-  const formattedDate = formatSystemReleaseDate(releaseDate);
-
-  const labelParts = [`versão ${versionLabel}`];
-  if (formattedDate) {
-    labelParts.push(`publicada em ${formattedDate}`);
-  }
-
-  const accessibleLabel = labelParts.join(' ');
-  versionButton.setAttribute('aria-label', `Abrir registro de alterações da ${accessibleLabel}`);
-  versionButton.setAttribute('title', `Exibir mudanças da ${accessibleLabel}`);
-  versionButton.dataset.version = versionLabel;
-
-  const changelogPath = typeof metadata?.changelogPath === 'string' ? metadata.changelogPath.trim() : '';
-  if (changelogPath) {
-    versionButton.dataset.changelog = changelogPath;
-  } else {
-    delete versionButton.dataset.changelog;
-  }
+  syncSystemReleaseIndicators({
+    versionLabel: getSystemVersionLabel(),
+    publishedAt: getSystemReleaseDate(),
+    changelogPath: metadata?.changelogPath,
+  });
 }
 
 applySystemVersionMetadata();

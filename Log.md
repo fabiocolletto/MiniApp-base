@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.231 - 2025-10-25 08:04 BRT
+- Automatiza a sincronização da versão do sistema no rodapé e no painel administrativo via `syncSystemReleaseIndicators` da ferramenta de log.
+- Adiciona identificadores aos chips de versão e publicação da navegação administrativa para permitir atualizações dinâmicas.
+- Atualiza os metadados e o pacote do projeto para anunciar a release v0.1.231.
+
 ## v0.1.230 - 2025-10-25 07:58 BRT
 - Reorganiza o formulário de dados do usuário em abas separando informações pessoais e endereço em painéis dedicados.
 - Ajusta o preenchimento por CEP para zerar número, complemento e país antes da consulta e limpar campos ausentes na resposta.
