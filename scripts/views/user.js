@@ -42,6 +42,16 @@ import { lookupCep, normalizeCep } from '../utils/cep-service.js';
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
 const HTMLElementRef = typeof HTMLElement === 'undefined' ? null : HTMLElement;
+const DocumentRef = typeof document === 'undefined' ? null : document;
+
+const getActiveElement = () => {
+  if (!DocumentRef || !HTMLElementRef) {
+    return null;
+  }
+
+  const active = DocumentRef.activeElement;
+  return active instanceof HTMLElementRef ? active : null;
+};
 
 const AUTO_FOCUS_ON_OPEN = (() => {
   if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
@@ -707,6 +717,70 @@ export function renderUserPanel(viewRoot) {
 
   userDataWidget.append(userDataContent);
 
+  let userDataTableBackdrop = null;
+  let userDataTableModal = null;
+  let userDataTableCloseButton = null;
+  let overlayFocusRestorer = null;
+
+  if (userDataTableContainer instanceof HTMLElement) {
+    userDataTableBackdrop = document.createElement('div');
+    userDataTableBackdrop.className = 'app-modal-backdrop user-dashboard__table-backdrop';
+    userDataTableBackdrop.hidden = true;
+
+    userDataTableModal = document.createElement('div');
+    userDataTableModal.className = 'app-modal user-dashboard__table-modal';
+    userDataTableModal.hidden = true;
+    userDataTableModal.setAttribute('role', 'dialog');
+    userDataTableModal.setAttribute('aria-modal', 'true');
+    userDataTableModal.setAttribute('aria-hidden', 'true');
+
+    const modalPanel = document.createElement('div');
+    modalPanel.className = 'app-modal__panel app-modal__panel--miniapp user-dashboard__table-modal-panel';
+
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'app-modal__header user-dashboard__table-header';
+
+    const modalTitle = document.createElement('h3');
+    modalTitle.className = 'app-modal__title user-dashboard__table-title';
+    modalTitle.id = 'user-dashboard-table-title';
+    modalTitle.textContent = 'Usuários sincronizados';
+    userDataTableModal.setAttribute('aria-labelledby', modalTitle.id);
+
+    userDataTableCloseButton = document.createElement('button');
+    userDataTableCloseButton.type = 'button';
+    userDataTableCloseButton.className = 'app-modal__close user-dashboard__table-close';
+    userDataTableCloseButton.setAttribute('aria-label', 'Fechar tabela de usuários');
+    userDataTableCloseButton.textContent = 'Fechar';
+
+    modalHeader.append(modalTitle, userDataTableCloseButton);
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'user-dashboard__table-content';
+    const detachTableContainer = () => {
+      const parent = userDataTableContainer.parentNode;
+
+      if (!parent) {
+        return;
+      }
+
+      if (typeof parent.removeChild === 'function') {
+        parent.removeChild(userDataTableContainer);
+        return;
+      }
+
+      if (Array.isArray(parent.children)) {
+        parent.children = parent.children.filter((child) => child !== userDataTableContainer);
+        userDataTableContainer.parentNode = null;
+      }
+    };
+
+    detachTableContainer();
+    modalContent.append(userDataTableContainer);
+
+    modalPanel.append(modalHeader, modalContent);
+    userDataTableModal.append(modalPanel);
+  }
+
   const findFieldEntry = (key) => accountFields.find((field) => field.key === key) ?? { field: null, input: null };
 
   const nameField = findFieldEntry('name').field;
@@ -870,6 +944,15 @@ export function renderUserPanel(viewRoot) {
   const accountWidget = userDataWidget;
 
   layout.append(introWidget, labelWidget, themeWidget, accessWidget, accountWidget);
+
+  if (userDataTableBackdrop instanceof HTMLElement) {
+    layout.append(userDataTableBackdrop);
+  }
+
+  if (userDataTableModal instanceof HTMLElement) {
+    layout.append(userDataTableModal);
+  }
+
   viewRoot.replaceChildren(layout);
 
   cleanupCallbacks.push(userDataWidgetInstance.teardown);
@@ -1508,6 +1591,64 @@ export function renderUserPanel(viewRoot) {
       restoreUserDataContentToRoot();
     }
 
+    const shouldShowTableModal = Boolean(
+      hasUser &&
+      userDataExpanded &&
+      userDataTableModal instanceof HTMLElement &&
+      userDataTableBackdrop instanceof HTMLElement,
+    );
+
+    if (!shouldShowTableModal) {
+      restoreUserDataContentToRoot();
+    }
+
+    if (userDataTableBackdrop instanceof HTMLElement) {
+      if (shouldShowTableModal) {
+        userDataTableBackdrop.hidden = false;
+        userDataTableBackdrop.classList.add('app-modal-backdrop--visible');
+      } else {
+        userDataTableBackdrop.classList.remove('app-modal-backdrop--visible');
+        userDataTableBackdrop.hidden = true;
+      }
+    }
+
+    if (userDataTableModal instanceof HTMLElement) {
+      if (shouldShowTableModal) {
+        if (userDataTableModal.hidden) {
+          overlayFocusRestorer = getActiveElement() ?? overlayFocusRestorer;
+        }
+
+        userDataTableModal.hidden = false;
+        userDataTableModal.setAttribute('aria-hidden', 'false');
+
+        if (
+          HTMLElementRef &&
+          userDataTableCloseButton instanceof HTMLElementRef &&
+          typeof userDataTableCloseButton.focus === 'function'
+        ) {
+          try {
+            userDataTableCloseButton.focus();
+          } catch (error) {
+            // Ignora ambientes sem suporte a foco programático.
+          }
+        }
+      } else if (!userDataTableModal.hidden) {
+        userDataTableModal.hidden = true;
+        userDataTableModal.setAttribute('aria-hidden', 'true');
+
+        const focusTarget = overlayFocusRestorer;
+        overlayFocusRestorer = null;
+
+        if (HTMLElementRef && focusTarget instanceof HTMLElementRef && typeof focusTarget.focus === 'function') {
+          try {
+            focusTarget.focus();
+          } catch (error) {
+            // Ignora ambientes sem suporte a foco programático.
+          }
+        }
+      }
+    }
+
     if (summaryPreview instanceof HTMLElement) {
       summaryPreview.hidden = !hasUser;
     }
@@ -1543,6 +1684,69 @@ export function renderUserPanel(viewRoot) {
 
     accountWidget.dataset.sectionState = hasUser ? (userDataExpanded ? 'expanded' : 'collapsed') : 'empty';
   };
+
+  const collapseUserDataOverlay = ({ notify = true } = {}) => {
+    const targetId = activeUser?.id != null ? String(activeUser.id) : null;
+    const collapseFn = userDataWidgetInstance?.setExpandedUser;
+
+    if (typeof collapseFn === 'function') {
+      collapseFn(targetId, false, { notify });
+      return;
+    }
+
+    if (userDataExpanded) {
+      userDataExpanded = false;
+      updateUserDataViewState();
+    }
+  };
+
+  const handleOverlayKeydown = (event) => {
+    if (!event || event.key !== 'Escape') {
+      return;
+    }
+
+    if (!(userDataTableModal instanceof HTMLElement) || userDataTableModal.hidden) {
+      return;
+    }
+
+    if (typeof event.preventDefault === 'function') {
+      event.preventDefault();
+    }
+
+    collapseUserDataOverlay();
+  };
+
+  if (DocumentRef && typeof DocumentRef.addEventListener === 'function') {
+    DocumentRef.addEventListener('keydown', handleOverlayKeydown);
+    cleanupCallbacks.push(() => {
+      if (typeof DocumentRef.removeEventListener === 'function') {
+        DocumentRef.removeEventListener('keydown', handleOverlayKeydown);
+      }
+    });
+  }
+
+  if (userDataTableCloseButton instanceof HTMLElement) {
+    const handleModalClose = () => collapseUserDataOverlay();
+    userDataTableCloseButton.addEventListener('click', handleModalClose);
+    cleanupCallbacks.push(() => userDataTableCloseButton.removeEventListener('click', handleModalClose));
+  }
+
+  if (userDataTableModal instanceof HTMLElement) {
+    const handleModalClick = (event) => {
+      if (event?.target === userDataTableModal) {
+        collapseUserDataOverlay();
+      }
+    };
+
+    userDataTableModal.addEventListener('click', handleModalClick);
+    cleanupCallbacks.push(() => userDataTableModal.removeEventListener('click', handleModalClick));
+  }
+
+  if (userDataTableBackdrop instanceof HTMLElement) {
+    const handleBackdropClick = () => collapseUserDataOverlay();
+    userDataTableBackdrop.addEventListener('click', handleBackdropClick);
+    cleanupCallbacks.push(() => userDataTableBackdrop.removeEventListener('click', handleBackdropClick));
+  }
 
   const resolveCurrentPreference = () => activeUser?.preferences?.theme ?? 'system';
 

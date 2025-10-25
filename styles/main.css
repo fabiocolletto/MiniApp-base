@@ -4573,6 +4573,53 @@ main > .admin-design-kit {
   --card-border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
 }
 
+.user-dashboard__table-backdrop {
+  z-index: 45;
+}
+
+.user-dashboard__table-modal {
+  z-index: 50;
+}
+
+.user-dashboard__table-modal-panel {
+  width: min(96vw, 70rem);
+  max-height: min(88vh, 48rem);
+  display: grid;
+  gap: var(--panel-stack-gap);
+  padding: clamp(1rem, 3vw, 1.6rem);
+}
+
+.user-dashboard__table-header {
+  align-items: start;
+}
+
+.user-dashboard__table-title {
+  font-size: clamp(1rem, 1.2vw + 0.75rem, 1.35rem);
+}
+
+.user-dashboard__table-close {
+  min-width: auto;
+  padding-inline: clamp(0.6rem, 1.6vw, 1rem);
+  padding-block: clamp(0.35rem, 1.1vw, 0.6rem);
+}
+
+.user-dashboard__table-content {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 0.08rem rgba(var(--color-warm-rgb), 0.16);
+  overflow: hidden;
+}
+
+.user-dashboard__table-content .admin-user-table-container {
+  margin: 0;
+  max-height: min(74vh, 38rem);
+  overflow: auto;
+}
+
+.user-dashboard__table-content .admin-user-table {
+  width: 100%;
+  min-width: min(56rem, 100%);
+}
+
 .user-panel__widget-header {
   display: flex;
   align-items: center;
