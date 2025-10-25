@@ -23,4 +23,5 @@
 - Mantenha os títulos das seções exatamente como definidos para que o agente reconheça o fluxo.
 - Atualize listas adicionando novos itens ao final, preservando exemplos anteriores.
 - Sempre que remover uma ferramenta, mova o log para `Arquivados/` e descreva o motivo tanto aqui quanto no `Log.md`.
+- Ao retirar uma função do sistema, remova também o item correspondente da lista em "Conteúdo atual" para manter o inventário atualizado.
 - Evite duplicar instruções; referencie os logs específicos quando houver detalhes operacionais.
