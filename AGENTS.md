@@ -11,6 +11,10 @@
 - Mantenha o README atualizado apenas com informações aprovadas pelo usuário.
 - Priorize o reaproveitamento de estilos globais existentes. Caso um novo padrão visual seja indispensável, implemente-o como
   utilitário compartilhado para que futuros painéis, widgets ou miniapps possam reutilizá-lo.
+- Sempre que o usuário declarar que um trabalho deve começar na pasta `temp/`, crie (ou reutilize) a subpasta correspondente
+  dentro dela e mantenha todo o código, assets e documentação do trabalho em andamento restritos a esse local até que o
+  usuário solicite explicitamente a integração ao aplicativo principal. Somente após essa autorização mova ou copie os
+  artefatos para suas pastas definitivas.
 
 ## Requisitos do Aplicativo
 - O aplicativo deve ser responsivo, entregando uma experiência consistente em diferentes tamanhos de tela.
