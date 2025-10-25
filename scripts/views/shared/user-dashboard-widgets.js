@@ -203,16 +203,68 @@ export function createQuickActionsWidget({
   defaultExpanded = true,
   extraClasses = [],
   onToggle,
+  collapsible = true,
 }) {
   const baseClasses = ['user-dashboard__widget', ...extraClasses.filter(Boolean)];
-  const controls = createCollapsibleSection({
-    id,
-    title,
-    description,
-    defaultExpanded,
-    classes: baseClasses,
-    onToggle,
-  });
+  const controls = collapsible
+    ? createCollapsibleSection({
+        id,
+        title,
+        description,
+        defaultExpanded,
+        classes: baseClasses,
+        onToggle,
+      })
+    : (() => {
+        const section = document.createElement('section');
+        section.className = ['surface-card', 'user-panel__widget', ...baseClasses]
+          .filter(Boolean)
+          .join(' ');
+        section.dataset.sectionId = id;
+        section.dataset.sectionState = 'expanded';
+
+        const header = document.createElement('div');
+        header.className = 'user-panel__widget-header';
+
+        const titleElement = document.createElement('span');
+        titleElement.className = 'user-widget__title';
+        titleElement.textContent = title;
+        header.append(titleElement);
+        section.append(header);
+
+        const content = document.createElement('div');
+        content.className = 'user-panel__widget-content';
+
+        let descriptionElement = null;
+        if (description) {
+          descriptionElement = document.createElement('p');
+          descriptionElement.className = 'user-widget__description';
+          descriptionElement.textContent = description;
+          content.append(descriptionElement);
+        }
+
+        section.append(content);
+
+        const setSectionState = (state) => {
+          const normalized = state === 'empty' ? 'empty' : 'expanded';
+          section.dataset.sectionState = normalized;
+          content.hidden = false;
+          if (descriptionElement) {
+            descriptionElement.hidden = false;
+          }
+        };
+
+        return {
+          section,
+          header,
+          toggleButton: null,
+          content,
+          descriptionElement,
+          setSectionState,
+          setExpanded: () => {},
+          cleanup: () => {},
+        };
+      })();
 
   const actionsWrapper = document.createElement('div');
   actionsWrapper.className = 'user-dashboard__actions';
@@ -255,7 +307,8 @@ function createQuickActionsPreview() {
     description:
       'Atalhos para alternar entre tema claro e escuro mantendo a sessão sincronizada com o painel.',
     defaultExpanded: true,
-    extraClasses: ['user-dashboard__widget--theme'],
+    extraClasses: ['user-dashboard__widget--theme', 'user-dashboard__widget--quick-actions'],
+    collapsible: false,
   });
 
   [
@@ -280,7 +333,8 @@ function createQuickActionsPreview() {
     title: 'Sessão e acesso',
     description: 'Gerencie rapidamente sessão atual, troca de usuário e limpeza local.',
     defaultExpanded: true,
-    extraClasses: ['user-panel__widget--access'],
+    extraClasses: ['user-panel__widget--access', 'user-dashboard__widget--quick-actions'],
+    collapsible: false,
   });
 
   [

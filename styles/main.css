@@ -4582,8 +4582,14 @@ main > .admin-design-kit {
   padding-inline: 0.85rem;
 }
 
-.user-dashboard__widget { 
+.user-dashboard__widget {
   align-content: start;
+}
+
+.user-dashboard__widget--quick-actions {
+  --card-background: transparent;
+  --card-border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
+  --card-shadow: none;
 }
 
 .user-dashboard__widget--intro,

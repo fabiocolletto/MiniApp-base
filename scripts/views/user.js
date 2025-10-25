@@ -328,7 +328,8 @@ export function renderUserPanel(viewRoot) {
     description:
       'Alterne rapidamente entre tema claro e escuro e mantenha sua escolha sincronizada em todos os acessos.',
     defaultExpanded: true,
-    extraClasses: ['user-dashboard__widget--theme'],
+    extraClasses: ['user-dashboard__widget--theme', 'user-dashboard__widget--quick-actions'],
+    collapsible: false,
   });
   const themeActionList = themeSectionControls.actionList;
 
@@ -338,7 +339,8 @@ export function renderUserPanel(viewRoot) {
     description:
       'Gerencie a sessão rapidamente: faça logoff, troque de usuário ou remova os dados salvos deste dispositivo.',
     defaultExpanded: true,
-    extraClasses: ['user-panel__widget--access'],
+    extraClasses: ['user-panel__widget--access', 'user-dashboard__widget--quick-actions'],
+    collapsible: false,
   });
   const accessActionList = accessSectionControls.actionList;
 
