@@ -37,6 +37,7 @@ import {
   markActivityIdle,
   markActivityError,
 } from '../system/activity-indicator.js';
+import { lookupCep, normalizeCep } from '../utils/cep-service.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
@@ -93,6 +94,23 @@ function normalizeUserData(user) {
   const name = typeof user.name === 'string' ? user.name.trim() : '';
   const phone = typeof user.phone === 'string' ? user.phone.trim() : '';
   const profileEmail = typeof user?.profile?.email === 'string' ? user.profile.email.trim() : '';
+  const profileAddress = typeof user?.profile?.address === 'string' ? user.profile.address.trim() : '';
+  const profileAddressNumber =
+    typeof user?.profile?.addressNumber === 'string' ? user.profile.addressNumber.trim() : '';
+  const profileAddressComplement =
+    typeof user?.profile?.addressComplement === 'string' ? user.profile.addressComplement.trim() : '';
+  const profileAddressDistrict =
+    typeof user?.profile?.addressDistrict === 'string' ? user.profile.addressDistrict.trim() : '';
+  const profileAddressCity =
+    typeof user?.profile?.addressCity === 'string' ? user.profile.addressCity.trim() : '';
+  const profileAddressState =
+    typeof user?.profile?.addressState === 'string'
+      ? user.profile.addressState.trim().slice(0, 2).toUpperCase()
+      : '';
+  const profileAddressZip =
+    typeof user?.profile?.addressZip === 'string' ? normalizeCep(user.profile.addressZip).slice(0, 8) : '';
+  const profileAddressCountry =
+    typeof user?.profile?.addressCountry === 'string' ? user.profile.addressCountry.trim() : '';
 
   const createdAtRaw = user.createdAt instanceof Date ? user.createdAt : new Date(user.createdAt);
   const updatedAtRaw = user.updatedAt instanceof Date ? user.updatedAt : new Date(user.updatedAt);
@@ -112,7 +130,17 @@ function normalizeUserData(user) {
     id,
     name,
     phone,
-    profile: { email: profileEmail },
+    profile: {
+      email: profileEmail,
+      address: profileAddress,
+      addressNumber: profileAddressNumber,
+      addressComplement: profileAddressComplement,
+      addressDistrict: profileAddressDistrict,
+      addressCity: profileAddressCity,
+      addressState: profileAddressState,
+      addressZip: profileAddressZip,
+      addressCountry: profileAddressCountry,
+    },
     preferences: normalizePreferences(user.preferences),
     userType,
     createdAt,
@@ -367,13 +395,17 @@ export function renderUserPanel(viewRoot) {
 
   const summaryName = createSummaryItem('Nome completo');
   const summaryPhone = createSummaryItem('Telefone principal');
-  const summaryEmail = createSummaryItem('E-mail de contato');
+  const summaryEmail = createSummaryItem('E-mail principal');
+  const summaryAddress = createSummaryItem('Endereço principal');
+  const summaryZip = createSummaryItem('CEP');
   const summaryLastAccess = createSummaryItem('Último acesso');
 
   accountSummaryList.append(
     summaryName.wrapper,
     summaryPhone.wrapper,
     summaryEmail.wrapper,
+    summaryAddress.wrapper,
+    summaryZip.wrapper,
     summaryLastAccess.wrapper,
   );
   accountSummary.append(accountSummaryList);
@@ -430,6 +462,104 @@ export function renderUserPanel(viewRoot) {
           required: false,
         },
       },
+      {
+        key: 'addressZip',
+        size: 'compact',
+        input: {
+          id: 'user-dashboard-address-zip',
+          label: 'CEP',
+          type: 'text',
+          placeholder: '00000-000',
+          autocomplete: 'postal-code',
+          inputMode: 'numeric',
+          required: false,
+        },
+      },
+      {
+        key: 'address',
+        size: 'wide',
+        input: {
+          id: 'user-dashboard-address',
+          label: 'Logradouro',
+          type: 'text',
+          placeholder: 'Rua, avenida ou estrada',
+          autocomplete: 'address-line1',
+          required: false,
+        },
+      },
+      {
+        key: 'addressNumber',
+        size: 'compact',
+        input: {
+          id: 'user-dashboard-address-number',
+          label: 'Número',
+          type: 'text',
+          placeholder: '123',
+          autocomplete: 'address-line2',
+          inputMode: 'numeric',
+          required: false,
+        },
+      },
+      {
+        key: 'addressComplement',
+        size: 'wide',
+        input: {
+          id: 'user-dashboard-address-complement',
+          label: 'Complemento',
+          type: 'text',
+          placeholder: 'Apartamento, bloco ou referência',
+          autocomplete: 'address-line3',
+          required: false,
+        },
+      },
+      {
+        key: 'addressDistrict',
+        size: 'wide',
+        input: {
+          id: 'user-dashboard-address-district',
+          label: 'Bairro',
+          type: 'text',
+          placeholder: 'Bairro',
+          autocomplete: 'address-level3',
+          required: false,
+        },
+      },
+      {
+        key: 'addressCity',
+        size: 'wide',
+        input: {
+          id: 'user-dashboard-address-city',
+          label: 'Cidade',
+          type: 'text',
+          placeholder: 'Cidade',
+          autocomplete: 'address-level2',
+          required: false,
+        },
+      },
+      {
+        key: 'addressState',
+        size: 'compact',
+        input: {
+          id: 'user-dashboard-address-state',
+          label: 'UF',
+          type: 'text',
+          placeholder: 'UF',
+          autocomplete: 'address-level1',
+          required: false,
+        },
+      },
+      {
+        key: 'addressCountry',
+        size: 'compact',
+        input: {
+          id: 'user-dashboard-address-country',
+          label: 'País',
+          type: 'text',
+          placeholder: 'Brasil',
+          autocomplete: 'country-name',
+          required: false,
+        },
+      },
     ],
     extras: [],
   });
@@ -468,6 +598,14 @@ export function renderUserPanel(viewRoot) {
   const nameField = findFieldEntry('name').field;
   const phoneField = findFieldEntry('phone').field;
   const emailField = findFieldEntry('email').field;
+  const addressZipField = findFieldEntry('addressZip').field;
+  const addressField = findFieldEntry('address').field;
+  const addressNumberField = findFieldEntry('addressNumber').field;
+  const addressComplementField = findFieldEntry('addressComplement').field;
+  const addressDistrictField = findFieldEntry('addressDistrict').field;
+  const addressCityField = findFieldEntry('addressCity').field;
+  const addressStateField = findFieldEntry('addressState').field;
+  const addressCountryField = findFieldEntry('addressCountry').field;
 
   const themeWidget = themeSectionControls.section;
   const accessWidget = accessSectionControls.section;
@@ -525,14 +663,46 @@ export function renderUserPanel(viewRoot) {
   let activeUser = null;
   let userDataExpanded = false;
 
-  const nameInput = nameField.querySelector('input');
-  const phoneInput = phoneField.querySelector('input');
-  const emailInput = emailField.querySelector('input');
-  [nameInput, phoneInput, emailInput]
+  const nameInput = nameField?.querySelector('input');
+  const phoneInput = phoneField?.querySelector('input');
+  const emailInput = emailField?.querySelector('input');
+  const addressZipInput = addressZipField?.querySelector('input');
+  const addressInput = addressField?.querySelector('input');
+  const addressNumberInput = addressNumberField?.querySelector('input');
+  const addressComplementInput = addressComplementField?.querySelector('input');
+  const addressDistrictInput = addressDistrictField?.querySelector('input');
+  const addressCityInput = addressCityField?.querySelector('input');
+  const addressStateInput = addressStateField?.querySelector('input');
+  const addressCountryInput = addressCountryField?.querySelector('input');
+
+  const inputsSharingFeedback = [
+    nameInput,
+    phoneInput,
+    emailInput,
+    addressZipInput,
+    addressInput,
+    addressNumberInput,
+    addressComplementInput,
+    addressDistrictInput,
+    addressCityInput,
+    addressStateInput,
+    addressCountryInput,
+  ];
+
+  inputsSharingFeedback
     .filter((field) => field instanceof HTMLElement)
     .forEach((field) => {
       field.setAttribute('aria-describedby', feedbackElementId);
     });
+
+  if (addressZipInput instanceof HTMLElement) {
+    addressZipInput.setAttribute('maxlength', '9');
+  }
+
+  if (addressStateInput instanceof HTMLElement) {
+    addressStateInput.setAttribute('maxlength', '2');
+    addressStateInput.setAttribute('autocapitalize', 'characters');
+  }
 
   const ACTIVITY_SOURCE = 'user-panel';
   const activityLabels = {
@@ -551,6 +721,97 @@ export function renderUserPanel(viewRoot) {
   };
 
   let hasPendingChanges = false;
+  let cepLookupController = null;
+
+  const ADDRESS_PROFILE_KEYS = [
+    'addressZip',
+    'address',
+    'addressNumber',
+    'addressComplement',
+    'addressDistrict',
+    'addressCity',
+    'addressState',
+    'addressCountry',
+  ];
+
+  const PROFILE_FIELD_KEYS = ['email', ...ADDRESS_PROFILE_KEYS];
+
+  const profileInputs = {
+    email: emailInput,
+    addressZip: addressZipInput,
+    address: addressInput,
+    addressNumber: addressNumberInput,
+    addressComplement: addressComplementInput,
+    addressDistrict: addressDistrictInput,
+    addressCity: addressCityInput,
+    addressState: addressStateInput,
+    addressCountry: addressCountryInput,
+  };
+
+  const formatCepForDisplay = (value) => {
+    const digits = normalizeCep(typeof value === 'string' ? value : '');
+    if (digits.length > 5) {
+      return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
+    }
+    return digits;
+  };
+
+  const sanitizeProfileValue = (key, value) => {
+    if (typeof value !== 'string') {
+      return '';
+    }
+
+    const trimmed = value.trim();
+
+    if (key === 'addressZip') {
+      return normalizeCep(trimmed).slice(0, 8);
+    }
+
+    if (key === 'addressState') {
+      return trimmed.slice(0, 2).toUpperCase();
+    }
+
+    return trimmed.slice(0, 240);
+  };
+
+  const getStoredProfileValue = (key) => {
+    const value = activeUser?.profile?.[key];
+    return typeof value === 'string' ? value : '';
+  };
+
+  const getSanitizedInputValue = (key) => {
+    const input = profileInputs[key];
+    if (!input || typeof input.value !== 'string') {
+      return '';
+    }
+
+    return sanitizeProfileValue(key, input.value);
+  };
+
+  const collectProfileUpdatesFromInputs = (keys = PROFILE_FIELD_KEYS) => {
+    const updates = {};
+
+    keys.forEach((key) => {
+      const sanitized = getSanitizedInputValue(key);
+      if (sanitized !== getStoredProfileValue(key)) {
+        updates[key] = sanitized;
+      }
+    });
+
+    return updates;
+  };
+
+  const applyProfileDisplayFormatting = () => {
+    if (addressZipInput instanceof HTMLElement) {
+      const cep = getStoredProfileValue('addressZip') || getSanitizedInputValue('addressZip');
+      addressZipInput.value = formatCepForDisplay(cep);
+    }
+
+    if (addressStateInput instanceof HTMLElement) {
+      const stateValue = getStoredProfileValue('addressState') || getSanitizedInputValue('addressState');
+      addressStateInput.value = sanitizeProfileValue('addressState', stateValue);
+    }
+  };
 
   const computeDirtyState = () => {
     if (!activeUser) {
@@ -570,6 +831,10 @@ export function renderUserPanel(viewRoot) {
     }
 
     if (emailInput && emailInput.value.trim() !== (activeUser.profile?.email ?? '').trim()) {
+      return true;
+    }
+
+    if (Object.keys(collectProfileUpdatesFromInputs()).length > 0) {
       return true;
     }
 
@@ -620,7 +885,7 @@ export function renderUserPanel(viewRoot) {
     refreshDirtyFlag({ allowIdle: true, force: true });
   };
 
-  [nameInput, phoneInput, emailInput]
+  inputsSharingFeedback
     .filter((field) => field instanceof HTMLElement)
     .forEach((field) => {
       field.addEventListener('input', handleFieldInput);
@@ -860,6 +1125,31 @@ export function renderUserPanel(viewRoot) {
       summaryEmail.valueElement.textContent = user?.profile?.email ? user.profile.email : fallback;
     }
 
+    if (summaryAddress.valueElement) {
+      const profile = user?.profile ?? {};
+      const lines = [];
+
+      if (profile.address) {
+        const numberSegment = profile.addressNumber ? `, ${profile.addressNumber}` : '';
+        const complementSegment = profile.addressComplement ? ` (${profile.addressComplement})` : '';
+        lines.push(`${profile.address}${numberSegment}${complementSegment}`.trim());
+      }
+
+      const district = profile.addressDistrict ? profile.addressDistrict : '';
+      const cityStateParts = [profile.addressCity, profile.addressState].filter(Boolean).join('/');
+      const locality = [district, cityStateParts].filter(Boolean).join(' · ');
+      if (locality) {
+        lines.push(locality);
+      }
+
+      summaryAddress.valueElement.textContent = lines.length > 0 ? lines.join(' • ') : fallback;
+    }
+
+    if (summaryZip.valueElement) {
+      const cep = user?.profile?.addressZip;
+      summaryZip.valueElement.textContent = cep ? formatCepForDisplay(cep) : fallback;
+    }
+
     if (summaryLastAccess.valueElement) {
       summaryLastAccess.valueElement.textContent = user?.lastAccessAt
         ? formatDateTime(user.lastAccessAt)
@@ -898,7 +1188,7 @@ export function renderUserPanel(viewRoot) {
   };
 
   const clearFieldValidity = () => {
-    [phoneInput]
+    [phoneInput, addressZipInput]
       .filter((field) => field instanceof HTMLElement)
       .forEach((field) => {
         field.removeAttribute('aria-invalid');
@@ -1191,8 +1481,18 @@ export function renderUserPanel(viewRoot) {
       activeUser.phone = updates.phone;
     }
 
-    if (updates.profile?.email !== undefined) {
-      activeUser.profile.email = updates.profile.email ?? '';
+    if (updates.profile) {
+      if (!activeUser.profile || typeof activeUser.profile !== 'object') {
+        activeUser.profile = {};
+      }
+
+      Object.entries(updates.profile).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          activeUser.profile[key] = value;
+        } else if (value == null) {
+          activeUser.profile[key] = '';
+        }
+      });
     }
 
     if (updates.preferences?.theme) {
@@ -1328,31 +1628,175 @@ export function renderUserPanel(viewRoot) {
     }
   };
 
+  const persistProfileFields = async (
+    keys,
+    { successMessage, showNoChangesFeedback = false, busyTargets: overrideBusyTargets } = {},
+  ) => {
+    if (!activeUser) {
+      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
+      markActivityError({
+        source: ACTIVITY_SOURCE,
+        message: activityLabels.missingSessionMessage,
+        details: activityLabels.missingSessionDetails,
+      });
+      hasPendingChanges = false;
+      return { status: 'no-session' };
+    }
+
+    const profileUpdates = collectProfileUpdatesFromInputs(keys);
+
+    if (Object.keys(profileUpdates).length === 0) {
+      if (showNoChangesFeedback) {
+        showFeedback('Nenhuma alteração para salvar.', { isError: false });
+      }
+      refreshDirtyFlag({ allowIdle: true, force: true });
+      return { status: 'no-changes' };
+    }
+
+    const busyTargets = Array.isArray(overrideBusyTargets) && overrideBusyTargets.length > 0
+      ? overrideBusyTargets.filter((element) => element instanceof HTMLElement)
+      : keys.map((key) => profileInputs[key]).filter((element) => element instanceof HTMLElement);
+
+    return persistUpdates(
+      { profile: profileUpdates },
+      {
+        successMessage: successMessage ?? 'Alterações salvas com sucesso!',
+        busyTargets,
+      },
+    );
+  };
+
   const handleEmailChange = async () => {
     if (!emailInput) {
       return;
     }
 
-    if (!activeUser) {
-      showFeedback('Nenhuma sessão ativa. Faça login para continuar.', { isError: true });
-      return;
-    }
-
-    const nextEmail = emailInput.value.trim();
-    if (nextEmail === (activeUser.profile?.email ?? '')) {
+    const nextEmail = getSanitizedInputValue('email');
+    if (nextEmail === (activeUser?.profile?.email ?? '')) {
       resetFeedback();
       updateSummary();
       refreshDirtyFlag({ allowIdle: true, force: true });
+      emailInput.value = nextEmail;
       return;
     }
 
-    await persistUpdates(
-      { profile: { email: nextEmail } },
-      {
-        successMessage: 'E-mail atualizado com sucesso!',
-        busyTargets: [emailInput].filter((element) => element instanceof HTMLElement),
-      },
-    );
+    await persistProfileFields(['email'], {
+      successMessage: 'E-mail atualizado com sucesso!',
+      busyTargets: [emailInput],
+    });
+  };
+
+  const handleAddressChange = async () => {
+    const result = await persistProfileFields(ADDRESS_PROFILE_KEYS, {
+      successMessage: 'Endereço atualizado com sucesso!',
+    });
+
+    if (result.status === 'success') {
+      return;
+    }
+
+    applyProfileDisplayFormatting();
+  };
+
+  const handleCepChange = async () => {
+    if (!(addressZipInput instanceof HTMLElement)) {
+      return;
+    }
+
+    const sanitizedCep = sanitizeProfileValue('addressZip', addressZipInput.value);
+    addressZipInput.value = formatCepForDisplay(sanitizedCep);
+
+    if (!sanitizedCep) {
+      addressZipInput.removeAttribute('aria-invalid');
+      applyProfileDisplayFormatting();
+      await persistProfileFields(['addressZip'], {
+        successMessage: 'CEP removido com sucesso!',
+        busyTargets: [addressZipInput],
+      });
+      return;
+    }
+
+    if (sanitizedCep.length !== 8) {
+      addressZipInput.setAttribute('aria-invalid', 'true');
+      showFeedback('Informe um CEP válido com 8 dígitos.', { isError: true });
+      return;
+    }
+
+    if (cepLookupController) {
+      try {
+        cepLookupController.abort();
+      } catch (error) {
+        // Ignora navegadores sem suporte a abortar requisições.
+      }
+    }
+
+    const controller = new AbortController();
+    cepLookupController = controller;
+
+    addressZipInput.removeAttribute('aria-invalid');
+    addressZipInput.setAttribute('aria-busy', 'true');
+
+    try {
+      const result = await lookupCep(sanitizedCep, { signal: controller.signal });
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (result.status === 'success') {
+        const { address } = result;
+
+        if (addressInput instanceof HTMLElement && address.street) {
+          addressInput.value = address.street;
+        }
+
+        if (addressDistrictInput instanceof HTMLElement && address.district) {
+          addressDistrictInput.value = address.district;
+        }
+
+        if (addressCityInput instanceof HTMLElement && address.city) {
+          addressCityInput.value = address.city;
+        }
+
+        if (addressStateInput instanceof HTMLElement && address.state) {
+          addressStateInput.value = sanitizeProfileValue('addressState', address.state);
+        }
+
+        await persistProfileFields(ADDRESS_PROFILE_KEYS, {
+          successMessage: 'Endereço carregado a partir do CEP!',
+          busyTargets: [
+            addressZipInput,
+            addressInput,
+            addressDistrictInput,
+            addressCityInput,
+            addressStateInput,
+          ],
+        });
+        return;
+      }
+
+      if (result.status === 'not-found') {
+        addressZipInput.setAttribute('aria-invalid', 'true');
+        showFeedback('CEP não encontrado. Verifique o número e tente novamente.', { isError: true });
+        return;
+      }
+
+      if (result.status !== 'aborted') {
+        addressZipInput.setAttribute('aria-invalid', 'true');
+        showFeedback('Não foi possível consultar o CEP. Tente novamente.', { isError: true });
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        addressZipInput.setAttribute('aria-invalid', 'true');
+        showFeedback('Não foi possível consultar o CEP. Tente novamente.', { isError: true });
+      }
+    } finally {
+      if (cepLookupController === controller) {
+        cepLookupController = null;
+      }
+      addressZipInput.removeAttribute('aria-busy');
+      applyProfileDisplayFormatting();
+    }
   };
 
   const persistAllFields = async ({ showNoChangesFeedback = true } = {}) => {
@@ -1368,7 +1812,6 @@ export function renderUserPanel(viewRoot) {
     }
 
     const updates = {};
-    const profileUpdates = {};
 
     if (nameInput) {
       const nextName = nameInput.value.trim();
@@ -1398,13 +1841,7 @@ export function renderUserPanel(viewRoot) {
       }
     }
 
-    if (emailInput) {
-      const nextEmail = emailInput.value.trim();
-      if (nextEmail !== (activeUser.profile?.email ?? '')) {
-        profileUpdates.email = nextEmail;
-      }
-    }
-
+    const profileUpdates = collectProfileUpdatesFromInputs();
     if (Object.keys(profileUpdates).length > 0) {
       updates.profile = profileUpdates;
     }
@@ -1417,7 +1854,7 @@ export function renderUserPanel(viewRoot) {
       return { status: 'no-changes' };
     }
 
-    const busyTargets = [nameInput, phoneInput, emailInput].filter((element) => element instanceof HTMLElement);
+    const busyTargets = inputsSharingFeedback.filter((element) => element instanceof HTMLElement);
 
     return persistUpdates(updates, {
       successMessage: 'Alterações salvas com sucesso!',
@@ -1453,6 +1890,41 @@ export function renderUserPanel(viewRoot) {
     cleanupCallbacks.push(() => emailInput.removeEventListener('change', handleEmailChange));
   }
 
+  ADDRESS_PROFILE_KEYS.forEach((key) => {
+    if (key === 'addressZip') {
+      return;
+    }
+
+    const input = profileInputs[key];
+    if (!(input instanceof HTMLElement)) {
+      return;
+    }
+
+    input.addEventListener('change', handleAddressChange);
+    cleanupCallbacks.push(() => input.removeEventListener('change', handleAddressChange));
+  });
+
+  if (addressStateInput instanceof HTMLElement) {
+    const handleStateInputFormat = () => {
+      addressStateInput.value = sanitizeProfileValue('addressState', addressStateInput.value);
+    };
+
+    addressStateInput.addEventListener('input', handleStateInputFormat);
+    cleanupCallbacks.push(() => addressStateInput.removeEventListener('input', handleStateInputFormat));
+  }
+
+  if (addressZipInput instanceof HTMLElement) {
+    const handleCepBlur = () => {
+      addressZipInput.value = formatCepForDisplay(addressZipInput.value);
+    };
+
+    addressZipInput.addEventListener('change', handleCepChange);
+    cleanupCallbacks.push(() => addressZipInput.removeEventListener('change', handleCepChange));
+
+    addressZipInput.addEventListener('blur', handleCepBlur);
+    cleanupCallbacks.push(() => addressZipInput.removeEventListener('blur', handleCepBlur));
+  }
+
   const unsubscribeThemeListener = subscribeThemeChange(() => {
     updateThemeActionContent();
   });
@@ -1482,10 +1954,51 @@ export function renderUserPanel(viewRoot) {
       emailInput.disabled = !isEnabled;
     }
 
+    if (addressZipInput) {
+      addressZipInput.value = user?.profile?.addressZip ?? '';
+      addressZipInput.disabled = !isEnabled;
+    }
+
+    if (addressInput) {
+      addressInput.value = user?.profile?.address ?? '';
+      addressInput.disabled = !isEnabled;
+    }
+
+    if (addressNumberInput) {
+      addressNumberInput.value = user?.profile?.addressNumber ?? '';
+      addressNumberInput.disabled = !isEnabled;
+    }
+
+    if (addressComplementInput) {
+      addressComplementInput.value = user?.profile?.addressComplement ?? '';
+      addressComplementInput.disabled = !isEnabled;
+    }
+
+    if (addressDistrictInput) {
+      addressDistrictInput.value = user?.profile?.addressDistrict ?? '';
+      addressDistrictInput.disabled = !isEnabled;
+    }
+
+    if (addressCityInput) {
+      addressCityInput.value = user?.profile?.addressCity ?? '';
+      addressCityInput.disabled = !isEnabled;
+    }
+
+    if (addressStateInput) {
+      addressStateInput.value = user?.profile?.addressState ?? '';
+      addressStateInput.disabled = !isEnabled;
+    }
+
+    if (addressCountryInput) {
+      addressCountryInput.value = user?.profile?.addressCountry ?? '';
+      addressCountryInput.disabled = !isEnabled;
+    }
+
     if (!isEnabled) {
       userDataExpanded = false;
     }
 
+    applyProfileDisplayFormatting();
     updateSummary();
     updateUserDataViewState();
     refreshDirtyFlag({ allowIdle: allowIdleReset, force: true });
