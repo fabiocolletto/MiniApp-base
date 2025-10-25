@@ -73,6 +73,8 @@ export class FakeElement {
     this.disabled = false;
     this.textContent = '';
     this.value = '';
+    this.checked = false;
+    this.selectedIndex = -1;
     this.style = {};
     this._className = '';
     this.classList = new FakeClassList(this);
@@ -124,6 +126,44 @@ export class FakeElement {
     });
     this.children = [];
     this.append(...nodes);
+  }
+
+  get childElementCount() {
+    return this.children.reduce((count, child) => {
+      if (child instanceof FakeElement && child.tagName !== '#TEXT') {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+  }
+
+  reset() {
+    if (this.tagName !== 'FORM') {
+      return;
+    }
+
+    const resetElement = (element) => {
+      if (!(element instanceof FakeElement)) {
+        return;
+      }
+
+      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+        element.value = '';
+        if ('checked' in element) {
+          element.checked = false;
+        }
+      } else if (element.tagName === 'SELECT') {
+        element.value = '';
+        const optionIndex = element.children.findIndex(
+          (child) => child instanceof FakeElement && child.tagName === 'OPTION',
+        );
+        element.selectedIndex = optionIndex === -1 ? (element.children.length > 0 ? 0 : -1) : optionIndex;
+      }
+
+      element.children.forEach((child) => resetElement(child));
+    };
+
+    resetElement(this);
   }
 
   setAttribute(name, value) {
