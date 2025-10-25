@@ -444,15 +444,37 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
   );
   assert.ok(layout, 'layout principal não foi renderizado');
-  assert.equal(layout.children.length, 7, 'o painel deve renderizar cinco widgets principais mais a sobreposição');
+  assert.equal(
+    layout.children.length,
+    8,
+    'o painel deve renderizar seis widgets principais mais a sobreposição',
+  );
 
-  const [introWidget, labelWidget, themeWidget, accessWidget, userDataWidget] = layout.children;
-  const userTableBackdrop = layout.children[5];
-  const userTableModal = layout.children[6];
+  const [introWidget, labelWidget, taskSummaryWidget, themeWidget, accessWidget, userDataWidget] =
+    layout.children;
+  const userTableBackdrop = layout.children[6];
+  const userTableModal = layout.children[7];
   assert.ok(
     introWidget instanceof FakeElement && introWidget.classList.contains('user-dashboard__widget--intro'),
     'o widget de introdução deve abrir a primeira linha do painel',
   );
+  assert.ok(
+    taskSummaryWidget instanceof FakeElement &&
+      taskSummaryWidget.classList.contains('user-dashboard__widget--tasks'),
+    'o widget de resumo de tarefas deve ocupar a terceira posição do painel',
+  );
+  assert.equal(
+    taskSummaryWidget.dataset.summaryState,
+    'loading',
+    'o resumo de tarefas deve iniciar em estado de carregamento',
+  );
+  const taskSummaryLink = findElement(
+    taskSummaryWidget,
+    (node) =>
+      node instanceof FakeElement && node.classList.contains('user-dashboard__task-summary-link'),
+  );
+  assert.ok(taskSummaryLink, 'o resumo de tarefas deve expor um atalho para abrir o painel completo');
+
   assert.ok(
     labelWidget instanceof FakeElement && labelWidget.classList.contains('user-dashboard__widget--label'),
     'o widget de etiqueta deve acompanhar a introdução na primeira linha do painel',
@@ -751,9 +773,9 @@ test('aba Dados pessoais abre a sobreposição de edição quando há sessão at
   );
   assert.ok(layout, 'layout principal não foi renderizado');
 
-  const userDataWidget = layout.children[4];
-  const userTableBackdrop = layout.children[5];
-  const userTableModal = layout.children[6];
+  const userDataWidget = layout.children[5];
+  const userTableBackdrop = layout.children[6];
+  const userTableModal = layout.children[7];
 
   assert.equal(
     userDataWidget.dataset.sectionState,

@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.240 - 2025-10-25 18:58 BRT
+- Adiciona ao painel do usuário um widget de resumo das tarefas com indicadores dinâmicos e atalho para o painel dedicado.
+- Compartilha os dados padrão do painel de tarefas em módulo próprio para reutilização entre views e seeds automáticos.
+- Ajusta os testes e estilos do painel do usuário para contemplar o novo widget e manter a grade alinhada.
+
 ## v0.1.239 - 2025-10-25 16:45 BRT
 - Impede que o seed do painel de tarefas repovoe os registros padrão após excluir todos os itens, usando marcador persistente no store.
 - Atualiza a versão do sistema para refletir a release v0.1.239 publicada às 16h45 em BRT.

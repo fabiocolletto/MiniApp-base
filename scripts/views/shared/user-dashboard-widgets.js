@@ -205,6 +205,180 @@ export function createUserDashboardLabelWidget({
   return widget;
 }
 
+export function createUserDashboardTaskSummaryWidget({
+  onNavigate,
+  title = 'Resumo de tarefas',
+  description = 'Acompanhe o andamento geral e abra o painel completo para ver todos os detalhes.',
+  linkLabel = 'Abrir painel de tarefas',
+} = {}) {
+  const HTMLElementRef = typeof HTMLElement === 'undefined' ? null : HTMLElement;
+
+  const widget = buildTransparentWidget(['user-dashboard__widget--tasks']);
+  widget.dataset.summaryState = 'loading';
+
+  const titleElement = document.createElement('h2');
+  titleElement.className = 'user-widget__title';
+  titleElement.textContent = title;
+
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'user-widget__description';
+  descriptionElement.textContent = description;
+
+  const summaryWrapper = document.createElement('div');
+  summaryWrapper.className = 'user-dashboard__summary user-dashboard__task-summary';
+
+  const summaryList = document.createElement('dl');
+  summaryList.className = 'user-dashboard__summary-list user-dashboard__summary-list--tasks';
+  summaryList.setAttribute('aria-label', 'Indicadores consolidados do painel de tarefas');
+
+  const summaryItems = [
+    { key: 'total', label: 'Planejadas' },
+    { key: 'inProgress', label: 'Em andamento' },
+    { key: 'completed', label: 'Concluídas' },
+    { key: 'blocked', label: 'Bloqueadas' },
+  ];
+
+  const summaryValues = new Map();
+
+  summaryItems.forEach(({ key, label }) => {
+    const entry = createSummaryEntry(label, '—');
+    if (HTMLElementRef && !(entry instanceof HTMLElementRef)) {
+      return;
+    }
+    const valueElement = entry?.querySelector?.('.user-dashboard__summary-value') ?? null;
+    if (!HTMLElementRef || valueElement instanceof HTMLElementRef) {
+      summaryValues.set(key, valueElement);
+    }
+    if (entry) {
+      summaryList.append(entry);
+    }
+  });
+
+  summaryWrapper.append(summaryList);
+
+  const helperElement = document.createElement('p');
+  helperElement.className = 'user-dashboard__task-summary-helper';
+  helperElement.textContent = 'Carregando resumo do painel de tarefas...';
+
+  const linkButton = document.createElement('button');
+  linkButton.type = 'button';
+  linkButton.className = 'button button--secondary user-dashboard__task-summary-link';
+  linkButton.textContent = linkLabel;
+  linkButton.setAttribute('aria-label', linkLabel);
+
+  let navigateCleanup = () => {};
+  if (typeof onNavigate === 'function') {
+    const handleNavigate = (event) => {
+      if (typeof event?.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      onNavigate();
+    };
+    linkButton.addEventListener('click', handleNavigate);
+    navigateCleanup = () => {
+      linkButton.removeEventListener('click', handleNavigate);
+    };
+  }
+
+  widget.append(titleElement, descriptionElement, summaryWrapper, helperElement, linkButton);
+
+  const numberFormatter = new Intl.NumberFormat('pt-BR');
+  let latestSummary = null;
+  let currentState = 'loading';
+
+  const formatNumber = (value) => {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+    return numberFormatter.format(value);
+  };
+
+  const updateHelper = () => {
+    if (!latestSummary || currentState === 'loading') {
+      helperElement.textContent = 'Carregando resumo do painel de tarefas...';
+      return;
+    }
+
+    if (currentState === 'error') {
+      helperElement.textContent =
+        'Não foi possível carregar o resumo de tarefas. Abra o painel completo para tentar novamente.';
+      return;
+    }
+
+    if (!Number.isFinite(latestSummary.total) || latestSummary.total <= 0 || currentState === 'empty') {
+      helperElement.textContent = 'Nenhuma tarefa cadastrada ainda.';
+      return;
+    }
+
+    const pieces = [];
+    const active = Number.isFinite(latestSummary.active) ? latestSummary.active : 0;
+    const dueSoon = Number.isFinite(latestSummary.dueSoon) ? latestSummary.dueSoon : 0;
+
+    pieces.push(`${formatNumber(active)} ativas`);
+    pieces.push(dueSoon > 0 ? `${formatNumber(dueSoon)} próximas entregas` : 'Sem entregas urgentes');
+
+    helperElement.textContent = pieces.join(' • ');
+  };
+
+  const setSummary = (summary) => {
+    latestSummary = {
+      total: Number(summary?.total) || 0,
+      inProgress: Number(summary?.inProgress) || 0,
+      completed: Number(summary?.completed) || 0,
+      blocked: Number(summary?.blocked) || 0,
+      active: Number(summary?.active) || 0,
+      dueSoon: Number(summary?.dueSoon) || 0,
+    };
+
+    summaryValues.forEach((valueElement, key) => {
+      if (valueElement && (!HTMLElementRef || valueElement instanceof HTMLElementRef)) {
+        if (key in latestSummary) {
+          valueElement.textContent = formatNumber(latestSummary[key]);
+        }
+      }
+    });
+
+    updateHelper();
+  };
+
+  const setState = (state) => {
+    const normalized = typeof state === 'string' ? state.trim().toLowerCase() : 'loading';
+    currentState = ['ready', 'empty', 'error', 'loading'].includes(normalized) ? normalized : 'loading';
+    widget.dataset.summaryState = currentState;
+
+    if (currentState === 'loading') {
+      summaryList.setAttribute('aria-busy', 'true');
+    } else {
+      summaryList.removeAttribute('aria-busy');
+    }
+
+    if (currentState === 'error') {
+      summaryList.setAttribute('aria-hidden', 'true');
+    } else {
+      summaryList.removeAttribute('aria-hidden');
+    }
+
+    updateHelper();
+  };
+
+  setSummary({ total: 0, inProgress: 0, completed: 0, blocked: 0, active: 0, dueSoon: 0 });
+  setState('loading');
+
+  const cleanup = () => {
+    navigateCleanup();
+  };
+
+  return {
+    section: widget,
+    link: linkButton,
+    helperElement,
+    summaryList,
+    setSummary,
+    setState,
+    cleanup,
+  };
+}
+
 export function createCollapsibleSection({
   id,
   title,
