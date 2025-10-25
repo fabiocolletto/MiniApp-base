@@ -1300,7 +1300,7 @@ export function renderTaskDashboard(viewRoot) {
     }
 
     form.hidden = false;
-    addButton.setAttribute('aria-expanded', mode === 'create' ? 'true' : 'false');
+    addButton.setAttribute('aria-expanded', 'true');
     if (mode !== 'edit' && typeof fields.title.focus === 'function') {
       try {
         fields.title.focus();
@@ -1434,7 +1434,7 @@ export function renderTaskDashboard(viewRoot) {
 
   function handleAddTaskClick(event) {
     event.preventDefault();
-    if (!form.hidden && form.dataset.mode === 'create') {
+    if (!form.hidden) {
       hideTaskForm();
       return;
     }

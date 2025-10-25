@@ -1,5 +1,14 @@
 # Log
 
+## v0.1.238 - 2025-10-25 16:29 BRT
+- Adiciona testes automatizados garantindo que o formulário do painel de tarefas só apareça ao criar ou editar itens e volte a
+  ficar oculto ao cancelar.
+- Atualiza a implementação do DOM falso de testes para suportar reset de formulários, permitindo simular os fluxos do painel.
+
+## v0.1.237 - 2025-10-25 16:22 BRT
+- Ajusta o painel de tarefas para manter o formulário oculto por padrão e fechá-lo ao alternar o botão "Nova tarefa" quando não houver criação ou edição ativa.
+- Corrige o estado `aria-expanded` do botão de nova tarefa para indicar quando o formulário está visível em fluxos de criação e edição.
+
 ## v0.1.236 - 2025-10-25 15:57 BRT
 - Ajusta o painel de tarefas para exibir o formulário de criação apenas ao acionar o botão "Nova tarefa", com estados ARIA atualizados.
 - Assegura que o formulário oculto permaneça invisível aplicando regra específica de CSS.
