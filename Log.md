@@ -1,9 +1,10 @@
 # Log
 
-## v0.1.228 - 2025-10-25 09:20 BRT
+## v0.1.228 - 2025-10-25 06:35 BRT
 - Externaliza os tokens globais para `styles/tokens.css`, abrindo espaço para reutilização centralizada das variáveis de tema.
 - Recalibra os widgets introdutório e de etiqueta do painel do usuário com tokens dedicados para gap, padding e altura mínima ampliada.
 - Atualiza os metadados do sistema para comunicar a release v0.1.228 no rodapé e demais indicadores do painel.
+- Ajusta os widgets de tema e de sessão do painel do usuário com fundo transparente, borda discreta e conteúdo sempre visível.
 
 ## v0.1.227 - 2025-10-25 06:02 BRT
 - Amplia os widgets introdutório e de etiqueta do painel do usuário para oferecer mais altura útil e dar destaque suave ao primeiro bloco da grade.

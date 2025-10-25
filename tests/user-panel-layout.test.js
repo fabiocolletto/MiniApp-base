@@ -455,7 +455,11 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(themeWidgetElement, 'widget de preferências de tema não foi renderizado');
 
   const themeAccordionToggle = themeWidgetElement.querySelector('.user-panel__section-toggle');
-  assert.ok(themeAccordionToggle, 'o widget de tema deve expor controle de acordeão');
+  assert.equal(
+    themeAccordionToggle,
+    null,
+    'o widget de tema deve manter as ações visíveis sem controles de acordeão',
+  );
 
   const actionList = themeWidgetElement.querySelector('.user-dashboard__action-list');
   assert.ok(actionList, 'a lista de ações rápidas deve estar visível no widget de tema');
@@ -523,6 +527,12 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
 
   const accessWidgetElement = accessWidget;
   assert.ok(accessWidgetElement, 'widget de controle de acesso não foi renderizado');
+  const accessAccordionToggle = accessWidgetElement.querySelector('.user-panel__section-toggle');
+  assert.equal(
+    accessAccordionToggle,
+    null,
+    'o widget de sessão e acesso deve manter as ações visíveis sem controles de acordeão',
+  );
   assert.equal(
     accessWidgetElement.dataset.state,
     'empty',
