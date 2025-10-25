@@ -1,5 +1,14 @@
 # Log
 
+## v0.1.229 - 2025-10-25 07:14 BRT
+- Organiza os utilitários do sistema criando a pasta `sys/tools` para concentrar integrações reutilizáveis.
+- Implementa a função `fetchCep` consultando a API ViaCEP e retornando os campos normalizados para reutilização nos painéis.
+- Documenta `sys/` e seus subdiretórios com READMEs descrevendo conteúdos, limites e orientações de uso das ferramentas.
+- Cria logs dedicados para cada ferramenta em `sys/tools`, iniciando o histórico do utilitário de CEP.
+- Revisa os READMEs de `sys/` e `sys/tools/` detalhando como agentes devem usar e preservar as páginas e seus registros.
+- Atualiza o log da ferramenta de CEP com orientações de manutenção para o histórico e requisitos expostos ao shell.
+- Ajusta o `AGENTS.md` para referenciar as instruções de uso e preservação já documentadas nos READMEs do `sys/` sem duplicá-las.
+
 ## v0.1.228 - 2025-10-25 06:35 BRT
 - Externaliza os tokens globais para `styles/tokens.css`, abrindo espaço para reutilização centralizada das variáveis de tema.
 - Recalibra os widgets introdutório e de etiqueta do painel do usuário com tokens dedicados para gap, padding e altura mínima ampliada.
