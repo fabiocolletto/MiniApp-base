@@ -1,4 +1,4 @@
-import { getUsers, subscribeUsers } from './user-store.js';
+import { getUsers, subscribeUsers, updateUser as updateUserRecord } from './user-store.js';
 import { setSessionState as persistGlobalSessionState } from '../../core/account-store.js';
 import eventBus from '../events/event-bus.js';
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
@@ -112,6 +112,23 @@ let activeUserId = null;
 let usersSnapshot = getUsers();
 let hasLoadedFromStorage = false;
 let hasSyncedUsers = false;
+
+function markUserLastAccess(userId) {
+  if (userId == null) {
+    return;
+  }
+
+  try {
+    const promise = updateUserRecord(userId, { lastAccessAt: new Date() });
+    if (promise && typeof promise.catch === 'function') {
+      promise.catch((error) => {
+        console.error('Não foi possível registrar o último acesso do usuário ativo.', error);
+      });
+    }
+  } catch (error) {
+    console.error('Não foi possível registrar o último acesso do usuário ativo.', error);
+  }
+}
 
 function getStorage() {
   if (typeof window === 'undefined') {
@@ -289,6 +306,7 @@ function updateActiveUserId(newId) {
   activeUserId = numericId;
   writePersistedUserId(numericId);
   persistGlobalSession(numericId);
+  markUserLastAccess(numericId);
   notifySessionListeners();
 }
 

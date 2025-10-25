@@ -85,6 +85,7 @@ export function normalizeSystemUser(user) {
     userType,
     device,
     createdAt: user.createdAt,
+    lastAccessAt: user.lastAccessAt,
     updatedAt: user.updatedAt,
     profile: {
       email: profileEmail,
@@ -125,6 +126,7 @@ const DEFAULT_COLUMNS = [
   { label: 'Nome', className: 'admin-user-table__head-cell admin-user-table__head-cell--name' },
   { label: 'Telefone', className: 'admin-user-table__head-cell' },
   { label: 'Tipo', className: 'admin-user-table__head-cell' },
+  { label: 'Último acesso', className: 'admin-user-table__head-cell' },
   { label: 'Atualizado em', className: 'admin-user-table__head-cell' },
   {
     label: 'Ações',
@@ -152,6 +154,7 @@ function createDefaultDetails(user) {
     ['Dispositivo reconhecido', user.device || '—'],
     ['Preferência de tema', formatThemePreference(user.preferences.theme)],
     ['Criado em', formatDateTime(user.createdAt)],
+    ['Último acesso', formatDateTime(user.lastAccessAt)],
     ['Atualizado em', formatDateTime(user.updatedAt)],
   ]
     .map(([term, value]) => createDefinitionItem(term, value))
@@ -269,6 +272,10 @@ export function createSystemUsersWidget({
       typeCell.className = 'admin-user-table__cell admin-user-table__cell--type';
       typeCell.textContent = formatUserType(user.userType);
 
+      const lastAccessCell = document.createElement('td');
+      lastAccessCell.className = 'admin-user-table__cell';
+      lastAccessCell.textContent = formatDateTime(user.lastAccessAt);
+
       const updatedCell = document.createElement('td');
       updatedCell.className = 'admin-user-table__cell';
       updatedCell.textContent = formatDateTime(user.updatedAt);
@@ -298,7 +305,7 @@ export function createSystemUsersWidget({
 
       actionCell.append(toggleButton);
 
-      row.append(nameCell, phoneCell, typeCell, updatedCell, actionCell);
+      row.append(nameCell, phoneCell, typeCell, lastAccessCell, updatedCell, actionCell);
 
       const detailsRow = document.createElement('tr');
       detailsRow.className = 'admin-user-table__details-row';

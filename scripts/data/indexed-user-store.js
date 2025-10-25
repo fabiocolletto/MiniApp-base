@@ -171,8 +171,40 @@ const useMemoryStore =
 const memoryStore = [];
 let memoryAutoIncrement = 1;
 
+function normalizeTimestamp(value, fallback = new Date()) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const fromNumber = new Date(value);
+    if (!Number.isNaN(fromNumber.getTime())) {
+      return fromNumber.toISOString();
+    }
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const fromString = new Date(value);
+    if (!Number.isNaN(fromString.getTime())) {
+      return fromString.toISOString();
+    }
+  }
+
+  const fallbackDate =
+    fallback instanceof Date && !Number.isNaN(fallback.getTime())
+      ? fallback
+      : new Date(typeof fallback === 'string' || typeof fallback === 'number' ? fallback : Date.now());
+
+  if (!Number.isNaN(fallbackDate.getTime())) {
+    return fallbackDate.toISOString();
+  }
+
+  return new Date().toISOString();
+}
+
 function createMemoryRecord({ name, phone, password, device, profile, userType, preferences }) {
-  const now = new Date().toISOString();
+  const now = new Date();
+  const timestamp = now.toISOString();
   return {
     id: memoryAutoIncrement++,
     name,
@@ -182,8 +214,9 @@ function createMemoryRecord({ name, phone, password, device, profile, userType, 
     userType: sanitizeUserType(userType),
     profile: normalizeProfile(profile),
     preferences: normalizePreferences(preferences),
-    createdAt: now,
-    updatedAt: now,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    lastAccessAt: timestamp,
   };
 }
 
@@ -275,6 +308,7 @@ function deserializeUser(record) {
       device: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      lastAccessAt: new Date(),
       profile: createEmptyProfile(),
       preferences: createEmptyPreferences(),
     };
@@ -282,6 +316,8 @@ function deserializeUser(record) {
 
   const createdAtValue = record.createdAt instanceof Date ? record.createdAt : new Date(record.createdAt);
   const updatedAtValue = record.updatedAt instanceof Date ? record.updatedAt : new Date(record.updatedAt);
+  const lastAccessAtValue =
+    record.lastAccessAt instanceof Date ? record.lastAccessAt : new Date(record.lastAccessAt ?? record.updatedAt);
 
   return {
     id: Number(record.id),
@@ -292,6 +328,7 @@ function deserializeUser(record) {
     userType: sanitizeUserType(record.userType),
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
+    lastAccessAt: Number.isNaN(lastAccessAtValue?.getTime()) ? new Date() : lastAccessAtValue,
     profile: normalizeProfile(record.profile),
     preferences: normalizePreferences(record.preferences),
   };
@@ -321,8 +358,7 @@ async function updateUserInMemory(id, updates = {}) {
 
   const existingRecord = memoryStore[index];
   const now = new Date().toISOString();
-  const nextRecord = {
-    ...existingRecord,
+  const structuralUpdates = {
     ...(Object.prototype.hasOwnProperty.call(updates, 'name') ? { name: updates.name } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
@@ -336,7 +372,18 @@ async function updateUserInMemory(id, updates = {}) {
     ...(Object.prototype.hasOwnProperty.call(updates, 'preferences')
       ? { preferences: mergePreferences(existingRecord.preferences, updates.preferences) }
       : {}),
-    updatedAt: now,
+  };
+
+  const hasStructuralUpdates = Object.keys(structuralUpdates).length > 0;
+  const lastAccessUpdate = Object.prototype.hasOwnProperty.call(updates, 'lastAccessAt')
+    ? { lastAccessAt: normalizeTimestamp(updates.lastAccessAt, existingRecord.lastAccessAt) }
+    : {};
+
+  const nextRecord = {
+    ...existingRecord,
+    ...structuralUpdates,
+    ...lastAccessUpdate,
+    updatedAt: hasStructuralUpdates ? now : existingRecord.updatedAt,
   };
 
   memoryStore[index] = nextRecord;
@@ -418,6 +465,7 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
 
+    const nowIso = new Date().toISOString();
     const record = {
       name,
       phone,
@@ -426,8 +474,9 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
       userType: sanitizeUserType(userType),
       profile: normalizeProfile(profile),
       preferences: normalizePreferences(preferences),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      lastAccessAt: nowIso,
     };
 
     let savedUser;
@@ -520,8 +569,7 @@ export async function updateUser(id, updates = {}) {
 
       const now = new Date().toISOString();
 
-      const record = {
-        ...existing,
+      const structuralUpdates = {
         ...(Object.prototype.hasOwnProperty.call(updates, 'name') ? { name: updates.name } : {}),
         ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
         ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
@@ -529,13 +577,24 @@ export async function updateUser(id, updates = {}) {
         ...(Object.prototype.hasOwnProperty.call(updates, 'userType')
           ? { userType: sanitizeUserType(updates.userType) }
           : {}),
-    ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
-      ? { profile: mergeProfile(existing.profile, updates.profile) }
-      : {}),
-    ...(Object.prototype.hasOwnProperty.call(updates, 'preferences')
-      ? { preferences: mergePreferences(existing.preferences, updates.preferences) }
-      : {}),
-        updatedAt: now,
+        ...(Object.prototype.hasOwnProperty.call(updates, 'profile')
+          ? { profile: mergeProfile(existing.profile, updates.profile) }
+          : {}),
+        ...(Object.prototype.hasOwnProperty.call(updates, 'preferences')
+          ? { preferences: mergePreferences(existing.preferences, updates.preferences) }
+          : {}),
+      };
+
+      const hasStructuralUpdates = Object.keys(structuralUpdates).length > 0;
+      const lastAccessUpdate = Object.prototype.hasOwnProperty.call(updates, 'lastAccessAt')
+        ? { lastAccessAt: normalizeTimestamp(updates.lastAccessAt, existing.lastAccessAt) }
+        : {};
+
+      const record = {
+        ...existing,
+        ...structuralUpdates,
+        ...lastAccessUpdate,
+        updatedAt: hasStructuralUpdates ? now : existing.updatedAt,
       };
 
       const putRequest = store.put(record);

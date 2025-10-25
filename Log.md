@@ -1153,10 +1153,12 @@
 - Reorganização estrutural para garantir que o cabeçalho permaneça alinhado ao topo da tela.
 - Validação visual do cabeçalho fixo mantendo header e footer consistentes.
 
-## v0.1.8 - 2025-10-19 07:20 BRT
+## v0.1.8 - 2025-10-25 06:25 BRT
 - Tornamos a versão exibida no rodapé clicável para abrir o Log.md no painel central.
 - Carregamento dinâmico do Log.md com preservação da área principal visível para header e footer.
 - Padronização do log com horários em BRT e atualização das diretrizes no `AGENTS.md`.
+- Inclusão da data do último acesso no widget de dados do usuário, atualizando tabela, resumo e visualização de exemplo.
+- Registro automático do último acesso ao ativar uma sessão, mantendo o campo de atualização separado das alterações de perfil.
 
 ## v0.1.7 - 2025-10-19 07:10 BRT
 - Adição do painel administrativo exibido ao clicar no logotipo do cabeçalho.
