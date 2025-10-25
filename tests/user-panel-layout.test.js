@@ -294,9 +294,31 @@ test('USER_DASHBOARD_WIDGET_MODELS expõe os widgets homologados do painel do us
   );
 
   assert.ok(Array.isArray(USER_DASHBOARD_WIDGET_MODELS), 'os modelos devem ser expostos em array imutável');
-  assert.ok(USER_DASHBOARD_WIDGET_MODELS.length >= 2, 'os widgets do painel do usuário precisam ter ao menos dois modelos');
+  assert.equal(
+    USER_DASHBOARD_WIDGET_MODELS.length,
+    4,
+    'o catálogo deve listar os quatro widgets homologados do painel do usuário',
+  );
 
-  const [quickActionsModel, userDataModel] = USER_DASHBOARD_WIDGET_MODELS;
+  const [introModel, labelModel, quickActionsModel, userDataModel] = USER_DASHBOARD_WIDGET_MODELS;
+
+  const introPreview = typeof introModel.create === 'function' ? introModel.create() : null;
+  assert.ok(
+    introPreview instanceof FakeElement,
+    'o modelo de introdução deve produzir elementos renderizáveis',
+  );
+  assert.ok(
+    introPreview.classList.contains('user-dashboard__widget--intro'),
+    'o widget de introdução deve aplicar a classe homologada',
+  );
+
+  const labelPreview = typeof labelModel.create === 'function' ? labelModel.create() : null;
+  assert.ok(labelPreview instanceof FakeElement, 'o modelo de etiqueta deve produzir elementos renderizáveis');
+  const labelChips = findElement(
+    labelPreview,
+    (node) => node instanceof FakeElement && node.classList.contains('miniapp-details__highlights'),
+  );
+  assert.ok(labelChips, 'o widget de etiqueta deve renderizar o agrupamento de chips');
 
   const quickActionsPreview =
     typeof quickActionsModel.create === 'function' ? quickActionsModel.create() : null;
@@ -385,51 +407,57 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
   );
   assert.ok(layout, 'layout principal não foi renderizado');
-  assert.equal(layout.children.length, 3, 'o painel deve renderizar três widgets principais');
+  assert.equal(layout.children.length, 5, 'o painel deve renderizar cinco widgets principais');
 
-  const [firstWidget, secondWidget, thirdWidget] = layout.children;
+  const [introWidget, labelWidget, themeWidget, accessWidget, userDataWidget] = layout.children;
   assert.ok(
-    firstWidget instanceof FakeElement && firstWidget.classList.contains('user-dashboard__widget--theme'),
-    'o widget de preferências de tema deve ser o primeiro item do painel',
+    introWidget instanceof FakeElement && introWidget.classList.contains('user-dashboard__widget--intro'),
+    'o widget de introdução deve abrir a primeira linha do painel',
+  );
+  assert.ok(
+    labelWidget instanceof FakeElement && labelWidget.classList.contains('user-dashboard__widget--label'),
+    'o widget de etiqueta deve acompanhar a introdução na primeira linha do painel',
+  );
+  assert.ok(
+    themeWidget instanceof FakeElement && themeWidget.classList.contains('user-dashboard__widget--theme'),
+    'o widget de preferências de tema deve ser o terceiro item do painel',
   );
   assert.equal(
-    firstWidget.dataset.sectionId,
+    themeWidget.dataset.sectionId,
     'theme',
     'a seção de tema deve indicar identificador semântico',
   );
   assert.equal(
-    firstWidget.dataset.sectionState,
+    themeWidget.dataset.sectionState,
     'expanded',
     'a seção de tema deve iniciar expandida para destacar as ações rápidas',
   );
   assert.ok(
-    secondWidget instanceof FakeElement && secondWidget.classList.contains('user-panel__widget--access'),
-    'o widget de acesso e sessão deve ocupar a segunda posição do painel',
+    accessWidget instanceof FakeElement && accessWidget.classList.contains('user-panel__widget--access'),
+    'o widget de acesso e sessão deve ocupar a quarta posição do painel',
   );
   assert.equal(
-    secondWidget.dataset.sectionId,
+    accessWidget.dataset.sectionId,
     'access',
     'a seção de acesso deve indicar identificador semântico',
   );
   assert.ok(
-    thirdWidget instanceof FakeElement && thirdWidget.classList.contains('user-dashboard__widget--user-data'),
-    'o widget de dados do usuário deve ocupar a terceira posição do painel',
+    userDataWidget instanceof FakeElement && userDataWidget.classList.contains('user-dashboard__widget--user-data'),
+    'o widget de dados do usuário deve ocupar a quinta posição do painel',
   );
   assert.equal(
-    thirdWidget.dataset.sectionId,
+    userDataWidget.dataset.sectionId,
     'user-data',
     'a seção de dados do usuário deve indicar identificador semântico',
   );
 
-  const themeWidget = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--theme'),
-  );
-  assert.ok(themeWidget, 'widget de preferências de tema não foi renderizado');
+  const themeWidgetElement = themeWidget;
+  assert.ok(themeWidgetElement, 'widget de preferências de tema não foi renderizado');
 
-  const themeAccordionToggle = themeWidget.querySelector('.user-panel__section-toggle');
+  const themeAccordionToggle = themeWidgetElement.querySelector('.user-panel__section-toggle');
   assert.ok(themeAccordionToggle, 'o widget de tema deve expor controle de acordeão');
 
-  const actionList = themeWidget.querySelector('.user-dashboard__action-list');
+  const actionList = themeWidgetElement.querySelector('.user-dashboard__action-list');
   assert.ok(actionList, 'a lista de ações rápidas deve estar visível no widget de tema');
 
   assert.equal(actionList.children.length, 2, 'o widget de tema deve exibir dois atalhos principais');
@@ -447,9 +475,7 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     'botão para alternar indicadores do rodapé deve estar disponível no painel',
   );
 
-  const accountWidget = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-dashboard__widget--user-data'),
-  );
+  const accountWidget = userDataWidget;
   assert.ok(accountWidget, 'widget de dados do usuário não foi renderizado');
 
   assert.equal(
@@ -495,18 +521,16 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(form, 'formulário principal não foi encontrado');
   assert.equal(form.hidden, true, 'formulário deve iniciar oculto até que a edição seja acionada');
 
-  const accessWidget = layout.children.find(
-    (child) => child instanceof FakeElement && child.classList.contains('user-panel__widget--access'),
-  );
-  assert.ok(accessWidget, 'widget de controle de acesso não foi renderizado');
+  const accessWidgetElement = accessWidget;
+  assert.ok(accessWidgetElement, 'widget de controle de acesso não foi renderizado');
   assert.equal(
-    accessWidget.dataset.state,
+    accessWidgetElement.dataset.state,
     'empty',
     'widget de acesso deve iniciar no estado "empty" sem sessão ativa',
   );
 
   const accessActionList = findElement(
-    accessWidget,
+    accessWidgetElement,
     (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__action-list'),
   );
   assert.ok(accessActionList, 'lista de ações deve estar disponível no widget de acesso');
