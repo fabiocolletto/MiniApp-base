@@ -6,6 +6,8 @@ Para acompanhar o progresso, consulte sempre:
 
 - `AGENTS.md`: reúne as diretrizes vigentes para o projeto.
 - `Log.md`: registra cada alteração realizada, incluindo a versão correspondente.
+- `temp/AGENTS.md`: descreve como organizar trabalhos temporários sempre que uma solicitação indicar que o desenvolvimento deve
+  iniciar na pasta `temp/`.
 
 Fique atento às próximas tarefas!
 

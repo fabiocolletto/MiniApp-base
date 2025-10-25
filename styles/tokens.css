@@ -86,7 +86,7 @@
   --color-input-bg: #ffffff;
   --color-input-border: rgba(var(--color-warm-rgb), 0.18);
   --color-input-border-strong: rgba(var(--color-accent-rgb), 0.28);
-  --color-input-placeholder: rgba(61, 42, 18, 0.45);
+  --color-input-placeholder: rgba(61, 42, 18, 0.28);
   --color-chip-bg: rgba(var(--color-accent-rgb), 0.12);
   --color-chip-border: rgba(var(--color-accent-rgb), 0.32);
   --color-success-bg: rgba(11, 128, 67, 0.12);
@@ -168,7 +168,7 @@
   --color-input-bg: rgba(255, 255, 255, 0.06);
   --color-input-border: rgba(242, 191, 115, 0.28);
   --color-input-border-strong: rgba(var(--color-accent-rgb), 0.45);
-  --color-input-placeholder: rgba(240, 210, 165, 0.55);
+  --color-input-placeholder: rgba(240, 210, 165, 0.38);
   --color-chip-bg: rgba(var(--color-accent-rgb), 0.18);
   --color-chip-border: rgba(var(--color-accent-rgb), 0.45);
   --color-success-bg: rgba(142, 219, 127, 0.16);
