@@ -368,13 +368,14 @@
 - Refatora o painel para reutilizar utilitários globais de layout, feedback e botões, convertendo o carrossel em componente compartilhado e removendo seletores específicos da Mini App Store.
 - Atualiza o `AGENTS.md` para exigir a leitura do `MiniApps/readme.mb` ao executar tarefas relacionadas a miniapps.
 
-## v0.1.166 - 2025-10-25 13:53 BRT
+## v0.1.166 - 2025-10-25 14:18 BRT
 - Expande o catálogo da Mini App Store para ocupar toda a largura da malha do painel do usuário.
 - Restaura a grade responsiva dos miniapps na view da loja com altura automática por cartão.
 - Mantém o breakpoint de quatro colunas para a lista de miniapps quando houver espaço disponível.
 - Abre a seção de endereço no painel do usuário solicitando CEP, preenchendo logradouro, bairro, cidade e UF automaticamente e atualizando o resumo com o endereço completo.
 - Adiciona o resumo textual dos dados principais antes da tabela no widget Dados do usuário, refletindo as colunas vistas com a tabela recolhida.
 - Exibe a tabela de dados do usuário apenas dentro de uma janela modal ao expandir o widget, aplicando backdrop desfocado e botão de fechamento dedicado.
+- Permite abrir a sobreposição de edição de dados pessoais diretamente pela aba "Dados pessoais" quando a sessão ativa estiver carregada.
 
 ## v0.1.165 - 2025-10-23 22:00 BRT
 - Ajusta o painel do usuário para exibir os campos de edição somente após o clique em "Editar dados" e recolhê-los ao ocultar.

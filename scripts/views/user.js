@@ -871,6 +871,23 @@ export function renderUserPanel(viewRoot) {
     button.textContent = definition.label;
 
     const handleTabClick = () => {
+      if (!userDataExpanded) {
+        const targetId = activeUser?.id != null ? String(activeUser.id) : null;
+
+        if (targetId) {
+          const expandFn = userDataWidgetInstance?.setExpandedUser;
+
+          if (typeof expandFn === 'function') {
+            expandFn(targetId, true);
+          }
+
+          if (!userDataExpanded) {
+            userDataExpanded = true;
+            updateUserDataViewState();
+          }
+        }
+      }
+
       setActiveTab(tabId, { focusTab: true });
     };
 
