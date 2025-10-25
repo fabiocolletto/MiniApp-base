@@ -1,6 +1,6 @@
 # Log
 
-## v0.1.231 - 2025-10-25 08:54 BRT
+## v0.1.231 - 2025-10-25 09:24 BRT
 - Automatiza a sincronização da versão do sistema no rodapé e no painel administrativo via `syncSystemReleaseIndicators` da ferramenta de log.
 - Adiciona identificadores aos chips de versão e publicação da navegação administrativa para permitir atualizações dinâmicas.
 - Atualiza os metadados e o pacote do projeto para anunciar a release v0.1.231.
@@ -8,6 +8,8 @@
 - Amplia o contraste visual entre texto digitado e placeholders nos campos de formulário para destacar campos pendentes de preenchimento.
 - Acrescenta ao painel do projeto o widget com a lista dos painéis implantados exibindo versão e data da última atualização em tabela dedicada.
 - Cria o projeto temporário `temp/version-panel` com painel para selecionar branches do GitHub e renderizar a prévia HTML da versão escolhida.
+- Expande o painel do projeto com a listagem dos protótipos em `temp/`, incluindo links de pré-visualização lado a lado com as demais colunas da tabela.
+- Disponibiliza o painel "Projetos temporários" restrito a administradores com atalho dedicado no menu principal e acesso móvel equivalente.
 
 ## v0.1.230 - 2025-10-25 07:58 BRT
 - Reorganiza o formulário de dados do usuário em abas separando informações pessoais e endereço em painéis dedicados.

@@ -2,6 +2,7 @@ import eventBus from '../scripts/events/event-bus.js';
 import { renderAdmin } from '../scripts/views/admin.js';
 import { renderAdminDesignKit } from '../scripts/views/admin-design-kit.js';
 import { renderLog } from '../scripts/views/log.js';
+import { renderTemporaryProjects } from '../scripts/views/temporary-projects.js';
 import { renderHome } from '../scripts/views/home.js';
 import { renderNotFound } from '../scripts/views/not-found.js';
 import { renderUserPanel } from '../scripts/views/user.js';
@@ -68,6 +69,7 @@ const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
 const headerProjectLink = document.querySelector('.header-project-link');
+const headerTemporaryLink = document.querySelector('.header-temporary-link');
 const headerUserLink = document.querySelector('.header-user-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
 const headerAdminLink = document.querySelector('.header-admin-link');
@@ -266,6 +268,7 @@ let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
 let mobileStoreAction = null;
 let mobileProjectAction = null;
+let mobileTemporaryAction = null;
 let mobileUserAction = null;
 let mobileLoginAction = null;
 let mobileThemeAction = null;
@@ -520,6 +523,7 @@ const views = {
   admin: renderAdmin,
   'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
+  'temporary-projects': renderTemporaryProjects,
   home: renderHome,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
@@ -544,6 +548,7 @@ const MENU_LABEL_FALLBACKS = {
   login: 'Painel de Login',
   register: 'Crie sua conta',
   log: 'Painel do projeto',
+  'temporary-projects': 'Projetos temporários',
   legal: 'Documentos legais',
   home: 'Início',
   dashboard: 'Início',
@@ -1179,6 +1184,17 @@ function ensureHeaderMobileMenu() {
     renderView('log');
   });
 
+  const temporaryAction = document.createElement('button');
+  temporaryAction.type = 'button';
+  temporaryAction.id = 'mobile-access-menu-temporary';
+  temporaryAction.className = 'app-modal__action header-mobile-menu__action';
+  temporaryAction.textContent = 'Projetos temporários';
+  temporaryAction.hidden = true;
+  temporaryAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('temporary-projects');
+  });
+
   const userAction = document.createElement('button');
   userAction.type = 'button';
   userAction.id = 'mobile-access-menu-user';
@@ -1227,13 +1243,23 @@ function ensureHeaderMobileMenu() {
     renderView('admin');
   });
 
-  actions.append(homeAction, storeAction, projectAction, userAction, loginAction, themeAction, adminAction);
+  actions.append(
+    homeAction,
+    storeAction,
+    projectAction,
+    temporaryAction,
+    userAction,
+    loginAction,
+    themeAction,
+    adminAction
+  );
 
   panel.append(header, description, actions);
   headerMobileMenuPanel = panel;
   mobileHomeAction = homeAction;
   mobileStoreAction = storeAction;
   mobileProjectAction = projectAction;
+  mobileTemporaryAction = temporaryAction;
   mobileUserAction = userAction;
   mobileLoginAction = loginAction;
   mobileThemeAction = themeAction;
@@ -1384,18 +1410,21 @@ function updateHeaderSession(user) {
     typeof user?.userType === 'string' ? user.userType.trim().toLowerCase() : '';
   const isAdmin = normalizedType === 'administrador';
   const showAdminLink = isAuthenticated && isAdmin;
+  const showTemporaryProjectsLink = isAuthenticated && isAdmin;
   const showDesignKitLink = isAuthenticated;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerProjectLink, true);
+  setLinkVisibility(headerTemporaryLink, showTemporaryProjectsLink);
   setLinkVisibility(headerUserLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
   setLinkVisibility(headerAdminLink, showAdminLink);
   setLinkVisibility(headerDesignKitLink, showDesignKitLink);
 
-  const shouldShowAdminSection = showDesignKitLink || showAdminLink;
+  const shouldShowAdminSection =
+    showDesignKitLink || showAdminLink || showTemporaryProjectsLink;
   if (headerMenuPrimarySeparator instanceof HTMLElement) {
     headerMenuPrimarySeparator.hidden = !shouldShowAdminSection;
     if (shouldShowAdminSection) {
@@ -1419,6 +1448,7 @@ function updateHeaderSession(user) {
     setLinkVisibility(mobileHomeAction, isAuthenticated);
     setLinkVisibility(mobileStoreAction, true);
     setLinkVisibility(mobileProjectAction, true);
+    setLinkVisibility(mobileTemporaryAction, showTemporaryProjectsLink);
     setLinkVisibility(mobileUserAction, isAuthenticated);
     setLinkVisibility(mobileLoginAction, true);
     setLinkVisibility(mobileThemeAction, !isAuthenticated);
@@ -1995,6 +2025,12 @@ export function initializeAppShell(router) {
     event.preventDefault();
     closeHeaderMenu();
     renderView('log');
+  });
+
+  headerTemporaryLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('temporary-projects');
   });
 
   headerUserLink?.addEventListener('click', (event) => {
