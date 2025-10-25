@@ -1,6 +1,6 @@
 const SYSTEM_METADATA = Object.freeze({
-  version: '0.1.226',
-  publishedAt: '2025-10-24T12:06:00-03:00',
+  version: '0.1.228',
+  publishedAt: '2025-10-25T09:20:00-03:00',
   changelogPath: './Log.md',
 });
 
