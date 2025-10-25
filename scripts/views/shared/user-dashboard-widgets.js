@@ -31,12 +31,117 @@ export function createUserDashboardIntroWidget({
   return widget;
 }
 
+function createSummaryEntry(term, value) {
+  if (!term || !value) {
+    return null;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'user-dashboard__summary-item';
+
+  const termElement = document.createElement('dt');
+  termElement.className = 'user-dashboard__summary-label';
+  termElement.textContent = term;
+
+  const valueElement = document.createElement('dd');
+  valueElement.className = 'user-dashboard__summary-value';
+  valueElement.textContent = value;
+
+  wrapper.append(termElement, valueElement);
+  return wrapper;
+}
+
+function createSummaryList({ ariaLabel, items = [] }) {
+  const list = document.createElement('dl');
+  list.className = 'user-dashboard__summary-list';
+
+  if (ariaLabel) {
+    list.setAttribute('aria-label', ariaLabel);
+  }
+
+  items
+    .map(({ term, value }) => createSummaryEntry(term, value))
+    .filter((entry) => entry instanceof HTMLElement)
+    .forEach((entry) => {
+      list.append(entry);
+    });
+
+  if (list.children.length === 0) {
+    return null;
+  }
+
+  return list;
+}
+
+function createQuickLink({ href = '#', label, description }) {
+  if (!label) {
+    return null;
+  }
+
+  const item = document.createElement('li');
+  item.className = 'user-dashboard__quick-links-item';
+
+  const link = document.createElement('a');
+  link.className = 'button panel-action-tile panel-action-tile--secondary user-dashboard__quick-link';
+  const normalizedHref = typeof href === 'string' && href.trim() !== '' ? href : '#';
+  link.href = normalizedHref;
+  link.setAttribute('href', normalizedHref);
+
+  const titleElement = document.createElement('span');
+  titleElement.className = 'user-dashboard__quick-link-title';
+  titleElement.textContent = label;
+  link.append(titleElement);
+
+  if (description) {
+    const descriptionElement = document.createElement('span');
+    descriptionElement.className = 'user-dashboard__quick-link-description';
+    descriptionElement.textContent = description;
+    link.append(descriptionElement);
+  }
+
+  item.append(link);
+  return item;
+}
+
 export function createUserDashboardLabelWidget({
   title = 'Etiqueta do painel',
   description = 'Compartilhe esta etiqueta para facilitar o acesso rápido ao painel.',
   panelLabel = 'Painel do usuário',
   projectLabel = 'MiniApp Base',
   extraLabels = [],
+  summarySections = [
+    {
+      ariaLabel: 'Resumo da sessão',
+      items: [
+        { term: 'Status da sessão', value: 'Sincronizada' },
+        { term: 'Último acesso', value: 'Hoje • 08:45' },
+      ],
+    },
+    {
+      ariaLabel: 'Mini-apps em destaque',
+      items: [
+        { term: 'Favoritos', value: '4 mini-apps' },
+        { term: 'Salvos', value: '5 mini-apps' },
+      ],
+    },
+  ],
+  quickLinks = [
+    {
+      href: '#theme',
+      label: 'Abrir preferências de tema',
+      description: 'Ajuste contraste, modo automático e acessibilidade.',
+    },
+    {
+      href: '#access',
+      label: 'Gerenciar sessão e acesso',
+      description: 'Atualize credenciais, logoff e limpeza local.',
+    },
+    {
+      href: '#user-data',
+      label: 'Ver dados do usuário',
+      description: 'Revise informações sincronizadas com o painel.',
+    },
+  ],
   extraClasses = [],
 } = {}) {
   const widget = buildTransparentWidget(['user-dashboard__widget--label', ...extraClasses]);
@@ -62,6 +167,41 @@ export function createUserDashboardLabelWidget({
     });
 
   widget.append(titleElement, descriptionElement, labelGroup);
+
+  const summary = document.createElement('div');
+  summary.className = 'user-dashboard__summary';
+
+  summarySections
+    .map((section) => createSummaryList(section))
+    .filter((sectionList) => sectionList instanceof HTMLElement)
+    .forEach((sectionList) => {
+      summary.append(sectionList);
+    });
+
+  if (summary.children.length > 0) {
+    widget.append(summary);
+  }
+
+  const quickLinksNav = document.createElement('nav');
+  quickLinksNav.className = 'user-dashboard__quick-links';
+  quickLinksNav.setAttribute('aria-label', 'Links rápidos do painel do usuário');
+
+  const quickLinksList = document.createElement('ul');
+  quickLinksList.className = 'user-dashboard__quick-links-list';
+  quickLinksList.setAttribute('role', 'list');
+
+  quickLinks
+    .map((linkConfig) => createQuickLink(linkConfig))
+    .filter((linkItem) => linkItem instanceof HTMLElement)
+    .forEach((linkItem) => {
+      quickLinksList.append(linkItem);
+    });
+
+  if (quickLinksList.children.length > 0) {
+    quickLinksNav.append(quickLinksList);
+    widget.append(quickLinksNav);
+  }
+
   return widget;
 }
 

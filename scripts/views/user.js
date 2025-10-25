@@ -334,8 +334,76 @@ export function renderUserPanel(viewRoot) {
   viewRoot.className = BASE_CLASSES;
   viewRoot.dataset.view = 'user';
 
+  const cleanupCallbacks = [];
+
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout user-dashboard__layout';
+
+  const footerElement = document?.querySelector?.('footer') ?? null;
+  let footerNoticeElement = null;
+  let footerNoticeHideHandle = null;
+
+  const hideFooterNotice = () => {
+    if (footerNoticeHideHandle) {
+      clearTimeout(footerNoticeHideHandle);
+      footerNoticeHideHandle = null;
+    }
+
+    if (footerNoticeElement instanceof HTMLElement) {
+      footerNoticeElement.classList.remove('footer-notice--visible');
+      footerNoticeElement.hidden = true;
+    }
+  };
+
+  const showFooterNotice = (message, { variant = 'success', duration = 4000 } = {}) => {
+    const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+
+    if (!(footerElement instanceof HTMLElement) || !normalizedMessage) {
+      return;
+    }
+
+    if (!(footerNoticeElement instanceof HTMLElement)) {
+      footerNoticeElement = document.createElement('div');
+      footerNoticeElement.className = 'footer-notice';
+      footerNoticeElement.setAttribute('role', 'status');
+      footerNoticeElement.setAttribute('aria-live', 'polite');
+      footerNoticeElement.setAttribute('aria-atomic', 'true');
+
+      const textElement = document.createElement('span');
+      textElement.className = 'footer-notice__text';
+      footerNoticeElement.append(textElement);
+
+      footerElement.append(footerNoticeElement);
+    }
+
+    footerNoticeElement.hidden = false;
+    footerNoticeElement.dataset.variant = variant;
+
+    const textElement = footerNoticeElement.querySelector('.footer-notice__text');
+    if (textElement instanceof HTMLElement) {
+      textElement.textContent = normalizedMessage;
+    }
+
+    footerNoticeElement.classList.add('footer-notice--visible');
+
+    if (footerNoticeHideHandle) {
+      clearTimeout(footerNoticeHideHandle);
+    }
+
+    if (duration > 0) {
+      footerNoticeHideHandle = setTimeout(() => {
+        hideFooterNotice();
+      }, duration);
+    }
+  };
+
+  cleanupCallbacks.push(() => {
+    hideFooterNotice();
+    if (footerNoticeElement instanceof HTMLElement && footerNoticeElement.parentNode) {
+      footerNoticeElement.parentNode.removeChild(footerNoticeElement);
+    }
+    footerNoticeElement = null;
+  });
 
   const introWidget = createUserDashboardIntroWidget({
     description: 'Gerencie preferências e dados sincronizados com o painel administrativo.',
@@ -607,6 +675,150 @@ export function renderUserPanel(viewRoot) {
   const addressStateField = findFieldEntry('addressState').field;
   const addressCountryField = findFieldEntry('addressCountry').field;
 
+  accountForm.classList.add('user-dashboard__form--tabbed');
+
+  const tabList = document.createElement('div');
+  tabList.className = 'user-dashboard__tab-list';
+  tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('aria-label', 'Categorias de dados do usuário');
+
+  const tabPanelsContainer = document.createElement('div');
+  tabPanelsContainer.className = 'user-dashboard__tab-panels';
+
+  const tabDefinitions = [
+    {
+      id: 'personal',
+      label: 'Dados pessoais',
+      fields: [nameField, phoneField, emailField],
+    },
+    {
+      id: 'address',
+      label: 'Endereço',
+      fields: [
+        addressZipField,
+        addressField,
+        addressNumberField,
+        addressComplementField,
+        addressDistrictField,
+        addressCityField,
+        addressStateField,
+        addressCountryField,
+      ],
+    },
+  ];
+
+  const tabButtons = new Map();
+  const tabPanels = new Map();
+  let activeTabId = 'personal';
+
+  const setActiveTab = (nextTabId, { focusTab = false } = {}) => {
+    if (!tabButtons.has(nextTabId) || !tabPanels.has(nextTabId)) {
+      return;
+    }
+
+    activeTabId = nextTabId;
+
+    tabButtons.forEach((button, tabId) => {
+      const isActive = tabId === nextTabId;
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      button.tabIndex = isActive ? 0 : -1;
+      button.classList.toggle('user-dashboard__tab--active', isActive);
+      if (isActive && focusTab && typeof button.focus === 'function') {
+        try {
+          button.focus();
+        } catch (error) {
+          // Ignora ambientes sem suporte a foco programático.
+        }
+      }
+    });
+
+    tabPanels.forEach((panel, tabId) => {
+      panel.hidden = tabId !== nextTabId;
+    });
+  };
+
+  const orderedTabIds = tabDefinitions.map((definition) => definition.id);
+
+  tabDefinitions.forEach((definition) => {
+    const tabId = definition.id;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'user-dashboard__tab';
+    button.id = `user-dashboard-tab-${tabId}-trigger`;
+    button.dataset.tab = tabId;
+    button.setAttribute('role', 'tab');
+    button.setAttribute('aria-controls', `user-dashboard-tab-${tabId}`);
+    button.textContent = definition.label;
+
+    const handleTabClick = () => {
+      setActiveTab(tabId, { focusTab: true });
+    };
+
+    button.addEventListener('click', handleTabClick);
+    cleanupCallbacks.push(() => button.removeEventListener('click', handleTabClick));
+
+    tabList.append(button);
+    tabButtons.set(tabId, button);
+
+    const panel = document.createElement('div');
+    panel.className = 'user-dashboard__tab-panel';
+    panel.id = `user-dashboard-tab-${tabId}`;
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', button.id);
+    panel.dataset.tab = tabId;
+
+    const panelFields = document.createElement('div');
+    panelFields.className = 'user-dashboard__tab-panel-fields';
+    definition.fields
+      .filter((field) => field instanceof HTMLElement)
+      .forEach((field) => {
+        panelFields.append(field);
+      });
+
+    panel.append(panelFields);
+    tabPanelsContainer.append(panel);
+    tabPanels.set(tabId, panel);
+  });
+
+  const handleTabKeydown = (event) => {
+    const key = event?.key;
+    if (!key) {
+      return;
+    }
+
+    if (key === 'ArrowRight' || key === 'ArrowLeft') {
+      const direction = key === 'ArrowRight' ? 1 : -1;
+      const currentIndex = orderedTabIds.indexOf(activeTabId);
+      const nextIndex = (currentIndex + direction + orderedTabIds.length) % orderedTabIds.length;
+      if (typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      setActiveTab(orderedTabIds[nextIndex], { focusTab: true });
+      return;
+    }
+
+    if (key === 'Home') {
+      if (typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      setActiveTab(orderedTabIds[0], { focusTab: true });
+      return;
+    }
+
+    if (key === 'End') {
+      if (typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      setActiveTab(orderedTabIds[orderedTabIds.length - 1], { focusTab: true });
+    }
+  };
+
+  tabList.addEventListener('keydown', handleTabKeydown);
+  cleanupCallbacks.push(() => tabList.removeEventListener('keydown', handleTabKeydown));
+
+  accountForm.replaceChildren(tabList, tabPanelsContainer);
+  setActiveTab(activeTabId);
+
   const themeWidget = themeSectionControls.section;
   const accessWidget = accessSectionControls.section;
   const accountWidget = userDataWidget;
@@ -614,7 +826,6 @@ export function renderUserPanel(viewRoot) {
   layout.append(introWidget, labelWidget, themeWidget, accessWidget, accountWidget);
   viewRoot.replaceChildren(layout);
 
-  const cleanupCallbacks = [];
   cleanupCallbacks.push(userDataWidgetInstance.teardown);
   [themeSectionControls, accessSectionControls]
     .map((controls) => controls?.cleanup)
@@ -746,6 +957,12 @@ export function renderUserPanel(viewRoot) {
     addressCity: addressCityInput,
     addressState: addressStateInput,
     addressCountry: addressCountryInput,
+  };
+
+  const setInputValue = (input, value = '') => {
+    if (input instanceof HTMLElement) {
+      input.value = typeof value === 'string' ? value : '';
+    }
   };
 
   const formatCepForDisplay = (value) => {
@@ -1722,6 +1939,10 @@ export function renderUserPanel(viewRoot) {
       return;
     }
 
+    setInputValue(addressNumberInput, '');
+    setInputValue(addressComplementInput, '');
+    setInputValue(addressCountryInput, '');
+
     if (cepLookupController) {
       try {
         cepLookupController.abort();
@@ -1746,32 +1967,34 @@ export function renderUserPanel(viewRoot) {
       if (result.status === 'success') {
         const { address } = result;
 
-        if (addressInput instanceof HTMLElement && address.street) {
-          addressInput.value = address.street;
-        }
+        setInputValue(addressInput, sanitizeProfileValue('address', address?.street ?? ''));
+        setInputValue(
+          addressDistrictInput,
+          sanitizeProfileValue('addressDistrict', address?.district ?? ''),
+        );
+        setInputValue(addressCityInput, sanitizeProfileValue('addressCity', address?.city ?? ''));
+        setInputValue(
+          addressStateInput,
+          sanitizeProfileValue('addressState', address?.state ?? ''),
+        );
 
-        if (addressDistrictInput instanceof HTMLElement && address.district) {
-          addressDistrictInput.value = address.district;
-        }
-
-        if (addressCityInput instanceof HTMLElement && address.city) {
-          addressCityInput.value = address.city;
-        }
-
-        if (addressStateInput instanceof HTMLElement && address.state) {
-          addressStateInput.value = sanitizeProfileValue('addressState', address.state);
-        }
-
-        await persistProfileFields(ADDRESS_PROFILE_KEYS, {
-          successMessage: 'Endereço carregado a partir do CEP!',
+        const persistResult = await persistProfileFields(ADDRESS_PROFILE_KEYS, {
+          successMessage: '',
           busyTargets: [
             addressZipInput,
             addressInput,
+            addressNumberInput,
+            addressComplementInput,
             addressDistrictInput,
             addressCityInput,
             addressStateInput,
+            addressCountryInput,
           ],
         });
+
+        if (persistResult.status === 'success') {
+          showFooterNotice('Endereço carregado a partir do CEP!', { variant: 'success' });
+        }
         return;
       }
 

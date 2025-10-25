@@ -319,6 +319,26 @@ test('USER_DASHBOARD_WIDGET_MODELS expõe os widgets homologados do painel do us
     (node) => node instanceof FakeElement && node.classList.contains('miniapp-details__highlights'),
   );
   assert.ok(labelChips, 'o widget de etiqueta deve renderizar o agrupamento de chips');
+  const labelSummary = findElement(
+    labelPreview,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__summary'),
+  );
+  assert.ok(labelSummary, 'o widget de etiqueta deve incluir um resumo do painel do usuário');
+  const summaryLists = labelSummary?.querySelectorAll?.('.user-dashboard__summary-list') ?? [];
+  assert.ok(summaryLists.length >= 1, 'o resumo da etiqueta deve listar ao menos uma categoria de dados');
+  const quickLinksNav = findElement(
+    labelPreview,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__quick-links'),
+  );
+  assert.ok(quickLinksNav, 'o widget de etiqueta deve expor uma área de links rápidos do painel');
+  const quickLinkAnchors = quickLinksNav?.querySelectorAll?.('.user-dashboard__quick-link') ?? [];
+  assert.equal(quickLinkAnchors.length, 3, 'a etiqueta deve publicar três links rápidos padronizados');
+  const quickLinkTargets = Array.from(quickLinkAnchors, (anchor) => anchor.getAttribute('href'));
+  assert.deepEqual(
+    quickLinkTargets,
+    ['#theme', '#access', '#user-data'],
+    'os links rápidos devem apontar para as seções principais do painel do usuário',
+  );
 
   const quickActionsPreview =
     typeof quickActionsModel.create === 'function' ? quickActionsModel.create() : null;
@@ -417,6 +437,26 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   assert.ok(
     labelWidget instanceof FakeElement && labelWidget.classList.contains('user-dashboard__widget--label'),
     'o widget de etiqueta deve acompanhar a introdução na primeira linha do painel',
+  );
+  const labelSummary = findElement(
+    labelWidget,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__summary'),
+  );
+  assert.ok(labelSummary, 'a etiqueta deve apresentar um resumo rápido do painel do usuário');
+  const labelSummaryLists = labelSummary?.querySelectorAll?.('.user-dashboard__summary-list') ?? [];
+  assert.ok(labelSummaryLists.length >= 1, 'o resumo da etiqueta precisa agrupar os principais dados da conta');
+  const quickLinksArea = findElement(
+    labelWidget,
+    (node) => node instanceof FakeElement && node.classList.contains('user-dashboard__quick-links'),
+  );
+  assert.ok(quickLinksArea, 'a etiqueta deve expor atalhos rápidos para as seções do painel');
+  const quickLinkAnchors = quickLinksArea?.querySelectorAll?.('.user-dashboard__quick-link') ?? [];
+  assert.equal(quickLinkAnchors.length, 3, 'a etiqueta deve listar três links rápidos principais');
+  const quickLinkTargets = Array.from(quickLinkAnchors, (anchor) => anchor.getAttribute('href'));
+  assert.deepEqual(
+    quickLinkTargets,
+    ['#theme', '#access', '#user-data'],
+    'os atalhos rápidos devem direcionar para tema, sessão e dados do painel',
   );
   assert.ok(
     themeWidget instanceof FakeElement && themeWidget.classList.contains('user-dashboard__widget--theme'),
@@ -524,6 +564,49 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
   const form = accountWidget.querySelector('form.user-form');
   assert.ok(form, 'formulário principal não foi encontrado');
   assert.equal(form.hidden, true, 'formulário deve iniciar oculto até que a edição seja acionada');
+
+  const tabList = form.querySelector('.user-dashboard__tab-list');
+  assert.ok(tabList, 'o formulário deve organizar os campos em uma lista de abas');
+
+  const tabs = tabList?.querySelectorAll?.('.user-dashboard__tab') ?? [];
+  assert.equal(tabs.length, 2, 'o formulário precisa exibir abas para dados pessoais e endereço');
+
+  const tabLabels = tabs.map((tab) => tab.textContent);
+  assert.deepEqual(
+    tabLabels,
+    ['Dados pessoais', 'Endereço'],
+    'as abas devem destacar dados pessoais e endereço na ordem esperada',
+  );
+
+  const activeTab = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+  assert.ok(activeTab, 'uma aba deve iniciar selecionada para exibir os campos iniciais');
+  assert.equal(activeTab?.dataset?.tab, 'personal', 'a aba inicial deve focar nos dados pessoais');
+
+  const tabPanels = form.querySelectorAll('.user-dashboard__tab-panel');
+  assert.equal(tabPanels.length, 2, 'devem existir dois painéis correspondentes às abas renderizadas');
+
+  const personalPanel = tabPanels.find((panel) => panel?.dataset?.tab === 'personal');
+  const addressPanel = tabPanels.find((panel) => panel?.dataset?.tab === 'address');
+  assert.ok(personalPanel, 'o painel de dados pessoais deve estar disponível');
+  assert.ok(addressPanel, 'o painel de endereço deve estar disponível');
+  assert.equal(personalPanel?.hidden, false, 'o painel de dados pessoais deve iniciar visível');
+  assert.equal(addressPanel?.hidden, true, 'o painel de endereço deve iniciar oculto por padrão');
+
+  const personalFields = personalPanel?.querySelector('.user-dashboard__tab-panel-fields');
+  assert.ok(personalFields, 'o painel de dados pessoais deve agrupar os campos principais');
+  assert.equal(
+    personalFields?.children.length ?? 0,
+    3,
+    'o painel de dados pessoais deve conter três campos principais',
+  );
+
+  const addressFieldsGroup = addressPanel?.querySelector('.user-dashboard__tab-panel-fields');
+  assert.ok(addressFieldsGroup, 'o painel de endereço deve agrupar os campos relacionados');
+  assert.equal(
+    addressFieldsGroup?.children.length ?? 0,
+    8,
+    'o painel de endereço deve reunir oito campos relacionados ao endereço completo',
+  );
 
   const accessWidgetElement = accessWidget;
   assert.ok(accessWidgetElement, 'widget de controle de acesso não foi renderizado');

@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.230 - 2025-10-25 08:55 BRT
+- Reorganiza o formulário de dados do usuário em abas separando informações pessoais e endereço em painéis dedicados.
+- Ajusta o preenchimento por CEP para zerar número, complemento e país antes da consulta e limpar campos ausentes na resposta.
+- Exibe a confirmação "Endereço carregado a partir do CEP" como aviso temporário no rodapé.
+- Reforça o README de `sys/tools` para remover itens da lista de Conteúdo atual quando a função correspondente sai do sistema.
+
 ## v0.1.229 - 2025-10-25 07:22 BRT
 - Organiza os utilitários do sistema criando a pasta `sys/tools` para concentrar integrações reutilizáveis.
 - Implementa a função `fetchCep` consultando a API ViaCEP e retornando os campos normalizados para reutilização nos painéis.
@@ -9,6 +15,7 @@
 - Atualiza o log da ferramenta de CEP com orientações de manutenção para o histórico e requisitos expostos ao shell.
 - Ajusta o `AGENTS.md` para referenciar as instruções de uso e preservação já documentadas nos READMEs do `sys/` sem duplicá-las.
 - Alinha a borda do widget "Dados do usuário" com o estilo aplicado aos widgets de tema e sessão no painel do usuário.
+- Atualiza o widget de etiqueta do painel do usuário com resumo integrado, destaques e links rápidos para as seções principais.
 
 ## v0.1.228 - 2025-10-25 06:35 BRT
 - Externaliza os tokens globais para `styles/tokens.css`, abrindo espaço para reutilização centralizada das variáveis de tema.
