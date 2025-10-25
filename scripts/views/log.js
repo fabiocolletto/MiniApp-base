@@ -44,6 +44,16 @@ const DEPLOYED_PANELS = Object.freeze([
   }),
 ]);
 
+const TEMPORARY_PROJECTS = Object.freeze([
+  Object.freeze({
+    id: 'version-panel',
+    name: 'Painel de Versões Temporárias',
+    version: null,
+    updatedAt: '2025-10-25T08:54:00-03:00',
+    previewUrl: 'temp/version-panel/index.html',
+  }),
+]);
+
 export function renderLog(viewRoot) {
   if (!(viewRoot instanceof HTMLElement)) {
     return;
@@ -58,12 +68,19 @@ export function renderLog(viewRoot) {
   const titleWidget = createSystemLogTitleWidget();
   const panelLabelWidget = createSystemLogPanelLabelWidget();
   const deploymentsWidget = createDeploymentsWidget();
+  const temporaryProjectsWidget = createTemporaryProjectsWidget();
   const { widget: logWidget, content: logContent } = createLogContentWidget();
 
   viewRoot.setAttribute('aria-busy', 'true');
   viewRoot.setAttribute('aria-label', 'Histórico de versões do MiniApp Base');
 
-  layout.append(titleWidget, panelLabelWidget, deploymentsWidget, logWidget);
+  const widgets = [titleWidget, panelLabelWidget, deploymentsWidget];
+  if (temporaryProjectsWidget) {
+    widgets.push(temporaryProjectsWidget);
+  }
+  widgets.push(logWidget);
+
+  layout.append(...widgets);
   viewRoot.replaceChildren(layout);
 
   (async () => {
@@ -166,13 +183,116 @@ function createDeploymentsWidget() {
 
     const versionCell = document.createElement('td');
     versionCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--version';
-    versionCell.textContent = panel.version;
+    versionCell.textContent = formatVersion(panel.version);
 
     const updatedCell = document.createElement('td');
     updatedCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--updated';
     updatedCell.textContent = formatUpdatedAt(panel.updatedAt);
 
     row.append(nameCell, versionCell, updatedCell);
+    tableBody.append(row);
+  });
+
+  table.append(tableBody);
+  tableWrapper.append(table);
+  widget.append(titleElement, descriptionElement, tableWrapper);
+
+  return widget;
+}
+
+export function createTemporaryProjectsWidget({ projects = TEMPORARY_PROJECTS } = {}) {
+  if (!Array.isArray(projects) || projects.length === 0) {
+    return null;
+  }
+
+  const widget = document.createElement('section');
+  widget.className = [
+    'surface-card',
+    'log-panel__widget',
+    'log-panel__widget--deployments',
+  ].join(' ');
+
+  const titleElement = document.createElement('h2');
+  titleElement.className = 'user-widget__title';
+  titleElement.textContent = 'Projetos temporários';
+
+  const descriptionElement = document.createElement('p');
+  descriptionElement.className = 'user-widget__description';
+  descriptionElement.textContent =
+    'Protótipos ativos na pasta temporária do projeto com acesso rápido às suas pré-visualizações.';
+
+  const tableWrapper = document.createElement('div');
+  tableWrapper.className = 'log-panel__deployments-table-wrapper';
+
+  const table = document.createElement('table');
+  table.className = 'log-panel__deployments-table';
+
+  const caption = document.createElement('caption');
+  caption.className = 'sr-only';
+  caption.textContent =
+    'Projetos temporários ativos, suas versões comunicadas, datas de atualização e links de pré-visualização.';
+  table.append(caption);
+
+  const tableHead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+
+  [
+    { label: 'Projeto', className: 'log-panel__deployments-header log-panel__deployments-header--panel' },
+    { label: 'Versão', className: 'log-panel__deployments-header log-panel__deployments-header--version' },
+    {
+      label: 'Última atualização',
+      className: 'log-panel__deployments-header log-panel__deployments-header--updated',
+    },
+    {
+      label: 'Pré-visualização',
+      className: 'log-panel__deployments-header log-panel__deployments-header--preview',
+    },
+  ].forEach(({ label, className }) => {
+    const cell = document.createElement('th');
+    cell.scope = 'col';
+    cell.className = className;
+    cell.textContent = label;
+    headerRow.append(cell);
+  });
+
+  tableHead.append(headerRow);
+  table.append(tableHead);
+
+  const tableBody = document.createElement('tbody');
+
+  projects.forEach((project) => {
+    const row = document.createElement('tr');
+    row.className = 'log-panel__deployments-row';
+
+    const nameCell = document.createElement('td');
+    nameCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--panel';
+    nameCell.textContent = project.name;
+
+    const versionCell = document.createElement('td');
+    versionCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--version';
+    versionCell.textContent = formatVersion(project.version);
+
+    const updatedCell = document.createElement('td');
+    updatedCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--updated';
+    updatedCell.textContent = formatUpdatedAt(project.updatedAt);
+
+    const previewCell = document.createElement('td');
+    previewCell.className = 'log-panel__deployments-cell log-panel__deployments-cell--preview';
+
+    if (typeof project.previewUrl === 'string' && project.previewUrl.trim() !== '') {
+      const link = document.createElement('a');
+      link.className = 'log-panel__deployments-link';
+      link.href = project.previewUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Abrir';
+      link.setAttribute('aria-label', `Abrir ${project.name} em uma nova aba`);
+      previewCell.append(link);
+    } else {
+      previewCell.textContent = '—';
+    }
+
+    row.append(nameCell, versionCell, updatedCell, previewCell);
     tableBody.append(row);
   });
 
@@ -190,6 +310,14 @@ function formatUpdatedAt(value) {
   }
 
   return dateTimeFormatter.format(date);
+}
+
+function formatVersion(value) {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value;
+  }
+
+  return '—';
 }
 
 function normalizeDate(value) {

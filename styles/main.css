@@ -5920,6 +5920,25 @@ main > .view--log {
   white-space: nowrap;
 }
 
+.log-panel__deployments-header--preview,
+.log-panel__deployments-cell--preview {
+  white-space: nowrap;
+}
+
+.log-panel__deployments-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-weight: 600;
+  color: var(--color-accent-deep);
+  text-decoration: none;
+}
+
+.log-panel__deployments-link:hover,
+.log-panel__deployments-link:focus-visible {
+  text-decoration: underline;
+}
+
 @media (max-width: 38rem) {
   .log-panel__deployments-table {
     min-width: 0;
