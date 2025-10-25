@@ -427,9 +427,11 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
   );
   assert.ok(layout, 'layout principal não foi renderizado');
-  assert.equal(layout.children.length, 5, 'o painel deve renderizar cinco widgets principais');
+  assert.equal(layout.children.length, 7, 'o painel deve renderizar cinco widgets principais mais a sobreposição');
 
   const [introWidget, labelWidget, themeWidget, accessWidget, userDataWidget] = layout.children;
+  const userTableBackdrop = layout.children[5];
+  const userTableModal = layout.children[6];
   assert.ok(
     introWidget instanceof FakeElement && introWidget.classList.contains('user-dashboard__widget--intro'),
     'o widget de introdução deve abrir a primeira linha do painel',
@@ -490,6 +492,38 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     'user-data',
     'a seção de dados do usuário deve indicar identificador semântico',
   );
+
+  assert.ok(
+    userTableBackdrop instanceof FakeElement &&
+      userTableBackdrop.classList.contains('user-dashboard__table-backdrop'),
+    'o painel deve fornecer um backdrop dedicado para a tabela flutuante',
+  );
+  assert.equal(userTableBackdrop.hidden, true, 'o backdrop deve iniciar oculto até a tabela ser aberta');
+
+  assert.ok(
+    userTableModal instanceof FakeElement && userTableModal.classList.contains('user-dashboard__table-modal'),
+    'a tabela deve ser renderizada dentro de uma janela modal dedicada',
+  );
+  assert.equal(userTableModal.hidden, true, 'a janela modal da tabela deve iniciar oculta');
+  assert.equal(userTableModal.getAttribute('role'), 'dialog', 'a janela deve se identificar como um diálogo modal');
+  assert.equal(
+    userTableModal.getAttribute('aria-hidden'),
+    'true',
+    'o diálogo deve sinalizar que está oculto antes de qualquer interação',
+  );
+
+  const tableInsideWidget = userDataWidget.querySelector('.admin-user-table-container');
+  assert.equal(
+    tableInsideWidget,
+    null,
+    'a tabela não deve ser exibida diretamente no widget enquanto estiver recolhida',
+  );
+
+  const modalTableContainer = userTableModal.querySelector('.admin-user-table-container');
+  assert.ok(modalTableContainer, 'a tabela deve ser incorporada ao conteúdo do diálogo modal');
+
+  const modalCloseButton = userTableModal.querySelector('.user-dashboard__table-close');
+  assert.ok(modalCloseButton, 'o diálogo deve fornecer um botão para fechar a tabela flutuante');
 
   const themeWidgetElement = themeWidget;
   assert.ok(themeWidgetElement, 'widget de preferências de tema não foi renderizado');
