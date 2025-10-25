@@ -28,7 +28,7 @@ import {
   createUserDashboardLabelWidget,
   createUserDashboardUsersWidget,
 } from './shared/user-dashboard-widgets.js';
-import { formatDateTime } from './shared/system-users-widget.js';
+import { formatDateTime, formatUserType } from './shared/system-users-widget.js';
 import eventBus from '../events/event-bus.js';
 import {
   markActivityDirty,
@@ -451,6 +451,31 @@ export function renderUserPanel(viewRoot) {
   const userDataContent = document.createElement('div');
   userDataContent.className = 'user-panel__widget-content user-dashboard__user-data-content';
 
+  const summaryPreview = document.createElement('div');
+  summaryPreview.className = 'user-dashboard__summary user-dashboard__summary--preview';
+  summaryPreview.id = 'user-dashboard-summary-preview';
+  summaryPreview.hidden = true;
+
+  const summaryPreviewList = document.createElement('dl');
+  summaryPreviewList.className = 'user-dashboard__summary-list user-dashboard__summary-list--preview';
+  summaryPreviewList.id = 'user-dashboard-summary-preview-list';
+  summaryPreviewList.hidden = true;
+
+  const previewName = createSummaryItem('Nome');
+  const previewPhone = createSummaryItem('Telefone');
+  const previewType = createSummaryItem('Tipo');
+  const previewLastAccess = createSummaryItem('Último acesso');
+  const previewUpdated = createSummaryItem('Atualizado em');
+
+  summaryPreviewList.append(
+    previewName.wrapper,
+    previewPhone.wrapper,
+    previewType.wrapper,
+    previewLastAccess.wrapper,
+    previewUpdated.wrapper,
+  );
+  summaryPreview.append(summaryPreviewList);
+
   const accountSummary = document.createElement('div');
   accountSummary.className = 'user-dashboard__summary';
   accountSummary.id = 'user-dashboard-summary';
@@ -659,6 +684,27 @@ export function renderUserPanel(viewRoot) {
   const userDataWidget = userDataWidgetInstance.widget;
   userDataWidget.dataset.sectionId = 'user-data';
   userDataWidget.dataset.sectionState = 'empty';
+  const userDataTableContainer = userDataWidget.querySelector('.admin-user-table-container');
+  let summaryPreviewInserted = false;
+
+  if (userDataTableContainer instanceof HTMLElement) {
+    if (typeof userDataTableContainer.before === 'function') {
+      userDataTableContainer.before(summaryPreview);
+      summaryPreviewInserted = true;
+    } else if (typeof userDataWidget.insertBefore === 'function') {
+      userDataWidget.insertBefore(summaryPreview, userDataTableContainer);
+      summaryPreviewInserted = true;
+    }
+  }
+
+  if (!summaryPreviewInserted) {
+    if (typeof userDataWidget.append === 'function') {
+      userDataWidget.append(summaryPreview);
+    } else if (typeof userDataWidget.appendChild === 'function') {
+      userDataWidget.appendChild(summaryPreview);
+    }
+  }
+
   userDataWidget.append(userDataContent);
 
   const findFieldEntry = (key) => accountFields.find((field) => field.key === key) ?? { field: null, input: null };
@@ -1327,6 +1373,33 @@ export function renderUserPanel(viewRoot) {
   const updateSummary = () => {
     const user = activeUser;
     const fallback = 'Não informado';
+    const previewFallback = '—';
+
+    if (previewName.valueElement) {
+      previewName.valueElement.textContent = user?.name ? user.name : previewFallback;
+    }
+
+    if (previewPhone.valueElement) {
+      previewPhone.valueElement.textContent = user?.phone
+        ? formatPhoneNumberForDisplay(user.phone)
+        : previewFallback;
+    }
+
+    if (previewType.valueElement) {
+      previewType.valueElement.textContent = user ? formatUserType(user.userType) : previewFallback;
+    }
+
+    if (previewLastAccess.valueElement) {
+      previewLastAccess.valueElement.textContent = user?.lastAccessAt
+        ? formatDateTime(user.lastAccessAt)
+        : previewFallback;
+    }
+
+    if (previewUpdated.valueElement) {
+      previewUpdated.valueElement.textContent = user?.updatedAt
+        ? formatDateTime(user.updatedAt)
+        : previewFallback;
+    }
 
     if (summaryName.valueElement) {
       summaryName.valueElement.textContent = user?.name ? user.name : fallback;
@@ -1433,6 +1506,14 @@ export function renderUserPanel(viewRoot) {
     if (!hasUser) {
       userDataExpanded = false;
       restoreUserDataContentToRoot();
+    }
+
+    if (summaryPreview instanceof HTMLElement) {
+      summaryPreview.hidden = !hasUser;
+    }
+
+    if (summaryPreviewList instanceof HTMLElement) {
+      summaryPreviewList.hidden = !hasUser;
     }
 
     if (accountSummary instanceof HTMLElement) {
