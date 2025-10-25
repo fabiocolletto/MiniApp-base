@@ -1411,7 +1411,7 @@ function updateHeaderSession(user) {
   const isAdmin = normalizedType === 'administrador';
   const showAdminLink = isAuthenticated && isAdmin;
   const showTemporaryProjectsLink = isAuthenticated && isAdmin;
-  const showDesignKitLink = isAuthenticated;
+  const showDesignKitLink = isAuthenticated && isAdmin;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
