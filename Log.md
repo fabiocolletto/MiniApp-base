@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.236 - 2025-10-25 15:57 BRT
+- Ajusta o painel de tarefas para exibir o formulário de criação apenas ao acionar o botão "Nova tarefa", com estados ARIA atualizados.
+- Assegura que o formulário oculto permaneça invisível aplicando regra específica de CSS.
+
 ## v0.1.235 - 2025-10-25 15:49 BRT
 - Conecta o painel de tarefas a um store persistente com IndexedDB e fallback em memória, permitindo cadastrar, editar e remover itens.
 - Acrescenta formulário interativo com validações, feedbacks e botões de ação nos cards do backlog para abrir edições rápidas.
