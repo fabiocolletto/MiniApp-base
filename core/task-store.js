@@ -3,14 +3,64 @@ import { logError, logInfo, logWarn } from '../sys/tools/log.js';
 const DB_NAME = 'miniapp_tasks_v1';
 const DB_VERSION = 1;
 const TASKS_STORE = 'tasks';
+const SEED_FLAG_STORAGE_KEY = `miniapp_tasks_seeded_v${DB_VERSION}`;
+
+let seedFlagReadWarningLogged = false;
+let seedFlagWriteWarningLogged = false;
 
 const TASK_STATUS_VALUES = ['backlog', 'in-progress', 'review', 'blocked', 'done'];
 const TASK_PRIORITY_VALUES = ['high', 'medium', 'low'];
 
+function resolveSeedFlagStorage() {
+  if (typeof globalThis !== 'object' || !globalThis) {
+    return null;
+  }
+
+  const storage = globalThis.localStorage;
+  if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function') {
+    return null;
+  }
+
+  return storage;
+}
+
+function readPersistentSeedFlag() {
+  const storage = resolveSeedFlagStorage();
+  if (!storage) {
+    return false;
+  }
+
+  try {
+    return storage.getItem(SEED_FLAG_STORAGE_KEY) === '1';
+  } catch (error) {
+    if (!seedFlagReadWarningLogged) {
+      seedFlagReadWarningLogged = true;
+      logWarn('task-store.seed.flag.read', 'Não foi possível verificar o marcador persistente de seed.', error);
+    }
+    return false;
+  }
+}
+
+function persistSeedFlag() {
+  const storage = resolveSeedFlagStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.setItem(SEED_FLAG_STORAGE_KEY, '1');
+  } catch (error) {
+    if (!seedFlagWriteWarningLogged) {
+      seedFlagWriteWarningLogged = true;
+      logWarn('task-store.seed.flag.write', 'Não foi possível registrar o marcador persistente de seed.', error);
+    }
+  }
+}
+
 const useMemoryStore = typeof indexedDB === 'undefined';
 const memoryTasks = [];
 let openPromise;
-let seededDefaults = false;
+let seededDefaults = readPersistentSeedFlag();
 let cachedTasks = [];
 
 const listeners = new Set();
@@ -502,11 +552,13 @@ export async function seedTaskStore(defaultTasks = []) {
   const existing = await listTasks();
   if (existing.length > 0) {
     seededDefaults = true;
+    persistSeedFlag();
     return;
   }
 
   if (!Array.isArray(defaultTasks) || defaultTasks.length === 0) {
     seededDefaults = true;
+    persistSeedFlag();
     return;
   }
 
@@ -529,6 +581,7 @@ export async function seedTaskStore(defaultTasks = []) {
   }
 
   seededDefaults = true;
+  persistSeedFlag();
   logInfo('task-store.seed', `Tarefas padrão carregadas (${normalized.length}).`);
 }
 

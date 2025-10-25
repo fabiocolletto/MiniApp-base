@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.239 - 2025-10-25 16:45 BRT
+- Impede que o seed do painel de tarefas repovoe os registros padrão após excluir todos os itens, usando marcador persistente no store.
+- Atualiza a versão do sistema para refletir a release v0.1.239 publicada às 16h45 em BRT.
+
 ## v0.1.238 - 2025-10-25 16:29 BRT
 - Adiciona testes automatizados garantindo que o formulário do painel de tarefas só apareça ao criar ou editar itens e volte a
   ficar oculto ao cancelar.
