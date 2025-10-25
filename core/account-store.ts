@@ -1,4 +1,4 @@
-import { logError, logInfo, logWarn } from '../sys/log.js';
+import { logError, logInfo, logWarn } from '../sys/tools/log.js';
 
 export type Account = {
   id: string;

@@ -2,7 +2,7 @@ import { determineInitialRoute } from '../core/bootstrap.js';
 import { router } from '../router/index.js';
 import { initializeAppShell, showSplash } from '../ui/app-shell.js';
 import { initializeTheme } from '../scripts/theme/theme-manager.js';
-import { logError } from '../sys/log.js';
+import { logError } from '../sys/tools/log.js';
 
 (async () => {
   initializeTheme();

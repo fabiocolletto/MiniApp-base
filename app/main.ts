@@ -6,7 +6,7 @@ import {
   renderView,
   showSplash,
 } from '../ui/app-shell.js';
-import { logError, logInfo } from '../sys/log.js';
+import { logError, logInfo } from '../sys/tools/log.js';
 import type { RouteName } from '../ui/app-shell.js';
 
 const ROUTE_BY_VIEW: Partial<Record<string, RouteName>> = {
