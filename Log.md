@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.233 - 2025-10-25 14:41 BRT
+- Reforça as diretrizes de log no `AGENTS.md` para congelar versões anteriores e permitir apenas complementos na versão vigente.
+
 ## v0.1.232 - 2025-10-25 14:00 BRT
 - Exibe a tabela de dados do usuário somente ao expandir o widget, apresentando-a em modal com fundo desfocado e restauração de foco.
 - Atualiza os indicadores do painel do usuário e do projeto para comunicarem a nova versão e horário de publicação.
