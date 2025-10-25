@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.234 - 2025-10-25 15:03 BRT
+- Cria o painel de tarefas com indicadores de andamento e backlog priorizado.
+- Permite abrir os detalhes de cada tarefa em modal com o shell desfocado e checklist contextual.
+- Atualiza metadados, versão do sistema e painel do projeto para comunicar a release v0.1.234.
+
 ## v0.1.233 - 2025-10-25 14:41 BRT
 - Reforça as diretrizes de log no `AGENTS.md` para congelar versões anteriores e permitir apenas complementos na versão vigente.
 

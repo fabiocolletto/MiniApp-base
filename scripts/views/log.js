@@ -37,10 +37,16 @@ const DEPLOYED_PANELS = Object.freeze([
     updatedAt: '2025-10-25T06:46:00-03:00',
   }),
   Object.freeze({
+    id: 'tasks',
+    name: 'Painel de tarefas',
+    version: 'v0.1.234',
+    updatedAt: '2025-10-25T15:03:00-03:00',
+  }),
+  Object.freeze({
     id: 'log',
     name: 'Painel do projeto',
-    version: 'v0.1.232',
-    updatedAt: '2025-10-25T14:00:00-03:00',
+    version: 'v0.1.234',
+    updatedAt: '2025-10-25T15:03:00-03:00',
   }),
 ]);
 
