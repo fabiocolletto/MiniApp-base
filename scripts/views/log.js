@@ -21,8 +21,8 @@ const DEPLOYED_PANELS = Object.freeze([
   Object.freeze({
     id: 'user',
     name: 'Painel do usuário',
-    version: 'v0.1.230',
-    updatedAt: '2025-10-25T07:58:00-03:00',
+    version: 'v0.1.232',
+    updatedAt: '2025-10-25T14:00:00-03:00',
   }),
   Object.freeze({
     id: 'admin',
@@ -39,8 +39,8 @@ const DEPLOYED_PANELS = Object.freeze([
   Object.freeze({
     id: 'log',
     name: 'Painel do projeto',
-    version: 'v0.1.231',
-    updatedAt: '2025-10-25T08:45:00-03:00',
+    version: 'v0.1.232',
+    updatedAt: '2025-10-25T14:00:00-03:00',
   }),
 ]);
 

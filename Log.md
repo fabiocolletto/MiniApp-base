@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.232 - 2025-10-25 14:00 BRT
+- Exibe a tabela de dados do usuário somente ao expandir o widget, apresentando-a em modal com fundo desfocado e restauração de foco.
+- Atualiza os indicadores do painel do usuário e do projeto para comunicarem a nova versão e horário de publicação.
+- Sincroniza os metadados do sistema com a release v0.1.232.
+
 ## v0.1.231 - 2025-10-25 10:41 BRT
 - Automatiza a sincronização da versão do sistema no rodapé e no painel administrativo via `syncSystemReleaseIndicators` da ferramenta de log.
 - Adiciona identificadores aos chips de versão e publicação da navegação administrativa para permitir atualizações dinâmicas.
