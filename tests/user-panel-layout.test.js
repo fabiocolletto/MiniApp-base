@@ -159,6 +159,23 @@ class FakeElement {
     this.eventListeners.get(eventName).add(handler);
   }
 
+  removeEventListener(eventName, handler) {
+    if (!eventName || typeof handler !== 'function') {
+      return;
+    }
+
+    if (!this.eventListeners.has(eventName)) {
+      return;
+    }
+
+    const listeners = this.eventListeners.get(eventName);
+    listeners.delete(handler);
+
+    if (listeners.size === 0) {
+      this.eventListeners.delete(eventName);
+    }
+  }
+
   dispatchEvent(event) {
     if (!event || typeof event.type !== 'string') {
       return false;
@@ -683,4 +700,104 @@ test('renderUserPanel monta preferências de tema e formulário principais com a
     false,
     'botão de troca de usuário deve permanecer disponível para abrir a tela de login mesmo sem sessão ativa',
   );
+});
+
+test('aba Dados pessoais abre a sobreposição de edição quando há sessão ativa', async (t) => {
+  const fakeDocument = new FakeDocument();
+  globalThis.document = fakeDocument;
+  globalThis.HTMLElement = FakeElement;
+  globalThis.CustomEvent = class FakeCustomEvent {
+    constructor(type, options = {}) {
+      this.type = type;
+      this.detail = options.detail ?? null;
+      this.bubbles = Boolean(options.bubbles);
+      this.cancelable = Boolean(options.cancelable);
+      this.defaultPrevented = false;
+    }
+
+    preventDefault() {
+      if (this.cancelable) {
+        this.defaultPrevented = true;
+      }
+    }
+  };
+
+  const userStore = await import('../scripts/data/user-store.js');
+  const sessionStore = await import('../scripts/data/session-store.js');
+
+  await userStore.resetUserStoreForTests();
+  sessionStore.clearActiveUser();
+
+  const createdUser = await userStore.addUser({
+    name: 'Usuária Teste',
+    phone: '41999990000',
+    password: '123456',
+    device: 'Navegador principal',
+    profile: { email: 'usuario.teste@example.com' },
+    userType: 'usuario',
+    preferences: { theme: 'light', footerIndicators: 'visible' },
+  });
+
+  sessionStore.setActiveUser(createdUser.id);
+
+  const { renderUserPanel } = await import('../scripts/views/user.js');
+  const { runViewCleanup } = await import('../scripts/view-cleanup.js');
+
+  const viewRoot = fakeDocument.createElement('div');
+  renderUserPanel(viewRoot);
+
+  const layout = viewRoot.children.find(
+    (child) => child instanceof FakeElement && child.classList.contains('user-panel__layout'),
+  );
+  assert.ok(layout, 'layout principal não foi renderizado');
+
+  const userDataWidget = layout.children[4];
+  const userTableBackdrop = layout.children[5];
+  const userTableModal = layout.children[6];
+
+  assert.equal(
+    userDataWidget.dataset.sectionState,
+    'collapsed',
+    'o widget de dados do usuário deve iniciar recolhido mesmo com sessão ativa',
+  );
+
+  const form = userDataWidget.querySelector('form.user-form');
+  assert.ok(form, 'formulário principal não foi encontrado');
+  assert.equal(form.hidden, true, 'formulário deve iniciar oculto mesmo com sessão ativa');
+
+  const personalTab =
+    form
+      ?.querySelectorAll?.('.user-dashboard__tab')
+      ?.find((tab) => tab instanceof FakeElement && tab.dataset?.tab === 'personal') ?? null;
+  assert.ok(personalTab, 'aba de dados pessoais não foi encontrada');
+
+  assert.equal(userTableModal.hidden, true, 'a janela modal deve iniciar oculta');
+  assert.equal(userTableBackdrop.hidden, true, 'o backdrop deve iniciar oculto');
+
+  personalTab.dispatchEvent({ type: 'click' });
+
+  assert.equal(
+    userDataWidget.dataset.sectionState,
+    'expanded',
+    'o widget de dados do usuário deve ficar expandido após clicar na aba de dados pessoais',
+  );
+  assert.equal(form.hidden, false, 'o formulário deve ficar visível após abrir a aba de dados pessoais');
+  assert.equal(userTableModal.hidden, false, 'a janela modal deve ser exibida após clicar na aba');
+  assert.equal(userTableModal.getAttribute('aria-hidden'), 'false', 'a janela deve sinalizar que está visível');
+  assert.equal(userTableBackdrop.hidden, false, 'o backdrop deve ser exibido após abrir a janela modal');
+  assert.ok(
+    userTableBackdrop.classList.contains('app-modal-backdrop--visible'),
+    'o backdrop deve aplicar a classe de visibilidade ao abrir a janela modal',
+  );
+
+  runViewCleanup(viewRoot);
+
+  sessionStore.clearActiveUser();
+  await userStore.resetUserStoreForTests();
+
+  t.after(async () => {
+    delete globalThis.document;
+    delete globalThis.HTMLElement;
+    delete globalThis.CustomEvent;
+  });
 });
