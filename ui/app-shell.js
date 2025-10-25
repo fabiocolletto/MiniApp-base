@@ -10,6 +10,7 @@ import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
+import { renderTaskDashboard } from '../scripts/views/tasks.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -68,6 +69,7 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerTasksLink = document.querySelector('.header-tasks-link');
 const headerProjectLink = document.querySelector('.header-project-link');
 const headerTemporaryLink = document.querySelector('.header-temporary-link');
 const headerUserLink = document.querySelector('.header-user-link');
@@ -268,6 +270,7 @@ let headerMobileMenuPanel = null;
 let mobileHomeAction = null;
 let mobileStoreAction = null;
 let mobileProjectAction = null;
+let mobileTasksAction = null;
 let mobileTemporaryAction = null;
 let mobileUserAction = null;
 let mobileLoginAction = null;
@@ -525,6 +528,7 @@ const views = {
   log: renderLog,
   'temporary-projects': renderTemporaryProjects,
   home: renderHome,
+  tasks: renderTaskDashboard,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -549,6 +553,7 @@ const MENU_LABEL_FALLBACKS = {
   register: 'Crie sua conta',
   log: 'Painel do projeto',
   'temporary-projects': 'Projetos temporários',
+  tasks: 'Painel de tarefas',
   legal: 'Documentos legais',
   home: 'Início',
   dashboard: 'Início',
@@ -1184,6 +1189,16 @@ function ensureHeaderMobileMenu() {
     renderView('log');
   });
 
+  const tasksAction = document.createElement('button');
+  tasksAction.type = 'button';
+  tasksAction.id = 'mobile-access-menu-tasks';
+  tasksAction.className = 'app-modal__action header-mobile-menu__action';
+  tasksAction.textContent = 'Painel de tarefas';
+  tasksAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('tasks');
+  });
+
   const temporaryAction = document.createElement('button');
   temporaryAction.type = 'button';
   temporaryAction.id = 'mobile-access-menu-temporary';
@@ -1247,6 +1262,7 @@ function ensureHeaderMobileMenu() {
     homeAction,
     storeAction,
     projectAction,
+    tasksAction,
     temporaryAction,
     userAction,
     loginAction,
@@ -1259,6 +1275,7 @@ function ensureHeaderMobileMenu() {
   mobileHomeAction = homeAction;
   mobileStoreAction = storeAction;
   mobileProjectAction = projectAction;
+  mobileTasksAction = tasksAction;
   mobileTemporaryAction = temporaryAction;
   mobileUserAction = userAction;
   mobileLoginAction = loginAction;
@@ -1411,11 +1428,12 @@ function updateHeaderSession(user) {
   const isAdmin = normalizedType === 'administrador';
   const showAdminLink = isAuthenticated && isAdmin;
   const showTemporaryProjectsLink = isAuthenticated && isAdmin;
-  const showDesignKitLink = isAuthenticated && isAdmin;
+  const showDesignKitLink = isAuthenticated;
   const menuControls = headerMenuControls instanceof HTMLElement ? headerMenuControls : null;
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerTasksLink, true);
   setLinkVisibility(headerProjectLink, true);
   setLinkVisibility(headerTemporaryLink, showTemporaryProjectsLink);
   setLinkVisibility(headerUserLink, isAuthenticated);
@@ -1448,6 +1466,7 @@ function updateHeaderSession(user) {
     setLinkVisibility(mobileHomeAction, isAuthenticated);
     setLinkVisibility(mobileStoreAction, true);
     setLinkVisibility(mobileProjectAction, true);
+    setLinkVisibility(mobileTasksAction, true);
     setLinkVisibility(mobileTemporaryAction, showTemporaryProjectsLink);
     setLinkVisibility(mobileUserAction, isAuthenticated);
     setLinkVisibility(mobileLoginAction, true);
@@ -1718,6 +1737,332 @@ function openMiniAppDetailsModal({ app, trigger } = {}) {
   });
 }
 
+const taskModalIdPrefix = 'task-details';
+
+function createTaskMetaEntry(term, description) {
+  if (!term || !description) {
+    return null;
+  }
+
+  const container = document.createElement('div');
+  container.className = 'task-dashboard__modal-meta-item';
+
+  const dt = document.createElement('dt');
+  dt.className = 'task-dashboard__modal-meta-term';
+  dt.textContent = term;
+
+  const dd = document.createElement('dd');
+  dd.className = 'task-dashboard__modal-meta-value';
+  dd.textContent = description;
+
+  container.append(dt, dd);
+  return container;
+}
+
+function buildTaskDetailsPanel(task) {
+  const rawId = typeof task?.id === 'string' && task.id.trim() ? task.id.trim() : 'task';
+  const panelId = `${taskModalIdPrefix}-${rawId}`;
+
+  const panel = document.createElement('section');
+  panel.className = 'app-modal__panel app-modal__panel--task task-dashboard__modal';
+  panel.id = panelId;
+  panel.setAttribute('role', 'document');
+
+  if (typeof task?.status === 'string') {
+    panel.dataset.status = task.status;
+  }
+
+  if (typeof task?.dueState === 'string') {
+    panel.dataset.dueState = task.dueState;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'app-modal__header task-dashboard__modal-header';
+
+  const title = document.createElement('h3');
+  title.className = 'app-modal__title task-dashboard__modal-title';
+  title.id = `${panelId}-title`;
+  title.textContent = typeof task?.title === 'string' && task.title.trim() ? task.title.trim() : 'Detalhes da tarefa';
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'app-modal__close task-dashboard__modal-close';
+  closeButton.textContent = 'Fechar';
+  closeButton.setAttribute('aria-label', 'Fechar detalhes da tarefa');
+  closeButton.addEventListener('click', () => {
+    closeAppModal({ restoreFocus: true, id: panelId });
+  });
+
+  header.append(title, closeButton);
+
+  const statusRow = document.createElement('div');
+  statusRow.className = 'task-dashboard__modal-status-row';
+
+  const statusBadge = document.createElement('span');
+  statusBadge.className = 'task-dashboard__status task-dashboard__modal-status';
+  if (typeof task?.status === 'string') {
+    statusBadge.dataset.status = task.status;
+  }
+  statusBadge.textContent =
+    typeof task?.statusLabel === 'string' && task.statusLabel.trim()
+      ? task.statusLabel.trim()
+      : 'Status não definido';
+
+  const priorityBadge = document.createElement('span');
+  priorityBadge.className = 'task-dashboard__priority task-dashboard__modal-priority';
+  if (typeof task?.priority === 'string') {
+    priorityBadge.dataset.priority = task.priority;
+  }
+  priorityBadge.textContent = `Prioridade ${
+    typeof task?.priorityLabel === 'string' && task.priorityLabel.trim() ? task.priorityLabel.trim() : 'padrão'
+  }`;
+
+  const dueBadge = document.createElement('span');
+  dueBadge.className = 'task-dashboard__due-badge';
+  if (typeof task?.dueState === 'string') {
+    dueBadge.dataset.dueState = task.dueState;
+  }
+  dueBadge.textContent =
+    typeof task?.dueRelative === 'string' && task.dueRelative.trim()
+      ? task.dueRelative.trim()
+      : typeof task?.dueLabel === 'string' && task.dueLabel.trim()
+        ? task.dueLabel.trim()
+        : 'Sem prazo definido';
+
+  statusRow.append(statusBadge, priorityBadge, dueBadge);
+
+  const lead = document.createElement('p');
+  lead.className = 'task-dashboard__modal-lead';
+  lead.id = `${panelId}-lead`;
+  lead.textContent =
+    typeof task?.summary === 'string' && task.summary.trim() ? task.summary.trim() : 'Nenhum resumo disponível para esta tarefa.';
+
+  const metaWrapper = document.createElement('div');
+  metaWrapper.className = 'task-dashboard__modal-meta';
+
+  const metaEntries = [];
+  const dueAbsolute =
+    typeof task?.dueAbsolute === 'string' && task.dueAbsolute.trim()
+      ? `${task.dueAbsolute.trim()} · ${
+          typeof task?.dueRelative === 'string' && task.dueRelative.trim() ? task.dueRelative.trim() : 'Sem prazo definido'
+        }`
+      : null;
+  const ownerLabel =
+    typeof task?.ownerName === 'string' && task.ownerName.trim()
+      ? `${task.ownerName.trim()} · ${
+          typeof task?.ownerRole === 'string' && task.ownerRole.trim() ? task.ownerRole.trim() : 'Responsável não informado'
+        }`
+      : null;
+  const updateLabel =
+    typeof task?.lastUpdateRelative === 'string' && task.lastUpdateRelative.trim()
+      ? `Atualizado ${task.lastUpdateRelative.trim()}`
+      : null;
+  const checklistLabel = Number.isFinite(task?.completedChecklist) && Array.isArray(task?.checklist)
+    ? `${task.completedChecklist} de ${task.checklist.length} subtarefas concluídas`
+    : null;
+
+  if (dueAbsolute) {
+    metaEntries.push(createTaskMetaEntry('Prazo', dueAbsolute));
+  }
+
+  if (ownerLabel) {
+    metaEntries.push(createTaskMetaEntry('Responsável', ownerLabel));
+  }
+
+  if (updateLabel) {
+    metaEntries.push(createTaskMetaEntry('Última atualização', updateLabel));
+  }
+
+  if (checklistLabel) {
+    metaEntries.push(createTaskMetaEntry('Checklist', checklistLabel));
+  }
+
+  metaEntries.filter(Boolean).forEach((entry) => metaWrapper.append(entry));
+
+  const progressValue = Number.isFinite(task?.progress) ? Math.max(0, Math.min(100, Math.round(task.progress))) : 0;
+  const progressContainer = document.createElement('div');
+  progressContainer.className = 'task-dashboard__modal-progress';
+  progressContainer.setAttribute('role', 'group');
+
+  const progressHeader = document.createElement('div');
+  progressHeader.className = 'task-dashboard__modal-progress-header';
+
+  const progressLabel = document.createElement('span');
+  progressLabel.className = 'task-dashboard__modal-progress-label';
+  progressLabel.textContent = 'Progresso';
+
+  const progressValueLabel = document.createElement('span');
+  progressValueLabel.className = 'task-dashboard__modal-progress-value';
+  progressValueLabel.textContent = `${progressValue}%`;
+
+  progressHeader.append(progressLabel, progressValueLabel);
+
+  const progressTrack = document.createElement('div');
+  progressTrack.className = 'task-dashboard__modal-progress-track';
+  progressTrack.setAttribute('role', 'progressbar');
+  progressTrack.setAttribute('aria-valuemin', '0');
+  progressTrack.setAttribute('aria-valuemax', '100');
+  progressTrack.setAttribute('aria-valuenow', String(progressValue));
+  progressTrack.setAttribute('aria-label', 'Progresso da tarefa');
+
+  const progressBar = document.createElement('span');
+  progressBar.className = 'task-dashboard__modal-progress-bar';
+  progressBar.style.width = `${progressValue}%`;
+  progressTrack.append(progressBar);
+
+  progressContainer.append(progressHeader, progressTrack);
+
+  const description = document.createElement('p');
+  description.className = 'task-dashboard__modal-description';
+  description.textContent =
+    typeof task?.description === 'string' && task.description.trim()
+      ? task.description.trim()
+      : 'Nenhum detalhe adicional registrado.';
+
+  const highlight = document.createElement('p');
+  highlight.className = 'task-dashboard__modal-highlight';
+  if (typeof task?.statusContext === 'string' && task.statusContext.trim()) {
+    highlight.textContent = task.statusContext.trim();
+  } else {
+    highlight.hidden = true;
+  }
+
+  const checklistSection = document.createElement('section');
+  checklistSection.className = 'task-dashboard__modal-section';
+
+  const checklistTitle = document.createElement('h4');
+  checklistTitle.className = 'task-dashboard__modal-section-title';
+  checklistTitle.textContent = 'Subtarefas';
+
+  let checklistContent = null;
+  if (Array.isArray(task?.checklist) && task.checklist.length > 0) {
+    const list = document.createElement('ul');
+    list.className = 'task-dashboard__modal-checklist';
+    task.checklist.forEach((item) => {
+      const listItem = document.createElement('li');
+      listItem.className = 'task-dashboard__modal-checklist-item';
+      listItem.dataset.state = item.done ? 'done' : 'pending';
+
+      const marker = document.createElement('span');
+      marker.className = 'task-dashboard__modal-check';
+      marker.setAttribute('aria-hidden', 'true');
+
+      const label = document.createElement('span');
+      label.className = 'task-dashboard__modal-check-label';
+      label.textContent = item.label;
+
+      listItem.append(marker, label);
+      list.append(listItem);
+    });
+    checklistContent = list;
+  } else {
+    const empty = document.createElement('p');
+    empty.className = 'task-dashboard__modal-empty';
+    empty.textContent = 'Nenhuma subtarefa cadastrada.';
+    checklistContent = empty;
+  }
+
+  checklistSection.append(checklistTitle, checklistContent);
+
+  const activitySection = document.createElement('section');
+  activitySection.className = 'task-dashboard__modal-section';
+
+  const activityTitle = document.createElement('h4');
+  activityTitle.className = 'task-dashboard__modal-section-title';
+  activityTitle.textContent = 'Últimas atualizações';
+
+  let activityContent = null;
+  if (Array.isArray(task?.activities) && task.activities.length > 0) {
+    const timeline = document.createElement('ol');
+    timeline.className = 'task-dashboard__modal-activity';
+
+    task.activities.forEach((entry) => {
+      const activityItem = document.createElement('li');
+      activityItem.className = 'task-dashboard__modal-activity-item';
+
+      const time = document.createElement('p');
+      time.className = 'task-dashboard__modal-activity-time';
+      time.textContent = entry.relative ? entry.relative : entry.absolute;
+
+      const descriptionText = document.createElement('p');
+      descriptionText.className = 'task-dashboard__modal-activity-description';
+      descriptionText.textContent = entry.label;
+
+      const absolute = document.createElement('p');
+      absolute.className = 'task-dashboard__modal-activity-absolute';
+      absolute.textContent = entry.absolute;
+
+      activityItem.append(time, descriptionText, absolute);
+      timeline.append(activityItem);
+    });
+
+    activityContent = timeline;
+  } else {
+    const emptyActivity = document.createElement('p');
+    emptyActivity.className = 'task-dashboard__modal-empty';
+    emptyActivity.textContent = 'Nenhuma atualização registrada ainda.';
+    activityContent = emptyActivity;
+  }
+
+  activitySection.append(activityTitle, activityContent);
+
+  const tagsSection = document.createElement('div');
+  tagsSection.className = 'task-dashboard__modal-tags';
+
+  if (Array.isArray(task?.tags) && task.tags.length > 0) {
+    const tagsLabel = document.createElement('span');
+    tagsLabel.className = 'task-dashboard__modal-tags-label';
+    tagsLabel.textContent = 'Etiquetas:';
+
+    const tagList = document.createElement('ul');
+    tagList.className = 'task-dashboard__modal-tags-list';
+
+    task.tags.forEach((tag) => {
+      const item = document.createElement('li');
+      item.className = 'task-dashboard__modal-tag';
+      item.textContent = tag;
+      tagList.append(item);
+    });
+
+    tagsSection.append(tagsLabel, tagList);
+  } else {
+    tagsSection.hidden = true;
+  }
+
+  panel.append(
+    header,
+    statusRow,
+    lead,
+    metaWrapper,
+    progressContainer,
+    description,
+    highlight,
+    checklistSection,
+    activitySection,
+    tagsSection,
+  );
+
+  return { panel, title, lead, closeButton };
+}
+
+function openTaskDetailsModal(payload = {}) {
+  const task = payload && typeof payload === 'object' ? payload.task : null;
+  if (!task || typeof task !== 'object') {
+    return;
+  }
+
+  const { panel, title, lead, closeButton } = buildTaskDetailsPanel(task);
+
+  openAppModal({
+    id: panel.id,
+    panel,
+    labelledBy: title.id,
+    describedBy: lead.id,
+    focusSelector: closeButton,
+    trigger: payload?.trigger instanceof HTMLElement ? payload.trigger : null,
+  });
+}
+
 function highlightSessionLegendState(state) {
   sessionLegendItems.forEach((item, key) => {
     const isActive = key === state;
@@ -1900,7 +2245,7 @@ function focusViewRoot() {
 }
 
 function applyMainState(view) {
-  const isAdminView = view === 'admin' || view === 'admin-design-kit';
+  const isAdminView = view === 'admin' || view === 'admin-design-kit' || view === 'tasks';
   const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
@@ -2019,6 +2364,12 @@ export function initializeAppShell(router) {
     event.preventDefault();
     renderView('miniapps');
     closeHeaderMenu();
+  });
+
+  headerTasksLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('tasks');
   });
 
   headerProjectLink?.addEventListener('click', (event) => {
@@ -2153,6 +2504,10 @@ export function initializeAppShell(router) {
     }
 
     openMiniAppDetailsModal(payload);
+  });
+
+  eventBus.on('tasks:details', (payload) => {
+    openTaskDetailsModal(payload);
   });
 
   updateBrandAssets(getResolvedTheme());

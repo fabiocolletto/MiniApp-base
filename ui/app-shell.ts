@@ -9,6 +9,7 @@ import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
 import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
+import { renderTaskDashboard } from '../scripts/views/tasks.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -35,6 +36,7 @@ const versionButton = document.querySelector('.footer-version');
 const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
+const headerTasksLink = document.querySelector('.header-tasks-link');
 const headerProjectLink = document.querySelector('.header-project-link');
 const headerUserLink = document.querySelector('.header-user-link');
 const headerThemeToggle = document.querySelector('.header-theme-toggle');
@@ -243,6 +245,7 @@ type ViewName =
   | 'admin-design-kit'
   | 'log'
   | 'home'
+  | 'tasks'
   | 'user'
   | 'miniapps'
   | 'login'
@@ -257,6 +260,7 @@ const MENU_LABEL_FALLBACKS: Partial<Record<MenuViewName, string>> = {
   admin: 'Painel administrativo',
   'admin-design-kit': 'Painel de design',
   miniapps: 'MiniApps',
+  tasks: 'Painel de tarefas',
   user: 'Painel do usuário',
   login: 'Painel de Login',
   register: 'Crie sua conta',
@@ -272,6 +276,7 @@ const views: Record<string, (viewRoot: HTMLElement) => void> = {
   'admin-design-kit': renderAdminDesignKit,
   log: renderLog,
   home: renderHome,
+  tasks: renderTaskDashboard,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -690,6 +695,7 @@ function updateHeaderSession(user: unknown): void {
 
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
+  setLinkVisibility(headerTasksLink, true);
   setLinkVisibility(headerProjectLink, true);
   setLinkVisibility(headerUserLink, isAuthenticated);
   setLinkVisibility(headerThemeToggle, !isAuthenticated);
@@ -1128,7 +1134,7 @@ function focusViewRoot(): void {
 }
 
 function applyMainState(view: string): void {
-  const isAdminView = view === 'admin' || view === 'admin-design-kit';
+  const isAdminView = view === 'admin' || view === 'admin-design-kit' || view === 'tasks';
   const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
@@ -1234,6 +1240,12 @@ export function initializeAppShell(router: RouterBridge): void {
     event.preventDefault();
     renderView('miniapps');
     closeHeaderMenu();
+  });
+
+  headerTasksLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('tasks');
   });
 
   headerProjectLink?.addEventListener('click', (event) => {
