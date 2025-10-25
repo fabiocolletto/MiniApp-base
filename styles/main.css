@@ -4710,6 +4710,41 @@ main > .admin-design-kit {
   justify-items: start;
 }
 
+.user-dashboard__widget--tasks {
+  display: grid;
+  gap: var(--panel-stack-gap);
+  --card-background: transparent;
+  --card-border: 0.06rem solid rgba(var(--color-warm-rgb), 0.16);
+  --card-shadow: none;
+}
+
+.user-dashboard__widget--tasks[data-summary-state='loading'] .user-dashboard__summary-list,
+.user-dashboard__widget--tasks[data-summary-state='error'] .user-dashboard__summary-list {
+  transition: opacity 0.2s ease;
+}
+
+.user-dashboard__widget--tasks[data-summary-state='loading'] .user-dashboard__summary-list {
+  opacity: 0.6;
+}
+
+.user-dashboard__widget--tasks[data-summary-state='error'] .user-dashboard__summary-list {
+  opacity: 0.4;
+}
+
+.user-dashboard__summary-list--tasks {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.user-dashboard__task-summary-helper {
+  margin: 0;
+  font-size: var(--panel-font-size-compact);
+  color: var(--color-text-muted);
+}
+
+.user-dashboard__task-summary-link {
+  justify-self: start;
+}
+
 .user-dashboard__widget--label .miniapp-details__highlights {
   justify-content: flex-start;
 }

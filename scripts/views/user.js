@@ -26,6 +26,7 @@ import {
   createQuickActionsWidget,
   createUserDashboardIntroWidget,
   createUserDashboardLabelWidget,
+  createUserDashboardTaskSummaryWidget,
   createUserDashboardUsersWidget,
 } from './shared/user-dashboard-widgets.js';
 import { formatDateTime, formatUserType } from './shared/system-users-widget.js';
@@ -38,6 +39,12 @@ import {
   markActivityError,
 } from '../system/activity-indicator.js';
 import { lookupCep, normalizeCep } from '../utils/cep-service.js';
+import {
+  listTasks as listDashboardTasks,
+  seedTaskStore as seedTaskStoreDefaults,
+  subscribeTasks as subscribeDashboardTasks,
+} from '../../core/task-store.js';
+import { DEFAULT_TASKS } from '../data/task-dashboard-defaults.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
@@ -174,6 +181,113 @@ function createSummaryItem(label) {
   wrapper.append(term, description);
 
   return { wrapper, valueElement: description };
+}
+
+const TASK_STATUS_SUMMARY_VALUES = new Set(['backlog', 'in-progress', 'review', 'blocked', 'done']);
+
+function normalizeTaskStatus(value) {
+  if (typeof value !== 'string') {
+    return 'backlog';
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return TASK_STATUS_SUMMARY_VALUES.has(normalized) ? normalized : 'backlog';
+}
+
+function parseTaskDueDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function getTaskDueStateForSummary(date, status) {
+  if (status === 'done') {
+    return 'completed';
+  }
+
+  if (!(date instanceof Date)) {
+    return 'unscheduled';
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(date.getTime());
+  due.setHours(0, 0, 0, 0);
+
+  if (due.getTime() < today.getTime()) {
+    return 'overdue';
+  }
+
+  if (due.getTime() === today.getTime()) {
+    return 'today';
+  }
+
+  const diffDays = Math.round((due.getTime() - today.getTime()) / 86400000);
+  if (diffDays <= 3) {
+    return 'soon';
+  }
+
+  return 'scheduled';
+}
+
+function summarizeTaskSnapshot(tasks) {
+  const summary = {
+    total: 0,
+    active: 0,
+    inProgress: 0,
+    blocked: 0,
+    completed: 0,
+    dueSoon: 0,
+  };
+
+  if (!Array.isArray(tasks) || tasks.length === 0) {
+    return summary;
+  }
+
+  tasks.forEach((task) => {
+    const status = normalizeTaskStatus(task?.status);
+    const dueDate = parseTaskDueDate(task?.dueDate);
+    const dueState = getTaskDueStateForSummary(dueDate, status);
+
+    summary.total += 1;
+
+    if (status === 'done') {
+      summary.completed += 1;
+    } else {
+      summary.active += 1;
+    }
+
+    if (status === 'in-progress') {
+      summary.inProgress += 1;
+    }
+
+    if (status === 'blocked') {
+      summary.blocked += 1;
+    }
+
+    if (dueState === 'soon' || dueState === 'today') {
+      summary.dueSoon += 1;
+    }
+  });
+
+  return summary;
 }
 
 export function createPersistUserChanges(getUserFn, updateUserFn) {
@@ -424,6 +538,13 @@ export function renderUserPanel(viewRoot) {
     projectLabel: 'MiniApp Base',
     extraLabels: ['Sessão sincronizada'],
   });
+
+  const taskSummaryControls = createUserDashboardTaskSummaryWidget({
+    onNavigate: () => {
+      eventBus.emit('app:navigate', { view: 'tasks' });
+    },
+  });
+  const taskSummaryWidget = taskSummaryControls.section;
 
   let themeAction = null;
   let footerIndicatorsAction = null;
@@ -960,7 +1081,7 @@ export function renderUserPanel(viewRoot) {
   const accessWidget = accessSectionControls.section;
   const accountWidget = userDataWidget;
 
-  layout.append(introWidget, labelWidget, themeWidget, accessWidget, accountWidget);
+  layout.append(introWidget, labelWidget, taskSummaryWidget, themeWidget, accessWidget, accountWidget);
 
   if (userDataTableBackdrop instanceof HTMLElement) {
     layout.append(userDataTableBackdrop);
@@ -973,6 +1094,7 @@ export function renderUserPanel(viewRoot) {
   viewRoot.replaceChildren(layout);
 
   cleanupCallbacks.push(userDataWidgetInstance.teardown);
+  cleanupCallbacks.push(taskSummaryControls.cleanup);
   [themeSectionControls, accessSectionControls]
     .map((controls) => controls?.cleanup)
     .filter((cleanup) => typeof cleanup === 'function')
@@ -1013,6 +1135,48 @@ export function renderUserPanel(viewRoot) {
     userDataWidget.removeEventListener('system-users-widget:toggle', handleUserWidgetToggle),
   );
   const unsubscribeCallbacks = [];
+  const taskDashboardUnsubscribes = [];
+
+  let taskSummaryActive = true;
+  cleanupCallbacks.push(() => {
+    taskSummaryActive = false;
+  });
+
+  const applyTaskSummary = (tasks) => {
+    if (!taskSummaryActive) {
+      return;
+    }
+
+    const summary = summarizeTaskSnapshot(tasks);
+    taskSummaryControls.setSummary(summary);
+    taskSummaryControls.setState(summary.total > 0 ? 'ready' : 'empty');
+  };
+
+  try {
+    const unsubscribeTasks = subscribeDashboardTasks((tasks) => {
+      applyTaskSummary(tasks);
+    });
+
+    if (typeof unsubscribeTasks === 'function') {
+      taskDashboardUnsubscribes.push(unsubscribeTasks);
+    }
+  } catch (error) {
+    console.error('Erro ao inscrever resumo do painel de tarefas.', error);
+    taskSummaryControls.setState('error');
+  }
+
+  (async () => {
+    try {
+      await seedTaskStoreDefaults(DEFAULT_TASKS);
+      const tasks = await listDashboardTasks();
+      applyTaskSummary(tasks);
+    } catch (error) {
+      console.error('Erro ao carregar resumo de tarefas para o painel do usuário.', error);
+      if (taskSummaryActive) {
+        taskSummaryControls.setState('error');
+      }
+    }
+  })();
 
   const usersById = new Map();
   let activeUserId = getActiveUserId();
@@ -2596,6 +2760,16 @@ export function renderUserPanel(viewRoot) {
   syncActiveUser();
 
   registerViewCleanup(viewRoot, () => {
+    taskDashboardUnsubscribes.forEach((unsubscribe) => {
+      try {
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
+      } catch (error) {
+        console.error('Erro ao cancelar inscrição do resumo de tarefas.', error);
+      }
+    });
+
     unsubscribeCallbacks.forEach((unsubscribe) => {
       try {
         unsubscribe();
