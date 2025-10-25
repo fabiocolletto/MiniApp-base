@@ -318,6 +318,7 @@ function createUserDataPreview() {
       userType: 'administrador',
       device: 'Chrome • Desktop',
       createdAt: new Date('2025-09-15T09:00:00-03:00'),
+      lastAccessAt: new Date('2025-10-21T08:00:00-03:00'),
       updatedAt: new Date('2025-10-20T18:45:00-03:00'),
       profile: {
         email: 'maria@exemplo.com',
@@ -336,6 +337,7 @@ function createUserDataPreview() {
       userType: 'colaborador',
       device: 'Safari • iOS',
       createdAt: new Date('2025-08-10T14:30:00-03:00'),
+      lastAccessAt: new Date('2025-10-19T10:15:00-03:00'),
       updatedAt: new Date('2025-10-18T11:20:00-03:00'),
       profile: {
         email: 'paulo@exemplo.com',

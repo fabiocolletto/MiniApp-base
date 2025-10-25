@@ -349,6 +349,7 @@ function cloneUser(user) {
     userType: sanitizeUserType(user.userType),
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt),
+    lastAccessAt: new Date(user.lastAccessAt ?? user.updatedAt ?? Date.now()),
     profile: cloneProfile(user.profile),
     preferences: clonePreferences(user.preferences),
   };
@@ -357,6 +358,10 @@ function cloneUser(user) {
 function normalizeUser(user) {
   const createdAtValue = user?.createdAt instanceof Date ? user.createdAt : new Date(user?.createdAt);
   const updatedAtValue = user?.updatedAt instanceof Date ? user.updatedAt : new Date(user?.updatedAt);
+  const lastAccessAtValue =
+    user?.lastAccessAt instanceof Date
+      ? user.lastAccessAt
+      : new Date(user?.lastAccessAt ?? updatedAtValue ?? Date.now());
   const sanitizedDevice = typeof user?.device === 'string' ? user.device.trim() : '';
 
   return {
@@ -368,6 +373,11 @@ function normalizeUser(user) {
     userType: sanitizeUserType(user?.userType),
     createdAt: Number.isNaN(createdAtValue?.getTime()) ? new Date() : createdAtValue,
     updatedAt: Number.isNaN(updatedAtValue?.getTime()) ? new Date() : updatedAtValue,
+    lastAccessAt: Number.isNaN(lastAccessAtValue?.getTime())
+      ? Number.isNaN(updatedAtValue?.getTime())
+        ? new Date()
+        : updatedAtValue
+      : lastAccessAtValue,
     profile: normalizeProfile(user?.profile),
     preferences: normalizePreferences(user?.preferences),
   };
@@ -564,6 +574,29 @@ export async function updateUser(id, updates = {}) {
     const preferencesUpdates = sanitizePreferencesUpdates(updates.preferences);
     if (Object.keys(preferencesUpdates).length > 0) {
       sanitizedUpdates.preferences = preferencesUpdates;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updates, 'lastAccessAt')) {
+    const value = updates.lastAccessAt;
+    let isoValue = '';
+
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      isoValue = value.toISOString();
+    } else if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        isoValue = parsed.toISOString();
+      }
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      const fromNumber = new Date(value);
+      if (!Number.isNaN(fromNumber.getTime())) {
+        isoValue = fromNumber.toISOString();
+      }
+    }
+
+    if (isoValue) {
+      sanitizedUpdates.lastAccessAt = isoValue;
     }
   }
 

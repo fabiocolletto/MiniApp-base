@@ -28,6 +28,7 @@ import {
   createUserDashboardLabelWidget,
   createUserDashboardUsersWidget,
 } from './shared/user-dashboard-widgets.js';
+import { formatDateTime } from './shared/system-users-widget.js';
 import eventBus from '../events/event-bus.js';
 import {
   markActivityDirty,
@@ -95,9 +96,15 @@ function normalizeUserData(user) {
 
   const createdAtRaw = user.createdAt instanceof Date ? user.createdAt : new Date(user.createdAt);
   const updatedAtRaw = user.updatedAt instanceof Date ? user.updatedAt : new Date(user.updatedAt);
+  const lastAccessAtRaw =
+    user.lastAccessAt instanceof Date ? user.lastAccessAt : new Date(user.lastAccessAt ?? user.updatedAt);
 
   const createdAt = createdAtRaw instanceof Date && !Number.isNaN(createdAtRaw.getTime()) ? createdAtRaw : null;
   const updatedAt = updatedAtRaw instanceof Date && !Number.isNaN(updatedAtRaw.getTime()) ? updatedAtRaw : null;
+  const lastAccessAt =
+    lastAccessAtRaw instanceof Date && !Number.isNaN(lastAccessAtRaw.getTime())
+      ? lastAccessAtRaw
+      : updatedAt;
 
   const userType = typeof user.userType === 'string' ? user.userType.trim().toLowerCase() : 'usuario';
 
@@ -109,6 +116,7 @@ function normalizeUserData(user) {
     preferences: normalizePreferences(user.preferences),
     userType,
     createdAt,
+    lastAccessAt,
     updatedAt,
   };
 }
@@ -358,8 +366,14 @@ export function renderUserPanel(viewRoot) {
   const summaryName = createSummaryItem('Nome completo');
   const summaryPhone = createSummaryItem('Telefone principal');
   const summaryEmail = createSummaryItem('E-mail de contato');
+  const summaryLastAccess = createSummaryItem('Último acesso');
 
-  accountSummaryList.append(summaryName.wrapper, summaryPhone.wrapper, summaryEmail.wrapper);
+  accountSummaryList.append(
+    summaryName.wrapper,
+    summaryPhone.wrapper,
+    summaryEmail.wrapper,
+    summaryLastAccess.wrapper,
+  );
   accountSummary.append(accountSummaryList);
 
   const emptyState = document.createElement('p');
@@ -842,6 +856,12 @@ export function renderUserPanel(viewRoot) {
 
     if (summaryEmail.valueElement) {
       summaryEmail.valueElement.textContent = user?.profile?.email ? user.profile.email : fallback;
+    }
+
+    if (summaryLastAccess.valueElement) {
+      summaryLastAccess.valueElement.textContent = user?.lastAccessAt
+        ? formatDateTime(user.lastAccessAt)
+        : fallback;
     }
   };
 
