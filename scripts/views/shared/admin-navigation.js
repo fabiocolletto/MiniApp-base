@@ -78,6 +78,7 @@ export function createAdminNavigation(options = {}) {
     const normalizedVersion = versionLabel.replace(/^v/i, '');
     const versionChip = document.createElement('span');
     versionChip.className = 'miniapp-details__chip';
+    versionChip.dataset.type = 'version';
     versionChip.textContent = `Versão v${normalizedVersion}`;
     metaGroup.append(versionChip);
   }
@@ -86,6 +87,7 @@ export function createAdminNavigation(options = {}) {
   if (publishedLabel) {
     const publishedChip = document.createElement('span');
     publishedChip.className = 'miniapp-details__chip';
+    publishedChip.dataset.type = 'published-at';
     publishedChip.textContent = `Publicado em ${publishedLabel}`;
     metaGroup.append(publishedChip);
   }

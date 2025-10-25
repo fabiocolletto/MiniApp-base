@@ -18,6 +18,11 @@ import {
   subscribeBranding,
   updateBranding as persistBrandingUpdate,
 } from '../data/branding-store.js';
+import {
+  getSystemMetadata,
+  getSystemReleaseDate,
+  getSystemVersionLabel,
+} from '../data/system-metadata.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 import {
   createSystemUsersWidget,
@@ -25,6 +30,7 @@ import {
 } from './shared/system-users-widget.js';
 import { createAdminNavigation } from './shared/admin-navigation.js';
 import { createSystemStorageWidget } from './shared/system-storage-widget.js';
+import { syncSystemReleaseIndicators } from '../../sys/tools/log.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--admin admin-dashboard';
 
@@ -1979,6 +1985,13 @@ export function renderAdmin(viewRoot) {
 
   viewRoot.setAttribute('aria-label', 'Painel administrativo');
   viewRoot.replaceChildren(layout);
+
+  const systemMetadata = getSystemMetadata();
+  syncSystemReleaseIndicators({
+    versionLabel: getSystemVersionLabel(),
+    publishedAt: getSystemReleaseDate(),
+    changelogPath: systemMetadata?.changelogPath,
+  });
 
   const unsubscribeUsers = subscribeUsers((snapshot) => {
     usersWidget.setUsers(snapshot);
