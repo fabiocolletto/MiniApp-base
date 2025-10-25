@@ -22,9 +22,8 @@
 
 ## Registro de Alterações
 - Registre toda modificação no `Log.md`, mantendo a sequência numérica de versões (por exemplo: `v0.1.0`, `v0.1.1`, `v0.2.0`, ...).
-- Durante a mesma edição (até o envio do pull request), complemente a versão já aberta no `Log.md` e apenas atualize data e
-  horário; só abra a próxima versão sequencial quando o usuário confirmar uma nova etapa.
-- Informe resumidamente o que mudou e utilize sempre a data e o horário oficiais de Curitiba/BR (BRT, UTC-3) vigentes no momento
-  da atualização do registro.
-- Ao identificar documentação obsoleta, mova-a para a pasta `Arquivados/` e descreva o motivo no `Log.md`. Caso ainda não exista
-  um documento descrevendo o processo, crie-o.
+- Trate cada versão como imutável após a conclusão da edição em andamento: não altere, remova ou reorganize entradas de versões anteriores. Se algum registro histórico estiver incorreto, registre a correção na versão atual explicando o ajuste em vez de editar o passado.
+- Durante a mesma edição (até o envio do pull request), complemente apenas a versão já aberta no `Log.md`, acrescentando itens sem apagar os existentes. Atualize data e horário dessa versão somente enquanto ela estiver em andamento; após o envio do PR, considere a versão congelada.
+- Sempre que uma nova etapa for autorizada pelo usuário, abra a próxima versão sequencial seguindo o padrão definido e informe o horário vigente em Curitiba/BR (BRT, UTC-3) no momento da atualização.
+- Informe resumidamente o que mudou e utilize sempre a data e o horário oficiais de Curitiba/BR (BRT, UTC-3) vigentes no momento da atualização do registro.
+- Ao identificar documentação obsoleta, mova-a para a pasta `Arquivados/` e descreva o motivo no `Log.md`. Caso ainda não exista um documento descrevendo o processo, crie-o.
