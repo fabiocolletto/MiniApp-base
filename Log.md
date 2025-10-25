@@ -1,10 +1,11 @@
 # Log
 
-## v0.1.230 - 2025-10-25 08:55 BRT
+## v0.1.230 - 2025-10-25 07:58 BRT
 - Reorganiza o formulário de dados do usuário em abas separando informações pessoais e endereço em painéis dedicados.
 - Ajusta o preenchimento por CEP para zerar número, complemento e país antes da consulta e limpar campos ausentes na resposta.
 - Exibe a confirmação "Endereço carregado a partir do CEP" como aviso temporário no rodapé.
 - Reforça o README de `sys/tools` para remover itens da lista de Conteúdo atual quando a função correspondente sai do sistema.
+- Converte o utilitário de log em ferramenta em `sys/tools/log`, atualizando importações globais e registrando histórico dedicado para o módulo.
 
 ## v0.1.229 - 2025-10-25 07:22 BRT
 - Organiza os utilitários do sistema criando a pasta `sys/tools` para concentrar integrações reutilizáveis.

@@ -1,4 +1,4 @@
-import { logError, logInfo, logWarn } from '../sys/log.js';
+import { logError, logInfo, logWarn } from '../sys/tools/log.js';
 
 const GLOBAL_DB_NAME = 'miniapp_global_v1';
 const GLOBAL_DB_VERSION = 1;

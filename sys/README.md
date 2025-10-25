@@ -4,8 +4,7 @@
 A pasta `sys/` concentra utilidades de sistema compartilhadas entre diferentes áreas do MiniApp. Aqui ficam módulos de log, ferramentas de integração com serviços externos e demais helpers que não pertencem a um miniapp específico. Use este diretório para tudo que precise permanecer estável e disponível para todo o shell.
 
 ## Estrutura atual
-- `log.ts` / `log.js`: implementações utilitárias para registrar eventos e manipular o histórico global do sistema.
-- `tools/`: conjunto de ferramentas reutilizáveis, como integrações com APIs externas.
+- `tools/`: conjunto de ferramentas reutilizáveis, como integrações com APIs externas e o utilitário de log compartilhado.
 
 ## O que pode conter
 - Wrappers utilitários que precisam ser acessados por múltiplas views ou miniapps.

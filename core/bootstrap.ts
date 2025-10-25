@@ -4,7 +4,7 @@ import {
   getSession as defaultGetSession,
   validateSchemaOrReset as defaultValidateSchema,
 } from './account-store.js';
-import { logError, logInfo, logWarn } from '../sys/log.js';
+import { logError, logInfo, logWarn } from '../sys/tools/log.js';
 
 export type InitialRoute = 'dashboard' | 'login' | 'register';
 

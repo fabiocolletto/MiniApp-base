@@ -1,5 +1,5 @@
 import { renderView } from '../ui/app-shell.js';
-import { logInfo, logWarn } from '../sys/log.js';
+import { logInfo, logWarn } from '../sys/tools/log.js';
 
 const routeToView = {
   dashboard: 'home',

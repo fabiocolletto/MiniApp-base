@@ -5,6 +5,7 @@
 
 ## Conteúdo atual
 - `cep.ts`: função `fetchCep` que consulta a API ViaCEP, trata respostas e entrega o endereço normalizado para preenchimento automático de formulários.
+- `log.ts` / `log.js`: funções `logInfo`, `logWarn` e `logError` com prefixo padronizado para registrar eventos globais do shell.
 - `cep.log.md`: log dedicado acompanhando alterações e consumo da ferramenta de CEP.
 
 ## O que pode conter
