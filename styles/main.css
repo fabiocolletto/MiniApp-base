@@ -6235,12 +6235,128 @@ main > .view--log {
   opacity: 0.85;
 }
 
+.task-dashboard__list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(0.35rem, 1vw, 0.6rem);
+}
+
+.task-dashboard__add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 0.9vw, 0.5rem);
+  padding: var(--panel-input-padding-block) var(--panel-input-padding-inline);
+  border-radius: var(--radius-pill);
+  border: 0.1rem solid rgba(var(--color-accent-rgb), 0.35);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.task-dashboard__add-button:hover,
+.task-dashboard__add-button:focus-visible {
+  background: rgba(var(--color-accent-rgb), 0.18);
+  box-shadow: 0 0.55rem 1.2rem rgba(var(--color-accent-rgb), 0.18);
+  transform: translateY(-1px);
+  outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.4);
+  outline-offset: 0.08rem;
+}
+
+.task-dashboard__list-message {
+  margin: 0;
+}
+
+.task-dashboard__list-empty {
+  margin: 0;
+  padding: clamp(0.75rem, 2vw, 1.1rem);
+  border-radius: var(--radius-md);
+  border: 0.08rem dashed rgba(var(--color-warm-rgb), 0.28);
+  text-align: center;
+  font-size: var(--panel-font-size-base);
+  color: var(--color-text-soft);
+}
+
+.task-dashboard__form {
+  border-radius: var(--radius-lg);
+  border: 0.08rem solid rgba(var(--color-warm-rgb), 0.22);
+  background: rgba(var(--color-bg-elevated), 0.95);
+  padding: var(--panel-padding);
+}
+
+.task-dashboard__form-title {
+  margin: 0;
+  font-size: var(--panel-font-size-heading);
+  color: var(--color-text-secondary);
+}
+
+.task-dashboard__form-grid {
+  display: grid;
+  gap: var(--panel-inner-gap);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.task-dashboard__form-grid [data-field-span='full'] {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 48rem) {
+  .task-dashboard__form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+}
+
+.task-dashboard__form-actions {
+  display: flex;
+  gap: clamp(0.45rem, 1.2vw, 0.75rem);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.task-dashboard__form-message {
+  margin: 0;
+}
+
+.task-dashboard__form-cancel {
+  font: inherit;
+  font-weight: 600;
+  border: 0.1rem solid rgba(var(--color-warm-rgb), 0.3);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: var(--panel-input-padding-block) calc(var(--panel-input-padding-inline) * 0.9);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.task-dashboard__form-cancel:hover,
+.task-dashboard__form-cancel:focus-visible {
+  border-color: rgba(var(--color-accent-rgb), 0.4);
+  color: var(--color-accent-deep);
+  outline: 0.15rem solid rgba(var(--color-accent-rgb), 0.35);
+  outline-offset: 0.08rem;
+}
+
 .task-dashboard__legend {
   display: inline-flex;
   flex-wrap: wrap;
   gap: clamp(0.35rem, 1vw, 0.6rem);
   align-items: center;
   justify-content: flex-end;
+}
+
+.task-dashboard__legend-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1;
+}
+
+.task-dashboard__legend-container .task-dashboard__legend {
+  margin-inline-start: auto;
 }
 
 .task-dashboard__status,
@@ -6426,7 +6542,49 @@ main > .view--log {
   border-style: dashed;
 }
 
-.task-dashboard__timeline {
+.task-dashboard__task-actions {
+  display: inline-flex;
+  gap: clamp(0.35rem, 1vw, 0.55rem);
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: clamp(0.3rem, 1vw, 0.55rem);
+}
+
+.task-dashboard__task-action {
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  border-radius: var(--radius-sm);
+}
+
+.task-dashboard__task-action:hover,
+.task-dashboard__task-action:focus-visible {
+  color: var(--color-accent-deep);
+  outline: 0.15rem solid var(--color-focus-outline);
+  outline-offset: 0.08rem;
+  text-decoration: none;
+}
+
+.task-dashboard__task-action--delete {
+  color: var(--color-error-text);
+}
+
+.task-dashboard__task-action--delete:hover,
+.task-dashboard__task-action--delete:focus-visible {
+  color: rgba(var(--color-error-rgb), 0.9);
+}
+
+.task-dashboard__timeline { 
+  display: grid;
+  gap: var(--panel-gap);
+}
+
+.task-dashboard__timeline-wrapper {
   display: grid;
   gap: var(--panel-gap);
 }
