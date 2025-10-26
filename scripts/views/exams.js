@@ -18,6 +18,11 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   gap: var(--space-lg);
 }
 
+.exam-dashboard__header,
+.exam-dashboard__layout {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+}
 
 .exam-dashboard__header {
   display: grid;
@@ -78,6 +83,11 @@ const EXAM_DASHBOARD_STYLES = String.raw`
 }
 
 @media (min-width: 64rem) {
+  .exam-dashboard__header,
+  .exam-dashboard__layout {
+    gap: var(--space-xl);
+  }
+
   .exam-dashboard__header-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
