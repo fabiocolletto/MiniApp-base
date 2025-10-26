@@ -2169,7 +2169,7 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
     const placeholder = document.createElement('p');
     placeholder.className = 'exam-dashboard__preview-placeholder';
     placeholder.textContent =
-      'Selecione uma prova em “Provas em andamento e agendadas” para visualizar o resumo e preparar a impressão.';
+      'Selecione uma prova em “Provas em andamento e agendadas” para visualizar somente a prévia do modelo antes de imprimir.';
     container.append(placeholder);
     if (typeof registerController === 'function') {
       registerController(null);
@@ -2177,64 +2177,6 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
     return;
   }
 
-  const title = document.createElement('h3');
-  title.className = 'exam-dashboard__preview-title';
-  title.textContent = exam.title;
-
-  const tagList = document.createElement('ul');
-  tagList.className = 'exam-dashboard__preview-tags';
-
-  const kindTag = document.createElement('li');
-  kindTag.className = 'exam-dashboard__preview-tag';
-  kindTag.textContent = getExamKindLabel(exam.kind);
-
-  const subjectTag = document.createElement('li');
-  subjectTag.className = 'exam-dashboard__preview-tag';
-  subjectTag.textContent = getSubjectLabel(exam.subject);
-
-  const seriesTag = document.createElement('li');
-  seriesTag.className = 'exam-dashboard__preview-tag';
-  seriesTag.textContent = SERIES_OPTIONS.includes(exam.series) ? exam.series : 'Turma não definida';
-
-  const difficultyTag = document.createElement('li');
-  difficultyTag.className = 'exam-dashboard__preview-tag';
-  difficultyTag.textContent = `Dificuldade: ${getDifficultyLabel(exam.difficulty)}`;
-
-  const statusTag = document.createElement('li');
-  statusTag.className = 'exam-dashboard__preview-tag';
-  statusTag.append(createStatusBadge(exam.status));
-
-  tagList.append(kindTag, subjectTag, seriesTag, difficultyTag, statusTag);
-
-  const schedule = document.createElement('p');
-  schedule.className = 'exam-dashboard__preview-schedule';
-  schedule.textContent = formatExamSchedule(exam);
-
-  const objectiveSection = document.createElement('section');
-  objectiveSection.className = 'exam-dashboard__preview-section layout-stack layout-stack--3xs';
-  const objectiveTitle = document.createElement('h4');
-  objectiveTitle.className = 'exam-dashboard__preview-subtitle';
-  objectiveTitle.textContent = 'Objetivo pedagógico';
-  const objectiveText = document.createElement('p');
-  objectiveText.className = 'exam-dashboard__preview-text';
-  objectiveText.textContent = exam.objective?.trim()
-    ? exam.objective
-    : 'Adicione o objetivo pedagógico para orientar a correção e os feedbacks.';
-  objectiveSection.append(objectiveTitle, objectiveText);
-
-  const instructionsSection = document.createElement('section');
-  instructionsSection.className = 'exam-dashboard__preview-section layout-stack layout-stack--3xs';
-  const instructionsTitle = document.createElement('h4');
-  instructionsTitle.className = 'exam-dashboard__preview-subtitle';
-  instructionsTitle.textContent = 'Orientações aos aplicadores';
-  const instructionsText = document.createElement('p');
-  instructionsText.className = 'exam-dashboard__preview-text';
-  instructionsText.textContent = exam.instructions?.trim()
-    ? exam.instructions
-    : 'Inclua orientações para professores e apoios pedagógicos antes da impressão.';
-  instructionsSection.append(instructionsTitle, instructionsText);
-
-  const questionsSection = buildQuestionPreview(exam.questionIds ?? [], questionMap);
   const printablePreview = buildPrintablePreviewSection(exam, questionMap, {
     initialVersion: previewVersion,
     onVersionChange,
@@ -2244,15 +2186,7 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
     registerController(printablePreview);
   }
 
-  container.append(
-    title,
-    tagList,
-    schedule,
-    objectiveSection,
-    instructionsSection,
-    questionsSection,
-    printablePreview.element,
-  );
+  container.append(printablePreview.element);
 }
 
 function sortExamsForList(exams) {
@@ -2662,7 +2596,7 @@ export function renderExamDashboard(viewRoot) {
   const previewDescription = document.createElement('p');
   previewDescription.className = 'exam-dashboard__preview-description';
   previewDescription.textContent =
-    'Escolha uma prova em “Provas em andamento e agendadas” para revisar os detalhes e visualizar as versões para alunos e professores antes de imprimir.';
+    'Escolha uma prova em “Provas em andamento e agendadas” para carregar apenas a prévia do modelo e alternar entre as versões de alunos e professores antes de imprimir.';
 
   previewHeader.append(previewTitle, previewDescription);
 
