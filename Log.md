@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.252 - 2025-10-26 11:09 BRT
+- Limita a largura do cabeçalho e do layout do painel de provas a 72rem, centralizando o conteúdo em telas largas sem afetar dispositivos estreitos.
+- Aumenta o espaçamento entre blocos principais do painel de provas em resoluções amplas para preservar o respiro visual após o novo limite.
+
 ## v0.1.251 - 2025-10-26 13:45 BRT
 - Consolida o Criador de Provas com cabeçalho simplificado, pré-visualização e lista lateral, mantendo
   as ações de impressão no widget superior para agilizar o planejamento docente.
