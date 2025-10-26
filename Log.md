@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.258 - 2025-10-26 12:59 BRT
+- Convertido o widget de provas em andamento e agendadas em um botão que abre modal dedicada com a lista de avaliações.
+- Ajustado o painel de visualização da prova para ocupar toda a largura disponível e sincronizado o fluxo de seleção com a nova janela modal.
+
+## v0.1.257 - 2025-10-26 12:24 BRT
+- Garantimos que o cabeçalho e o grid principal do painel de provas ocupem toda a largura disponível para evitar sobreposição de informações em telas intermediárias.
+
 ## v0.1.256 - 2025-10-26 11:59 BRT
 - Realinhamos o Criador de Provas para utilizar o grid padrão do MiniAppBase, reutilizando classes compartilhadas e removendo ajustes locais.
 
