@@ -1407,6 +1407,13 @@ table.clean td{
   padding:6pt 8pt;
   text-align:left;
 }
+.line-fill{
+  display:block;
+  width:100%;
+  min-height:18pt;
+  border-bottom:1px solid var(--ink);
+  margin-top:6pt;
+}
 .answer-lines{
   background:repeating-linear-gradient(#fff,#fff 24px,#f2f2f2 25px);
   border:1px dashed var(--border);
@@ -1455,6 +1462,8 @@ body.teacher-version .teacher-meta{display:block;}
 }
 @page{size:A4 portrait;margin:0;}
 `;
+
+const LINE_FILL_MARKUP = '<span class="line-fill" aria-hidden="true"></span>';
 
 function cloneQuestion(question) {
   return {
@@ -1975,16 +1984,17 @@ function generatePrintableExamHtml(exam, questionMap, { version = 'student' } = 
   const questions = buildPrintableQuestionsMarkup(safeExam.questionIds ?? [], questionMap);
   const bodyClass = version === 'teacher' ? 'teacher-version' : 'student-version';
   const schoolName = safeExam.school?.trim() || 'Escola Municipal';
-  const teacherName = safeExam.teacher?.trim() || '______________________________';
+  const teacherName = safeExam.teacher?.trim();
+  const teacherCell = teacherName ? escapeHtml(teacherName) : LINE_FILL_MARKUP;
   const studentRows = `
-    <tr><th style="width:130px">Estudante</th><td>______________________________</td></tr>
-    <tr><th>Registro</th><td>__________</td></tr>
-    <tr><th>Assinatura</th><td>______________________________</td></tr>
+    <tr><th style="width:130px">Estudante</th><td>${LINE_FILL_MARKUP}</td></tr>
+    <tr><th>Registro</th><td>${LINE_FILL_MARKUP}</td></tr>
+    <tr><th>Assinatura</th><td>${LINE_FILL_MARKUP}</td></tr>
   `;
 
   const institutionRows = `
     <tr><th style="width:130px">Escola</th><td>${escapeHtml(schoolName)}</td></tr>
-    <tr><th>Professor(a)</th><td>${escapeHtml(teacherName)}</td></tr>
+    <tr><th>Professor(a)</th><td>${teacherCell}</td></tr>
     <tr><th>Disciplina</th><td>${escapeHtml(getSubjectLabel(safeExam.subject))}</td></tr>
     <tr><th>Turma</th><td>${escapeHtml(seriesLabel)}</td></tr>
     <tr><th>Data</th><td>${escapeHtml(dateLabel)}</td></tr>
