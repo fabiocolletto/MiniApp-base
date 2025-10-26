@@ -2591,10 +2591,14 @@ export function renderExamDashboard(viewRoot) {
 
   selectionControls.append(openSelectionButton, selectionStatusMessage);
 
+  headerSection.append(selectionControls);
+
   const previewBody = document.createElement('div');
   previewBody.className = 'exam-dashboard__preview-body layout-stack layout-stack--lg';
 
-  previewSection.append(previewHeader, previewMessage, selectionControls, previewBody);
+  previewSection.append(previewHeader, previewBody);
+
+  previewRow.append(previewMessage, previewSection);
 
   const listItems = document.createElement('ul');
   listItems.className = 'exam-dashboard__list-items';
@@ -2653,8 +2657,6 @@ export function renderExamDashboard(viewRoot) {
   selectionBackdrop = selectionBackdropElement;
   selectionModal = selectionModalElement;
   selectionCloseButton = selectionCloseButtonElement;
-
-  previewRow.append(previewSection);
 
   const formRow = document.createElement('div');
   formRow.className = 'admin-dashboard__widget-row exam-dashboard__form-row';

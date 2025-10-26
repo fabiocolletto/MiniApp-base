@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.265 - 2025-10-26 15:50 BRT
+- Reposiciona o botão de provas e o feedback associado no cabeçalho, deixando o widget Visualização da prova apenas com título e prévia.
+- Move a mensagem de status do widget para fora do cartão, mantendo somente o conteúdo da prova na área principal de visualização.
+
 ## v0.1.264 - 2025-10-26 15:40 BRT
 - Substitui os traços de preenchimento do cabeçalho do modelo de impressão por linhas estilizadas que se ajustam à largura disponível.
 - Ajusta o fallback do campo de professor para reaproveitar o novo traço responsivo quando o nome não estiver definido.
