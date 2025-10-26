@@ -1,5 +1,14 @@
 # Log
 
+-## v0.1.242 - 2025-10-26 06:03 BRT
+- Reforça o guia da pasta `MiniApps/` com estrutura mínima, artefatos obrigatórios e orientações de integração para novos MiniApps.
+- Documenta a auditoria da pasta `MiniApps/` destacando a prontidão para receber miniapps alinhados às boas práticas do repositório.
+
+## v0.1.241 - 2025-10-26 05:55 BRT
+- Classifica o painel de tarefas como miniapp no catálogo padrão, com metadados de acesso e categoria alinhados ao gestor.
+- Atualiza a descrição da Mini App Store para comunicar que miniapps são experiências completas como o Gestor de tarefas.
+- Atualiza os metadados de versão do sistema e o painel de MiniApps para registrar a release v0.1.241.
+
 ## v0.1.240 - 2025-10-25 18:58 BRT
 - Adiciona ao painel do usuário um widget de resumo das tarefas com indicadores dinâmicos e atalho para o painel dedicado.
 - Compartilha os dados padrão do painel de tarefas em módulo próprio para reutilização entre views e seeds automáticos.

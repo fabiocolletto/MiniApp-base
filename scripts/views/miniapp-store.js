@@ -180,7 +180,8 @@ export function renderMiniAppStore(viewRoot) {
 
   const description = document.createElement('p');
   description.className = 'user-widget__description';
-  description.textContent = 'Acesse rapidamente todos os miniapps liberados para a sua organização.';
+  description.textContent =
+    'Miniapps são experiências completas, como o Gestor de tarefas, prontas para ativar na sua organização.';
 
   const catalog = document.createElement('ul');
   catalog.className = 'miniapp-store__catalog carousel-list';
