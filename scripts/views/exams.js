@@ -70,12 +70,14 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   }
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 52rem) {
   .exam-dashboard__layout--split {
     grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
     align-items: start;
   }
+}
 
+@media (min-width: 64rem) {
   .exam-dashboard__header-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

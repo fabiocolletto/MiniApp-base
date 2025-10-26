@@ -9,6 +9,8 @@
   de tipo e dificuldade para simulações diretamente no painel.
 - Atualiza documentação, catálogo e metadados do miniapp unificando a release no número 0.1.251 e registra a
   validação visual do painel de provas.
+- Ajusta o breakpoint do layout do painel de provas para liberar a coluna lateral a partir de 52rem enquanto
+  mantém a grade do cabeçalho com quatro colunas apenas em telas de 64rem ou mais largas, preservando o empilhamento móvel.
 
 ## v0.1.250 - 2025-10-26 07:29 BRT
 - Substitui o snapshot persistido com placeholders antigos pelo catálogo atual de miniapps assim que o seed legado é detectado.
