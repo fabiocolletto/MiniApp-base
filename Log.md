@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.245 - 2025-10-26 06:36 BRT
+- Implementa salvaguardas de acessibilidade reduzindo transições e animações de botões, cartões, notificações e indicadores do rodapé via `prefers-reduced-motion`.
+
 ## v0.1.244 - 2025-10-26 06:31 BRT
 - Remove a diretiva `@import` de `styles/main.css` e passa a carregar os tokens globais diretamente pelo HTML.
 - Atualiza `index.html` para referenciar `tokens.css` e `main.css` em sequência, mantendo o carregamento dos estilos globais.

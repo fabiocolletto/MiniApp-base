@@ -6960,3 +6960,41 @@ main > .view--log {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .header-logo,
+  .header-menu__controls,
+  .header-menu__item,
+  .header-action,
+  .app-modal__close,
+  .app-modal__action,
+  .surface-card,
+  .feedback-banner,
+  .footer-notice,
+  .footer-version,
+  .footer-activity,
+  .footer-activity__dot,
+  .footer-memory,
+  .footer-memory__dot,
+  .footer-session,
+  .footer-session__dot,
+  .footer-session__legend-item,
+  .footer-session__legend-dot {
+    transition: none !important;
+  }
+
+  footer[data-mobile-state='collapsed'] .footer-brand::after,
+  footer[data-mobile-state='expanded'] .footer-brand::after {
+    transition: none !important;
+  }
+
+  .footer-session[data-state='loading'] .footer-session__dot,
+  .footer-session__legend-item[data-state='loading'] .footer-session__legend-dot,
+  .footer-memory[data-state='loading'] .footer-memory__dot,
+  .footer-memory[data-state='updated'] .footer-memory__dot,
+  .footer-activity[data-state='dirty'] .footer-activity__dot,
+  .footer-activity[data-state='saving'] .footer-activity__dot {
+    animation: none !important;
+  }
+}
+
