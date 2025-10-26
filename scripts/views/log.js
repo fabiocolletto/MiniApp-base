@@ -33,8 +33,8 @@ const DEPLOYED_PANELS = Object.freeze([
   Object.freeze({
     id: 'miniapps',
     name: 'MiniApps',
-    version: 'v0.1.166',
-    updatedAt: '2025-10-25T06:46:00-03:00',
+    version: 'v0.1.241',
+    updatedAt: '2025-10-26T05:55:00-03:00',
   }),
   Object.freeze({
     id: 'tasks',

@@ -61,6 +61,22 @@ const DEFAULT_MINI_APPS = [
     featuredCategories: ['Analytics', 'Gestão'],
     icon: null,
   },
+  {
+    id: 'task-manager',
+    name: 'Gestor de tarefas',
+    category: 'Produtividade',
+    description:
+      'Organize o backlog, acompanhe indicadores de execução e detalhe cada entrega com checklists contextualizados.',
+    status: 'active',
+    updatedAt: '2025-10-25T15:03:00-03:00',
+    access: ['administrador', 'colaborador', 'usuario'],
+    version: '0.1.234',
+    downloads: 3280,
+    favorites: 2840,
+    releaseDate: '2025-10-25T15:03:00-03:00',
+    featuredCategories: ['Produtividade', 'Gestão de tarefas'],
+    icon: null,
+  },
 ];
 
 const listeners = new Set();

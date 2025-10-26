@@ -14,6 +14,17 @@ test.after(() => {
   resetMiniApps();
 });
 
+test('snapshot padrão inclui o Gestor de tarefas como miniapp', () => {
+  resetMiniApps();
+
+  const snapshot = getMiniAppsSnapshot();
+  const taskManager = snapshot.find((app) => app.id === 'task-manager');
+
+  assert.ok(taskManager, 'Gestor de tarefas deve estar cadastrado no catálogo padrão de miniapps');
+  assert.equal(taskManager?.category, 'Produtividade');
+  assert.deepEqual(taskManager?.featuredCategories ?? [], ['Produtividade', 'Gestão de tarefas']);
+});
+
 test('resetMiniApps normalizes métricas numéricas e categorias destacadas', () => {
   resetMiniApps([
     {

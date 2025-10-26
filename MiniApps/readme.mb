@@ -1,27 +1,43 @@
 # Guia de contribuição para MiniApps
 
-## Estrutura
-- Cada novo MiniApp deve ser criado em um subdiretório próprio dentro de `MiniApps/`.
-- Armazene códigos-fonte, assets, testes e documentação específica do MiniApp dentro do respectivo subdiretório.
-- Utilize nomes descritivos em caixa camelCase ou kebab-case para facilitar a identificação dos MiniApps.
+## Estrutura recomendada
+- Crie um subdiretório próprio para cada MiniApp dentro de `MiniApps/`, usando nomes descritivos em `kebab-case`.
+- Dentro do diretório do MiniApp, organize o código em subpastas padronizadas:
+  - `src/` para componentes, controladores e integrações específicas do MiniApp.
+  - `ui/` para templates HTML, fragmentos ou widgets isolados quando aplicável.
+  - `styles/` para folhas de estilo locais, reaproveitando tokens globais e utilitários existentes.
+  - `tests/` para suites automatizadas (unitárias, integração e end-to-end quando necessário).
+  - `docs/` para especificações funcionais, guias de QA e referências de design.
+  - `assets/` apenas quando indispensável; prefira compartilhar materiais por meio de utilitários globais.
+- Utilize arquivos sentinelas (`.gitkeep`) em pastas vazias que precisem ser versionadas.
 
-## Padronização de desenvolvimento
-- Reaproveite componentes, estilos e utilitários globais já existentes no projeto sempre que possível.
-- Siga as convenções de lint, formatação e organização estabelecidas no restante do repositório.
-- Documente dependências externas e scripts de build necessários em um `README.md` localizado dentro da pasta do MiniApp.
+### Conteúdo mínimo em cada MiniApp
+- `README.md` descrevendo propósito, status do desenvolvimento, dependências e passos de build/teste.
+- `CHANGELOG.md` ou `log.md` local registrando as entregas específicas do MiniApp, alinhado ao `Log.md` principal.
+- Scripts de seed ou mocks quando o MiniApp depender de dados específicos; armazene-os em `src/seeds/` ou `tests/fixtures/`.
+- Testes automatizados cobrindo fluxos críticos com comandos para execução local e em CI.
 
-## Fluxo de trabalho
-- Antes de implementar ou editar um MiniApp, registre o planejamento e impactos esperados no `Log.md` conforme as diretrizes gerais do projeto.
-- Mantenha testes automatizados atualizados e crie novos testes sempre que adicionar funcionalidades ou corrigir bugs.
-- Atualize o versionamento e quaisquer painéis ou listagens que referenciem o MiniApp alterado.
+## Fluxo de integração
+- Registre no `Log.md` principal qualquer planejamento ou execução antes de iniciar ajustes significativos.
+- Ao publicar ou atualizar um MiniApp, sincronize os catálogos e painéis que o referenciam (`scripts/data/miniapp-store.js`,
+  `scripts/views/miniapp-store.js`, stores ou seeds relacionados) e ajuste os testes (`tests/miniapp-store-data.test.js`) para
+  refletir os novos metadados.
+- Atualize metadados globais de versão quando a release impactar o aplicativo como um todo, seguindo as diretrizes de `sys/` e
+  dos painéis administrativos.
 
-## Revisões e manutenção
-- Revise código, estilos e acessibilidade garantindo responsividade em diferentes tamanhos de tela.
-- Remova documentação ou arquivos obsoletos movendo-os para `Arquivados/` quando apropriado, anotando a mudança no `Log.md`.
-- Centralize materiais de design, especificações e assets compartilhados em subpastas dentro de `MiniApps/` para evitar dispersão pelo repositório.
+## Boas práticas compartilhadas
+- Reaproveite componentes e estilos globais; crie utilitários novos apenas quando forem reaproveitáveis por outros MiniApps.
+- Garanta responsividade cobrindo pontos de quebra homologados e valide acessibilidade (ARIA, foco visível, contraste, navegação
+  por teclado).
+- Prefira dados e stores centralizados antes de introduzir novos contextos ou provedores locais.
+- Documente rotinas assíncronas, integrações externas e requisitos de configuração adicional diretamente no `README.md` do
+  MiniApp.
+- Inclua instruções de QA descrevendo cenários críticos, dados de teste e critérios de aceite quando preparar uma release.
 
-## Comunicação
-- Registre no `Log.md` o resumo das alterações realizadas em cada MiniApp junto com data e horário em BRT.
-- Durante o desenvolvimento, mantenha um log dedicado dentro do diretório do MiniApp e utilize o `Log.md` principal apenas para anunciar lançamentos ou atualizações efetivamente publicados.
-- Inclua instruções claras para QA e publicação quando preparar um MiniApp para release.
-- Utilize descrições consistentes nas pull requests para facilitar o acompanhamento histórico das evoluções dos MiniApps.
+## Manutenção e limpeza
+- Mova artefatos obsoletos para `Arquivados/` registrando o motivo no `Log.md` geral e no log local do MiniApp.
+- Remova subpastas temporárias após concluir migrações a partir de `temp/`, garantindo que apenas o código final permaneça aqui.
+- Utilize PRs com descrições completas, informando impacto nos painéis, nas APIs internas e nas ferramentas auxiliares.
+
+Para dúvidas ou diretrizes adicionais, consulte o `AGENTS.md` na raiz e mantenha o alinhamento com as normas de versionamento e
+registro do projeto.
