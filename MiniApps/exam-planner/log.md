@@ -1,5 +1,8 @@
 # Log do MiniApp Criador de Provas
 
+## v0.1.266 - 2025-10-26
+- Remove o cabeçalho do widget de visualização mantendo apenas a prévia impressa dentro do cartão principal.
+
 ## v0.1.265 - 2025-10-26
 - Reposiciona o acionador da lista de provas e o feedback de status no cabeçalho, liberando o widget de visualização para conter apenas título e prévia.
 - Move a mensagem de pré-visualização para fora do cartão principal, mantendo a área dedicada exclusivamente ao modelo impresso.
