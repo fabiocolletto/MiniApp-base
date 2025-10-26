@@ -26,8 +26,10 @@ body {
 main {
   flex: 1;
   display: grid;
-  justify-items: center;
-  align-content: start;
+  justify-items: stretch;
+  align-content: stretch;
+  align-items: stretch;
+  grid-auto-rows: minmax(0, 1fr);
   padding-block-start:
     calc(
       var(--content-padding-block-start) +
@@ -1645,17 +1647,19 @@ footer[data-footer-indicators='hidden'] .footer-actions {
 
 .view {
   outline: none;
-  max-height: var(--view-max-block-size);
+  min-height: var(--view-max-block-size, 100%);
+  max-height: var(--view-max-block-size, 100%);
+  width: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--color-warm-rgb), 0.35) transparent;
-  padding-block: clamp(1.25rem, 3.6vw, 2.5rem);
-  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  padding: 0;
   box-sizing: border-box;
   display: grid;
-  place-items: center;
+  align-content: start;
+  justify-items: stretch;
   gap: clamp(1rem, 3vw, 1.75rem);
   text-align: center;
 }
@@ -1841,24 +1845,31 @@ main > .admin-design-kit {
 }
 
 .card.auth-view {
-  width: min(92vw, 42rem);
-  padding: clamp(1.25rem, 2.6vw, 1.9rem);
+  width: 100%;
+  max-width: none;
+  padding: 0;
   box-sizing: border-box;
-  justify-self: center;
-  align-self: center;
-  background: var(--color-bg-card);
-  max-height: var(--view-max-block-size);
+  justify-self: stretch;
+  align-self: stretch;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  min-height: var(--view-max-block-size, 100%);
+  max-height: var(--view-max-block-size, 100%);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
 }
 
 .card.view--splash {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 12rem;
-  background: var(--color-bg-card);
+  display: grid;
+  place-items: center;
+  min-height: var(--view-max-block-size, 100%);
+  max-height: var(--view-max-block-size, 100%);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .splash__loader {
@@ -1886,8 +1897,8 @@ main > .admin-design-kit {
   min-height: 100%;
   justify-items: center;
   text-align: center;
-  padding-block: clamp(0.6rem, 1.8vw, 1rem);
-  padding-inline: clamp(0.75rem, 2.4vw, 1.6rem);
+  padding-block: clamp(1.25rem, 2.6vw, 1.9rem);
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
   grid-template-rows: auto auto minmax(0, 1fr);
 }
 
@@ -2212,14 +2223,10 @@ main > .admin-design-kit {
 }
 
 @media (orientation: portrait) {
-  .card.auth-view {
-    padding: clamp(0.9rem, 2vw, 1.2rem);
-  }
-
   .auth-view {
     gap: clamp(0.55rem, 2vw, 0.95rem);
-    padding-block: clamp(0.45rem, 1.4vw, 0.8rem);
-    padding-inline: clamp(0.6rem, 2vw, 1.25rem);
+    padding-block: clamp(0.9rem, 2vw, 1.2rem);
+    padding-inline: clamp(0.95rem, 3vw, 1.75rem);
   }
 
   .auth-panel__form {
@@ -2228,10 +2235,6 @@ main > .admin-design-kit {
 }
 
 @media (min-width: 56rem) {
-  .card.auth-view {
-    width: min(82vw, 34rem);
-  }
-
   .auth-panel__intro {
     max-width: 30rem;
   }

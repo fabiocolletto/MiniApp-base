@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.260 - 2025-10-26 14:50 BRT
+- Ajusta o grid principal para que as views ocupem toda a largura e altura disponíveis sem bordas vazias.
+- Redefine o layout das telas de autenticação e do splash para abandonarem o cartão centralizado e aderirem ao modo tela cheia.
+- Recalibra o espaçamento responsivo das telas de autenticação garantindo conforto visual em diferentes orientações.
+
 ## v0.1.259 - 2025-10-26 13:30 BRT
 - Limita o widget Visualização da prova a exibir somente a prévia do modelo impresso, removendo o resumo e metadados textuais.
 
