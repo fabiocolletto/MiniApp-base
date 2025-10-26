@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.244 - 2025-10-26 06:31 BRT
+- Remove a diretiva `@import` de `styles/main.css` e passa a carregar os tokens globais diretamente pelo HTML.
+- Atualiza `index.html` para referenciar `tokens.css` e `main.css` em sequência, mantendo o carregamento dos estilos globais.
+
 ## v0.1.243 - 2025-10-26 06:23 BRT
 - Ajusta os tokens de tema para definir `--color-text-soft` com valores explícitos nos modos claro e escuro, restaurando a cor esperada das descrições.
 
