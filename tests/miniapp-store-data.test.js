@@ -8,6 +8,7 @@ import {
   getTopMiniAppsByFavorites,
   getLatestMiniApps,
   getMiniAppsByFeaturedCategories,
+  __resetMiniAppStoreStateForTests,
 } from '../scripts/data/miniapp-store.js';
 
 test.after(() => {
@@ -23,6 +24,116 @@ test('snapshot padrão inclui o Gestor de tarefas como miniapp', () => {
   assert.ok(taskManager, 'Gestor de tarefas deve estar cadastrado no catálogo padrão de miniapps');
   assert.equal(taskManager?.category, 'Produtividade');
   assert.deepEqual(taskManager?.featuredCategories ?? [], ['Produtividade', 'Gestão de tarefas']);
+});
+
+test('descarta placeholders legados persistidos ao inicializar o catálogo', () => {
+  const legacySnapshot = [
+    {
+      id: 'time-tracker',
+      name: 'Time Tracker',
+      category: 'Produtividade',
+      description:
+        'Monitore jornadas, exporte relatórios completos e mantenha a equipe sincronizada com as regras do painel administrativo.',
+      status: 'active',
+      updatedAt: '2025-10-12T18:00:00-03:00',
+      access: ['administrador', 'colaborador'],
+      version: '1.8.0',
+      downloads: 12840,
+      favorites: 9420,
+      releaseDate: '2024-05-10T09:00:00-03:00',
+      featuredCategories: ['Produtividade', 'Gestão de tempo'],
+      icon: null,
+    },
+    {
+      id: 'field-forms',
+      name: 'Field Forms',
+      category: 'Operações',
+      description:
+        'Colete dados em campo mesmo offline, centralize anexos e acompanhe revisões em tempo real a partir do painel.',
+      status: 'testing',
+      updatedAt: '2025-10-18T09:30:00-03:00',
+      access: ['administrador'],
+      version: '3.2.1',
+      downloads: 8640,
+      favorites: 5120,
+      releaseDate: '2023-11-03T11:30:00-03:00',
+      featuredCategories: ['Operações', 'Coleta em campo'],
+      icon: null,
+    },
+    {
+      id: 'insights-hub',
+      name: 'Insights Hub',
+      category: 'Analytics',
+      description:
+        'Combine métricas de diferentes mini-apps, configure alertas inteligentes e acompanhe o avanço da implantação.',
+      status: 'deployment',
+      updatedAt: '2025-10-20T14:45:00-03:00',
+      access: ['administrador', 'colaborador', 'usuario'],
+      version: '0.9.5',
+      downloads: 4760,
+      favorites: 3980,
+      releaseDate: '2024-07-22T15:15:00-03:00',
+      featuredCategories: ['Analytics', 'Gestão'],
+      icon: null,
+    },
+    {
+      id: 'task-manager',
+      name: 'Gestor de tarefas',
+      category: 'Produtividade',
+      description:
+        'Organize o backlog, acompanhe indicadores de execução e detalhe cada entrega com checklists contextualizados.',
+      status: 'active',
+      updatedAt: '2025-10-25T15:03:00-03:00',
+      access: ['administrador', 'colaborador', 'usuario'],
+      version: '0.1.234',
+      downloads: 3280,
+      favorites: 2840,
+      releaseDate: '2025-10-25T15:03:00-03:00',
+      featuredCategories: ['Produtividade', 'Gestão de tarefas'],
+      icon: null,
+    },
+  ];
+
+  const storage = new Map();
+  const localStorageMock = {
+    getItem(key) {
+      return storage.has(key) ? storage.get(key) : null;
+    },
+    setItem(key, value) {
+      storage.set(key, String(value));
+    },
+    removeItem(key) {
+      storage.delete(key);
+    },
+    clear() {
+      storage.clear();
+    },
+  };
+
+  const previousWindow = global.window;
+  global.window = { localStorage: localStorageMock };
+
+  try {
+    localStorageMock.setItem('miniapp:admin-miniapps', JSON.stringify(legacySnapshot));
+    __resetMiniAppStoreStateForTests();
+
+    const snapshot = getMiniAppsSnapshot();
+    assert.equal(snapshot.length, 1);
+    assert.deepEqual(snapshot.map((app) => app.id), ['task-manager']);
+
+    const persisted = JSON.parse(localStorageMock.getItem('miniapp:admin-miniapps'));
+    assert.ok(Array.isArray(persisted));
+    assert.deepEqual(persisted.map((app) => app.id), ['task-manager']);
+  } finally {
+    if (previousWindow === undefined) {
+      delete global.window;
+    } else {
+      global.window = previousWindow;
+    }
+
+    __resetMiniAppStoreStateForTests();
+    resetMiniApps();
+  }
 });
 
 test('resetMiniApps normalizes métricas numéricas e categorias destacadas', () => {

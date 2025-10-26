@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.250 - 2025-10-26 07:29 BRT
+- Substitui o snapshot persistido com placeholders antigos pelo catálogo atual de miniapps assim que o seed legado é detectado.
+- Expõe utilitário de teste para reinicializar o store e valida via teste automatizado que o catálogo remove entradas obsoletas ao carregar do armazenamento.
+- Executa `npm test` para garantir que o catálogo e os fluxos existentes continuem aprovados após a migração do seed.
+
 ## v0.1.249 - 2025-10-26 07:17 BRT
 - Remove os miniapps fictícios do seed `DEFAULT_MINI_APPS` deixando apenas o Gestor de tarefas disponível no painel.
 - Executa `npm test` para garantir que o catálogo continue renderizando sem regressões.
