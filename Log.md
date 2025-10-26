@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.247 - 2025-10-26 06:43 BRT
+- Executa a suíte `npm test` para confirmar que os fluxos principais continuam renderizando sem regressões visuais perceptíveis.
+- Tenta acionar rotinas `npm run build` e `npm run dev`, registrando que ainda não existem scripts configurados para esses fluxos automatizados.
+
 ## v0.1.246 - 2025-10-26 06:40 BRT
 - Consolida as regras de `.footer-brand__text` em `styles/main.css`, removendo duplicidade e mantendo os ajustes de overflow do rodapé.
 
