@@ -2028,7 +2028,7 @@ function generatePrintableExamHtml(exam, questionMap, { version = 'student' } = 
 }
 
 function buildPrintablePreviewSection(exam, questionMap, options = {}) {
-  const { initialVersion = 'student', onVersionChange } = options;
+  const { onVersionChange } = options;
 
   const section = document.createElement('section');
   section.className = 'exam-dashboard__preview-section exam-dashboard__printable layout-stack layout-stack--sm';
@@ -2037,94 +2037,28 @@ function buildPrintablePreviewSection(exam, questionMap, options = {}) {
   heading.className = 'exam-dashboard__preview-subtitle';
   heading.textContent = 'Prévia do modelo impresso';
 
-  const description = document.createElement('p');
-  description.className = 'exam-dashboard__preview-text';
-  description.textContent =
-    'Alterne entre as versões para alunos e professores e confirme o visual antes de gerar a impressão.';
-
-  const toolbar = document.createElement('div');
-  toolbar.className = 'exam-dashboard__preview-toolbar';
-
-  const toolbarLabel = document.createElement('span');
-  toolbarLabel.className = 'exam-dashboard__preview-toolbar-label';
-  toolbarLabel.textContent = 'Versão da prévia:';
-
-  const toggleGroup = document.createElement('div');
-  toggleGroup.className = 'exam-dashboard__preview-toggle-group';
-  toggleGroup.setAttribute('role', 'group');
-  toggleGroup.setAttribute('aria-label', 'Escolher versão da prévia impressa');
-
-  const studentToggle = document.createElement('button');
-  studentToggle.type = 'button';
-  studentToggle.className = 'button button--ghost button--pill exam-dashboard__preview-toggle';
-  studentToggle.textContent = 'Alunos';
-  studentToggle.dataset.version = 'student';
-
-  const teacherToggle = document.createElement('button');
-  teacherToggle.type = 'button';
-  teacherToggle.className = 'button button--ghost button--pill exam-dashboard__preview-toggle';
-  teacherToggle.textContent = 'Professores';
-  teacherToggle.dataset.version = 'teacher';
-
-  toggleGroup.append(studentToggle, teacherToggle);
-  toolbar.append(toolbarLabel, toggleGroup);
-
   const frame = document.createElement('iframe');
   frame.className = 'exam-dashboard__preview-frame';
   frame.setAttribute('loading', 'lazy');
   frame.setAttribute('title', `Prévia da prova impressa: ${exam.title}`);
 
-  const toggles = {
-    student: studentToggle,
-    teacher: teacherToggle,
-  };
+  section.dataset.previewVersion = 'student';
 
-  const isTeacherVersion = initialVersion === 'teacher';
-  let currentVersion = isTeacherVersion ? 'teacher' : 'student';
-
-  function updateToggleState() {
-    Object.entries(toggles).forEach(([versionKey, button]) => {
-      const isActive = versionKey === currentVersion;
-      button.setAttribute('aria-pressed', String(isActive));
-    });
-    section.dataset.previewVersion = currentVersion;
-  }
-
-  function setVersion(version, options = {}) {
-    const { force = false } = options;
-    const normalizedVersion = version === 'teacher' ? 'teacher' : 'student';
-    if (!force && normalizedVersion === currentVersion) {
-      return false;
-    }
-    currentVersion = normalizedVersion;
-    frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: currentVersion });
-    updateToggleState();
-    if (typeof onVersionChange === 'function') {
-      onVersionChange(currentVersion);
-    }
-    return true;
-  }
-
-  studentToggle.addEventListener('click', () => {
-    setVersion('student');
-  });
-  teacherToggle.addEventListener('click', () => {
-    setVersion('teacher');
-  });
-
-  frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: currentVersion });
-  updateToggleState();
+  frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: 'student' });
 
   if (typeof onVersionChange === 'function') {
-    onVersionChange(currentVersion);
+    onVersionChange('student');
   }
 
-  section.append(heading, description, toolbar, frame);
+  section.append(heading, frame);
   return {
     element: section,
-    setVersion,
+    setVersion() {
+      section.dataset.previewVersion = 'student';
+      return false;
+    },
     getVersion() {
-      return currentVersion;
+      return 'student';
     },
   };
 }

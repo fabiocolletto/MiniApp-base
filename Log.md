@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.268 - 2025-10-26 16:39 BRT
+- Limita a prévia do modelo impresso à versão do aluno, removendo a descrição e os controles de alternância do widget.
+
 ## v0.1.267 - 2025-10-26 16:27 BRT
 - Simplifica o widget de visualização do painel de provas removendo o cabeçalho e mantendo apenas o visualizador dedicado.
 
