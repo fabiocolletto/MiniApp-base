@@ -901,14 +901,11 @@ footer {
 }
 
 .footer-brand__text {
+  display: inline-block;
   font-size: clamp(0.68rem, 1.25vw, 0.95rem);
   font-weight: 500;
   letter-spacing: 0.02em;
   color: rgba(var(--color-warm-rgb), 0.75);
-}
-
-.footer-brand__text {
-  display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

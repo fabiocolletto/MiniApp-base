@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.246 - 2025-10-26 06:40 BRT
+- Consolida as regras de `.footer-brand__text` em `styles/main.css`, removendo duplicidade e mantendo os ajustes de overflow do rodapé.
+
 ## v0.1.245 - 2025-10-26 06:36 BRT
 - Implementa salvaguardas de acessibilidade reduzindo transições e animações de botões, cartões, notificações e indicadores do rodapé via `prefers-reduced-motion`.
 
