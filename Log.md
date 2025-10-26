@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.266 - 2025-10-26 16:11 BRT
+- Ajusta a inicialização do catálogo do painel MiniApps para repor automaticamente o Gestor de tarefas e o Criador de provas quando o armazenamento local não os inclui.
+- Acrescenta testes garantindo que snapshots persistidos personalizados preservem seus itens enquanto recebem os miniapps padrão necessários.
+- Atualiza a referência de versão do sistema para refletir a nova release.
+
 ## v0.1.265 - 2025-10-26 15:50 BRT
 - Reposiciona o botão de provas e o feedback associado no cabeçalho, deixando o widget Visualização da prova apenas com título e prévia.
 - Move a mensagem de status do widget para fora do cartão, mantendo somente o conteúdo da prova na área principal de visualização.

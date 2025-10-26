@@ -408,14 +408,38 @@ function cloneMiniAppEntry(entry) {
   };
 }
 
+const DEFAULT_MINI_APPS_NORMALIZED = DEFAULT_MINI_APPS.map((entry) => normalizeMiniAppEntry(entry)).filter(
+  (entry) => entry !== null,
+);
+
+function mergeWithDefaultMiniApps(entries) {
+  const normalizedEntries = Array.isArray(entries) ? entries.slice() : [];
+  const indexById = new Map(normalizedEntries.map((entry) => [entry.id, entry]));
+  let hasChanges = false;
+
+  DEFAULT_MINI_APPS_NORMALIZED.forEach((defaultEntry) => {
+    if (!indexById.has(defaultEntry.id)) {
+      const cloned = cloneMiniAppEntry(defaultEntry);
+      normalizedEntries.push(cloned);
+      indexById.set(cloned.id, cloned);
+      hasChanges = true;
+    }
+  });
+
+  return { entries: normalizedEntries, hasChanges };
+}
+
 function ensureInitialized() {
   if (Array.isArray(miniApps)) {
     if (isLegacyDefaultMiniAppSnapshot(miniApps)) {
-      miniApps = DEFAULT_MINI_APPS.map((entry) => normalizeMiniAppEntry(entry)).filter(
-        (entry) => entry !== null,
+      const { entries, hasChanges } = mergeWithDefaultMiniApps(
+        DEFAULT_MINI_APPS.map((entry) => normalizeMiniAppEntry(entry)).filter((entry) => entry !== null),
       );
-      persistMiniAppsSnapshot(miniApps);
-      notifyListeners();
+      miniApps = entries;
+      if (hasChanges) {
+        persistMiniAppsSnapshot(miniApps);
+        notifyListeners();
+      }
     }
     return;
   }
@@ -424,11 +448,12 @@ function ensureInitialized() {
   const shouldUseDefault = !Array.isArray(persisted) || isLegacyDefaultMiniAppSnapshot(persisted);
   const source = shouldUseDefault ? DEFAULT_MINI_APPS : persisted;
 
-  miniApps = source
-    .map((entry) => normalizeMiniAppEntry(entry))
-    .filter((entry) => entry !== null);
+  const normalized = source.map((entry) => normalizeMiniAppEntry(entry)).filter((entry) => entry !== null);
+  const { entries, hasChanges } = mergeWithDefaultMiniApps(normalized);
 
-  if (shouldUseDefault) {
+  miniApps = entries;
+
+  if (shouldUseDefault || hasChanges) {
     persistMiniAppsSnapshot(miniApps);
   }
 }
