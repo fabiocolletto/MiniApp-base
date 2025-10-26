@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.261 - 2025-10-26 14:55 BRT
+- Simplifica o painel de provas mantendo apenas as instruções solicitadas e alinha a mensagem da pré-visualização com o texto de impressão desejado.
+
 ## v0.1.260 - 2025-10-26 14:50 BRT
 - Ajusta o grid principal para que as views ocupem toda a largura e altura disponíveis sem bordas vazias.
 - Redefine o layout das telas de autenticação e do splash para abandonarem o cartão centralizado e aderirem ao modo tela cheia.

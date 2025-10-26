@@ -2169,7 +2169,7 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
     const placeholder = document.createElement('p');
     placeholder.className = 'exam-dashboard__preview-placeholder';
     placeholder.textContent =
-      'Selecione uma prova em “Provas em andamento e agendadas” para visualizar somente a prévia do modelo antes de imprimir.';
+      'Escolha uma prova em “Provas em andamento e agendadas” para carregar apenas a prévia do modelo e alternar entre as versões de alunos e professores antes de imprimir.';
     container.append(placeholder);
     if (typeof registerController === 'function') {
       registerController(null);
@@ -2521,11 +2521,6 @@ export function renderExamDashboard(viewRoot) {
     filterDurationField,
   );
 
-  const headerHelper = document.createElement('p');
-  headerHelper.className = 'exam-dashboard__header-helper';
-  headerHelper.textContent =
-    'As escolhas ajustam a pré-visualização e a lista de provas. Use "Todos os status" para exibir todas as avaliações e deixe o tempo máximo em branco para considerar qualquer duração.';
-
   const headerActions = document.createElement('div');
   headerActions.className = 'exam-dashboard__header-actions';
 
@@ -2575,7 +2570,7 @@ export function renderExamDashboard(viewRoot) {
 
   syncPrintButtons();
 
-  headerSection.append(headerText, headerGrid, headerHelper, headerActions);
+  headerSection.append(headerText, headerGrid, headerActions);
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout exam-dashboard__layout';
