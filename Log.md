@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.249 - 2025-10-26 07:17 BRT
+- Remove os miniapps fictícios do seed `DEFAULT_MINI_APPS` deixando apenas o Gestor de tarefas disponível no painel.
+- Executa `npm test` para garantir que o catálogo continue renderizando sem regressões.
+
 ## v0.1.248 - 2025-10-26 07:04 BRT
 - Limpeza dos estilos globais removendo seletores e propriedades sem referência em `styles/main.css`.
 - Preservação dos utilitários e tokens compartilhados enquanto eliminamos regras obsoletas.
