@@ -110,11 +110,6 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   color: var(--color-text-strong);
 }
 
-.exam-dashboard__preview-description {
-  margin: 0;
-  color: var(--color-text-soft);
-}
-
 .exam-dashboard__preview-message {
   margin: 0;
 }
@@ -172,16 +167,6 @@ const EXAM_DASHBOARD_STYLES = String.raw`
 .exam-dashboard__preview-toggle:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.4);
-}
-
-.exam-dashboard__preview-placeholder {
-  margin: 0;
-  padding: var(--space-lg);
-  text-align: center;
-  color: var(--color-text-soft);
-  border: 1px dashed var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-neutral);
 }
 
 .exam-dashboard__selection-description {
@@ -2166,11 +2151,6 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
   }
 
   if (!exam) {
-    const placeholder = document.createElement('p');
-    placeholder.className = 'exam-dashboard__preview-placeholder';
-    placeholder.textContent =
-      'Escolha uma prova em “Provas em andamento e agendadas” para carregar apenas a prévia do modelo e alternar entre as versões de alunos e professores antes de imprimir.';
-    container.append(placeholder);
     if (typeof registerController === 'function') {
       registerController(null);
     }
@@ -2583,12 +2563,7 @@ export function renderExamDashboard(viewRoot) {
   previewTitle.className = 'exam-dashboard__preview-heading';
   previewTitle.textContent = 'Visualização da prova';
 
-  const previewDescription = document.createElement('p');
-  previewDescription.className = 'exam-dashboard__preview-description';
-  previewDescription.textContent =
-    'Escolha uma prova em “Provas em andamento e agendadas” para carregar apenas a prévia do modelo e alternar entre as versões de alunos e professores antes de imprimir.';
-
-  previewHeader.append(previewTitle, previewDescription);
+  previewHeader.append(previewTitle);
 
   const previewMessage = createMessageElement('exam-dashboard__preview-message');
 

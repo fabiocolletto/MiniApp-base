@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.263 - 2025-10-26 15:27 BRT
+- Remove as instruções textuais do widget de Visualização da prova, tanto no cabeçalho quanto no estado sem seleção.
+
 ## v0.1.262 - 2025-10-26 15:07 BRT
 - Remove o texto descritivo do widget Planejamento da avaliação, deixando apenas os filtros e ações disponíveis.
 
