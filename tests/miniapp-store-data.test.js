@@ -159,6 +159,79 @@ test('descarta placeholders legados persistidos ao inicializar o catálogo', () 
   }
 });
 
+test('repõe miniapps padrão quando snapshot persistido não os inclui', () => {
+  const storage = new Map();
+  const localStorageMock = {
+    getItem(key) {
+      return storage.has(key) ? storage.get(key) : null;
+    },
+    setItem(key, value) {
+      storage.set(key, String(value));
+    },
+    removeItem(key) {
+      storage.delete(key);
+    },
+    clear() {
+      storage.clear();
+    },
+  };
+
+  const persistedSnapshot = [
+    {
+      id: 'custom-app',
+      name: 'App personalizado',
+      category: 'Utilidades',
+      description: 'Ferramenta criada para um cliente específico.',
+      status: 'testing',
+      updatedAt: '2025-10-01T12:00:00-03:00',
+      access: ['usuario'],
+      version: '1.0.0',
+      downloads: 42,
+      favorites: 8,
+      releaseDate: '2025-10-01T12:00:00-03:00',
+      featuredCategories: ['Utilidades'],
+      icon: null,
+    },
+  ];
+
+  const previousWindow = global.window;
+  global.window = { localStorage: localStorageMock };
+
+  try {
+    localStorageMock.setItem('miniapp:admin-miniapps', JSON.stringify(persistedSnapshot));
+    __resetMiniAppStoreStateForTests();
+
+    const snapshot = getMiniAppsSnapshot();
+    assert.equal(snapshot.length, 3);
+    assert.deepEqual(
+      snapshot
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['custom-app', 'exam-planner', 'task-manager'],
+    );
+
+    const persisted = JSON.parse(localStorageMock.getItem('miniapp:admin-miniapps'));
+    assert.ok(Array.isArray(persisted));
+    assert.deepEqual(
+      persisted
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['custom-app', 'exam-planner', 'task-manager'],
+    );
+  } finally {
+    if (previousWindow === undefined) {
+      delete global.window;
+    } else {
+      global.window = previousWindow;
+    }
+
+    __resetMiniAppStoreStateForTests();
+    resetMiniApps();
+  }
+});
+
 test('resetMiniApps normalizes métricas numéricas e categorias destacadas', () => {
   resetMiniApps([
     {
