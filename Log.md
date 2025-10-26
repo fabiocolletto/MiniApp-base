@@ -4,6 +4,8 @@
 - Substitui o snapshot persistido com placeholders antigos pelo catálogo atual de miniapps assim que o seed legado é detectado.
 - Expõe utilitário de teste para reinicializar o store e valida via teste automatizado que o catálogo remove entradas obsoletas ao carregar do armazenamento.
 - Executa `npm test` para garantir que o catálogo e os fluxos existentes continuem aprovados após a migração do seed.
+- Centraliza a versão do sistema em `scripts/data/system-release-source.js` e expõe utilitário compartilhado para sincronizar rodapé, shell e ferramentas administrativas.
+- Atualiza `app-shell` e `syncSystemReleaseIndicators` para consumir os metadados derivados e acrescenta testes garantindo a consistência da versão exibida nos indicadores visuais.
 
 ## v0.1.249 - 2025-10-26 07:17 BRT
 - Remove os miniapps fictícios do seed `DEFAULT_MINI_APPS` deixando apenas o Gestor de tarefas disponível no painel.

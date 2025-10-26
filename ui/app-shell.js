@@ -22,11 +22,7 @@ import {
   sanitizeUserThemePreference,
   updateUser as updateUserRecord,
 } from '../scripts/data/user-store.js';
-import {
-  getSystemMetadata,
-  getSystemReleaseDate,
-  getSystemVersionLabel,
-} from '../scripts/data/system-metadata.js';
+import { getSystemReleaseMetadata } from '../scripts/utils/system-release.js';
 import {
   getResolvedTheme,
   getThemePreference,
@@ -104,12 +100,8 @@ const mobileFooterMediaQuery =
     : null;
 
 function applySystemVersionMetadata() {
-  const metadata = getSystemMetadata();
-  syncSystemReleaseIndicators({
-    versionLabel: getSystemVersionLabel(),
-    publishedAt: getSystemReleaseDate(),
-    changelogPath: metadata?.changelogPath,
-  });
+  const metadata = getSystemReleaseMetadata();
+  syncSystemReleaseIndicators(metadata);
 }
 
 applySystemVersionMetadata();

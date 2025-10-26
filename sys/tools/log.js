@@ -1,3 +1,4 @@
+import { getSystemReleaseMetadata } from '../../scripts/utils/system-release.js';
 const LOG_PREFIX = '[miniapp]';
 
 const releaseDateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -32,16 +33,6 @@ function emit(level, event, message, error) {
   console.info(formatted);
 }
 
-function normalizeVersionLabel(rawVersion) {
-  const cleaned = typeof rawVersion === 'string' ? rawVersion.trim() : '';
-  if (!cleaned) {
-    return 'v0';
-  }
-
-  const normalized = cleaned.replace(/^v/i, '');
-  return `v${normalized}`;
-}
-
 function formatReleaseDateLabel(value) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return releaseDateFormatter.format(value);
@@ -71,9 +62,10 @@ export function syncSystemReleaseIndicators(options = {}) {
     return;
   }
 
-  const versionLabel = normalizeVersionLabel(options.versionLabel ?? options.version ?? '');
-  const releaseDateLabel = formatReleaseDateLabel(options.publishedAt);
-  const changelogPath = typeof options.changelogPath === 'string' ? options.changelogPath.trim() : '';
+  const metadata = getSystemReleaseMetadata(options);
+  const versionLabel = metadata.versionLabel;
+  const releaseDateLabel = formatReleaseDateLabel(metadata.publishedAt);
+  const changelogPath = metadata.changelogPath;
   const selectSingle =
     typeof document.querySelector === 'function' ? document.querySelector.bind(document) : null;
   const selectAll =
