@@ -1,5 +1,9 @@
 # Log do MiniApp Criador de Provas
 
+## v0.1.265 - 2025-10-26
+- Reposiciona o acionador da lista de provas e o feedback de status no cabeçalho, liberando o widget de visualização para conter apenas título e prévia.
+- Move a mensagem de pré-visualização para fora do cartão principal, mantendo a área dedicada exclusivamente ao modelo impresso.
+
 ## v0.1.254 - 2025-10-26
 - Adiciona filtro por status no painel, permitindo visualizar apenas provas em rascunho, revisão, agendadas ou publicadas.
 - Mantém "Todos os status" como seleção padrão e aplica a escolha ao formulário para acelerar a criação/edição.
