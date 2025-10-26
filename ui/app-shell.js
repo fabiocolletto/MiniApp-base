@@ -1200,7 +1200,7 @@ function ensureHeaderMobileMenu() {
   examsAction.type = 'button';
   examsAction.id = 'mobile-access-menu-exams';
   examsAction.className = 'app-modal__action header-mobile-menu__action';
-  examsAction.textContent = 'Criador de provas';
+  examsAction.textContent = 'Criador de Provas';
   examsAction.addEventListener('click', () => {
     closeHeaderMobileMenu();
     renderView('exams');

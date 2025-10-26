@@ -15,17 +15,17 @@ test.after(() => {
   resetMiniApps();
 });
 
-test('snapshot padrão inclui o Gestor de tarefas e o Criador de provas', () => {
+test('snapshot padrão inclui Gestão de Trabalho e o Criador de Provas', () => {
   resetMiniApps();
 
   const snapshot = getMiniAppsSnapshot();
   const taskManager = snapshot.find((app) => app.id === 'task-manager');
   const examPlanner = snapshot.find((app) => app.id === 'exam-planner');
 
-  assert.ok(taskManager, 'Gestor de tarefas deve estar cadastrado no catálogo padrão de miniapps');
+  assert.ok(taskManager, 'Gestão de Trabalho deve estar cadastrada no catálogo padrão de miniapps');
   assert.equal(taskManager?.category, 'Produtividade');
-  assert.deepEqual(taskManager?.featuredCategories ?? [], ['Produtividade', 'Gestão de tarefas']);
-  assert.ok(examPlanner, 'Criador de provas deve estar cadastrado no catálogo padrão de miniapps');
+  assert.deepEqual(taskManager?.featuredCategories ?? [], ['Produtividade', 'Gestão de trabalho']);
+  assert.ok(examPlanner, 'Criador de Provas deve estar cadastrado no catálogo padrão de miniapps');
   assert.equal(examPlanner?.category, 'Educação');
   assert.deepEqual(examPlanner?.featuredCategories ?? [], ['Educação', 'Avaliações escolares']);
   assert.deepEqual(

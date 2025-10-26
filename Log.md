@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.269 - 2025-10-26 16:45 BRT
+- Renomeia o miniapp de tarefas para "Gestão de Trabalho" e ajusta o catálogo para destacar apenas os dois miniapps oficiais.
+- Torna os cards do painel MiniApps interativos, abrindo diretamente os painéis de Gestão de Trabalho e Criador de Provas ao clicar.
+
 ## v0.1.268 - 2025-10-26 16:39 BRT
 - Limita a prévia do modelo impresso à versão do aluno, removendo a descrição e os controles de alternância do widget.
 

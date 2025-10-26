@@ -15,7 +15,7 @@ export const ACCESS_LEVEL_OPTIONS = [
 const DEFAULT_MINI_APPS = [
   {
     id: 'task-manager',
-    name: 'Gestor de tarefas',
+    name: 'Gestão de Trabalho',
     category: 'Produtividade',
     description:
       'Organize o backlog, acompanhe indicadores de execução e detalhe cada entrega com checklists contextualizados.',
@@ -26,12 +26,12 @@ const DEFAULT_MINI_APPS = [
     downloads: 3280,
     favorites: 2840,
     releaseDate: '2025-10-25T15:03:00-03:00',
-    featuredCategories: ['Produtividade', 'Gestão de tarefas'],
+    featuredCategories: ['Produtividade', 'Gestão de trabalho'],
     icon: null,
   },
   {
     id: 'exam-planner',
-    name: 'Criador de provas',
+    name: 'Criador de Provas',
     category: 'Educação',
     description:
       'Monte provas alinhadas à BNCC com banco de questões por competência, controle de turmas e indicadores de preparação.',
