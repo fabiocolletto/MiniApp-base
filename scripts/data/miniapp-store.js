@@ -29,6 +29,22 @@ const DEFAULT_MINI_APPS = [
     featuredCategories: ['Produtividade', 'Gestão de tarefas'],
     icon: null,
   },
+  {
+    id: 'exam-planner',
+    name: 'Criador de provas',
+    category: 'Educação',
+    description:
+      'Monte provas alinhadas à BNCC com banco de questões por competência, controle de turmas e indicadores de preparação.',
+    status: 'active',
+    updatedAt: '2025-10-26T13:45:00-03:00',
+    access: ['administrador', 'colaborador', 'usuario'],
+    version: '0.1.251',
+    downloads: 1620,
+    favorites: 1180,
+    releaseDate: '2025-10-26T13:45:00-03:00',
+    featuredCategories: ['Educação', 'Avaliações escolares'],
+    icon: null,
+  },
 ];
 
 const LEGACY_DEFAULT_MINI_APPS = Object.freeze([

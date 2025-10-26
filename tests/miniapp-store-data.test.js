@@ -15,15 +15,26 @@ test.after(() => {
   resetMiniApps();
 });
 
-test('snapshot padrão inclui o Gestor de tarefas como miniapp', () => {
+test('snapshot padrão inclui o Gestor de tarefas e o Criador de provas', () => {
   resetMiniApps();
 
   const snapshot = getMiniAppsSnapshot();
   const taskManager = snapshot.find((app) => app.id === 'task-manager');
+  const examPlanner = snapshot.find((app) => app.id === 'exam-planner');
 
   assert.ok(taskManager, 'Gestor de tarefas deve estar cadastrado no catálogo padrão de miniapps');
   assert.equal(taskManager?.category, 'Produtividade');
   assert.deepEqual(taskManager?.featuredCategories ?? [], ['Produtividade', 'Gestão de tarefas']);
+  assert.ok(examPlanner, 'Criador de provas deve estar cadastrado no catálogo padrão de miniapps');
+  assert.equal(examPlanner?.category, 'Educação');
+  assert.deepEqual(examPlanner?.featuredCategories ?? [], ['Educação', 'Avaliações escolares']);
+  assert.deepEqual(
+    snapshot
+      .map((app) => app.id)
+      .slice()
+      .sort(),
+    ['exam-planner', 'task-manager'],
+  );
 });
 
 test('descarta placeholders legados persistidos ao inicializar o catálogo', () => {
@@ -118,12 +129,24 @@ test('descarta placeholders legados persistidos ao inicializar o catálogo', () 
     __resetMiniAppStoreStateForTests();
 
     const snapshot = getMiniAppsSnapshot();
-    assert.equal(snapshot.length, 1);
-    assert.deepEqual(snapshot.map((app) => app.id), ['task-manager']);
+    assert.equal(snapshot.length, 2);
+    assert.deepEqual(
+      snapshot
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['exam-planner', 'task-manager'],
+    );
 
     const persisted = JSON.parse(localStorageMock.getItem('miniapp:admin-miniapps'));
     assert.ok(Array.isArray(persisted));
-    assert.deepEqual(persisted.map((app) => app.id), ['task-manager']);
+    assert.deepEqual(
+      persisted
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['exam-planner', 'task-manager'],
+    );
   } finally {
     if (previousWindow === undefined) {
       delete global.window;
