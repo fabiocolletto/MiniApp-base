@@ -17,11 +17,7 @@ import {
   getSessionStatus as defaultGetSessionStatus,
 } from '../scripts/data/session-store.js';
 import { getStorageStatus as defaultGetStorageStatus } from '../scripts/data/user-store.js';
-import {
-  getSystemMetadata,
-  getSystemReleaseDate,
-  getSystemVersionLabel,
-} from '../scripts/data/system-metadata.js';
+import { getSystemReleaseMetadata } from '../scripts/utils/system-release.js';
 import { getResolvedTheme, setThemePreference, subscribeThemeChange } from '../scripts/theme/theme-manager.js';
 import {
   getActivityStatus as defaultGetActivityStatus,

@@ -1,4 +1,4 @@
-import { getSystemMetadata, getSystemVersion } from './system-metadata.js';
+import { getSystemReleaseMetadata } from '../utils/system-release.js';
 
 const releaseDateFormatter = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
@@ -7,13 +7,13 @@ const releaseDateFormatter = new Intl.DateTimeFormat('pt-BR', {
 });
 
 export function getSystemReleaseInfo() {
-  const metadata = getSystemMetadata();
-  const version = typeof metadata?.version === 'string' ? metadata.version : getSystemVersion();
+  const metadata = getSystemReleaseMetadata();
 
   return {
-    version,
-    publishedAt: metadata?.publishedAt ?? null,
-    changelogPath: metadata?.changelogPath ?? './Log.md',
+    version: metadata.version,
+    versionLabel: metadata.versionLabel,
+    publishedAt: metadata.publishedAt,
+    changelogPath: metadata.changelogPath,
   };
 }
 

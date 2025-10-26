@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { getSystemReleaseMetadata } from '../../scripts/utils/system-release.js';
 
 class FakeNode {
   constructor() {
@@ -7,11 +8,27 @@ class FakeNode {
   }
 
   registerSelector(selector, element) {
-    this.selectors.set(selector, element);
+    if (!this.selectors.has(selector)) {
+      this.selectors.set(selector, new Set());
+    }
+    this.selectors.get(selector).add(element);
   }
 
   querySelector(selector) {
-    return this.selectors.get(selector) ?? null;
+    const bucket = this.selectors.get(selector);
+    if (!bucket || bucket.size === 0) {
+      return null;
+    }
+    const first = bucket.values().next().value;
+    return first ?? null;
+  }
+
+  querySelectorAll(selector) {
+    const bucket = this.selectors.get(selector);
+    if (!bucket || bucket.size === 0) {
+      return [];
+    }
+    return Array.from(bucket.values());
   }
 }
 
@@ -199,20 +216,30 @@ function createAppDom() {
   const headerLogo = new FakeElement('img');
   const headerTitle = new FakeElement('span');
   const versionButton = new FakeElement('button');
+  const versionButtonText = new FakeElement('span');
   const loginLink = new FakeElement('a');
   const headerActions = new FakeElement('nav');
   const memoryIndicator = new FakeElement('span');
   const memoryIndicatorText = new FakeElement('span');
+  const adminMeta = new FakeElement('div');
+  const adminVersionChip = new FakeElement('span');
+  const adminPublishedChip = new FakeElement('span');
 
   document.registerElement(viewRoot, { id: 'view-root' });
   document.registerElement(main, { selectors: ['main'] });
   document.registerElement(headerLogo, { selectors: ['.header-logo'] });
   document.registerElement(headerTitle, { selectors: ['.header-title'] });
   document.registerElement(versionButton, { selectors: ['.footer-version'] });
+  versionButton.registerSelector('.footer-version__text', versionButtonText);
   document.registerElement(loginLink, { selectors: ['.header-login-link'] });
   document.registerElement(headerActions, { selectors: ['.header-actions'] });
   document.registerElement(memoryIndicator, { selectors: ['.footer-memory'] });
   memoryIndicator.registerSelector('.footer-memory__text', memoryIndicatorText);
+  document.registerElement(adminMeta, { selectors: ['.admin-menu__meta'] });
+  adminMeta.registerSelector('.miniapp-details__chip[data-type="version"]', adminVersionChip);
+  adminMeta.registerSelector('.miniapp-details__chip[data-type="published-at"]', adminPublishedChip);
+  document.registerSelector('.admin-menu__meta .miniapp-details__chip[data-type="version"]', adminVersionChip);
+  document.registerSelector('.admin-menu__meta .miniapp-details__chip[data-type="published-at"]', adminPublishedChip);
 
   return {
     document,
@@ -222,10 +249,13 @@ function createAppDom() {
       headerLogo,
       headerTitle,
       versionButton,
+      versionButtonText,
       loginLink,
       headerActions,
       memoryIndicator,
       memoryIndicatorText,
+      adminVersionChip,
+      adminPublishedChip,
     },
   };
 }
@@ -364,6 +394,22 @@ test('router recarrega o Início quando a rota já está ativa', () => {
 
   router.goTo('dashboard');
   assert.equal(dom.elements.viewRoot.__lastRendered, 'home');
+});
+
+test('sincroniza indicadores de versão com metadados do sistema', async () => {
+  const expectedLabel = getSystemReleaseMetadata().versionLabel;
+
+  await runBootstrapScenario({
+    validation: 'ok',
+    accounts: [{ id: 'a1' }],
+    session: { activeAccountId: 'a1' },
+  });
+
+  const { versionButton, versionButtonText, adminVersionChip } = dom.elements;
+
+  assert.equal(versionButtonText.textContent, expectedLabel);
+  assert.equal(versionButton.dataset.version, expectedLabel);
+  assert.equal(adminVersionChip.textContent, `Versão ${expectedLabel}`);
 });
 
 test.after(() => {

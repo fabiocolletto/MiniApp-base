@@ -1,30 +1,30 @@
-const SYSTEM_METADATA = Object.freeze({
-  version: '0.1.241',
-  publishedAt: '2025-10-26T05:55:00-03:00',
-  changelogPath: './Log.md',
-});
+import {
+  getSystemReleaseMetadata as resolveSystemReleaseMetadata,
+  getSystemVersion as resolveSystemVersion,
+  getSystemVersionLabel as resolveSystemVersionLabel,
+} from '../utils/system-release.js';
 
 export function getSystemMetadata() {
-  return { ...SYSTEM_METADATA };
+  const metadata = resolveSystemReleaseMetadata();
+  return {
+    version: metadata.version,
+    publishedAt: metadata.publishedAt,
+    changelogPath: metadata.changelogPath,
+  };
 }
 
 export function getSystemVersion() {
-  return SYSTEM_METADATA.version;
+  return resolveSystemVersion();
 }
 
 export function getSystemVersionLabel() {
-  const version = getSystemVersion();
-  if (typeof version === 'string' && version.trim() !== '') {
-    const normalized = version.trim().replace(/^v/i, '');
-    return `v${normalized}`;
-  }
-  return 'v0';
+  return resolveSystemVersionLabel();
 }
 
 export function getSystemReleaseDate() {
-  return SYSTEM_METADATA.publishedAt;
+  return resolveSystemReleaseMetadata().publishedAt;
 }
 
 export function getSystemChangelogPath() {
-  return SYSTEM_METADATA.changelogPath;
+  return resolveSystemReleaseMetadata().changelogPath;
 }
