@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.259 - 2025-10-26 13:30 BRT
+- Limita o widget Visualização da prova a exibir somente a prévia do modelo impresso, removendo o resumo e metadados textuais.
+
 ## v0.1.258 - 2025-10-26 12:59 BRT
 - Convertido o widget de provas em andamento e agendadas em um botão que abre modal dedicada com a lista de avaliações.
 - Ajustado o painel de visualização da prova para ocupar toda a largura disponível e sincronizado o fluxo de seleção com a nova janela modal.
