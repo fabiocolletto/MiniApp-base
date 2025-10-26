@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.262 - 2025-10-26 15:07 BRT
+- Remove o texto descritivo do widget Planejamento da avaliação, deixando apenas os filtros e ações disponíveis.
+
 ## v0.1.261 - 2025-10-26 14:55 BRT
 - Simplifica o painel de provas mantendo apenas as instruções solicitadas e alinha a mensagem da pré-visualização com o texto de impressão desejado.
 
