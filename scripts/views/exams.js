@@ -9,6 +9,11 @@ const EXAM_DASHBOARD_STYLES = String.raw`
 
 .exam-dashboard__layout {
   gap: var(--panel-gap);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.exam-dashboard__layout > * {
+  grid-column: 1 / -1;
 }
 
 .exam-dashboard__header {
@@ -54,6 +59,20 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   flex-wrap: wrap;
   gap: var(--space-sm);
   justify-content: flex-start;
+}
+
+.exam-dashboard__preview-row {
+  display: grid;
+  gap: var(--panel-gap);
+}
+
+.exam-dashboard__selection {
+  display: grid;
+  gap: var(--space-3xs);
+}
+
+.exam-dashboard__selection-message {
+  margin: 0;
 }
 
 @media (min-width: 48rem) {
@@ -113,6 +132,16 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   gap: var(--space-sm);
 }
 
+.exam-dashboard__selection-button {
+  inline-size: 100%;
+}
+
+@media (min-width: 40rem) {
+  .exam-dashboard__selection-button {
+    inline-size: auto;
+  }
+}
+
 .exam-dashboard__preview-toolbar-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-soft);
@@ -153,6 +182,12 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   border: 1px dashed var(--color-border-subtle);
   border-radius: var(--radius-lg);
   background: var(--color-surface-neutral);
+}
+
+.exam-dashboard__selection-description {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--font-size-sm);
 }
 
 .exam-dashboard__preview-tags {
@@ -308,6 +343,30 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.exam-dashboard__selection-panel {
+  width: min(92vw, 32rem);
+  gap: var(--space-md);
+}
+
+.exam-dashboard__selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.exam-dashboard__selection-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-strong);
+}
+
+.exam-dashboard__selection-content {
+  display: grid;
+  gap: var(--space-sm);
 }
 
 .exam-dashboard__list-empty {
@@ -2109,7 +2168,8 @@ function renderExamPreview(container, exam, questionMap, controls = {}) {
   if (!exam) {
     const placeholder = document.createElement('p');
     placeholder.className = 'exam-dashboard__preview-placeholder';
-    placeholder.textContent = 'Selecione uma prova na lista ao lado para visualizar o resumo e preparar a impressão.';
+    placeholder.textContent =
+      'Selecione uma prova em “Provas em andamento e agendadas” para visualizar o resumo e preparar a impressão.';
     container.append(placeholder);
     if (typeof registerController === 'function') {
       registerController(null);
@@ -2433,6 +2493,11 @@ export function renderExamDashboard(viewRoot) {
 
   let previewVersion = 'student';
   let printablePreviewController = null;
+  let selectionModal = null;
+  let selectionBackdrop = null;
+  let selectionCloseButton = null;
+  let selectionFocusRestorer = null;
+  let isSelectionModalOpen = false;
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.setAttribute('aria-label', 'Painel de provas do MiniApp Criador de Provas');
@@ -2525,7 +2590,7 @@ export function renderExamDashboard(viewRoot) {
   const headerHelper = document.createElement('p');
   headerHelper.className = 'exam-dashboard__header-helper';
   headerHelper.textContent =
-    'As escolhas ajustam a pré-visualização e a lista abaixo. Use "Todos os status" para exibir todas as provas e deixe o tempo máximo em branco para considerar qualquer duração.';
+    'As escolhas ajustam a pré-visualização e a lista de provas. Use "Todos os status" para exibir todas as avaliações e deixe o tempo máximo em branco para considerar qualquer duração.';
 
   const headerActions = document.createElement('div');
   headerActions.className = 'exam-dashboard__header-actions';
@@ -2581,8 +2646,8 @@ export function renderExamDashboard(viewRoot) {
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout exam-dashboard__layout';
 
-  const mainRow = document.createElement('div');
-  mainRow.className = 'admin-dashboard__widget-row admin-dashboard__widget-row--split';
+  const previewRow = document.createElement('div');
+  previewRow.className = 'admin-dashboard__widget-row exam-dashboard__preview-row';
 
   const previewSection = document.createElement('section');
   previewSection.className = 'surface-card exam-dashboard__preview layout-stack layout-stack--lg';
@@ -2597,30 +2662,30 @@ export function renderExamDashboard(viewRoot) {
   const previewDescription = document.createElement('p');
   previewDescription.className = 'exam-dashboard__preview-description';
   previewDescription.textContent =
-    'Escolha uma prova na lista ao lado para revisar os detalhes e visualizar as versões para alunos e professores antes de imprimir.';
+    'Escolha uma prova em “Provas em andamento e agendadas” para revisar os detalhes e visualizar as versões para alunos e professores antes de imprimir.';
 
   previewHeader.append(previewTitle, previewDescription);
 
   const previewMessage = createMessageElement('exam-dashboard__preview-message');
 
+  const selectionControls = document.createElement('div');
+  selectionControls.className = 'exam-dashboard__selection layout-stack layout-stack--4xs';
+
+  const openSelectionButton = document.createElement('button');
+  openSelectionButton.type = 'button';
+  openSelectionButton.className = 'button button--ghost exam-dashboard__selection-button';
+  openSelectionButton.textContent = 'Provas em andamento e agendadas';
+  openSelectionButton.setAttribute('aria-haspopup', 'dialog');
+  openSelectionButton.setAttribute('aria-expanded', 'false');
+
+  const selectionStatusMessage = createMessageElement('exam-dashboard__selection-message');
+
+  selectionControls.append(openSelectionButton, selectionStatusMessage);
+
   const previewBody = document.createElement('div');
   previewBody.className = 'exam-dashboard__preview-body layout-stack layout-stack--lg';
 
-  previewSection.append(previewHeader, previewMessage, previewBody);
-
-  const listSection = document.createElement('section');
-  listSection.className = 'surface-card exam-dashboard__list layout-stack layout-stack--lg';
-
-  const listHeader = document.createElement('div');
-  listHeader.className = 'exam-dashboard__list-header';
-
-  const listTitle = document.createElement('h3');
-  listTitle.className = 'task-dashboard__widget-title';
-  listTitle.textContent = 'Provas em andamento e agendadas';
-
-  listHeader.append(listTitle);
-
-  const listMessage = createMessageElement('exam-dashboard__list-message');
+  previewSection.append(previewHeader, previewMessage, selectionControls, previewBody);
 
   const listItems = document.createElement('ul');
   listItems.className = 'exam-dashboard__list-items';
@@ -2629,11 +2694,70 @@ export function renderExamDashboard(viewRoot) {
   const { form, fields, message: formMessage, cancelButton, submitButton } = createExamForm();
   addButton.setAttribute('aria-controls', form.id);
 
-  listSection.append(listHeader, listMessage, listItems, form);
+  const selectionTitleId = `exam-dashboard-selection-title-${Math.random().toString(36).slice(2, 8)}`;
 
-  mainRow.append(previewSection, listSection);
+  const selectionBackdropElement = document.createElement('div');
+  selectionBackdropElement.className = 'app-modal-backdrop exam-dashboard__selection-backdrop';
+  selectionBackdropElement.hidden = true;
 
-  layout.append(headerSection, mainRow);
+  const selectionModalElement = document.createElement('div');
+  selectionModalElement.className = 'app-modal exam-dashboard__selection-modal';
+  selectionModalElement.hidden = true;
+  selectionModalElement.id = `exam-dashboard-selection-${Math.random().toString(36).slice(2, 8)}`;
+  selectionModalElement.setAttribute('role', 'dialog');
+  selectionModalElement.setAttribute('aria-modal', 'true');
+  selectionModalElement.setAttribute('aria-hidden', 'true');
+  selectionModalElement.setAttribute('aria-labelledby', selectionTitleId);
+
+  openSelectionButton.setAttribute('aria-controls', selectionModalElement.id);
+
+  const selectionPanel = document.createElement('div');
+  selectionPanel.className = 'app-modal__panel app-modal__panel--miniapp exam-dashboard__selection-panel';
+
+  const selectionHeader = document.createElement('div');
+  selectionHeader.className = 'app-modal__header exam-dashboard__selection-header';
+
+  const selectionTitle = document.createElement('h3');
+  selectionTitle.className = 'app-modal__title exam-dashboard__selection-title';
+  selectionTitle.id = selectionTitleId;
+  selectionTitle.textContent = 'Provas em andamento e agendadas';
+
+  const selectionCloseButtonElement = document.createElement('button');
+  selectionCloseButtonElement.type = 'button';
+  selectionCloseButtonElement.className = 'app-modal__close exam-dashboard__selection-close';
+  selectionCloseButtonElement.setAttribute('aria-label', 'Fechar lista de provas');
+  selectionCloseButtonElement.textContent = 'Fechar';
+
+  selectionHeader.append(selectionTitle, selectionCloseButtonElement);
+
+  const selectionDescription = document.createElement('p');
+  selectionDescription.className = 'exam-dashboard__selection-description';
+  selectionDescription.textContent = 'Selecione uma prova para carregar os detalhes no painel de visualização.';
+
+  const selectionContent = document.createElement('div');
+  selectionContent.className = 'exam-dashboard__selection-content';
+  selectionContent.append(listItems);
+
+  selectionPanel.append(selectionHeader, selectionDescription, selectionContent);
+  selectionModalElement.append(selectionPanel);
+
+  selectionBackdrop = selectionBackdropElement;
+  selectionModal = selectionModalElement;
+  selectionCloseButton = selectionCloseButtonElement;
+
+  previewRow.append(previewSection);
+
+  const formRow = document.createElement('div');
+  formRow.className = 'admin-dashboard__widget-row exam-dashboard__form-row';
+  formRow.append(form);
+
+  layout.append(
+    headerSection,
+    previewRow,
+    formRow,
+    selectionBackdropElement,
+    selectionModalElement,
+  );
 
   function parseMaxDurationValue(value) {
     const numericValue = Number.parseInt((value ?? '').toString(), 10);
@@ -2743,16 +2867,126 @@ export function renderExamDashboard(viewRoot) {
   }
 
   function setListMessage(type, text) {
-    updateMessageElement(listMessage, type, text);
+    updateMessageElement(selectionStatusMessage, type, text);
     if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
       if (listMessageTimeout) {
         window.clearTimeout(listMessageTimeout);
       }
       if (text) {
         listMessageTimeout = window.setTimeout(() => {
-          updateMessageElement(listMessage, null, '');
+          updateMessageElement(selectionStatusMessage, null, '');
         }, 5000);
       }
+    }
+  }
+
+  function handleSelectionKeydown(event) {
+    if (event?.key === 'Escape') {
+      event.preventDefault();
+      closeSelectionModal();
+    }
+  }
+
+  function closeSelectionModal(options = {}) {
+    const { restoreFocus = true } = options;
+
+    if (!isSelectionModalOpen) {
+      return;
+    }
+
+    isSelectionModalOpen = false;
+
+    if (selectionBackdrop instanceof HTMLElement) {
+      selectionBackdrop.classList.remove('app-modal-backdrop--visible');
+      selectionBackdrop.hidden = true;
+    }
+
+    if (selectionModal instanceof HTMLElement) {
+      selectionModal.hidden = true;
+      selectionModal.setAttribute('aria-hidden', 'true');
+    }
+
+    openSelectionButton.setAttribute('aria-expanded', 'false');
+
+    if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
+      document.removeEventListener('keydown', handleSelectionKeydown);
+    }
+
+    const focusTarget = restoreFocus ? selectionFocusRestorer : null;
+    selectionFocusRestorer = null;
+
+    if (focusTarget instanceof HTMLElement) {
+      try {
+        focusTarget.focus();
+      } catch (error) {
+        console.error('Não foi possível restaurar o foco após fechar a lista de provas.', error);
+      }
+    }
+  }
+
+  function openSelectionModal() {
+    if (!(selectionModal instanceof HTMLElement) || !(selectionBackdrop instanceof HTMLElement)) {
+      return;
+    }
+
+    const activeElement = typeof document !== 'undefined' ? document.activeElement : null;
+    selectionFocusRestorer = activeElement instanceof HTMLElement ? activeElement : openSelectionButton;
+
+    renderExamList();
+
+    isSelectionModalOpen = true;
+
+    selectionBackdrop.hidden = false;
+    selectionBackdrop.classList.add('app-modal-backdrop--visible');
+
+    selectionModal.hidden = false;
+    selectionModal.setAttribute('aria-hidden', 'false');
+
+    openSelectionButton.setAttribute('aria-expanded', 'true');
+
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('keydown', handleSelectionKeydown);
+    }
+
+    const firstInteractive = selectionModal.querySelector('.exam-dashboard__list-button');
+    const focusTarget =
+      firstInteractive instanceof HTMLElement
+        ? firstInteractive
+        : selectionCloseButton instanceof HTMLElement
+          ? selectionCloseButton
+          : null;
+
+    if (focusTarget instanceof HTMLElement) {
+      try {
+        focusTarget.focus();
+      } catch (error) {
+        console.error('Não foi possível focar a lista de provas ao abrir a janela.', error);
+      }
+    }
+  }
+
+  function handleSelectionButtonClick(event) {
+    event.preventDefault();
+    if (isSelectionModalOpen) {
+      closeSelectionModal();
+    } else {
+      openSelectionModal();
+    }
+  }
+
+  function handleSelectionClose(event) {
+    event.preventDefault();
+    closeSelectionModal();
+  }
+
+  function handleSelectionBackdropClick(event) {
+    event.preventDefault();
+    closeSelectionModal();
+  }
+
+  function handleSelectionModalClick(event) {
+    if (event?.target === selectionModal) {
+      closeSelectionModal();
     }
   }
 
@@ -2919,8 +3153,12 @@ export function renderExamDashboard(viewRoot) {
         isSelected: exam.id === selectedExamId,
         onSelect: (examId) => {
           selectExam(examId);
+          closeSelectionModal();
         },
-        startEditExam,
+        startEditExam: (examToEdit) => {
+          closeSelectionModal({ restoreFocus: false });
+          startEditExam(examToEdit);
+        },
       });
       button.dataset.examId = exam.id;
       listItems.append(item);
@@ -3160,6 +3398,28 @@ export function renderExamDashboard(viewRoot) {
   cancelButton.addEventListener('click', handleCancel);
   printStudentButton.addEventListener('click', handlePrintStudent);
   printTeacherButton.addEventListener('click', handlePrintTeacher);
+  openSelectionButton.addEventListener('click', handleSelectionButtonClick);
+
+  if (selectionCloseButton instanceof HTMLElement) {
+    selectionCloseButton.addEventListener('click', handleSelectionClose);
+    cleanupCallbacks.push(() => {
+      selectionCloseButton.removeEventListener('click', handleSelectionClose);
+    });
+  }
+
+  if (selectionBackdrop instanceof HTMLElement) {
+    selectionBackdrop.addEventListener('click', handleSelectionBackdropClick);
+    cleanupCallbacks.push(() => {
+      selectionBackdrop.removeEventListener('click', handleSelectionBackdropClick);
+    });
+  }
+
+  if (selectionModal instanceof HTMLElement) {
+    selectionModal.addEventListener('click', handleSelectionModalClick);
+    cleanupCallbacks.push(() => {
+      selectionModal.removeEventListener('click', handleSelectionModalClick);
+    });
+  }
 
   cleanupCallbacks.push(() => {
     addButton.removeEventListener('click', handleAddButtonClick);
@@ -3167,6 +3427,11 @@ export function renderExamDashboard(viewRoot) {
     cancelButton.removeEventListener('click', handleCancel);
     printStudentButton.removeEventListener('click', handlePrintStudent);
     printTeacherButton.removeEventListener('click', handlePrintTeacher);
+    openSelectionButton.removeEventListener('click', handleSelectionButtonClick);
+    if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
+      document.removeEventListener('keydown', handleSelectionKeydown);
+    }
+    closeSelectionModal({ restoreFocus: false });
   });
 
   registerViewCleanup(viewRoot, () => {
