@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.254 - 2025-10-26 15:10 BRT
+- Inclui filtro por status das provas no painel do Criador de Provas, com seleção "Todos os status" por padrão.
+- Sincroniza o novo filtro com o formulário de criação/edição e aplica o recorte na lista e pré-visualização.
+- Atualiza metadados do release para 0.1.254, refletindo a publicação na listagem de miniapps e no rodapé.
+
 ## v0.1.253 - 2025-10-26 11:24 BRT
 - Adiciona botão "Editar" na lista de provas para iniciar edições diretamente do painel de planejamento.
 - Preenche o formulário com os dados da prova selecionada ao iniciar a edição e reutiliza o foco/scroll existentes.

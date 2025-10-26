@@ -392,6 +392,8 @@ const EXAM_STATUS_OPTIONS = [
   { value: 'published', label: 'Publicada' },
 ];
 
+const FILTER_STATUS_OPTIONS = [{ value: 'all', label: 'Todos os status' }, ...EXAM_STATUS_OPTIONS];
+
 const EXAM_STATUS_LABELS = new Map(EXAM_STATUS_OPTIONS.map((option) => [option.value, option.label]));
 
 const EXAM_KIND_OPTIONS = [
@@ -2297,6 +2299,7 @@ export function renderExamDashboard(viewRoot) {
     subject: 'all',
     series: 'all',
     difficulty: 'all',
+    status: 'all',
     maxDuration: null,
   };
 
@@ -2348,6 +2351,13 @@ export function renderExamDashboard(viewRoot) {
   });
   filterDifficultyField.classList.add('exam-dashboard__header-field');
 
+  const { field: filterStatusField, control: filterStatusSelect } = createSelectField({
+    name: 'filterStatus',
+    label: 'Status da prova',
+    options: FILTER_STATUS_OPTIONS,
+  });
+  filterStatusField.classList.add('exam-dashboard__header-field');
+
   const { field: filterDurationField, control: filterDurationInput } = createInputField({
     name: 'filterDuration',
     label: 'Tempo máximo (minutos)',
@@ -2369,13 +2379,22 @@ export function renderExamDashboard(viewRoot) {
   if (filterDifficultySelect instanceof HTMLSelectElement) {
     filterDifficultySelect.value = filterState.difficulty;
   }
+  if (filterStatusSelect instanceof HTMLSelectElement) {
+    filterStatusSelect.value = filterState.status;
+  }
 
-  headerGrid.append(filterSubjectField, filterSeriesField, filterDifficultyField, filterDurationField);
+  headerGrid.append(
+    filterSubjectField,
+    filterSeriesField,
+    filterDifficultyField,
+    filterStatusField,
+    filterDurationField,
+  );
 
   const headerHelper = document.createElement('p');
   headerHelper.className = 'exam-dashboard__header-helper';
   headerHelper.textContent =
-    'As escolhas ajustam a pré-visualização e a lista abaixo. Deixe o tempo máximo em branco para considerar qualquer duração.';
+    'As escolhas ajustam a pré-visualização e a lista abaixo. Use "Todos os status" para exibir todas as provas e deixe o tempo máximo em branco para considerar qualquer duração.';
 
   const headerActions = document.createElement('div');
   headerActions.className = 'exam-dashboard__header-actions';
@@ -2480,6 +2499,12 @@ export function renderExamDashboard(viewRoot) {
         filterState.difficulty = 'all';
       }
     }
+    if (filterStatusSelect instanceof HTMLSelectElement) {
+      filterState.status = filterStatusSelect.value || 'all';
+      if (!FILTER_STATUS_OPTIONS.some((option) => option.value === filterState.status)) {
+        filterState.status = 'all';
+      }
+    }
     if (filterDurationInput instanceof HTMLInputElement) {
       filterState.maxDuration = parseMaxDurationValue(filterDurationInput.value);
     }
@@ -2494,6 +2519,9 @@ export function renderExamDashboard(viewRoot) {
         return false;
       }
       if (filterState.difficulty !== 'all' && exam.difficulty !== filterState.difficulty) {
+        return false;
+      }
+      if (filterState.status !== 'all' && exam.status !== filterState.status) {
         return false;
       }
       if (filterState.maxDuration !== null && Number.isFinite(filterState.maxDuration)) {
@@ -2527,6 +2555,13 @@ export function renderExamDashboard(viewRoot) {
     if (fields.difficulty instanceof HTMLSelectElement) {
       const difficultyValue = filterState.difficulty !== 'all' ? filterState.difficulty : DEFAULT_EXAM_DIFFICULTY;
       fields.difficulty.value = difficultyValue;
+    }
+
+    if (fields.status instanceof HTMLSelectElement) {
+      const statusValue = filterState.status !== 'all' ? filterState.status : EXAM_STATUS_OPTIONS[0]?.value;
+      if (statusValue) {
+        fields.status.value = statusValue;
+      }
     }
 
     if (fields.kind instanceof HTMLSelectElement) {
@@ -2927,6 +2962,13 @@ export function renderExamDashboard(viewRoot) {
     filterDifficultySelect.addEventListener('change', handleFiltersChange);
     cleanupCallbacks.push(() => {
       filterDifficultySelect.removeEventListener('change', handleFiltersChange);
+    });
+  }
+
+  if (filterStatusSelect instanceof HTMLSelectElement) {
+    filterStatusSelect.addEventListener('change', handleFiltersChange);
+    cleanupCallbacks.push(() => {
+      filterStatusSelect.removeEventListener('change', handleFiltersChange);
     });
   }
 
