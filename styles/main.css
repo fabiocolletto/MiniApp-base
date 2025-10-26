@@ -58,8 +58,16 @@ main {
   gap: clamp(0.9rem, 2.2vw, 1.35rem);
 }
 
+.layout-stack--sm {
+  gap: clamp(0.75rem, 2vw, 1.1rem);
+}
+
 .layout-stack--lg {
   gap: clamp(1.05rem, 2.6vw, 1.55rem);
+}
+
+.layout-stack--3xs {
+  gap: clamp(0.4rem, 1.4vw, 0.65rem);
 }
 
 .section-header {
@@ -6130,4 +6138,3 @@ main > .view--log {
     animation: none !important;
   }
 }
-

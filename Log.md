@@ -1,5 +1,15 @@
 # Log
 
+## v0.1.251 - 2025-10-26 13:45 BRT
+- Consolida o Criador de Provas com cabeçalho simplificado, pré-visualização e lista lateral, mantendo
+  as ações de impressão no widget superior para agilizar o planejamento docente.
+- Integra o modelo de impressão padronizado fornecido, exibindo a prévia em iframe e controlando metadados
+  docentes nas versões do aluno e do professor.
+- Amplia o banco de questões e disponibiliza pelo menos cinco modelos de prova por disciplina com variações
+  de tipo e dificuldade para simulações diretamente no painel.
+- Atualiza documentação, catálogo e metadados do miniapp unificando a release no número 0.1.251 e registra a
+  validação visual do painel de provas.
+
 ## v0.1.250 - 2025-10-26 07:29 BRT
 - Substitui o snapshot persistido com placeholders antigos pelo catálogo atual de miniapps assim que o seed legado é detectado.
 - Expõe utilitário de teste para reinicializar o store e valida via teste automatizado que o catálogo remove entradas obsoletas ao carregar do armazenamento.

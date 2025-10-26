@@ -11,6 +11,7 @@ import { renderLoginPanel } from '../scripts/views/login.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderLegal } from '../scripts/views/legal.js';
 import { renderTaskDashboard } from '../scripts/views/tasks.js';
+import { renderExamDashboard } from '../scripts/views/exams.js';
 import { runViewCleanup as defaultRunViewCleanup } from '../scripts/view-cleanup.js';
 import {
   clearActiveUser as defaultClearActiveUser,
@@ -66,6 +67,7 @@ const loginLink = document.querySelector('.header-login-link');
 const homeLink = document.querySelector('.header-home-link');
 const storeLink = document.querySelector('.header-store-link');
 const headerTasksLink = document.querySelector('.header-tasks-link');
+const headerExamsLink = document.querySelector('.header-exams-link');
 const headerProjectLink = document.querySelector('.header-project-link');
 const headerTemporaryLink = document.querySelector('.header-temporary-link');
 const headerUserLink = document.querySelector('.header-user-link');
@@ -263,6 +265,7 @@ let mobileHomeAction = null;
 let mobileStoreAction = null;
 let mobileProjectAction = null;
 let mobileTasksAction = null;
+let mobileExamsAction = null;
 let mobileTemporaryAction = null;
 let mobileUserAction = null;
 let mobileLoginAction = null;
@@ -521,6 +524,7 @@ const views = {
   'temporary-projects': renderTemporaryProjects,
   home: renderHome,
   tasks: renderTaskDashboard,
+  exams: renderExamDashboard,
   user: renderUserPanel,
   miniapps: renderMiniAppStore,
   login: renderLoginPanel,
@@ -546,6 +550,7 @@ const MENU_LABEL_FALLBACKS = {
   log: 'Painel do projeto',
   'temporary-projects': 'Projetos temporários',
   tasks: 'Painel de tarefas',
+  exams: 'Painel de provas',
   legal: 'Documentos legais',
   home: 'Início',
   dashboard: 'Início',
@@ -1191,6 +1196,16 @@ function ensureHeaderMobileMenu() {
     renderView('tasks');
   });
 
+  const examsAction = document.createElement('button');
+  examsAction.type = 'button';
+  examsAction.id = 'mobile-access-menu-exams';
+  examsAction.className = 'app-modal__action header-mobile-menu__action';
+  examsAction.textContent = 'Criador de provas';
+  examsAction.addEventListener('click', () => {
+    closeHeaderMobileMenu();
+    renderView('exams');
+  });
+
   const temporaryAction = document.createElement('button');
   temporaryAction.type = 'button';
   temporaryAction.id = 'mobile-access-menu-temporary';
@@ -1255,6 +1270,7 @@ function ensureHeaderMobileMenu() {
     storeAction,
     projectAction,
     tasksAction,
+    examsAction,
     temporaryAction,
     userAction,
     loginAction,
@@ -1268,6 +1284,7 @@ function ensureHeaderMobileMenu() {
   mobileStoreAction = storeAction;
   mobileProjectAction = projectAction;
   mobileTasksAction = tasksAction;
+  mobileExamsAction = examsAction;
   mobileTemporaryAction = temporaryAction;
   mobileUserAction = userAction;
   mobileLoginAction = loginAction;
@@ -1426,6 +1443,7 @@ function updateHeaderSession(user) {
   setLinkVisibility(loginLink, true);
   setLinkVisibility(homeLink, isAuthenticated);
   setLinkVisibility(headerTasksLink, true);
+  setLinkVisibility(headerExamsLink, true);
   setLinkVisibility(headerProjectLink, true);
   setLinkVisibility(headerTemporaryLink, showTemporaryProjectsLink);
   setLinkVisibility(headerUserLink, isAuthenticated);
@@ -1459,6 +1477,7 @@ function updateHeaderSession(user) {
     setLinkVisibility(mobileStoreAction, true);
     setLinkVisibility(mobileProjectAction, true);
     setLinkVisibility(mobileTasksAction, true);
+    setLinkVisibility(mobileExamsAction, true);
     setLinkVisibility(mobileTemporaryAction, showTemporaryProjectsLink);
     setLinkVisibility(mobileUserAction, isAuthenticated);
     setLinkVisibility(mobileLoginAction, true);
@@ -2237,7 +2256,8 @@ function focusViewRoot() {
 }
 
 function applyMainState(view) {
-  const isAdminView = view === 'admin' || view === 'admin-design-kit' || view === 'tasks';
+  const isAdminView =
+    view === 'admin' || view === 'admin-design-kit' || view === 'tasks' || view === 'exams';
   const isUserView = view === 'user' || view === 'miniapps';
   const isLoginView = view === 'login';
   const isRegisterView = view === 'register';
@@ -2362,6 +2382,12 @@ export function initializeAppShell(router) {
     event.preventDefault();
     closeHeaderMenu();
     renderView('tasks');
+  });
+
+  headerExamsLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeHeaderMenu();
+    renderView('exams');
   });
 
   headerProjectLink?.addEventListener('click', (event) => {
