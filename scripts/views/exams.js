@@ -2166,7 +2166,6 @@ function createExamListItem(exam, { isSelected, onSelect, startEditExam }) {
 function createExamForm() {
   const form = document.createElement('form');
   form.className = 'task-dashboard__form exam-dashboard__form layout-stack layout-stack--md';
-  form.hidden = true;
   form.dataset.mode = 'create';
   form.id = `exam-dashboard-form-${Math.random().toString(36).slice(2, 10)}`;
 
@@ -2332,8 +2331,6 @@ export function renderExamDashboard(viewRoot) {
     maxDuration: null,
   };
 
-  let previewVersion = 'student';
-  let printablePreviewController = null;
   let selectionModal = null;
   let selectionBackdrop = null;
   let selectionCloseButton = null;
@@ -2423,56 +2420,7 @@ export function renderExamDashboard(viewRoot) {
     filterDurationField,
   );
 
-  const headerActions = document.createElement('div');
-  headerActions.className = 'exam-dashboard__header-actions';
-
-  const printStudentButton = document.createElement('button');
-  printStudentButton.type = 'button';
-  printStudentButton.className = 'button button--primary';
-  printStudentButton.textContent = 'Imprimir versão para alunos';
-
-  const printTeacherButton = document.createElement('button');
-  printTeacherButton.type = 'button';
-  printTeacherButton.className = 'button button--secondary';
-  printTeacherButton.textContent = 'Imprimir versão para professores';
-
-  const addButton = document.createElement('button');
-  addButton.type = 'button';
-  addButton.className = 'button button--ghost exam-dashboard__add-button';
-  addButton.textContent = 'Cadastrar nova prova';
-  addButton.setAttribute('aria-expanded', 'false');
-  addButton.setAttribute('aria-controls', '');
-
-  headerActions.append(printStudentButton, printTeacherButton, addButton);
-
-  function syncPrintButtons() {
-    const isStudentActive = previewVersion !== 'teacher';
-    printStudentButton.classList.toggle('button--primary', isStudentActive);
-    printStudentButton.classList.toggle('button--secondary', !isStudentActive);
-    printTeacherButton.classList.toggle('button--primary', !isStudentActive);
-    printTeacherButton.classList.toggle('button--secondary', isStudentActive);
-    printStudentButton.setAttribute('aria-pressed', String(isStudentActive));
-    printTeacherButton.setAttribute('aria-pressed', String(!isStudentActive));
-  }
-
-  function updatePreviewVersionState(version) {
-    previewVersion = version === 'teacher' ? 'teacher' : 'student';
-    syncPrintButtons();
-  }
-
-  function applyPreviewVersion(version, options = {}) {
-    const normalizedVersion = version === 'teacher' ? 'teacher' : 'student';
-    const controller = printablePreviewController;
-    const changed = controller?.setVersion ? controller.setVersion(normalizedVersion, options) : false;
-
-    if (!changed) {
-      updatePreviewVersionState(normalizedVersion);
-    }
-  }
-
-  syncPrintButtons();
-
-  headerSection.append(headerText, headerGrid, headerActions);
+  headerSection.append(headerText, headerGrid);
 
   const layout = document.createElement('div');
   layout.className = 'user-panel__layout admin-dashboard__layout exam-dashboard__layout';
@@ -2489,16 +2437,9 @@ export function renderExamDashboard(viewRoot) {
   const selectionControls = document.createElement('div');
   selectionControls.className = 'exam-dashboard__selection layout-stack layout-stack--4xs';
 
-  const openSelectionButton = document.createElement('button');
-  openSelectionButton.type = 'button';
-  openSelectionButton.className = 'button button--ghost exam-dashboard__selection-button';
-  openSelectionButton.textContent = 'Provas em andamento e agendadas';
-  openSelectionButton.setAttribute('aria-haspopup', 'dialog');
-  openSelectionButton.setAttribute('aria-expanded', 'false');
-
   const selectionStatusMessage = createMessageElement('exam-dashboard__selection-message');
 
-  selectionControls.append(openSelectionButton, selectionStatusMessage);
+  selectionControls.append(selectionStatusMessage);
 
   headerSection.append(selectionControls);
 
@@ -2509,7 +2450,6 @@ export function renderExamDashboard(viewRoot) {
   listItems.setAttribute('role', 'list');
 
   const { form, fields, message: formMessage, cancelButton, submitButton } = createExamForm();
-  addButton.setAttribute('aria-controls', form.id);
 
   const selectionTitleId = `exam-dashboard-selection-title-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -2525,8 +2465,6 @@ export function renderExamDashboard(viewRoot) {
   selectionModalElement.setAttribute('aria-modal', 'true');
   selectionModalElement.setAttribute('aria-hidden', 'true');
   selectionModalElement.setAttribute('aria-labelledby', selectionTitleId);
-
-  openSelectionButton.setAttribute('aria-controls', selectionModalElement.id);
 
   const selectionPanel = document.createElement('div');
   selectionPanel.className = 'app-modal__panel app-modal__panel--miniapp exam-dashboard__selection-panel';
@@ -2721,8 +2659,6 @@ export function renderExamDashboard(viewRoot) {
       selectionModal.setAttribute('aria-hidden', 'true');
     }
 
-    openSelectionButton.setAttribute('aria-expanded', 'false');
-
     if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
       document.removeEventListener('keydown', handleSelectionKeydown);
     }
@@ -2745,7 +2681,7 @@ export function renderExamDashboard(viewRoot) {
     }
 
     const activeElement = typeof document !== 'undefined' ? document.activeElement : null;
-    selectionFocusRestorer = activeElement instanceof HTMLElement ? activeElement : openSelectionButton;
+    selectionFocusRestorer = activeElement instanceof HTMLElement ? activeElement : null;
 
     renderExamList();
 
@@ -2756,8 +2692,6 @@ export function renderExamDashboard(viewRoot) {
 
     selectionModal.hidden = false;
     selectionModal.setAttribute('aria-hidden', 'false');
-
-    openSelectionButton.setAttribute('aria-expanded', 'true');
 
     if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
       document.addEventListener('keydown', handleSelectionKeydown);
@@ -2780,15 +2714,6 @@ export function renderExamDashboard(viewRoot) {
     }
   }
 
-  function handleSelectionButtonClick(event) {
-    event.preventDefault();
-    if (isSelectionModalOpen) {
-      closeSelectionModal();
-    } else {
-      openSelectionModal();
-    }
-  }
-
   function handleSelectionClose(event) {
     event.preventDefault();
     closeSelectionModal();
@@ -2808,8 +2733,6 @@ export function renderExamDashboard(viewRoot) {
   function resetForm() {
     form.reset();
     form.dataset.mode = 'create';
-    form.hidden = true;
-    addButton.setAttribute('aria-expanded', 'false');
     submitButton.textContent = 'Salvar prova';
     updateMessageElement(formMessage, null, '');
     if (fields.status instanceof HTMLSelectElement) {
@@ -2823,12 +2746,10 @@ export function renderExamDashboard(viewRoot) {
 
   function showForm() {
     const isEditMode = form.dataset.mode === 'edit';
-    form.hidden = false;
     if (!isEditMode) {
       form.dataset.mode = 'create';
     }
     submitButton.textContent = isEditMode ? 'Atualizar prova' : 'Salvar prova';
-    addButton.setAttribute('aria-expanded', 'true');
     if (!isEditMode) {
       applyFiltersToFormDefaults();
     }
@@ -2918,18 +2839,8 @@ export function renderExamDashboard(viewRoot) {
     }
     updateMessageElement(previewMessage, null, '');
     const selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
-    renderExamPreview(previewSection, selectedExam, questionMap, {
-      previewVersion,
-      onVersionChange: updatePreviewVersionState,
-      syncButtons: syncPrintButtons,
-      registerController(controller) {
-        printablePreviewController = controller;
-      },
-    });
+    renderExamPreview(previewSection, selectedExam, questionMap);
     updateListSelection();
-    const hasSelection = Boolean(selectedExam);
-    printStudentButton.disabled = !hasSelection;
-    printTeacherButton.disabled = !hasSelection;
   }
 
   function updateListSelection() {
@@ -2954,7 +2865,7 @@ export function renderExamDashboard(viewRoot) {
       empty.className = 'exam-dashboard__list-empty';
       empty.textContent =
         Array.isArray(currentExams) && currentExams.length === 0
-          ? 'Nenhuma prova cadastrada ainda. Utilize “Nova prova” para iniciar seu planejamento.'
+          ? 'Nenhuma prova cadastrada ainda. Utilize o formulário para iniciar seu planejamento.'
           : 'Nenhuma prova atende ao contexto selecionado. Ajuste os filtros acima para visualizar outras avaliações.';
       listItems.append(empty);
       selectExam(null);
@@ -3099,79 +3010,10 @@ export function renderExamDashboard(viewRoot) {
     resetForm();
   }
 
-  function handleAddButtonClick(event) {
-    event.preventDefault();
-    if (form.hidden) {
-      resetForm();
-      showForm();
-    } else {
-      resetForm();
-    }
-  }
-
   function handleCancel(event) {
     event.preventDefault();
     resetForm();
   }
-
-  function handlePrint(version) {
-    const exam = currentExams.find((item) => item.id === selectedExamId);
-    if (!exam) {
-      updateMessageElement(previewMessage, 'error', 'Selecione uma prova para gerar a impressão.');
-      return;
-    }
-
-    const versionLabel = version === 'teacher' ? 'professores' : 'alunos';
-
-    try {
-      const html = generatePrintableExamHtml(exam, questionMap, { version });
-      const printWindow = window.open('', '_blank', 'noopener=yes,width=1024,height=768');
-
-      if (!printWindow) {
-        updateMessageElement(
-          previewMessage,
-          'error',
-          'Não foi possível abrir a janela de impressão. Libere pop-ups e tente novamente.',
-        );
-        return;
-      }
-
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-
-      updateMessageElement(
-        previewMessage,
-        'success',
-        `A versão para ${versionLabel} da prova “${exam.title}” foi aberta em uma nova janela. Revise e utilize o comando de impressão do navegador para gerar o PDF.`,
-      );
-
-      setTimeout(() => {
-        try {
-          printWindow.focus();
-          printWindow.print();
-        } catch (error) {
-          console.error('Erro ao acionar a impressão automática da prova.', error);
-        }
-      }, 300);
-    } catch (error) {
-      console.error('Erro ao gerar o modelo de impressão da prova.', error);
-      updateMessageElement(
-        previewMessage,
-        'error',
-        'Não foi possível gerar o modelo de impressão. Tente novamente em instantes.',
-      );
-    }
-  }
-
-  const handlePrintStudent = () => {
-    applyPreviewVersion('student');
-    handlePrint('student');
-  };
-  const handlePrintTeacher = () => {
-    applyPreviewVersion('teacher');
-    handlePrint('teacher');
-  };
 
   if (filterSubjectSelect instanceof HTMLSelectElement) {
     filterSubjectSelect.addEventListener('change', handleFiltersChange);
@@ -3208,12 +3050,8 @@ export function renderExamDashboard(viewRoot) {
     });
   }
 
-  addButton.addEventListener('click', handleAddButtonClick);
   form.addEventListener('submit', handleSubmit);
   cancelButton.addEventListener('click', handleCancel);
-  printStudentButton.addEventListener('click', handlePrintStudent);
-  printTeacherButton.addEventListener('click', handlePrintTeacher);
-  openSelectionButton.addEventListener('click', handleSelectionButtonClick);
 
   if (selectionCloseButton instanceof HTMLElement) {
     selectionCloseButton.addEventListener('click', handleSelectionClose);
@@ -3237,12 +3075,8 @@ export function renderExamDashboard(viewRoot) {
   }
 
   cleanupCallbacks.push(() => {
-    addButton.removeEventListener('click', handleAddButtonClick);
     form.removeEventListener('submit', handleSubmit);
     cancelButton.removeEventListener('click', handleCancel);
-    printStudentButton.removeEventListener('click', handlePrintStudent);
-    printTeacherButton.removeEventListener('click', handlePrintTeacher);
-    openSelectionButton.removeEventListener('click', handleSelectionButtonClick);
     if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
       document.removeEventListener('keydown', handleSelectionKeydown);
     }

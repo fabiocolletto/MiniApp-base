@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.270 - 2025-10-26 17:03 BRT
+- Remove os botões de impressão do widget Planejamento da avaliação, mantendo apenas a prévia padrão exibida.
+- Mantém o formulário de cadastro sempre visível ao retirar o botão "Cadastrar nova prova" do cabeçalho do widget.
+- Elimina o atalho para "Provas em andamento e agendadas", preservando somente a mensagem de status no cabeçalho.
+
 ## v0.1.269 - 2025-10-26 16:45 BRT
 - Renomeia o miniapp de tarefas para "Gestão de Trabalho" e ajusta o catálogo para destacar apenas os dois miniapps oficiais.
 - Torna os cards do painel MiniApps interativos, abrindo diretamente os painéis de Gestão de Trabalho e Criador de Provas ao clicar.
