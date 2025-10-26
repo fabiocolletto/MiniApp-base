@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.253 - 2025-10-26 11:24 BRT
+- Adiciona botão "Editar" na lista de provas para iniciar edições diretamente do painel de planejamento.
+- Preenche o formulário com os dados da prova selecionada ao iniciar a edição e reutiliza o foco/scroll existentes.
+- Atualiza o fluxo de submissão para persistir alterações nas provas existentes e restaura o modo de criação ao encerrar a edição.
+
 ## v0.1.252 - 2025-10-26 11:09 BRT
 - Limita a largura do cabeçalho e do layout do painel de provas a 72rem, centralizando o conteúdo em telas largas sem afetar dispositivos estreitos.
 - Aumenta o espaçamento entre blocos principais do painel de provas em resoluções amplas para preservar o respiro visual após o novo limite.

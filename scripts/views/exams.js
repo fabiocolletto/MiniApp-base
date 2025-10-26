@@ -2080,7 +2080,7 @@ function sortExamsForList(exams) {
     });
 }
 
-function createExamListItem(exam, { isSelected, onSelect }) {
+function createExamListItem(exam, { isSelected, onSelect, startEditExam }) {
   const item = document.createElement('li');
   item.className = 'exam-dashboard__list-item';
 
@@ -2092,6 +2092,11 @@ function createExamListItem(exam, { isSelected, onSelect }) {
   if (isSelected) {
     button.setAttribute('aria-current', 'true');
   }
+
+  const editButton = document.createElement('button');
+  editButton.type = 'button';
+  editButton.className = 'button button--ghost exam-dashboard__list-edit-button';
+  editButton.textContent = 'Editar';
 
   const title = document.createElement('p');
   title.className = 'exam-dashboard__list-title';
@@ -2116,8 +2121,15 @@ function createExamListItem(exam, { isSelected, onSelect }) {
     onSelect(exam.id);
   });
 
-  item.append(button);
-  return { item, button };
+  editButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (typeof startEditExam === 'function') {
+      startEditExam(exam);
+    }
+  });
+
+  item.append(button, editButton);
+  return { item, button, editButton };
 }
 
 function createExamForm() {
@@ -2563,11 +2575,16 @@ export function renderExamDashboard(viewRoot) {
   }
 
   function showForm() {
+    const isEditMode = form.dataset.mode === 'edit';
     form.hidden = false;
-    form.dataset.mode = 'create';
-    submitButton.textContent = 'Salvar prova';
+    if (!isEditMode) {
+      form.dataset.mode = 'create';
+    }
+    submitButton.textContent = isEditMode ? 'Atualizar prova' : 'Salvar prova';
     addButton.setAttribute('aria-expanded', 'true');
-    applyFiltersToFormDefaults();
+    if (!isEditMode) {
+      applyFiltersToFormDefaults();
+    }
     if (fields.title instanceof HTMLElement && typeof fields.title.focus === 'function') {
       try {
         fields.title.focus();
@@ -2582,6 +2599,67 @@ export function renderExamDashboard(viewRoot) {
         console.error('Não foi possível rolar até o formulário de provas.', error);
       }
     }
+  }
+
+  function startEditExam(exam) {
+    if (!exam || typeof exam !== 'object') {
+      return;
+    }
+
+    const existingExam = currentExams.find((item) => item.id === exam.id);
+    if (!existingExam) {
+      updateMessageElement(
+        formMessage,
+        'error',
+        'Não foi possível localizar a prova selecionada para edição.',
+      );
+      return;
+    }
+
+    selectedExamId = existingExam.id;
+    selectExam(existingExam.id);
+
+    form.dataset.mode = 'edit';
+    updateMessageElement(formMessage, null, '');
+
+    if (fields.title && 'value' in fields.title) {
+      fields.title.value = existingExam.title ?? '';
+    }
+    if (fields.subject instanceof HTMLSelectElement) {
+      fields.subject.value = existingExam.subject ?? '';
+    }
+    if (fields.series instanceof HTMLSelectElement) {
+      fields.series.value = existingExam.series ?? '';
+    }
+    if (fields.difficulty instanceof HTMLSelectElement) {
+      fields.difficulty.value = existingExam.difficulty ?? DEFAULT_EXAM_DIFFICULTY;
+    }
+    if (fields.kind instanceof HTMLSelectElement) {
+      fields.kind.value = existingExam.kind ?? DEFAULT_EXAM_KIND;
+    }
+    if (fields.status instanceof HTMLSelectElement) {
+      fields.status.value = existingExam.status ?? 'draft';
+    }
+    if (fields.applicationDate && 'value' in fields.applicationDate) {
+      fields.applicationDate.value = existingExam.applicationDate ?? '';
+    }
+    if (fields.startTime && 'value' in fields.startTime) {
+      fields.startTime.value = existingExam.startTime ?? '';
+    }
+    if (fields.durationMinutes && 'value' in fields.durationMinutes) {
+      const durationValue = Number.isFinite(existingExam.durationMinutes)
+        ? existingExam.durationMinutes
+        : '';
+      fields.durationMinutes.value = durationValue ? String(durationValue) : '';
+    }
+    if (fields.objective && 'value' in fields.objective) {
+      fields.objective.value = existingExam.objective ?? '';
+    }
+    if (fields.instructions && 'value' in fields.instructions) {
+      fields.instructions.value = existingExam.instructions ?? '';
+    }
+
+    showForm();
   }
 
   function selectExam(examId) {
@@ -2637,6 +2715,7 @@ export function renderExamDashboard(viewRoot) {
         onSelect: (examId) => {
           selectExam(examId);
         },
+        startEditExam,
       });
       button.dataset.examId = exam.id;
       listItems.append(item);
@@ -2675,19 +2754,80 @@ export function renderExamDashboard(viewRoot) {
       return;
     }
 
+    const sanitizedDifficulty = DIFFICULTY_OPTIONS.some((option) => option.value === difficulty)
+      ? difficulty
+      : DEFAULT_EXAM_DIFFICULTY;
+    const sanitizedKind = EXAM_KIND_OPTIONS.some((option) => option.value === kind)
+      ? kind
+      : DEFAULT_EXAM_KIND;
+    const sanitizedDuration = Number.isFinite(durationMinutes) && durationMinutes > 0
+      ? durationMinutes
+      : 60;
+
+    if (form.dataset.mode === 'edit') {
+      if (!selectedExamId) {
+        updateMessageElement(
+          formMessage,
+          'error',
+          'Selecione uma prova válida antes de tentar editar.',
+        );
+        return;
+      }
+
+      const examIndex = currentExams.findIndex((exam) => exam.id === selectedExamId);
+      if (examIndex === -1) {
+        updateMessageElement(
+          formMessage,
+          'error',
+          'Não foi possível localizar a prova selecionada para edição.',
+        );
+        return;
+      }
+
+      const existingExam = currentExams[examIndex];
+      const updatedExam = {
+        ...existingExam,
+        title,
+        subject,
+        series,
+        difficulty: sanitizedDifficulty || existingExam.difficulty || DEFAULT_EXAM_DIFFICULTY,
+        kind: sanitizedKind || existingExam.kind || DEFAULT_EXAM_KIND,
+        status,
+        applicationDate,
+        startTime,
+        durationMinutes:
+          Number.isFinite(durationMinutes) && durationMinutes > 0
+            ? durationMinutes
+            : existingExam.durationMinutes ?? sanitizedDuration,
+        objective,
+        instructions,
+      };
+
+      currentExams = [
+        ...currentExams.slice(0, examIndex),
+        updatedExam,
+        ...currentExams.slice(examIndex + 1),
+      ];
+
+      selectedExamId = updatedExam.id;
+      renderExamList();
+      updateMessageElement(formMessage, 'success', `Prova “${title}” atualizada com sucesso.`);
+      setListMessage('success', `Prova “${title}” atualizada.`);
+      resetForm();
+      return;
+    }
+
     const newExam = {
       id: `exam-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
       title,
       subject,
       series,
-      difficulty: DIFFICULTY_OPTIONS.some((option) => option.value === difficulty)
-        ? difficulty
-        : DEFAULT_EXAM_DIFFICULTY,
-      kind: EXAM_KIND_OPTIONS.some((option) => option.value === kind) ? kind : DEFAULT_EXAM_KIND,
+      difficulty: sanitizedDifficulty,
+      kind: sanitizedKind,
       status,
       applicationDate,
       startTime,
-      durationMinutes: Number.isFinite(durationMinutes) && durationMinutes > 0 ? durationMinutes : 60,
+      durationMinutes: sanitizedDuration,
       objective,
       instructions,
       questionIds: [],
@@ -2704,6 +2844,7 @@ export function renderExamDashboard(viewRoot) {
   function handleAddButtonClick(event) {
     event.preventDefault();
     if (form.hidden) {
+      resetForm();
       showForm();
     } else {
       resetForm();
