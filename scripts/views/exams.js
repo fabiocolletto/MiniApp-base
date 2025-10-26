@@ -4,24 +4,11 @@ const BASE_CLASSES = 'card view dashboard-view view--exams exam-dashboard';
 
 const EXAM_DASHBOARD_STYLES = String.raw`
 .exam-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--panel-gap);
 }
 
 .exam-dashboard__layout {
-  display: grid;
-  gap: var(--space-lg);
-}
-
-.exam-dashboard__layout--split {
-  gap: var(--space-lg);
-}
-
-.exam-dashboard__header,
-.exam-dashboard__layout {
-  width: min(100%, 72rem);
-  margin: 0 auto;
+  gap: var(--panel-gap);
 }
 
 .exam-dashboard__header {
@@ -75,13 +62,6 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   }
 }
 
-@media (min-width: 52rem) {
-  .exam-dashboard__layout--split {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
-    align-items: start;
-  }
-}
-
 @media (min-width: 64rem) {
   .exam-dashboard__header,
   .exam-dashboard__layout {
@@ -123,6 +103,46 @@ const EXAM_DASHBOARD_STYLES = String.raw`
 .exam-dashboard__preview-body {
   display: grid;
   gap: var(--space-lg);
+}
+
+.exam-dashboard__preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.exam-dashboard__preview-toolbar-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-soft);
+}
+
+.exam-dashboard__preview-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4xs);
+  padding: var(--space-4xs);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-neutral);
+}
+
+.exam-dashboard__preview-toggle {
+  font-size: var(--font-size-sm);
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exam-dashboard__preview-toggle[aria-pressed='true'] {
+  background: var(--color-surface-base);
+  color: var(--color-text-strong);
+  box-shadow: 0 0 0 1px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.exam-dashboard__preview-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.4);
 }
 
 .exam-dashboard__preview-placeholder {
@@ -1970,7 +1990,9 @@ function generatePrintableExamHtml(exam, questionMap, { version = 'student' } = 
 </html>`;
 }
 
-function buildPrintablePreviewSection(exam, questionMap) {
+function buildPrintablePreviewSection(exam, questionMap, options = {}) {
+  const { initialVersion = 'student', onVersionChange } = options;
+
   const section = document.createElement('section');
   section.className = 'exam-dashboard__preview-section exam-dashboard__printable layout-stack layout-stack--sm';
 
@@ -1981,26 +2003,117 @@ function buildPrintablePreviewSection(exam, questionMap) {
   const description = document.createElement('p');
   description.className = 'exam-dashboard__preview-text';
   description.textContent =
-    'Confira o cabeçalho padronizado e a estrutura das questões conforme a versão para alunos antes de gerar a impressão.';
+    'Alterne entre as versões para alunos e professores e confirme o visual antes de gerar a impressão.';
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'exam-dashboard__preview-toolbar';
+
+  const toolbarLabel = document.createElement('span');
+  toolbarLabel.className = 'exam-dashboard__preview-toolbar-label';
+  toolbarLabel.textContent = 'Versão da prévia:';
+
+  const toggleGroup = document.createElement('div');
+  toggleGroup.className = 'exam-dashboard__preview-toggle-group';
+  toggleGroup.setAttribute('role', 'group');
+  toggleGroup.setAttribute('aria-label', 'Escolher versão da prévia impressa');
+
+  const studentToggle = document.createElement('button');
+  studentToggle.type = 'button';
+  studentToggle.className = 'button button--ghost button--pill exam-dashboard__preview-toggle';
+  studentToggle.textContent = 'Alunos';
+  studentToggle.dataset.version = 'student';
+
+  const teacherToggle = document.createElement('button');
+  teacherToggle.type = 'button';
+  teacherToggle.className = 'button button--ghost button--pill exam-dashboard__preview-toggle';
+  teacherToggle.textContent = 'Professores';
+  teacherToggle.dataset.version = 'teacher';
+
+  toggleGroup.append(studentToggle, teacherToggle);
+  toolbar.append(toolbarLabel, toggleGroup);
 
   const frame = document.createElement('iframe');
   frame.className = 'exam-dashboard__preview-frame';
   frame.setAttribute('loading', 'lazy');
   frame.setAttribute('title', `Prévia da prova impressa: ${exam.title}`);
-  frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: 'student' });
 
-  section.append(heading, description, frame);
-  return section;
+  const toggles = {
+    student: studentToggle,
+    teacher: teacherToggle,
+  };
+
+  const isTeacherVersion = initialVersion === 'teacher';
+  let currentVersion = isTeacherVersion ? 'teacher' : 'student';
+
+  function updateToggleState() {
+    Object.entries(toggles).forEach(([versionKey, button]) => {
+      const isActive = versionKey === currentVersion;
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+    section.dataset.previewVersion = currentVersion;
+  }
+
+  function setVersion(version, options = {}) {
+    const { force = false } = options;
+    const normalizedVersion = version === 'teacher' ? 'teacher' : 'student';
+    if (!force && normalizedVersion === currentVersion) {
+      return false;
+    }
+    currentVersion = normalizedVersion;
+    frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: currentVersion });
+    updateToggleState();
+    if (typeof onVersionChange === 'function') {
+      onVersionChange(currentVersion);
+    }
+    return true;
+  }
+
+  studentToggle.addEventListener('click', () => {
+    setVersion('student');
+  });
+  teacherToggle.addEventListener('click', () => {
+    setVersion('teacher');
+  });
+
+  frame.srcdoc = generatePrintableExamHtml(exam, questionMap, { version: currentVersion });
+  updateToggleState();
+
+  if (typeof onVersionChange === 'function') {
+    onVersionChange(currentVersion);
+  }
+
+  section.append(heading, description, toolbar, frame);
+  return {
+    element: section,
+    setVersion,
+    getVersion() {
+      return currentVersion;
+    },
+  };
 }
 
-function renderExamPreview(container, exam, questionMap) {
+function renderExamPreview(container, exam, questionMap, controls = {}) {
+  const {
+    previewVersion = 'student',
+    onVersionChange,
+    syncButtons,
+    registerController,
+  } = controls;
+
   container.replaceChildren();
+
+  if (typeof syncButtons === 'function') {
+    syncButtons();
+  }
 
   if (!exam) {
     const placeholder = document.createElement('p');
     placeholder.className = 'exam-dashboard__preview-placeholder';
     placeholder.textContent = 'Selecione uma prova na lista ao lado para visualizar o resumo e preparar a impressão.';
     container.append(placeholder);
+    if (typeof registerController === 'function') {
+      registerController(null);
+    }
     return;
   }
 
@@ -2062,9 +2175,24 @@ function renderExamPreview(container, exam, questionMap) {
   instructionsSection.append(instructionsTitle, instructionsText);
 
   const questionsSection = buildQuestionPreview(exam.questionIds ?? [], questionMap);
-  const printableSection = buildPrintablePreviewSection(exam, questionMap);
+  const printablePreview = buildPrintablePreviewSection(exam, questionMap, {
+    initialVersion: previewVersion,
+    onVersionChange,
+  });
 
-  container.append(title, tagList, schedule, objectiveSection, instructionsSection, questionsSection, printableSection);
+  if (typeof registerController === 'function') {
+    registerController(printablePreview);
+  }
+
+  container.append(
+    title,
+    tagList,
+    schedule,
+    objectiveSection,
+    instructionsSection,
+    questionsSection,
+    printablePreview.element,
+  );
 }
 
 function sortExamsForList(exams) {
@@ -2303,6 +2431,9 @@ export function renderExamDashboard(viewRoot) {
     maxDuration: null,
   };
 
+  let previewVersion = 'student';
+  let printablePreviewController = null;
+
   viewRoot.className = BASE_CLASSES;
   viewRoot.setAttribute('aria-label', 'Painel de provas do MiniApp Criador de Provas');
 
@@ -2418,10 +2549,40 @@ export function renderExamDashboard(viewRoot) {
 
   headerActions.append(printStudentButton, printTeacherButton, addButton);
 
+  function syncPrintButtons() {
+    const isStudentActive = previewVersion !== 'teacher';
+    printStudentButton.classList.toggle('button--primary', isStudentActive);
+    printStudentButton.classList.toggle('button--secondary', !isStudentActive);
+    printTeacherButton.classList.toggle('button--primary', !isStudentActive);
+    printTeacherButton.classList.toggle('button--secondary', isStudentActive);
+    printStudentButton.setAttribute('aria-pressed', String(isStudentActive));
+    printTeacherButton.setAttribute('aria-pressed', String(!isStudentActive));
+  }
+
+  function updatePreviewVersionState(version) {
+    previewVersion = version === 'teacher' ? 'teacher' : 'student';
+    syncPrintButtons();
+  }
+
+  function applyPreviewVersion(version, options = {}) {
+    const normalizedVersion = version === 'teacher' ? 'teacher' : 'student';
+    const controller = printablePreviewController;
+    const changed = controller?.setVersion ? controller.setVersion(normalizedVersion, options) : false;
+
+    if (!changed) {
+      updatePreviewVersionState(normalizedVersion);
+    }
+  }
+
+  syncPrintButtons();
+
   headerSection.append(headerText, headerGrid, headerHelper, headerActions);
 
   const layout = document.createElement('div');
-  layout.className = 'exam-dashboard__layout exam-dashboard__layout--split';
+  layout.className = 'user-panel__layout admin-dashboard__layout exam-dashboard__layout';
+
+  const mainRow = document.createElement('div');
+  mainRow.className = 'admin-dashboard__widget-row admin-dashboard__widget-row--split';
 
   const previewSection = document.createElement('section');
   previewSection.className = 'surface-card exam-dashboard__preview layout-stack layout-stack--lg';
@@ -2436,7 +2597,7 @@ export function renderExamDashboard(viewRoot) {
   const previewDescription = document.createElement('p');
   previewDescription.className = 'exam-dashboard__preview-description';
   previewDescription.textContent =
-    'Escolha uma prova na lista ao lado para revisar os detalhes antes de enviar para impressão.';
+    'Escolha uma prova na lista ao lado para revisar os detalhes e visualizar as versões para alunos e professores antes de imprimir.';
 
   previewHeader.append(previewTitle, previewDescription);
 
@@ -2470,7 +2631,9 @@ export function renderExamDashboard(viewRoot) {
 
   listSection.append(listHeader, listMessage, listItems, form);
 
-  layout.append(previewSection, listSection);
+  mainRow.append(previewSection, listSection);
+
+  layout.append(headerSection, mainRow);
 
   function parseMaxDurationValue(value) {
     const numericValue = Number.parseInt((value ?? '').toString(), 10);
@@ -2706,7 +2869,14 @@ export function renderExamDashboard(viewRoot) {
     }
     updateMessageElement(previewMessage, null, '');
     const selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
-    renderExamPreview(previewBody, selectedExam, questionMap);
+    renderExamPreview(previewBody, selectedExam, questionMap, {
+      previewVersion,
+      onVersionChange: updatePreviewVersionState,
+      syncButtons: syncPrintButtons,
+      registerController(controller) {
+        printablePreviewController = controller;
+      },
+    });
     updateListSelection();
     const hasSelection = Boolean(selectedExam);
     printStudentButton.disabled = !hasSelection;
@@ -2941,8 +3111,14 @@ export function renderExamDashboard(viewRoot) {
     }
   }
 
-  const handlePrintStudent = () => handlePrint('student');
-  const handlePrintTeacher = () => handlePrint('teacher');
+  const handlePrintStudent = () => {
+    applyPreviewVersion('student');
+    handlePrint('student');
+  };
+  const handlePrintTeacher = () => {
+    applyPreviewVersion('teacher');
+    handlePrint('teacher');
+  };
 
   if (filterSubjectSelect instanceof HTMLSelectElement) {
     filterSubjectSelect.addEventListener('change', handleFiltersChange);
@@ -3011,7 +3187,7 @@ export function renderExamDashboard(viewRoot) {
   syncFiltersFromControls();
   applyFiltersToFormDefaults();
 
-  viewRoot.replaceChildren(styleElement, headerSection, layout);
+  viewRoot.replaceChildren(styleElement, layout);
 
   renderExamList();
 }

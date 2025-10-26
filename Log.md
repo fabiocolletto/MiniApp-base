@@ -1,5 +1,12 @@
 # Log
 
+## v0.1.256 - 2025-10-26 11:59 BRT
+- Realinhamos o Criador de Provas para utilizar o grid padrão do MiniAppBase, reutilizando classes compartilhadas e removendo ajustes locais.
+
+## v0.1.255 - 2025-10-26 11:39 BRT
+- Adicionamos alternância de visualização entre as versões para alunos e professores diretamente na prévia impressa.
+- Atualizamos os botões de impressão para refletirem a versão em exibição e tornamos a descrição da pré-visualização mais clara.
+
 ## v0.1.254 - 2025-10-26 15:10 BRT
 - Inclui filtro por status das provas no painel do Criador de Provas, com seleção "Todos os status" por padrão.
 - Sincroniza o novo filtro com o formulário de criação/edição e aplica o recorte na lista e pré-visualização.
@@ -1278,6 +1285,11 @@
 - Externalização dos estilos para `styles/main.css`, mantendo o layout responsivo do painel central.
 - Inclusão do link para a folha de estilos no `index.html` e atualização da versão exibida no rodapé.
 - Preparação dos módulos de view para reutilizarem as classes de estilo compartilhadas.
+
+## v0.1.14 - 2025-10-26 11:50 BRT
+- Exposição do controle da prévia impressa para sincronizar versão selecionada com as ações de impressão.
+- Atualização dos botões de impressão para refletirem automaticamente a alternância entre as versões de aluno e professor.
+- Revisão da pré-visualização para manter o estado de versão armazenado no painel ao trocar de prova.
 
 ## v0.1.12 - 2025-10-19 08:00 BRT
 - Modularização das telas em módulos ES6 com a função central `renderView`.
