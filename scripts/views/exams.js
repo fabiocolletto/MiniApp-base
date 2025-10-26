@@ -2450,12 +2450,7 @@ export function renderExamDashboard(viewRoot) {
   headerTitle.className = 'exam-dashboard__header-heading';
   headerTitle.textContent = 'Planejamento da avaliação';
 
-  const headerDescription = document.createElement('p');
-  headerDescription.className = 'exam-dashboard__header-description';
-  headerDescription.textContent =
-    'Defina o contexto da prova e utilize as ações para gerar as versões de impressão desejadas.';
-
-  headerText.append(headerTitle, headerDescription);
+  headerText.append(headerTitle);
 
   const headerGrid = document.createElement('div');
   headerGrid.className = 'exam-dashboard__header-grid';
