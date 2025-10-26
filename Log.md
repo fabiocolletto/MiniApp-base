@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.267 - 2025-10-26 16:27 BRT
+- Simplifica o widget de visualização do painel de provas removendo o cabeçalho e mantendo apenas o visualizador dedicado.
+
 ## v0.1.266 - 2025-10-26 16:11 BRT
 - Ajusta a inicialização do catálogo do painel MiniApps para repor automaticamente o Gestor de tarefas e o Criador de provas quando o armazenamento local não os inclui.
 - Acrescenta testes garantindo que snapshots persistidos personalizados preservem seus itens enquanto recebem os miniapps padrão necessários.

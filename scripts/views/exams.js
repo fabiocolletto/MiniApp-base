@@ -98,25 +98,8 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   gap: var(--space-md);
 }
 
-.exam-dashboard__preview-header {
-  display: grid;
-  gap: var(--space-2xs);
-}
-
-.exam-dashboard__preview-heading {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-strong);
-}
-
 .exam-dashboard__preview-message {
   margin: 0;
-}
-
-.exam-dashboard__preview-body {
-  display: grid;
-  gap: var(--space-lg);
 }
 
 .exam-dashboard__preview-toolbar {
@@ -2564,16 +2547,8 @@ export function renderExamDashboard(viewRoot) {
   previewRow.className = 'admin-dashboard__widget-row exam-dashboard__preview-row';
 
   const previewSection = document.createElement('section');
-  previewSection.className = 'surface-card exam-dashboard__preview layout-stack layout-stack--lg';
-
-  const previewHeader = document.createElement('div');
-  previewHeader.className = 'exam-dashboard__preview-header layout-stack layout-stack--3xs';
-
-  const previewTitle = document.createElement('h2');
-  previewTitle.className = 'exam-dashboard__preview-heading';
-  previewTitle.textContent = 'Visualização da prova';
-
-  previewHeader.append(previewTitle);
+  previewSection.className = 'surface-card exam-dashboard__preview';
+  previewSection.setAttribute('aria-label', 'Visualização da prova');
 
   const previewMessage = createMessageElement('exam-dashboard__preview-message');
 
@@ -2592,11 +2567,6 @@ export function renderExamDashboard(viewRoot) {
   selectionControls.append(openSelectionButton, selectionStatusMessage);
 
   headerSection.append(selectionControls);
-
-  const previewBody = document.createElement('div');
-  previewBody.className = 'exam-dashboard__preview-body layout-stack layout-stack--lg';
-
-  previewSection.append(previewHeader, previewBody);
 
   previewRow.append(previewMessage, previewSection);
 
@@ -3014,7 +2984,7 @@ export function renderExamDashboard(viewRoot) {
     }
     updateMessageElement(previewMessage, null, '');
     const selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
-    renderExamPreview(previewBody, selectedExam, questionMap, {
+    renderExamPreview(previewSection, selectedExam, questionMap, {
       previewVersion,
       onVersionChange: updatePreviewVersionState,
       syncButtons: syncPrintButtons,
