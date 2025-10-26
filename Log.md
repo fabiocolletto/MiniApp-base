@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.264 - 2025-10-26 15:40 BRT
+- Substitui os traços de preenchimento do cabeçalho do modelo de impressão por linhas estilizadas que se ajustam à largura disponível.
+- Ajusta o fallback do campo de professor para reaproveitar o novo traço responsivo quando o nome não estiver definido.
+
 ## v0.1.263 - 2025-10-26 15:27 BRT
 - Remove as instruções textuais do widget de Visualização da prova, tanto no cabeçalho quanto no estado sem seleção.
 
