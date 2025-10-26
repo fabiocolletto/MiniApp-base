@@ -1,5 +1,8 @@
 # Log
 
+## v0.1.243 - 2025-10-26 06:23 BRT
+- Ajusta os tokens de tema para definir `--color-text-soft` com valores explícitos nos modos claro e escuro, restaurando a cor esperada das descrições.
+
 -## v0.1.242 - 2025-10-26 06:03 BRT
 - Reforça o guia da pasta `MiniApps/` com estrutura mínima, artefatos obrigatórios e orientações de integração para novos MiniApps.
 - Documenta a auditoria da pasta `MiniApps/` destacando a prontidão para receber miniapps alinhados às boas práticas do repositório.
