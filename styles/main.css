@@ -1705,6 +1705,13 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   display: grid;
   gap: clamp(0.55rem, 1.8vw, 0.85rem);
   align-content: start;
+  cursor: pointer;
+  outline: none;
+}
+
+.miniapp-store__catalog-card:focus-visible {
+  outline: 0.14rem solid rgba(var(--color-accent-rgb), 0.55);
+  outline-offset: 0.12rem;
 }
 
 .miniapp-store__catalog-header {

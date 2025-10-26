@@ -2,6 +2,26 @@ import eventBus from '../events/event-bus.js';
 import { getMiniAppStatusLabel, subscribeMiniApps as subscribeMiniAppCatalog } from '../data/miniapp-store.js';
 import { registerViewCleanup } from '../view-cleanup.js';
 
+const MINI_APP_PANEL_ROUTES = new Map(
+  [
+    ['task-manager', 'tasks'],
+    ['exam-planner', 'exams'],
+  ].map(([id, view]) => [id.toLowerCase(), view]),
+);
+
+function resolveMiniAppPanelRoute(appId) {
+  if (typeof appId !== 'string') {
+    return null;
+  }
+
+  const normalizedId = appId.trim().toLowerCase();
+  if (!normalizedId) {
+    return null;
+  }
+
+  return MINI_APP_PANEL_ROUTES.get(normalizedId) ?? null;
+}
+
 const UPDATED_AT_FORMATTER = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' });
 
 function formatUpdatedAt(value) {
@@ -80,6 +100,11 @@ function renderMiniAppCatalogItem(entry) {
 
   const card = document.createElement('article');
   card.className = 'miniapp-store__catalog-card';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-label', `Abrir painel ${entry.name}`);
+
+  const panelRoute = resolveMiniAppPanelRoute(entry.id);
 
   const header = document.createElement('div');
   header.className = 'miniapp-store__catalog-header';
@@ -102,7 +127,18 @@ function renderMiniAppCatalogItem(entry) {
     eventBus.emit('miniapp:details', { app: entry.details, trigger: detailTrigger });
   };
 
-  action.addEventListener('click', () => {
+  const openPanel = (trigger = card) => {
+    if (panelRoute) {
+      eventBus.emit('app:navigate', { view: panelRoute, trigger });
+      return;
+    }
+
+    openDetails(trigger);
+  };
+
+  action.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     openDetails(action);
   });
 
@@ -139,6 +175,30 @@ function renderMiniAppCatalogItem(entry) {
   }
 
   card.append(...elements);
+
+  card.addEventListener('click', (event) => {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (target && target.closest('.miniapp-store__catalog-action')) {
+      return;
+    }
+
+    openPanel(card);
+  });
+
+  card.addEventListener('keydown', (event) => {
+    const key = event.key;
+    if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
+      return;
+    }
+
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (target && target.closest('.miniapp-store__catalog-action')) {
+      return;
+    }
+
+    event.preventDefault();
+    openPanel(card);
+  });
 
   item.append(card);
   return item;
@@ -181,7 +241,7 @@ export function renderMiniAppStore(viewRoot) {
   const description = document.createElement('p');
   description.className = 'user-widget__description';
   description.textContent =
-    'Miniapps são experiências completas, como o Gestor de tarefas e o Criador de provas, prontas para ativar na sua organização.';
+    'Miniapps são experiências completas, como Gestão de Trabalho e o Criador de Provas, prontas para ativar na sua organização.';
 
   const catalog = document.createElement('ul');
   catalog.className = 'miniapp-store__catalog carousel-list';
