@@ -1,5 +1,10 @@
 # Log do MiniApp Criador de Provas
 
+## v0.1.254 - 2025-10-26
+- Adiciona filtro por status no painel, permitindo visualizar apenas provas em rascunho, revisão, agendadas ou publicadas.
+- Mantém "Todos os status" como seleção padrão e aplica a escolha ao formulário para acelerar a criação/edição.
+- Atualiza metadados públicos do miniapp para refletir a versão 0.1.254.
+
 ## v0.1.251 - 2025-10-26
 - Consolida o painel do Criador de Provas com cabeçalho único concentrando filtros e ações de impressão,
   deixando a pré-visualização e a lista de provas lado a lado no corpo principal.
