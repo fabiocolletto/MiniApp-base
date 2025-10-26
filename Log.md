@@ -1,5 +1,11 @@
 # Log
 
+## v0.1.248 - 2025-10-26 07:04 BRT
+- Limpeza dos estilos globais removendo seletores e propriedades sem referência em `styles/main.css`.
+- Preservação dos utilitários e tokens compartilhados enquanto eliminamos regras obsoletas.
+- Normaliza os espaçamentos remanescentes na folha principal para evitar blocos vazios após a remoção dos seletores.
+- Tenta rodar `npm run dev` para validar regressões visuais, registrando que o script ainda não está definido no projeto.
+
 ## v0.1.247 - 2025-10-26 06:43 BRT
 - Executa a suíte `npm test` para confirmar que os fluxos principais continuam renderizando sem regressões visuais perceptíveis.
 - Tenta acionar rotinas `npm run build` e `npm run dev`, registrando que ainda não existem scripts configurados para esses fluxos automatizados.
