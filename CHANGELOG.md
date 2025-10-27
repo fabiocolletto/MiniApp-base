@@ -9,3 +9,4 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Exposta a instância global de roteador para habilitar a navegação dos botões da tela inicial.
 - Adicionada janela modal de autenticação na tela inicial com suporte aos painéis de login e cadastro.
 - Ajustado o layout dos painéis de login e cadastro para eliminar sobreposição com o cabeçalho do modal e remover espaços excedentes.
+- Cadastro passa a abrir automaticamente o painel do usuário após conclusão e inclui teste de verificação desse fluxo.
