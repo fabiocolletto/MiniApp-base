@@ -1,7 +1,9 @@
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
 
+export const DUPLICATE_PHONE_ERROR_MESSAGE = 'Telefone já cadastrado.';
+
 const DB_NAME = 'miniapp-user-store';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'users';
 
 export function getIndexedUserDbMetadata() {
@@ -63,6 +65,18 @@ function createEmptyPreferences() {
     theme: DEFAULT_THEME_PREFERENCE,
     footerIndicators: DEFAULT_FOOTER_INDICATORS_PREFERENCE,
   };
+}
+
+function createDuplicatePhoneError() {
+  return new Error(DUPLICATE_PHONE_ERROR_MESSAGE);
+}
+
+function isConstraintError(error) {
+  return (error && typeof error === 'object' && error.name === 'ConstraintError') === true;
+}
+
+function normalizePhoneValue(phone) {
+  return typeof phone === 'string' ? phone.trim() : '';
 }
 
 function normalizePreferences(rawPreferences) {
@@ -256,6 +270,16 @@ function isIndexedDbSupported() {
   return typeof indexedDB !== 'undefined';
 }
 
+function ensurePhoneIndex(store) {
+  if (!store || typeof store.createIndex !== 'function') {
+    return;
+  }
+
+  if (!store.indexNames?.contains?.('phone')) {
+    store.createIndex('phone', 'phone', { unique: true });
+  }
+}
+
 function openDatabase() {
   if (!isIndexedDbSupported()) {
     return Promise.reject(new Error('IndexedDB não é suportado neste navegador.'));
@@ -267,9 +291,15 @@ function openDatabase() {
 
       request.onupgradeneeded = () => {
         const db = request.result;
+        let store;
+
         if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+          store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        } else {
+          store = request.transaction?.objectStore(STORE_NAME);
         }
+
+        ensurePhoneIndex(store);
       };
 
       request.onsuccess = () => {
@@ -339,7 +369,22 @@ async function loadUsersFromMemory() {
 }
 
 async function saveUserToMemory({ name, phone, password, device, profile, userType, preferences }) {
-  const record = createMemoryRecord({ name, phone, password, device, profile, userType, preferences });
+  const normalizedPhone = normalizePhoneValue(phone);
+  const hasDuplicate = memoryStore.some((record) => record.phone === normalizedPhone);
+
+  if (hasDuplicate) {
+    throw createDuplicatePhoneError();
+  }
+
+  const record = createMemoryRecord({
+    name,
+    phone: normalizedPhone,
+    password,
+    device,
+    profile,
+    userType,
+    preferences,
+  });
   memoryStore.push(record);
   await notifyListeners();
   return deserializeUser(record);
@@ -358,9 +403,21 @@ async function updateUserInMemory(id, updates = {}) {
 
   const existingRecord = memoryStore[index];
   const now = new Date().toISOString();
+  let sanitizedPhoneUpdate;
+  if (Object.prototype.hasOwnProperty.call(updates, 'phone')) {
+    sanitizedPhoneUpdate = normalizePhoneValue(updates.phone);
+    const hasDuplicate = memoryStore.some(
+      (record, recordIndex) => recordIndex !== index && record.phone === sanitizedPhoneUpdate,
+    );
+
+    if (hasDuplicate) {
+      throw createDuplicatePhoneError();
+    }
+  }
+
   const structuralUpdates = {
     ...(Object.prototype.hasOwnProperty.call(updates, 'name') ? { name: updates.name } : {}),
-    ...(Object.prototype.hasOwnProperty.call(updates, 'phone') ? { phone: updates.phone } : {}),
+    ...(sanitizedPhoneUpdate !== undefined ? { phone: sanitizedPhoneUpdate } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'password') ? { password: updates.password } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'device') ? { device: updates.device } : {}),
     ...(Object.prototype.hasOwnProperty.call(updates, 'userType')
@@ -466,9 +523,10 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
     const store = transaction.objectStore(STORE_NAME);
 
     const nowIso = new Date().toISOString();
+    const normalizedPhone = normalizePhoneValue(phone);
     const record = {
       name,
-      phone,
+      phone: normalizedPhone,
       password,
       device,
       userType: sanitizeUserType(userType),
@@ -480,6 +538,7 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
     };
 
     let savedUser;
+    let hasErrored = false;
 
     const request = store.add(record);
 
@@ -490,6 +549,11 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
     };
 
     request.onerror = () => {
+      hasErrored = true;
+      if (isConstraintError(request.error)) {
+        reject(createDuplicatePhoneError());
+        return;
+      }
       reject(request.error || new Error('Erro ao salvar o usuário no IndexedDB.'));
     };
 
@@ -500,10 +564,28 @@ export async function saveUser({ name, phone, password, device, profile, userTyp
     };
 
     transaction.onabort = () => {
+      if (hasErrored) {
+        return;
+      }
+
+      if (isConstraintError(transaction.error)) {
+        reject(createDuplicatePhoneError());
+        return;
+      }
+
       reject(transaction.error || new Error('Transação abortada ao salvar o usuário no IndexedDB.'));
     };
 
     transaction.onerror = () => {
+      if (hasErrored) {
+        return;
+      }
+
+      if (isConstraintError(transaction.error)) {
+        reject(createDuplicatePhoneError());
+        return;
+      }
+
       reject(transaction.error || new Error('Erro na transação ao salvar o usuário no IndexedDB.'));
     };
   });
@@ -605,6 +687,10 @@ export async function updateUser(id, updates = {}) {
       };
 
       putRequest.onerror = () => {
+        if (isConstraintError(putRequest.error)) {
+          reject(createDuplicatePhoneError());
+          return;
+        }
         reject(putRequest.error || new Error('Erro ao atualizar o usuário no IndexedDB.'));
       };
     };
@@ -620,15 +706,29 @@ export async function updateUser(id, updates = {}) {
     };
 
     transaction.onabort = () => {
-      if (!updatedUser) {
-        reject(transaction.error || new Error('Transação abortada ao atualizar usuário.'));
+      if (updatedUser) {
+        return;
       }
+
+      if (isConstraintError(transaction.error)) {
+        reject(createDuplicatePhoneError());
+        return;
+      }
+
+      reject(transaction.error || new Error('Transação abortada ao atualizar usuário.'));
     };
 
     transaction.onerror = () => {
-      if (!updatedUser) {
-        reject(transaction.error || new Error('Erro na transação ao atualizar usuário.'));
+      if (updatedUser) {
+        return;
       }
+
+      if (isConstraintError(transaction.error)) {
+        reject(createDuplicatePhoneError());
+        return;
+      }
+
+      reject(transaction.error || new Error('Erro na transação ao atualizar usuário.'));
     };
   });
 }

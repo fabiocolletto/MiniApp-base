@@ -1,4 +1,4 @@
-import { addUser } from '../data/user-store.js';
+import { addUser, DUPLICATE_PHONE_ERROR_MESSAGE } from '../data/user-store.js';
 import { setActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
@@ -392,16 +392,24 @@ export function renderRegisterPanel(viewRoot) {
     } catch (error) {
       console.error('Erro ao criar cadastro pelo painel dedicado.', error);
       const errorMessage = error instanceof Error ? error.message : '';
+      const isDuplicatePhone = errorMessage === DUPLICATE_PHONE_ERROR_MESSAGE;
       const isStorageIssue =
         typeof errorMessage === 'string' &&
         (errorMessage.includes('Armazenamento local indisponível') || errorMessage.includes('armazenamento local'));
 
       showFeedback(
-        isStorageIssue
+        isDuplicatePhone
+          ? DUPLICATE_PHONE_ERROR_MESSAGE
+          : isStorageIssue
           ? 'Não foi possível concluir o cadastro porque o armazenamento local está indisponível neste dispositivo.'
           : 'Não foi possível concluir o cadastro. Verifique os dados e tente novamente.',
         { isError: true }
       );
+
+      if (isDuplicatePhone) {
+        phoneNumberInput.focus();
+        phoneNumberInput.select?.();
+      }
     }
 
     isSubmitting = false;
