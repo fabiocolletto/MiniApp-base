@@ -11,6 +11,8 @@ import {
   __resetMiniAppStoreStateForTests,
 } from '../scripts/data/miniapp-store.js';
 
+const OFFICIAL_MINIAPP_IDS = ['exam-planner', 'task-manager'];
+
 test.after(() => {
   resetMiniApps();
 });
@@ -101,6 +103,112 @@ test('descarta placeholders legados persistidos ao inicializar o catálogo', () 
       favorites: 2840,
       releaseDate: '2025-10-25T15:03:00-03:00',
       featuredCategories: ['Produtividade', 'Gestão de tarefas'],
+      icon: null,
+    },
+  ];
+
+  const storage = new Map();
+  const localStorageMock = {
+    getItem(key) {
+      return storage.has(key) ? storage.get(key) : null;
+    },
+    setItem(key, value) {
+      storage.set(key, String(value));
+    },
+    removeItem(key) {
+      storage.delete(key);
+    },
+    clear() {
+      storage.clear();
+    },
+  };
+
+  const previousWindow = global.window;
+  global.window = { localStorage: localStorageMock };
+
+  try {
+    localStorageMock.setItem('miniapp:admin-miniapps', JSON.stringify(legacySnapshot));
+    __resetMiniAppStoreStateForTests();
+
+    const snapshot = getMiniAppsSnapshot();
+    assert.equal(snapshot.length, 2);
+    assert.deepEqual(
+      snapshot
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['exam-planner', 'task-manager'],
+    );
+
+    const persisted = JSON.parse(localStorageMock.getItem('miniapp:admin-miniapps'));
+    assert.ok(Array.isArray(persisted));
+    assert.deepEqual(
+      persisted
+        .map((app) => app.id)
+        .slice()
+        .sort(),
+      ['exam-planner', 'task-manager'],
+    );
+  } finally {
+    if (previousWindow === undefined) {
+      delete global.window;
+    } else {
+      global.window = previousWindow;
+    }
+
+    __resetMiniAppStoreStateForTests();
+    resetMiniApps();
+  }
+});
+
+test('descarta placeholders legados mesmo quando snapshot persistido está incompleto', () => {
+  const legacySnapshot = [
+    {
+      id: 'time-tracker',
+      name: 'Time Tracker',
+      category: 'Produtividade',
+      description:
+        'Monitore jornadas, exporte relatórios completos e mantenha a equipe sincronizada com as regras do painel administrativo.',
+      status: 'active',
+      updatedAt: '2025-10-12T18:00:00-03:00',
+      access: ['administrador', 'colaborador'],
+      version: '1.8.0',
+      downloads: 12840,
+      favorites: 9420,
+      releaseDate: '2024-05-10T09:00:00-03:00',
+      featuredCategories: ['Produtividade', 'Gestão de tempo'],
+      icon: null,
+    },
+    {
+      id: 'field-forms',
+      name: 'Field Forms',
+      category: 'Operações',
+      description:
+        'Colete dados em campo mesmo offline, centralize anexos e acompanhe revisões em tempo real a partir do painel.',
+      status: 'testing',
+      updatedAt: '2025-10-18T09:30:00-03:00',
+      access: ['administrador'],
+      version: '3.2.1',
+      downloads: 8640,
+      favorites: 5120,
+      releaseDate: '2023-11-03T11:30:00-03:00',
+      featuredCategories: ['Operações', 'Coleta em campo'],
+      icon: null,
+    },
+    {
+      id: 'insights-hub',
+      name: 'Insights Hub',
+      category: 'Analytics',
+      description:
+        'Combine métricas de diferentes mini-apps, configure alertas inteligentes e acompanhe o avanço da implantação.',
+      status: 'deployment',
+      updatedAt: '2025-10-20T14:45:00-03:00',
+      access: ['administrador', 'colaborador', 'usuario'],
+      version: '0.9.5',
+      downloads: 4760,
+      favorites: 3980,
+      releaseDate: '2024-07-22T15:15:00-03:00',
+      featuredCategories: ['Analytics', 'Gestão'],
       icon: null,
     },
   ];
@@ -251,15 +359,22 @@ test('resetMiniApps normalizes métricas numéricas e categorias destacadas', ()
   ]);
 
   const snapshot = getMiniAppsSnapshot();
-  assert.equal(snapshot.length, 1);
+  assert.deepEqual(
+    snapshot
+      .map((app) => app.id)
+      .slice()
+      .sort(),
+    ['alpha', ...OFFICIAL_MINIAPP_IDS].sort(),
+  );
 
-  const [app] = snapshot;
-  assert.equal(app.version, '2');
-  assert.equal(app.downloads, 1010);
-  assert.equal(app.favorites, 501);
-  assert.equal(app.releaseDate, new Date(1700000000000).toISOString());
-  assert.deepEqual(app.featuredCategories, ['Analytics', 'Gestão']);
-  assert.deepEqual(app.access.sort(), ['colaborador', 'usuario']);
+  const alpha = snapshot.find((app) => app.id === 'alpha');
+  assert.ok(alpha, 'miniapp personalizado deve permanecer no catálogo');
+  assert.equal(alpha.version, '2');
+  assert.equal(alpha.downloads, 1010);
+  assert.equal(alpha.favorites, 501);
+  assert.equal(alpha.releaseDate, new Date(1700000000000).toISOString());
+  assert.deepEqual(alpha.featuredCategories, ['Analytics', 'Gestão']);
+  assert.deepEqual(alpha.access.sort(), ['colaborador', 'usuario']);
 });
 
 test('métricas de ranking retornam os miniapps ordenados corretamente', () => {
@@ -273,8 +388,8 @@ test('métricas de ranking retornam os miniapps ordenados corretamente', () => {
       updatedAt: '2025-01-01T10:00:00-03:00',
       access: ['usuario'],
       version: '1.0.0',
-      downloads: 1200,
-      favorites: 340,
+      downloads: 5200,
+      favorites: 2340,
       releaseDate: '2024-10-01T10:00:00-03:00',
       featuredCategories: ['Analytics'],
     },
@@ -287,8 +402,8 @@ test('métricas de ranking retornam os miniapps ordenados corretamente', () => {
       updatedAt: '2025-01-02T10:00:00-03:00',
       access: ['administrador'],
       version: '1.2.0',
-      downloads: 860,
-      favorites: 420,
+      downloads: 4860,
+      favorites: 3420,
       releaseDate: '2024-12-01T10:00:00-03:00',
       featuredCategories: ['Operações'],
     },
@@ -301,20 +416,29 @@ test('métricas de ranking retornam os miniapps ordenados corretamente', () => {
       updatedAt: '2025-01-03T10:00:00-03:00',
       access: ['usuario'],
       version: '0.9.0',
-      downloads: 1430,
-      favorites: 180,
+      downloads: 6430,
+      favorites: 1180,
       releaseDate: '2025-01-15T10:00:00-03:00',
       featuredCategories: ['Financeiro'],
     },
   ]);
 
-  const topDownloads = getTopMiniAppsByDownloads(2).map((app) => app.id);
+  const topDownloads = getTopMiniAppsByDownloads(5)
+    .map((app) => app.id)
+    .filter((id) => !OFFICIAL_MINIAPP_IDS.includes(id))
+    .slice(0, 2);
   assert.deepEqual(topDownloads, ['gamma', 'alpha']);
 
-  const topFavorites = getTopMiniAppsByFavorites(2).map((app) => app.id);
+  const topFavorites = getTopMiniAppsByFavorites(5)
+    .map((app) => app.id)
+    .filter((id) => !OFFICIAL_MINIAPP_IDS.includes(id))
+    .slice(0, 2);
   assert.deepEqual(topFavorites, ['beta', 'alpha']);
 
-  const newest = getLatestMiniApps(2).map((app) => app.id);
+  const newest = getLatestMiniApps(5)
+    .map((app) => app.id)
+    .filter((id) => !OFFICIAL_MINIAPP_IDS.includes(id))
+    .slice(0, 2);
   assert.deepEqual(newest, ['gamma', 'beta']);
 });
 
@@ -378,6 +502,8 @@ test('getMiniAppsByFeaturedCategories respeita limite e ordenação por categori
     },
   ]);
 
-  const result = getMiniAppsByFeaturedCategories({ limit: 4 }).map((app) => app.id);
-  assert.deepEqual(result, ['alpha', 'delta', 'gamma', 'beta']);
+  const result = getMiniAppsByFeaturedCategories({ limit: 8 })
+    .map((app) => app.id)
+    .filter((id) => !OFFICIAL_MINIAPP_IDS.includes(id));
+  assert.deepEqual(result.slice(0, 4), ['alpha', 'delta', 'gamma', 'beta']);
 });

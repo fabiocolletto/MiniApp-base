@@ -1630,6 +1630,29 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   }
 }
 
+@media (max-width: 640px) {
+  main {
+    padding-inline: 0;
+  }
+
+  main > .card.view {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  main > .card.view::before,
+  main > .card.view::after {
+    border-radius: 0;
+  }
+
+  main > .dashboard-view {
+    --dashboard-padding-block-start: clamp(1rem, 5vw, 1.4rem);
+    --dashboard-padding-inline: clamp(0.75rem, 4.5vw, 1.1rem);
+    --dashboard-padding-block-end: clamp(1rem, 5vw, 1.5rem);
+  }
+}
+
 @media (max-width: 520px) {
   header {
     flex-wrap: nowrap;

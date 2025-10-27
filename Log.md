@@ -1,5 +1,13 @@
 # Log
 
+## v0.1.272 - 2025-10-27 07:40 BRT
+- Descarta automaticamente os miniapps legados de espera ao detectar snapshots incompletos com placeholders antigos.
+- Amplia os testes do catálogo para cobrir snapshots parciais herdados dos miniapps em espera.
+- Atualiza a fonte de metadados do sistema para registrar a release v0.1.272.
+- Ajusta os estilos móveis para que os painéis ocupem toda a largura útil, removendo sombras e cantos arredondados redundantes.
+- Harmoniza o espaçamento interno dos dashboards em telas pequenas para aproveitar melhor o espaço útil sem comprometer a leitura.
+- Atualiza o painel de provas para ocultar a pré-visualização em telas móveis, exibindo botão dedicado que abre modal em tela cheia com navegação entre resultados filtrados.
+
 ## v0.1.271 - 2025-10-26 17:44 BRT
 - Remove o widget de cadastro de provas do painel, mantendo apenas a visualização e seleção das avaliações existentes.
 - Limita a altura do widget de visualização a até 70% da área disponível para evitar que a prévia ocupe todo o painel.
