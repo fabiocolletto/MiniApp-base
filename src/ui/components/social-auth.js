@@ -166,4 +166,10 @@ class SocialAuth extends HTMLElement {
   setHint(msg) { this.$hint.textContent = msg; }
 }
 
-customElements.define('social-auth', SocialAuth);
+const registry = typeof globalThis === 'object' && globalThis ? globalThis.customElements : undefined;
+
+if (registry && typeof registry.define === 'function') {
+  if (!registry.get || !registry.get('social-auth')) {
+    registry.define('social-auth', SocialAuth);
+  }
+}
