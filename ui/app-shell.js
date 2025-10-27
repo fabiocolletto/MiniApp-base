@@ -657,6 +657,7 @@ function closeAppModal({ restoreFocus = true, id } = {}) {
     appModalContainer.replaceChildren();
     appModalContainer.removeAttribute('aria-labelledby');
     appModalContainer.removeAttribute('aria-describedby');
+    appModalContainer.className = 'app-modal';
   }
 
   const trigger = modalActiveTrigger;
@@ -1008,6 +1009,23 @@ function registerFooterMobileToggle() {
   }
 }
 
+function normalizeContainerClasses(containerClass) {
+  if (typeof containerClass === 'string') {
+    return containerClass
+      .split(' ')
+      .map((className) => className.trim())
+      .filter(Boolean);
+  }
+
+  if (Array.isArray(containerClass)) {
+    return containerClass
+      .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 function openAppModal({
   id,
   panel,
@@ -1016,6 +1034,7 @@ function openAppModal({
   focusSelector,
   trigger,
   onClose,
+  containerClass,
 } = {}) {
   if (!(panel instanceof HTMLElement)) {
     return;
@@ -1028,6 +1047,12 @@ function openAppModal({
 
   if (appModalOpen) {
     closeAppModal({ restoreFocus: false });
+  }
+
+  container.className = 'app-modal';
+  const containerClasses = normalizeContainerClasses(containerClass);
+  if (containerClasses.length > 0) {
+    container.classList.add(...containerClasses);
   }
 
   container.replaceChildren(panel);
@@ -1745,6 +1770,7 @@ function openMiniAppDetailsModal({ app, trigger } = {}) {
     describedBy: lead.id,
     focusSelector: closeButton,
     trigger: trigger instanceof HTMLElement ? trigger : null,
+    containerClass: 'app-modal--miniapp',
   });
 }
 

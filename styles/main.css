@@ -1053,6 +1053,22 @@ footer[data-footer-indicators='hidden'] .footer-actions {
   gap: clamp(0.65rem, 2.2vw, 1.15rem);
 }
 
+@media (min-width: 64rem) {
+  .app-modal--miniapp {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .app-modal--miniapp .app-modal__panel--miniapp {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 .miniapp-details {
   color: var(--color-text-secondary);
 }
