@@ -8,3 +8,4 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Documentado o procedimento de integração da página `/miniapps/` no WordPress com Elementor.
 - Exposta a instância global de roteador para habilitar a navegação dos botões da tela inicial.
 - Adicionada janela modal de autenticação na tela inicial com suporte aos painéis de login e cadastro.
+- Ajustado o layout dos painéis de login e cadastro para eliminar sobreposição com o cabeçalho do modal e remover espaços excedentes.
