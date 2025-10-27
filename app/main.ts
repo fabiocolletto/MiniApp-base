@@ -58,7 +58,15 @@ export async function bootstrapApp(): Promise<void> {
     const route = await determineInitialRoute();
     router.goTo(route);
     initializeAppShell(router);
-    restorePersistedView(persistedView);
+    if (route === 'dashboard' && (typeof persistedView !== 'string' || !persistedView)) {
+      renderView('user');
+      logInfo(
+        'app.bootstrap.restore',
+        'Painel do usuário aberto automaticamente após autenticação persistida.',
+      );
+    } else {
+      restorePersistedView(persistedView);
+    }
     logInfo('app.bootstrap.ready', `Aplicação inicializada na rota "${route}".`);
   } catch (error) {
     logError('app.bootstrap.failed', 'Falha ao inicializar aplicação. Direcionando para cadastro.', error);

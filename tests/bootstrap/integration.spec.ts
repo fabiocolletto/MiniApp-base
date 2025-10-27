@@ -404,7 +404,7 @@ test('bootstrap direciona para dashboard quando há sessão ativa', async () => 
   });
 
   assert.equal(router.currentRoute, expected);
-  assert.equal(dom.elements.viewRoot.__lastRendered, 'home');
+  assert.equal(dom.elements.viewRoot.__lastRendered, 'user');
 });
 
 test('bootstrap direciona para login quando existem cadastros sem sessão', async () => {
