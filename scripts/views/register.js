@@ -388,6 +388,7 @@ export function renderRegisterPanel(viewRoot) {
       isSubmitting = false;
       submitButton.removeAttribute('aria-busy');
       renderRegisterSuccess(viewRoot, savedUser);
+      eventBus.emit('app:navigate', { view: 'user', source: 'register:success' });
       return;
     } catch (error) {
       console.error('Erro ao criar cadastro pelo painel dedicado.', error);
