@@ -23,7 +23,7 @@ async function importRegisterView() {
   return import('../scripts/views/register.js');
 }
 
-test('renderRegisterPanel navega automaticamente para o painel do usuário após cadastro', async (t) => {
+test('renderRegisterPanel exibe mensagem de sucesso e navega apenas após ação do usuário', async (t) => {
   const restoreDom = setupFakeDom();
   globalThis.window = {};
   if (typeof HTMLElement !== 'undefined') {
@@ -76,9 +76,22 @@ test('renderRegisterPanel navega automaticamente para o painel do usuário após
   await new Promise((resolve) => setTimeout(resolve, 0));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
+  assert.equal(emittedEvents.length, 0, 'fluxo de sucesso não deve navegar automaticamente');
+
+  assert.equal(viewRoot.dataset.view, 'register-success', 'visão deve indicar estado de sucesso');
+  assert.ok(
+    viewRoot.className.includes('register-view--success'),
+    'classe de sucesso deve ser aplicada ao contêiner',
+  );
+
+  const successButton = viewRoot.querySelector('.register-success__action--primary');
+  assert.ok(successButton, 'botão principal de sucesso deve estar disponível para navegação');
+
+  successButton.dispatchEvent({ type: 'click' });
+
   assert.ok(
     emittedEvents.some((payload) => payload && payload.view === 'user'),
-    'cadastro bem-sucedido deve emitir navegação para o painel do usuário',
+    'navegação deve ocorrer quando o usuário aciona o botão de sucesso',
   );
 
   const activeUserId = typeof getActiveUserId === 'function' ? getActiveUserId() : null;
