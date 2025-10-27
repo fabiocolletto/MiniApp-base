@@ -1,3 +1,54 @@
+let msalLoader = null;
+
+function ensureMsalScript() {
+  if (window.msal) {
+    return Promise.resolve(window.msal);
+  }
+
+  if (!msalLoader) {
+    msalLoader = new Promise((resolve, reject) => {
+      let script = document.querySelector('script[data-msal]');
+
+      const cleanup = () => {
+        if (script) {
+          script.removeEventListener('load', onLoad);
+          script.removeEventListener('error', onError);
+        }
+      };
+
+      const onLoad = () => {
+        cleanup();
+        resolve(window.msal);
+      };
+
+      const onError = () => {
+        cleanup();
+        msalLoader = null;
+        reject(new Error('MSAL script failed to load'));
+      };
+
+      if (!script) {
+        script = document.createElement('script');
+        script.src = 'https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js';
+        script.async = true;
+        script.defer = true;
+        script.setAttribute('data-msal', '1');
+      }
+
+      script.addEventListener('load', onLoad, { once: true });
+      script.addEventListener('error', onError, { once: true });
+
+      if (!script.isConnected) {
+        document.head.appendChild(script);
+      } else if (script.readyState === 'complete' || script.readyState === 'loaded') {
+        onLoad();
+      }
+    });
+  }
+
+  return msalLoader;
+}
+
 const tpl = document.createElement('template');
 tpl.innerHTML = `
   <style>
@@ -56,14 +107,9 @@ class SocialAuth extends HTMLElement {
       document.head.appendChild(s);
     }
     // MSAL (Microsoft Identity)
-    if (!document.querySelector('script[data-msal]')) {
-      const s2 = document.createElement('script');
-      s2.src = 'https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js';
-      s2.async = true;
-      s2.defer = true;
-      s2.setAttribute('data-msal', '1');
-      document.head.appendChild(s2);
-    }
+    ensureMsalScript().catch((err) => {
+      console.error('Falha ao preparar MSAL', err);
+    });
   }
 
   // --- Google: ID token (OIDC) via GIS ---
@@ -108,12 +154,23 @@ class SocialAuth extends HTMLElement {
 
   // --- Microsoft: OIDC via MSAL popup ---
   async microsoft() {
+    this.setHint('Preparando login Microsoft...');
+
+    let msalLib;
+    try {
+      msalLib = await ensureMsalScript();
+    } catch (error) {
+      console.error('MSAL indisponível', error);
+      return this.setHint('Não foi possível carregar o login Microsoft. Verifique sua conexão e permissões.');
+    }
+
     const cid = window.__ENV__?.MSAL_CLIENT_ID;
     const tenant = window.__ENV__?.MSAL_TENANT_ID || 'common';
-    if (!cid || !window.msal) {
+    if (!cid || !msalLib) {
       return this.setHint('Microsoft indisponível. Verifique env.js e permissões.');
     }
-    const { PublicClientApplication } = window.msal;
+    const { PublicClientApplication } = msalLib;
+    this.setHint('');
     const msalConfig = {
       auth: { clientId: cid, authority: `https://login.microsoftonline.com/${tenant}`, redirectUri: location.origin },
       cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
