@@ -12,6 +12,8 @@ import '../../src/ui/components/social-auth.js';
 
 const BASE_CLASSES = 'card view auth-view view--login';
 const BRAZIL_COUNTRY_CODE = '55';
+const INVALID_CREDENTIALS_MESSAGE =
+  'Telefone ou senha inválidos. Verifique os dados e tente novamente.';
 
 const isBrazilianCode = (code) => code === BRAZIL_COUNTRY_CODE || code === '';
 
@@ -251,16 +253,25 @@ export function renderLoginPanel(viewRoot) {
         phone: phoneValue,
         password: passwordValue,
       });
-      setActiveUser(authenticatedUser?.id);
+      const authenticatedUserId = authenticatedUser?.id;
+
+      if (authenticatedUserId == null) {
+        showFeedback(INVALID_CREDENTIALS_MESSAGE, { isError: true });
+        submitButton.disabled = false;
+        submitButton.removeAttribute('aria-busy');
+        return;
+      }
+
+      setActiveUser(authenticatedUserId);
 
       if (
-        authenticatedUser?.id != null &&
+        authenticatedUserId != null &&
         typeof deviceInfo === 'string' &&
         deviceInfo &&
         deviceInfo !== authenticatedUser.device
       ) {
         try {
-          await updateUser(authenticatedUser.id, { device: deviceInfo });
+          await updateUser(authenticatedUserId, { device: deviceInfo });
         } catch (updateError) {
           console.warn('Não foi possível atualizar o dispositivo do usuário autenticado.', updateError);
         }
