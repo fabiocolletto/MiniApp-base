@@ -4,6 +4,7 @@ import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 import { validatePasswordStrength, validatePhoneParts, formatPhoneNumberForDisplay } from './shared/validation.js';
+import '../../src/ui/components/social-auth.js';
 
 const BASE_CLASSES = 'card view auth-view view--register';
 
@@ -241,6 +242,8 @@ export function renderRegisterPanel(viewRoot) {
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
+  const socialAuth = document.createElement('social-auth');
+
   const loginRedirect = document.createElement('p');
   loginRedirect.className = 'auth-panel__redirect';
 
@@ -406,7 +409,7 @@ export function renderRegisterPanel(viewRoot) {
     updateLegalControls();
   });
 
-  form.append(phoneField, passwordField, legalSection, submitButton, feedback, loginRedirect);
+  form.append(phoneField, passwordField, legalSection, submitButton, feedback, socialAuth, loginRedirect);
 
   viewRoot.setAttribute('aria-label', 'Painel de cadastro');
   viewRoot.replaceChildren(form);

@@ -8,6 +8,7 @@ import {
   sanitizeLocalPhoneNumber,
   validatePhoneParts,
 } from './shared/validation.js';
+import '../../src/ui/components/social-auth.js';
 
 const BASE_CLASSES = 'card view auth-view view--login';
 const BRAZIL_COUNTRY_CODE = '55';
@@ -155,6 +156,8 @@ export function renderLoginPanel(viewRoot) {
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
+  const socialAuth = document.createElement('social-auth');
+
   const registerRedirect = document.createElement('p');
   registerRedirect.className = 'auth-panel__redirect';
 
@@ -292,7 +295,7 @@ export function renderLoginPanel(viewRoot) {
     submitButton.removeAttribute('aria-busy');
   });
 
-  form.append(phoneField, passwordField, submitButton, feedback, registerRedirect);
+  form.append(phoneField, passwordField, submitButton, feedback, socialAuth, registerRedirect);
 
   viewRoot.setAttribute('aria-label', 'Painel de login');
   viewRoot.replaceChildren(form);
