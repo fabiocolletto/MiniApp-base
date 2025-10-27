@@ -99,8 +99,29 @@
     .auth-dialog__title{ margin:0; font:600 18px/1.3 system-ui, sans-serif; color:var(--txt); }
     .auth-dialog__close{ border:none; background:transparent; font-size:24px; line-height:1; color:var(--muted); cursor:pointer; border-radius:8px; width:32px; height:32px; display:grid; place-items:center; }
     .auth-dialog__close:focus-visible{ outline:2px solid var(--p); outline-offset:2px; }
-    .auth-dialog__body{ overflow:auto; padding-right:4px; }
+    .auth-dialog__body{
+      display:flex;
+      flex-direction:column;
+      overflow:auto;
+      padding:clamp(16px, 2.4vw, 24px);
+      padding-right:calc(clamp(16px, 2.4vw, 24px) - 4px);
+      gap:clamp(12px, 2vw, 20px);
+      box-sizing:border-box;
+    }
     .auth-dialog__view{ min-width:0; }
+    .auth-dialog__body > .auth-dialog__view{
+      flex:1;
+      display:grid;
+      align-content:start;
+    }
+    .auth-dialog__body > .view--login,
+    .auth-dialog__body > .view--register{
+      min-height:auto;
+      grid-template-rows:minmax(0, max-content);
+      justify-items:center;
+      gap:clamp(0.65rem, 2.2vw, 1rem);
+      padding-block:clamp(1rem, 2.4vw, 1.6rem);
+    }
     body.auth-dialog--open{ overflow:hidden; }
   </style>
 
