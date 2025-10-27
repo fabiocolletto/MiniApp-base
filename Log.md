@@ -1,5 +1,9 @@
 # Log
 
+## v0.1.271 - 2025-10-26 17:44 BRT
+- Remove o widget de cadastro de provas do painel, mantendo apenas a visualização e seleção das avaliações existentes.
+- Limita a altura do widget de visualização a até 70% da área disponível para evitar que a prévia ocupe todo o painel.
+
 ## v0.1.270 - 2025-10-26 17:03 BRT
 - Remove os botões de impressão do widget Planejamento da avaliação, mantendo apenas a prévia padrão exibida.
 - Mantém o formulário de cadastro sempre visível ao retirar o botão "Cadastrar nova prova" do cabeçalho do widget.
