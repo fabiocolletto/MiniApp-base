@@ -385,7 +385,6 @@ export function renderRegisterPanel(viewRoot) {
         userType: 'usuario',
       });
       setActiveUser(savedUser?.id);
-      eventBus.emit('app:navigate', { view: 'user' });
       isSubmitting = false;
       submitButton.removeAttribute('aria-busy');
       renderRegisterSuccess(viewRoot, savedUser);
