@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.274 - 2025-10-27 06:35 BRT
+- Habilita política de sincronização Local-Only com persistência em `localStorage` e gerenciador de políticas reativo.
+- Adiciona stubs seguros dos providers Google Drive e OneDrive preparando inicialização e limpeza de tokens futuros.
+- Cria toggle Multidispositivos nas personalizações do painel do usuário e ativa o worker de sincronização conforme a política vigente.
+
 ## v0.1.273 - 2025-10-27 06:22 BRT
 - Expande o modal base de miniapps em desktops para ocupar toda a área útil, removendo bordas e sombras supérfluas.
 - Atualiza o shell para sinalizar modais de miniapps com classe dedicada e garantir que o painel detalhe herde o layout amplo.

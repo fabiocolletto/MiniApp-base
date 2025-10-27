@@ -3,6 +3,7 @@ import { router } from '../router/index.js';
 import { initializeAppShell, showSplash } from '../ui/app-shell.js';
 import { initializeTheme } from '../scripts/theme/theme-manager.js';
 import { logError } from '../sys/tools/log.js';
+import '../src/core/sync/worker.js';
 
 (async () => {
   initializeTheme();

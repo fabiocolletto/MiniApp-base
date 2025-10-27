@@ -45,6 +45,7 @@ import {
   subscribeTasks as subscribeDashboardTasks,
 } from '../../core/task-store.js';
 import { DEFAULT_TASKS } from '../data/task-dashboard-defaults.js';
+import '../../src/ui/components/multi-device-toggle.js';
 
 const BASE_CLASSES = 'card view dashboard-view view--user user-dashboard';
 
@@ -559,6 +560,17 @@ export function renderUserPanel(viewRoot) {
     collapsible: false,
   });
   const themeActionList = themeSectionControls.actionList;
+
+  const multiDeviceToggle = document.createElement('multi-device-toggle');
+  const themeContent = themeSectionControls.content;
+  const actionsWrapper = themeSectionControls.actionsWrapper;
+  const contentIsElement = Boolean(HTMLElementRef && themeContent instanceof HTMLElementRef);
+  const wrapperElement = HTMLElementRef && actionsWrapper instanceof HTMLElementRef ? actionsWrapper : null;
+  if (contentIsElement && typeof themeContent.insertBefore === 'function' && wrapperElement) {
+    themeContent.insertBefore(multiDeviceToggle, wrapperElement);
+  } else if (themeContent && typeof themeContent.append === 'function') {
+    themeContent.append(multiDeviceToggle);
+  }
 
   const accessSectionControls = createQuickActionsWidget({
     id: 'access',
