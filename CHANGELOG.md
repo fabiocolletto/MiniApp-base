@@ -6,3 +6,4 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 ## [Unreleased]
 - Estrutura inicial de automação do log criada.
 - Documentado o procedimento de integração da página `/miniapps/` no WordPress com Elementor.
+- Exposta a instância global de roteador para habilitar a navegação dos botões da tela inicial.
