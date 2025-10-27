@@ -129,6 +129,22 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   }
 }
 
+.exam-dashboard__preview-trigger {
+  inline-size: 100%;
+}
+
+@media (min-width: 40rem) {
+  .exam-dashboard__preview-trigger {
+    inline-size: auto;
+  }
+}
+
+@media (min-width: 48rem) {
+  .exam-dashboard__preview-trigger {
+    display: none;
+  }
+}
+
 .exam-dashboard__preview-toolbar-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-soft);
@@ -185,6 +201,76 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   background: var(--color-surface-neutral);
   color: var(--color-text-soft);
   font-size: var(--font-size-sm);
+}
+
+.exam-dashboard__preview-modal {
+  padding: 0;
+}
+
+.app-modal__panel.exam-dashboard__preview-panel {
+  width: 100%;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--color-bg-base);
+  padding: var(--space-lg);
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-rows: auto 1fr;
+}
+
+@media (min-width: 40rem) {
+  .app-modal__panel.exam-dashboard__preview-panel {
+    padding: var(--space-xl);
+  }
+}
+
+.exam-dashboard__preview-modal-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.exam-dashboard__preview-modal-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.exam-dashboard__preview-modal-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-strong);
+}
+
+.exam-dashboard__preview-nav {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.exam-dashboard__preview-nav-button {
+  min-inline-size: 7rem;
+}
+
+.exam-dashboard__preview-modal-content {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: auto;
+}
+
+.exam-dashboard__preview-modal-content .exam-dashboard__preview-section {
+  min-block-size: 100%;
+}
+
+.exam-dashboard__preview-modal-content iframe {
+  inline-size: 100%;
+  block-size: 100%;
 }
 
 .exam-dashboard__status-badge {
@@ -2333,6 +2419,18 @@ export function renderExamDashboard(viewRoot) {
   let selectionCloseButton = null;
   let selectionFocusRestorer = null;
   let isSelectionModalOpen = false;
+  let previewTriggerButton = null;
+  let previewModal = null;
+  let previewBackdrop = null;
+  let previewCloseButton = null;
+  let previewPrevButton = null;
+  let previewNextButton = null;
+  let previewModalContent = null;
+  let previewModalTitle = null;
+  let previewFocusRestorer = null;
+  let isPreviewModalOpen = false;
+  let mobileViewportQuery = null;
+  let lastVisibleExams = [];
 
   viewRoot.className = BASE_CLASSES;
   viewRoot.setAttribute('aria-label', 'Painel de provas do MiniApp Criador de Provas');
@@ -2436,11 +2534,23 @@ export function renderExamDashboard(viewRoot) {
 
   const selectionStatusMessage = createMessageElement('exam-dashboard__selection-message');
 
-  selectionControls.append(selectionStatusMessage);
+  const previewTriggerButtonElement = document.createElement('button');
+  previewTriggerButtonElement.type = 'button';
+  previewTriggerButtonElement.className = 'button button--primary exam-dashboard__preview-trigger';
+  previewTriggerButtonElement.textContent = 'Visualizar prova';
+  previewTriggerButtonElement.setAttribute('aria-haspopup', 'dialog');
+  previewTriggerButtonElement.setAttribute('aria-expanded', 'false');
+  previewTriggerButtonElement.disabled = true;
+  previewTriggerButtonElement.setAttribute('aria-disabled', 'true');
+  previewTriggerButtonElement.hidden = true;
+
+  selectionControls.append(selectionStatusMessage, previewTriggerButtonElement);
 
   headerSection.append(selectionControls);
 
   previewRow.append(previewMessage, previewSection);
+
+  previewTriggerButton = previewTriggerButtonElement;
 
   const listItems = document.createElement('ul');
   listItems.className = 'exam-dashboard__list-items';
@@ -2497,11 +2607,83 @@ export function renderExamDashboard(viewRoot) {
   selectionModal = selectionModalElement;
   selectionCloseButton = selectionCloseButtonElement;
 
+  const previewTitleId = `exam-dashboard-preview-title-${Math.random().toString(36).slice(2, 8)}`;
+  const previewBackdropElement = document.createElement('div');
+  previewBackdropElement.className = 'app-modal-backdrop exam-dashboard__preview-backdrop';
+  previewBackdropElement.hidden = true;
+
+  const previewModalElement = document.createElement('div');
+  previewModalElement.className = 'app-modal exam-dashboard__preview-modal';
+  previewModalElement.hidden = true;
+  previewModalElement.id = `exam-dashboard-preview-${Math.random().toString(36).slice(2, 8)}`;
+  previewModalElement.setAttribute('role', 'dialog');
+  previewModalElement.setAttribute('aria-modal', 'true');
+  previewModalElement.setAttribute('aria-hidden', 'true');
+  previewModalElement.setAttribute('aria-labelledby', previewTitleId);
+
+  const previewPanel = document.createElement('div');
+  previewPanel.className = 'app-modal__panel exam-dashboard__preview-panel layout-stack layout-stack--lg';
+
+  const previewHeader = document.createElement('div');
+  previewHeader.className = 'exam-dashboard__preview-modal-header';
+
+  const previewTitle = document.createElement('h3');
+  previewTitle.className = 'exam-dashboard__preview-modal-title';
+  previewTitle.id = previewTitleId;
+  previewTitle.textContent = 'Visualização da prova';
+
+  const previewActions = document.createElement('div');
+  previewActions.className = 'exam-dashboard__preview-modal-actions';
+
+  const previewNav = document.createElement('div');
+  previewNav.className = 'exam-dashboard__preview-nav';
+
+  const previewPrevButtonElement = document.createElement('button');
+  previewPrevButtonElement.type = 'button';
+  previewPrevButtonElement.className = 'button button--secondary exam-dashboard__preview-nav-button';
+  previewPrevButtonElement.textContent = 'Anterior';
+
+  const previewNextButtonElement = document.createElement('button');
+  previewNextButtonElement.type = 'button';
+  previewNextButtonElement.className = 'button button--secondary exam-dashboard__preview-nav-button';
+  previewNextButtonElement.textContent = 'Próxima';
+
+  previewNav.append(previewPrevButtonElement, previewNextButtonElement);
+
+  const previewCloseButtonElement = document.createElement('button');
+  previewCloseButtonElement.type = 'button';
+  previewCloseButtonElement.className = 'app-modal__close exam-dashboard__preview-close';
+  previewCloseButtonElement.setAttribute('aria-label', 'Fechar visualização da prova');
+  previewCloseButtonElement.textContent = 'Fechar';
+
+  previewActions.append(previewNav, previewCloseButtonElement);
+  previewHeader.append(previewTitle, previewActions);
+
+  const previewModalContentElement = document.createElement('div');
+  previewModalContentElement.className = 'exam-dashboard__preview-modal-content';
+
+  previewPanel.append(previewHeader, previewModalContentElement);
+  previewModalElement.append(previewPanel);
+
+  previewBackdrop = previewBackdropElement;
+  previewModal = previewModalElement;
+  previewCloseButton = previewCloseButtonElement;
+  previewPrevButton = previewPrevButtonElement;
+  previewNextButton = previewNextButtonElement;
+  previewModalContent = previewModalContentElement;
+  previewModalTitle = previewTitle;
+
+  if (previewTriggerButton instanceof HTMLButtonElement) {
+    previewTriggerButton.setAttribute('aria-controls', previewModalElement.id);
+  }
+
   layout.append(
     headerSection,
     previewRow,
     selectionBackdropElement,
     selectionModalElement,
+    previewBackdropElement,
+    previewModalElement,
   );
 
   function parseMaxDurationValue(value) {
@@ -2602,6 +2784,265 @@ export function renderExamDashboard(viewRoot) {
 
     if (fields.durationMinutes instanceof HTMLInputElement) {
       fields.durationMinutes.value = filterState.maxDuration !== null ? String(filterState.maxDuration) : '';
+    }
+  }
+
+  function handleMobileViewportChange(event) {
+    const isMobile = Boolean(event?.matches);
+
+    if (previewSection instanceof HTMLElement) {
+      previewSection.hidden = isMobile;
+      previewSection.setAttribute('aria-hidden', isMobile ? 'true' : 'false');
+    }
+
+    if (previewTriggerButton instanceof HTMLButtonElement) {
+      previewTriggerButton.hidden = !isMobile;
+      if (!isMobile) {
+        previewTriggerButton.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    if (!isMobile && isPreviewModalOpen) {
+      closePreviewModal({ restoreFocus: false });
+    }
+  }
+
+  function setupMobileViewportWatcher() {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      handleMobileViewportChange({ matches: false });
+      return;
+    }
+
+    mobileViewportQuery = window.matchMedia('(max-width: 47.99rem)');
+    handleMobileViewportChange(mobileViewportQuery);
+
+    const listener = (event) => {
+      handleMobileViewportChange(event);
+    };
+
+    if (typeof mobileViewportQuery.addEventListener === 'function') {
+      mobileViewportQuery.addEventListener('change', listener);
+      cleanupCallbacks.push(() => {
+        try {
+          mobileViewportQuery.removeEventListener('change', listener);
+        } catch (error) {
+          console.error('Não foi possível remover o listener de viewport móvel.', error);
+        }
+      });
+    } else if (typeof mobileViewportQuery.addListener === 'function') {
+      mobileViewportQuery.addListener(listener);
+      cleanupCallbacks.push(() => {
+        try {
+          mobileViewportQuery.removeListener(listener);
+        } catch (error) {
+          console.error('Não foi possível remover o listener legado de viewport móvel.', error);
+        }
+      });
+    }
+  }
+
+  function updatePreviewTriggerState(visibleExams = lastVisibleExams) {
+    const hasExams = Array.isArray(visibleExams) && visibleExams.length > 0;
+
+    if (previewTriggerButton instanceof HTMLButtonElement) {
+      previewTriggerButton.disabled = !hasExams;
+      if (hasExams) {
+        previewTriggerButton.removeAttribute('aria-disabled');
+      } else {
+        previewTriggerButton.setAttribute('aria-disabled', 'true');
+      }
+    }
+  }
+
+  function updatePreviewNavigation(visibleExams = lastVisibleExams) {
+    const exams = Array.isArray(visibleExams) ? visibleExams : [];
+    const currentIndex = exams.findIndex((exam) => exam.id === selectedExamId);
+    const hasExam = currentIndex !== -1;
+
+    if (previewPrevButton instanceof HTMLButtonElement) {
+      previewPrevButton.disabled = !hasExam || currentIndex <= 0;
+    }
+
+    if (previewNextButton instanceof HTMLButtonElement) {
+      previewNextButton.disabled = !hasExam || currentIndex >= exams.length - 1;
+    }
+
+    if (previewModalTitle instanceof HTMLElement) {
+      previewModalTitle.textContent = hasExam
+        ? `Visualizando: ${exams[currentIndex].title}`
+        : 'Visualização da prova';
+    }
+
+    if (!hasExam && isPreviewModalOpen) {
+      closePreviewModal({ restoreFocus: false });
+    }
+  }
+
+  function goToAdjacentExam(step) {
+    if (!Number.isInteger(step) || step === 0) {
+      return;
+    }
+
+    const exams = Array.isArray(lastVisibleExams) ? lastVisibleExams : [];
+    if (exams.length === 0) {
+      return;
+    }
+
+    const currentIndex = exams.findIndex((exam) => exam.id === selectedExamId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const nextIndex = currentIndex + step;
+    if (nextIndex < 0 || nextIndex >= exams.length) {
+      return;
+    }
+
+    selectExam(exams[nextIndex].id, exams);
+  }
+
+  function handlePreviewKeydown(event) {
+    if (event?.key === 'Escape') {
+      event.preventDefault();
+      closePreviewModal();
+      return;
+    }
+
+    if (event?.key === 'ArrowRight') {
+      event.preventDefault();
+      goToAdjacentExam(1);
+      return;
+    }
+
+    if (event?.key === 'ArrowLeft') {
+      event.preventDefault();
+      goToAdjacentExam(-1);
+    }
+  }
+
+  function closePreviewModal(options = {}) {
+    const { restoreFocus = true } = options;
+
+    if (!isPreviewModalOpen) {
+      return;
+    }
+
+    isPreviewModalOpen = false;
+
+    if (previewBackdrop instanceof HTMLElement) {
+      previewBackdrop.classList.remove('app-modal-backdrop--visible');
+      previewBackdrop.hidden = true;
+    }
+
+    if (previewModal instanceof HTMLElement) {
+      previewModal.hidden = true;
+      previewModal.setAttribute('aria-hidden', 'true');
+    }
+
+    if (previewTriggerButton instanceof HTMLButtonElement) {
+      previewTriggerButton.setAttribute('aria-expanded', 'false');
+    }
+
+    if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
+      document.removeEventListener('keydown', handlePreviewKeydown);
+    }
+
+    const focusTarget = restoreFocus ? previewFocusRestorer : null;
+    previewFocusRestorer = null;
+
+    if (focusTarget instanceof HTMLElement) {
+      try {
+        focusTarget.focus();
+      } catch (error) {
+        console.error('Não foi possível restaurar o foco após fechar a visualização da prova.', error);
+      }
+    }
+  }
+
+  function openPreviewModal() {
+    if (!(previewModal instanceof HTMLElement) || !(previewBackdrop instanceof HTMLElement)) {
+      return;
+    }
+
+    const exams = Array.isArray(lastVisibleExams) ? lastVisibleExams : [];
+    if (exams.length === 0) {
+      return;
+    }
+
+    let selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
+    if (!selectedExam && exams[0]) {
+      selectExam(exams[0].id, exams);
+      selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
+    }
+
+    if (!selectedExam) {
+      return;
+    }
+
+    const activeElement = typeof document !== 'undefined' ? document.activeElement : null;
+    previewFocusRestorer = activeElement instanceof HTMLElement ? activeElement : null;
+
+    renderExamPreview(previewModalContent, selectedExam, questionMap);
+    updatePreviewNavigation(exams);
+
+    isPreviewModalOpen = true;
+
+    previewBackdrop.hidden = false;
+    previewBackdrop.classList.add('app-modal-backdrop--visible');
+
+    previewModal.hidden = false;
+    previewModal.setAttribute('aria-hidden', 'false');
+
+    if (previewTriggerButton instanceof HTMLButtonElement) {
+      previewTriggerButton.setAttribute('aria-expanded', 'true');
+    }
+
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('keydown', handlePreviewKeydown);
+    }
+
+    const focusTarget =
+      previewNav instanceof HTMLElement && previewNav.querySelector
+        ? previewNav.querySelector('.exam-dashboard__preview-nav-button:not([disabled])') || previewCloseButton
+        : previewCloseButton;
+
+    if (focusTarget instanceof HTMLElement) {
+      try {
+        focusTarget.focus();
+      } catch (error) {
+        console.error('Não foi possível focar o controle da visualização da prova.', error);
+      }
+    }
+  }
+
+  function handlePreviewTriggerClick(event) {
+    event.preventDefault();
+    openPreviewModal();
+  }
+
+  function handlePreviewPrevious(event) {
+    event.preventDefault();
+    goToAdjacentExam(-1);
+  }
+
+  function handlePreviewNext(event) {
+    event.preventDefault();
+    goToAdjacentExam(1);
+  }
+
+  function handlePreviewClose(event) {
+    event.preventDefault();
+    closePreviewModal();
+  }
+
+  function handlePreviewBackdropClick(event) {
+    event.preventDefault();
+    closePreviewModal();
+  }
+
+  function handlePreviewModalClick(event) {
+    if (event?.target === previewModal) {
+      closePreviewModal();
     }
   }
 
@@ -2736,17 +3177,27 @@ export function renderExamDashboard(viewRoot) {
     applyFiltersToFormDefaults();
   }
 
-  function selectExam(examId) {
-    const visibleExams = getFilteredExams();
-    if (!examId || !visibleExams.some((exam) => exam.id === examId)) {
-      selectedExamId = visibleExams[0]?.id ?? null;
+  function selectExam(examId, visibleExams = lastVisibleExams) {
+    const exams = Array.isArray(visibleExams) ? visibleExams : getFilteredExams();
+
+    if (!examId || !exams.some((exam) => exam.id === examId)) {
+      selectedExamId = exams[0]?.id ?? null;
     } else {
       selectedExamId = examId;
     }
+
     updateMessageElement(previewMessage, null, '');
+
     const selectedExam = currentExams.find((exam) => exam.id === selectedExamId) ?? null;
     renderExamPreview(previewSection, selectedExam, questionMap);
+
+    if (previewModalContent instanceof HTMLElement) {
+      renderExamPreview(previewModalContent, selectedExam, questionMap);
+    }
+
     updateListSelection();
+    updatePreviewNavigation(exams);
+    updatePreviewTriggerState(exams);
   }
 
   function updateListSelection() {
@@ -2767,6 +3218,7 @@ export function renderExamDashboard(viewRoot) {
     const filtered = getFilteredExams();
 
     if (!Array.isArray(filtered) || filtered.length === 0) {
+      lastVisibleExams = [];
       const empty = document.createElement('li');
       empty.className = 'exam-dashboard__list-empty';
       empty.textContent =
@@ -2774,17 +3226,19 @@ export function renderExamDashboard(viewRoot) {
           ? 'Nenhuma prova cadastrada ainda. Cadastre novas avaliações no fluxo principal para acompanhá-las aqui.'
           : 'Nenhuma prova atende ao contexto selecionado. Ajuste os filtros acima para visualizar outras avaliações.';
       listItems.append(empty);
-      selectExam(null);
+      selectExam(null, lastVisibleExams);
       return;
     }
 
     const sorted = sortExamsForList(filtered);
 
+    lastVisibleExams = sorted;
+
     sorted.forEach((exam) => {
       const { item, button } = createExamListItem(exam, {
         isSelected: exam.id === selectedExamId,
         onSelect: (examId) => {
-          selectExam(examId);
+          selectExam(examId, sorted);
           closeSelectionModal();
         },
       });
@@ -2796,7 +3250,7 @@ export function renderExamDashboard(viewRoot) {
       selectedExamId = sorted[0].id;
     }
 
-    selectExam(selectedExamId);
+    selectExam(selectedExamId, sorted);
   }
 
   function handleSubmit(event) {
@@ -2955,6 +3409,48 @@ export function renderExamDashboard(viewRoot) {
   form.addEventListener('submit', handleSubmit);
   cancelButton.addEventListener('click', handleCancel);
 
+  if (previewTriggerButton instanceof HTMLButtonElement) {
+    previewTriggerButton.addEventListener('click', handlePreviewTriggerClick);
+    cleanupCallbacks.push(() => {
+      previewTriggerButton.removeEventListener('click', handlePreviewTriggerClick);
+    });
+  }
+
+  if (previewPrevButton instanceof HTMLButtonElement) {
+    previewPrevButton.addEventListener('click', handlePreviewPrevious);
+    cleanupCallbacks.push(() => {
+      previewPrevButton.removeEventListener('click', handlePreviewPrevious);
+    });
+  }
+
+  if (previewNextButton instanceof HTMLButtonElement) {
+    previewNextButton.addEventListener('click', handlePreviewNext);
+    cleanupCallbacks.push(() => {
+      previewNextButton.removeEventListener('click', handlePreviewNext);
+    });
+  }
+
+  if (previewCloseButton instanceof HTMLElement) {
+    previewCloseButton.addEventListener('click', handlePreviewClose);
+    cleanupCallbacks.push(() => {
+      previewCloseButton.removeEventListener('click', handlePreviewClose);
+    });
+  }
+
+  if (previewBackdrop instanceof HTMLElement) {
+    previewBackdrop.addEventListener('click', handlePreviewBackdropClick);
+    cleanupCallbacks.push(() => {
+      previewBackdrop.removeEventListener('click', handlePreviewBackdropClick);
+    });
+  }
+
+  if (previewModal instanceof HTMLElement) {
+    previewModal.addEventListener('click', handlePreviewModalClick);
+    cleanupCallbacks.push(() => {
+      previewModal.removeEventListener('click', handlePreviewModalClick);
+    });
+  }
+
   if (selectionCloseButton instanceof HTMLElement) {
     selectionCloseButton.addEventListener('click', handleSelectionClose);
     cleanupCallbacks.push(() => {
@@ -2981,8 +3477,10 @@ export function renderExamDashboard(viewRoot) {
     cancelButton.removeEventListener('click', handleCancel);
     if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
       document.removeEventListener('keydown', handleSelectionKeydown);
+      document.removeEventListener('keydown', handlePreviewKeydown);
     }
     closeSelectionModal({ restoreFocus: false });
+    closePreviewModal({ restoreFocus: false });
   });
 
   registerViewCleanup(viewRoot, () => {
@@ -3002,6 +3500,8 @@ export function renderExamDashboard(viewRoot) {
 
   syncFiltersFromControls();
   applyFiltersToFormDefaults();
+
+  setupMobileViewportWatcher();
 
   viewRoot.replaceChildren(styleElement, layout);
 

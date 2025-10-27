@@ -47,72 +47,10 @@ const DEFAULT_MINI_APPS = [
   },
 ];
 
-const LEGACY_DEFAULT_MINI_APPS = Object.freeze([
-  {
-    id: 'time-tracker',
-    name: 'Time Tracker',
-    category: 'Produtividade',
-    description:
-      'Monitore jornadas, exporte relatórios completos e mantenha a equipe sincronizada com as regras do painel administrativo.',
-    status: 'active',
-    updatedAt: '2025-10-12T18:00:00-03:00',
-    access: ['administrador', 'colaborador'],
-    version: '1.8.0',
-    downloads: 12840,
-    favorites: 9420,
-    releaseDate: '2024-05-10T09:00:00-03:00',
-    featuredCategories: ['Produtividade', 'Gestão de tempo'],
-    icon: null,
-  },
-  {
-    id: 'field-forms',
-    name: 'Field Forms',
-    category: 'Operações',
-    description:
-      'Colete dados em campo mesmo offline, centralize anexos e acompanhe revisões em tempo real a partir do painel.',
-    status: 'testing',
-    updatedAt: '2025-10-18T09:30:00-03:00',
-    access: ['administrador'],
-    version: '3.2.1',
-    downloads: 8640,
-    favorites: 5120,
-    releaseDate: '2023-11-03T11:30:00-03:00',
-    featuredCategories: ['Operações', 'Coleta em campo'],
-    icon: null,
-  },
-  {
-    id: 'insights-hub',
-    name: 'Insights Hub',
-    category: 'Analytics',
-    description:
-      'Combine métricas de diferentes mini-apps, configure alertas inteligentes e acompanhe o avanço da implantação.',
-    status: 'deployment',
-    updatedAt: '2025-10-20T14:45:00-03:00',
-    access: ['administrador', 'colaborador', 'usuario'],
-    version: '0.9.5',
-    downloads: 4760,
-    favorites: 3980,
-    releaseDate: '2024-07-22T15:15:00-03:00',
-    featuredCategories: ['Analytics', 'Gestão'],
-    icon: null,
-  },
-  {
-    id: 'task-manager',
-    name: 'Gestor de tarefas',
-    category: 'Produtividade',
-    description:
-      'Organize o backlog, acompanhe indicadores de execução e detalhe cada entrega com checklists contextualizados.',
-    status: 'active',
-    updatedAt: '2025-10-25T15:03:00-03:00',
-    access: ['administrador', 'colaborador', 'usuario'],
-    version: '0.1.234',
-    downloads: 3280,
-    favorites: 2840,
-    releaseDate: '2025-10-25T15:03:00-03:00',
-    featuredCategories: ['Produtividade', 'Gestão de tarefas'],
-    icon: null,
-  },
-]);
+export const REMOVED_LEGACY_MINI_APP_IDS = Object.freeze(['time-tracker', 'field-forms', 'insights-hub']);
+
+const REMOVED_LEGACY_MINI_APP_IDS_SET = new Set(REMOVED_LEGACY_MINI_APP_IDS);
+const LEGACY_TASK_MANAGER_NAMES = new Set(['gestor de tarefas']);
 
 const listeners = new Set();
 let miniApps = null;
@@ -340,54 +278,6 @@ function normalizeMiniAppEntry(app) {
   };
 }
 
-const LEGACY_DEFAULT_MINI_APPS_NORMALIZED = LEGACY_DEFAULT_MINI_APPS.map((entry) =>
-  normalizeMiniAppEntry(entry),
-).filter((entry) => entry !== null);
-
-function areStringArraysEqual(a, b) {
-  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
-    return false;
-  }
-
-  return a.every((value, index) => value === b[index]);
-}
-
-function isLegacyDefaultMiniAppSnapshot(snapshot) {
-  if (!Array.isArray(snapshot) || snapshot.length !== LEGACY_DEFAULT_MINI_APPS_NORMALIZED.length) {
-    return false;
-  }
-
-  const normalizedSnapshot = snapshot
-    .map((entry) => normalizeMiniAppEntry(entry))
-    .filter((entry) => entry !== null);
-
-  if (normalizedSnapshot.length !== LEGACY_DEFAULT_MINI_APPS_NORMALIZED.length) {
-    return false;
-  }
-
-  return LEGACY_DEFAULT_MINI_APPS_NORMALIZED.every((legacyEntry) => {
-    const candidate = normalizedSnapshot.find((entry) => entry.id === legacyEntry.id);
-    if (!candidate) {
-      return false;
-    }
-
-    return (
-      candidate.name === legacyEntry.name &&
-      candidate.category === legacyEntry.category &&
-      candidate.description === legacyEntry.description &&
-      candidate.status === legacyEntry.status &&
-      candidate.updatedAt === legacyEntry.updatedAt &&
-      areStringArraysEqual(candidate.access, legacyEntry.access) &&
-      candidate.version === legacyEntry.version &&
-      candidate.downloads === legacyEntry.downloads &&
-      candidate.favorites === legacyEntry.favorites &&
-      candidate.releaseDate === legacyEntry.releaseDate &&
-      areStringArraysEqual(candidate.featuredCategories, legacyEntry.featuredCategories) &&
-      candidate.icon === legacyEntry.icon
-    );
-  });
-}
-
 function cloneMiniAppEntry(entry) {
   return {
     id: entry.id,
@@ -412,6 +302,52 @@ const DEFAULT_MINI_APPS_NORMALIZED = DEFAULT_MINI_APPS.map((entry) => normalizeM
   (entry) => entry !== null,
 );
 
+function isLegacyPlaceholderMiniApp(entry) {
+  if (!entry || typeof entry !== 'object') {
+    return false;
+  }
+
+  if (REMOVED_LEGACY_MINI_APP_IDS_SET.has(entry.id)) {
+    return true;
+  }
+
+  if (entry.id === 'task-manager') {
+    const normalizedName = typeof entry.name === 'string' ? entry.name.trim().toLowerCase() : '';
+    if (normalizedName && LEGACY_TASK_MANAGER_NAMES.has(normalizedName)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function removeDeprecatedMiniApps(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return { entries: [], removed: false };
+  }
+
+  const filtered = [];
+  let removed = false;
+
+  entries.forEach((entry) => {
+    if (!entry || typeof entry !== 'object') {
+      return;
+    }
+
+    if (isLegacyPlaceholderMiniApp(entry)) {
+      removed = true;
+      return;
+    }
+
+    filtered.push(entry);
+  });
+
+  return {
+    entries: removed ? filtered : entries.slice(),
+    removed,
+  };
+}
+
 function mergeWithDefaultMiniApps(entries) {
   const normalizedEntries = Array.isArray(entries) ? entries.slice() : [];
   const indexById = new Map(normalizedEntries.map((entry) => [entry.id, entry]));
@@ -431,29 +367,27 @@ function mergeWithDefaultMiniApps(entries) {
 
 function ensureInitialized() {
   if (Array.isArray(miniApps)) {
-    if (isLegacyDefaultMiniAppSnapshot(miniApps)) {
-      const { entries, hasChanges } = mergeWithDefaultMiniApps(
-        DEFAULT_MINI_APPS.map((entry) => normalizeMiniAppEntry(entry)).filter((entry) => entry !== null),
-      );
-      miniApps = entries;
-      if (hasChanges) {
-        persistMiniAppsSnapshot(miniApps);
-        notifyListeners();
-      }
+    const { entries: sanitizedEntries, removed } = removeDeprecatedMiniApps(miniApps);
+    const { entries: mergedEntries, hasChanges } = mergeWithDefaultMiniApps(sanitizedEntries);
+
+    if (removed || hasChanges) {
+      miniApps = mergedEntries;
+      persistMiniAppsSnapshot(miniApps);
+      notifyListeners();
     }
     return;
   }
 
   const persisted = readPersistedMiniApps();
-  const shouldUseDefault = !Array.isArray(persisted) || isLegacyDefaultMiniAppSnapshot(persisted);
-  const source = shouldUseDefault ? DEFAULT_MINI_APPS : persisted;
+  const source = Array.isArray(persisted) ? persisted : DEFAULT_MINI_APPS;
 
   const normalized = source.map((entry) => normalizeMiniAppEntry(entry)).filter((entry) => entry !== null);
-  const { entries, hasChanges } = mergeWithDefaultMiniApps(normalized);
+  const { entries: sanitizedEntries, removed } = removeDeprecatedMiniApps(normalized);
+  const { entries, hasChanges } = mergeWithDefaultMiniApps(sanitizedEntries);
 
   miniApps = entries;
 
-  if (shouldUseDefault || hasChanges) {
+  if (!Array.isArray(persisted) || removed || hasChanges) {
     persistMiniAppsSnapshot(miniApps);
   }
 }
@@ -634,9 +568,11 @@ export function updateMiniApp(id, updater) {
 }
 
 export function resetMiniApps(entries = DEFAULT_MINI_APPS) {
-  miniApps = entries
-    .map((entry) => normalizeMiniAppEntry(entry))
-    .filter((entry) => entry !== null);
+  const normalized = entries.map((entry) => normalizeMiniAppEntry(entry)).filter((entry) => entry !== null);
+  const { entries: sanitizedEntries } = removeDeprecatedMiniApps(normalized);
+  const { entries: mergedEntries } = mergeWithDefaultMiniApps(sanitizedEntries);
+
+  miniApps = mergedEntries;
 
   persistMiniAppsSnapshot(miniApps);
   notifyListeners();

@@ -264,7 +264,7 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
     ['usuario', 'Usuários finais'],
   ]);
 
-  const targetPlanId = 'field-expansion';
+  const targetPlanId = 'collaboration-plus';
   let subscriptionRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__row')).find(
     (row) => row.dataset.planId === targetPlanId,
   );
@@ -303,8 +303,13 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
   );
   assert.ok(subscriptionDetailsRow, 'detalhes do pacote devem permanecer acessíveis após atualização de valor');
 
-  const miniAppCheckbox = subscriptionDetailsRow.querySelector('.admin-miniapp-table__access-checkbox');
-  assert.ok(miniAppCheckbox, 'é esperado ao menos um mini-app configurável no pacote');
+  const miniAppCheckboxes = Array.from(
+    subscriptionDetailsRow.querySelectorAll('.admin-miniapp-table__access-checkbox'),
+  );
+  assert.ok(miniAppCheckboxes.length > 0, 'é esperado ao menos um mini-app configurável no pacote');
+
+  const checkedBefore = miniAppCheckboxes.filter((input) => input.checked).length;
+  const miniAppCheckbox = miniAppCheckboxes[0];
   const wasChecked = miniAppCheckbox.checked;
   miniAppCheckbox.checked = !wasChecked;
   miniAppCheckbox.dispatchEvent({ type: 'change', target: miniAppCheckbox });
@@ -313,8 +318,24 @@ test('renderAdmin exibe widgets de gestão de usuários, assinaturas e miniapps'
     (row) => row.dataset.planId === targetPlanId,
   );
   const miniAppsSummary = subscriptionRow?.querySelector('.admin-miniapp-table__access-summary');
-  const emptySummary = miniAppsSummary?.querySelector('.admin-miniapp-table__access-empty');
-  if (wasChecked) {
+  assert.ok(miniAppsSummary, 'sumário do pacote deve permanecer acessível após alteração de mini-apps');
+
+  subscriptionDetailsRow = Array.from(subscriptionTable.querySelectorAll('.admin-subscription-table__details-row')).find(
+    (row) => row.dataset.planId === targetPlanId,
+  );
+  assert.ok(subscriptionDetailsRow, 'detalhes do pacote devem permanecer disponíveis após atualizar mini-apps');
+  const updatedCheckboxes = Array.from(
+    subscriptionDetailsRow.querySelectorAll('.admin-miniapp-table__access-checkbox'),
+  );
+  const checkedAfter = updatedCheckboxes.filter((input) => input.checked).length;
+  assert.notEqual(
+    checkedAfter,
+    checkedBefore,
+    'quantidade de mini-apps habilitados deve refletir a alteração realizada',
+  );
+
+  if (checkedAfter === 0) {
+    const emptySummary = miniAppsSummary?.querySelector('.admin-miniapp-table__access-empty');
     assert.ok(emptySummary, 'sumário do pacote deve indicar ausência de mini-apps após remoção');
   } else {
     const chipsAfter = miniAppsSummary

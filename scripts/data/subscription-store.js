@@ -1,3 +1,5 @@
+import { REMOVED_LEGACY_MINI_APP_IDS } from './miniapp-store.js';
+
 const STORAGE_KEY = 'miniapp:admin-subscriptions';
 
 export const SUBSCRIPTION_PERIODICITY_OPTIONS = [
@@ -6,48 +8,50 @@ export const SUBSCRIPTION_PERIODICITY_OPTIONS = [
   { value: 'yearly', label: 'Anual' },
 ];
 
+const REMOVED_LEGACY_MINI_APP_IDS_SET = new Set(REMOVED_LEGACY_MINI_APP_IDS);
+
 const DEFAULT_SUBSCRIPTION_PLANS = [
   {
-    id: 'essential',
-    name: 'Pacote Essencial',
+    id: 'productivity-starter',
+    name: 'Pacote Produtividade Essencial',
     description:
-      'Conjunto base com jornadas produtivas para equipes que precisam iniciar rapidamente com supervisão compartilhada.',
+      'Coleção enxuta com o miniapp Gestão de Trabalho para organizar tarefas, indicadores e checklists entre equipes híbridas.',
     startDate: '2025-01-01T03:00:00.000Z',
     endDate: '2025-06-30T03:00:00.000Z',
     price: 149.9,
     periodicity: 'monthly',
-    miniApps: ['time-tracker', 'field-forms'],
+    miniApps: ['task-manager'],
     userCategory: 'colaborador',
-    createdAt: '2025-10-10T14:30:00.000Z',
-    updatedAt: '2025-10-18T10:20:00.000Z',
+    createdAt: '2025-10-24T14:30:00.000Z',
+    updatedAt: '2025-10-26T10:20:00.000Z',
   },
   {
-    id: 'insights-plus',
-    name: 'Plano Insights Plus',
+    id: 'assessment-suite',
+    name: 'Plano Avaliações Integradas',
     description:
-      'Pacote completo com analytics e integrações em tempo real para times que precisam acompanhar implantações intensivas.',
+      'Pacote voltado a gestores escolares com o Criador de Provas, cobrindo planejamento, publicação e indicadores de aplicação.',
     startDate: '2025-02-01T03:00:00.000Z',
     endDate: '2025-12-31T03:00:00.000Z',
     price: 329.5,
     periodicity: 'quarterly',
-    miniApps: ['time-tracker', 'insights-hub'],
+    miniApps: ['exam-planner'],
     userCategory: 'administrador',
-    createdAt: '2025-10-12T16:45:00.000Z',
-    updatedAt: '2025-10-19T11:10:00.000Z',
+    createdAt: '2025-10-25T16:45:00.000Z',
+    updatedAt: '2025-10-27T11:10:00.000Z',
   },
   {
-    id: 'field-expansion',
-    name: 'Pacote Expansão em Campo',
+    id: 'collaboration-plus',
+    name: 'Combo Gestão & Avaliação',
     description:
-      'Coleção voltada a operações externas com suporte offline, checklists avançados e dashboards compartilhados.',
+      'Assinatura completa combinando Gestão de Trabalho e Criador de Provas para times que acompanham projetos e avaliações.',
     startDate: '2025-03-15T03:00:00.000Z',
     endDate: '2026-03-14T03:00:00.000Z',
     price: 219.0,
     periodicity: 'yearly',
-    miniApps: ['field-forms'],
+    miniApps: ['task-manager', 'exam-planner'],
     userCategory: 'usuario',
-    createdAt: '2025-10-14T09:05:00.000Z',
-    updatedAt: '2025-10-21T08:25:00.000Z',
+    createdAt: '2025-10-26T09:05:00.000Z',
+    updatedAt: '2025-10-27T08:25:00.000Z',
   },
 ];
 
@@ -141,22 +145,32 @@ function normalizePeriodicity(value, fallback = SUBSCRIPTION_PERIODICITY_OPTIONS
 }
 
 function normalizeMiniApps(list, fallback = []) {
-  if (!Array.isArray(list)) {
-    return Array.isArray(fallback) ? fallback.slice() : [];
-  }
+  const source = Array.isArray(list)
+    ? list
+    : Array.isArray(fallback)
+    ? fallback
+    : [];
 
   const values = [];
-  list.forEach((value) => {
+  let removedLegacy = false;
+
+  source.forEach((value) => {
     const normalizedValue = typeof value === 'string' ? value.trim() : '';
     if (!normalizedValue) {
       return;
     }
+
+    if (REMOVED_LEGACY_MINI_APP_IDS_SET.has(normalizedValue)) {
+      removedLegacy = true;
+      return;
+    }
+
     if (!values.includes(normalizedValue)) {
       values.push(normalizedValue);
     }
   });
 
-  return values;
+  return { values, removedLegacy };
 }
 
 function normalizeUserCategory(value, fallback = 'usuario') {
@@ -203,7 +217,7 @@ function normalizeDescription(value, fallback = '') {
   return '';
 }
 
-function normalizePlan(entry, fallback = null) {
+function normalizePlan(entry, fallback = null, meta = null) {
   if (!entry || typeof entry !== 'object') {
     return fallback;
   }
@@ -223,7 +237,11 @@ function normalizePlan(entry, fallback = null) {
   const endDate = toIsoDate(entry.endDate ?? previous?.endDate ?? new Date(), previous?.endDate ?? startDate);
   const price = normalizePrice(entry.price, previous?.price ?? 0);
   const periodicity = normalizePeriodicity(entry.periodicity, previous?.periodicity);
-  const miniApps = normalizeMiniApps(entry.miniApps, previous?.miniApps ?? []);
+  const normalizedMiniApps = normalizeMiniApps(entry.miniApps, previous?.miniApps ?? []);
+  if (meta && normalizedMiniApps.removedLegacy) {
+    meta.removedLegacyMiniApps = true;
+  }
+  const miniApps = normalizedMiniApps.values;
   const userCategory = normalizeUserCategory(entry.userCategory, previous?.userCategory ?? 'usuario');
   const createdAt = toIsoDate(entry.createdAt ?? previous?.createdAt ?? new Date(), previous?.createdAt ?? new Date());
   const updatedAt = toIsoDate(entry.updatedAt ?? new Date(), new Date());
@@ -250,9 +268,21 @@ function ensureSubscriptionPlans() {
 
   const persisted = readPersistedPlans();
   if (Array.isArray(persisted) && persisted.length > 0) {
+    let removedLegacyMiniApps = false;
     subscriptionPlans = persisted
-      .map((entry) => normalizePlan(entry))
+      .map((entry) => {
+        const meta = {};
+        const plan = normalizePlan(entry, null, meta);
+        if (meta.removedLegacyMiniApps) {
+          removedLegacyMiniApps = true;
+        }
+        return plan;
+      })
       .filter((plan) => plan !== null);
+
+    if (removedLegacyMiniApps) {
+      persistPlansSnapshot(subscriptionPlans);
+    }
   } else {
     subscriptionPlans = DEFAULT_SUBSCRIPTION_PLANS.map((entry) => normalizePlan(entry));
   }
