@@ -98,6 +98,15 @@ const EXAM_DASHBOARD_STYLES = String.raw`
   gap: var(--space-md);
 }
 
+.exam-dashboard__preview {
+  max-block-size: 70dvh;
+  overflow: auto;
+}
+
+.exam-dashboard__preview > * {
+  min-block-size: 0;
+}
+
 .exam-dashboard__preview-message {
   margin: 0;
 }
@@ -2111,7 +2120,7 @@ function sortExamsForList(exams) {
     });
 }
 
-function createExamListItem(exam, { isSelected, onSelect, startEditExam }) {
+function createExamListItem(exam, { isSelected, onSelect }) {
   const item = document.createElement('li');
   item.className = 'exam-dashboard__list-item';
 
@@ -2123,11 +2132,6 @@ function createExamListItem(exam, { isSelected, onSelect, startEditExam }) {
   if (isSelected) {
     button.setAttribute('aria-current', 'true');
   }
-
-  const editButton = document.createElement('button');
-  editButton.type = 'button';
-  editButton.className = 'button button--ghost exam-dashboard__list-edit-button';
-  editButton.textContent = 'Editar';
 
   const title = document.createElement('p');
   title.className = 'exam-dashboard__list-title';
@@ -2152,15 +2156,8 @@ function createExamListItem(exam, { isSelected, onSelect, startEditExam }) {
     onSelect(exam.id);
   });
 
-  editButton.addEventListener('click', (event) => {
-    event.preventDefault();
-    if (typeof startEditExam === 'function') {
-      startEditExam(exam);
-    }
-  });
-
-  item.append(button, editButton);
-  return { item, button, editButton };
+  item.append(button);
+  return { item, button };
 }
 
 function createExamForm() {
@@ -2500,14 +2497,9 @@ export function renderExamDashboard(viewRoot) {
   selectionModal = selectionModalElement;
   selectionCloseButton = selectionCloseButtonElement;
 
-  const formRow = document.createElement('div');
-  formRow.className = 'admin-dashboard__widget-row exam-dashboard__form-row';
-  formRow.append(form);
-
   layout.append(
     headerSection,
     previewRow,
-    formRow,
     selectionBackdropElement,
     selectionModalElement,
   );
@@ -2744,92 +2736,6 @@ export function renderExamDashboard(viewRoot) {
     applyFiltersToFormDefaults();
   }
 
-  function showForm() {
-    const isEditMode = form.dataset.mode === 'edit';
-    if (!isEditMode) {
-      form.dataset.mode = 'create';
-    }
-    submitButton.textContent = isEditMode ? 'Atualizar prova' : 'Salvar prova';
-    if (!isEditMode) {
-      applyFiltersToFormDefaults();
-    }
-    if (fields.title instanceof HTMLElement && typeof fields.title.focus === 'function') {
-      try {
-        fields.title.focus();
-      } catch (error) {
-        console.error('Não foi possível focar o campo de título da prova.', error);
-      }
-    }
-    if (typeof form.scrollIntoView === 'function') {
-      try {
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (error) {
-        console.error('Não foi possível rolar até o formulário de provas.', error);
-      }
-    }
-  }
-
-  function startEditExam(exam) {
-    if (!exam || typeof exam !== 'object') {
-      return;
-    }
-
-    const existingExam = currentExams.find((item) => item.id === exam.id);
-    if (!existingExam) {
-      updateMessageElement(
-        formMessage,
-        'error',
-        'Não foi possível localizar a prova selecionada para edição.',
-      );
-      return;
-    }
-
-    selectedExamId = existingExam.id;
-    selectExam(existingExam.id);
-
-    form.dataset.mode = 'edit';
-    updateMessageElement(formMessage, null, '');
-
-    if (fields.title && 'value' in fields.title) {
-      fields.title.value = existingExam.title ?? '';
-    }
-    if (fields.subject instanceof HTMLSelectElement) {
-      fields.subject.value = existingExam.subject ?? '';
-    }
-    if (fields.series instanceof HTMLSelectElement) {
-      fields.series.value = existingExam.series ?? '';
-    }
-    if (fields.difficulty instanceof HTMLSelectElement) {
-      fields.difficulty.value = existingExam.difficulty ?? DEFAULT_EXAM_DIFFICULTY;
-    }
-    if (fields.kind instanceof HTMLSelectElement) {
-      fields.kind.value = existingExam.kind ?? DEFAULT_EXAM_KIND;
-    }
-    if (fields.status instanceof HTMLSelectElement) {
-      fields.status.value = existingExam.status ?? 'draft';
-    }
-    if (fields.applicationDate && 'value' in fields.applicationDate) {
-      fields.applicationDate.value = existingExam.applicationDate ?? '';
-    }
-    if (fields.startTime && 'value' in fields.startTime) {
-      fields.startTime.value = existingExam.startTime ?? '';
-    }
-    if (fields.durationMinutes && 'value' in fields.durationMinutes) {
-      const durationValue = Number.isFinite(existingExam.durationMinutes)
-        ? existingExam.durationMinutes
-        : '';
-      fields.durationMinutes.value = durationValue ? String(durationValue) : '';
-    }
-    if (fields.objective && 'value' in fields.objective) {
-      fields.objective.value = existingExam.objective ?? '';
-    }
-    if (fields.instructions && 'value' in fields.instructions) {
-      fields.instructions.value = existingExam.instructions ?? '';
-    }
-
-    showForm();
-  }
-
   function selectExam(examId) {
     const visibleExams = getFilteredExams();
     if (!examId || !visibleExams.some((exam) => exam.id === examId)) {
@@ -2865,7 +2771,7 @@ export function renderExamDashboard(viewRoot) {
       empty.className = 'exam-dashboard__list-empty';
       empty.textContent =
         Array.isArray(currentExams) && currentExams.length === 0
-          ? 'Nenhuma prova cadastrada ainda. Utilize o formulário para iniciar seu planejamento.'
+          ? 'Nenhuma prova cadastrada ainda. Cadastre novas avaliações no fluxo principal para acompanhá-las aqui.'
           : 'Nenhuma prova atende ao contexto selecionado. Ajuste os filtros acima para visualizar outras avaliações.';
       listItems.append(empty);
       selectExam(null);
@@ -2880,10 +2786,6 @@ export function renderExamDashboard(viewRoot) {
         onSelect: (examId) => {
           selectExam(examId);
           closeSelectionModal();
-        },
-        startEditExam: (examToEdit) => {
-          closeSelectionModal({ restoreFocus: false });
-          startEditExam(examToEdit);
         },
       });
       button.dataset.examId = exam.id;
