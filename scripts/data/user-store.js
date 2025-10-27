@@ -5,10 +5,13 @@ import {
   updateUser as updateUserInIndexedDb,
   deleteUser as deleteUserFromIndexedDb,
   resetIndexedDbMock,
+  DUPLICATE_PHONE_ERROR_MESSAGE,
 } from './indexed-user-store.js';
 import eventBus from '../events/event-bus.js';
 import { replaceAccounts } from '../../core/account-store.js';
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
+
+export { DUPLICATE_PHONE_ERROR_MESSAGE } from './indexed-user-store.js';
 
 const listeners = new Set();
 const statusListeners = new Set();
@@ -479,6 +482,11 @@ export async function addUser({ name, phone, password, device, profile, userType
     throw new Error('Armazenamento local indisponível. Verifique o suporte ao IndexedDB e tente novamente.');
   }
 
+  const phoneAlreadyRegistered = users.some((user) => user.phone === sanitizedPhone);
+  if (phoneAlreadyRegistered) {
+    throw new Error(DUPLICATE_PHONE_ERROR_MESSAGE);
+  }
+
   try {
     const savedUser = await saveUserToIndexedDb({
       name: sanitizedName,
@@ -504,6 +512,11 @@ export async function addUser({ name, phone, password, device, profile, userType
     scheduleAccountsSync();
     return cloneUser(normalized);
   } catch (error) {
+    if (error instanceof Error && error.message === DUPLICATE_PHONE_ERROR_MESSAGE) {
+      console.warn('Tentativa de cadastrar telefone já existente.', error);
+      throw error;
+    }
+
     console.error('Erro ao salvar usuário no IndexedDB.', error);
     markStorageError(error);
     throw new Error('Não foi possível salvar o cadastro no armazenamento local. Tente novamente.');
@@ -626,6 +639,10 @@ export async function updateUser(id, updates = {}) {
     return cloneUser(normalized);
   } catch (error) {
     pendingStorageReadyReason = null;
+    if (error instanceof Error && error.message === DUPLICATE_PHONE_ERROR_MESSAGE) {
+      console.warn('Tentativa de atualizar usuário com telefone já cadastrado.', error);
+      throw error;
+    }
     console.error('Erro ao atualizar usuário no IndexedDB.', error);
     markStorageError(error);
     throw new Error('Não foi possível atualizar o usuário. Tente novamente.');

@@ -12,6 +12,7 @@ const {
   deleteUser,
   getUsers,
   getStorageStatus,
+  DUPLICATE_PHONE_ERROR_MESSAGE,
 } = userStoreModule;
 
 await resetUserStoreForTests();
@@ -73,6 +74,17 @@ test('autentica usuário com credenciais válidas', { concurrency: false }, asyn
     () => authenticateUser({ phone: '11888877777', password: 'senha-incorreta' }),
     {
       message: /Telefone ou senha inválidos/,
+    }
+  );
+});
+
+test('impede cadastro com telefone duplicado', { concurrency: false }, async () => {
+  await addUser({ phone: '11999988888', password: 'senhaSegura1' });
+
+  await assert.rejects(
+    () => addUser({ phone: '11999988888', password: 'senhaSegura2' }),
+    {
+      message: DUPLICATE_PHONE_ERROR_MESSAGE,
     }
   );
 });
