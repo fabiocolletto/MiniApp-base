@@ -13,266 +13,77 @@
       sizes="500x500"
     />
   </head>
-  <body>
-    <header aria-label="Topo da aplicação">
-      <button
-        type="button"
-        class="header-logo"
-        aria-label="Voltar para o painel inicial"
-        title="Voltar para o painel inicial"
-      >
-        <img
-          class="header-logo__image"
-          src="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp"
-          alt="Logotipo 5Horas"
-          width="2000"
-          height="500"
-          decoding="async"
-          loading="lazy"
-        />
-      </button>
-      <div class="header-title" aria-live="polite">
-        <span class="header-title__text"></span>
+<body class="auth-only">
+  <main id="app" class="auth-screen">
+    <section class="auth-card">
+      <header class="auth-header">
+        <h1 data-i18n="auth.welcome">Bem-vindo</h1>
+        <p class="auth-sub" data-i18n="auth.subtitle">Acesse sua conta ou crie um novo cadastro</p>
+      </header>
+
+      <div class="auth-actions">
+        <button id="btnLogin" class="btn btn-primary" data-i18n="auth.login">Entrar</button>
+        <button id="btnRegister" class="btn btn-outline" data-i18n="auth.register">Criar conta</button>
       </div>
-      <div class="header-menu" data-state="closed">
-        <div class="header-menu__controls" data-session="guest">
-          <button
-            type="button"
-            class="header-action header-action--menu header-menu__trigger"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="header-navigation-menu"
-            aria-label="Abrir menu de painéis"
-            title="Abrir menu de painéis"
-          >
-            <span class="header-menu__icon" aria-hidden="true"></span>
-            <span class="header-menu__label">Painéis</span>
-          </button>
-        </div>
-        <div
-          class="header-menu__panel"
-          id="header-navigation-menu"
-          role="menu"
-          aria-label="Painéis disponíveis"
-          hidden
-        >
-          <button
-            type="button"
-            class="header-menu__item header-home-link"
-            role="menuitem"
-            aria-pressed="false"
-            aria-controls="view-root"
-            aria-label="Abrir Início"
-            title="Abrir Início"
-          >
-            Início
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-store-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir MiniApps"
-            title="Abrir MiniApps"
-          >
-            MiniApps
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-tasks-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel de tarefas"
-            title="Abrir painel de tarefas"
-          >
-            Tarefas
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-exams-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel de provas"
-            title="Abrir painel de provas"
-          >
-            Provas
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-project-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel do projeto"
-            title="Abrir painel do projeto"
-          >
-            Painel do projeto
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-user-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel do usuário"
-            title="Abrir painel do usuário"
-            hidden
-          >
-            Painel do usuário
-          </button>
-          <span
-            class="header-menu__separator header-menu__separator--primary"
-            role="separator"
-            aria-hidden="true"
-            hidden
-          ></span>
-          <button
-            type="button"
-            class="header-menu__item header-design-kit-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel de design"
-            title="Abrir painel de design"
-            hidden
-          >
-            Painel de design
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-temporary-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel de projetos temporários"
-            title="Abrir painel de projetos temporários"
-            hidden
-          >
-            Projetos temporários
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-admin-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Abrir painel administrativo"
-            title="Abrir painel administrativo"
-            hidden
-          >
-            Painel administrativo
-          </button>
-          <span
-            class="header-menu__separator header-menu__separator--secondary"
-            role="separator"
-            aria-hidden="true"
-            hidden
-          ></span>
-          <button
-            type="button"
-            class="header-menu__item header-login-link"
-            role="menuitem"
-            aria-controls="view-root"
-            aria-label="Gerenciar sessão"
-            title="Gerenciar sessão"
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            class="header-menu__item header-theme-toggle"
-            role="menuitem"
-            aria-pressed="false"
-            aria-label="Alternar tema do aplicativo"
-            title="Alternar tema do aplicativo"
-          >
-            Alternar tema
-          </button>
-        </div>
-      </div>
-    </header>
-    <main>
-      <div
-        id="view-root"
-        class="card view view--splash"
-        role="region"
-        aria-live="polite"
-        tabindex="-1"
-        aria-label="Carregando painel"
-      >
-        <div class="splash__loader" role="status" aria-live="polite">Carregando painel...</div>
-      </div>
-    </main>
-    <footer aria-live="polite" data-mobile-state="collapsed">
-      <button
-        type="button"
-        class="footer-brand"
-        data-footer-toggle="true"
-        aria-label="Alternar indicadores do rodapé"
-      >
-        <img
-          class="footer-brand__icon"
-          src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-          alt="Logotipo 5Horas"
-          width="64"
-          height="64"
-          loading="lazy"
-          decoding="async"
-        />
-        <span
-          class="footer-brand__text"
-          title="© 2025 5Horas. Todos os direitos reservados."
-          >© 2025 5Horas. Todos os direitos reservados.</span
-        >
-      </button>
-      <div class="footer-actions" id="footer-actions">
-        <span
-          class="footer-activity"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          data-state="idle"
-        >
-          <span class="footer-activity__dot" aria-hidden="true"></span>
-          <span class="footer-activity__text">Nenhuma alteração pendente</span>
-          <span class="footer-activity__announcement sr-only" aria-live="polite" aria-atomic="true">
-            Nenhuma alteração pendente
-          </span>
-        </span>
-        <span
-          class="footer-memory"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          data-state="loading"
-        >
-          <span class="footer-memory__dot" aria-hidden="true"></span>
-          <span class="footer-memory__text">Memória carregando</span>
-        </span>
-        <button
-          type="button"
-          class="footer-session"
-          data-state="loading"
-          aria-haspopup="dialog"
-          aria-expanded="false"
-          aria-controls="session-status-panel"
-        >
-          <span class="footer-session__dot" aria-hidden="true"></span>
-          <span class="footer-session__text">Sessão sincronizando</span>
-          <span
-            class="footer-session__announcement sr-only"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            Sessão sincronizando
-          </span>
-        </button>
-        <button
-          type="button"
-          class="footer-version"
-          aria-label="Abrir registro de alterações da versão do sistema"
-          title="Exibir mudanças da versão atual"
-        >
-          <span class="footer-version__dot" aria-hidden="true"></span>
-          <span class="footer-version__text">Versão</span>
-        </button>
-      </div>
-    </footer>
-    <script type="module" src="./app/entry.js"></script>
-  </body>
+
+      <footer class="auth-footer">
+        <small id="statusHint" data-i18n="auth.hint">Você pode ativar o modo multidispositivos depois do login, em Personalizações.</small>
+      </footer>
+    </section>
+  </main>
+
+  <style>
+    :root{
+      --p: var(--ac-primary, #2e7d32);
+      --txt: var(--ac-text, #1a1a1a);
+      --muted: #6b7280;
+      --bd: var(--ac-border, #e5e7eb);
+      --bg: var(--ac-surface, #ffffff);
+    }
+    html, body { height:100%; margin:0; }
+    .auth-screen{
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      background: var(--ac-bg, #f8fafc);
+      padding:24px;
+    }
+    .auth-card{
+      width:min(420px, 92vw);
+      background:var(--bg);
+      border:1px solid var(--bd);
+      border-radius:16px;
+      padding:24px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.05);
+    }
+    .auth-header h1{ margin:0 0 6px; font: 600 22px/1.2 system-ui, sans-serif; color:var(--txt); }
+    .auth-sub{ margin:0 0 18px; color:var(--muted); }
+    .auth-actions{ display:flex; gap:12px; }
+    .btn{ flex:1; padding:12px 14px; border-radius:10px; border:1px solid var(--bd); cursor:pointer; font:600 15px/1 system-ui, sans-serif; }
+    .btn-primary{ background:var(--p); color:#fff; border-color:transparent; }
+    .btn-outline{ background:#fff; color:var(--txt); }
+    .auth-footer{ margin-top:14px; color:var(--muted); }
+  </style>
+
+  <script>
+    (function () {
+      function go(route){
+        // tenta router do app
+        if (window.AppRouter && typeof window.AppRouter.navigate === 'function'){
+          window.AppRouter.navigate(route);
+          return;
+        }
+        if (window.navigateTo && typeof window.navigateTo === 'function'){
+          window.navigateTo(route);
+          return;
+        }
+        // fallback por hash
+        location.hash = route.startsWith('#') ? route : ('#' + route.replace(/^\//,''));
+      }
+      document.getElementById('btnLogin')?.addEventListener('click', () => go('login'));
+      document.getElementById('btnRegister')?.addEventListener('click', () => go('register'));
+    })();
+  </script>
+
+</body>
 </html>
