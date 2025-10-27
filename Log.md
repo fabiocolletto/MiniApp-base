@@ -1,5 +1,10 @@
 # Log
 
+## v0.1.273 - 2025-10-27 06:22 BRT
+- Expande o modal base de miniapps em desktops para ocupar toda a área útil, removendo bordas e sombras supérfluas.
+- Atualiza o shell para sinalizar modais de miniapps com classe dedicada e garantir que o painel detalhe herde o layout amplo.
+- Documenta observações sobre versões anteriores descontinuadas para evitar referências incorretas durante novas análises.
+
 ## v0.1.272 - 2025-10-27 07:40 BRT
 - Descarta automaticamente os miniapps legados de espera ao detectar snapshots incompletos com placeholders antigos.
 - Amplia os testes do catálogo para cobrir snapshots parciais herdados dos miniapps em espera.
@@ -11,6 +16,7 @@
 ## v0.1.271 - 2025-10-26 17:44 BRT
 - Remove o widget de cadastro de provas do painel, mantendo apenas a visualização e seleção das avaliações existentes.
 - Limita a altura do widget de visualização a até 70% da área disponível para evitar que a prévia ocupe todo o painel.
+- _Observação: Entradas de v0.1.271 a v0.1.259 registram experimentos descartados após a revisão completa da v0.1.272; utilizar apenas os fluxos atuais como referência._
 
 ## v0.1.270 - 2025-10-26 17:03 BRT
 - Remove os botões de impressão do widget Planejamento da avaliação, mantendo apenas a prévia padrão exibida.
@@ -70,6 +76,7 @@
 ## v0.1.255 - 2025-10-26 11:39 BRT
 - Adicionamos alternância de visualização entre as versões para alunos e professores diretamente na prévia impressa.
 - Atualizamos os botões de impressão para refletirem a versão em exibição e tornamos a descrição da pré-visualização mais clara.
+- _Observação: Funcionalidades desta faixa (v0.1.255 a v0.1.251) foram substituídas pelo fluxo consolidado nas releases mais recentes e não devem ser restauradas._
 
 ## v0.1.254 - 2025-10-26 15:10 BRT
 - Inclui filtro por status das provas no painel do Criador de Provas, com seleção "Todos os status" por padrão.
