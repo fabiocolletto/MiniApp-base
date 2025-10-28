@@ -7,8 +7,8 @@
   "dir": "ltr",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "../index.html",
+  "scope": "../",
   "theme_color": "#f29f05",
   "background_color": "#fffaf3",
   "orientation": "portrait",
@@ -31,7 +31,7 @@
       "name": "Gestão de Trabalho",
       "short_name": "Trabalho",
       "description": "Abrir visão geral do MiniApp Gestão de Trabalho.",
-      "url": "./?app=task-manager",
+      "url": "../?app=task-manager",
       "icons": [
         {
           "src": "icons/shortcut-task-manager.svg",
@@ -44,7 +44,7 @@
       "name": "Criador de Provas",
       "short_name": "Provas",
       "description": "Consultar materiais do MiniApp Criador de Provas.",
-      "url": "./?app=exam-planner",
+      "url": "../?app=exam-planner",
       "icons": [
         {
           "src": "icons/shortcut-exam-planner.svg",
