@@ -5,7 +5,7 @@ Aplicativo PWA que centraliza o acesso aos MiniApps da 5 Horas com suporte a ins
 ## Estrutura do repositório
 
 - `index.html` – shell principal com painel de autenticação e vitrine de MiniApps liberados.
-- `public/` – assets estáticos servidos diretamente (manifestos, service worker, ícones, páginas offline e atalhos dos MiniApps).
+- `public/` – assets estáticos servidos diretamente (service worker, ícones, páginas offline e atalhos dos MiniApps).
 - `styles/` – design tokens globais (`tokens.css`) e estilos do fluxo de autenticação (`main.css` e `auth.css`).
 - `scripts/` – módulos JavaScript do shell (autenticação, armazenamento local, preferências e integração com o service worker).
 - `core/` – utilitários persistentes para contas e sessão global (IndexedDB + logging compartilhado).
@@ -26,7 +26,7 @@ Aplicativo PWA que centraliza o acesso aos MiniApps da 5 Horas com suporte a ins
 
 - **Fallback offline**: com o app aberto no navegador, abra as DevTools (`Ctrl+Shift+I` / `Cmd+Option+I`), ative o modo "Offline" na aba **Network** e recarregue a página. O shell deve exibir `public/offline.html` com o aviso de falta de conexão. Ao restaurar a conexão e atualizar novamente, o painel de autenticação volta a aparecer.
 - **Atalhos de MiniApp**: acesse `/?app=task-manager` ou `/?app=exam-planner` para confirmar o redirecionamento imediato para a ficha correspondente em `docs/miniapps/`.
-- **Instalabilidade**: verifique a opção "Instalar" do navegador (Chrome/Edge) e confirme que o nome, ícones maskable e atalho do PWA aparecem conforme o manifesto (`public/manifest.webmanifest`).
+- **Instalabilidade**: verifique a opção "Instalar" do navegador (Chrome/Edge) e confirme que o nome, ícones maskable e atalho do PWA aparecem conforme o manifesto (`manifest.webmanifest`).
 
 ## Instalação como PWA
 

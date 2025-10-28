@@ -18,7 +18,7 @@ const REQUIRED_PATHS = new Set([
   'service-worker.js',
   'package.json',
   'package-lock.json',
-  'public/manifest.webmanifest',
+  'manifest.webmanifest',
   'public/offline.html',
   'public/icons/miniapp-icon-192.svg',
   'public/icons/miniapp-icon-512.svg',

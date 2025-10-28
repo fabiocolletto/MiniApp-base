@@ -12,7 +12,7 @@ const CORE_ASSETS = [
   './styles/main.css',
   './styles/auth.css',
   './package.json',
-  './public/manifest.webmanifest',
+  './manifest.webmanifest',
   './public/offline.html',
   './docs/miniapps/task-manager.md',
   './docs/miniapps/exam-planner.md',
