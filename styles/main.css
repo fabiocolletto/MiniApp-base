@@ -239,15 +239,26 @@ textarea:focus-visible {
 .auth-panel__phone-inputs {
   display: grid;
   gap: 0.65rem;
+  grid-template-columns: minmax(3.75rem, 5rem) minmax(0, 1fr);
+  align-items: end;
 }
 
 .auth-panel__phone-subfield {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .auth-panel__phone-subfield--country {
-  max-width: 6rem;
+  max-width: none;
+}
+
+.auth-panel__phone-subfield--country .form-input {
+  text-align: center;
+}
+
+.auth-panel__phone-subfield--number .form-input {
+  width: 100%;
 }
 
 .auth-panel__phone-subfield-label {
@@ -359,11 +370,7 @@ textarea:focus-visible {
 
 @media (min-width: 540px) {
   .auth-panel__phone-inputs {
-    grid-template-columns: minmax(0, 6rem) 1fr;
-  }
-
-  .auth-panel__phone-subfield--country {
-    max-width: none;
+    grid-template-columns: minmax(4.25rem, 5rem) minmax(0, 1fr);
   }
 
   .register-success__actions {
