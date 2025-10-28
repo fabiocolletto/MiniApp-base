@@ -16,8 +16,6 @@ const CORE_ASSETS = [
   './public/offline.html',
   './docs/miniapps/task-manager.md',
   './docs/miniapps/exam-planner.md',
-  './public/icons/miniapp-icon-192.svg',
-  './public/icons/miniapp-icon-512.svg',
   './public/icons/shortcut-task-manager.svg',
   './public/icons/shortcut-exam-planner.svg'
 ];

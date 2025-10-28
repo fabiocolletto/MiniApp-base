@@ -1,5 +1,5 @@
 import { authenticateUser, updateUser } from '../data/user-store.js';
-import { clearActiveUser, setActiveUser } from '../data/session-store.js';
+import { setActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
@@ -156,35 +156,10 @@ export function renderLoginPanel(viewRoot) {
     'button button--primary button--pill form-submit user-form__submit auth-panel__action auth-panel__action--primary';
   submitButton.textContent = 'Entrar';
 
-  const guestButton = document.createElement('button');
-  guestButton.type = 'button';
-  guestButton.className =
-    'button button--secondary button--pill auth-panel__action auth-panel__action--guest';
-  guestButton.textContent = 'Explorar MiniApp Store como convidado';
-
   const feedback = document.createElement('p');
   feedback.className = 'form-message user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
-
-  const registerRedirect = document.createElement('p');
-  registerRedirect.className = 'auth-panel__redirect';
-
-  const registerRedirectText = document.createElement('span');
-  registerRedirectText.className = 'auth-panel__redirect-text';
-  registerRedirectText.textContent = 'Ainda não possui cadastro?';
-
-  const registerLink = document.createElement('a');
-  registerLink.className = 'auth-panel__redirect-link';
-  registerLink.href = '#register';
-  registerLink.title = 'Ir para a aba de cadastro';
-  registerLink.textContent = 'Acesse a aba Criar conta';
-  registerLink.addEventListener('click', (event) => {
-    event.preventDefault();
-    eventBus.emit('app:navigate', { view: 'register' });
-  });
-
-  registerRedirect.append(registerRedirectText, ' ', registerLink, '.');
 
   function resetFeedback() {
     feedback.hidden = true;
@@ -212,13 +187,7 @@ export function renderLoginPanel(viewRoot) {
     }
   }
 
-  guestButton.addEventListener('click', () => {
-    resetFeedback();
-    clearActiveUser();
-    eventBus.emit('app:navigate', { view: 'miniapps', source: 'login:guest' });
-  });
-
-  actions.append(submitButton, guestButton);
+  actions.append(submitButton);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -321,7 +290,7 @@ export function renderLoginPanel(viewRoot) {
     submitButton.removeAttribute('aria-busy');
   });
 
-  form.append(phoneField, passwordField, actions, feedback, registerRedirect);
+  form.append(phoneField, passwordField, actions, feedback);
 
   viewRoot.setAttribute('aria-label', 'Painel de login');
   viewRoot.replaceChildren(form);

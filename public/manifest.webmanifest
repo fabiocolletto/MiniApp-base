@@ -14,16 +14,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icons/miniapp-icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
+      "src": "https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Claro-500x500px.png",
+      "sizes": "500x500",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/miniapp-icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Claro-500x500px.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [

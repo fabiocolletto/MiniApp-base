@@ -23,6 +23,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - MiniApp Base convertido em PWA com manifesto, ícones instaláveis e Service Worker para navegação offline.
 - Auditada a conversão PWA com relatório de validação cobrindo manifesto, service worker e próximos ajustes.
 - Ícones do PWA convertidos para SVG vetoriais com suporte maskable, evitando o uso de assets binários no repositório.
+- Ícone instalável atualizado para utilizar o asset oficial hospedado em 5horas.com.br.
 
 ## [0.2.0] - 2025-10-28T06:41:39-03:00 (BRT)
 - Arquivada a árvore legada (`app/`, `router/`, `ui/`, `src/`, `tests/`, `MiniApps/` e utilitários redundantes) em `archive/2025-10-28/` para preservar histórico sem poluir o shell ativo.
