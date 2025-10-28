@@ -1,0 +1,159 @@
+{
+  "profile": "mobile",
+  "device": "iPhone 13",
+  "generatedAt": "2025-10-28T09:58:58.083354+00:00",
+  "js": {
+    "totalBytes": 141423,
+    "usedBytes": 141423,
+    "coverage": 1.0,
+    "files": [
+      {
+        "path": "core/account-store.js",
+        "totalBytes": 10778,
+        "usedBytes": 10778,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "index.html",
+        "totalBytes": 11815,
+        "usedBytes": 11815,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/data/indexed-user-store.js",
+        "totalBytes": 21524,
+        "usedBytes": 21524,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/data/miniapp-store.js",
+        "totalBytes": 15599,
+        "usedBytes": 15599,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/data/session-store.js",
+        "totalBytes": 10669,
+        "usedBytes": 10669,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/data/system-release-source.js",
+        "totalBytes": 183,
+        "usedBytes": 183,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/data/user-store.js",
+        "totalBytes": 21346,
+        "usedBytes": 21346,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/events/event-bus.js",
+        "totalBytes": 2175,
+        "usedBytes": 2175,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/preferences/footer-indicators.js",
+        "totalBytes": 3337,
+        "usedBytes": 3337,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/pwa/register-service-worker.js",
+        "totalBytes": 834,
+        "usedBytes": 834,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/utils/system-release.js",
+        "totalBytes": 1817,
+        "usedBytes": 1817,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/views/login.js",
+        "totalBytes": 11611,
+        "usedBytes": 11611,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/views/register.js",
+        "totalBytes": 15050,
+        "usedBytes": 15050,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/views/shared/device-info.js",
+        "totalBytes": 547,
+        "usedBytes": 547,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/views/shared/form-fields.js",
+        "totalBytes": 1513,
+        "usedBytes": 1513,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "scripts/views/shared/validation.js",
+        "totalBytes": 8701,
+        "usedBytes": 8701,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "sys/tools/log.js",
+        "totalBytes": 3924,
+        "usedBytes": 3924,
+        "coverage": 1.0,
+        "unusedRanges": []
+      }
+    ]
+  },
+  "css": {
+    "totalBytes": 24806,
+    "usedBytes": 20173,
+    "coverage": 0.8132306699991937,
+    "files": [
+      {
+        "path": "styles/auth.css",
+        "totalBytes": 6460,
+        "usedBytes": 5462,
+        "coverage": 0.8455108359133127,
+        "unusedRanges": []
+      },
+      {
+        "path": "styles/main.css",
+        "totalBytes": 7759,
+        "usedBytes": 7759,
+        "coverage": 1.0,
+        "unusedRanges": []
+      },
+      {
+        "path": "styles/tokens.css",
+        "totalBytes": 10587,
+        "usedBytes": 6952,
+        "coverage": 0.6566543874563143,
+        "unusedRanges": []
+      }
+    ]
+  }
+}
