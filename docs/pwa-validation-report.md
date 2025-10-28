@@ -4,17 +4,17 @@
 - **Data da auditoria:** 28/10/2025 (BRT)
 - **Ambiente de testes:** container Linux sem acesso a navegadores gráficos ou Chrome DevTools. A aplicação foi servida localmente via `python -m http.server` para inspeções estáticas.
 - **Limitações do ambiente:** políticas de rede bloqueiam downloads via npm/pip, impedindo a instalação do Lighthouse ou Playwright e a captura de capturas de tela do DevTools. Foram indicadas etapas para repetição manual das verificações em um ambiente com Chrome/Edge.
-- **Artefatos consultados:** manifesto (`public/manifest.json`), shell HTML (`index.html`), service worker (`service-worker.js`), registrador (`scripts/pwa/register-service-worker.js`) e fluxos de navegação (`scripts/views/*.js`). Todos os testes automatizados (`npm test`) foram executados.
+- **Artefatos consultados:** manifesto (`manifest.webmanifest`), shell HTML (`index.html`), service worker (`service-worker.js`), registrador (`scripts/pwa/register-service-worker.js`) e fluxos de navegação (`scripts/views/*.js`). Todos os testes automatizados (`npm test`) foram executados.
 
 ## 1. Instalabilidade e Manifesto
 | Item | Resultado | Evidências |
 | --- | --- | --- |
 | HTTPS ativo | **Não verificado** | Necessita checagem em produção; não há configuração de servidor no repositório. |
-| Manifesto presente e linkado | ✅ | `<link rel="manifest" href="./public/manifest.json">` no `index.html`.【F:index.html†L8-L25】 |
-| Campos obrigatórios (name/short_name/start_url/display) | ✅ | Manifesto define `name`, `short_name`, `start_url: "../"`, `display: "standalone"`, idioma, orientação e cores.【F:public/manifest.json†L1-L27】 |
+| Manifesto presente e linkado | ✅ | `<link rel="manifest" href="./manifest.webmanifest">` no `index.html`.【F:index.html†L8-L25】 |
+| Campos obrigatórios (name/short_name/start_url/display) | ✅ | Manifesto define `name`, `short_name`, `start_url: "./"`, `display: "standalone"`, idioma, orientação e cores.【F:manifest.webmanifest†L1-L29】 |
 | MIME type correto | ⚠️ | Precisa ser confirmado no servidor real (não exposto no repo). Sugerido configurar `Content-Type: application/manifest+json`. |
-| Ícones 192/512 + maskable | ✅ | Manifesto inclui 192×192 (`purpose: any`) e 512×512 (`purpose: any maskable`).【F:public/manifest.json†L14-L25】 |
-| Shortcuts para MiniApps | ❌ | Manifesto não define `shortcuts`, portanto não há deep links para apps específicos. |
+| Ícones 192/512 + maskable | ✅ | Manifesto inclui 500×500 (`purpose: any` e `maskable`).【F:manifest.webmanifest†L14-L27】 |
+| Shortcuts para MiniApps | ✅ | Manifesto inclui atalhos para `task-manager` e `exam-planner`.【F:manifest.webmanifest†L29-L44】 |
 
 ## 2. Service Worker e Offline
 | Item | Resultado | Evidências |
@@ -50,7 +50,7 @@
 ## 6. Escopo, Rotas e Versão
 | Item | Resultado | Evidências |
 | --- | --- | --- |
-| Scope/start_url coerentes | ✅ | Manifesto define `scope`/`start_url` para raiz, alinhado ao roteador hash-based.【F:public/manifest.json†L9-L17】 |
+| Scope/start_url coerentes | ✅ | Manifesto define `scope`/`start_url` para raiz, alinhado ao shell sem roteador dedicado.【F:manifest.webmanifest†L1-L21】 |
 | Versionamento de cache | Parcial | `CACHE_PREFIX` inclui versão (`?v=`), mas não há rotina automatizada de bump; depende de publicar SW com query distinta.【F:service-worker.js†L1-L32】 |
 
 ## 7. Dados, Segurança e Privacidade
@@ -69,18 +69,18 @@ Devido à limitação de ambiente, os prints solicitados (DevTools > Manifest/Se
 
 ## Lista de arquivos verificados
 - `index.html`
-- `public/manifest.json`
+- `manifest.webmanifest`
 - `public/icons/miniapp-icon-192.svg`
 - `public/icons/miniapp-icon-512.svg`
 - `service-worker.js`
 - `scripts/pwa/register-service-worker.js`
 - `scripts/views/login.js`
-- `scripts/views/home.js`
 - `scripts/views/register.js`
+- `scripts/views/shared/form-fields.js`
 - `scripts/events/event-bus.js`
 
 ## Próximos passos recomendados
-1. Adicionar `shortcuts` no manifesto para abrir MiniApps específicos.
+1. Validar os `shortcuts` do manifesto em produção e expandir a lista conforme novos MiniApps gratuitos forem lançados.
 2. Atualizar o Service Worker para estratégia `stale-while-revalidate` nos assets e incluir fallback offline dedicado (HTML enxuto).
 3. Preparar documentação de instalação iOS/Android e políticas de dados offline.
 4. Reexecutar os audits Lighthouse em ambiente com Chrome e anexar os prints exigidos.

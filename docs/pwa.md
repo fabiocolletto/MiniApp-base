@@ -2,7 +2,7 @@
 
 Este documento descreve o checklist recorrente para manter o MiniApp Base instalado, rápido e confiável.
 
-## Manifesto (`public/manifest.webmanifest`)
+## Manifesto (`manifest.webmanifest`)
 
 - Atualize `version`, `start_url`, `scope` e `shortcuts` sempre que um novo MiniApp for publicado.
 - Garanta que todo atalho `/?app=<slug>` possua uma ficha correspondente em `docs/miniapps/<slug>.md` e ícone dedicado em `public/icons/`.
