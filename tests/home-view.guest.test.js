@@ -14,7 +14,7 @@ async function resetSession() {
   clearActiveUser();
 }
 
-test('renderHome exibe painel de convidado com atalho para o painel do usuário', async (t) => {
+test('renderHome exibe painel de convidado com atalho para a MiniApp Store', async (t) => {
   const restoreDom = setupFakeDom();
   globalThis.window = {};
 
@@ -38,7 +38,7 @@ test('renderHome exibe painel de convidado com atalho para o painel do usuário'
   const userPanelButton = guestPanel.querySelector('.home-guest__action--primary');
   const registerLink = guestPanel.querySelector('.auth-panel__redirect-link');
 
-  assert.ok(userPanelButton, 'botão do painel do usuário deve estar presente');
+  assert.ok(userPanelButton, 'botão da MiniApp Store deve estar presente');
   assert.ok(registerLink, 'link de cadastro adicional deve estar presente');
 
   const emittedEvents = [];
@@ -52,8 +52,8 @@ test('renderHome exibe painel de convidado com atalho para o painel do usuário'
 
   assert.deepEqual(
     emittedEvents,
-    [{ view: 'user' }, { view: 'register' }],
-    'ações de convidado devem emitir navegação para o painel do usuário e para cadastro',
+    [{ view: 'miniapps' }, { view: 'register' }],
+    'ações de convidado devem emitir navegação para a MiniApp Store e para cadastro',
   );
 
   unsubscribe?.();

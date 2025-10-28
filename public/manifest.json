@@ -1,0 +1,32 @@
+{
+  "id": "miniapp-base",
+  "name": "5 Horas MiniApps",
+  "short_name": "MiniApps",
+  "description": "Catálogo unificado e acesso aos MiniApps da 5 Horas.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "display": "standalone",
+  "start_url": "../",
+  "scope": "../",
+  "theme_color": "#f29f05",
+  "background_color": "#fffaf3",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icons/miniapp-icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/miniapp-icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "productivity",
+    "utilities"
+  ]
+}

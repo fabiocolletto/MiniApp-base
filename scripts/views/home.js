@@ -520,8 +520,8 @@ function renderGuestPanel(ownerDocument) {
   const userPanelButton = doc.createElement('button');
   userPanelButton.type = 'button';
   userPanelButton.className = 'button button--primary button--pill home-guest__action home-guest__action--primary';
-  userPanelButton.textContent = 'Ir para o painel do usuário';
-  userPanelButton.addEventListener('click', () => navigateTo('user'));
+  userPanelButton.textContent = 'Ir para a MiniApp Store';
+  userPanelButton.addEventListener('click', () => navigateTo('miniapps'));
 
   actions.append(userPanelButton);
 
