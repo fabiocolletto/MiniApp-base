@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiniApps offline</title>
+    <link rel="stylesheet" href="../styles/tokens.css" />
+    <link rel="stylesheet" href="../styles/auth.css" />
+  </head>
+  <body class="auth-only">
+    <header class="auth-shell__header" aria-label="Aplicativo indisponível offline">
+      <div class="auth-shell__brand">
+        <span class="auth-shell__brand-label">5 Horas</span>
+        <span class="auth-shell__brand-divider" aria-hidden="true">•</span>
+        <span class="auth-shell__brand-product">MiniApps</span>
+      </div>
+    </header>
+
+    <main class="auth-screen">
+      <section class="auth-card" role="status" aria-live="polite">
+        <header class="auth-header">
+          <h1>Sem conexão</h1>
+          <p class="auth-sub">Não foi possível carregar o conteúdo porque você está offline.</p>
+        </header>
+        <div class="auth-card__body">
+          <div class="guest-panel" role="presentation">
+            <p class="guest-panel__intro">
+              Assim que a conexão for restabelecida, volte a esta página para acessar os MiniApps.
+            </p>
+            <p class="guest-panel__note">
+              Caso o problema persista, verifique o acesso à internet ou tente novamente mais tarde.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="auth-shell__footer">
+      <small class="auth-shell__footer-text">
+        <span>5 Horas • MiniApps</span>
+        <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+        <span>Offline</span>
+      </small>
+    </footer>
+  </body>
+</html>

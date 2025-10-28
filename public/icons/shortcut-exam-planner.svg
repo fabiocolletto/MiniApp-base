@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Atalho Criador de Provas">
+  <defs>
+    <linearGradient id="gradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f29f05" />
+      <stop offset="100%" stop-color="#d8891f" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="36" fill="url(#gradExam)" />
+  <g fill="#fffaf3">
+    <path d="M64 48h72a12 12 0 0 1 12 12v104H52V60a12 12 0 0 1 12-12Z" opacity="0.88" />
+    <path d="M64 32h40l20 20v12H64V32Z" opacity="0.7" />
+    <path d="M76 94h72v12H76z" />
+    <path d="M76 122h56v12H76z" opacity="0.85" />
+    <path d="M76 150h48v12H76z" opacity="0.7" />
+  </g>
+</svg>

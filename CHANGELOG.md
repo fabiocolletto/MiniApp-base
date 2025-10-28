@@ -23,3 +23,13 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - MiniApp Base convertido em PWA com manifesto, ícones instaláveis e Service Worker para navegação offline.
 - Auditada a conversão PWA com relatório de validação cobrindo manifesto, service worker e próximos ajustes.
 - Ícones do PWA convertidos para SVG vetoriais com suporte maskable, evitando o uso de assets binários no repositório.
+
+## [0.2.0] - 2025-10-28T06:41:39-03:00 (BRT)
+- Arquivada a árvore legada (`app/`, `router/`, `ui/`, `src/`, `tests/`, `MiniApps/` e utilitários redundantes) em `archive/2025-10-28/` para preservar histórico sem poluir o shell ativo.
+- Consolidada a estrutura PWA: manifesto renomeado para `.webmanifest`, service worker com fallback offline dedicado e pré-cache dos atalhos `/?app=<slug>`.
+- Migrado estilos inline para `styles/auth.css`, adicionada página `public/offline.html` e criados ícones específicos para os atalhos de MiniApps.
+- Criadas fichas vivas em `docs/miniapps/`, além dos guias [`docs/pwa.md`](docs/pwa.md) e [`docs/migration-pre-to-post-pwa.md`](docs/migration-pre-to-post-pwa.md) documentando manutenção e rastreabilidade.
+- Publicado relatório de limpeza (`reports/pwa-cleanup-2025-10-28/`) com inventário automatizado, cobertura CSS/JS e validações de instalabilidade/offline.
+- Reduzido `styles/main.css` ao conjunto efetivamente usado pelo shell, eliminando utilitários órfãos destacados nos relatórios de coverage.
+- Atualizado `service-worker.js` para usar navigation preload, evitar cache de navegação stale e priorizar o fallback `public/offline.html` quando a conexão falhar.
+- Documentado no `README.md` o procedimento visual para demonstrar o fallback offline e os atalhos do catálogo durante as validações manuais.
