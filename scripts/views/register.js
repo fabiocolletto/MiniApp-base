@@ -26,7 +26,7 @@ function renderRegisterSuccess(viewRoot, savedUser) {
   const message = document.createElement('p');
   message.className = 'register-success__message';
   message.textContent =
-    'Seu acesso foi liberado e o painel do usuário já está pronto para receber suas informações.';
+    'Seu acesso foi liberado e a MiniApp Store já está pronta para receber suas informações.';
 
   let summary = null;
   if (savedUser?.phone) {
@@ -39,34 +39,24 @@ function renderRegisterSuccess(viewRoot, savedUser) {
     summary.append('Telefone cadastrado: ', phoneHighlight);
   }
 
-  const actions = document.createElement('div');
-  actions.className = 'register-success__actions';
-
   const openPanelButton = document.createElement('button');
   openPanelButton.type = 'button';
   openPanelButton.className =
     'button button--primary button--pill register-success__action register-success__action--primary';
-  openPanelButton.textContent = 'Ir para o painel do usuário';
+  openPanelButton.textContent = 'Ir para a MiniApp Store';
   openPanelButton.addEventListener('click', () => {
-    eventBus.emit('app:navigate', { view: 'user' });
+    eventBus.emit('app:navigate', { view: 'miniapps', source: 'register:success:cta' });
   });
-
-  const registerAnotherButton = document.createElement('button');
-  registerAnotherButton.type = 'button';
-  registerAnotherButton.className =
-    'button button--secondary button--pill register-success__action register-success__action--secondary';
-  registerAnotherButton.textContent = 'Fazer outro cadastro';
-  registerAnotherButton.addEventListener('click', () => {
-    renderRegisterPanel(viewRoot);
-  });
-
-  actions.append(openPanelButton, registerAnotherButton);
 
   successWidget.append(title, message);
 
   if (summary) {
     successWidget.append(summary);
   }
+
+  const actions = document.createElement('div');
+  actions.className = 'register-success__actions';
+  actions.append(openPanelButton);
 
   successWidget.append(actions);
 
@@ -385,7 +375,7 @@ export function renderRegisterPanel(viewRoot) {
       isSubmitting = false;
       submitButton.removeAttribute('aria-busy');
       renderRegisterSuccess(viewRoot, savedUser);
-      eventBus.emit('app:navigate', { view: 'user', source: 'register:success' });
+      eventBus.emit('app:navigate', { view: 'miniapps', source: 'register:success' });
       return;
     } catch (error) {
       console.error('Erro ao criar cadastro pelo painel dedicado.', error);
