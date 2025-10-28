@@ -119,3 +119,38 @@ test('exibe mensagem de erro e mantém o painel de login com credenciais inváli
 
   unsubscribe();
 });
+
+test('permite acessar a MiniApp Store diretamente do painel de login como convidado', () => {
+  const viewRoot = document.createElement('div');
+  renderLoginPanel(viewRoot);
+
+  const form = viewRoot.querySelector('form');
+  assert.ok(form, 'form deve existir');
+
+  const guestButton = findElementByClass(form, 'auth-panel__action--guest');
+  assert.ok(guestButton, 'botão de convidado deve existir');
+
+  const navigations = [];
+  const unsubscribe = eventBus.on('app:navigate', (payload) => {
+    navigations.push(payload);
+  });
+
+  const guestListeners = guestButton?.eventListeners?.get('click');
+  assert.ok(guestListeners, 'botão de convidado deve registrar ouvinte de clique');
+
+  const clickHandler = guestListeners?.values().next().value;
+  assert.equal(typeof clickHandler, 'function', 'handler de clique deve ser função');
+
+  const event = { type: 'click', preventDefault() {} };
+  clickHandler.call(guestButton, event);
+
+  assert.equal(navigations.length, 1, 'deve emitir navegação para a MiniApp Store');
+  assert.equal(navigations[0]?.view, 'miniapps', 'navegação deve informar a MiniApp Store');
+  assert.equal(
+    navigations[0]?.source,
+    'login:guest',
+    'navegação deve indicar que veio do botão de convidado do login',
+  );
+
+  unsubscribe();
+});

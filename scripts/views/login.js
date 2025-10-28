@@ -1,5 +1,5 @@
 import { authenticateUser, updateUser } from '../data/user-store.js';
-import { setActiveUser } from '../data/session-store.js';
+import { clearActiveUser, setActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
@@ -8,7 +8,6 @@ import {
   sanitizeLocalPhoneNumber,
   validatePhoneParts,
 } from './shared/validation.js';
-import '../../src/ui/components/social-auth.js';
 
 const BASE_CLASSES = 'card view auth-view view--login';
 const BRAZIL_COUNTRY_CODE = '55';
@@ -148,17 +147,25 @@ export function renderLoginPanel(viewRoot) {
 
   applyCurrentMask();
 
+  const actions = document.createElement('div');
+  actions.className = 'auth-panel__actions';
+
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
-  submitButton.className = 'button form-submit user-form__submit';
+  submitButton.className =
+    'button button--primary button--pill form-submit user-form__submit auth-panel__action auth-panel__action--primary';
   submitButton.textContent = 'Entrar';
+
+  const guestButton = document.createElement('button');
+  guestButton.type = 'button';
+  guestButton.className =
+    'button button--secondary button--pill auth-panel__action auth-panel__action--guest';
+  guestButton.textContent = 'Explorar MiniApp Store como convidado';
 
   const feedback = document.createElement('p');
   feedback.className = 'form-message user-form__feedback auth-panel__feedback';
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
-
-  const socialAuth = document.createElement('social-auth');
 
   const registerRedirect = document.createElement('p');
   registerRedirect.className = 'auth-panel__redirect';
@@ -170,8 +177,8 @@ export function renderLoginPanel(viewRoot) {
   const registerLink = document.createElement('a');
   registerLink.className = 'auth-panel__redirect-link';
   registerLink.href = '#register';
-  registerLink.title = 'Ir para o painel de cadastro';
-  registerLink.textContent = 'Crie sua conta agora';
+  registerLink.title = 'Ir para a aba de cadastro';
+  registerLink.textContent = 'Acesse a aba Criar conta';
   registerLink.addEventListener('click', (event) => {
     event.preventDefault();
     eventBus.emit('app:navigate', { view: 'register' });
@@ -204,6 +211,14 @@ export function renderLoginPanel(viewRoot) {
       feedback.removeAttribute('role');
     }
   }
+
+  guestButton.addEventListener('click', () => {
+    resetFeedback();
+    clearActiveUser();
+    eventBus.emit('app:navigate', { view: 'miniapps', source: 'login:guest' });
+  });
+
+  actions.append(submitButton, guestButton);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -278,7 +293,7 @@ export function renderLoginPanel(viewRoot) {
       }
       submitButton.disabled = false;
       submitButton.removeAttribute('aria-busy');
-      eventBus.emit('app:navigate', { view: 'user' });
+      eventBus.emit('app:navigate', { view: 'miniapps', source: 'login:success' });
       return;
     } catch (error) {
       console.error('Erro ao autenticar acesso pelo painel de login.', error);
@@ -306,7 +321,7 @@ export function renderLoginPanel(viewRoot) {
     submitButton.removeAttribute('aria-busy');
   });
 
-  form.append(phoneField, passwordField, submitButton, feedback, socialAuth, registerRedirect);
+  form.append(phoneField, passwordField, actions, feedback, registerRedirect);
 
   viewRoot.setAttribute('aria-label', 'Painel de login');
   viewRoot.replaceChildren(form);

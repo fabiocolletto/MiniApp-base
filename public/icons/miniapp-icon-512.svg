@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MiniApp Base">
+  <defs>
+    <linearGradient id="miniapp-gradient-512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f29f05" />
+      <stop offset="100%" stop-color="#f28705" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#miniapp-gradient-512)" />
+  <g fill="#ffffff" opacity="0.9">
+    <path d="M120 144h120a26 26 0 0 1 26 26v120a26 26 0 0 1-26 26H120a26 26 0 0 1-26-26V170a26 26 0 0 1 26-26zm0 36a10 10 0 0 0-10 10v120a10 10 0 0 0 10 10h120a10 10 0 0 0 10-10V190a10 10 0 0 0-10-10z" />
+    <path d="M266 240h120a26 26 0 0 1 26 26v120a26 26 0 0 1-26 26H266a26 26 0 0 1-26-26V266a26 26 0 0 1 26-26zm0 36a10 10 0 0 0-10 10v120a10 10 0 0 0 10 10h120a10 10 0 0 0 10-10V286a10 10 0 0 0-10-10z" />
+    <path d="M282 128a16 16 0 0 1 16-16h66a16 16 0 0 1 16 16v66a16 16 0 0 1-16 16h-66a16 16 0 0 1-16-16z" />
+    <path d="M138 314a16 16 0 0 1 16-16h66a16 16 0 0 1 16 16v66a16 16 0 0 1-16 16h-66a16 16 0 0 1-16-16z" />
+  </g>
+</svg>
