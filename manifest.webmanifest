@@ -7,7 +7,7 @@
   "dir": "ltr",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "theme_color": "#f29f05",
   "background_color": "#fffaf3",
