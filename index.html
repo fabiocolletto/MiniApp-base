@@ -6,23 +6,18 @@
     <title>5 Horas • MiniApps</title>
     <link rel="stylesheet" href="./styles/tokens.css" />
     <link rel="stylesheet" href="./styles/main.css" />
-    <link rel="manifest" href="./public/manifest.json" />
+    <link rel="stylesheet" href="./styles/auth.css" />
+    <link rel="manifest" href="./public/manifest.webmanifest" />
     <meta name="theme-color" content="#f29f05" />
     <meta name="application-name" content="5 Horas MiniApps" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="MiniApps" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <script src="./public/env.js"></script>
-    <link
-      rel="icon"
-      href="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-      type="image/webp"
-      sizes="500x500"
-    />
-    <link rel="apple-touch-icon" sizes="192x192" href="./public/icons/miniapp-icon-192.svg" />
     <link rel="icon" type="image/svg+xml" sizes="192x192" href="./public/icons/miniapp-icon-192.svg" />
     <link rel="icon" type="image/svg+xml" sizes="512x512" href="./public/icons/miniapp-icon-512.svg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="./public/icons/miniapp-icon-192.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="./public/icons/miniapp-icon-512.svg" />
   </head>
 <body class="auth-only">
   <header class="auth-shell__header" aria-label="Identidade do MiniApp">
@@ -107,307 +102,6 @@
     </small>
   </footer>
 
-  <style>
-    :root {
-      --p: var(--ac-primary, #2e7d32);
-      --p-soft: rgba(46, 125, 50, 0.12);
-      --p-strong: #1f5a2a;
-      --txt: var(--ac-text, #1a1a1a);
-      --muted: #6b7280;
-      --bd: var(--ac-border, #e5e7eb);
-      --bg: var(--ac-surface, #ffffff);
-      --shell-surface: rgba(255, 255, 255, 0.9);
-      --shell-border: rgba(15, 23, 42, 0.08);
-      --shell-blur: 18px;
-    }
-
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-    }
-
-    body.auth-only {
-      --layout-header-offset: 0px;
-      --layout-footer-offset: 0px;
-      --content-padding-block-start: 0px;
-      --content-padding-block-end: 0px;
-      --view-max-block-size: auto;
-      background: var(--ac-bg, #f8fafc);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .auth-shell__header,
-    .auth-shell__footer {
-      position: sticky;
-      z-index: 10;
-      top: 0;
-      backdrop-filter: blur(var(--shell-blur));
-      background: var(--shell-surface);
-      border-block: 1px solid var(--shell-border);
-      padding: clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: clamp(0.75rem, 2vw, 1.5rem);
-    }
-
-    .auth-shell__footer {
-      bottom: 0;
-      top: auto;
-      justify-content: center;
-    }
-
-    .auth-shell__brand {
-      display: inline-flex;
-      align-items: baseline;
-      gap: clamp(0.35rem, 1.2vw, 0.65rem);
-      font: 700 clamp(1.1rem, 2.8vw, 1.5rem) / 1.1 system-ui, sans-serif;
-      color: var(--txt);
-      text-transform: uppercase;
-      letter-spacing: clamp(0.08rem, 0.4vw, 0.18rem);
-    }
-
-    .auth-shell__brand-label,
-    .auth-shell__brand-product {
-      white-space: nowrap;
-    }
-
-    .auth-shell__brand-divider {
-      color: var(--p-strong);
-      font-weight: 400;
-    }
-
-    .auth-shell__context {
-      margin: 0;
-      font: 500 clamp(0.9rem, 2.2vw, 1.05rem) / 1.4 system-ui, sans-serif;
-      color: var(--muted);
-      text-align: right;
-    }
-
-    .auth-shell__footer-text {
-      display: inline-flex;
-      align-items: center;
-      gap: clamp(0.35rem, 1.5vw, 0.75rem);
-      color: var(--muted);
-      font: 500 clamp(0.85rem, 2vw, 1rem) / 1.4 system-ui, sans-serif;
-    }
-
-    .auth-shell__footer-divider {
-      color: rgba(15, 23, 42, 0.18);
-    }
-
-    .auth-shell__footer-text strong {
-      font-weight: 700;
-      color: var(--p-strong);
-    }
-
-    .auth-screen {
-      flex: 1;
-      display: grid;
-      place-items: center;
-      background: var(--ac-bg, #f8fafc);
-      padding: clamp(1.5rem, 4vw, 2.5rem);
-      min-height: 0;
-    }
-
-    .auth-card {
-      width: min(520px, 95vw);
-      display: grid;
-      gap: clamp(1.1rem, 3vw, 1.75rem);
-      background: var(--bg);
-      border: 1px solid var(--bd);
-      border-radius: 20px;
-      padding: clamp(1.5rem, 3.8vw, 2.25rem);
-      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
-      overflow: hidden;
-    }
-
-    .auth-header h1 {
-      margin: 0;
-      font: 700 clamp(1.5rem, 3vw, 2rem) / 1.2 system-ui, sans-serif;
-      color: var(--txt);
-      letter-spacing: normal;
-      text-transform: none;
-    }
-
-    .auth-sub {
-      margin: 0;
-      color: var(--muted);
-      font: 500 clamp(1rem, 2.4vw, 1.125rem) / 1.5 system-ui, sans-serif;
-    }
-
-    .auth-selector {
-      display: inline-flex;
-      gap: 0.5rem;
-      padding: 0.35rem;
-      border-radius: 999px;
-      background: var(--p-soft);
-      border: 1px solid rgba(46, 125, 50, 0.22);
-      align-self: center;
-    }
-
-    .auth-selector__button {
-      flex: 1 1 auto;
-      padding: 0.55rem 1.25rem;
-      border: none;
-      border-radius: 999px;
-      background: transparent;
-      color: var(--muted);
-      font: 600 clamp(0.95rem, 2.4vw, 1.05rem) / 1 system-ui, sans-serif;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-    }
-
-    .auth-selector__button.is-active {
-      background: linear-gradient(130deg, var(--p), var(--p-strong));
-      color: #ffffff;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(46, 125, 50, 0.28);
-    }
-
-    .auth-selector__button:focus-visible {
-      outline: 3px solid rgba(46, 125, 50, 0.35);
-      outline-offset: 2px;
-    }
-
-    .auth-card__body {
-      display: flex;
-      justify-content: center;
-    }
-
-    .auth-card__view {
-      width: 100%;
-      display: grid;
-      justify-items: center;
-    }
-
-    .auth-card__view > .card.auth-view {
-      width: 100%;
-      max-width: none;
-      background: transparent;
-      box-shadow: none;
-      min-height: auto;
-      max-height: none;
-      overflow: visible;
-      padding: 0;
-    }
-
-    .auth-card__view > .card.auth-view > * {
-      width: 100%;
-    }
-
-    .auth-panel__actions {
-      display: grid;
-      gap: clamp(0.5rem, 2vw, 0.75rem);
-    }
-
-    .auth-panel__action {
-      width: 100%;
-    }
-
-    .auth-panel__action--guest {
-      --button-text-color: var(--p-strong);
-      --button-hover-text-color: var(--p-strong);
-    }
-
-    .guest-panel {
-      display: grid;
-      gap: clamp(1rem, 3vw, 1.5rem);
-    }
-
-    .guest-panel__title {
-      margin: 0;
-      font: 700 clamp(1.15rem, 3vw, 1.45rem) / 1.2 system-ui, sans-serif;
-      color: var(--txt);
-    }
-
-    .guest-panel__intro,
-    .guest-panel__note,
-    .guest-panel__item-description,
-    .guest-panel__empty {
-      margin: 0;
-      font: 500 clamp(0.9rem, 2.2vw, 1rem) / 1.6 system-ui, sans-serif;
-      color: var(--muted);
-    }
-
-    .guest-panel__list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: clamp(0.75rem, 2.5vw, 1rem);
-    }
-
-    .guest-panel__item {
-      display: grid;
-      gap: clamp(0.5rem, 1.6vw, 0.75rem);
-      padding: clamp(1rem, 3vw, 1.25rem);
-      border: 1px solid var(--bd);
-      border-radius: 16px;
-      background: var(--p-soft);
-    }
-
-    .guest-panel__item-title {
-      margin: 0;
-      font: 600 clamp(1rem, 2.4vw, 1.2rem) / 1.3 system-ui, sans-serif;
-      color: var(--txt);
-    }
-
-    .guest-panel__link {
-      justify-self: start;
-      font: 600 clamp(0.95rem, 2.2vw, 1.05rem) / 1.2 system-ui, sans-serif;
-      color: var(--p-strong);
-      text-decoration: none;
-    }
-
-    .guest-panel__link:focus-visible,
-    .guest-panel__link:hover {
-      text-decoration: underline;
-    }
-
-    .guest-panel__note {
-      padding-block-start: clamp(0.25rem, 1vw, 0.5rem);
-    }
-
-    .auth-footer {
-      color: var(--muted);
-      font: 500 0.9rem/1.4 system-ui, sans-serif;
-      text-align: center;
-      padding: 0;
-      background: transparent;
-      border: 0;
-    }
-
-    .auth-footer small {
-      display: block;
-      padding: 0.5rem 0;
-    }
-
-    @media (max-width: 768px) {
-      .auth-shell__header,
-      .auth-shell__footer {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .auth-shell__context {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .auth-card {
-        padding: clamp(1.25rem, 6vw, 1.75rem);
-        border-radius: 16px;
-      }
-
-      .auth-selector {
-        width: 100%;
-      }
-    }
-  </style>
 
   <script type="module">
     import eventBus from './scripts/events/event-bus.js';
@@ -421,8 +115,54 @@
     const selector = document.querySelector('.auth-selector');
     const selectorButtons = Array.from(document.querySelectorAll('.auth-selector__button'));
     const statusHint = document.getElementById('statusHint');
+    const APP_DOC_BASE_PATH = './docs/miniapps';
+    const APP_QUERY_PARAM = 'app';
 
-    function renderGuestAccessPanel(root) {
+    function normalizeMiniAppId(value) {
+      if (typeof value !== 'string') {
+        return '';
+      }
+
+      return value.trim().toLowerCase();
+    }
+
+    function buildMiniAppDocPath(id) {
+      const normalized = normalizeMiniAppId(id);
+      return normalized ? `${APP_DOC_BASE_PATH}/${normalized}.md` : '';
+    }
+
+    function findMiniAppById(id) {
+      const normalized = normalizeMiniAppId(id);
+      if (!normalized) {
+        return null;
+      }
+
+      return (
+        getMiniAppsSnapshot().find((app) => normalizeMiniAppId(app?.id) === normalized) ?? null
+      );
+    }
+
+    function openMiniAppShortcut(id) {
+      const normalized = normalizeMiniAppId(id);
+      if (!normalized) {
+        return false;
+      }
+
+      const target = findMiniAppById(normalized);
+      if (!target) {
+        return false;
+      }
+
+      const docPath = buildMiniAppDocPath(normalized);
+      if (!docPath) {
+        return false;
+      }
+
+      window.location.replace(docPath);
+      return true;
+    }
+
+    function renderGuestAccessPanel(root, options = {}) {
       if (!(root instanceof HTMLElement)) {
         return;
       }
@@ -432,6 +172,10 @@
 
       const panel = document.createElement('section');
       panel.className = 'auth-panel__form guest-panel';
+
+      const highlightAppId = normalizeMiniAppId(options.highlightAppId);
+      let highlightedLink = null;
+      let highlightedApp = null;
 
       const title = document.createElement('h2');
       title.className = 'auth-panel__title guest-panel__title';
@@ -481,10 +225,17 @@
         link.target = '_blank';
         link.rel = 'noreferrer noopener';
         const appId = typeof app?.id === 'string' ? app.id.trim() : '';
-        const normalizedId = appId || 'miniapp';
-        link.href = `./MiniApps/${normalizedId}/README.md`;
-        link.textContent = 'Abrir MiniApp';
-        link.title = `Abrir documentação do MiniApp ${appTitle.textContent}`;
+        const normalizedId = normalizeMiniAppId(appId) || 'miniapp';
+        item.dataset.appId = normalizedId;
+        link.href = buildMiniAppDocPath(normalizedId) || '#';
+        link.textContent = 'Abrir documentação do MiniApp';
+        link.title = `Ver detalhes do MiniApp ${appTitle.textContent}`;
+
+        if (normalizedId === highlightAppId) {
+          item.classList.add('guest-panel__item--active');
+          highlightedLink = link;
+          highlightedApp = app;
+        }
 
         item.append(appTitle, description, link);
         list.append(item);
@@ -497,6 +248,20 @@
 
       panel.append(title, intro, list, note);
       root.replaceChildren(panel);
+
+      if (highlightedLink) {
+        queueMicrotask(() => {
+          try {
+            highlightedLink.focus();
+          } catch (error) {
+            console.warn('Não foi possível focar o atalho solicitado.', error);
+          }
+        });
+
+        if (typeof options.onHighlight === 'function') {
+          options.onHighlight({ app: highlightedApp, link: highlightedLink, id: highlightAppId });
+        }
+      }
     }
 
     const VIEW_RENDERERS = {
@@ -554,7 +319,7 @@
       });
     }
 
-    function renderAuthView(viewName, { shouldFocus = true } = {}) {
+    function renderAuthView(viewName, { shouldFocus = true, viewProps = {} } = {}) {
       if (!(viewRoot instanceof HTMLElement)) {
         return;
       }
@@ -565,7 +330,7 @@
       }
 
       viewRoot.replaceChildren();
-      viewConfig.render(viewRoot);
+      viewConfig.render(viewRoot, viewProps);
       currentView = viewName;
 
       setActiveButton(viewName);
@@ -681,6 +446,27 @@
     setupPwaSupport().catch((error) => {
       console.error('Falha ao configurar os recursos PWA.', error);
     });
+
+    const currentUrl = new URL(window.location.href);
+    const requestedMiniApp = normalizeMiniAppId(currentUrl.searchParams.get(APP_QUERY_PARAM));
+
+    if (requestedMiniApp) {
+      const redirected = openMiniAppShortcut(requestedMiniApp);
+
+      if (!redirected) {
+        renderAuthView('guest', {
+          shouldFocus: true,
+          viewProps: {
+            highlightAppId: requestedMiniApp,
+            onHighlight({ app }) {
+              if (statusHint instanceof HTMLElement && app) {
+                statusHint.textContent = `Documentação do MiniApp "${app.name}" aberta nesta tela. Use o botão para acessar os detalhes.`;
+              }
+            },
+          },
+        });
+      }
+    }
   </script>
 
 </body>

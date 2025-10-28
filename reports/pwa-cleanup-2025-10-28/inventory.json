@@ -1,0 +1,769 @@
+{
+  "summary": {
+    "generatedAt": "2025-10-28T09:59:20.774Z",
+    "fileCount": 59,
+    "requiredCount": 38,
+    "referencedCount": 21,
+    "orphanCount": 0
+  },
+  "files": [
+    {
+      "path": ".commitlintrc.json",
+      "type": "config",
+      "size": 334,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "type": "docs",
+      "size": 304,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": ".github/workflows/commitlint.yml",
+      "type": "other",
+      "size": 289,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": ".github/workflows/jekyll-gh-pages.yml",
+      "type": "other",
+      "size": 1409,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": ".github/workflows/release-please.yml",
+      "type": "other",
+      "size": 696,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": ".gitignore",
+      "type": "other",
+      "size": 666,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "AGENTS.md",
+      "type": "docs",
+      "size": 3084,
+      "lastModified": "2025-10-28T08:04:48.808Z",
+      "referencedBy": [
+        "docs/miniapps-folder-audit.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "type": "docs",
+      "size": 3764,
+      "lastModified": "2025-10-28T09:58:13.175Z",
+      "referencedBy": [
+        "Log.md",
+        "README.md",
+        "docs/miniapps-folder-audit.md",
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "core/account-store.js",
+      "type": "js",
+      "size": 10802,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/session-store.js",
+        "scripts/data/user-store.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "docs/design-kit-tokens.md",
+      "type": "docs",
+      "size": 6256,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "docs/migration-pre-to-post-pwa.md",
+      "type": "docs",
+      "size": 1694,
+      "lastModified": "2025-10-28T09:42:35.640Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "docs/miniapps-folder-audit.md",
+      "type": "docs",
+      "size": 1347,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "docs/miniapps/exam-planner.md",
+      "type": "docs",
+      "size": 974,
+      "lastModified": "2025-10-28T09:39:53.489Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "docs/miniapps/task-manager.md",
+      "type": "docs",
+      "size": 941,
+      "lastModified": "2025-10-28T09:39:47.857Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "docs/pwa-validation-report.md",
+      "type": "docs",
+      "size": 6797,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "docs/pwa.md",
+      "type": "docs",
+      "size": 2236,
+      "lastModified": "2025-10-28T09:42:27.464Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "docs/wordpress-miniapps-integration.md",
+      "type": "docs",
+      "size": 4714,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "index.html",
+      "type": "html",
+      "size": 15821,
+      "lastModified": "2025-10-28T09:41:15.432Z",
+      "referencedBy": [
+        "README.md",
+        "docs/migration-pre-to-post-pwa.md",
+        "docs/pwa-validation-report.md",
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "Log.md",
+      "type": "docs",
+      "size": 98,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "AGENTS.md",
+        "docs/miniapps-folder-audit.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/system-release-source.js",
+        "scripts/utils/system-release.js",
+        "sys/README.md",
+        "sys/tools/README.md"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "package-lock.json",
+      "type": "config",
+      "size": 187,
+      "lastModified": "2025-10-28T09:41:36.480Z",
+      "referencedBy": [
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "package.json",
+      "type": "config",
+      "size": 182,
+      "lastModified": "2025-10-28T09:41:31.340Z",
+      "referencedBy": [
+        "docs/pwa.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/env.example.js",
+      "type": "js",
+      "size": 291,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/icons/miniapp-icon-192.svg",
+      "type": "icon",
+      "size": 1052,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "public/manifest.webmanifest",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/icons/miniapp-icon-512.svg",
+      "type": "icon",
+      "size": 1141,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "public/manifest.webmanifest",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/icons/shortcut-exam-planner.svg",
+      "type": "icon",
+      "size": 702,
+      "lastModified": "2025-10-28T09:38:42.365Z",
+      "referencedBy": [
+        "public/manifest.webmanifest",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/icons/shortcut-task-manager.svg",
+      "type": "icon",
+      "size": 722,
+      "lastModified": "2025-10-28T09:38:36.805Z",
+      "referencedBy": [
+        "public/manifest.webmanifest",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "type": "manifest",
+      "size": 1482,
+      "lastModified": "2025-10-28T09:39:12.113Z",
+      "referencedBy": [
+        "README.md",
+        "docs/pwa.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "public/offline.html",
+      "type": "html",
+      "size": 1741,
+      "lastModified": "2025-10-28T09:37:49.717Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "README.md",
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "README.md",
+      "type": "docs",
+      "size": 4866,
+      "lastModified": "2025-10-28T09:58:07.927Z",
+      "referencedBy": [
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "docs/migration-pre-to-post-pwa.md",
+        "docs/miniapps-folder-audit.md",
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+      "type": "config",
+      "size": 3765,
+      "lastModified": "2025-10-28T09:59:03.359Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+      "type": "config",
+      "size": 3789,
+      "lastModified": "2025-10-28T09:59:07.315Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "reports/pwa-cleanup-2025-10-28/inventory.json",
+      "type": "config",
+      "size": 21929,
+      "lastModified": "2025-10-28T09:49:48.162Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/README.md"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "reports/pwa-cleanup-2025-10-28/README.md",
+      "type": "docs",
+      "size": 2294,
+      "lastModified": "2025-10-28T09:59:17.723Z",
+      "referencedBy": [
+        "README.md",
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/data/indexed-user-store.js",
+      "type": "js",
+      "size": 21580,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/user-store.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/data/miniapp-store.js",
+      "type": "js",
+      "size": 15629,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "docs/miniapps-folder-audit.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/data/session-store.js",
+      "type": "js",
+      "size": 10715,
+      "lastModified": "2025-10-28T08:04:48.812Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/data/system-release-source.js",
+      "type": "js",
+      "size": 183,
+      "lastModified": "2025-10-28T09:41:42.708Z",
+      "referencedBy": [
+        "docs/pwa.md",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/utils/system-release.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/data/user-store.js",
+      "type": "js",
+      "size": 21395,
+      "lastModified": "2025-10-28T08:04:48.816Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/session-store.js",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/events/event-bus.js",
+      "type": "js",
+      "size": 2175,
+      "lastModified": "2025-10-28T08:04:48.816Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/session-store.js",
+        "scripts/data/user-store.js",
+        "scripts/preferences/footer-indicators.js",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/preferences/footer-indicators.js",
+      "type": "js",
+      "size": 3347,
+      "lastModified": "2025-10-28T08:04:48.816Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/data/indexed-user-store.js",
+        "scripts/data/session-store.js",
+        "scripts/data/user-store.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/pwa/register-service-worker.js",
+      "type": "js",
+      "size": 836,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/reporting/create-inventory.mjs",
+      "type": "other",
+      "size": 6378,
+      "lastModified": "2025-10-28T09:49:44.790Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "scripts/utils/system-release.js",
+      "type": "js",
+      "size": 1817,
+      "lastModified": "2025-10-28T08:04:48.816Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "sys/tools/log.js",
+        "sys/tools/log.ts"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/views/login.js",
+      "type": "js",
+      "size": 11628,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/views/register.js",
+      "type": "js",
+      "size": 15075,
+      "lastModified": "2025-10-28T09:27:18.520Z",
+      "referencedBy": [
+        "docs/pwa-validation-report.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/views/shared/device-info.js",
+      "type": "js",
+      "size": 547,
+      "lastModified": "2025-10-28T08:04:48.820Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/views/shared/form-fields.js",
+      "type": "js",
+      "size": 1513,
+      "lastModified": "2025-10-28T08:04:48.820Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "scripts/views/shared/validation.js",
+      "type": "js",
+      "size": 8709,
+      "lastModified": "2025-10-28T08:04:48.820Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/views/login.js",
+        "scripts/views/register.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "service-worker.js",
+      "type": "service-worker",
+      "size": 3989,
+      "lastModified": "2025-10-28T09:57:56.080Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "README.md",
+        "docs/pwa-validation-report.md",
+        "docs/pwa.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "scripts/pwa/register-service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "styles/auth.css",
+      "type": "css",
+      "size": 6460,
+      "lastModified": "2025-10-28T09:39:39.185Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "index.html",
+        "public/offline.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "styles/main.css",
+      "type": "css",
+      "size": 7759,
+      "lastModified": "2025-10-28T09:57:18.228Z",
+      "referencedBy": [
+        "CHANGELOG.md",
+        "index.html",
+        "reports/pwa-cleanup-2025-10-28/README.md",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "styles/tokens.css",
+      "type": "css",
+      "size": 10587,
+      "lastModified": "2025-10-28T08:04:48.824Z",
+      "referencedBy": [
+        "index.html",
+        "public/offline.html",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "service-worker.js"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "sys/README.md",
+      "type": "docs",
+      "size": 1808,
+      "lastModified": "2025-10-28T08:04:48.824Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "sys/tools/cep.log.md",
+      "type": "docs",
+      "size": 618,
+      "lastModified": "2025-10-28T08:04:48.824Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "sys/tools/README.md"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "sys/tools/cep.ts",
+      "type": "source",
+      "size": 1296,
+      "lastModified": "2025-10-28T08:04:48.828Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "sys/tools/README.md"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "sys/tools/log.js",
+      "type": "js",
+      "size": 3932,
+      "lastModified": "2025-10-28T08:04:48.828Z",
+      "referencedBy": [
+        "core/account-store.js",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/desktop.json",
+        "reports/pwa-cleanup-2025-10-28/coverage-report/mobile.json",
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "sys/tools/README.md",
+        "sys/tools/log.log.md"
+      ],
+      "status": "required"
+    },
+    {
+      "path": "sys/tools/log.log.md",
+      "type": "docs",
+      "size": 546,
+      "lastModified": "2025-10-28T08:04:48.828Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "sys/tools/log.ts",
+      "type": "source",
+      "size": 4407,
+      "lastModified": "2025-10-28T08:04:48.828Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json",
+        "sys/tools/README.md",
+        "sys/tools/log.log.md"
+      ],
+      "status": "referenced"
+    },
+    {
+      "path": "sys/tools/README.md",
+      "type": "docs",
+      "size": 2031,
+      "lastModified": "2025-10-28T08:04:48.824Z",
+      "referencedBy": [
+        "reports/pwa-cleanup-2025-10-28/inventory.json"
+      ],
+      "status": "referenced"
+    }
+  ]
+}
