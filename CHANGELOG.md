@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
 - Removido o botão "Fazer outro cadastro" do painel de sucesso para simplificar o fluxo após o cadastro.
 - Estrutura inicial de automação do log criada.
 - Documentado o procedimento de integração da página `/miniapps/` no WordPress com Elementor.
