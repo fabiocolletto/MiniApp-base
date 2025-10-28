@@ -2,9 +2,11 @@
 
 Aplicativo PWA que centraliza o acesso aos MiniApps da 5 Horas com suporte a instalação, uso offline controlado e catálogo de miniaplicações acessíveis a convidados.
 
+O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApps liberados sem credenciais. Quando desejar salvar preferências ou sincronizar dispositivos, o usuário pode abrir o formulário de cadastro para criar uma conta.
+
 ## Estrutura do repositório
 
-- `index.html` – shell principal com painel de autenticação e vitrine de MiniApps liberados.
+- `index.html` – shell principal com painel de acesso (modo convidado por padrão) e vitrine de MiniApps liberados.
 - `public/` – assets estáticos servidos diretamente (service worker, ícones, páginas offline e atalhos dos MiniApps).
 - `styles/` – design tokens globais (`tokens.css`) e estilos do fluxo de autenticação (`main.css` e `auth.css`).
 - `scripts/` – módulos JavaScript do shell (autenticação, armazenamento local, preferências e integração com o service worker).

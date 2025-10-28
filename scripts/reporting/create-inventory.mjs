@@ -30,7 +30,6 @@ const REQUIRED_PATHS = new Set([
   'styles/auth.css',
   'scripts/events/event-bus.js',
   'scripts/pwa/register-service-worker.js',
-  'scripts/views/login.js',
   'scripts/views/register.js',
   'scripts/views/shared/form-fields.js',
   'scripts/views/shared/device-info.js',

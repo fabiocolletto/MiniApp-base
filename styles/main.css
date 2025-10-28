@@ -106,7 +106,6 @@ textarea:focus-visible {
   justify-items: stretch;
 }
 
-.view--login,
 .view--register,
 .view--guest {
   align-content: start;
