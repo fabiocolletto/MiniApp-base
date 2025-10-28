@@ -231,25 +231,6 @@ export function renderRegisterPanel(viewRoot) {
   feedback.setAttribute('aria-live', 'polite');
   feedback.hidden = true;
 
-  const loginRedirect = document.createElement('p');
-  loginRedirect.className = 'auth-panel__redirect';
-
-  const loginRedirectText = document.createElement('span');
-  loginRedirectText.className = 'auth-panel__redirect-text';
-  loginRedirectText.textContent = 'Já possui cadastro?';
-
-  const loginLink = document.createElement('a');
-  loginLink.className = 'auth-panel__redirect-link';
-  loginLink.href = '#entrar';
-  loginLink.title = 'Acessar a aba de login';
-  loginLink.textContent = 'Acesse a aba Entrar';
-  loginLink.addEventListener('click', (event) => {
-    event.preventDefault();
-    eventBus.emit('app:navigate', { view: 'login' });
-  });
-
-  loginRedirect.append(loginRedirectText, ' ', loginLink, '.');
-
   function resetFeedback() {
     feedback.hidden = true;
     feedback.textContent = '';
@@ -405,7 +386,7 @@ export function renderRegisterPanel(viewRoot) {
     updateLegalControls();
   });
 
-  form.append(phoneField, passwordField, legalSection, submitButton, feedback, loginRedirect);
+  form.append(phoneField, passwordField, legalSection, submitButton, feedback);
 
   viewRoot.setAttribute('aria-label', 'Painel de cadastro');
   viewRoot.replaceChildren(form);

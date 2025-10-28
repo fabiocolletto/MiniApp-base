@@ -41,24 +41,11 @@
       <header class="auth-header">
         <h1 id="authWelcomeTitle" data-i18n="auth.welcome">Bem-vindo</h1>
         <p class="auth-sub" data-i18n="auth.subtitle">
-          Acesse sua conta, crie um novo cadastro ou explore como convidado
+          Crie um novo cadastro ou explore imediatamente como convidado
         </p>
       </header>
 
       <div class="auth-selector" role="tablist" aria-label="Modos de acesso">
-        <button
-          id="btnLogin"
-          class="auth-selector__button is-active"
-          type="button"
-          role="tab"
-          aria-controls="authViewRoot"
-          aria-selected="true"
-          tabindex="0"
-          data-view="login"
-          data-i18n="auth.login"
-        >
-          Entrar
-        </button>
         <button
           id="btnRegister"
           class="auth-selector__button"
@@ -74,12 +61,12 @@
         </button>
         <button
           id="btnGuest"
-          class="auth-selector__button"
+          class="auth-selector__button is-active"
           type="button"
           role="tab"
           aria-controls="authViewRoot"
-          aria-selected="false"
-          tabindex="-1"
+          aria-selected="true"
+          tabindex="0"
           data-view="guest"
           data-i18n="auth.guest"
         >
@@ -93,7 +80,7 @@
 
       <div class="auth-footer" role="note">
         <small id="statusHint" data-i18n="auth.hint">
-          Use os botões acima para escolher entre entrar, criar conta ou explorar como convidado.
+          Use os botões acima para criar uma conta ou continuar explorando como convidado.
         </small>
       </div>
     </section>
@@ -113,7 +100,6 @@
   <script type="module">
     import eventBus from './scripts/events/event-bus.js';
     import { registerServiceWorker } from './scripts/pwa/register-service-worker.js';
-    import { renderLoginPanel } from './scripts/views/login.js';
     import { renderRegisterPanel } from './scripts/views/register.js';
     import { getMiniAppsSnapshot } from './scripts/data/miniapp-store.js';
 
@@ -251,7 +237,7 @@
       const note = document.createElement('p');
       note.className = 'guest-panel__note';
       note.textContent =
-        'Para salvar progresso e sincronizar preferências entre dispositivos, faça login ou crie uma conta a qualquer momento.';
+        'Para salvar progresso e sincronizar preferências entre dispositivos, crie uma conta quando estiver pronto.';
 
       panel.append(title, intro, list, note);
       root.replaceChildren(panel);
@@ -272,17 +258,13 @@
     }
 
     const VIEW_RENDERERS = {
-      login: {
-        render: renderLoginPanel,
-        hint: 'Informe seu telefone e senha ou selecione o modo convidado para explorar o MiniApp.',
-      },
       register: {
         render: renderRegisterPanel,
         hint: 'Preencha os dados abaixo para criar sua conta com segurança.',
       },
       guest: {
         render: renderGuestAccessPanel,
-        hint: 'Conheça os MiniApps liberados para convidados sem precisar de cadastro.',
+        hint: 'Conheça os MiniApps liberados para convidados sem precisar de credenciais.',
       },
     };
 
@@ -358,7 +340,7 @@
       }
 
       const { view } = payload;
-      if (view === 'login' || view === 'register' || view === 'guest') {
+      if (view === 'register' || view === 'guest') {
         renderAuthView(view, { shouldFocus: true });
       }
     }
@@ -404,7 +386,7 @@
 
     eventBus.on('app:navigate', handleAppNavigate);
 
-    renderAuthView('login', { shouldFocus: false });
+    renderAuthView('guest', { shouldFocus: false });
 
     const versionTarget = document.querySelector('[data-app-version]');
     const currentYearTarget = document.querySelector('[data-current-year]');
