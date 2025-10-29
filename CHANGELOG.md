@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
 - Adicionado botão flutuante de instalação do MiniApp com controlador PWA acoplado ao bootstrap do shell.
 - Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.
 - Eliminados os preenchimentos laterais do painel de views em telas pequenas para evitar acúmulo duplo de espaçamentos com os MiniApps renderizados.

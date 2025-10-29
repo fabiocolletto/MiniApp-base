@@ -1,4 +1,23 @@
 const INSTALL_BUTTON_SELECTOR = '#pwaInstallFab';
+const MOBILE_DEVICE_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+
+function isMobileEnvironment(win) {
+  const nav = win?.navigator;
+
+  if (!nav) {
+    return false;
+  }
+
+  const userAgentDataMobile = nav.userAgentData?.mobile;
+
+  if (typeof userAgentDataMobile === 'boolean') {
+    return userAgentDataMobile;
+  }
+
+  const userAgent = nav.userAgent ?? '';
+
+  return MOBILE_DEVICE_REGEX.test(userAgent);
+}
 
 function toggleButtonVisibility(button, shouldShow) {
   if (!button) {
@@ -36,9 +55,16 @@ export function initPwaInstallPrompt(windowRef = globalThis) {
     return () => {};
   }
 
+  const isMobileInstallContext = isMobileEnvironment(win);
   let deferredPromptEvent = null;
 
   const handleBeforeInstallPrompt = (event) => {
+    if (!isMobileInstallContext) {
+      deferredPromptEvent = null;
+      toggleButtonVisibility(button, false);
+      return;
+    }
+
     event.preventDefault();
     deferredPromptEvent = event;
     toggleButtonVisibility(button, true);
