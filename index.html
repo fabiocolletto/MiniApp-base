@@ -180,6 +180,33 @@
       }
     }
 
+    function focusWithoutScreenShift(element) {
+      if (!(element instanceof HTMLElement)) {
+        return;
+      }
+
+      const scrollTarget = document.scrollingElement;
+      const previousScrollTop = scrollTarget ? scrollTarget.scrollTop : window.scrollY;
+      const previousScrollLeft = scrollTarget ? scrollTarget.scrollLeft : window.scrollX;
+
+      try {
+        element.focus({ preventScroll: true });
+      } catch (error) {
+        element.focus();
+      }
+
+      const nextScrollTop = scrollTarget ? scrollTarget.scrollTop : window.scrollY;
+      const nextScrollLeft = scrollTarget ? scrollTarget.scrollLeft : window.scrollX;
+
+      if (nextScrollTop !== previousScrollTop || nextScrollLeft !== previousScrollLeft) {
+        if (scrollTarget) {
+          scrollTarget.scrollTo({ top: previousScrollTop, left: previousScrollLeft });
+        } else {
+          window.scrollTo(previousScrollLeft, previousScrollTop);
+        }
+      }
+    }
+
     function closeFooterMenu({ focusToggle = false } = {}) {
       if (!footerMenuOpen) {
         return;
@@ -194,7 +221,7 @@
       }
 
       if (focusToggle && footerMenuButton instanceof HTMLElement) {
-        footerMenuButton.focus();
+        focusWithoutScreenShift(footerMenuButton);
       }
     }
 
@@ -210,9 +237,7 @@
       const nextIndex = (normalizedIndex + offset + items.length) % items.length;
       const nextItem = items[nextIndex];
 
-      if (nextItem instanceof HTMLElement) {
-        nextItem.focus();
-      }
+      focusWithoutScreenShift(nextItem);
     }
 
     function handleFooterMenuItemKeydown(event) {
@@ -315,9 +340,7 @@
         targetItem = items[items.length - 1];
       }
 
-      if (targetItem instanceof HTMLElement) {
-        targetItem.focus({ preventScroll: true });
-      }
+      focusWithoutScreenShift(targetItem);
     }
 
     function toggleFooterMenu() {
@@ -697,9 +720,7 @@
         'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       );
 
-      if (focusable instanceof HTMLElement) {
-        focusable.focus({ preventScroll: true });
-      }
+      focusWithoutScreenShift(focusable);
     }
 
     function updateHint(viewName) {
