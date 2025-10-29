@@ -6,6 +6,7 @@ import { openMarcoCore, openPesquisaStudio } from '../../shared/storage/idb/data
 import { migrateLegacyStorage } from '../../shared/storage/idb/migrate.js';
 import { syncMiniappsCatalog as syncMiniappsCatalogToIndexedDB } from '../../shared/storage/idb/marcocore.js';
 import { loadUserPreferences } from '../preferences/user-preferences.js';
+import { initPwaInstallPrompt } from '../pwa/install-prompt.js';
 
 function emitStorageReady(payload) {
   eventBus.emit('storage:ready', payload);
@@ -155,6 +156,12 @@ export function bootstrapMiniAppBase(runtimeWindow = typeof window !== 'undefine
   });
 
   initAuthShell(resolvedWindow);
+
+  try {
+    initPwaInstallPrompt(resolvedWindow);
+  } catch (error) {
+    console.error('Falha ao inicializar o prompt de instalação do PWA.', error);
+  }
   setupEstimateRefresh();
   bootstrapStorageLayer().catch((error) => {
     console.error('Falha ao inicializar a camada de armazenamento IndexedDB.', error);
