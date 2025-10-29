@@ -26,6 +26,7 @@ body.auth-only {
   background: var(--ac-bg, #f8fafc);
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;
 }
 
 .auth-shell__header,
@@ -47,6 +48,8 @@ body.auth-only {
   bottom: 0;
   top: auto;
   justify-content: center;
+  margin-top: auto;
+  align-self: stretch;
 }
 
 
