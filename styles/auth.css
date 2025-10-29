@@ -466,8 +466,6 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .miniapp-store__intro,
-.miniapp-store__description,
-.miniapp-store__meta,
 .miniapp-store__empty {
   margin: 0;
   font: 500 clamp(0.95rem, 2.4vw, 1.05rem) / 1.6 system-ui, sans-serif;
@@ -494,7 +492,7 @@ body.auth-only.auth-shell--menu-open {
 
 .miniapp-store__card {
   display: grid;
-  gap: clamp(0.5rem, 2vw, 0.75rem);
+  gap: clamp(0.75rem, 2.6vw, 1rem);
   padding: clamp(1rem, 3vw, 1.5rem);
   border-radius: 20px;
 }
@@ -505,57 +503,81 @@ body.auth-only.auth-shell--menu-open {
   color: var(--auth-text);
 }
 
-.miniapp-store__description {
-  color: var(--auth-text);
-}
-
-.miniapp-store__meta {
-  font-size: clamp(0.85rem, 2vw, 0.95rem);
-}
-
-.miniapp-store__footer {
+.miniapp-store__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(0.5rem, 2vw, 0.75rem);
-}
-
-.miniapp-store__category {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(46, 125, 50, 0.12);
-  color: var(--auth-primary-strong);
-  font: 600 clamp(0.75rem, 2vw, 0.85rem) / 1.2 system-ui, sans-serif;
-}
-
-.miniapp-store__actions {
-  display: inline-flex;
-  gap: 0.5rem;
+  gap: clamp(0.5rem, 2.4vw, 0.75rem);
 }
 
 .miniapp-store__action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.6rem 1rem;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  padding: 0.55rem 1.15rem;
   border-radius: 999px;
-  border: 1px solid var(--auth-primary);
-  background: var(--auth-primary);
-  color: #ffffff;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--auth-text);
   font: 600 clamp(0.85rem, 2.2vw, 0.95rem) / 1.2 system-ui, sans-serif;
   text-decoration: none;
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.miniapp-store__action:hover,
 .miniapp-store__action:focus-visible {
+  outline: 3px solid var(--auth-primary-soft);
+  outline-offset: 2px;
+}
+
+.miniapp-store__action--open {
+  border-color: var(--auth-primary);
+  background: var(--auth-primary);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.2);
+}
+
+.miniapp-store__action--open:hover,
+.miniapp-store__action--open:focus-visible {
   background: var(--auth-primary-strong);
-  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.25);
-  outline: none;
+  border-color: var(--auth-primary-strong);
+  box-shadow: 0 14px 32px rgba(46, 125, 50, 0.25);
+}
+
+.miniapp-store__action--toggle {
+  border-color: var(--auth-border);
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--auth-text);
+}
+
+.miniapp-store__action--toggle:hover,
+.miniapp-store__action--toggle:focus-visible {
+  border-color: var(--auth-primary);
+  color: var(--auth-primary-strong);
+  background: var(--auth-primary-soft);
+}
+
+.miniapp-store__action--toggle[aria-pressed='true'],
+.miniapp-store__action--toggle.miniapp-store__action--active {
+  border-color: var(--auth-primary);
+  color: var(--auth-primary-strong);
+  background: var(--auth-primary-soft);
+  box-shadow: inset 0 0 0 1px rgba(46, 125, 50, 0.08);
+}
+
+.miniapp-store__action[disabled],
+.miniapp-store__action[aria-busy='true'],
+.miniapp-store__action[data-busy='true'] {
+  cursor: not-allowed;
+  opacity: 0.65;
+  box-shadow: none;
+}
+
+.miniapp-store__action[data-busy='true'] {
+  cursor: progress;
 }
 
 .miniapp-store__empty {
