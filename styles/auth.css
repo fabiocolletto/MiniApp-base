@@ -29,6 +29,10 @@ body.auth-only {
   min-height: 100dvh;
 }
 
+body.auth-only.auth-shell--menu-open {
+  overflow: hidden;
+}
+
 .auth-shell__header,
 .auth-shell__footer {
   position: sticky;
@@ -76,6 +80,21 @@ body.auth-only {
 }
 
 
+.auth-shell__menu-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 6vw, 3rem);
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(18px);
+  z-index: 40;
+}
+
+.auth-shell__menu-overlay[hidden] {
+  display: none !important;
+}
+
 .auth-shell__menu-button {
   display: inline-flex;
   align-items: center;
@@ -105,18 +124,15 @@ body.auth-only {
 }
 
 .auth-shell__menu-panel {
-  position: absolute;
-  inset-block-end: calc(100% + clamp(0.75rem, 2vw, 1rem));
-  inset-inline-end: 0;
+  position: relative;
   background: var(--auth-surface);
   border: 1px solid var(--auth-border);
   border-radius: 18px;
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
   padding: clamp(1rem, 3vw, 1.5rem);
-  width: clamp(16rem, 55vw, 22rem);
+  width: min(90vw, 24rem);
   display: grid;
   gap: clamp(0.75rem, 2vw, 1.25rem);
-  z-index: 20;
   max-height: min(80vh, 28rem);
   overflow-y: auto;
   overscroll-behavior: contain;

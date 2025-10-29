@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Menu principal do shell de autenticação agora abre como sobreposição centralizada com desfoco do plano de fundo.
+- Corrigida a sobreposição do menu principal para ocupar toda a viewport e desfocar corretamente o plano de fundo.
 - Reativado o painel MiniApp Store com vitrine detalhada dos MiniApps ativos e destaque automático para atalhos acionados.
 - Menu do rodapé reorganizado para listar páginas do shell e atalhos dos MiniApps publicados, com estados acessíveis e navegação por teclado.
 - Botão principal de menu movido para o rodapé com painel suspenso listando os modos Convidado e Cadastro.
