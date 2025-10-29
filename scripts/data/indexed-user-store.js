@@ -1,4 +1,9 @@
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
+import {
+  createEmptyMiniAppPreferences,
+  normalizeMiniAppPreferenceRecord,
+  sanitizeMiniAppPreferencesUpdates as sanitizeMiniAppPreferenceUpdates,
+} from './miniapp-preferences-helpers.js';
 
 export const DUPLICATE_PHONE_ERROR_MESSAGE = 'Telefone já cadastrado.';
 
@@ -64,6 +69,7 @@ function createEmptyPreferences() {
   return {
     theme: DEFAULT_THEME_PREFERENCE,
     footerIndicators: DEFAULT_FOOTER_INDICATORS_PREFERENCE,
+    miniApps: createEmptyMiniAppPreferences(),
   };
 }
 
@@ -94,6 +100,8 @@ function normalizePreferences(rawPreferences) {
     normalized.footerIndicators = sanitizeFooterIndicatorsPreference(rawPreferences.footerIndicators);
   }
 
+  normalized.miniApps = normalizeMiniAppPreferenceRecord(rawPreferences);
+
   return normalized;
 }
 
@@ -112,6 +120,21 @@ function mergePreferences(existingPreferences, updates = {}) {
 
   if (Object.prototype.hasOwnProperty.call(updates, 'footerIndicators')) {
     merged.footerIndicators = sanitizeFooterIndicatorsPreference(updates.footerIndicators);
+  }
+
+  const { hasUpdates, updates: miniAppUpdates } = sanitizeMiniAppPreferenceUpdates(updates);
+
+  if (hasUpdates) {
+    const mergedMiniApps = {
+      saved: Object.prototype.hasOwnProperty.call(miniAppUpdates, 'saved')
+        ? miniAppUpdates.saved
+        : basePreferences.miniApps.saved,
+      favorites: Object.prototype.hasOwnProperty.call(miniAppUpdates, 'favorites')
+        ? miniAppUpdates.favorites
+        : basePreferences.miniApps.favorites,
+    };
+
+    merged.miniApps = normalizeMiniAppPreferenceRecord({ miniApps: mergedMiniApps });
   }
 
   return merged;
