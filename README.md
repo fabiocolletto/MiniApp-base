@@ -17,6 +17,39 @@ O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApp
 - `reports/` – relatórios e evidências da limpeza PWA atual, incluindo inventário, coverage e validações.
 - `archive/2025-10-28/` – árvore completa do legado movido durante a limpeza, preservando histórico sem poluir o shell ativo.
 
+## Memória local (IndexedDB)
+
+### Visão geral
+- A camada oficial utiliza [`shared/vendor/idb.min.js`](shared/vendor/idb.min.js) (versão 7.x em ESM com licença MIT embutida).
+- O banco `marco_core` centraliza configurações, usuário mestre, catálogo de MiniApps, auditoria local e cache chave/valor.
+- MiniApps que precisam de persistência dedicada ganham bancos próprios, como `pesquisa_studio` para o futuro Pesquisa Studio.
+- As APIs residem em `shared/storage/idb/` e expõem funções assíncronas prontas para uso em módulos ESM.
+
+### Convenções de nomes
+- Bancos: `marco_core` para o Base; `miniapp_slug` ou nomes compostos (`pesquisa_studio`) para MiniApps.
+- Stores (`marco_core`): `settings`, `user_master`, `miniapps_catalog`, `audit_log`, `kv_cache`.
+- Stores (`pesquisa_studio`): `surveys`, `flows`, `templates`, `variants`, `terminals`, `presets`, `drafts`, `exports`, `runs`, `tags`.
+- Índices seguem o prefixo `by_` (`by_email`, `by_route`, `by_status`, `surveys_multi` etc.). Use chaves compostas quando necessário (`variants` usa `[surveyId, variantId]`).
+
+### Exemplos de uso
+```js
+import { setSetting, getMiniappsCatalog, listAuditLog } from './shared/storage/idb/marcocore.js';
+import { upsertSurvey, listSurveys } from './shared/storage/idb/surveystudio.js';
+
+await setSetting('theme', 'dark');
+const catalog = await getMiniappsCatalog();
+const recentEvents = await listAuditLog({ limit: 10 });
+
+await upsertSurvey({ surveyId: 'launch-2025', name: 'Pesquisa de lançamento', status: 'draft' });
+const drafts = await listSurveys({ status: 'draft' });
+```
+
+### Boas práticas
+- Solicite persistência e monitore quota usando `ensurePersistentStorage()` e `getStorageEstimate()` (expostos em `persistence.js`).
+- Evite armazenar segredos ou PII. A camada destina-se a preferências, catálogos e caches descartáveis.
+- Para backup local ou auditoria, exporte os dados com `listAuditLog()`/`getMiniappsCatalog()` e gere um JSON para download (por exemplo com `URL.createObjectURL(new Blob([...]))`).
+- Nunca dependa de `localStorage`; a migração automática (`shared/storage/idb/migrate.js`) limpa resquícios legados.
+
 ## Executando localmente
 
 1. Instale as dependências do projeto com `npm install` (requer acesso ao pacote `jsdom`).

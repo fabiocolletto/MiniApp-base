@@ -27,3 +27,15 @@
 - Sempre que uma nova etapa for autorizada pelo usuário, abra a próxima versão sequencial seguindo o padrão definido e informe o horário vigente em Curitiba/BR (BRT, UTC-3) no momento da atualização.
 - Informe resumidamente o que mudou e utilize sempre a data e o horário oficiais de Curitiba/BR (BRT, UTC-3) vigentes no momento da atualização do registro.
 - Ao identificar documentação obsoleta, mova-a para a pasta `Arquivados/` e descreva o motivo no `Log.md`. Caso ainda não exista um documento descrevendo o processo, crie-o.
+
+## Memória local: IndexedDB (padrão oficial)
+- Origem do código: `shared/vendor/idb.min.js` (versão 7.x em ESM com cabeçalho de licença).
+- Bancos padrão: `marco_core` (sistema Base) e bancos dedicados por MiniApp, como `pesquisa_studio`.
+- Estrutura: os arquivos de API residem em `shared/storage/idb/` (`databases.js`, `marcocore.js`, `surveystudio.js`, `migrate.js`, `persistence.js`).
+- Migração/onupgradeneeded: incremente versões com inteiros crescentes e utilize os helpers de `databases.js` para garantir stores/índices; mantenha migrações idempotentes.
+- Persistência e cota: use `ensurePersistentStorage()` e `getStorageEstimate()` (expostos em `persistence.js`) para solicitar armazenamento persistente e reportar uso/quota.
+- Restrições: nunca armazene segredos ou dados sensíveis (LGPD) no navegador. Limite-se a chaves públicas ou caches descartáveis.
+
+## Como um MiniApp deve acessar armazenamento
+- Importar a API ESM correspondente (ex.: `import { upsertSurvey } from '../../shared/storage/idb/surveystudio.js';`).
+- Evitar o uso de `localStorage` ou outros storages legados. Toda persistência deve passar pela camada IndexedDB padronizada.
