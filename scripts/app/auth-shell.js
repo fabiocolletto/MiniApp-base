@@ -544,13 +544,16 @@ export function initAuthShell(options = {}) {
         link.rel = 'noopener noreferrer';
 
         const appId = normalizeMiniAppId(app?.id);
-        const normalizedId = appId || 'miniapp';
-        item.dataset.appId = normalizedId;
-        link.href = buildMiniAppDocPath(normalizedId) || '#';
+        if (!appId) {
+          return;
+        }
+
+        item.dataset.appId = appId;
+        link.href = buildMiniAppDocPath(appId) || '#';
         link.textContent = 'Abrir documentação do MiniApp';
         link.title = `Ver detalhes do MiniApp ${appTitle.textContent}`;
 
-        if (normalizedId === highlightAppId) {
+        if (appId === highlightAppId) {
           item.classList.add('guest-panel__item--active');
           highlightedLink = link;
           highlightedApp = app;
@@ -967,8 +970,10 @@ export function initAuthShell(options = {}) {
       return null;
     }
 
+    const VERSION_RESOURCE = './meta/app-version.json';
+
     try {
-      const response = await runtime.fetch('./package.json', { cache: 'no-store' });
+      const response = await runtime.fetch(VERSION_RESOURCE, { cache: 'no-store' });
 
       if (!response.ok) {
         if (ensureHtmlElement(doc, versionTarget)) {
@@ -977,8 +982,8 @@ export function initAuthShell(options = {}) {
         return null;
       }
 
-      const packageInfo = await response.json();
-      const version = typeof packageInfo?.version === 'string' ? packageInfo.version.trim() : '';
+      const payload = await response.json();
+      const version = typeof payload?.version === 'string' ? payload.version.trim() : '';
 
       if (ensureHtmlElement(doc, versionTarget)) {
         versionTarget.textContent = version ? `v${version}` : 'em desenvolvimento';

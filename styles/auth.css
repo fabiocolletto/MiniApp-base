@@ -3,12 +3,28 @@
   --auth-primary-strong: #1f5a2a;
   --auth-primary-soft: rgba(46, 125, 50, 0.12);
   --auth-text: var(--ac-text, #1a1a1a);
-  --auth-muted: #6b7280;
+  --auth-muted: var(--ac-text-muted, #6b7280);
   --auth-border: var(--ac-border, #e5e7eb);
   --auth-surface: var(--ac-surface, #ffffff);
-  --auth-shell-surface: rgba(255, 255, 255, 0.9);
-  --auth-shell-border: rgba(15, 23, 42, 0.08);
+  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #ffffff) 92%, transparent 8%);
+  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(15, 23, 42, 0.08)) 100%, transparent 0%);
   --auth-shell-blur: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141b22) 88%, transparent 12%);
+    --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
+    --auth-text: var(--ac-text, #ebeff3);
+    --auth-muted: var(--ac-text-muted, #94a3b8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141b22) 88%, transparent 12%);
+  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
+  --auth-text: var(--ac-text, #ebeff3);
+  --auth-muted: var(--ac-text-muted, #94a3b8);
 }
 
 html,
@@ -264,7 +280,7 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-shell__footer-divider {
-  color: rgba(15, 23, 42, 0.18);
+  color: color-mix(in srgb, var(--auth-muted) 40%, transparent);
 }
 
 .auth-shell__footer-text strong {
