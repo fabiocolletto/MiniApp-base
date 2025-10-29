@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Rodapé exibe novamente o ícone da 5 Horas com variação automática para temas claro e escuro.
 - Menu principal do shell de autenticação agora abre como sobreposição centralizada com desfoco do plano de fundo.
 - Corrigida a sobreposição do menu principal para ocupar toda a viewport e desfocar corretamente o plano de fundo.
 - Reativado o painel MiniApp Store com vitrine detalhada dos MiniApps ativos e destaque automático para atalhos acionados.
