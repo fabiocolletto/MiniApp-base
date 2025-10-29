@@ -104,18 +104,20 @@
         hidden
       >
         <p id="authFooterMenuTitle" class="auth-shell__menu-title">Painéis do aplicativo</p>
-        <ul class="auth-shell__menu-list">
-          <li>
-            <button type="button" class="auth-shell__menu-item" data-view="guest">
-              Explorar como convidado
-            </button>
-          </li>
-          <li>
-            <button type="button" class="auth-shell__menu-item" data-view="register">
-              Criar uma nova conta
-            </button>
-          </li>
-        </ul>
+        <ul class="auth-shell__menu-list" data-menu-group="views"></ul>
+        <div class="auth-shell__menu-divider" role="presentation" aria-hidden="true"></div>
+        <p
+          id="authFooterMiniAppsTitle"
+          class="auth-shell__menu-section-title"
+          data-menu-title="miniapps"
+          hidden
+        >
+          MiniApps ativos
+        </p>
+        <p class="auth-shell__menu-empty" data-menu-empty="miniapps" hidden>
+          Nenhum MiniApp ativo disponível no momento.
+        </p>
+        <ul class="auth-shell__menu-list" data-menu-group="miniapps"></ul>
       </div>
     </nav>
 
@@ -133,7 +135,8 @@
     import eventBus from './scripts/events/event-bus.js';
     import { registerServiceWorker } from './scripts/pwa/register-service-worker.js';
     import { renderRegisterPanel } from './scripts/views/register.js';
-    import { getMiniAppsSnapshot } from './scripts/data/miniapp-store.js';
+    import { renderMiniAppStore } from './scripts/views/miniapp-store.js';
+    import { getMiniAppsSnapshot, subscribeMiniApps } from './scripts/data/miniapp-store.js';
 
     const viewRoot = document.getElementById('authViewRoot');
     const authCard = document.querySelector('.auth-card');
@@ -144,6 +147,11 @@
     const footerMenuButton = document.querySelector('.auth-shell__menu-button');
     const footerMenuPanel = document.getElementById('authFooterMenu');
     const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
+    const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
+    const footerMenuMiniAppsTitle = footerMenuPanel?.querySelector('[data-menu-title="miniapps"]');
+    const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
+    const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
+    const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
     let footerMenuOpen = false;
     let removeFooterMenuListeners = null;
 
@@ -211,7 +219,7 @@
         return;
       }
 
-      const target = event.target;
+      const target = event.target instanceof HTMLElement ? event.target.closest('.auth-shell__menu-item') : null;
 
       if (!(target instanceof HTMLElement)) {
         return;
@@ -511,9 +519,102 @@
         render: renderGuestAccessPanel,
         hint: 'Conheça os MiniApps liberados para convidados sem precisar de credenciais.',
       },
+      miniapps: {
+        render: renderMiniAppStore,
+        hint: 'Explore o catálogo completo de MiniApps e abra as documentações disponíveis.',
+      },
     };
 
     let currentView = null;
+
+    const footerViewEntries = [
+      { view: 'guest', label: 'Explorar como convidado' },
+      { view: 'register', label: 'Criar uma nova conta' },
+      { view: 'miniapps', label: 'MiniApp Store' },
+    ];
+
+    function renderFooterViewItems() {
+      if (!(footerMenuViewsList instanceof HTMLElement)) {
+        return;
+      }
+
+      const items = footerViewEntries.map((entry) => {
+        const listItem = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'auth-shell__menu-item';
+        button.dataset.view = entry.view;
+        button.textContent = entry.label;
+        listItem.append(button);
+        return listItem;
+      });
+
+      footerMenuViewsList.replaceChildren(...items);
+    }
+
+    function renderFooterMiniAppItems(apps) {
+      if (!(footerMenuMiniAppsList instanceof HTMLElement)) {
+        return;
+      }
+
+      footerMenuMiniAppsList.replaceChildren();
+
+      const normalized = Array.isArray(apps)
+        ? apps
+            .filter(
+              (app) =>
+                app &&
+                Array.isArray(app.access) &&
+                app.access.includes('usuario') &&
+                String(app.status ?? '').trim().toLowerCase() === 'active'
+            )
+            .map((app) => ({
+              id: normalizeMiniAppId(app.id),
+              name: typeof app.name === 'string' && app.name.trim() ? app.name.trim() : 'MiniApp ativo',
+            }))
+            .filter((entry) => entry.id)
+            .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+        : [];
+
+      if (footerMenuMiniAppsTitle instanceof HTMLElement) {
+        footerMenuMiniAppsTitle.hidden = normalized.length === 0;
+      }
+
+      if (footerMenuMiniAppsEmpty instanceof HTMLElement) {
+        footerMenuMiniAppsEmpty.hidden = normalized.length > 0;
+      }
+
+      if (footerMenuMiniAppsList instanceof HTMLElement) {
+        footerMenuMiniAppsList.hidden = normalized.length === 0;
+      }
+
+      if (footerMenuMiniAppsDivider instanceof HTMLElement) {
+        footerMenuMiniAppsDivider.hidden = normalized.length === 0;
+      }
+
+      if (normalized.length === 0) {
+        return;
+      }
+
+      const items = normalized.map((entry) => {
+        const listItem = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'auth-shell__menu-item auth-shell__menu-item--miniapp';
+        button.dataset.miniappId = entry.id;
+        button.textContent = entry.name;
+        button.title = `Abrir destaque para o MiniApp ${entry.name}`;
+        listItem.append(button);
+        return listItem;
+      });
+
+      footerMenuMiniAppsList.append(...items);
+    }
+
+    function refreshFooterMenuItems() {
+      renderFooterViewItems();
+      renderFooterMiniAppItems(getMiniAppsSnapshot());
+    }
 
     if (footerMenuButton instanceof HTMLElement) {
       footerMenuButton.addEventListener('click', () => {
@@ -538,17 +639,52 @@
       });
     }
 
-    getFooterMenuItems().forEach((item) => {
-      item.addEventListener('click', () => {
-        const viewName = item.dataset.view;
+    function handleFooterMenuItemAction(item) {
+      if (!(item instanceof HTMLElement)) {
+        return;
+      }
 
-        if (viewName) {
-          closeFooterMenu();
-          renderAuthView(viewName, { shouldFocus: true });
+      const viewName = item.dataset.view;
+      const highlightAppId = item.dataset.highlightAppId || item.dataset.miniappId;
+
+      if (viewName) {
+        closeFooterMenu();
+        renderAuthView(viewName, {
+          shouldFocus: true,
+          viewProps: highlightAppId ? { highlightAppId } : {},
+        });
+        return;
+      }
+
+      if (item.dataset.miniappId) {
+        closeFooterMenu();
+        renderAuthView('miniapps', {
+          shouldFocus: true,
+          viewProps: { highlightAppId },
+        });
+      }
+    }
+
+    if (footerMenuPanel instanceof HTMLElement) {
+      footerMenuPanel.addEventListener('click', (event) => {
+        const target = event.target instanceof HTMLElement ? event.target.closest('.auth-shell__menu-item') : null;
+        if (!target) {
+          return;
         }
+
+        event.preventDefault();
+        handleFooterMenuItemAction(target);
       });
 
-      item.addEventListener('keydown', handleFooterMenuItemKeydown);
+      footerMenuPanel.addEventListener('keydown', (event) => {
+        handleFooterMenuItemKeydown(event);
+      });
+    }
+
+    refreshFooterMenuItems();
+
+    subscribeMiniApps((apps) => {
+      renderFooterMiniAppItems(apps);
     });
 
     function focusFirstInteractiveElement(root) {
@@ -623,9 +759,13 @@
         return;
       }
 
-      const { view } = payload;
-      if (view === 'register' || view === 'guest') {
-        renderAuthView(view, { shouldFocus: true });
+      const { view, viewProps, shouldFocus = true } = payload;
+      if (typeof view !== 'string') {
+        return;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(VIEW_RENDERERS, view)) {
+        renderAuthView(view, { shouldFocus, viewProps });
       }
     }
 
@@ -727,13 +867,13 @@
       const redirected = openMiniAppShortcut(requestedMiniApp);
 
       if (!redirected) {
-        renderAuthView('guest', {
+        renderAuthView('miniapps', {
           shouldFocus: true,
           viewProps: {
             highlightAppId: requestedMiniApp,
             onHighlight({ app }) {
               if (statusHint instanceof HTMLElement && app) {
-                statusHint.textContent = `Documentação do MiniApp "${app.name}" aberta nesta tela. Use o botão para acessar os detalhes.`;
+                statusHint.textContent = `MiniApp "${app.name}" destacado. Use o atalho para abrir a documentação oficial.`;
               }
             },
           },
