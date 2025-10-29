@@ -59,6 +59,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
 
+## [0.2.3] - 2025-10-29T15:27:46-03:00 (BRT)
+- Mantido o layout horizontal do cabeçalho, rodapé e cartão de autenticação em todas as larguras, ajustando apenas espaçamentos para telas menores sem alterar a hierarquia visual.
+
 ## [0.2.2] - 2025-10-29T15:21:24-03:00 (BRT)
 - Ajustada a largura do cartão de autenticação para seguir o contêiner em telas menores, mantendo o espaçamento interno aprovado e a consistência responsiva entre mobile e desktop.
 

@@ -900,22 +900,26 @@ body.auth-only.auth-shell--menu-open {
 @media (max-width: 768px) {
   .auth-shell__header,
   .auth-shell__footer {
-    flex-direction: column;
-    text-align: center;
+    justify-content: space-between;
+    gap: clamp(0.75rem, 4vw, 1.5rem);
   }
 
-  .auth-shell__context {
-    text-align: center;
+  .auth-shell__footer {
+    padding-inline: clamp(1.25rem, 5vw, 2.25rem);
+  }
+
+  .auth-card {
+    padding: clamp(1.5rem, 5vw, 2.25rem);
   }
 }
 
 @media (max-width: 480px) {
-  .auth-card {
-    padding: clamp(1.25rem, 6vw, 1.75rem);
-    border-radius: 16px;
+  .auth-shell__header,
+  .auth-shell__footer {
+    padding-inline: clamp(1rem, 6vw, 1.5rem);
   }
 
-  .auth-selector {
-    width: 100%;
+  .auth-card {
+    padding: clamp(1.4rem, 6vw, 2rem);
   }
 }
