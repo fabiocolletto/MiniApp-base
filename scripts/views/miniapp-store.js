@@ -609,16 +609,33 @@ export function renderMiniAppStore(viewRoot, options = {}) {
     return;
   }
 
+  let highlightResolved = false;
   apps.forEach((app) => {
     const item = createMiniAppCard(app, {
       highlightId,
-      onHighlight: options.onHighlight,
+      onHighlight: (payload) => {
+        highlightResolved = true;
+        if (typeof options.onHighlight === 'function') {
+          options.onHighlight(payload);
+        }
+      },
       preferencesSnapshot,
       onToggleSaved: toggleSavedHandler,
       onToggleFavorite: toggleFavoriteHandler,
     });
     list.append(item);
   });
+
+  if (!highlightResolved && highlightId && typeof options.onHighlight === 'function') {
+    queueMicrotask(() => {
+      options.onHighlight({
+        app: { id: highlightId, name: highlightId },
+        id: highlightId,
+        link: null,
+        controls: null,
+      });
+    });
+  }
 
   container.append(header, list);
   viewRoot.replaceChildren(container);

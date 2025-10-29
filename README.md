@@ -7,8 +7,9 @@ O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApp
 ## Estrutura do repositório
 
 - `index.html` – shell principal com painel de acesso (modo convidado por padrão) e vitrine de MiniApps liberados.
-- `public/` – assets estáticos servidos diretamente (service worker, ícones, páginas offline e atalhos dos MiniApps).
-- `styles/` – design tokens globais (`tokens.css`) e estilos do fluxo de autenticação (`main.css` e `auth.css`).
+- `design/` – tokens DTCG (`tokens.json`) e utilitários de geração (`scripts/build/tokens.mjs`).
+- `public/` – assets estáticos servidos diretamente (service worker, ícones, `app-theme.css`, `tokens.css` e páginas offline).
+- `styles/` – estilos do fluxo de autenticação (`main.css` e `auth.css`) construídos sobre o tema global.
 - `scripts/` – módulos JavaScript do shell (autenticação, armazenamento local, preferências e integração com o service worker).
 - `core/` – utilitários persistentes para contas e sessão global (IndexedDB + logging compartilhado).
 - `sys/` – ferramentas de infraestrutura (ex.: utilitário de log) utilizadas pelos módulos centrais.
@@ -16,6 +17,30 @@ O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApp
 - `docs/miniapps/` – fichas descritivas dos MiniApps publicados no catálogo.
 - `reports/` – relatórios e evidências da limpeza PWA atual, incluindo inventário, coverage e validações.
 - `archive/2025-10-28/` – árvore completa do legado movido durante a limpeza, preservando histórico sem poluir o shell ativo.
+
+## Tema 5 Horas & Tokens
+
+- Os tokens do tema são definidos em [`design/tokens.json`](design/tokens.json) seguindo o padrão DTCG. Execute `node scripts/build/tokens.mjs`
+  sempre que alterar o JSON para regenerar `public/tokens.css`.
+- [`public/app-theme.css`](public/app-theme.css) organiza as camadas `@layer tokens, base, layout, components, utilities`, mapeia variáveis do Elementor
+  (`--e-global-*`) para aliases `--ac-*` e controla `color-scheme` com `data-theme`.
+- Os estilos específicos do shell (`styles/main.css`, `styles/auth.css`) consomem os aliases `--ac-*` e variáveis auxiliares expostas pelo tema global.
+- Detalhes adicionais, mapa de escala tipográfica e exemplos de uso estão em [`docs/ui-theme-and-prefs.md`](docs/ui-theme-and-prefs.md).
+
+## Preferências do Usuário
+
+- As preferências são persistidas no IndexedDB `marco_core`, store `prefs`, através de [`shared/storage/idb/prefs.js`](shared/storage/idb/prefs.js).
+- O controlador [`scripts/preferences/user-preferences.js`](scripts/preferences/user-preferences.js) aplica as preferências ao carregar o shell (`loadUserPreferences`),
+  expõe `updateUserPreferences`, `getCurrentPreferences` e permite inscrição em mudanças.
+- Opções suportadas: tema (`auto`/`light`/`dark`), idioma (`pt-BR`/`en`/`es`), escala tipográfica (cinco níveis), densidade (`comfort`/`compact`) e redução de animações.
+- O painel visual é carregado sob demanda a partir de [`components/preferences/panel.js`](components/preferences/panel.js) via menu do rodapé (item **Preferências do usuário**).
+  O painel aplica as alterações imediatamente e respeita `prefers-color-scheme` / `prefers-reduced-motion` quando o usuário mantém a opção automática.
+
+## Registry de MiniApps
+
+- [`miniapps/registry.json`](miniapps/registry.json) lista os MiniApps publicados e aponta para o módulo ESM responsável por inicializar cada experiência.
+- [`shell/load-miniapp.js`](shell/load-miniapp.js) expõe `loadMiniApp(id, options)`, que busca o registro sem cache, importa o módulo e executa `mount(target, context)`.
+- O service worker mantém `miniapps/registry.json` e `components/preferences/panel.html` com estratégia network-first para garantir atualizações rápidas sem exigir limpeza manual de cache.
 
 ## Memória local (IndexedDB)
 
@@ -52,10 +77,10 @@ const drafts = await listSurveys({ status: 'draft' });
 
 ## Executando localmente
 
-1. Instale as dependências do projeto com `npm install` (requer acesso ao pacote `jsdom`).
+1. Instale as dependências do projeto com `npm install` (nenhum pacote externo é obrigatório para os testes).
 2. Inicie um servidor apontando para a raiz do projeto, por exemplo: `npx serve .` ou `python -m http.server 4173`.
 3. Acesse `http://localhost:<porta>/index.html` para validar a interface.
-4. Execute `npm test` para rodar a suíte automatizada que cobre as interações do shell (requer `jsdom`).
+4. Execute `npm test` para rodar a suíte automatizada que cobre as interações do shell (uma simulação de DOM já está inclusa no repositório).
 
 ### Testes manuais recomendados
 
@@ -80,6 +105,8 @@ const drafts = await listSurveys({ status: 'draft' });
 ## Política de cache e offline
 
 - O `service-worker.js` utiliza estratégia cache-first para os assets essenciais listados em `CORE_ASSETS`.
+- `miniapps/registry.json` e `components/preferences/panel.html` são tratados com estratégia network-first (`NETWORK_FIRST_PATHS`)
+  para refletir publicações e ajustes de UI sem exigir limpeza manual de cache.
 - A página `public/offline.html` garante fallback controlado para navegação sem conexão.
 - As fichas dos MiniApps (`docs/miniapps/*.md`) são pré-cacheadas para suportar leitura offline após o primeiro acesso.
 - Requisições de navegação para `/?app=<slug>` redirecionam automaticamente para a documentação correspondente; caso o slug seja inválido o catálogo destaca o item buscado.
@@ -96,6 +123,7 @@ const drafts = await listSurveys({ status: 'draft' });
 - Roteiro de migração pré ➜ pós PWA: [`docs/migration-pre-to-post-pwa.md`](docs/migration-pre-to-post-pwa.md)
 - Auditoria da pasta MiniApps: [`docs/miniapps-folder-audit.md`](docs/miniapps-folder-audit.md)
 - Tokens de design: [`docs/design-kit-tokens.md`](docs/design-kit-tokens.md)
+- Tema e preferências: [`docs/ui-theme-and-prefs.md`](docs/ui-theme-and-prefs.md)
 - Validação PWA anterior: [`docs/pwa-validation-report.md`](docs/pwa-validation-report.md)
 - Integração MiniApps + WordPress: [`docs/wordpress-miniapps-integration.md`](docs/wordpress-miniapps-integration.md)
 - Relatório completo da limpeza: [`reports/pwa-cleanup-2025-10-28/README.md`](reports/pwa-cleanup-2025-10-28/README.md)

@@ -8,7 +8,8 @@ const OFFLINE_FALLBACK_URL = new URL(OFFLINE_FALLBACK, swUrl.origin).toString();
 
 const CORE_ASSETS = [
   './index.html',
-  './styles/tokens.css',
+  './public/app-theme.css',
+  './public/tokens.css',
   './styles/main.css',
   './styles/auth.css',
   './package.json',
@@ -19,6 +20,12 @@ const CORE_ASSETS = [
   './public/icons/shortcut-task-manager.svg',
   './public/icons/shortcut-exam-planner.svg'
 ];
+
+const NETWORK_FIRST_PATHS = ['/miniapps/registry.json', '/components/preferences/panel.html'];
+
+function shouldUseNetworkFirst(url) {
+  return NETWORK_FIRST_PATHS.some((path) => url.pathname.endsWith(path));
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -112,6 +119,31 @@ async function handleNavigationRequest(event) {
 
 async function handleAssetRequest(request) {
   const cache = await caches.open(CACHE_NAME);
+  const requestUrl = new URL(request.url);
+
+  if (shouldUseNetworkFirst(requestUrl)) {
+    try {
+      const networkResponse = await fetch(request, { cache: 'no-store' });
+      if (networkResponse && networkResponse.ok) {
+        cache.put(request, networkResponse.clone());
+        return networkResponse;
+      }
+    } catch (error) {
+      console.warn('Network-first falhou para', requestUrl.pathname, error);
+    }
+
+    const fallbackCached = await cache.match(request);
+    if (fallbackCached) {
+      return fallbackCached;
+    }
+
+    return new Response('Conteúdo temporariamente indisponível.', {
+      status: 503,
+      statusText: 'Unavailable',
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+
   const cached = await cache.match(request);
 
   if (cached) {
