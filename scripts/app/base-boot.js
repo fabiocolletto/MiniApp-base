@@ -5,6 +5,7 @@ import { ensurePersistentStorage, getStorageEstimate } from '../../shared/storag
 import { openMarcoCore, openPesquisaStudio } from '../../shared/storage/idb/databases.js';
 import { migrateLegacyStorage } from '../../shared/storage/idb/migrate.js';
 import { syncMiniappsCatalog as syncMiniappsCatalogToIndexedDB } from '../../shared/storage/idb/marcocore.js';
+import { loadUserPreferences } from '../preferences/user-preferences.js';
 
 function emitStorageReady(payload) {
   eventBus.emit('storage:ready', payload);
@@ -144,7 +145,16 @@ function setupEstimateRefresh() {
 }
 
 export function bootstrapMiniAppBase(runtimeWindow = typeof window !== 'undefined' ? window : undefined) {
-  initAuthShell(runtimeWindow);
+  const resolvedWindow = runtimeWindow ?? (typeof window !== 'undefined' ? window : undefined);
+  const resolvedDocument =
+    (resolvedWindow && typeof resolvedWindow.document === 'object' ? resolvedWindow.document : undefined) ??
+    (typeof document !== 'undefined' ? document : undefined);
+
+  loadUserPreferences({ window: resolvedWindow, document: resolvedDocument }).catch((error) => {
+    console.error('Falha ao carregar preferências do usuário.', error);
+  });
+
+  initAuthShell(resolvedWindow);
   setupEstimateRefresh();
   bootstrapStorageLayer().catch((error) => {
     console.error('Falha ao inicializar a camada de armazenamento IndexedDB.', error);

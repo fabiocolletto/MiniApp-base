@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { JSDOM } from 'jsdom';
+import { JSDOM } from './helpers/jsdom-shim.js';
 
 import { initAuthShell, buildMiniAppDocPath } from '../scripts/app/auth-shell.js';
 import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
@@ -30,7 +30,11 @@ function attachDomGlobals(window) {
   global.Node = window.Node;
   global.KeyboardEvent = window.KeyboardEvent;
   global.HTMLBodyElement = window.HTMLBodyElement;
-  global.navigator = window.navigator;
+  Object.defineProperty(global, 'navigator', {
+    configurable: true,
+    writable: true,
+    value: window.navigator,
+  });
 }
 
 function restoreGlobals() {

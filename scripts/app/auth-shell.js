@@ -18,6 +18,25 @@ const VIEW_CLEANUP_KEY = '__viewCleanup';
 export const normalizeMiniAppId = normalizeMiniAppIdFromStore;
 export const buildMiniAppDocPath = buildMiniAppDocPathFromStore;
 
+let preferencesPanelModulePromise = null;
+
+async function openPreferencesPanelLazy({ doc, win } = {}) {
+  try {
+    if (!preferencesPanelModulePromise) {
+      preferencesPanelModulePromise = import('../../components/preferences/panel.js');
+    }
+
+    const module = await preferencesPanelModulePromise;
+    if (!module || typeof module.openPreferencesPanel !== 'function') {
+      throw new Error('Módulo do painel de preferências indisponível.');
+    }
+
+    await module.openPreferencesPanel({ document: doc, window: win });
+  } catch (error) {
+    console.error('Não foi possível abrir o painel de preferências.', error);
+  }
+}
+
 function resolveRuntime(input = {}) {
   if (input && typeof input === 'object' && input.document && !input.window) {
     return { ...input, window: input.window ?? input };
@@ -497,6 +516,12 @@ export function initAuthShell(options = {}) {
 
     guestApps
       .filter((app) => normalizeMiniAppId(app?.id))
+      .filter(
+        (app) =>
+          Array.isArray(app?.access) &&
+          app.access.includes('usuario') &&
+          String(app?.status ?? '').trim().toLowerCase() === 'active',
+      )
       .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', 'pt-BR'))
       .forEach((app) => {
         const item = doc.createElement('li');
@@ -584,6 +609,7 @@ export function initAuthShell(options = {}) {
     { view: 'register', label: 'Criar uma nova conta' },
     { view: 'account-dashboard', label: 'Painel da conta' },
     { view: 'miniapps', label: 'MiniApp Store' },
+    { action: 'preferences', label: 'Preferências do usuário' },
   ];
 
   function renderFooterViewItems() {
@@ -596,7 +622,12 @@ export function initAuthShell(options = {}) {
       const button = doc.createElement('button');
       button.type = 'button';
       button.className = 'auth-shell__menu-item';
-      button.dataset.view = entry.view;
+      if (entry.view) {
+        button.dataset.view = entry.view;
+      }
+      if (entry.action) {
+        button.dataset.action = entry.action;
+      }
       button.textContent = entry.label;
       listItem.append(button);
       return listItem;
@@ -707,6 +738,7 @@ export function initAuthShell(options = {}) {
 
     const viewName = item.dataset.view;
     const highlightAppId = item.dataset.highlightAppId || item.dataset.miniappId;
+    const action = item.dataset.action;
 
     if (viewName) {
       closeFooterMenu();
@@ -714,6 +746,12 @@ export function initAuthShell(options = {}) {
         shouldFocus: true,
         viewProps: highlightAppId ? { highlightAppId } : {},
       });
+      return;
+    }
+
+    if (action === 'preferences') {
+      closeFooterMenu();
+      openPreferencesPanelLazy({ doc, win });
       return;
     }
 

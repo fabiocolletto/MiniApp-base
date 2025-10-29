@@ -13,6 +13,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Extraído o bootstrap do shell de autenticação para `scripts/app/auth-shell.js` com a função pública `initAuthShell`.
 - Exportados utilitários das views de cadastro e MiniApp Store para permitir testes modulares.
 - Adicionada suíte de testes de integração do shell com Node Test Runner + jsdom e documentação atualizada sobre execução local.
+- Substituída a dependência externa do jsdom por um simulador de DOM embutido utilizado pela suíte de testes, permitindo execuções sem acesso à internet.
 - Adicionada rotina de limpeza completa do dispositivo acionável pelo painel de gerenciamento, removendo cadastros locais,
   encerrando a sessão e sincronizando o banco global vazio.
 - Adicionado painel "Painel da conta" com lista de cadastros locais, ações rápidas e limpeza completa dos dados do dispositivo.
