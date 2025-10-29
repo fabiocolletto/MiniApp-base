@@ -119,6 +119,15 @@
       <span>© <span data-current-year></span> 5 Horas</span>
       <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
       <span>MiniApps</span>
+      <span
+        class="auth-shell__footer-divider"
+        aria-hidden="true"
+        data-active-view-divider
+        hidden
+      >
+        •
+      </span>
+      <span data-active-view-label hidden></span>
       <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
       <span>Versão <strong data-app-version>carregando…</strong></span>
     </small>
@@ -169,6 +178,8 @@
     const footerMenuPanel = document.getElementById('authFooterMenu');
     const footerMenuOverlay = document.querySelector('[data-menu-overlay]');
     const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
+    const footerActiveViewLabel = document.querySelector('[data-active-view-label]');
+    const footerActiveViewDivider = document.querySelector('[data-active-view-divider]');
     const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
     const footerMenuMiniAppsTitle = footerMenuPanel?.querySelector('[data-menu-title="miniapps"]');
     const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
@@ -408,6 +419,20 @@
         footerMenuLabel.textContent = activeLabel
           ? `Menu principal — painel atual: ${activeLabel}`
           : 'Menu principal';
+      }
+
+      if (footerActiveViewLabel instanceof HTMLElement) {
+        if (activeLabel) {
+          footerActiveViewLabel.textContent = `Painel atual: ${activeLabel}`;
+          footerActiveViewLabel.hidden = false;
+        } else {
+          footerActiveViewLabel.textContent = '';
+          footerActiveViewLabel.hidden = true;
+        }
+      }
+
+      if (footerActiveViewDivider instanceof HTMLElement) {
+        footerActiveViewDivider.hidden = !activeLabel;
       }
 
       if (footerMenuButton instanceof HTMLElement) {
