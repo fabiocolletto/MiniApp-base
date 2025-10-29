@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Adicionado painel "Painel da conta" com lista de cadastros locais, ações rápidas e limpeza completa dos dados do dispositivo.
 - Corrigido o botão do menu principal para manter a sobreposição aberta mesmo quando não há itens disponíveis.
 - Rodapé exibe novamente o ícone da 5 Horas com variação automática para temas claro e escuro.
 - Menu principal do shell de autenticação agora abre como sobreposição centralizada com desfoco do plano de fundo.
