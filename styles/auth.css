@@ -412,8 +412,14 @@ body.auth-only.auth-shell--menu-open {
   }
 
   .auth-card {
+    --auth-card-inline-padding-xs: clamp(1.1rem, 5vw, 1.75rem);
     gap: clamp(0.9rem, 4vw, 1.4rem);
-    padding: clamp(1.1rem, 5vw, 1.75rem);
+    padding-block: var(--auth-card-inline-padding-xs);
+    padding-inline: 0;
+  }
+
+  .auth-card > :not(.auth-card__body) {
+    padding-inline: var(--auth-card-inline-padding-xs);
   }
 
   .card {
