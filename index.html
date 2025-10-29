@@ -166,6 +166,7 @@
     import { registerServiceWorker } from './scripts/pwa/register-service-worker.js';
     import { renderRegisterPanel } from './scripts/views/register.js';
     import { renderMiniAppStore } from './scripts/views/miniapp-store.js';
+    import { renderAccountDashboard } from './scripts/views/account-dashboard.js';
     import { getMiniAppsSnapshot, subscribeMiniApps } from './scripts/data/miniapp-store.js';
 
     const viewRoot = document.getElementById('authViewRoot');
@@ -185,6 +186,7 @@
     const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
     const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
     const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
+    const VIEW_CLEANUP_KEY = '__viewCleanup';
 
     if (footerMenuPanel instanceof HTMLElement && !footerMenuPanel.hasAttribute('tabindex')) {
       footerMenuPanel.tabIndex = -1;
@@ -607,6 +609,10 @@
         render: renderMiniAppStore,
         hint: 'Explore o catálogo completo de MiniApps e abra as documentações disponíveis.',
       },
+      'account-dashboard': {
+        render: renderAccountDashboard,
+        hint: 'Gerencie cadastros locais, revise detalhes e limpe dados salvos neste dispositivo.',
+      },
     };
 
     let currentView = null;
@@ -614,6 +620,7 @@
     const footerViewEntries = [
       { view: 'guest', label: 'Explorar como convidado' },
       { view: 'register', label: 'Criar uma nova conta' },
+      { view: 'account-dashboard', label: 'Painel da conta' },
       { view: 'miniapps', label: 'MiniApp Store' },
     ];
 
@@ -818,6 +825,16 @@
       if (!viewConfig) {
         return;
       }
+
+      const teardown = viewRoot[VIEW_CLEANUP_KEY];
+      if (typeof teardown === 'function') {
+        try {
+          teardown();
+        } catch (error) {
+          console.error('Erro ao encerrar a view anterior.', error);
+        }
+      }
+      viewRoot[VIEW_CLEANUP_KEY] = null;
 
       viewRoot.replaceChildren();
       viewConfig.render(viewRoot, viewProps);
