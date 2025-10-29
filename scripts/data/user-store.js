@@ -4,6 +4,7 @@ import {
   watchUsers as watchUsersFromIndexedDb,
   updateUser as updateUserInIndexedDb,
   deleteUser as deleteUserFromIndexedDb,
+  clearAllUsers,
   resetIndexedDbMock,
   DUPLICATE_PHONE_ERROR_MESSAGE,
 } from './indexed-user-store.js';
@@ -671,6 +672,26 @@ export async function deleteUser(id) {
     console.error('Erro ao remover usuário do IndexedDB.', error);
     markStorageError(error);
     throw new Error('Não foi possível remover o usuário. Tente novamente.');
+  }
+}
+
+export async function purgeDeviceData() {
+  await initializationPromise?.catch(() => {});
+
+  if (storageError) {
+    throw new Error('Armazenamento local indisponível. Verifique o suporte ao IndexedDB e tente novamente.');
+  }
+
+  try {
+    await clearAllUsers();
+    users = [];
+    notify();
+    markStorageReady({ reason: 'update' });
+    await scheduleAccountsSync();
+  } catch (error) {
+    console.error('Erro ao limpar dados locais do IndexedDB.', error);
+    markStorageError(error);
+    throw new Error('Não foi possível limpar os dados locais do dispositivo. Tente novamente.');
   }
 }
 

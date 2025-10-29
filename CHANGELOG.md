@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Adicionada rotina de limpeza completa do dispositivo acionável pelo painel de gerenciamento, removendo cadastros locais,
+  encerrando a sessão e sincronizando o banco global vazio.
 - Adicionado painel "Painel da conta" com lista de cadastros locais, ações rápidas e limpeza completa dos dados do dispositivo.
 - Corrigido o botão do menu principal para manter a sobreposição aberta mesmo quando não há itens disponíveis.
 - Rodapé exibe novamente o ícone da 5 Horas com variação automática para temas claro e escuro.

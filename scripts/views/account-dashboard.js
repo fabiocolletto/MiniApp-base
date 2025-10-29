@@ -1,4 +1,4 @@
-import { subscribeUsers, deleteUser, getUsers } from '../data/user-store.js';
+import { subscribeUsers, deleteUser, purgeDeviceData } from '../data/user-store.js';
 import { subscribeSession, clearActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
 import { formatPhoneNumberForDisplay } from './shared/validation.js';
@@ -499,33 +499,20 @@ export function renderAccountDashboard(viewRoot) {
     eraseDeviceButton.disabled = true;
     setStatusHint(
       hadUsers
-        ? 'Excluindo dados locais deste dispositivo. Aguarde...'
-        : 'Limpando preferências locais armazenadas neste dispositivo.'
+        ? 'Excluindo cadastros e encerrando a sessão ativa neste dispositivo. Aguarde...'
+        : 'Limpando preferências locais e encerrando a sessão ativa. Aguarde...'
     );
 
     try {
-      if (hadUsers) {
-        const snapshot = getUsers();
-        for (const user of snapshot) {
-          if (user?.id == null) {
-            continue;
-          }
-
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            await deleteUser(user.id);
-          } catch (error) {
-            throw error;
-          }
-        }
-      }
-
+      await purgeDeviceData();
       clearActiveUser();
       clearLocalSnapshotCaches();
-      const message = hadUsers
-        ? 'Dados do dispositivo excluídos com sucesso. Nenhum cadastro permanece salvo.'
-        : 'Preferências locais removidas. Nenhum cadastro estava armazenado.';
-      setStatusHint(message);
+
+      const successMessage = hadUsers
+        ? 'Todos os cadastros foram removidos e a sessão ativa foi encerrada.'
+        : 'Nenhum cadastro estava salvo. Sessão ativa encerrada e preferências locais limpas.';
+
+      setStatusHint(successMessage);
       focusElement(title);
     } catch (error) {
       console.error('Erro ao excluir dados locais do dispositivo.', error);
