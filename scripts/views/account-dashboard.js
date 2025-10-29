@@ -1,6 +1,7 @@
 import { subscribeUsers, deleteUser, purgeDeviceData } from '../data/user-store.js';
 import { subscribeSession, clearActiveUser } from '../data/session-store.js';
 import eventBus from '../events/event-bus.js';
+import { listAuditLog } from '../../shared/storage/idb/marcocore.js';
 import { formatPhoneNumberForDisplay } from './shared/validation.js';
 
 const DATE_TIME_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
@@ -240,6 +241,71 @@ export function renderAccountDashboard(viewRoot) {
   quickButtons.append(logoutButton, openStoreButton, eraseDeviceButton);
   quickActions.append(quickTitle, quickSummary, quickButtons);
 
+  const storageSection = document.createElement('section');
+  storageSection.className = 'account-dashboard__storage surface-card';
+
+  const storageTitle = document.createElement('h3');
+  storageTitle.className = 'account-dashboard__storage-title';
+  storageTitle.textContent = 'Armazenamento local';
+
+  const storageStatus = document.createElement('p');
+  storageStatus.className = 'account-dashboard__storage-status';
+  storageStatus.textContent = 'Verificando persistência do navegador...';
+
+  const storageUsageList = document.createElement('dl');
+  storageUsageList.className = 'account-dashboard__storage-metrics';
+
+  const usageLabel = document.createElement('dt');
+  usageLabel.textContent = 'Uso';
+  usageLabel.className = 'account-dashboard__storage-metrics-label';
+  const usageValue = document.createElement('dd');
+  usageValue.className = 'account-dashboard__storage-metrics-value';
+  usageValue.textContent = '—';
+
+  const quotaLabel = document.createElement('dt');
+  quotaLabel.textContent = 'Cota';
+  quotaLabel.className = 'account-dashboard__storage-metrics-label';
+  const quotaValue = document.createElement('dd');
+  quotaValue.className = 'account-dashboard__storage-metrics-value';
+  quotaValue.textContent = '—';
+
+  storageUsageList.append(usageLabel, usageValue, quotaLabel, quotaValue);
+
+  const storageActions = document.createElement('div');
+  storageActions.className = 'account-dashboard__storage-actions';
+
+  const refreshButton = document.createElement('button');
+  refreshButton.type = 'button';
+  refreshButton.className = 'button button--secondary button--pill account-dashboard__storage-refresh';
+  refreshButton.textContent = 'Atualizar';
+
+  const auditButton = document.createElement('button');
+  auditButton.type = 'button';
+  auditButton.className = 'button button--secondary button--pill account-dashboard__storage-audit-toggle';
+  auditButton.textContent = 'Abrir auditoria local';
+
+  storageActions.append(refreshButton, auditButton);
+
+  const auditPanel = document.createElement('div');
+  auditPanel.className = 'account-dashboard__storage-audit surface-card';
+  auditPanel.hidden = true;
+
+  const auditTitle = document.createElement('h4');
+  auditTitle.className = 'account-dashboard__storage-audit-title';
+  auditTitle.textContent = 'Últimos eventos (50)';
+
+  const auditList = document.createElement('ol');
+  auditList.className = 'account-dashboard__storage-audit-list';
+  auditList.setAttribute('aria-live', 'polite');
+
+  const auditEmpty = document.createElement('p');
+  auditEmpty.className = 'account-dashboard__storage-audit-empty';
+  auditEmpty.textContent = 'Nenhum evento registrado ainda.';
+
+  auditPanel.append(auditTitle, auditEmpty, auditList);
+
+  storageSection.append(storageTitle, storageStatus, storageUsageList, storageActions, auditPanel);
+
   const recordsSection = document.createElement('section');
   recordsSection.className = 'account-dashboard__records';
 
@@ -257,7 +323,7 @@ export function renderAccountDashboard(viewRoot) {
 
   recordsSection.append(recordsTitle, emptyState, list);
 
-  dashboard.append(title, description, quickActions, recordsSection);
+  dashboard.append(title, description, quickActions, storageSection, recordsSection);
   viewRoot.replaceChildren(dashboard);
 
   const state = {
@@ -266,6 +332,168 @@ export function renderAccountDashboard(viewRoot) {
     expanded: new Set(),
   };
   let pendingFocusIndex = null;
+
+  const storageState = {
+    persistent: null,
+    usage: null,
+    quota: null,
+    lastEstimateAt: null,
+    refreshing: false,
+    auditLoaded: false,
+    auditLoading: false,
+    auditVisible: false,
+    auditEntries: [],
+  };
+
+  function formatBytes(bytes) {
+    if (typeof bytes !== 'number' || !Number.isFinite(bytes)) {
+      return '—';
+    }
+
+    if (bytes <= 0) {
+      return '0 B';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let index = 0;
+    let value = bytes;
+
+    while (value >= 1024 && index < units.length - 1) {
+      value /= 1024;
+      index += 1;
+    }
+
+    return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+  }
+
+  function updateStorageStatusView() {
+    if (storageState.persistent === true) {
+      storageStatus.textContent = 'Persistente: dados protegidos contra limpeza automática do navegador.';
+    } else if (storageState.persistent === false) {
+      storageStatus.textContent = 'Best-effort: o navegador pode limpar os dados em cenários de baixo espaço.';
+    } else {
+      storageStatus.textContent = 'Verificando persistência do navegador...';
+    }
+  }
+
+  function updateStorageMetricsView() {
+    if (storageState.usage != null) {
+      usageValue.textContent = formatBytes(storageState.usage);
+    } else {
+      usageValue.textContent = '—';
+    }
+
+    if (storageState.quota != null) {
+      quotaValue.textContent = formatBytes(storageState.quota);
+    } else {
+      quotaValue.textContent = '—';
+    }
+
+    refreshButton.disabled = storageState.refreshing;
+  }
+
+  function applyStorageEstimatePayload(payload) {
+    if (!payload || typeof payload !== 'object') {
+      return;
+    }
+
+    if (payload.persisted !== null && payload.persisted !== undefined) {
+      storageState.persistent = Boolean(payload.persisted);
+    }
+
+    if (typeof payload.usage === 'number') {
+      storageState.usage = payload.usage;
+    }
+
+    if (typeof payload.quota === 'number') {
+      storageState.quota = payload.quota;
+    }
+
+    storageState.refreshing = false;
+    storageState.lastEstimateAt = payload.timestamp ?? Date.now();
+    updateStorageStatusView();
+    updateStorageMetricsView();
+  }
+
+  function requestStorageEstimate() {
+    storageState.refreshing = true;
+    updateStorageMetricsView();
+    eventBus.emit('storage:estimate:request');
+  }
+
+  async function populateAuditLog() {
+    if (storageState.auditLoading) {
+      return;
+    }
+
+    storageState.auditLoading = true;
+    auditButton.disabled = true;
+    auditEmpty.hidden = false;
+    auditEmpty.textContent = 'Carregando auditoria local...';
+    auditList.replaceChildren();
+
+    try {
+      const entries = await listAuditLog({ limit: 50 });
+      storageState.auditEntries = Array.isArray(entries) ? entries : [];
+      storageState.auditLoaded = true;
+
+      if (storageState.auditEntries.length === 0) {
+        auditEmpty.hidden = false;
+        auditEmpty.textContent = 'Nenhum evento registrado ainda.';
+        return;
+      }
+
+      auditEmpty.hidden = true;
+      const fragment = document.createDocumentFragment();
+
+      storageState.auditEntries.forEach((entry) => {
+        const item = document.createElement('li');
+        item.className = 'account-dashboard__storage-audit-item';
+
+        const timestamp = typeof entry?.timestamp === 'number' ? entry.timestamp : Date.now();
+        const formattedDate = DATE_TIME_FORMATTER.format(new Date(timestamp));
+        const actionLabel = typeof entry?.action === 'string' ? entry.action : 'evento';
+        const statusLabel = typeof entry?.status === 'string' ? entry.status : '';
+        const miniappLabel = typeof entry?.miniappId === 'string' ? entry.miniappId : 'marco_core';
+        const summaryParts = [`[${formattedDate}]`, actionLabel];
+
+        if (statusLabel) {
+          summaryParts.push(`(${statusLabel})`);
+        }
+
+        if (miniappLabel) {
+          summaryParts.push(`• ${miniappLabel}`);
+        }
+
+        const summary = document.createElement('p');
+        summary.className = 'account-dashboard__storage-audit-summary';
+        summary.textContent = summaryParts.join(' ');
+        item.append(summary);
+
+        const detailsValue = entry?.details ?? entry?.message ?? null;
+        if (detailsValue) {
+          const details = document.createElement('pre');
+          details.className = 'account-dashboard__storage-audit-details';
+          const detailText = typeof detailsValue === 'string'
+            ? detailsValue
+            : JSON.stringify(detailsValue, null, 2);
+          details.textContent = detailText;
+          item.append(details);
+        }
+
+        fragment.append(item);
+      });
+
+      auditList.replaceChildren(fragment);
+    } catch (error) {
+      console.error('Erro ao carregar auditoria local.', error);
+      auditEmpty.hidden = false;
+      auditEmpty.textContent = 'Falha ao carregar auditoria local.';
+    } finally {
+      storageState.auditLoading = false;
+      auditButton.disabled = false;
+    }
+  }
 
   function updateQuickActions() {
     const activeUser = state.activeUser;
@@ -529,6 +757,49 @@ export function renderAccountDashboard(viewRoot) {
 
   updateQuickActions();
   renderUserList();
+  updateStorageStatusView();
+  updateStorageMetricsView();
+
+  refreshButton.addEventListener('click', () => {
+    requestStorageEstimate();
+    setStatusHint('Solicitando atualização de uso do armazenamento local.');
+  });
+
+  auditButton.setAttribute('aria-expanded', 'false');
+  auditButton.addEventListener('click', async () => {
+    storageState.auditVisible = !storageState.auditVisible;
+    auditButton.setAttribute('aria-expanded', String(storageState.auditVisible));
+    auditPanel.hidden = !storageState.auditVisible;
+
+    if (storageState.auditVisible) {
+      setStatusHint('Auditoria local aberta.');
+      if (!storageState.auditLoaded) {
+        await populateAuditLog();
+      }
+    } else {
+      setStatusHint('Auditoria local fechada.');
+    }
+  });
+
+  const unsubscribeStorageReady = eventBus.on('storage:ready', (payload) => {
+    if (payload && typeof payload === 'object' && 'persistent' in payload) {
+      storageState.persistent = Boolean(payload.persistent);
+      updateStorageStatusView();
+    }
+  });
+
+  const unsubscribeStorageEstimate = eventBus.on('storage:estimate', (payload) => {
+    applyStorageEstimatePayload(payload);
+  });
+
+  const unsubscribeStorageMigrated = eventBus.on('storage:migrated', () => {
+    storageState.auditLoaded = false;
+    if (storageState.auditVisible) {
+      populateAuditLog();
+    }
+  });
+
+  requestStorageEstimate();
 
   viewRoot[VIEW_ROOT_CLEANUP_KEY] = () => {
     try {
@@ -541,6 +812,24 @@ export function renderAccountDashboard(viewRoot) {
       unsubscribeSession();
     } catch (error) {
       console.error('Erro ao cancelar assinatura da sessão.', error);
+    }
+
+    try {
+      unsubscribeStorageReady();
+    } catch (error) {
+      console.error('Erro ao cancelar monitoramento de armazenamento (ready).', error);
+    }
+
+    try {
+      unsubscribeStorageEstimate();
+    } catch (error) {
+      console.error('Erro ao cancelar monitoramento de armazenamento (estimate).', error);
+    }
+
+    try {
+      unsubscribeStorageMigrated();
+    } catch (error) {
+      console.error('Erro ao cancelar monitoramento de armazenamento (migrated).', error);
     }
   };
 }

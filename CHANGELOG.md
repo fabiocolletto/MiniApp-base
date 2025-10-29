@@ -4,6 +4,10 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Implantada camada oficial de IndexedDB com vendor `idb` 7.x, bancos `marco_core`/`pesquisa_studio`, APIs compartilhadas, migrador de `localStorage` e monitoramento de persistência/cota.
+- Boot do shell sincroniza o catálogo com IndexedDB, solicita persistência, expõe eventos `storage:*` no MarcoBus e atualiza o estado do painel.
+- Painel "Painel da conta" exibe status do armazenamento (persistência, uso/cota e auditoria local dos últimos eventos).
+- Documentação atualizada (README e AGENTS.md) descrevendo arquitetura IndexedDB, convenções, boas práticas e acesso oficial por MiniApps.
 - Extraído o bootstrap do shell de autenticação para `scripts/app/auth-shell.js` com a função pública `initAuthShell`.
 - Exportados utilitários das views de cadastro e MiniApp Store para permitir testes modulares.
 - Adicionada suíte de testes de integração do shell com Node Test Runner + jsdom e documentação atualizada sobre execução local.

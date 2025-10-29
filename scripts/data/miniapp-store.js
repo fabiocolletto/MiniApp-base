@@ -1,3 +1,9 @@
+import eventBus from '../events/event-bus.js';
+import {
+  getMiniappsCatalog as getMiniappsCatalogFromIndexedDB,
+  syncMiniappsCatalog as syncMiniappsCatalogToIndexedDB,
+} from '../../shared/storage/idb/marcocore.js';
+
 const STORAGE_KEY = 'miniapp:admin-miniapps';
 
 export const MINI_APP_STATUS_OPTIONS = [
@@ -28,6 +34,7 @@ const DEFAULT_MINI_APPS = [
     releaseDate: '2025-10-25T15:03:00-03:00',
     featuredCategories: ['Produtividade', 'Gestão de trabalho'],
     icon: null,
+    route: '/miniapps/task-manager',
   },
   {
     id: 'exam-planner',
@@ -44,6 +51,7 @@ const DEFAULT_MINI_APPS = [
     releaseDate: '2025-10-26T15:10:00-03:00',
     featuredCategories: ['Educação', 'Avaliações escolares'],
     icon: null,
+    route: '/miniapps/exam-planner',
   },
 ];
 
@@ -58,6 +66,9 @@ const MINI_APP_STATUS_LABELS = new Map(
   MINI_APP_STATUS_OPTIONS.map((option) => [option.value, option.label]),
 );
 
+let suppressIndexedDBSync = false;
+let hydrateCatalogPromise = null;
+
 function getLocalStorage() {
   if (typeof window !== 'object' || !window) {
     return null;
@@ -69,6 +80,24 @@ function getLocalStorage() {
     console.error('Não foi possível acessar o armazenamento local dos mini-apps.', error);
     return null;
   }
+}
+
+function scheduleSyncWithIndexedDB(snapshot) {
+  if (!Array.isArray(snapshot)) {
+    return;
+  }
+
+  if (suppressIndexedDBSync) {
+    return;
+  }
+
+  Promise.resolve()
+    .then(() => syncMiniappsCatalogToIndexedDB(snapshot).catch((error) => {
+      console.error('Não foi possível sincronizar o catálogo com IndexedDB.', error);
+    }))
+    .catch((error) => {
+      console.error('Falha inesperada ao agendar sincronização com IndexedDB.', error);
+    });
 }
 
 function readPersistedMiniApps() {
@@ -94,13 +123,16 @@ function readPersistedMiniApps() {
 function persistMiniAppsSnapshot(snapshot) {
   const storage = getLocalStorage();
   if (!storage) {
+    scheduleSyncWithIndexedDB(snapshot);
     return;
   }
 
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    scheduleSyncWithIndexedDB(snapshot);
   } catch (error) {
     console.error('Não foi possível salvar os mini-apps no armazenamento local.', error);
+    scheduleSyncWithIndexedDB(snapshot);
   }
 }
 
@@ -260,6 +292,7 @@ function normalizeMiniAppEntry(app) {
   const releaseDate = normalizeReleaseDate(app.releaseDate);
   const featuredCategories = normalizeFeaturedCategories(app.featuredCategories);
   const icon = normalizeMiniAppIcon(app.icon);
+  const route = typeof app.route === 'string' && app.route.trim() ? app.route.trim() : `/miniapps/${id}`;
 
   return {
     id,
@@ -275,6 +308,7 @@ function normalizeMiniAppEntry(app) {
     releaseDate,
     featuredCategories,
     icon,
+    route,
   };
 }
 
@@ -295,6 +329,7 @@ function cloneMiniAppEntry(entry) {
       ? [...entry.featuredCategories]
       : [],
     icon: entry.icon ?? null,
+    route: entry.route,
   };
 }
 
@@ -400,6 +435,30 @@ function notifyListeners() {
       console.error('Erro ao notificar assinante das atualizações de mini-apps.', error);
     }
   });
+}
+
+async function hydrateCatalogFromIndexedDB() {
+  if (!hydrateCatalogPromise) {
+    hydrateCatalogPromise = (async () => {
+      try {
+        const entries = await getMiniappsCatalogFromIndexedDB();
+        if (Array.isArray(entries) && entries.length > 0) {
+          suppressIndexedDBSync = true;
+          try {
+            resetMiniApps(entries);
+          } finally {
+            suppressIndexedDBSync = false;
+          }
+        }
+      } catch (error) {
+        console.warn('Não foi possível carregar o catálogo de MiniApps a partir do IndexedDB.', error);
+      } finally {
+        hydrateCatalogPromise = null;
+      }
+    })();
+  }
+
+  return hydrateCatalogPromise;
 }
 
 export function getMiniAppsSnapshot() {
@@ -576,6 +635,27 @@ export function resetMiniApps(entries = DEFAULT_MINI_APPS) {
 
   persistMiniAppsSnapshot(miniApps);
   notifyListeners();
+}
+
+if (typeof window !== 'undefined') {
+  eventBus.on('storage:ready', () => {
+    hydrateCatalogFromIndexedDB();
+  });
+
+  eventBus.on('storage:migrated', (payload) => {
+    const catalog = payload && Array.isArray(payload.catalog) ? payload.catalog : null;
+    if (catalog && catalog.length > 0) {
+      suppressIndexedDBSync = true;
+      try {
+        resetMiniApps(catalog);
+      } finally {
+        suppressIndexedDBSync = false;
+      }
+      return;
+    }
+
+    hydrateCatalogFromIndexedDB();
+  });
 }
 
 export function __resetMiniAppStoreStateForTests() {
