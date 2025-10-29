@@ -44,12 +44,35 @@ body.auth-only {
   gap: clamp(0.75rem, 2vw, 1.5rem);
 }
 
+.auth-shell__header:empty {
+  display: none;
+}
+
 .auth-shell__footer {
   bottom: 0;
   top: auto;
   justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
   margin-top: auto;
   align-self: stretch;
+}
+
+@media (min-width: 48rem) {
+  .auth-shell__footer {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+.auth-shell__footer-nav {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -68,6 +91,7 @@ body.auth-only {
   transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
+.auth-shell__footer-nav[data-state='open'] .auth-shell__menu-button,
 .auth-shell__menu-button:hover {
   background: var(--auth-primary-soft);
   border-color: var(--auth-primary-soft);
@@ -78,6 +102,65 @@ body.auth-only {
   outline-offset: 3px;
   background: var(--auth-primary-soft);
   border-color: var(--auth-primary-soft);
+}
+
+.auth-shell__menu-panel {
+  position: absolute;
+  inset-block-end: calc(100% + clamp(0.75rem, 2vw, 1rem));
+  inset-inline-end: 0;
+  background: var(--auth-surface);
+  border: 1px solid var(--auth-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  width: clamp(16rem, 55vw, 22rem);
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  z-index: 20;
+}
+
+.auth-shell__menu-title {
+  margin: 0;
+  font: 700 clamp(1rem, 2.4vw, 1.1rem) / 1.3 system-ui, sans-serif;
+  color: var(--auth-text);
+}
+
+.auth-shell__menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.auth-shell__menu-item {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: rgba(46, 125, 50, 0.08);
+  color: var(--auth-text);
+  padding: clamp(0.75rem, 2.2vw, 0.9rem) clamp(0.85rem, 3vw, 1.15rem);
+  font: 600 clamp(0.95rem, 2.3vw, 1.05rem) / 1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.auth-shell__menu-item:hover {
+  background: rgba(46, 125, 50, 0.14);
+}
+
+.auth-shell__menu-item:focus-visible {
+  outline: 3px solid rgba(46, 125, 50, 0.35);
+  outline-offset: 2px;
+}
+
+.auth-shell__menu-item.is-active {
+  border-color: var(--auth-primary);
+  background: linear-gradient(130deg, var(--auth-primary), var(--auth-primary-strong));
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.25);
 }
 
 .auth-shell__menu-icon {

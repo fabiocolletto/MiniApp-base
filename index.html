@@ -27,16 +27,7 @@
     />
   </head>
 <body class="auth-only">
-  <header class="auth-shell__header" aria-label="Identidade do MiniApp">
-    <button type="button" class="auth-shell__menu-button" aria-label="Abrir menu principal">
-      <span class="sr-only">Abrir menu</span>
-      <span class="auth-shell__menu-icon" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-      </span>
-    </button>
-  </header>
+  <header class="auth-shell__header" aria-label="Identidade do MiniApp"></header>
 
   <main id="app" class="auth-screen">
     <section class="auth-card" aria-labelledby="authWelcomeTitle">
@@ -89,6 +80,45 @@
   </main>
 
   <footer class="auth-shell__footer">
+    <nav class="auth-shell__footer-nav" aria-label="Menu principal">
+      <button
+        type="button"
+        class="auth-shell__menu-button"
+        aria-label="Abrir menu principal"
+        aria-controls="authFooterMenu"
+        aria-expanded="false"
+      >
+        <span class="auth-shell__menu-icon" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+        <span class="sr-only" data-menu-button-label>Menu principal</span>
+      </button>
+
+      <div
+        id="authFooterMenu"
+        class="auth-shell__menu-panel"
+        role="region"
+        aria-labelledby="authFooterMenuTitle"
+        hidden
+      >
+        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Painéis do aplicativo</p>
+        <ul class="auth-shell__menu-list">
+          <li>
+            <button type="button" class="auth-shell__menu-item" data-view="guest">
+              Explorar como convidado
+            </button>
+          </li>
+          <li>
+            <button type="button" class="auth-shell__menu-item" data-view="register">
+              Criar uma nova conta
+            </button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
     <small class="auth-shell__footer-text">
       <span>© <span data-current-year></span> 5 Horas</span>
       <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
@@ -110,6 +140,219 @@
     const selector = document.querySelector('.auth-selector');
     const selectorButtons = Array.from(document.querySelectorAll('.auth-selector__button'));
     const statusHint = document.getElementById('statusHint');
+    const footerMenu = document.querySelector('.auth-shell__footer-nav');
+    const footerMenuButton = document.querySelector('.auth-shell__menu-button');
+    const footerMenuPanel = document.getElementById('authFooterMenu');
+    const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
+    let footerMenuOpen = false;
+    let removeFooterMenuListeners = null;
+
+    function getFooterMenuItems() {
+      if (!(footerMenuPanel instanceof HTMLElement)) {
+        return [];
+      }
+
+      return Array.from(footerMenuPanel.querySelectorAll('.auth-shell__menu-item')).filter(
+        (item) => item instanceof HTMLElement && !item.disabled
+      );
+    }
+
+    function setFooterMenuState(isOpen) {
+      if (footerMenu instanceof HTMLElement) {
+        footerMenu.dataset.state = isOpen ? 'open' : 'closed';
+      }
+
+      if (footerMenuButton instanceof HTMLElement) {
+        footerMenuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      if (footerMenuPanel instanceof HTMLElement) {
+        footerMenuPanel.hidden = !isOpen;
+      }
+    }
+
+    function closeFooterMenu({ focusToggle = false } = {}) {
+      if (!footerMenuOpen) {
+        return;
+      }
+
+      footerMenuOpen = false;
+      setFooterMenuState(false);
+
+      if (typeof removeFooterMenuListeners === 'function') {
+        removeFooterMenuListeners();
+        removeFooterMenuListeners = null;
+      }
+
+      if (focusToggle && footerMenuButton instanceof HTMLElement) {
+        footerMenuButton.focus();
+      }
+    }
+
+    function focusFooterMenuItemByOffset(currentIndex, offset) {
+      const items = getFooterMenuItems();
+
+      if (!items.length) {
+        closeFooterMenu();
+        return;
+      }
+
+      const normalizedIndex = currentIndex >= 0 ? currentIndex : 0;
+      const nextIndex = (normalizedIndex + offset + items.length) % items.length;
+      const nextItem = items[nextIndex];
+
+      if (nextItem instanceof HTMLElement) {
+        nextItem.focus();
+      }
+    }
+
+    function handleFooterMenuItemKeydown(event) {
+      if (!(event instanceof KeyboardEvent)) {
+        return;
+      }
+
+      const target = event.target;
+
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const items = getFooterMenuItems();
+      const currentIndex = items.indexOf(target);
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        focusFooterMenuItemByOffset(currentIndex, 1);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        focusFooterMenuItemByOffset(currentIndex, -1);
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        focusFooterMenuItemByOffset(0, 0);
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        focusFooterMenuItemByOffset(items.length - 1, 0);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeFooterMenu({ focusToggle: true });
+      }
+    }
+
+    function openFooterMenu({ focus = 'first' } = {}) {
+      if (footerMenuOpen) {
+        return;
+      }
+
+      footerMenuOpen = true;
+      setFooterMenuState(true);
+
+      const handlePointerDown = (event) => {
+        if (!(event.target instanceof Node)) {
+          return;
+        }
+
+        const isInsidePanel =
+          footerMenuPanel instanceof HTMLElement && footerMenuPanel.contains(event.target);
+        const isToggle =
+          footerMenuButton instanceof HTMLElement && footerMenuButton.contains(event.target);
+
+        if (!isInsidePanel && !isToggle) {
+          closeFooterMenu();
+        }
+      };
+
+      const handleFocusIn = (event) => {
+        if (!(event.target instanceof Node)) {
+          return;
+        }
+
+        const isInsidePanel =
+          footerMenuPanel instanceof HTMLElement && footerMenuPanel.contains(event.target);
+        const isToggle =
+          footerMenuButton instanceof HTMLElement && footerMenuButton.contains(event.target);
+
+        if (!isInsidePanel && !isToggle) {
+          closeFooterMenu();
+        }
+      };
+
+      const handleKeydown = (event) => {
+        if (event instanceof KeyboardEvent && event.key === 'Escape') {
+          event.preventDefault();
+          closeFooterMenu({ focusToggle: true });
+        }
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      document.addEventListener('focusin', handleFocusIn);
+      document.addEventListener('keydown', handleKeydown);
+
+      removeFooterMenuListeners = () => {
+        document.removeEventListener('pointerdown', handlePointerDown);
+        document.removeEventListener('focusin', handleFocusIn);
+        document.removeEventListener('keydown', handleKeydown);
+      };
+
+      const items = getFooterMenuItems();
+
+      if (!items.length) {
+        closeFooterMenu();
+        return;
+      }
+
+      let targetItem = items[0];
+
+      if (focus === 'last') {
+        targetItem = items[items.length - 1];
+      }
+
+      if (targetItem instanceof HTMLElement) {
+        targetItem.focus({ preventScroll: true });
+      }
+    }
+
+    function toggleFooterMenu() {
+      if (footerMenuOpen) {
+        closeFooterMenu({ focusToggle: true });
+      } else {
+        openFooterMenu();
+      }
+    }
+
+    function setActiveFooterMenuItem(viewName) {
+      const items = getFooterMenuItems();
+      let activeLabel = '';
+
+      items.forEach((item) => {
+        if (!(item instanceof HTMLElement)) {
+          return;
+        }
+
+        const isActive = item.dataset.view === viewName;
+        item.classList.toggle('is-active', isActive);
+        item.setAttribute('aria-current', isActive ? 'page' : 'false');
+
+        if (isActive) {
+          activeLabel = item.textContent?.trim() || '';
+        }
+      });
+
+      if (footerMenuLabel instanceof HTMLElement) {
+        footerMenuLabel.textContent = activeLabel
+          ? `Menu principal — painel atual: ${activeLabel}`
+          : 'Menu principal';
+      }
+
+      if (footerMenuButton instanceof HTMLElement) {
+        footerMenuButton.setAttribute(
+          'aria-label',
+          activeLabel
+            ? `Abrir menu principal. Painel atual: ${activeLabel}`
+            : 'Abrir menu principal'
+        );
+      }
+    }
+
     const APP_DOC_BASE_PATH = './docs/miniapps';
     const APP_QUERY_PARAM = 'app';
 
@@ -272,6 +515,42 @@
 
     let currentView = null;
 
+    if (footerMenuButton instanceof HTMLElement) {
+      footerMenuButton.addEventListener('click', () => {
+        toggleFooterMenu();
+      });
+
+      footerMenuButton.addEventListener('keydown', (event) => {
+        if (!(event instanceof KeyboardEvent)) {
+          return;
+        }
+
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          openFooterMenu({ focus: 'first' });
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          openFooterMenu({ focus: 'last' });
+        } else if (event.key === 'Escape' && footerMenuOpen) {
+          event.preventDefault();
+          closeFooterMenu({ focusToggle: true });
+        }
+      });
+    }
+
+    getFooterMenuItems().forEach((item) => {
+      item.addEventListener('click', () => {
+        const viewName = item.dataset.view;
+
+        if (viewName) {
+          closeFooterMenu();
+          renderAuthView(viewName, { shouldFocus: true });
+        }
+      });
+
+      item.addEventListener('keydown', handleFooterMenuItemKeydown);
+    });
+
     function focusFirstInteractiveElement(root) {
       if (!(root instanceof HTMLElement)) {
         return;
@@ -311,6 +590,8 @@
     }
 
     function renderAuthView(viewName, { shouldFocus = true, viewProps = {} } = {}) {
+      closeFooterMenu();
+
       if (!(viewRoot instanceof HTMLElement)) {
         return;
       }
@@ -325,6 +606,7 @@
       currentView = viewName;
 
       setActiveButton(viewName);
+      setActiveFooterMenuItem(viewName);
       updateHint(viewName);
 
       if (authCard instanceof HTMLElement) {
