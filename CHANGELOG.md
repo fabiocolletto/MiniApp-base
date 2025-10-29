@@ -59,6 +59,11 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
 
+## [0.2.1] - 2025-10-29T14:39:13-03:00 (BRT)
+- Ajustadas as superfícies translúcidas do cabeçalho e rodapé do shell de autenticação para respeitarem a paleta ativa em temas claro e escuro, preservando contraste em telas móveis.
+- Publicado `public/meta/app-version.json` como fonte estável da versão exibida no rodapé e atualizado o carregamento assíncrono para consumir o novo recurso.
+- Atualizado o painel de convidados para ignorar MiniApps sem identificador válido, evitando atalhos quebrados que apontavam para `miniapp.md`.
+
 ## [0.2.0] - 2025-10-28T06:41:39-03:00 (BRT)
 - Arquivada a árvore legada (`app/`, `router/`, `ui/`, `src/`, `tests/`, `MiniApps/` e utilitários redundantes) em `archive/2025-10-28/` para preservar histórico sem poluir o shell ativo.
 - Consolidada a estrutura PWA: manifesto renomeado para `.webmanifest`, service worker com fallback offline dedicado e pré-cache dos atalhos `/?app=<slug>`.

@@ -71,6 +71,16 @@ const SAMPLE_MINI_APPS = [
     releaseDate: '2025-10-22T09:00:00-03:00',
   },
   {
+    id: '   ',
+    name: 'MiniApp Sem Identificador',
+    description: 'Cadastro temporário em validação.',
+    status: 'active',
+    access: ['usuario'],
+    category: 'Teste',
+    updatedAt: '2025-10-27T12:00:00-03:00',
+    releaseDate: '2025-10-27T12:00:00-03:00',
+  },
+  {
     id: 'internal-tool',
     name: 'Ferramenta Interna',
     description: 'Uso restrito para o time.',
@@ -132,7 +142,7 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
   };
 
   const fetchMock = async (resource) => {
-    if (typeof resource === 'string' && resource.endsWith('package.json')) {
+    if (typeof resource === 'string' && resource.includes('meta/app-version.json')) {
       return {
         ok: true,
         json: async () => ({ version: '1.2.3' }),
@@ -187,6 +197,11 @@ test('inicializa o shell com painel de convidado e dois MiniApps ativos', async 
     assert.equal(miniAppItems.length, 2);
     const ids = miniAppItems.map((item) => item.dataset.appId).sort();
     assert.deepEqual(ids, ['exam-planner', 'task-manager']);
+    miniAppItems.forEach((item) => {
+      const link = item.querySelector('.guest-panel__cta');
+      assert.ok(link);
+      assert.equal(link.href.includes('/miniapp.md'), false);
+    });
 
     const footerLabel = env.document.querySelector('[data-active-view-label]');
     assert.ok(footerLabel);
