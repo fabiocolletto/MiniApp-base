@@ -396,6 +396,70 @@ body.auth-only.auth-shell--menu-open {
   overflow: hidden;
 }
 
+@media (max-width: 30rem) {
+  .auth-shell__header,
+  .auth-shell__footer {
+    padding: clamp(0.75rem, 4.5vw, 1.1rem) clamp(1rem, 6vw, 1.5rem);
+  }
+
+  .auth-shell__footer {
+    gap: clamp(0.5rem, 4vw, 1rem);
+  }
+
+  .auth-screen {
+    padding: clamp(0.75rem, 4vw, 1.25rem);
+    padding-bottom: calc(clamp(0.75rem, 4vw, 1.25rem) + var(--layout-footer-offset, 0px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .auth-card {
+    gap: clamp(0.9rem, 4vw, 1.4rem);
+    padding: clamp(1.1rem, 5vw, 1.75rem);
+  }
+
+  .card {
+    gap: clamp(0.65rem, 4.5vw, 0.9rem);
+    padding: clamp(1rem, 5vw, 1.6rem);
+  }
+
+  .view {
+    gap: clamp(0.75rem, 5vw, 1.1rem);
+  }
+
+  .guest-panel {
+    gap: clamp(0.75rem, 5vw, 1.1rem);
+  }
+
+  .guest-panel__list {
+    gap: clamp(0.55rem, 4.5vw, 0.85rem);
+  }
+
+  .guest-panel__item {
+    gap: clamp(0.45rem, 4vw, 0.7rem);
+    padding: clamp(0.75rem, 4.5vw, 1.1rem);
+  }
+
+  .miniapp-store {
+    gap: clamp(0.75rem, 5vw, 1.1rem);
+  }
+
+  .miniapp-store__list {
+    gap: clamp(0.65rem, 4.5vw, 1rem);
+  }
+
+  .miniapp-store__card {
+    gap: clamp(0.6rem, 4.5vw, 0.9rem);
+    padding: clamp(0.85rem, 5vw, 1.3rem);
+  }
+
+  .miniapp-store__actions {
+    gap: clamp(0.35rem, 4vw, 0.65rem);
+  }
+
+  .miniapp-store__empty {
+    padding: clamp(1rem, 5vw, 1.5rem);
+  }
+}
+
 .auth-header h1 {
   margin: 0;
   font: 700 clamp(1.5rem, 3vw, 2rem) / 1.2 system-ui, sans-serif;

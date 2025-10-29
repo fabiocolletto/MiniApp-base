@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.
 - Ajustado o rodapé móvel com botão de detalhes apenas em ícone, offsets dinâmicos para evitar sobreposição e alinhamento total à base da viewport.
 - Preferências de usuário passam a incluir listas `miniApps.saved` e `miniApps.favorites`, com saneamento de IDs, deduplicação e compatibilidade com dados existentes.
 - Criado módulo de preferências de MiniApps com operações de salvar/favoritar, limite de favoritos, sincronização da sessão ativa e cobertura de testes para os novos fluxos.
