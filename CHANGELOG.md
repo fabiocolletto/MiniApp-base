@@ -31,6 +31,8 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Adicionada aba de convidado ao painel de boas-vindas com vitrine de MiniApps gratuitos e botão de acesso rápido.
 - Arquivado o componente legado de autenticação social e seus testes, concentrando o fluxo na tela unificada.
 - Login e acesso convidado passam a abrir diretamente o painel MiniApp Store após a autenticação ou seleção gratuita.
+- Painel do menu de autenticação agora limita a altura e habilita rolagem interna para listas extensas em mobile e desktop.
+- Botão do menu principal informa a existência do painel por meio de `aria-haspopup` para leitores de tela.
 - MiniApp Base convertido em PWA com manifesto, ícones instaláveis e Service Worker para navegação offline.
 - Auditada a conversão PWA com relatório de validação cobrindo manifesto, service worker e próximos ajustes.
 - Ícones do PWA convertidos para SVG vetoriais com suporte maskable, evitando o uso de assets binários no repositório.

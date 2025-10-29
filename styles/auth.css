@@ -117,6 +117,10 @@ body.auth-only {
   display: grid;
   gap: clamp(0.75rem, 2vw, 1.25rem);
   z-index: 20;
+  max-height: min(80vh, 28rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
 }
 
 .auth-shell__menu-panel[hidden] {
