@@ -39,6 +39,50 @@
     </main>
 
     <footer class="auth-shell__footer">
+      <nav class="auth-shell__footer-nav" aria-label="Menu principal">
+        <button
+          type="button"
+          class="auth-shell__menu-button"
+          aria-label="Abrir menu principal"
+          aria-haspopup="true"
+          aria-expanded="false"
+          disabled
+          aria-disabled="true"
+        >
+          <span class="auth-shell__menu-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="sr-only">Menu indisponível offline</span>
+        </button>
+      </nav>
+
+      <button
+        type="button"
+        class="auth-shell__footer-toggle"
+        data-footer-toggle
+        aria-controls="authShellFooterExtra"
+        aria-expanded="false"
+        aria-label="Mostrar detalhes do rodapé"
+      >
+        <svg
+          class="auth-shell__footer-toggle-icon"
+          viewBox="0 0 20 20"
+          role="presentation"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 8.25L10 12.75L15 8.25"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+
       <small class="auth-shell__footer-text">
         <picture
           class="auth-shell__footer-logo"
@@ -58,9 +102,109 @@
           />
         </picture>
         <span>5 Horas • MiniApps</span>
-        <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-        <span>Offline</span>
+        <span data-footer-extra id="authShellFooterExtra">
+          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+          <span>Offline</span>
+        </span>
       </small>
     </footer>
+
+    <script>
+      (() => {
+        const footer = document.querySelector('.auth-shell__footer');
+        const toggle = document.querySelector('[data-footer-toggle]');
+        const root = document.body;
+        const labels = {
+          expand: 'Mostrar detalhes do rodapé',
+          collapse: 'Ocultar detalhes do rodapé',
+        };
+
+        const mediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 48rem)') : null;
+
+        function updateFooterOffset() {
+          if (!footer || !root) {
+            return;
+          }
+
+          const isMobile = Boolean(mediaQuery?.matches);
+          const footerHeight = isMobile ? Math.ceil(footer.getBoundingClientRect().height) : 0;
+
+          if (footerHeight > 0) {
+            root.style.setProperty('--layout-footer-offset', `${footerHeight}px`);
+          } else {
+            root.style.removeProperty('--layout-footer-offset');
+          }
+        }
+
+        function setExpanded(state) {
+          const expanded = Boolean(state);
+
+          if (footer) {
+            if (expanded) {
+              footer.setAttribute('data-footer-expanded', 'true');
+            } else {
+              footer.removeAttribute('data-footer-expanded');
+            }
+          }
+
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            toggle.setAttribute('aria-label', expanded ? labels.collapse : labels.expand);
+          }
+
+          updateFooterOffset();
+        }
+
+        function collapse() {
+          setExpanded(false);
+        }
+
+        function syncViewport() {
+          const isMobile = Boolean(mediaQuery?.matches);
+          if (toggle) {
+            toggle.hidden = !isMobile;
+          }
+          if (!isMobile) {
+            collapse();
+          }
+
+          updateFooterOffset();
+        }
+
+        if (toggle) {
+          toggle.addEventListener('click', () => {
+            const expanded = footer?.getAttribute('data-footer-expanded') === 'true';
+            setExpanded(!expanded);
+          });
+
+          toggle.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && footer?.getAttribute('data-footer-expanded') === 'true') {
+              event.preventDefault();
+              collapse();
+            }
+          });
+        }
+
+        if (mediaQuery) {
+          const handleChange = () => syncViewport();
+          if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', handleChange);
+          } else if (typeof mediaQuery.addListener === 'function') {
+            mediaQuery.addListener(handleChange);
+          }
+          syncViewport();
+        } else if (toggle) {
+          toggle.hidden = true;
+        }
+
+        if (footer && 'ResizeObserver' in window) {
+          const resizeObserver = new ResizeObserver(() => updateFooterOffset());
+          resizeObserver.observe(footer);
+        }
+
+        collapse();
+        updateFooterOffset();
+      })();
+    </script>
   </body>
 </html>
