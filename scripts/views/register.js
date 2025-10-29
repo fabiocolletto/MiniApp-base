@@ -5,7 +5,50 @@ import { createInputField } from './shared/form-fields.js';
 import { collectDeviceInfo } from './shared/device-info.js';
 import { validatePasswordStrength, validatePhoneParts, formatPhoneNumberForDisplay } from './shared/validation.js';
 
-const BASE_CLASSES = 'card view auth-view view--register';
+export const BASE_CLASSES = 'card view auth-view view--register';
+
+export function sanitizeCountryCode(value) {
+  return String(value ?? '')
+    .replace(/[^0-9]/g, '')
+    .slice(0, 3);
+}
+
+export function isBrazilianCode(code) {
+  const normalized = String(code ?? '').trim();
+  return normalized === '' || normalized === '55';
+}
+
+export function formatBrazilianDigits(digits) {
+  const normalized = String(digits ?? '').replace(/[^0-9]/g, '').slice(0, 11);
+  if (!normalized) {
+    return '';
+  }
+
+  if (normalized.length <= 2) {
+    return `(${normalized}`;
+  }
+
+  if (normalized.length <= 7) {
+    return `(${normalized.slice(0, 2)}) ${normalized.slice(2)}`;
+  }
+
+  return `(${normalized.slice(0, 2)}) ${normalized.slice(2, 7)}-${normalized.slice(7)}`;
+}
+
+export function formatInternationalDigits(digits) {
+  const normalized = String(digits ?? '').replace(/[^0-9]/g, '').slice(0, 15);
+
+  if (normalized.length <= 4) {
+    return normalized;
+  }
+
+  const groups = [];
+  for (let index = 0; index < normalized.length; index += 3) {
+    groups.push(normalized.slice(index, index + 3));
+  }
+
+  return groups.join(' ');
+}
 
 function renderRegisterSuccess(viewRoot, savedUser) {
   if (!(viewRoot instanceof HTMLElement)) {
@@ -133,36 +176,6 @@ export function renderRegisterPanel(viewRoot) {
 
   phoneInputsWrapper.append(countryGroup, numberGroup);
   phoneField.append(phoneFieldLabel, phoneInputsWrapper);
-
-  const sanitizeCountryCode = (value) => value.replace(/[^0-9]/g, '').slice(0, 3);
-
-  const isBrazilianCode = (code) => !code || code === '55';
-
-  const formatBrazilianDigits = (digits) => {
-    const limited = digits.slice(0, 11);
-    if (!limited) {
-      return '';
-    }
-    if (limited.length <= 2) {
-      return `(${limited}`;
-    }
-    if (limited.length <= 7) {
-      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-    }
-    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
-  };
-
-  const formatInternationalDigits = (digits) => {
-    const limited = digits.slice(0, 15);
-    if (limited.length <= 4) {
-      return limited;
-    }
-    const groups = [];
-    for (let index = 0; index < limited.length; index += 3) {
-      groups.push(limited.slice(index, index + 3));
-    }
-    return groups.join(' ');
-  };
 
   const updateNumberPlaceholder = (code) => {
     if (isBrazilianCode(code)) {

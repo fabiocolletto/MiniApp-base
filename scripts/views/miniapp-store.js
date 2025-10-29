@@ -1,9 +1,9 @@
 import { getMiniAppsSnapshot, getMiniAppStatusLabel } from '../data/miniapp-store.js';
 
-const APP_DOC_BASE_PATH = './docs/miniapps';
+export const APP_DOC_BASE_PATH = './docs/miniapps';
 const UPDATED_AT_FORMATTER = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' });
 
-function normalizeMiniAppId(value) {
+export function normalizeMiniAppId(value) {
   if (typeof value !== 'string') {
     return '';
   }
@@ -11,12 +11,12 @@ function normalizeMiniAppId(value) {
   return value.trim().toLowerCase();
 }
 
-function buildMiniAppDocPath(id) {
+export function buildMiniAppDocPath(id) {
   const normalized = normalizeMiniAppId(id);
   return normalized ? `${APP_DOC_BASE_PATH}/${normalized}.md` : '';
 }
 
-function formatUpdatedAt(updatedAt, fallback = null) {
+export function formatUpdatedAt(updatedAt, fallback = null) {
   const candidate = updatedAt ?? fallback;
   if (!candidate) {
     return 'Atualização pendente';
@@ -31,7 +31,7 @@ function formatUpdatedAt(updatedAt, fallback = null) {
   return `Atualizado em ${UPDATED_AT_FORMATTER.format(parsed)}`;
 }
 
-function createMiniAppCard(app, { highlightId, onHighlight } = {}) {
+export function createMiniAppCard(app, { highlightId, onHighlight } = {}) {
   const normalizedId = normalizeMiniAppId(app.id);
 
   const item = document.createElement('li');
@@ -100,7 +100,7 @@ function createMiniAppCard(app, { highlightId, onHighlight } = {}) {
   return item;
 }
 
-function mapMiniAppToEntry(app) {
+export function mapMiniAppToEntry(app) {
   const normalizedId = normalizeMiniAppId(app?.id);
 
   if (

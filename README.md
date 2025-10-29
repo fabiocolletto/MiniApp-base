@@ -19,16 +19,23 @@ O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApp
 
 ## Executando localmente
 
-1. Instale as dependências necessárias para servir arquivos estáticos (qualquer servidor HTTP simples atende).
+1. Instale as dependências do projeto com `npm install` (requer acesso ao pacote `jsdom`).
 2. Inicie um servidor apontando para a raiz do projeto, por exemplo: `npx serve .` ou `python -m http.server 4173`.
 3. Acesse `http://localhost:<porta>/index.html` para validar a interface.
-4. Opcionalmente execute `npm test` para garantir que não há regressões (nenhum teste automatizado permanece ativo após o arquivamento).
+4. Execute `npm test` para rodar a suíte automatizada que cobre as interações do shell (requer `jsdom`).
 
 ### Testes manuais recomendados
 
 - **Fallback offline**: com o app aberto no navegador, abra as DevTools (`Ctrl+Shift+I` / `Cmd+Option+I`), ative o modo "Offline" na aba **Network** e recarregue a página. O shell deve exibir `public/offline.html` com o aviso de falta de conexão. Ao restaurar a conexão e atualizar novamente, o painel de autenticação volta a aparecer.
 - **Atalhos de MiniApp**: acesse `/?app=task-manager` ou `/?app=exam-planner` para confirmar o redirecionamento imediato para a ficha correspondente em `docs/miniapps/`.
 - **Instalabilidade**: verifique a opção "Instalar" do navegador (Chrome/Edge) e confirme que o nome, ícones maskable e atalho do PWA aparecem conforme o manifesto (`manifest.webmanifest`).
+
+### Cenários validados automaticamente
+
+- Inicialização do shell no modo convidado com dois MiniApps ativos e versão carregada a partir de `package.json`.
+- Alternância para o painel de cadastro pelo seletor principal e foco automático nas ações relevantes.
+- Funcionamento do menu do rodapé, incluindo abertura com foco no primeiro item e destaque de MiniApp selecionado.
+- Tratamento do parâmetro `?app=` para redirecionar diretamente à documentação ou destacar o MiniApp correspondente na MiniApp Store.
 
 ## Instalação como PWA
 
