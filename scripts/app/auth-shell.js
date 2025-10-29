@@ -202,11 +202,13 @@ export function initAuthShell(options = {}) {
   const selector = doc.querySelector('.auth-selector');
   const selectorButtons = Array.from(doc.querySelectorAll('.auth-selector__button'));
   const statusHint = doc.getElementById('statusHint');
+  const footer = doc.querySelector('.auth-shell__footer');
   const footerMenu = doc.querySelector('.auth-shell__footer-nav');
   const footerMenuButton = doc.querySelector('.auth-shell__menu-button');
   const footerMenuPanel = doc.getElementById('authFooterMenu');
   const footerMenuOverlay = doc.querySelector('[data-menu-overlay]');
   const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
+  const footerToggle = doc.querySelector('[data-footer-toggle]');
   const footerActiveViewLabel = doc.querySelector('[data-active-view-label]');
   const footerActiveViewDivider = doc.querySelector('[data-active-view-divider]');
   const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
@@ -214,6 +216,15 @@ export function initAuthShell(options = {}) {
   const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
   const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
   const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
+  const footerViewportQuery =
+    typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
+  const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
+  const BodyElementRef = doc.defaultView?.HTMLBodyElement ?? (typeof HTMLBodyElement !== 'undefined' ? HTMLBodyElement : null);
+  const rootElement = doc.body && (!BodyElementRef || doc.body instanceof BodyElementRef) ? doc.body : null;
+  const FOOTER_TOGGLE_LABELS = {
+    expand: 'Mostrar detalhes do rodapé',
+    collapse: 'Ocultar detalhes do rodapé',
+  };
 
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
@@ -225,6 +236,195 @@ export function initAuthShell(options = {}) {
 
   const teardownCallbacks = [];
   let footerMenuOpen = false;
+  let footerDetailsExpanded = false;
+
+  const FOOTER_OFFSET_TOKEN = '--layout-footer-offset';
+
+  function applyFooterOffset(value) {
+    if (!rootElement) {
+      return;
+    }
+
+    const style = rootElement.style;
+
+    if (style && typeof style.setProperty === 'function') {
+      style.setProperty(FOOTER_OFFSET_TOKEN, value);
+      return;
+    }
+
+    if (style && typeof style === 'object') {
+      style[FOOTER_OFFSET_TOKEN] = value;
+      return;
+    }
+
+    if (typeof rootElement.getAttribute === 'function' && typeof rootElement.setAttribute === 'function') {
+      const existing = rootElement.getAttribute('style') ?? '';
+      const filtered = existing
+        .split(';')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry && !entry.startsWith(`${FOOTER_OFFSET_TOKEN}:`));
+      filtered.push(`${FOOTER_OFFSET_TOKEN}: ${value}`);
+      rootElement.setAttribute('style', `${filtered.join('; ')};`);
+    }
+  }
+
+  function clearFooterOffset() {
+    if (!rootElement) {
+      return;
+    }
+
+    const style = rootElement.style;
+
+    if (style && typeof style.removeProperty === 'function') {
+      style.removeProperty(FOOTER_OFFSET_TOKEN);
+      return;
+    }
+
+    if (style && typeof style === 'object') {
+      delete style[FOOTER_OFFSET_TOKEN];
+      return;
+    }
+
+    if (typeof rootElement.getAttribute === 'function' && typeof rootElement.setAttribute === 'function') {
+      const existing = rootElement.getAttribute('style');
+      if (!existing) {
+        return;
+      }
+
+      const filtered = existing
+        .split(';')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry && !entry.startsWith(`${FOOTER_OFFSET_TOKEN}:`));
+
+      if (filtered.length > 0) {
+        rootElement.setAttribute('style', `${filtered.join('; ')};`);
+      } else {
+        rootElement.removeAttribute('style');
+      }
+    }
+  }
+
+  function updateFooterOffset() {
+    if (!rootElement || !ensureHtmlElement(doc, footer)) {
+      return;
+    }
+
+    const isMobileViewport = Boolean(footerViewportQuery?.matches);
+    const footerRect = isMobileViewport ? footer.getBoundingClientRect() : null;
+    const footerHeight = footerRect ? Math.ceil(footerRect.height) : 0;
+
+    if (footerHeight > 0) {
+      applyFooterOffset(`${footerHeight}px`);
+    } else {
+      clearFooterOffset();
+    }
+  }
+
+  function setFooterDetailsExpanded(isExpanded) {
+    footerDetailsExpanded = Boolean(isExpanded);
+
+    if (ensureHtmlElement(doc, footer)) {
+      if (footerDetailsExpanded) {
+        footer.setAttribute('data-footer-expanded', 'true');
+      } else {
+        footer.removeAttribute('data-footer-expanded');
+      }
+    }
+
+    if (ensureHtmlElement(doc, footerToggle)) {
+      footerToggle.setAttribute('aria-expanded', footerDetailsExpanded ? 'true' : 'false');
+      footerToggle.setAttribute(
+        'aria-label',
+        footerDetailsExpanded ? FOOTER_TOGGLE_LABELS.collapse : FOOTER_TOGGLE_LABELS.expand,
+      );
+    }
+
+    updateFooterOffset();
+  }
+
+  function collapseFooterDetails() {
+    setFooterDetailsExpanded(false);
+  }
+
+  function syncFooterToggleVisibility() {
+    const isMobileViewport = Boolean(footerViewportQuery?.matches);
+
+    if (ensureHtmlElement(doc, footerToggle)) {
+      footerToggle.hidden = !isMobileViewport;
+    }
+
+    if (!isMobileViewport) {
+      collapseFooterDetails();
+    }
+
+    updateFooterOffset();
+  }
+
+  collapseFooterDetails();
+  syncFooterToggleVisibility();
+
+  if (footerViewportQuery) {
+    const handleFooterViewportChange = () => {
+      syncFooterToggleVisibility();
+    };
+
+    if (typeof footerViewportQuery.addEventListener === 'function') {
+      footerViewportQuery.addEventListener('change', handleFooterViewportChange);
+      teardownCallbacks.push(() => {
+        footerViewportQuery.removeEventListener('change', handleFooterViewportChange);
+      });
+    } else if (typeof footerViewportQuery.addListener === 'function') {
+      footerViewportQuery.addListener(handleFooterViewportChange);
+      teardownCallbacks.push(() => {
+        footerViewportQuery.removeListener(handleFooterViewportChange);
+      });
+    }
+  } else if (ensureHtmlElement(doc, footerToggle)) {
+    footerToggle.hidden = true;
+  }
+
+  if (ensureHtmlElement(doc, footerToggle)) {
+    const handleFooterToggleClick = () => {
+      setFooterDetailsExpanded(!footerDetailsExpanded);
+    };
+
+    const handleFooterToggleKeydown = (event) => {
+      if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+        return;
+      }
+
+      if (event.key === 'Escape' && footerDetailsExpanded) {
+        event.preventDefault();
+        collapseFooterDetails();
+      }
+    };
+
+    footerToggle.addEventListener('click', handleFooterToggleClick);
+    footerToggle.addEventListener('keydown', handleFooterToggleKeydown);
+
+    teardownCallbacks.push(() => {
+      footerToggle.removeEventListener('click', handleFooterToggleClick);
+      footerToggle.removeEventListener('keydown', handleFooterToggleKeydown);
+    });
+  }
+
+  if (ensureHtmlElement(doc, footer) && ResizeObserverRef) {
+    const footerObserver = new ResizeObserverRef(() => {
+      updateFooterOffset();
+    });
+
+    footerObserver.observe(footer);
+
+    teardownCallbacks.push(() => {
+      footerObserver.disconnect();
+    });
+  }
+
+  if (rootElement) {
+    teardownCallbacks.push(() => {
+      clearFooterOffset();
+    });
+  }
 
   function getFooterMenuItems() {
     if (!(footerMenuPanel instanceof HTMLElementRef)) {
@@ -256,6 +456,8 @@ export function initAuthShell(options = {}) {
     if (doc.body instanceof (doc.defaultView?.HTMLBodyElement ?? (typeof HTMLBodyElement !== 'undefined' ? HTMLBodyElement : HTMLElementRef))) {
       doc.body.classList.toggle('auth-shell--menu-open', isOpen);
     }
+
+    updateFooterOffset();
   }
 
   const footerMenuListeners = new Set();
@@ -368,6 +570,7 @@ export function initAuthShell(options = {}) {
       return;
     }
 
+    collapseFooterDetails();
     footerMenuOpen = true;
     setFooterMenuState(true);
 

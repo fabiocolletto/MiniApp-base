@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Ajustado o rodapé móvel com botão de detalhes apenas em ícone, offsets dinâmicos para evitar sobreposição e alinhamento total à base da viewport.
 - Preferências de usuário passam a incluir listas `miniApps.saved` e `miniApps.favorites`, com saneamento de IDs, deduplicação e compatibilidade com dados existentes.
 - Criado módulo de preferências de MiniApps com operações de salvar/favoritar, limite de favoritos, sincronização da sessão ativa e cobertura de testes para os novos fluxos.
 - Implantada camada oficial de IndexedDB com vendor `idb` 7.x, bancos `marco_core`/`pesquisa_studio`, APIs compartilhadas, migrador de `localStorage` e monitoramento de persistência/cota.

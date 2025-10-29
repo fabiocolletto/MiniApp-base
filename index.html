@@ -98,6 +98,31 @@
       </button>
     </nav>
 
+    <button
+      type="button"
+      class="auth-shell__footer-toggle"
+      data-footer-toggle
+      aria-controls="authShellFooterExtra"
+      aria-expanded="false"
+      aria-label="Mostrar detalhes do rodapé"
+    >
+      <svg
+        class="auth-shell__footer-toggle-icon"
+        viewBox="0 0 20 20"
+        role="presentation"
+        aria-hidden="true"
+      >
+        <path
+          d="M5 8.25L10 12.75L15 8.25"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
     <small class="auth-shell__footer-text">
       <picture
         class="auth-shell__footer-logo"
@@ -117,19 +142,21 @@
         />
       </picture>
       <span>© <span data-current-year></span> 5 Horas</span>
-      <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-      <span>MiniApps</span>
-      <span
-        class="auth-shell__footer-divider"
-        aria-hidden="true"
-        data-active-view-divider
-        hidden
-      >
-        •
+      <span data-footer-extra id="authShellFooterExtra">
+        <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+        <span>MiniApps</span>
+        <span
+          class="auth-shell__footer-divider"
+          aria-hidden="true"
+          data-active-view-divider
+          hidden
+        >
+          •
+        </span>
+        <span data-active-view-label hidden></span>
+        <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+        <span>Versão <strong data-app-version>carregando…</strong></span>
       </span>
-      <span data-active-view-label hidden></span>
-      <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-      <span>Versão <strong data-app-version>carregando…</strong></span>
     </small>
   </footer>
 
