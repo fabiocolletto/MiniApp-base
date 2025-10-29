@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Botão principal de menu movido para o rodapé com painel suspenso listando os modos Convidado e Cadastro.
 - Ajustado o rodapé do shell de autenticação para permanecer alinhado à base da tela em qualquer altura de conteúdo.
 - Painel inicial abre diretamente no modo convidado e remove o formulário de login para simplificar o acesso sem credenciais.
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
