@@ -59,6 +59,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
 
+## [0.2.2] - 2025-10-29T15:21:24-03:00 (BRT)
+- Ajustada a largura do cartão de autenticação para seguir o contêiner em telas menores, mantendo o espaçamento interno aprovado e a consistência responsiva entre mobile e desktop.
+
 ## [0.2.1] - 2025-10-29T14:39:13-03:00 (BRT)
 - Ajustadas as superfícies translúcidas do cabeçalho e rodapé do shell de autenticação para respeitarem a paleta ativa em temas claro e escuro, preservando contraste em telas móveis.
 - Publicado `public/meta/app-version.json` como fonte estável da versão exibida no rodapé e atualizado o carregamento assíncrono para consumir o novo recurso.

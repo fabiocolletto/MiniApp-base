@@ -298,7 +298,7 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-card {
-  width: min(520px, 95vw);
+  width: min(520px, 100%);
   display: grid;
   gap: clamp(1.1rem, 3vw, 1.75rem);
   background: var(--auth-surface);
