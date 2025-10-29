@@ -40,6 +40,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Corrigido o manifesto PWA para que o aplicativo instalado abra a tela inicial em dispositivos móveis e mantenha os atalhos funcionais.
 - Manifesto PWA movido para a raiz com `start_url` e `scope` relativos ao shell, evitando erro 404 ao abrir o app instalado pelo atalho.
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
+- Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
 
 ## [0.2.0] - 2025-10-28T06:41:39-03:00 (BRT)
 - Arquivada a árvore legada (`app/`, `router/`, `ui/`, `src/`, `tests/`, `MiniApps/` e utilitários redundantes) em `archive/2025-10-28/` para preservar histórico sem poluir o shell ativo.
