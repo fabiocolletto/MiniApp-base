@@ -96,30 +96,6 @@
         </span>
         <span class="sr-only" data-menu-button-label>Menu principal</span>
       </button>
-
-      <div
-        id="authFooterMenu"
-        class="auth-shell__menu-panel"
-        role="region"
-        aria-labelledby="authFooterMenuTitle"
-        hidden
-      >
-        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Painéis do aplicativo</p>
-        <ul class="auth-shell__menu-list" data-menu-group="views"></ul>
-        <div class="auth-shell__menu-divider" role="presentation" aria-hidden="true"></div>
-        <p
-          id="authFooterMiniAppsTitle"
-          class="auth-shell__menu-section-title"
-          data-menu-title="miniapps"
-          hidden
-        >
-          MiniApps ativos
-        </p>
-        <p class="auth-shell__menu-empty" data-menu-empty="miniapps" hidden>
-          Nenhum MiniApp ativo disponível no momento.
-        </p>
-        <ul class="auth-shell__menu-list" data-menu-group="miniapps"></ul>
-      </div>
     </nav>
 
     <small class="auth-shell__footer-text">
@@ -130,6 +106,33 @@
       <span>Versão <strong data-app-version>carregando…</strong></span>
     </small>
   </footer>
+
+  <div class="auth-shell__menu-overlay" data-menu-overlay hidden>
+    <div
+      id="authFooterMenu"
+      class="auth-shell__menu-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="authFooterMenuTitle"
+      hidden
+    >
+      <p id="authFooterMenuTitle" class="auth-shell__menu-title">Painéis do aplicativo</p>
+      <ul class="auth-shell__menu-list" data-menu-group="views"></ul>
+      <div class="auth-shell__menu-divider" role="presentation" aria-hidden="true"></div>
+      <p
+        id="authFooterMiniAppsTitle"
+        class="auth-shell__menu-section-title"
+        data-menu-title="miniapps"
+        hidden
+      >
+        MiniApps ativos
+      </p>
+      <p class="auth-shell__menu-empty" data-menu-empty="miniapps" hidden>
+        Nenhum MiniApp ativo disponível no momento.
+      </p>
+      <ul class="auth-shell__menu-list" data-menu-group="miniapps"></ul>
+    </div>
+  </div>
 
 
   <script type="module">
@@ -147,6 +150,7 @@
     const footerMenu = document.querySelector('.auth-shell__footer-nav');
     const footerMenuButton = document.querySelector('.auth-shell__menu-button');
     const footerMenuPanel = document.getElementById('authFooterMenu');
+    const footerMenuOverlay = document.querySelector('[data-menu-overlay]');
     const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
     const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
     const footerMenuMiniAppsTitle = footerMenuPanel?.querySelector('[data-menu-title="miniapps"]');
@@ -177,6 +181,14 @@
 
       if (footerMenuPanel instanceof HTMLElement) {
         footerMenuPanel.hidden = !isOpen;
+      }
+
+      if (footerMenuOverlay instanceof HTMLElement) {
+        footerMenuOverlay.hidden = !isOpen;
+      }
+
+      if (document.body instanceof HTMLBodyElement) {
+        document.body.classList.toggle('auth-shell--menu-open', isOpen);
       }
     }
 
