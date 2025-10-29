@@ -484,6 +484,48 @@ async function notifyListeners() {
   }
 }
 
+export async function clearAllUsers() {
+  if (useMemoryStore) {
+    memoryStore.length = 0;
+    memoryAutoIncrement = 1;
+    await notifyListeners();
+    return;
+  }
+
+  const db = await openDatabase();
+
+  await new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    let hasErrored = false;
+
+    const request = store.clear();
+
+    request.onerror = () => {
+      hasErrored = true;
+      reject(request.error || new Error('Erro ao limpar os usuários do IndexedDB.'));
+    };
+
+    request.onsuccess = () => {};
+
+    transaction.oncomplete = () => {
+      if (!hasErrored) {
+        resolve();
+      }
+    };
+
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transação abortada ao limpar usuários do IndexedDB.'));
+    };
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error('Erro na transação ao limpar usuários do IndexedDB.'));
+    };
+  });
+
+  await notifyListeners();
+}
+
 export async function loadUsers() {
   if (useMemoryStore) {
     return loadUsersFromMemory();
