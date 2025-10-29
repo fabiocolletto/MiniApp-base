@@ -11,6 +11,11 @@ import {
 import eventBus from '../events/event-bus.js';
 import { replaceAccounts } from '../../core/account-store.js';
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
+import {
+  createEmptyMiniAppPreferences,
+  normalizeMiniAppPreferenceRecord,
+  sanitizeMiniAppPreferencesUpdates as sanitizeMiniAppPreferenceUpdates,
+} from './miniapp-preferences-helpers.js';
 
 export { DUPLICATE_PHONE_ERROR_MESSAGE } from './indexed-user-store.js';
 
@@ -273,6 +278,7 @@ function createEmptyPreferences() {
   return {
     theme: DEFAULT_THEME_PREFERENCE,
     footerIndicators: DEFAULT_FOOTER_INDICATORS_PREFERENCE,
+    miniApps: createEmptyMiniAppPreferences(),
   };
 }
 
@@ -290,6 +296,8 @@ function normalizePreferences(rawPreferences) {
   if (Object.prototype.hasOwnProperty.call(rawPreferences, 'footerIndicators')) {
     normalized.footerIndicators = sanitizeFooterIndicatorsPreference(rawPreferences.footerIndicators);
   }
+
+  normalized.miniApps = normalizeMiniAppPreferenceRecord(rawPreferences);
 
   return normalized;
 }
@@ -311,6 +319,20 @@ function sanitizePreferencesUpdates(updates = {}) {
 
   if (Object.prototype.hasOwnProperty.call(updates, 'footerIndicators')) {
     sanitized.footerIndicators = sanitizeFooterIndicatorsPreference(updates.footerIndicators);
+  }
+
+  const { hasUpdates, updates: miniAppUpdates } = sanitizeMiniAppPreferenceUpdates(updates);
+
+  if (hasUpdates) {
+    sanitized.miniApps = {};
+
+    if (Object.prototype.hasOwnProperty.call(miniAppUpdates, 'saved')) {
+      sanitized.miniApps.saved = miniAppUpdates.saved;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(miniAppUpdates, 'favorites')) {
+      sanitized.miniApps.favorites = miniAppUpdates.favorites;
+    }
   }
 
   return sanitized;

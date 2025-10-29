@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Preferências de usuário passam a incluir listas `miniApps.saved` e `miniApps.favorites`, com saneamento de IDs, deduplicação e compatibilidade com dados existentes.
+- Criado módulo de preferências de MiniApps com operações de salvar/favoritar, limite de favoritos, sincronização da sessão ativa e cobertura de testes para os novos fluxos.
 - Implantada camada oficial de IndexedDB com vendor `idb` 7.x, bancos `marco_core`/`pesquisa_studio`, APIs compartilhadas, migrador de `localStorage` e monitoramento de persistência/cota.
 - Boot do shell sincroniza o catálogo com IndexedDB, solicita persistência, expõe eventos `storage:*` no MarcoBus e atualiza o estado do painel.
 - Painel "Painel da conta" exibe status do armazenamento (persistência, uso/cota e auditoria local dos últimos eventos).

@@ -1,4 +1,9 @@
 import { getMiniAppsSnapshot } from '../data/miniapp-store.js';
+import {
+  getActiveMiniAppPreferences,
+  toggleMiniAppSaved,
+  toggleMiniAppFavorite,
+} from '../data/miniapp-preferences.js';
 
 export const APP_DOC_BASE_PATH = './docs/miniapps';
 
@@ -137,11 +142,48 @@ function setElementBusy(element, busy) {
   }
 }
 
-export function createMiniAppCard(
-  app,
-  { highlightId, onHighlight, isSaved = false, isFavorite = false, onToggleSaved, onToggleFavorite } = {},
-) {
+export function createMiniAppCard(app, options = {}) {
+  const {
+    highlightId,
+    onHighlight,
+    isSaved,
+    isFavorite,
+    onToggleSaved,
+    onToggleFavorite,
+    preferencesSnapshot,
+  } = options;
+
   const normalizedId = normalizeMiniAppId(app.id);
+
+  const snapshot =
+    preferencesSnapshot && typeof preferencesSnapshot === 'object'
+      ? preferencesSnapshot
+      : getActiveMiniAppPreferences();
+
+  const savedFromSnapshot = Array.isArray(snapshot?.saved) ? snapshot.saved : [];
+  const favoriteFromSnapshot = Array.isArray(snapshot?.favorites) ? snapshot.favorites : [];
+  const sessionActive = snapshot?.userId != null;
+  const hasSavedOverride = Object.prototype.hasOwnProperty.call(options, 'isSaved');
+  const hasFavoriteOverride = Object.prototype.hasOwnProperty.call(options, 'isFavorite');
+
+  let savedState = hasSavedOverride ? Boolean(isSaved) : savedFromSnapshot.includes(normalizedId);
+  let favoriteState = hasFavoriteOverride
+    ? Boolean(isFavorite)
+    : favoriteFromSnapshot.includes(normalizedId);
+
+  const resolvedToggleSaved =
+    typeof onToggleSaved === 'function'
+      ? onToggleSaved
+      : ({ id, nextState }) => toggleMiniAppSaved(id, { targetState: nextState });
+
+  const resolvedToggleFavorite =
+    typeof onToggleFavorite === 'function'
+      ? onToggleFavorite
+      : ({ id, nextState }) => toggleMiniAppFavorite(id, { targetState: nextState });
+
+  const sessionRequiredMessage = 'Faça login para gerenciar seus MiniApps.';
+  const invalidMiniAppMessage =
+    'Não foi possível identificar este MiniApp. Atualize a página e tente novamente.';
 
   const item = document.createElement('li');
   item.className = 'miniapp-store__item';
@@ -210,11 +252,54 @@ export function createMiniAppCard(
     favoriteButton.removeAttribute('data-feedback');
   };
 
-  let savedState = Boolean(isSaved);
-  let favoriteState = Boolean(isFavorite);
+  const updateStatesFromPreferences = (preferences) => {
+    if (!preferences || typeof preferences !== 'object') {
+      return;
+    }
+
+    const savedList = Array.isArray(preferences.saved)
+      ? preferences.saved
+      : Array.isArray(preferences?.miniApps?.saved)
+        ? preferences.miniApps.saved
+        : null;
+    const favoritesList = Array.isArray(preferences.favorites)
+      ? preferences.favorites
+      : Array.isArray(preferences?.miniApps?.favorites)
+        ? preferences.miniApps.favorites
+        : null;
+
+    if (savedList) {
+      savedState = savedList.includes(normalizedId);
+      applySavedState(savedState);
+    }
+
+    if (favoritesList) {
+      favoriteState = favoritesList.includes(normalizedId);
+      applyFavoriteState(favoriteState);
+    }
+  };
 
   applySavedState(savedState);
   applyFavoriteState(favoriteState);
+
+  if (!sessionActive) {
+    savedButton.disabled = true;
+    savedButton.setAttribute('aria-disabled', 'true');
+    savedButton.dataset.feedback = sessionRequiredMessage;
+    savedButton.title = sessionRequiredMessage;
+    savedButton.setAttribute('aria-label', sessionRequiredMessage);
+
+    favoriteButton.disabled = true;
+    favoriteButton.setAttribute('aria-disabled', 'true');
+    favoriteButton.dataset.feedback = sessionRequiredMessage;
+    favoriteButton.title = sessionRequiredMessage;
+    favoriteButton.setAttribute('aria-label', sessionRequiredMessage);
+  }
+
+  const savedReasonMessages = {
+    'inactive-session': sessionRequiredMessage,
+    'invalid-miniapp-id': invalidMiniAppMessage,
+  };
 
   const favoriteReasonMessages = {
     'favorite-limit-exceeded': (details) => {
@@ -228,16 +313,28 @@ export function createMiniAppCard(
         ? `Você atingiu o limite de ${limit} MiniApps favoritados. Remova um favorito antes de continuar.`
         : 'Você atingiu o limite de MiniApps favoritados. Remova um favorito antes de tentar novamente.';
     },
+    'inactive-session': sessionRequiredMessage,
+    'invalid-miniapp-id': invalidMiniAppMessage,
   };
 
   const handleSavedClick = () => {
+    if (!sessionActive) {
+      notifyToggleError(
+        savedButton,
+        sessionRequiredMessage,
+        Object.assign(new Error(sessionRequiredMessage), { reason: 'inactive-session' }),
+        savedReasonMessages,
+      );
+      return;
+    }
+
     const previousState = savedState;
     const targetState = !previousState;
 
     savedState = targetState;
     applySavedState(savedState);
 
-    if (typeof onToggleSaved !== 'function') {
+    if (typeof resolvedToggleSaved !== 'function') {
       return;
     }
 
@@ -245,7 +342,7 @@ export function createMiniAppCard(
 
     let toggleResult;
     try {
-      toggleResult = onToggleSaved({
+      toggleResult = resolvedToggleSaved({
         app,
         id: normalizedId,
         nextState: targetState,
@@ -260,14 +357,17 @@ export function createMiniAppCard(
         savedButton,
         'Não foi possível atualizar os MiniApps salvos. Tente novamente em instantes.',
         error,
+        savedReasonMessages,
       );
       return;
     }
 
     Promise.resolve(toggleResult)
       .then((result) => {
-        savedState = resolveToggleResult(result, { targetState });
+        const resolvedValue = resolveToggleResult(result, { targetState });
+        savedState = resolvedValue;
         applySavedState(savedState);
+        updateStatesFromPreferences(result?.preferences?.miniApps ?? result?.preferences ?? null);
       })
       .catch((error) => {
         savedState = previousState;
@@ -276,6 +376,7 @@ export function createMiniAppCard(
           savedButton,
           'Não foi possível atualizar os MiniApps salvos. Tente novamente em instantes.',
           error,
+          savedReasonMessages,
         );
       })
       .finally(() => {
@@ -284,13 +385,23 @@ export function createMiniAppCard(
   };
 
   const handleFavoriteClick = () => {
+    if (!sessionActive) {
+      notifyToggleError(
+        favoriteButton,
+        sessionRequiredMessage,
+        Object.assign(new Error(sessionRequiredMessage), { reason: 'inactive-session' }),
+        favoriteReasonMessages,
+      );
+      return;
+    }
+
     const previousState = favoriteState;
     const targetState = !previousState;
 
     favoriteState = targetState;
     applyFavoriteState(favoriteState);
 
-    if (typeof onToggleFavorite !== 'function') {
+    if (typeof resolvedToggleFavorite !== 'function') {
       return;
     }
 
@@ -298,7 +409,7 @@ export function createMiniAppCard(
 
     let toggleResult;
     try {
-      toggleResult = onToggleFavorite({
+      toggleResult = resolvedToggleFavorite({
         app,
         id: normalizedId,
         nextState: targetState,
@@ -320,8 +431,10 @@ export function createMiniAppCard(
 
     Promise.resolve(toggleResult)
       .then((result) => {
-        favoriteState = resolveToggleResult(result, { targetState });
+        const resolvedValue = resolveToggleResult(result, { targetState });
+        favoriteState = resolvedValue;
         applyFavoriteState(favoriteState);
+        updateStatesFromPreferences(result?.preferences?.miniApps ?? result?.preferences ?? null);
       })
       .catch((error) => {
         favoriteState = previousState;
@@ -437,12 +550,24 @@ export function renderMiniAppStore(viewRoot, options = {}) {
       ? options.favoriteMiniApps
       : [];
 
-  const savedSet = new Set(savedInput.map(toNormalizedId).filter(Boolean));
-  const favoriteSet = new Set(favoriteInput.map(toNormalizedId).filter(Boolean));
+  const basePreferences = getActiveMiniAppPreferences();
+  const savedSet = new Set(Array.isArray(basePreferences.saved) ? basePreferences.saved : []);
+  const favoriteSet = new Set(Array.isArray(basePreferences.favorites) ? basePreferences.favorites : []);
 
-  const toggleSavedHandler = typeof options.onToggleSaved === 'function' ? options.onToggleSaved : null;
+  savedInput.map(toNormalizedId).filter(Boolean).forEach((id) => savedSet.add(id));
+  favoriteInput.map(toNormalizedId).filter(Boolean).forEach((id) => favoriteSet.add(id));
+
+  favoriteSet.forEach((id) => savedSet.add(id));
+
+  const preferencesSnapshot = {
+    userId: basePreferences.userId,
+    saved: Array.from(savedSet),
+    favorites: Array.from(favoriteSet),
+  };
+
+  const toggleSavedHandler = typeof options.onToggleSaved === 'function' ? options.onToggleSaved : undefined;
   const toggleFavoriteHandler =
-    typeof options.onToggleFavorite === 'function' ? options.onToggleFavorite : null;
+    typeof options.onToggleFavorite === 'function' ? options.onToggleFavorite : undefined;
 
   viewRoot.className = 'card view auth-view view--miniapps';
   viewRoot.dataset.view = 'miniapps';
@@ -488,8 +613,7 @@ export function renderMiniAppStore(viewRoot, options = {}) {
     const item = createMiniAppCard(app, {
       highlightId,
       onHighlight: options.onHighlight,
-      isSaved: savedSet.has(app.id),
-      isFavorite: favoriteSet.has(app.id),
+      preferencesSnapshot,
       onToggleSaved: toggleSavedHandler,
       onToggleFavorite: toggleFavoriteHandler,
     });

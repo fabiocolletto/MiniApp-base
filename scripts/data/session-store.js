@@ -2,6 +2,7 @@ import { getUsers, subscribeUsers, updateUser as updateUserRecord } from './user
 import { setSessionState as persistGlobalSessionState } from '../../core/account-store.js';
 import eventBus from '../events/event-bus.js';
 import { sanitizeFooterIndicatorsPreference } from '../preferences/footer-indicators.js';
+import { normalizeMiniAppPreferenceRecord } from './miniapp-preferences-helpers.js';
 
 const SESSION_STORAGE_KEY = 'miniapp-active-user-id';
 const sessionListeners = new Set();
@@ -22,10 +23,14 @@ function normalizeThemePreference(value) {
 
 function clonePreferences(preferences) {
   if (!preferences || typeof preferences !== 'object') {
-    return { theme: 'system', footerIndicators: 'visible' };
+    return { theme: 'system', footerIndicators: 'visible', miniApps: normalizeMiniAppPreferenceRecord({}) };
   }
 
-  const cloned = { theme: 'system', footerIndicators: 'visible' };
+  const cloned = {
+    theme: 'system',
+    footerIndicators: 'visible',
+    miniApps: normalizeMiniAppPreferenceRecord(preferences),
+  };
 
   if (Object.prototype.hasOwnProperty.call(preferences, 'theme')) {
     cloned.theme = normalizeThemePreference(preferences.theme);
