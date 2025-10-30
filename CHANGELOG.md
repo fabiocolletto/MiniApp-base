@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Menu principal abre com o título "Menu principal" e agora exibe uma faixa de categorias com botões em formato de pílula, sublistas com links para os painéis e preserva o ícone isolado no acionador do rodapé.
+- Fundo do shell de autenticação foi ajustado para reutilizar o gradiente principal, eliminando a faixa clara entre o painel e o rodapé.
 - Ajustado o overlay do menu desktop para usar layout flexível ancorado ao rodapé, evitando centralização indevida da janela do menu.
 - Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
 - Painel principal do shell de autenticação passa a alinhar-se ao topo, ocupar toda a área entre cabeçalho e rodapé e abandona os cantos arredondados para seguir o layout solicitado.

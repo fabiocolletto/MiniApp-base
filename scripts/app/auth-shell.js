@@ -213,6 +213,7 @@ export function initAuthShell(options = {}) {
   const footerToggle = doc.querySelector('[data-footer-toggle]');
   const footerActiveViewLabel = doc.querySelector('[data-active-view-label]');
   const footerActiveViewDivider = doc.querySelector('[data-active-view-divider]');
+  const footerMenuCategoriesNav = footerMenuPanel?.querySelector('[data-menu-categories]');
   const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
   const footerMenuMiniAppsTitle = footerMenuPanel?.querySelector('[data-menu-title="miniapps"]');
   const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
@@ -747,7 +748,21 @@ export function initAuthShell(options = {}) {
   }
 
   function setActiveFooterMenuItem(viewName) {
-    const items = getFooterMenuItems();
+    let items = getFooterMenuItems();
+
+    if (viewName) {
+      const hasActiveItem = items.some((item) => item instanceof HTMLElementRef && item.dataset.view === viewName);
+      if (!hasActiveItem) {
+        const targetCategory = findCategoryByView(viewName);
+        if (targetCategory && targetCategory.id && targetCategory.id !== activeCategoryId) {
+          activeCategoryId = targetCategory.id;
+          renderFooterCategoryNavigation();
+          renderFooterCategoryContent();
+          items = getFooterMenuItems();
+        }
+      }
+    }
+
     let activeLabel = '';
 
     items.forEach((item) => {
@@ -755,7 +770,7 @@ export function initAuthShell(options = {}) {
         return;
       }
 
-      const isActive = item.dataset.view === viewName;
+      const isActive = Boolean(viewName) && item.dataset.view === viewName;
       item.classList.toggle('is-active', isActive);
       item.setAttribute('aria-current', isActive ? 'page' : 'false');
 
@@ -764,24 +779,7 @@ export function initAuthShell(options = {}) {
         const typeId = item.dataset.typeId;
 
         if (categoryId) {
-          expandedCategories.add(categoryId);
-
-          if (footerMenuViewsList instanceof HTMLElementRef) {
-            const categoryToggle = footerMenuViewsList.querySelector(
-              `[data-category-toggle="${categoryId}"]`,
-            );
-            const categoryContent = footerMenuViewsList.querySelector(
-              `[data-category-content="${categoryId}"]`,
-            );
-
-            if (ensureHtmlElement(doc, categoryToggle)) {
-              categoryToggle.setAttribute('aria-expanded', 'true');
-            }
-
-            if (ensureHtmlElement(doc, categoryContent)) {
-              categoryContent.hidden = false;
-            }
-          }
+          activeCategoryId = categoryId;
         }
 
         if (categoryId && typeId) {
@@ -831,6 +829,19 @@ export function initAuthShell(options = {}) {
         'aria-label',
         activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
       );
+    }
+
+    if (ensureHtmlElement(doc, footerMenuCategoriesNav)) {
+      const buttons = Array.from(footerMenuCategoriesNav.querySelectorAll('[data-category-id]'));
+      buttons.forEach((button) => {
+        if (!ensureHtmlElement(doc, button)) {
+          return;
+        }
+
+        const isActive = button.dataset.categoryId === activeCategoryId;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
     }
   }
 
@@ -956,175 +967,256 @@ export function initAuthShell(options = {}) {
   };
 
   let currentView = null;
-  const expandedCategories = new Set();
   const expandedTypes = new Set();
+  let activeCategoryId = FOOTER_MENU_STRUCTURE.find((category) => category && category.id)?.id ?? null;
 
   function getTypeKey(categoryId, typeId) {
     return `${categoryId}::${typeId}`;
   }
 
-  if (FOOTER_MENU_STRUCTURE.length > 0) {
-    const firstCategory = FOOTER_MENU_STRUCTURE[0];
-    if (firstCategory?.id) {
-      expandedCategories.add(firstCategory.id);
-      const firstType = Array.isArray(firstCategory.types) ? firstCategory.types[0] : null;
-      if (firstType?.id) {
-        expandedTypes.add(getTypeKey(firstCategory.id, firstType.id));
-      }
+  function findCategoryById(categoryId) {
+    if (!categoryId) {
+      return null;
     }
+
+    return (
+      FOOTER_MENU_STRUCTURE.find((category) => category && category.id === categoryId) ?? null
+    );
   }
 
-  function renderFooterViewItems() {
+  function findCategoryByView(viewName) {
+    if (!viewName) {
+      return null;
+    }
+
+    return (
+      FOOTER_MENU_STRUCTURE.find((category) => {
+        if (!category || !Array.isArray(category.types)) {
+          return false;
+        }
+
+        return category.types.some((type) => {
+          if (!type || !Array.isArray(type.entries)) {
+            return false;
+          }
+
+          return type.entries.some((entry) => entry && entry.view === viewName);
+        });
+      }) ?? null
+    );
+  }
+
+  function renderFooterCategoryNavigation() {
+    if (!(footerMenuCategoriesNav instanceof HTMLElementRef)) {
+      return;
+    }
+
+    const categories = FOOTER_MENU_STRUCTURE.filter((category) => category && category.id && category.label);
+
+    if (categories.length === 0) {
+      footerMenuCategoriesNav.replaceChildren();
+      footerMenuCategoriesNav.hidden = true;
+      return;
+    }
+
+    footerMenuCategoriesNav.hidden = false;
+
+    const fragment = doc.createDocumentFragment();
+    const list = doc.createElement('ul');
+    list.className = 'auth-shell__menu-category-tabs';
+
+    categories.forEach((category) => {
+      const item = doc.createElement('li');
+      item.className = 'auth-shell__menu-category-tab';
+
+      const button = doc.createElement('button');
+      button.type = 'button';
+      button.className = 'auth-shell__menu-category-button';
+      button.dataset.categoryId = category.id;
+      button.textContent = category.label;
+
+      const isActive = category.id === activeCategoryId;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+      item.append(button);
+      list.append(item);
+    });
+
+    fragment.append(list);
+    footerMenuCategoriesNav.replaceChildren(fragment);
+  }
+
+  function renderFooterCategoryContent() {
     if (!(footerMenuViewsList instanceof HTMLElementRef)) {
       return;
     }
 
+    footerMenuViewsList.replaceChildren();
+
+    const categories = FOOTER_MENU_STRUCTURE.filter((category) => category && category.id);
+    if (categories.length === 0) {
+      return;
+    }
+
+    let category = findCategoryById(activeCategoryId) ?? categories[0];
+    if (!category || !category.id) {
+      return;
+    }
+
+    activeCategoryId = category.id;
+
+    const types = Array.isArray(category.types) ? category.types.filter((type) => type && type.id) : [];
+
+    if (types.length === 0) {
+      return;
+    }
+
+    const hasExpandedType = types.some((type) => expandedTypes.has(getTypeKey(category.id, type.id)));
+    if (!hasExpandedType) {
+      const firstType = types[0];
+      if (firstType && firstType.id) {
+        expandedTypes.add(getTypeKey(category.id, firstType.id));
+      }
+    }
+
     const fragment = doc.createDocumentFragment();
+    const categoryItem = doc.createElement('li');
+    categoryItem.className = 'auth-shell__menu-category';
 
-    FOOTER_MENU_STRUCTURE.forEach((category) => {
-      const categoryItem = doc.createElement('li');
-      categoryItem.className = 'auth-shell__menu-category';
+    const categoryTitle = doc.createElement('h3');
+    categoryTitle.className = 'auth-shell__menu-category-title';
+    categoryTitle.textContent = category.label ?? 'Painéis';
+    categoryItem.append(categoryTitle);
 
-      const categoryToggle = doc.createElement('button');
-      categoryToggle.type = 'button';
-      categoryToggle.className = 'auth-shell__menu-category-title auth-shell__menu-category-toggle';
-      categoryToggle.dataset.categoryToggle = category.id;
-      categoryToggle.textContent = category.label;
+    const categoryContent = doc.createElement('div');
+    categoryContent.className = 'auth-shell__menu-category-content';
 
-      const categoryContentId = `authFooterMenuCategory-${category.id}`;
-      categoryToggle.setAttribute('aria-controls', categoryContentId);
+    types.forEach((type) => {
+      const typeSection = doc.createElement('section');
+      typeSection.className = 'auth-shell__menu-type';
 
-      const categoryContent = doc.createElement('div');
-      categoryContent.id = categoryContentId;
-      categoryContent.className = 'auth-shell__menu-category-content';
-      categoryContent.dataset.categoryContent = category.id;
+      const typeKey = getTypeKey(category.id, type.id);
 
-      const isCategoryExpanded = expandedCategories.has(category.id);
-      categoryToggle.setAttribute('aria-expanded', isCategoryExpanded ? 'true' : 'false');
-      categoryContent.hidden = !isCategoryExpanded;
+      const typeToggle = doc.createElement('button');
+      typeToggle.type = 'button';
+      typeToggle.className = 'auth-shell__menu-type-title auth-shell__menu-type-toggle';
+      typeToggle.dataset.typeToggle = typeKey;
+      typeToggle.textContent = type.label ?? 'Categoria';
 
-      categoryToggle.addEventListener('click', () => {
-        const currentlyExpanded = expandedCategories.has(category.id);
+      const typeContentId = `authFooterMenuType-${category.id}-${type.id}`;
+      typeToggle.setAttribute('aria-controls', typeContentId);
+
+      const typeContent = doc.createElement('div');
+      typeContent.id = typeContentId;
+      typeContent.className = 'auth-shell__menu-type-content';
+      typeContent.dataset.typeContent = typeKey;
+
+      const isTypeExpanded = expandedTypes.has(typeKey);
+      typeToggle.setAttribute('aria-expanded', isTypeExpanded ? 'true' : 'false');
+      typeContent.hidden = !isTypeExpanded;
+
+      typeToggle.addEventListener('click', () => {
+        const currentlyExpanded = expandedTypes.has(typeKey);
         if (currentlyExpanded) {
-          expandedCategories.delete(category.id);
+          expandedTypes.delete(typeKey);
         } else {
-          expandedCategories.add(category.id);
+          expandedTypes.add(typeKey);
         }
 
-        categoryToggle.setAttribute('aria-expanded', currentlyExpanded ? 'false' : 'true');
-        categoryContent.hidden = currentlyExpanded;
+        typeToggle.setAttribute('aria-expanded', currentlyExpanded ? 'false' : 'true');
+        typeContent.hidden = currentlyExpanded;
       });
 
-      category.types.forEach((type) => {
-        const typeSection = doc.createElement('section');
-        typeSection.className = 'auth-shell__menu-type';
+      const sublist = doc.createElement('ul');
+      sublist.className = 'auth-shell__menu-sublist';
 
-        const typeKey = getTypeKey(category.id, type.id);
-        const typeToggle = doc.createElement('button');
-        typeToggle.type = 'button';
-        typeToggle.className = 'auth-shell__menu-type-title auth-shell__menu-type-toggle';
-        typeToggle.dataset.typeToggle = typeKey;
-        typeToggle.textContent = type.label;
+      const entries = Array.isArray(type.entries) ? type.entries.filter(Boolean) : [];
 
-        const typeContentId = `authFooterMenuType-${category.id}-${type.id}`;
-        typeToggle.setAttribute('aria-controls', typeContentId);
+      entries.forEach((entry) => {
+        const entryItem = doc.createElement('li');
+        entryItem.className = 'auth-shell__menu-entry';
 
-        const typeContent = doc.createElement('div');
-        typeContent.id = typeContentId;
-        typeContent.className = 'auth-shell__menu-type-content';
-        typeContent.dataset.typeContent = typeKey;
+        const link = doc.createElement('a');
+        link.className = 'auth-shell__menu-item';
+        link.dataset.categoryId = category.id;
+        link.dataset.typeId = type.id;
+        link.textContent = entry.label ?? 'Painel';
+        link.href = entry.view
+          ? `#${entry.view}`
+          : entry.action
+          ? `#${entry.action}`
+          : `#${entry.id ?? 'painel'}`;
 
-        const isTypeExpanded = expandedTypes.has(typeKey);
-        typeToggle.setAttribute('aria-expanded', isTypeExpanded ? 'true' : 'false');
-        typeContent.hidden = !isTypeExpanded;
+        if (entry.view) {
+          link.dataset.view = entry.view;
+        }
 
-        typeToggle.addEventListener('click', () => {
-          const currentlyExpanded = expandedTypes.has(typeKey);
-          if (currentlyExpanded) {
-            expandedTypes.delete(typeKey);
-          } else {
-            expandedTypes.add(typeKey);
-          }
+        if (entry.action) {
+          link.dataset.action = entry.action;
+        }
 
-          typeToggle.setAttribute('aria-expanded', currentlyExpanded ? 'false' : 'true');
-          typeContent.hidden = currentlyExpanded;
-        });
+        if (entry.widgetId) {
+          link.dataset.widgetId = entry.widgetId;
+        }
 
-        const sublist = doc.createElement('ul');
-        sublist.className = 'auth-shell__menu-sublist';
+        let descriptionId = null;
 
-        type.entries.forEach((entry) => {
-          const entryItem = doc.createElement('li');
-          entryItem.className = 'auth-shell__menu-entry';
+        if (entry.description) {
+          descriptionId = `${entry.id}-description`;
+          link.setAttribute('aria-describedby', descriptionId);
+        }
 
-          const button = doc.createElement('button');
-          button.type = 'button';
-          button.className = 'auth-shell__menu-item';
-          button.dataset.categoryId = category.id;
-          button.dataset.typeId = type.id;
-          button.textContent = entry.label;
+        entryItem.append(link);
 
-          if (entry.view) {
-            button.dataset.view = entry.view;
-          }
+        if (entry.description) {
+          const description = doc.createElement('p');
+          description.id = descriptionId;
+          description.className = 'auth-shell__menu-item-description';
+          description.textContent = entry.description;
+          entryItem.append(description);
+        }
 
-          if (entry.action) {
-            button.dataset.action = entry.action;
-          }
+        if (entry.widgetId) {
+          const toggle = doc.createElement('label');
+          toggle.className = 'auth-shell__menu-toggle';
 
-          if (entry.widgetId) {
-            button.dataset.widgetId = entry.widgetId;
-          }
+          const checkbox = doc.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'auth-shell__menu-toggle-input';
+          checkbox.dataset.widgetToggle = entry.widgetId;
+          checkbox.checked = activeWidgetIds.has(entry.widgetId);
 
-          let descriptionId = null;
+          const toggleText = doc.createElement('span');
+          toggleText.className = 'auth-shell__menu-toggle-label';
+          toggleText.textContent = 'Fixar no painel principal';
 
-          if (entry.description) {
-            descriptionId = `${entry.id}-description`;
-            button.setAttribute('aria-describedby', descriptionId);
-          }
+          toggle.append(checkbox, toggleText);
+          entryItem.append(toggle);
+        }
 
-          entryItem.append(button);
+        sublist.append(entryItem);
+      });
 
-          if (entry.description) {
-            const description = doc.createElement('p');
-            description.id = descriptionId;
-            description.className = 'auth-shell__menu-item-description';
-            description.textContent = entry.description;
-            entryItem.append(description);
-          }
-
-          if (entry.widgetId) {
-            const toggle = doc.createElement('label');
-            toggle.className = 'auth-shell__menu-toggle';
-
-            const checkbox = doc.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'auth-shell__menu-toggle-input';
-            checkbox.dataset.widgetToggle = entry.widgetId;
-            checkbox.checked = activeWidgetIds.has(entry.widgetId);
-
-            const toggleText = doc.createElement('span');
-            toggleText.className = 'auth-shell__menu-toggle-label';
-            toggleText.textContent = 'Fixar no painel principal';
-
-            toggle.append(checkbox, toggleText);
-            entryItem.append(toggle);
-          }
-
-          sublist.append(entryItem);
-        });
-
+      if (sublist.children.length > 0) {
         typeContent.append(sublist);
         typeSection.append(typeToggle, typeContent);
         categoryContent.append(typeSection);
-      });
-
-      categoryItem.append(categoryToggle, categoryContent);
-      fragment.append(categoryItem);
+      }
     });
 
-    footerMenuViewsList.replaceChildren(fragment);
-    setActiveFooterMenuItem(currentView);
+    if (categoryContent.children.length > 0) {
+      categoryItem.append(categoryContent);
+      fragment.append(categoryItem);
+    }
+
+    footerMenuViewsList.append(fragment);
+  }
+
+  function renderFooterViewItems({ alignWithView = true } = {}) {
+    renderFooterCategoryNavigation();
+    renderFooterCategoryContent();
+    setActiveFooterMenuItem(alignWithView ? currentView : null);
   }
 
   function renderFooterMiniAppItems(apps) {
@@ -1343,6 +1435,76 @@ export function initAuthShell(options = {}) {
     teardownCallbacks.push(() => {
       footerMenuButton.removeEventListener('click', handleFooterMenuClick);
       footerMenuButton.removeEventListener('keydown', handleFooterMenuKeydown);
+    });
+  }
+
+  if (ensureHtmlElement(doc, footerMenuCategoriesNav)) {
+    const handleCategoryClick = (event) => {
+      const trigger =
+        event.target instanceof HTMLElementRef
+          ? event.target.closest('[data-category-id]')
+          : null;
+
+      if (!trigger || !ensureHtmlElement(doc, trigger)) {
+        return;
+      }
+
+      const categoryId = trigger.dataset.categoryId;
+
+      if (!categoryId || categoryId === activeCategoryId) {
+        return;
+      }
+
+      activeCategoryId = categoryId;
+      renderFooterViewItems({ alignWithView: false });
+
+      const focusTarget = footerMenuCategoriesNav.querySelector(`[data-category-id="${categoryId}"]`);
+      if (ensureHtmlElement(doc, focusTarget)) {
+        focusWithoutScreenShift(doc, win, focusTarget);
+      }
+    };
+
+    const handleCategoryKeydown = (event) => {
+      if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+        return;
+      }
+
+      const trigger =
+        event.target instanceof HTMLElementRef
+          ? event.target.closest('[data-category-id]')
+          : null;
+
+      if (!trigger || !ensureHtmlElement(doc, trigger)) {
+        return;
+      }
+
+      const buttons = Array.from(footerMenuCategoriesNav.querySelectorAll('[data-category-id]')).filter((button) =>
+        ensureHtmlElement(doc, button),
+      );
+
+      if (!buttons.length) {
+        return;
+      }
+
+      const currentIndex = buttons.indexOf(trigger);
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % buttons.length : 0;
+        buttons[nextIndex]?.focus();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + buttons.length) % buttons.length : 0;
+        buttons[prevIndex]?.focus();
+      }
+    };
+
+    footerMenuCategoriesNav.addEventListener('click', handleCategoryClick);
+    footerMenuCategoriesNav.addEventListener('keydown', handleCategoryKeydown);
+
+    teardownCallbacks.push(() => {
+      footerMenuCategoriesNav.removeEventListener('click', handleCategoryClick);
+      footerMenuCategoriesNav.removeEventListener('keydown', handleCategoryKeydown);
     });
   }
 
