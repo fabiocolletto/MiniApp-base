@@ -1,13 +1,13 @@
 /* Auto-generated from design/tokens.json. Do not edit manually. */
 /* Token set: global */
 :root {
-  --global-color-brand-accent: #00b3a4;
-  --global-color-brand-highlight: #f29f05;
-  --global-color-brand-primary: #1f6feb;
-  --global-color-brand-secondary: #6c7a89;
-  --global-color-neutral-base: #111315;
-  --global-color-neutral-inverse: #f5f7fa;
-  --global-color-neutral-muted: #64707d;
+  --global-color-brand-accent: #2bb489;
+  --global-color-brand-highlight: #ececf1;
+  --global-color-brand-primary: #10a37f;
+  --global-color-brand-secondary: #1f232a;
+  --global-color-neutral-base: #0f1720;
+  --global-color-neutral-inverse: #f7f8f8;
+  --global-color-neutral-muted: #71788a;
   --global-color-state-error: #d93025;
   --global-color-state-info: #2563eb;
   --global-color-state-success: #0f9d58;
@@ -39,24 +39,24 @@
 
 /* Token set: light */
 :root {
-  --light-color-border-strong: rgba(31, 111, 235, 0.35);
-  --light-color-border-subtle: rgba(17, 19, 21, 0.08);
-  --light-color-surface-background: #fef9f2;
+  --light-color-border-strong: rgba(16, 163, 127, 0.35);
+  --light-color-border-subtle: rgba(15, 23, 32, 0.08);
+  --light-color-surface-background: #f7f8f8;
   --light-color-surface-card: #ffffff;
-  --light-color-surface-muted: #f4f6f8;
-  --light-color-text-muted: #475569;
-  --light-color-text-primary: #111315;
-  --light-color-text-secondary: #334155;
+  --light-color-surface-muted: #f1f3f5;
+  --light-color-text-muted: #5a6270;
+  --light-color-text-primary: #1f232a;
+  --light-color-text-secondary: #3a3f4b;
 }
 
 /* Token set: dark */
 :root {
-  --dark-color-border-strong: rgba(0, 179, 164, 0.45);
-  --dark-color-border-subtle: rgba(245, 247, 250, 0.12);
-  --dark-color-surface-background: #0b0f13;
-  --dark-color-surface-card: #141b22;
-  --dark-color-surface-muted: #1f2933;
-  --dark-color-text-muted: #94a3b8;
-  --dark-color-text-primary: #ebeff3;
-  --dark-color-text-secondary: #cbd5f5;
+  --dark-color-border-strong: rgba(16, 163, 127, 0.45);
+  --dark-color-border-subtle: rgba(236, 236, 241, 0.12);
+  --dark-color-surface-background: #0b0d10;
+  --dark-color-surface-card: #13161b;
+  --dark-color-surface-muted: #1a1e24;
+  --dark-color-text-muted: #8e8ea0;
+  --dark-color-text-primary: #ececf1;
+  --dark-color-text-secondary: #bfc5d6;
 }

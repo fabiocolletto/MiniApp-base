@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { JSDOM } from './helpers/jsdom-shim.js';
+import { createDomEnvironment } from './helpers/dom-env.js';
 
 import { initAuthShell, buildMiniAppDocPath } from '../scripts/app/auth-shell.js';
 import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
@@ -12,40 +12,6 @@ import { renderAccountDashboard } from '../scripts/views/account-dashboard.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
-
-const originalGlobals = {
-  window: global.window,
-  document: global.document,
-  HTMLElement: global.HTMLElement,
-  Node: global.Node,
-  KeyboardEvent: global.KeyboardEvent,
-  HTMLBodyElement: global.HTMLBodyElement,
-  navigator: global.navigator,
-};
-
-function attachDomGlobals(window) {
-  global.window = window;
-  global.document = window.document;
-  global.HTMLElement = window.HTMLElement;
-  global.Node = window.Node;
-  global.KeyboardEvent = window.KeyboardEvent;
-  global.HTMLBodyElement = window.HTMLBodyElement;
-  Object.defineProperty(global, 'navigator', {
-    configurable: true,
-    writable: true,
-    value: window.navigator,
-  });
-}
-
-function restoreGlobals() {
-  Object.entries(originalGlobals).forEach(([key, value]) => {
-    if (typeof value === 'undefined') {
-      delete global[key];
-    } else {
-      global[key] = value;
-    }
-  });
-}
 
 const SAMPLE_MINI_APPS = [
   {
@@ -118,15 +84,10 @@ function createEventBus() {
 }
 
 function setupShell({ url = 'http://localhost/', prepare } = {}) {
-  const dom = new JSDOM(indexHtml, {
-    url,
-    pretendToBeVisual: true,
-  });
-
-  attachDomGlobals(dom.window);
+  const env = createDomEnvironment({ html: indexHtml, url });
 
   if (typeof prepare === 'function') {
-    prepare(dom.window);
+    prepare(env.window);
   }
 
   const miniAppsSnapshot = JSON.parse(JSON.stringify(SAMPLE_MINI_APPS));
@@ -153,8 +114,8 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
   };
 
   const shell = initAuthShell({
-    window: dom.window,
-    document: dom.window.document,
+    window: env.window,
+    document: env.document,
     fetch: fetchMock,
     registerServiceWorker,
     eventBus: createEventBus(),
@@ -168,20 +129,20 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
   const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
 
   return {
-    dom,
+    dom: env.dom,
     shell,
-    window: dom.window,
-    document: dom.window.document,
+    window: env.window,
+    document: env.document,
     getRegisteredVersion: () => registeredVersion,
     flushAsync,
     miniAppsSnapshot,
+    restore: env.restore,
   };
 }
 
 function teardownShell(env) {
   env.shell?.destroy?.();
-  env.dom?.window?.close?.();
-  restoreGlobals();
+  env.restore?.();
 }
 
 test('inicializa o shell com painel de convidado e dois MiniApps ativos', async () => {
@@ -274,6 +235,18 @@ test('selecionar um MiniApp no menu abre a MiniApp Store destacando o item', asy
     const highlight = env.document.querySelector('.miniapp-store__item--highlight');
     assert.ok(highlight);
     assert.equal(highlight.dataset.appId, 'exam-planner');
+
+    const conversationItems = env.document.querySelectorAll('.chat-shell__conversation-item');
+    assert.equal(conversationItems.length, 2);
+
+    const activeConversation = env.document.querySelector('.chat-shell__conversation-item.is-active');
+    assert.ok(activeConversation);
+    const activeButton = activeConversation.querySelector('.chat-shell__conversation-button');
+    assert.ok(activeButton);
+    assert.equal(activeButton.dataset.appId, 'exam-planner');
+
+    const composer = env.document.querySelector('.chat-shell__composer');
+    assert.ok(composer);
   } finally {
     teardownShell(env);
   }

@@ -42,6 +42,14 @@ O shell inicia diretamente na vitrine de convidados, permitindo explorar MiniApp
 - [`shell/load-miniapp.js`](shell/load-miniapp.js) expõe `loadMiniApp(id, options)`, que busca o registro sem cache, importa o módulo e executa `mount(target, context)`.
 - O service worker mantém `miniapps/registry.json` e `components/preferences/panel.html` com estratégia network-first para garantir atualizações rápidas sem exigir limpeza manual de cache.
 
+## MiniApp Store em layout conversacional
+
+- A view `renderMiniAppStore` (`scripts/views/miniapp-store.js`) monta a vitrine utilizando uma grade responsiva (`.chat-shell`) inspirada no ChatGPT: sidebar com jornadas e thread central com mensagens e cartões.
+- As conversas disponíveis aparecem em `.chat-shell__conversation-list`. Clicar em um item atualiza imediatamente o destaque da lista e da vitrine (`.miniapp-store__item--highlight`) e fecha o menu lateral em telas estreitas.
+- O botão "Nova conversa" leva o foco ao compositor (`.chat-shell__composer`) e reposiciona a thread no topo, simulando o início de um novo atendimento.
+- A identidade visual utiliza tokens verdes/grafite. Ajustes adicionais podem ser feitos nos arquivos `design/tokens.json` e `public/app-theme.css`; gere novamente `public/tokens.css` com `node scripts/build/tokens.mjs` após alterar os tokens.
+- Para customizar preferências salvas/favoritas sem uma sessão ativa, utilize as opções `savedMiniAppIds` e `favoriteMiniAppIds` ao chamar `renderMiniAppStore` em testes ou storybooks.
+
 ## Memória local (IndexedDB)
 
 ### Visão geral
@@ -87,6 +95,8 @@ const drafts = await listSurveys({ status: 'draft' });
 - **Fallback offline**: com o app aberto no navegador, abra as DevTools (`Ctrl+Shift+I` / `Cmd+Option+I`), ative o modo "Offline" na aba **Network** e recarregue a página. O shell deve exibir `public/offline.html` com o aviso de falta de conexão. Ao restaurar a conexão e atualizar novamente, o painel de autenticação volta a aparecer.
 - **Atalhos de MiniApp**: acesse `/?app=task-manager` ou `/?app=exam-planner` para confirmar o redirecionamento imediato para a ficha correspondente em `docs/miniapps/`.
 - **Instalabilidade**: verifique a opção "Instalar" do navegador (Chrome/Edge) e confirme que o nome, ícones maskable e atalho do PWA aparecem conforme o manifesto (`manifest.webmanifest`).
+- **Navegação conversacional**: valide a alternância do botão de sidebar (`.chat-shell__sidebar-toggle`) em telas estreitas, a seleção de conversas na lista lateral e o foco aplicado ao cartão correspondente.
+- **Ações de MiniApp**: estando autenticado, teste os botões "Salvar" e "Favoritar" em cada cartão verificando feedbacks acessíveis (`aria-pressed`, rótulos atualizados e mensagens de erro quando atingir o limite de favoritos).
 
 ### Cenários validados automaticamente
 
@@ -94,6 +104,7 @@ const drafts = await listSurveys({ status: 'draft' });
 - Alternância para o painel de cadastro pelo seletor principal e foco automático nas ações relevantes.
 - Funcionamento do menu do rodapé, incluindo abertura com foco no primeiro item e destaque de MiniApp selecionado.
 - Tratamento do parâmetro `?app=` para redirecionar diretamente à documentação ou destacar o MiniApp correspondente na MiniApp Store.
+- Renderização do layout conversacional do MiniApp Store com destaque automático, alternância de conversas e bloqueio das ações de salvar/favoritar sem sessão ativa.
 
 ## Instalação como PWA
 
@@ -124,6 +135,7 @@ const drafts = await listSurveys({ status: 'draft' });
 - Auditoria da pasta MiniApps: [`docs/miniapps-folder-audit.md`](docs/miniapps-folder-audit.md)
 - Tokens de design: [`docs/design-kit-tokens.md`](docs/design-kit-tokens.md)
 - Tema e preferências: [`docs/ui-theme-and-prefs.md`](docs/ui-theme-and-prefs.md)
+- Validação da versão 3.0.0: [`docs/testing/release-3.0-validation.md`](docs/testing/release-3.0-validation.md)
 - Validação PWA anterior: [`docs/pwa-validation-report.md`](docs/pwa-validation-report.md)
 - Integração MiniApps + WordPress: [`docs/wordpress-miniapps-integration.md`](docs/wordpress-miniapps-integration.md)
 - Relatório completo da limpeza: [`reports/pwa-cleanup-2025-10-28/README.md`](reports/pwa-cleanup-2025-10-28/README.md)

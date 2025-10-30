@@ -186,8 +186,15 @@ export function renderRegisterPanel(viewRoot) {
   };
 
   const applyCurrentMask = () => {
-    const countryDigits = sanitizeCountryCode(phoneCountryInput.value);
-    const numberDigits = phoneNumberInput.value.replace(/[^0-9]/g, '');
+    if (!phoneCountryInput || !phoneNumberInput) {
+      return;
+    }
+
+    const countryDigits = sanitizeCountryCode(
+      typeof phoneCountryInput.value === 'string' ? phoneCountryInput.value : '',
+    );
+    const rawNumber = typeof phoneNumberInput.value === 'string' ? phoneNumberInput.value : '';
+    const numberDigits = rawNumber.replace(/[^0-9]/g, '');
     const formatted = isBrazilianCode(countryDigits)
       ? formatBrazilianDigits(numberDigits)
       : formatInternationalDigits(numberDigits);

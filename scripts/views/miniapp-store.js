@@ -459,6 +459,12 @@ export function createMiniAppCard(app, options = {}) {
   card.append(title, actions);
   item.append(card);
 
+  const controls = {
+    open: openLink,
+    save: savedButton,
+    favorite: favoriteButton,
+  };
+
   const isHighlighted = normalizedId && normalizedId === highlightId;
 
   if (isHighlighted) {
@@ -476,16 +482,18 @@ export function createMiniAppCard(app, options = {}) {
         app,
         id: normalizedId,
         link: openLink,
-        controls: {
-          open: openLink,
-          save: savedButton,
-          favorite: favoriteButton,
-        },
+        controls,
       });
     }
   }
 
-  return item;
+  return {
+    element: item,
+    card,
+    app,
+    id: normalizedId,
+    controls,
+  };
 }
 
 export function mapMiniAppToEntry(app) {
@@ -569,25 +577,141 @@ export function renderMiniAppStore(viewRoot, options = {}) {
   const toggleFavoriteHandler =
     typeof options.onToggleFavorite === 'function' ? options.onToggleFavorite : undefined;
 
-  viewRoot.className = 'card view auth-view view--miniapps';
+  const scheduleTask =
+    typeof queueMicrotask === 'function' ? queueMicrotask : (cb) => Promise.resolve().then(cb);
+
+  viewRoot.className = 'view auth-view view--miniapps';
   viewRoot.dataset.view = 'miniapps';
+
+  const layout = document.createElement('div');
+  layout.className = 'chat-shell';
+  layout.dataset.sidebarOpen = 'false';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'chat-shell__overlay';
+
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'chat-shell__sidebar';
+  sidebar.id = 'miniappChatSidebar';
+  sidebar.setAttribute('aria-label', 'Navegação entre MiniApps');
+
+  const sidebarHeader = document.createElement('div');
+  sidebarHeader.className = 'chat-shell__sidebar-header';
+
+  const brand = document.createElement('strong');
+  brand.className = 'chat-shell__brand';
+  brand.textContent = 'MiniApp Base';
+
+  sidebarHeader.append(brand);
+
+  const sidebarActions = document.createElement('div');
+  sidebarActions.className = 'chat-shell__sidebar-actions';
+
+  const newChatButton = document.createElement('button');
+  newChatButton.type = 'button';
+  newChatButton.className = 'button button--secondary chat-shell__new-chat';
+  newChatButton.textContent = 'Nova conversa';
+
+  sidebarActions.append(newChatButton);
+
+  const sidebarScroll = document.createElement('div');
+  sidebarScroll.className = 'chat-shell__sidebar-scroll';
+
+  const conversationList = document.createElement('ul');
+  conversationList.className = 'chat-shell__conversation-list';
+
+  sidebarScroll.append(conversationList);
+
+  const sidebarFooter = document.createElement('p');
+  sidebarFooter.className = 'chat-shell__sidebar-footer';
+  sidebarFooter.textContent =
+    'Favoritos e salvos ficam aqui para você retomar cada jornada quando quiser.';
+
+  sidebar.append(sidebarHeader, sidebarActions, sidebarScroll, sidebarFooter);
+
+  const main = document.createElement('section');
+  main.className = 'chat-shell__main';
+
+  const header = document.createElement('header');
+  header.className = 'chat-shell__header';
+
+  const headerGroup = document.createElement('div');
+  headerGroup.className = 'chat-shell__header-group';
+
+  const headerTitle = document.createElement('h2');
+  headerTitle.className = 'chat-shell__title';
+  headerTitle.textContent = 'Assistente MiniApp Base';
+
+  const headerSubtitle = document.createElement('p');
+  headerSubtitle.className = 'chat-shell__subtitle';
+  headerSubtitle.textContent = 'Converse para descobrir MiniApps e abrir suas documentações oficiais.';
+
+  headerGroup.append(headerTitle, headerSubtitle);
+
+  const sidebarToggle = document.createElement('button');
+  sidebarToggle.type = 'button';
+  sidebarToggle.className = 'chat-shell__sidebar-toggle';
+  sidebarToggle.setAttribute('aria-controls', sidebar.id);
+  sidebarToggle.setAttribute('aria-expanded', 'false');
+
+  const toggleIcon = document.createElement('span');
+  toggleIcon.setAttribute('aria-hidden', 'true');
+  toggleIcon.textContent = '☰';
+
+  const toggleLabel = document.createElement('span');
+  toggleLabel.className = 'sr-only';
+  toggleLabel.textContent = 'Alternar navegação dos MiniApps';
+
+  sidebarToggle.append(toggleIcon, toggleLabel);
+
+  header.append(headerGroup, sidebarToggle);
+
+  const thread = document.createElement('div');
+  thread.className = 'chat-shell__thread';
+
+  const welcomeMessage = document.createElement('article');
+  welcomeMessage.className = 'chat-message chat-message--assistant';
+
+  const welcomeAvatar = document.createElement('span');
+  welcomeAvatar.className = 'chat-message__avatar';
+  welcomeAvatar.textContent = 'AI';
+
+  const welcomeBubble = document.createElement('div');
+  welcomeBubble.className = 'chat-message__bubble';
+
+  const welcomeIntro = document.createElement('p');
+  welcomeIntro.textContent =
+    'Olá! Reuni seus MiniApps com a mesma fluidez de uma conversa. Escolha um atalho para abrir a documentação oficial ou organize seus favoritos em poucos cliques.';
+
+  welcomeBubble.append(welcomeIntro);
+  welcomeMessage.append(welcomeAvatar, welcomeBubble);
+
+  const storeMessage = document.createElement('article');
+  storeMessage.className = 'chat-message chat-message--assistant';
+
+  const storeAvatar = document.createElement('span');
+  storeAvatar.className = 'chat-message__avatar';
+  storeAvatar.textContent = 'AI';
+
+  const storeBubble = document.createElement('div');
+  storeBubble.className = 'chat-message__bubble';
 
   const container = document.createElement('section');
   container.className = 'miniapp-store';
 
-  const header = document.createElement('header');
-  header.className = 'miniapp-store__header';
+  const storeHeader = document.createElement('header');
+  storeHeader.className = 'miniapp-store__header';
 
-  const title = document.createElement('h2');
-  title.className = 'miniapp-store__heading';
-  title.textContent = 'MiniApp Store';
+  const storeTitle = document.createElement('h3');
+  storeTitle.className = 'miniapp-store__heading';
+  storeTitle.textContent = 'MiniApp Store personalizada';
 
-  const intro = document.createElement('p');
-  intro.className = 'miniapp-store__intro';
-  intro.textContent =
-    'Acesse os MiniApps publicados para sua conta, explore funcionalidades e abra a documentação oficial de cada solução.';
+  const storeIntro = document.createElement('p');
+  storeIntro.className = 'miniapp-store__intro';
+  storeIntro.textContent =
+    'Abra qualquer MiniApp disponível, marque favoritos e acesse a documentação com um toque.';
 
-  header.append(title, intro);
+  storeHeader.append(storeTitle, storeIntro);
 
   const list = document.createElement('ul');
   list.className = 'miniapp-store__list';
@@ -598,37 +722,253 @@ export function renderMiniAppStore(viewRoot, options = {}) {
     .filter((entry) => entry && entry.id)
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
+  const cardRegistry = new Map();
+  const sidebarItems = new Map();
+
+  let highlightResolved = false;
+  let activeId = highlightId && apps.some((entry) => entry.id === highlightId) ? highlightId : '';
+
+  const updateActiveState = (id, { focus = false, scroll = false } = {}) => {
+    const normalized = normalizeMiniAppId(id);
+    if (!normalized) {
+      return;
+    }
+
+    sidebarItems.forEach((item, key) => {
+      item.classList.toggle('is-active', key === normalized);
+    });
+
+    cardRegistry.forEach((entry, key) => {
+      const isActive = key === normalized;
+      const element = entry?.element ?? null;
+      if (!element) {
+        return;
+      }
+
+      element.classList.toggle('miniapp-store__item--highlight', isActive);
+      if (isActive && scroll && typeof element.scrollIntoView === 'function') {
+        try {
+          element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        } catch (error) {
+          try {
+            element.scrollIntoView();
+          } catch (scrollError) {
+            // Ignora ambientes sem suporte a scrollIntoView.
+          }
+        }
+      }
+    });
+
+    if (focus) {
+      const entry = cardRegistry.get(normalized);
+      const focusTarget = entry?.controls?.open ?? null;
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        try {
+          focusTarget.focus({ preventScroll: true });
+        } catch (error) {
+          focusTarget.focus();
+        }
+      }
+    }
+
+    activeId = normalized;
+  };
+
+  const forwardHighlight = (payload, { focus = false } = {}) => {
+    if (!payload || typeof payload !== 'object') {
+      if (typeof options.onHighlight === 'function') {
+        options.onHighlight(payload);
+      }
+      return;
+    }
+
+    const normalized = normalizeMiniAppId(payload.id ?? payload.app?.id);
+    if (normalized && cardRegistry.has(normalized)) {
+      updateActiveState(normalized, { focus, scroll: true });
+    }
+
+    if (typeof options.onHighlight === 'function') {
+      options.onHighlight(payload);
+    }
+  };
+
+  container.append(storeHeader);
+
   if (apps.length === 0) {
     const emptyState = document.createElement('p');
     emptyState.className = 'miniapp-store__empty';
     emptyState.textContent =
       'Ainda não há MiniApps publicados para sua conta. Volte em breve para descobrir novas soluções.';
+    container.append(emptyState);
 
-    container.append(header, emptyState);
-    viewRoot.replaceChildren(container);
-    return;
+    const placeholderItem = document.createElement('li');
+    placeholderItem.className = 'chat-shell__conversation-item';
+    const placeholderText = document.createElement('span');
+    placeholderText.className = 'chat-shell__conversation-meta';
+    placeholderText.textContent = 'Nenhum MiniApp disponível no momento.';
+    placeholderItem.append(placeholderText);
+    conversationList.append(placeholderItem);
+  } else {
+    container.append(list);
+
+    apps.forEach((app, index) => {
+      const card = createMiniAppCard(app, {
+        highlightId,
+        onHighlight: (payload) => {
+          highlightResolved = true;
+          scheduleTask(() => forwardHighlight(payload));
+        },
+        preferencesSnapshot,
+        onToggleSaved: toggleSavedHandler,
+        onToggleFavorite: toggleFavoriteHandler,
+      });
+
+      cardRegistry.set(card.id, { ...card, app });
+      list.append(card.element);
+
+      const conversationItem = document.createElement('li');
+      conversationItem.className = 'chat-shell__conversation-item';
+
+      const conversationButton = document.createElement('button');
+      conversationButton.type = 'button';
+      conversationButton.className = 'chat-shell__conversation-button';
+      conversationButton.dataset.appId = card.id;
+
+      const buttonLabel = document.createElement('span');
+      buttonLabel.textContent = app.name;
+
+      const buttonMeta = document.createElement('span');
+      buttonMeta.className = 'chat-shell__conversation-meta';
+      buttonMeta.textContent = app.category;
+
+      conversationButton.append(buttonLabel, buttonMeta);
+      conversationItem.append(conversationButton);
+      conversationList.append(conversationItem);
+      sidebarItems.set(card.id, conversationItem);
+
+      conversationButton.addEventListener('click', () => {
+        closeSidebar();
+        forwardHighlight(
+          {
+            app,
+            id: card.id,
+            link: card.controls?.open ?? null,
+            controls: card.controls ?? null,
+          },
+          { focus: true },
+        );
+      });
+
+      if (!activeId && index === 0) {
+        activeId = card.id;
+      }
+    });
   }
 
-  let highlightResolved = false;
-  apps.forEach((app) => {
-    const item = createMiniAppCard(app, {
-      highlightId,
-      onHighlight: (payload) => {
-        highlightResolved = true;
-        if (typeof options.onHighlight === 'function') {
-          options.onHighlight(payload);
-        }
-      },
-      preferencesSnapshot,
-      onToggleSaved: toggleSavedHandler,
-      onToggleFavorite: toggleFavoriteHandler,
-    });
-    list.append(item);
+  storeBubble.append(container);
+  storeMessage.append(storeAvatar, storeBubble);
+  thread.append(welcomeMessage, storeMessage);
+
+  const composer = document.createElement('form');
+  composer.className = 'chat-shell__composer';
+  composer.noValidate = true;
+  composer.addEventListener('submit', (event) => event.preventDefault());
+
+  const promptGroup = document.createElement('div');
+  promptGroup.className = 'chat-shell__prompt';
+
+  const promptLabel = document.createElement('label');
+  promptLabel.className = 'sr-only';
+  promptLabel.setAttribute('for', 'chatShellPrompt');
+  promptLabel.textContent = 'Mensagem para o assistente MiniApp';
+
+  const promptTextarea = document.createElement('textarea');
+  promptTextarea.id = 'chatShellPrompt';
+  promptTextarea.name = 'chatShellPrompt';
+  promptTextarea.rows = 3;
+  promptTextarea.className = 'chat-shell__textarea';
+  promptTextarea.placeholder = 'Peça um MiniApp ou descreva a experiência que procura...';
+
+  promptGroup.append(promptLabel, promptTextarea);
+
+  const promptActions = document.createElement('div');
+  promptActions.className = 'chat-shell__prompt-actions';
+
+  const promptButton = document.createElement('button');
+  promptButton.type = 'button';
+  promptButton.className = 'button button--primary';
+  promptButton.textContent = 'Enviar feedback';
+
+  promptButton.addEventListener('click', () => {
+    promptTextarea.value = '';
+    promptTextarea.blur();
   });
 
-  if (!highlightResolved && highlightId && typeof options.onHighlight === 'function') {
-    queueMicrotask(() => {
-      options.onHighlight({
+  promptActions.append(promptButton);
+
+  const disclaimer = document.createElement('p');
+  disclaimer.className = 'chat-shell__disclaimer';
+  disclaimer.textContent =
+    'Interface demonstrativa inspirada nos produtos da OpenAI. Nenhum conteúdo é enviado a servidores externos.';
+
+  composer.append(promptGroup, promptActions, disclaimer);
+
+  main.append(header, thread, composer);
+
+  layout.append(overlay, sidebar, main);
+  viewRoot.replaceChildren(layout);
+
+  const closeSidebar = () => {
+    layout.dataset.sidebarOpen = 'false';
+    sidebarToggle.setAttribute('aria-expanded', 'false');
+  };
+
+  const openSidebar = () => {
+    layout.dataset.sidebarOpen = 'true';
+    sidebarToggle.setAttribute('aria-expanded', 'true');
+  };
+
+  sidebarToggle.addEventListener('click', () => {
+    if (layout.dataset.sidebarOpen === 'true') {
+      closeSidebar();
+      return;
+    }
+    openSidebar();
+  });
+
+  overlay.addEventListener('click', closeSidebar);
+  sidebar.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeSidebar();
+      sidebarToggle.focus();
+    }
+  });
+
+  newChatButton.addEventListener('click', () => {
+    closeSidebar();
+    scheduleTask(() => {
+      try {
+        thread.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        thread.scrollTop = 0;
+      }
+      if (typeof promptTextarea.focus === 'function') {
+        try {
+          promptTextarea.focus({ preventScroll: true });
+        } catch (error) {
+          promptTextarea.focus();
+        }
+      }
+    });
+  });
+
+  if (activeId && cardRegistry.has(activeId)) {
+    scheduleTask(() => updateActiveState(activeId, { focus: false }));
+  }
+
+  if (!highlightResolved && highlightId) {
+    scheduleTask(() => {
+      forwardHighlight({
         app: { id: highlightId, name: highlightId },
         id: highlightId,
         link: null,
@@ -636,9 +976,6 @@ export function renderMiniAppStore(viewRoot, options = {}) {
       });
     });
   }
-
-  container.append(header, list);
-  viewRoot.replaceChildren(container);
 }
 
 export default renderMiniAppStore;
