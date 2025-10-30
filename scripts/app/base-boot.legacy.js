@@ -173,20 +173,9 @@
     }
 
     function syncFooterToggleVisibility() {
-      var isMobile = mediaQuery ? mediaQuery.matches : true;
-
       if (footerToggle) {
-        if (isMobile) {
-          footerToggle.hidden = false;
-          footerToggle.removeAttribute('aria-hidden');
-        } else {
-          footerToggle.hidden = true;
-          footerToggle.setAttribute('aria-hidden', 'true');
-        }
-      }
-
-      if (!isMobile) {
-        collapseFooter();
+        footerToggle.hidden = false;
+        footerToggle.removeAttribute('aria-hidden');
       }
 
       updateFooterOffset();
@@ -335,7 +324,7 @@
 
       syncFooterToggleVisibility();
     } else {
-      updateFooterOffset();
+      syncFooterToggleVisibility();
     }
 
     if (win && typeof win.addEventListener === 'function') {

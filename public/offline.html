@@ -160,12 +160,9 @@
         }
 
         function syncViewport() {
-          const isMobile = Boolean(mediaQuery?.matches);
           if (toggle) {
-            toggle.hidden = !isMobile;
-          }
-          if (!isMobile) {
-            collapse();
+            toggle.hidden = false;
+            toggle.removeAttribute('aria-hidden');
           }
 
           updateFooterOffset();
@@ -194,7 +191,8 @@
           }
           syncViewport();
         } else if (toggle) {
-          toggle.hidden = true;
+          toggle.hidden = false;
+          toggle.removeAttribute('aria-hidden');
         }
 
         if (footer && 'ResizeObserver' in window) {
