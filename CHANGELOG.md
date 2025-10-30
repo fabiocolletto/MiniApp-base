@@ -5,6 +5,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 
 ## [Unreleased]
 - Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
+- Painel principal do shell de autenticação passa a alinhar-se ao topo, ocupar toda a área entre cabeçalho e rodapé e abandona os cantos arredondados para seguir o layout solicitado.
 - Botão de detalhes do rodapé permanece disponível em qualquer largura de tela e mantém o menu com as mesmas informações exibidas no modo mobile.
 - Adicionada versão legada do bootstrap com script `nomodule` garantindo o menu principal e o rodapé funcionais em tablets sem suporte a módulos ES.
 - Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
@@ -38,6 +39,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Painel inicial abre diretamente no modo convidado e remove o formulário de login para simplificar o acesso sem credenciais.
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
 - Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
+
+## [3.0.1] - 2025-10-30T11:43:53-03:00 (BRT)
+- Eliminados os preenchimentos laterais do painel `.auth-screen` em telas largas, mantendo apenas o `padding-block` para aproveitar toda a largura útil sem criar barras horizontais e preservando o alinhamento do rodapé.
 - Removido o botão "Fazer outro cadastro" do painel de sucesso para simplificar o fluxo após o cadastro.
 - Estrutura inicial de automação do log criada.
 - Documentado o procedimento de integração da página `/miniapps/` no WordPress com Elementor.
