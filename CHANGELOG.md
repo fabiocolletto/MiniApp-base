@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
 - Botão de detalhes do rodapé permanece disponível em qualquer largura de tela e mantém o menu com as mesmas informações exibidas no modo mobile.
 - Adicionada versão legada do bootstrap com script `nomodule` garantindo o menu principal e o rodapé funcionais em tablets sem suporte a módulos ES.
 - Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
