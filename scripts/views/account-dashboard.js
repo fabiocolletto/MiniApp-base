@@ -214,8 +214,30 @@ export function renderAccountDashboard(viewRoot) {
   quickTitle.textContent = 'Ações rápidas';
   quickTitle.tabIndex = -1;
 
-  const quickSummary = document.createElement('p');
+  const quickSummary = document.createElement('div');
   quickSummary.className = 'account-dashboard__quick-summary';
+  quickSummary.setAttribute('role', 'status');
+  quickSummary.setAttribute('aria-live', 'polite');
+
+  const quickSummaryUserItem = document.createElement('div');
+  quickSummaryUserItem.className = 'account-dashboard__quick-summary-item';
+  const quickSummaryUserLabel = document.createElement('span');
+  quickSummaryUserLabel.className = 'account-dashboard__quick-summary-label';
+  quickSummaryUserLabel.textContent = 'Usuário conectado';
+  const quickSummaryUserValue = document.createElement('span');
+  quickSummaryUserValue.className = 'account-dashboard__quick-summary-value';
+
+  const quickSummaryPhoneItem = document.createElement('div');
+  quickSummaryPhoneItem.className = 'account-dashboard__quick-summary-item';
+  const quickSummaryPhoneLabel = document.createElement('span');
+  quickSummaryPhoneLabel.className = 'account-dashboard__quick-summary-label';
+  quickSummaryPhoneLabel.textContent = 'Telefone';
+  const quickSummaryPhoneValue = document.createElement('span');
+  quickSummaryPhoneValue.className = 'account-dashboard__quick-summary-value';
+
+  quickSummaryUserItem.append(quickSummaryUserLabel, quickSummaryUserValue);
+  quickSummaryPhoneItem.append(quickSummaryPhoneLabel, quickSummaryPhoneValue);
+  quickSummary.append(quickSummaryUserItem, quickSummaryPhoneItem);
 
   const quickButtons = document.createElement('div');
   quickButtons.className = 'account-dashboard__quick-buttons';
@@ -500,11 +522,14 @@ export function renderAccountDashboard(viewRoot) {
     if (activeUser) {
       const displayName = getUserDisplayName(activeUser);
       const phone = formatPhone(activeUser.phone);
-      quickSummary.textContent = `${displayName} conectado • ${phone}`;
+      quickSummaryUserValue.textContent = displayName;
+      quickSummaryPhoneValue.textContent = phone;
     } else if (state.users.length > 0) {
-      quickSummary.textContent = 'Nenhum usuário ativo no momento.';
+      quickSummaryUserValue.textContent = 'Nenhum usuário ativo no momento.';
+      quickSummaryPhoneValue.textContent = 'Ative um cadastro para exibir o telefone.';
     } else {
-      quickSummary.textContent = 'Os dados locais estão limpos. Nenhum cadastro permanece salvo.';
+      quickSummaryUserValue.textContent = 'Nenhum cadastro salvo no dispositivo.';
+      quickSummaryPhoneValue.textContent = 'Cadastre ou importe um usuário para começar.';
     }
 
     logoutButton.disabled = !activeUser;
