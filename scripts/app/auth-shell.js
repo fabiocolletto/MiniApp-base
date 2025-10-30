@@ -196,6 +196,8 @@ export function initAuthShell(options = {}) {
   const HTMLElementRef = doc.defaultView?.HTMLElement ?? (typeof HTMLElement !== 'undefined' ? HTMLElement : null);
   const KeyboardEventRef = doc.defaultView?.KeyboardEvent ?? (typeof KeyboardEvent !== 'undefined' ? KeyboardEvent : null);
   const NodeRef = doc.defaultView?.Node ?? (typeof Node !== 'undefined' ? Node : null);
+  const HTMLInputElementRef =
+    doc.defaultView?.HTMLInputElement ?? (typeof HTMLInputElement !== 'undefined' ? HTMLInputElement : null);
 
   const viewRoot = doc.getElementById('authViewRoot');
   const authCard = doc.querySelector('.auth-card');
@@ -216,6 +218,9 @@ export function initAuthShell(options = {}) {
   const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
   const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
   const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
+  const widgetBoard = doc.querySelector('[data-widget-board]');
+  const widgetGrid = widgetBoard?.querySelector('[data-widget-grid]');
+  const widgetEmptyState = widgetBoard?.querySelector('[data-widget-empty]');
   const footerViewportQuery =
     typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
   const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
@@ -226,6 +231,109 @@ export function initAuthShell(options = {}) {
     collapse: 'Ocultar detalhes do rodapé',
   };
 
+  const FOOTER_MENU_STRUCTURE = [
+    {
+      id: 'shell-access',
+      label: 'Shell principal',
+      types: [
+        {
+          id: 'guided-journeys',
+          label: 'Jornadas guiadas',
+          entries: [
+            {
+              id: 'view-guest',
+              label: 'Explorar como convidado',
+              description: 'Acesse os MiniApps liberados para visitantes sem cadastro.',
+              view: 'guest',
+              widgetId: 'widget-guest-overview',
+              widgetTitle: 'Explorar como convidado',
+              widgetDescription: 'Lista os MiniApps liberados e os destaques para visitantes.',
+            },
+            {
+              id: 'view-miniapps',
+              label: 'MiniApp Store',
+              description: 'Abra o catálogo completo com destaques das miniaplicações ativas.',
+              view: 'miniapps',
+              widgetId: 'widget-miniapp-store',
+              widgetTitle: 'Catálogo de MiniApps',
+              widgetDescription: 'Acompanhe novidades, destaques e jornadas do catálogo oficial.',
+            },
+          ],
+        },
+        {
+          id: 'account-management',
+          label: 'Conta e segurança',
+          entries: [
+            {
+              id: 'view-register',
+              label: 'Criar uma nova conta',
+              description: 'Inicie o cadastro com validações assistidas e etapas orientadas.',
+              view: 'register',
+              widgetId: 'widget-register-flow',
+              widgetTitle: 'Cadastro rápido',
+              widgetDescription: 'Resumo das etapas do fluxo de cadastro e próximos passos sugeridos.',
+            },
+            {
+              id: 'view-account-dashboard',
+              label: 'Painel da conta',
+              description: 'Gerencie cadastros locais, sessões e limpeza de dados neste dispositivo.',
+              view: 'account-dashboard',
+              widgetId: 'widget-account-dashboard',
+              widgetTitle: 'Painel da conta',
+              widgetDescription: 'Monitore dados armazenados localmente e ações de manutenção de sessão.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'preferences',
+      label: 'Configurações',
+      types: [
+        {
+          id: 'personalization',
+          label: 'Preferências e acessibilidade',
+          entries: [
+            {
+              id: 'action-preferences',
+              label: 'Preferências do usuário',
+              description: 'Ajuste tema, idioma e privacidade específicos deste dispositivo.',
+              action: 'preferences',
+              widgetId: 'widget-preferences',
+              widgetTitle: 'Preferências do shell',
+              widgetDescription: 'Centraliza atalhos de idioma, acessibilidade e privacidade.',
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const FOOTER_WIDGET_LIBRARY = new Map();
+
+  FOOTER_MENU_STRUCTURE.forEach((category) => {
+    category.types.forEach((type) => {
+      type.entries.forEach((entry) => {
+        if (!entry.widgetId || FOOTER_WIDGET_LIBRARY.has(entry.widgetId)) {
+          return;
+        }
+
+        FOOTER_WIDGET_LIBRARY.set(entry.widgetId, {
+          id: entry.widgetId,
+          label: entry.label,
+          title: entry.widgetTitle ?? entry.label,
+          description: entry.widgetDescription ?? entry.description ?? '',
+          view: entry.view ?? null,
+          action: entry.action ?? null,
+          categoryId: category.id,
+          categoryLabel: category.label,
+          typeId: type.id,
+          typeLabel: type.label,
+        });
+      });
+    });
+  });
+
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
   }
@@ -235,6 +343,7 @@ export function initAuthShell(options = {}) {
   }
 
   const teardownCallbacks = [];
+  const activeWidgetIds = new Set();
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
 
@@ -806,36 +915,102 @@ export function initAuthShell(options = {}) {
 
   let currentView = null;
 
-  const footerViewEntries = [
-    { view: 'guest', label: 'Explorar como convidado' },
-    { view: 'register', label: 'Criar uma nova conta' },
-    { view: 'account-dashboard', label: 'Painel da conta' },
-    { view: 'miniapps', label: 'MiniApp Store' },
-    { action: 'preferences', label: 'Preferências do usuário' },
-  ];
-
   function renderFooterViewItems() {
     if (!(footerMenuViewsList instanceof HTMLElementRef)) {
       return;
     }
 
-    const items = footerViewEntries.map((entry) => {
-      const listItem = doc.createElement('li');
-      const button = doc.createElement('button');
-      button.type = 'button';
-      button.className = 'auth-shell__menu-item';
-      if (entry.view) {
-        button.dataset.view = entry.view;
-      }
-      if (entry.action) {
-        button.dataset.action = entry.action;
-      }
-      button.textContent = entry.label;
-      listItem.append(button);
-      return listItem;
+    const fragment = doc.createDocumentFragment();
+
+    FOOTER_MENU_STRUCTURE.forEach((category) => {
+      const categoryItem = doc.createElement('li');
+      categoryItem.className = 'auth-shell__menu-category';
+
+      const categoryTitle = doc.createElement('p');
+      categoryTitle.className = 'auth-shell__menu-category-title';
+      categoryTitle.textContent = category.label;
+      categoryItem.append(categoryTitle);
+
+      category.types.forEach((type) => {
+        const typeSection = doc.createElement('div');
+        typeSection.className = 'auth-shell__menu-type';
+
+        const typeTitle = doc.createElement('p');
+        typeTitle.className = 'auth-shell__menu-type-title';
+        typeTitle.textContent = type.label;
+        typeSection.append(typeTitle);
+
+        const sublist = doc.createElement('ul');
+        sublist.className = 'auth-shell__menu-sublist';
+
+        type.entries.forEach((entry) => {
+          const entryItem = doc.createElement('li');
+          entryItem.className = 'auth-shell__menu-entry';
+
+          const button = doc.createElement('button');
+          button.type = 'button';
+          button.className = 'auth-shell__menu-item';
+          button.textContent = entry.label;
+
+          if (entry.view) {
+            button.dataset.view = entry.view;
+          }
+
+          if (entry.action) {
+            button.dataset.action = entry.action;
+          }
+
+          if (entry.widgetId) {
+            button.dataset.widgetId = entry.widgetId;
+          }
+
+          let descriptionId = null;
+
+          if (entry.description) {
+            descriptionId = `${entry.id}-description`;
+            button.setAttribute('aria-describedby', descriptionId);
+          }
+
+          entryItem.append(button);
+
+          if (entry.description) {
+            const description = doc.createElement('p');
+            description.id = descriptionId;
+            description.className = 'auth-shell__menu-item-description';
+            description.textContent = entry.description;
+            entryItem.append(description);
+          }
+
+          if (entry.widgetId) {
+            const toggle = doc.createElement('label');
+            toggle.className = 'auth-shell__menu-toggle';
+
+            const checkbox = doc.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'auth-shell__menu-toggle-input';
+            checkbox.dataset.widgetToggle = entry.widgetId;
+            checkbox.checked = activeWidgetIds.has(entry.widgetId);
+
+            const toggleText = doc.createElement('span');
+            toggleText.className = 'auth-shell__menu-toggle-label';
+            toggleText.textContent = 'Mostrar no painel principal';
+
+            toggle.append(checkbox, toggleText);
+            entryItem.append(toggle);
+          }
+
+          sublist.append(entryItem);
+        });
+
+        typeSection.append(sublist);
+        categoryItem.append(typeSection);
+      });
+
+      fragment.append(categoryItem);
     });
 
-    footerMenuViewsList.replaceChildren(...items);
+    footerMenuViewsList.replaceChildren(fragment);
+    setActiveFooterMenuItem(currentView);
   }
 
   function renderFooterMiniAppItems(apps) {
@@ -895,6 +1070,130 @@ export function initAuthShell(options = {}) {
     });
 
     footerMenuMiniAppsList.append(...items);
+  }
+
+  function syncMenuToggleState(widgetId, isActive) {
+    if (!(footerMenuPanel instanceof HTMLElementRef)) {
+      return;
+    }
+
+    const toggles = footerMenuPanel.querySelectorAll('.auth-shell__menu-toggle-input');
+    toggles.forEach((toggle) => {
+      if (!toggle) {
+        return;
+      }
+
+      if (HTMLInputElementRef && toggle instanceof HTMLInputElementRef) {
+        if (toggle.dataset.widgetToggle === widgetId) {
+          toggle.checked = Boolean(isActive);
+        }
+        return;
+      }
+
+      if (typeof toggle === 'object' && 'dataset' in toggle && toggle.dataset?.widgetToggle === widgetId) {
+        if ('checked' in toggle) {
+          try {
+            toggle.checked = Boolean(isActive);
+          } catch (error) {
+            // noop
+          }
+        }
+      }
+    });
+  }
+
+  function renderWidgetBoard() {
+    if (!(widgetGrid instanceof HTMLElementRef) || !(widgetEmptyState instanceof HTMLElementRef)) {
+      return;
+    }
+
+    const entries = Array.from(activeWidgetIds)
+      .map((id) => FOOTER_WIDGET_LIBRARY.get(id))
+      .filter(Boolean);
+
+    widgetEmptyState.hidden = entries.length > 0;
+    widgetGrid.hidden = entries.length === 0;
+
+    if (entries.length === 0) {
+      widgetGrid.replaceChildren();
+      return;
+    }
+
+    const fragment = doc.createDocumentFragment();
+
+    entries.forEach((entry) => {
+      const card = doc.createElement('article');
+      card.className = 'auth-widget';
+      card.dataset.widget = entry.id;
+
+      if (entry.view && entry.view === currentView) {
+        card.classList.add('auth-widget--active');
+      }
+
+      const badge = doc.createElement('span');
+      badge.className = 'auth-widget__badge';
+      badge.textContent = `${entry.categoryLabel} • ${entry.typeLabel}`;
+
+      const title = doc.createElement('h3');
+      title.className = 'auth-widget__title';
+      title.textContent = entry.title;
+
+      const description = doc.createElement('p');
+      description.className = 'auth-widget__description';
+      description.textContent = entry.description;
+
+      const actions = doc.createElement('div');
+      actions.className = 'auth-widget__actions';
+
+      if (entry.view || entry.action) {
+        const openButton = doc.createElement('button');
+        openButton.type = 'button';
+        openButton.className = 'auth-widget__action';
+        openButton.dataset.widgetAction = 'open';
+        openButton.dataset.widgetId = entry.id;
+        openButton.textContent = entry.view ? 'Abrir painel' : 'Abrir configurações';
+        actions.append(openButton);
+      }
+
+      const removeButton = doc.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'auth-widget__action';
+      removeButton.dataset.widgetAction = 'remove';
+      removeButton.dataset.widgetId = entry.id;
+      removeButton.textContent = 'Remover do painel';
+      actions.append(removeButton);
+
+      card.append(badge, title, description, actions);
+      fragment.append(card);
+    });
+
+    widgetGrid.replaceChildren(fragment);
+  }
+
+  function activateWidget(widgetId) {
+    if (!widgetId || !FOOTER_WIDGET_LIBRARY.has(widgetId)) {
+      return;
+    }
+
+    if (!activeWidgetIds.has(widgetId)) {
+      activeWidgetIds.add(widgetId);
+    }
+
+    syncMenuToggleState(widgetId, true);
+    renderWidgetBoard();
+  }
+
+  function deactivateWidget(widgetId) {
+    if (!widgetId || !FOOTER_WIDGET_LIBRARY.has(widgetId)) {
+      return;
+    }
+
+    if (activeWidgetIds.has(widgetId)) {
+      activeWidgetIds.delete(widgetId);
+    }
+
+    syncMenuToggleState(widgetId, false);
+    renderWidgetBoard();
   }
 
   function refreshFooterMenuItems() {
@@ -981,16 +1280,89 @@ export function initAuthShell(options = {}) {
       handleFooterMenuItemKeydown(event);
     };
 
+    const handlePanelChange = (event) => {
+      const rawTarget = event.target;
+
+      let input = null;
+
+      if (HTMLInputElementRef && rawTarget instanceof HTMLInputElementRef) {
+        input = rawTarget;
+      } else if (rawTarget && typeof rawTarget === 'object' && 'dataset' in rawTarget && 'checked' in rawTarget) {
+        input = rawTarget;
+      }
+
+      if (!input || !input.dataset || input.dataset.widgetToggle === undefined) {
+        return;
+      }
+
+      if (typeof input.matches === 'function' && !input.matches('.auth-shell__menu-toggle-input')) {
+        return;
+      }
+
+      const widgetId = input.dataset.widgetToggle;
+      if (!widgetId) {
+        return;
+      }
+
+      const isChecked = Boolean(input.checked);
+      if (isChecked) {
+        activateWidget(widgetId);
+      } else {
+        deactivateWidget(widgetId);
+      }
+    };
+
     footerMenuPanel.addEventListener('click', handlePanelClick);
     footerMenuPanel.addEventListener('keydown', handlePanelKeydown);
+    footerMenuPanel.addEventListener('change', handlePanelChange);
 
     teardownCallbacks.push(() => {
       footerMenuPanel.removeEventListener('click', handlePanelClick);
       footerMenuPanel.removeEventListener('keydown', handlePanelKeydown);
+      footerMenuPanel.removeEventListener('change', handlePanelChange);
+    });
+  }
+
+  if (ensureHtmlElement(doc, widgetGrid)) {
+    const handleWidgetActionClick = (event) => {
+      const trigger = event.target instanceof HTMLElementRef ? event.target.closest('[data-widget-action]') : null;
+      if (!trigger) {
+        return;
+      }
+
+      const widgetId = trigger.dataset.widgetId;
+      const action = trigger.dataset.widgetAction;
+
+      if (!widgetId || !action) {
+        return;
+      }
+
+      if (action === 'open') {
+        const widget = FOOTER_WIDGET_LIBRARY.get(widgetId);
+        if (!widget) {
+          return;
+        }
+
+        if (widget.view) {
+          renderAuthView(widget.view, { shouldFocus: true });
+        } else if (widget.action === 'preferences') {
+          closeFooterMenu();
+          openPreferencesPanelLazy({ doc, win });
+        }
+      } else if (action === 'remove') {
+        deactivateWidget(widgetId);
+      }
+    };
+
+    widgetGrid.addEventListener('click', handleWidgetActionClick);
+
+    teardownCallbacks.push(() => {
+      widgetGrid.removeEventListener('click', handleWidgetActionClick);
     });
   }
 
   refreshFooterMenuItems();
+  renderWidgetBoard();
 
   const unsubscribeMiniApps = runtime.subscribeMiniApps((apps) => {
     renderFooterMiniAppItems(apps);
@@ -1063,6 +1435,7 @@ export function initAuthShell(options = {}) {
     viewRoot.replaceChildren();
     viewConfig.render(viewRoot, viewProps);
     currentView = viewName;
+    renderWidgetBoard();
 
     setActiveButton(viewName);
     setActiveFooterMenuItem(viewName);

@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Ajustado o overlay do menu desktop para usar layout flexível ancorado ao rodapé, evitando centralização indevida da janela do menu.
 - Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
 - Painel principal do shell de autenticação passa a alinhar-se ao topo, ocupar toda a área entre cabeçalho e rodapé e abandona os cantos arredondados para seguir o layout solicitado.
 - Botão de detalhes do rodapé permanece disponível em qualquer largura de tela e mantém o menu com as mesmas informações exibidas no modo mobile.
@@ -39,6 +40,15 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Painel inicial abre diretamente no modo convidado e remove o formulário de login para simplificar o acesso sem credenciais.
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
 - Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
+
+## [3.1.0] - 2025-10-30T12:15:26-03:00 (BRT)
+- Menu principal reorganizado em categorias e tipos que espelham as jornadas do shell, com descrições contextuais e toggles para
+  fixar widgets correspondentes.
+- Estabelecido painel de widgets no corpo do aplicativo que reúne cartões dinâmicos para cada item ativado, com ações de acesso
+  rápido e remoção.
+- Aplicado visual inspirado no Windows 98 ao botão e à janela do menu em telas largas, incluindo rótulo textual exposto e painel
+  acoplado ao rodapé.
+- Criado teste automatizado garantindo que a ativação dos widgets via menu atualize o painel principal.
 
 ## [3.0.1] - 2025-10-30T11:43:53-03:00 (BRT)
 - Eliminados os preenchimentos laterais do painel `.auth-screen` em telas largas, mantendo apenas o `padding-block` para aproveitar toda a largura útil sem criar barras horizontais e preservando o alinhamento do rodapé.
