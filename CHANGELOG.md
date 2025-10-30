@@ -67,6 +67,8 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Manifesto PWA movido para a raiz com `start_url` e `scope` relativos ao shell, evitando erro 404 ao abrir o app instalado pelo atalho.
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
+- Rodapé do painel de autenticação passa a expor a dica contextual diretamente em `#statusHint` como região ao vivo (`role="status"`) para garantir o anúncio automático em leitores de tela.
+- Painel de autenticação amplia-se para ocupar toda a área útil em telas largas, com tipografia reajustada para leitura confortável.
 
 ## [3.0.0] - 2025-10-30T06:02:57-03:00 (BRT)
 - Criado helper compartilhado (`tests/helpers/dom-env.js`) para reutilizar o ambiente DOM simulado em toda a suíte automatizada.

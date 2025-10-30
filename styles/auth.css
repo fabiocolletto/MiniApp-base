@@ -418,6 +418,11 @@ body.auth-only.auth-shell--menu-open {
   width: min(520px, 100%);
   display: grid;
   gap: clamp(1.1rem, 3vw, 1.75rem);
+  grid-template-areas:
+    "header"
+    "tabs"
+    "body"
+    "footer";
   background: var(--auth-surface);
   border: 1px solid var(--auth-border);
   border-radius: 24px;
@@ -425,6 +430,14 @@ body.auth-only.auth-shell--menu-open {
   box-shadow: 0 24px 64px rgba(4, 8, 12, 0.28);
   overflow: hidden;
   backdrop-filter: blur(12px);
+}
+
+.auth-header {
+  grid-area: header;
+}
+
+.auth-selector {
+  grid-area: tabs;
 }
 
 .auth-card[data-active-view="miniapps"] {
@@ -454,6 +467,78 @@ body.auth-only.auth-shell--menu-open {
 .auth-card[data-active-view="miniapps"] .auth-card__view > .auth-view {
   display: flex;
   width: 100%;
+}
+
+@media (min-width: 80rem) {
+  .auth-screen {
+    padding: clamp(2.75rem, 5vw, 5.5rem);
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-areas:
+      "header body"
+      "tabs body"
+      "footer body";
+    gap: clamp(2rem, 3vw, 3rem);
+    padding: clamp(2.5rem, 4vw, 4rem);
+  }
+
+  .auth-header h1 {
+    font-size: clamp(2.5rem, 3vw, 3.25rem);
+    line-height: 1.1;
+  }
+
+  .auth-sub {
+    font-size: clamp(1.15rem, 0.6vw + 1rem, 1.5rem);
+    max-width: 48ch;
+    text-wrap: balance;
+  }
+
+  .auth-selector {
+    justify-self: start;
+    padding: 0.5rem;
+    gap: 0.65rem;
+  }
+
+  .auth-selector__button {
+    padding: 0.85rem 1.85rem;
+    font-size: clamp(1.05rem, 0.4vw + 1rem, 1.35rem);
+  }
+
+  .auth-card__body {
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .auth-card__view {
+    align-content: stretch;
+    justify-items: stretch;
+  }
+
+  .auth-card__view > .card.auth-view {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.5rem, 2.5vw, 2.25rem);
+    padding: clamp(2.25rem, 3vw, 3.5rem);
+    background: color-mix(in srgb, var(--auth-surface) 88%, transparent 12%);
+    border: 1px solid color-mix(in srgb, var(--auth-border) 75%, transparent);
+    border-radius: 28px;
+  }
+
+  .auth-footer {
+    align-self: start;
+    text-align: left;
+    max-width: 52ch;
+  }
+
+  .auth-footer #statusHint {
+    font-size: clamp(1.05rem, 0.35vw + 1rem, 1.3rem);
+    text-wrap: balance;
+  }
 }
 
 @media (max-width: 30rem) {
@@ -576,6 +661,7 @@ body.auth-only.auth-shell--menu-open {
 
 
 .auth-card__body {
+  grid-area: body;
   display: flex;
   justify-content: center;
 }
@@ -599,6 +685,10 @@ body.auth-only.auth-shell--menu-open {
 
 .auth-card__view > .card.auth-view > * {
   width: 100%;
+}
+
+.auth-footer {
+  grid-area: footer;
 }
 
 .auth-panel__actions {
