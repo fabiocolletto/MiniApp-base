@@ -9,6 +9,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Painel principal do shell de autenticação passa a alinhar-se ao topo, ocupar toda a área entre cabeçalho e rodapé e abandona os cantos arredondados para seguir o layout solicitado.
 - Botão de detalhes do rodapé permanece disponível em qualquer largura de tela e mantém o menu com as mesmas informações exibidas no modo mobile.
 - Adicionada versão legada do bootstrap com script `nomodule` garantindo o menu principal e o rodapé funcionais em tablets sem suporte a módulos ES.
+- Menu principal do rodapé passa a expor o rótulo textual e organizar as opções em categorias e subcategorias expansíveis, incluindo a seção de Configurações com acesso direto às preferências do usuário.
 - Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
 - Adicionado botão flutuante de instalação do MiniApp com controlador PWA acoplado ao bootstrap do shell.
 - Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.

@@ -760,6 +760,48 @@ export function initAuthShell(options = {}) {
       item.setAttribute('aria-current', isActive ? 'page' : 'false');
 
       if (isActive) {
+        const categoryId = item.dataset.categoryId;
+        const typeId = item.dataset.typeId;
+
+        if (categoryId) {
+          expandedCategories.add(categoryId);
+
+          if (footerMenuViewsList instanceof HTMLElementRef) {
+            const categoryToggle = footerMenuViewsList.querySelector(
+              `[data-category-toggle="${categoryId}"]`,
+            );
+            const categoryContent = footerMenuViewsList.querySelector(
+              `[data-category-content="${categoryId}"]`,
+            );
+
+            if (ensureHtmlElement(doc, categoryToggle)) {
+              categoryToggle.setAttribute('aria-expanded', 'true');
+            }
+
+            if (ensureHtmlElement(doc, categoryContent)) {
+              categoryContent.hidden = false;
+            }
+          }
+        }
+
+        if (categoryId && typeId) {
+          const typeKey = getTypeKey(categoryId, typeId);
+          expandedTypes.add(typeKey);
+
+          if (footerMenuViewsList instanceof HTMLElementRef) {
+            const typeToggle = footerMenuViewsList.querySelector(`[data-type-toggle="${typeKey}"]`);
+            const typeContent = footerMenuViewsList.querySelector(`[data-type-content="${typeKey}"]`);
+
+            if (ensureHtmlElement(doc, typeToggle)) {
+              typeToggle.setAttribute('aria-expanded', 'true');
+            }
+
+            if (ensureHtmlElement(doc, typeContent)) {
+              typeContent.hidden = false;
+            }
+          }
+        }
+
         activeLabel = item.textContent?.trim() || '';
       }
     });
@@ -914,6 +956,23 @@ export function initAuthShell(options = {}) {
   };
 
   let currentView = null;
+  const expandedCategories = new Set();
+  const expandedTypes = new Set();
+
+  function getTypeKey(categoryId, typeId) {
+    return `${categoryId}::${typeId}`;
+  }
+
+  if (FOOTER_MENU_STRUCTURE.length > 0) {
+    const firstCategory = FOOTER_MENU_STRUCTURE[0];
+    if (firstCategory?.id) {
+      expandedCategories.add(firstCategory.id);
+      const firstType = Array.isArray(firstCategory.types) ? firstCategory.types[0] : null;
+      if (firstType?.id) {
+        expandedTypes.add(getTypeKey(firstCategory.id, firstType.id));
+      }
+    }
+  }
 
   function renderFooterViewItems() {
     if (!(footerMenuViewsList instanceof HTMLElementRef)) {
@@ -926,19 +985,70 @@ export function initAuthShell(options = {}) {
       const categoryItem = doc.createElement('li');
       categoryItem.className = 'auth-shell__menu-category';
 
-      const categoryTitle = doc.createElement('p');
-      categoryTitle.className = 'auth-shell__menu-category-title';
-      categoryTitle.textContent = category.label;
-      categoryItem.append(categoryTitle);
+      const categoryToggle = doc.createElement('button');
+      categoryToggle.type = 'button';
+      categoryToggle.className = 'auth-shell__menu-category-title auth-shell__menu-category-toggle';
+      categoryToggle.dataset.categoryToggle = category.id;
+      categoryToggle.textContent = category.label;
+
+      const categoryContentId = `authFooterMenuCategory-${category.id}`;
+      categoryToggle.setAttribute('aria-controls', categoryContentId);
+
+      const categoryContent = doc.createElement('div');
+      categoryContent.id = categoryContentId;
+      categoryContent.className = 'auth-shell__menu-category-content';
+      categoryContent.dataset.categoryContent = category.id;
+
+      const isCategoryExpanded = expandedCategories.has(category.id);
+      categoryToggle.setAttribute('aria-expanded', isCategoryExpanded ? 'true' : 'false');
+      categoryContent.hidden = !isCategoryExpanded;
+
+      categoryToggle.addEventListener('click', () => {
+        const currentlyExpanded = expandedCategories.has(category.id);
+        if (currentlyExpanded) {
+          expandedCategories.delete(category.id);
+        } else {
+          expandedCategories.add(category.id);
+        }
+
+        categoryToggle.setAttribute('aria-expanded', currentlyExpanded ? 'false' : 'true');
+        categoryContent.hidden = currentlyExpanded;
+      });
 
       category.types.forEach((type) => {
-        const typeSection = doc.createElement('div');
+        const typeSection = doc.createElement('section');
         typeSection.className = 'auth-shell__menu-type';
 
-        const typeTitle = doc.createElement('p');
-        typeTitle.className = 'auth-shell__menu-type-title';
-        typeTitle.textContent = type.label;
-        typeSection.append(typeTitle);
+        const typeKey = getTypeKey(category.id, type.id);
+        const typeToggle = doc.createElement('button');
+        typeToggle.type = 'button';
+        typeToggle.className = 'auth-shell__menu-type-title auth-shell__menu-type-toggle';
+        typeToggle.dataset.typeToggle = typeKey;
+        typeToggle.textContent = type.label;
+
+        const typeContentId = `authFooterMenuType-${category.id}-${type.id}`;
+        typeToggle.setAttribute('aria-controls', typeContentId);
+
+        const typeContent = doc.createElement('div');
+        typeContent.id = typeContentId;
+        typeContent.className = 'auth-shell__menu-type-content';
+        typeContent.dataset.typeContent = typeKey;
+
+        const isTypeExpanded = expandedTypes.has(typeKey);
+        typeToggle.setAttribute('aria-expanded', isTypeExpanded ? 'true' : 'false');
+        typeContent.hidden = !isTypeExpanded;
+
+        typeToggle.addEventListener('click', () => {
+          const currentlyExpanded = expandedTypes.has(typeKey);
+          if (currentlyExpanded) {
+            expandedTypes.delete(typeKey);
+          } else {
+            expandedTypes.add(typeKey);
+          }
+
+          typeToggle.setAttribute('aria-expanded', currentlyExpanded ? 'false' : 'true');
+          typeContent.hidden = currentlyExpanded;
+        });
 
         const sublist = doc.createElement('ul');
         sublist.className = 'auth-shell__menu-sublist';
@@ -950,6 +1060,8 @@ export function initAuthShell(options = {}) {
           const button = doc.createElement('button');
           button.type = 'button';
           button.className = 'auth-shell__menu-item';
+          button.dataset.categoryId = category.id;
+          button.dataset.typeId = type.id;
           button.textContent = entry.label;
 
           if (entry.view) {
@@ -993,7 +1105,7 @@ export function initAuthShell(options = {}) {
 
             const toggleText = doc.createElement('span');
             toggleText.className = 'auth-shell__menu-toggle-label';
-            toggleText.textContent = 'Mostrar no painel principal';
+            toggleText.textContent = 'Fixar no painel principal';
 
             toggle.append(checkbox, toggleText);
             entryItem.append(toggle);
@@ -1002,10 +1114,12 @@ export function initAuthShell(options = {}) {
           sublist.append(entryItem);
         });
 
-        typeSection.append(sublist);
-        categoryItem.append(typeSection);
+        typeContent.append(sublist);
+        typeSection.append(typeToggle, typeContent);
+        categoryContent.append(typeSection);
       });
 
+      categoryItem.append(categoryToggle, categoryContent);
       fragment.append(categoryItem);
     });
 
