@@ -10,6 +10,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.
 - Eliminados os preenchimentos laterais do painel de views em telas pequenas para evitar acúmulo duplo de espaçamentos com os MiniApps renderizados.
 - Ajustado o rodapé móvel com botão de detalhes apenas em ícone, offsets dinâmicos para evitar sobreposição e alinhamento total à base da viewport.
+- Rodapé móvel expandido passa a quebrar os rótulos completos (MiniApps, painel atual e versão) sem cortes, com espaçamentos reorganizados para leitura integral.
 - Preferências de usuário passam a incluir listas `miniApps.saved` e `miniApps.favorites`, com saneamento de IDs, deduplicação e compatibilidade com dados existentes.
 - Criado módulo de preferências de MiniApps com operações de salvar/favoritar, limite de favoritos, sincronização da sessão ativa e cobertura de testes para os novos fluxos.
 - Implantada camada oficial de IndexedDB com vendor `idb` 7.x, bancos `marco_core`/`pesquisa_studio`, APIs compartilhadas, migrador de `localStorage` e monitoramento de persistência/cota.
@@ -64,6 +65,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Manifesto PWA movido para a raiz com `start_url` e `scope` relativos ao shell, evitando erro 404 ao abrir o app instalado pelo atalho.
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
+
+## [0.2.4] - 2025-10-30T02:02:29-03:00 (BRT)
+- Ajustada a quebra do rodapé móvel expandido para permitir múltiplas linhas sem separar o ícone da marca do texto legal, mantendo a tipografia consistente nos metadados adicionais.
 
 ## [0.2.3] - 2025-10-29T15:27:46-03:00 (BRT)
 - Mantido o layout horizontal do cabeçalho, rodapé e cartão de autenticação em todas as larguras, ajustando apenas espaçamentos para telas menores sem alterar a hierarquia visual.
