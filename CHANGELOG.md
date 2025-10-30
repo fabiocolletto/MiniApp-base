@@ -67,8 +67,18 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Documentação atualizada para refletir o novo local do manifesto e os atalhos ativos.
 - Evitado o deslocamento involuntário da tela ao abrir o menu principal, preservando a posição do usuário durante a navegação.
 
+## [3.0.0] - 2025-10-30T06:02:57-03:00 (BRT)
+- Criado helper compartilhado (`tests/helpers/dom-env.js`) para reutilizar o ambiente DOM simulado em toda a suíte automatizada.
+- Adicionada bateria de testes `tests/miniapp-store.view.test.js` cobrindo cartões, favoritos/salvos e navegação da MiniApp Store em layout conversacional.
+- Atualizada documentação (README + `docs/testing/release-3.0-validation.md`) com roteiro de validação completa e referências para o novo shell inspirado na OpenAI.
+
 ## [0.2.4] - 2025-10-30T02:02:29-03:00 (BRT)
 - Ajustada a quebra do rodapé móvel expandido para permitir múltiplas linhas sem separar o ícone da marca do texto legal, mantendo a tipografia consistente nos metadados adicionais.
+
+## [0.2.5] - 2025-10-30T05:50:57-03:00 (BRT)
+- Recriado o painel da MiniApp Store com layout conversacional inspirado no ChatGPT, incluindo sidebar de jornadas, thread central e compositor de mensagens responsivo.
+- Atualizada a paleta de tokens e o tema global para tons esverdeados e neutros utilizados pela identidade da OpenAI, propagando o novo visual para botões, cartões e focos.
+- Adicionados controles de navegação lateral para mobile/desktop, lista de conversas sincronizada com destaques de MiniApps e melhorias de acessibilidade no fluxo convidado.
 
 ## [0.2.3] - 2025-10-29T15:27:46-03:00 (BRT)
 - Mantido o layout horizontal do cabeçalho, rodapé e cartão de autenticação em todas as larguras, ajustando apenas espaçamentos para telas menores sem alterar a hierarquia visual.
