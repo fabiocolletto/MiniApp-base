@@ -217,6 +217,37 @@ test('abre o menu do rodapé e mantém o foco no primeiro item', async () => {
   }
 });
 
+test('ativar widgets pelo menu exibe cartões no painel principal', async () => {
+  const env = setupShell();
+  try {
+    const board = env.document.querySelector('[data-widget-board]');
+    assert.ok(board);
+
+    const menuButton = env.document.querySelector('.auth-shell__menu-button');
+    assert.ok(menuButton);
+    menuButton.click();
+
+    const toggle = env.document.querySelector(
+      '.auth-shell__menu-toggle-input[data-widget-toggle="widget-guest-overview"]',
+    );
+    assert.ok(toggle);
+    toggle.checked = true;
+    toggle.dispatchEvent(new env.window.Event('change', { bubbles: true }));
+
+    const widget = env.document.querySelector('[data-widget="widget-guest-overview"]');
+    assert.ok(widget);
+
+    const removeButton = widget.querySelector('[data-widget-action="remove"]');
+    assert.ok(removeButton);
+    removeButton.click();
+
+    const widgetAfterRemoval = env.document.querySelector('[data-widget="widget-guest-overview"]');
+    assert.equal(widgetAfterRemoval, null);
+  } finally {
+    teardownShell(env);
+  }
+});
+
 test('selecionar um MiniApp no menu abre a MiniApp Store destacando o item', async () => {
   const env = setupShell();
   try {
