@@ -257,7 +257,7 @@ export function renderAccountDashboard(viewRoot) {
   const eraseDeviceButton = document.createElement('button');
   eraseDeviceButton.type = 'button';
   eraseDeviceButton.className =
-    'button button--secondary button--pill account-dashboard__quick-button account-dashboard__quick-button--erase';
+    'button button--danger button--pill account-dashboard__quick-button account-dashboard__quick-button--erase';
   eraseDeviceButton.textContent = 'Excluir dados do dispositivo';
 
   quickButtons.append(logoutButton, openStoreButton, eraseDeviceButton);
@@ -747,6 +747,19 @@ export function renderAccountDashboard(viewRoot) {
   });
 
   eraseDeviceButton.addEventListener('click', async () => {
+    const shouldConfirmErase =
+      typeof window === 'object' && window && typeof window.confirm === 'function'
+        ? window.confirm(
+            'Esta ação removerá todos os cadastros locais, preferências e encerrará a sessão ativa. Deseja continuar?'
+          )
+        : true;
+
+    if (!shouldConfirmErase) {
+      setStatusHint('A exclusão foi cancelada. Nenhum dado foi removido.');
+      focusElement(eraseDeviceButton);
+      return;
+    }
+
     const hadUsers = state.users.length > 0;
 
     eraseDeviceButton.disabled = true;
