@@ -25,6 +25,8 @@ Os cenários abaixo compõem o roteiro manual oficial da versão 3.0.0. Eles per
 3. **Instalabilidade PWA** – o prompt de instalação precisa listar nome, ícones maskable e atalhos definidos no manifesto.
 4. **Navegação conversacional** – alternância do botão de sidebar, seleção de conversas e foco automático no cartão correspondente (testar em diferentes larguras).
 5. **Ações de MiniApp** – autenticação local seguida dos fluxos de salvar/favoritar, com feedbacks de limite e mensagens acessíveis.
+6. **Anúncio de status** – acionar qualquer fluxo que invoque `setStatusHint()` (por exemplo, alternar entre os modos Convidado e Criar conta) e confirmar pelo leitor de tela que a mensagem em `#statusHint` é anunciada automaticamente graças à região com `role="status"`.
+7. **Layout em telas largas** – abrir o painel em uma viewport ≥ 1280 px e verificar que o cartão ocupa toda a área útil com tipografia ampliada e legível.
 
 ## Evidências adicionais
 
