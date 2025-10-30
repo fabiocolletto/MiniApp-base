@@ -1199,8 +1199,28 @@ body.auth-only.auth-shell--menu-open {
 
 .account-dashboard__quick-summary {
   margin: 0;
-  font: 500 clamp(0.95rem, 2.3vw, 1.05rem) / 1.5 system-ui, sans-serif;
+  display: grid;
+  gap: clamp(0.65rem, 2vw, 0.85rem);
   color: var(--auth-text);
+}
+
+.account-dashboard__quick-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.2rem, 1.2vw, 0.35rem);
+}
+
+.account-dashboard__quick-summary-label {
+  font: 600 clamp(0.78rem, 1.9vw, 0.9rem) / 1.4 system-ui, sans-serif;
+  color: var(--auth-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-dashboard__quick-summary-value {
+  font: 600 clamp(1.05rem, 2.5vw, 1.2rem) / 1.35 system-ui, sans-serif;
+  color: var(--auth-text);
+  word-break: break-word;
 }
 
 .account-dashboard__quick-buttons {
