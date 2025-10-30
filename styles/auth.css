@@ -133,10 +133,6 @@ body.auth-only.auth-shell--menu-open {
     white-space: nowrap;
   }
 
-  .auth-shell__footer:not([data-footer-expanded='true']) [data-footer-extra] {
-    display: none;
-  }
-
   .auth-shell__footer-text {
     justify-content: flex-start;
     overflow: hidden;
@@ -194,8 +190,8 @@ body.auth-only.auth-shell--menu-open {
 }
 
 @media (min-width: 48rem) {
-  .auth-shell__footer-toggle {
-    display: none;
+  .auth-shell__footer[data-footer-expanded='true'] .auth-shell__footer-text {
+    gap: clamp(0.5rem, 1.2vw, 0.85rem);
   }
 }
 
@@ -394,6 +390,10 @@ body.auth-only.auth-shell--menu-open {
   align-items: center;
   gap: clamp(0.35rem, 1.5vw, 0.75rem);
   font: inherit;
+}
+
+.auth-shell__footer:not([data-footer-expanded='true']) [data-footer-extra] {
+  display: none;
 }
 
 .auth-shell__footer-text strong {

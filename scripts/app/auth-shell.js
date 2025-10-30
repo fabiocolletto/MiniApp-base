@@ -347,14 +347,9 @@ export function initAuthShell(options = {}) {
   }
 
   function syncFooterToggleVisibility() {
-    const isMobileViewport = Boolean(footerViewportQuery?.matches);
-
     if (ensureHtmlElement(doc, footerToggle)) {
-      footerToggle.hidden = !isMobileViewport;
-    }
-
-    if (!isMobileViewport) {
-      collapseFooterDetails();
+      footerToggle.hidden = false;
+      footerToggle.removeAttribute('aria-hidden');
     }
 
     updateFooterOffset();
@@ -380,7 +375,8 @@ export function initAuthShell(options = {}) {
       });
     }
   } else if (ensureHtmlElement(doc, footerToggle)) {
-    footerToggle.hidden = true;
+    footerToggle.hidden = false;
+    footerToggle.removeAttribute('aria-hidden');
   }
 
   if (ensureHtmlElement(doc, footerToggle)) {
