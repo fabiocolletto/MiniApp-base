@@ -22,10 +22,6 @@ const REQUIRED_PATHS = new Set([
   'public/offline.html',
   'public/app-theme.css',
   'public/tokens.css',
-  'public/icons/miniapp-icon-192.svg',
-  'public/icons/miniapp-icon-512.svg',
-  'public/icons/shortcut-task-manager.svg',
-  'public/icons/shortcut-exam-planner.svg',
   'public/env.example.js',
   'styles/main.css',
   'styles/auth.css',
@@ -35,7 +31,6 @@ const REQUIRED_PATHS = new Set([
   'scripts/views/shared/form-fields.js',
   'scripts/views/shared/device-info.js',
   'scripts/views/shared/validation.js',
-  'scripts/data/miniapp-store.js',
   'scripts/data/user-store.js',
   'scripts/data/session-store.js',
   'scripts/data/indexed-user-store.js',
@@ -46,8 +41,6 @@ const REQUIRED_PATHS = new Set([
   'sys/tools/log.js',
   'docs/pwa.md',
   'docs/migration-pre-to-post-pwa.md',
-  'docs/miniapps/task-manager.md',
-  'docs/miniapps/exam-planner.md',
   'reports/pwa-cleanup-2025-10-28/README.md',
 ]);
 

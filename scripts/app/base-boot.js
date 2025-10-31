@@ -1,10 +1,8 @@
 import { initAuthShell } from './auth-shell.js';
 import eventBus from '../events/event-bus.js';
-import { resetMiniApps, getMiniAppsSnapshot } from '../data/miniapp-store.js';
 import { ensurePersistentStorage, getStorageEstimate } from '../../shared/storage/idb/persistence.js';
 import { openMarcoCore, openPesquisaStudio } from '../../shared/storage/idb/databases.js';
 import { migrateLegacyStorage } from '../../shared/storage/idb/migrate.js';
-import { syncMiniappsCatalog as syncMiniappsCatalogToIndexedDB } from '../../shared/storage/idb/marcocore.js';
 import { loadUserPreferences } from '../preferences/user-preferences.js';
 import { initPwaInstallPrompt } from '../pwa/install-prompt.js';
 
@@ -62,41 +60,6 @@ async function prepareDatabases() {
   };
 }
 
-async function synchronizeMiniAppsCatalog(sourceEntries = null) {
-  let entries = Array.isArray(sourceEntries) ? sourceEntries : null;
-
-  if (!entries) {
-    try {
-      const response = await fetch('./miniapps/catalog.json', { cache: 'no-store' });
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) {
-          entries = data;
-        }
-      } else {
-        console.warn('Catálogo de MiniApps não pôde ser carregado (HTTP %s).', response.status);
-      }
-    } catch (error) {
-      console.warn('Falha ao buscar miniapps/catalog.json.', error);
-    }
-  }
-
-  if (!entries) {
-    entries = getMiniAppsSnapshot();
-  }
-
-  if (!entries || entries.length === 0) {
-    resetMiniApps();
-    const snapshot = getMiniAppsSnapshot();
-    await syncMiniappsCatalogToIndexedDB(snapshot);
-    return snapshot;
-  }
-
-  await syncMiniappsCatalogToIndexedDB(entries);
-  resetMiniApps(entries);
-  return entries;
-}
-
 async function collectStorageEstimate() {
   const estimate = await getStorageEstimate();
   if (!estimate) {
@@ -135,7 +98,6 @@ async function bootstrapStorageLayer() {
   const migrationResult = await migrateLegacyStorage();
   emitStorageMigrated(migrationResult);
 
-  await synchronizeMiniAppsCatalog(migrationResult.catalog);
   await collectStorageEstimate();
 }
 

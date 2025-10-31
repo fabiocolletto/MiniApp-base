@@ -5,58 +5,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDomEnvironment } from './helpers/dom-env.js';
 
-import { initAuthShell, buildMiniAppDocPath } from '../scripts/app/auth-shell.js';
-import { renderMiniAppStore } from '../scripts/views/miniapp-store.js';
+import { initAuthShell } from '../scripts/app/auth-shell.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderAccountDashboard } from '../scripts/views/account-dashboard.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
-
-const SAMPLE_MINI_APPS = [
-  {
-    id: 'task-manager',
-    name: 'Gestão de Trabalho',
-    description:
-      'Organize o backlog, acompanhe indicadores de execução e detalhe cada entrega com checklists contextualizados.',
-    status: 'active',
-    access: ['usuario', 'administrador'],
-    category: 'Produtividade',
-    updatedAt: '2025-10-25T15:03:00-03:00',
-    releaseDate: '2025-10-20T12:00:00-03:00',
-  },
-  {
-    id: 'exam-planner',
-    name: 'Criador de Provas',
-    description:
-      'Monte provas alinhadas à BNCC com banco de questões por competência, controle de turmas e indicadores de preparação.',
-    status: 'active',
-    access: ['usuario'],
-    category: 'Educação',
-    updatedAt: '2025-10-26T10:10:00-03:00',
-    releaseDate: '2025-10-22T09:00:00-03:00',
-  },
-  {
-    id: '   ',
-    name: 'MiniApp Sem Identificador',
-    description: 'Cadastro temporário em validação.',
-    status: 'active',
-    access: ['usuario'],
-    category: 'Teste',
-    updatedAt: '2025-10-27T12:00:00-03:00',
-    releaseDate: '2025-10-27T12:00:00-03:00',
-  },
-  {
-    id: 'internal-tool',
-    name: 'Ferramenta Interna',
-    description: 'Uso restrito para o time.',
-    status: 'testing',
-    access: ['administrador'],
-    category: 'Interno',
-    updatedAt: '2025-10-28T09:00:00-03:00',
-    releaseDate: '2025-10-28T09:00:00-03:00',
-  },
-];
 
 function createEventBus() {
   const listeners = new Map();
@@ -90,13 +44,6 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     prepare(env.window);
   }
 
-  const miniAppsSnapshot = JSON.parse(JSON.stringify(SAMPLE_MINI_APPS));
-  const getMiniAppsSnapshot = () => miniAppsSnapshot;
-  const subscribeMiniApps = (listener) => {
-    listener(miniAppsSnapshot);
-    return () => {};
-  };
-
   let registeredVersion = null;
   const registerServiceWorker = async (version) => {
     registeredVersion = version;
@@ -119,11 +66,8 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     fetch: fetchMock,
     registerServiceWorker,
     eventBus: createEventBus(),
-    renderMiniAppStore,
     renderRegisterPanel,
     renderAccountDashboard,
-    getMiniAppsSnapshot,
-    subscribeMiniApps,
   });
 
   const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -135,7 +79,6 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     document: env.document,
     getRegisteredVersion: () => registeredVersion,
     flushAsync,
-    miniAppsSnapshot,
     restore: env.restore,
   };
 }
@@ -145,7 +88,7 @@ function teardownShell(env) {
   env.restore?.();
 }
 
-test('inicializa o shell com painel de convidado e dois MiniApps ativos', async () => {
+test('inicializa o shell com painel Educação estático e sem MiniApps listados', async () => {
   const env = setupShell();
   try {
     await env.flushAsync();
@@ -154,19 +97,16 @@ test('inicializa o shell com painel de convidado e dois MiniApps ativos', async 
     assert.ok(viewRoot);
     assert.equal(viewRoot.dataset.view, 'guest');
 
-    const miniAppItems = [...env.document.querySelectorAll('.guest-panel__item')];
-    assert.equal(miniAppItems.length, 2);
-    const ids = miniAppItems.map((item) => item.dataset.appId).sort();
-    assert.deepEqual(ids, ['exam-planner', 'task-manager']);
-    miniAppItems.forEach((item) => {
-      const link = item.querySelector('.guest-panel__link');
-      assert.ok(link);
-      assert.equal(link.href.includes('/miniapp.md'), false);
-    });
+    const educationHome = env.document.querySelector('.education-home__container');
+    assert.ok(educationHome);
+    assert.match(educationHome.textContent, /Bem-vindo ao MiniApp da 5 horas, Educação/);
+
+    const legacyList = env.document.querySelectorAll('.guest-panel__item, .miniapp-store');
+    assert.equal(legacyList.length, 0);
 
     const footerLabel = env.document.querySelector('[data-active-view-label]');
     assert.ok(footerLabel);
-    assert.match(footerLabel.textContent, /Painel atual: Explorar como convidado/);
+    assert.match(footerLabel.textContent, /Painel atual: MiniApp Educação/);
 
     await env.flushAsync();
 
@@ -427,38 +367,3 @@ test('menu não exibe toggles de widgets ou atalhos de MiniApps', async () => {
   }
 });
 
-test('processa o parâmetro ?app= com redirecionamento para a documentação quando o MiniApp existe', async () => {
-  let redirectedTo = null;
-
-  const env = setupShell({
-    url: 'http://localhost/?app=task-manager',
-    prepare(window) {
-      window.location.replace = (href) => {
-        redirectedTo = href;
-      };
-    },
-  });
-  try {
-    await env.flushAsync();
-
-    assert.equal(redirectedTo, buildMiniAppDocPath('task-manager'));
-  } finally {
-    teardownShell(env);
-  }
-});
-
-test('quando o MiniApp solicitado não existe o shell destaca o catálogo e atualiza a dica', async () => {
-  const env = setupShell({ url: 'http://localhost/?app=unknown-app' });
-  try {
-    await env.flushAsync();
-
-    const viewRoot = env.document.getElementById('authViewRoot');
-    assert.equal(viewRoot.dataset.view, 'miniapps');
-
-    const statusHint = env.document.getElementById('statusHint');
-    assert.ok(statusHint);
-    assert.match(statusHint.textContent, /MiniApp "unknown-app" destacado/);
-  } finally {
-    teardownShell(env);
-  }
-});
