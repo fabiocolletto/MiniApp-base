@@ -209,6 +209,10 @@ test('abre o menu do rodapé exibindo atalhos rápidos de tema e idioma', async 
     assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
     assert.equal(panel.hidden, false);
 
+    const overlay = env.document.querySelector('[data-menu-overlay]');
+    assert.ok(overlay);
+    assert.equal(overlay.hidden, false);
+
     const items = panel.querySelectorAll('.auth-shell__menu-item');
     assert.equal(items.length, 3);
 
@@ -229,6 +233,35 @@ test('abre o menu do rodapé exibindo atalhos rápidos de tema e idioma', async 
 
     assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
     assert.equal(panel.hidden, true);
+    assert.equal(overlay.hidden, true);
+  } finally {
+    teardownShell(env);
+  }
+});
+
+test('fecha o menu do rodapé ao clicar novamente no botão do painel', async () => {
+  const env = setupShell();
+  try {
+    const menuButton = env.document.querySelector('.auth-shell__menu-button');
+    assert.ok(menuButton);
+
+    menuButton.click();
+
+    const panel = env.document.getElementById('authFooterMenu');
+    assert.ok(panel);
+    assert.equal(panel.hidden, false);
+
+    const overlay = env.document.querySelector('[data-menu-overlay]');
+    assert.ok(overlay);
+    assert.equal(overlay.hidden, false);
+
+    menuButton.click();
+
+    await env.flushAsync();
+
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
+    assert.equal(panel.hidden, true);
+    assert.equal(overlay.hidden, true);
   } finally {
     teardownShell(env);
   }
