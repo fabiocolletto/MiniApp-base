@@ -109,7 +109,7 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
 
     const footerLabel = env.document.querySelector('[data-active-view-label]');
     assert.ok(footerLabel);
-    assert.match(footerLabel.textContent, /Painel atual: MiniApp Educação/);
+    assert.match(footerLabel.textContent, /Painel atual: Visitante/);
 
     await env.flushAsync();
 
@@ -125,7 +125,11 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
 test('alterna para a tela de cadastro ao clicar no botão correspondente', async () => {
   const env = setupShell();
   try {
-    const registerButton = env.document.querySelector('.auth-selector__button[data-view="register"]');
+    const menuButton = env.document.querySelector('.auth-shell__menu-button');
+    assert.ok(menuButton);
+    menuButton.click();
+
+    const registerButton = env.document.querySelector('[data-view-toggle][data-view="register"]');
     assert.ok(registerButton);
     registerButton.click();
 
@@ -156,18 +160,33 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     assert.ok(overlay);
     assert.equal(overlay.hidden, false);
 
-    const items = panel.querySelectorAll('.auth-shell__menu-item');
-    assert.equal(items.length, 3);
+    const userSection = panel.querySelector('[data-menu-section="user"]');
+    assert.ok(userSection);
+    const userTitle = userSection.querySelector('.auth-shell__menu-section-title');
+    assert.ok(userTitle);
+    assert.equal(userTitle.textContent.trim(), 'Usuário');
 
-    const [themeButton, fontButton, languageButton] = items;
+    const registerButton = panel.querySelector('[data-view-toggle][data-view="register"]');
+    const guestButton = panel.querySelector('[data-view-toggle][data-view="guest"]');
+    assert.ok(registerButton);
+    assert.ok(guestButton);
+    assert.equal(registerButton.getAttribute('aria-current'), 'false');
+    assert.equal(guestButton.getAttribute('aria-current'), 'page');
+    assert.ok(guestButton.classList.contains('is-active'));
+    assert.strictEqual(env.document.activeElement, registerButton);
+
+    const themeButton = panel.querySelector('[data-action="preferences-theme"]');
+    const fontButton = panel.querySelector('[data-action="preferences-font"]');
+    const languageButton = panel.querySelector('[data-action="preferences-language"]');
     assert.ok(themeButton);
-    assert.equal(themeButton.dataset.action, 'preferences-theme');
+    assert.ok(fontButton);
+    assert.ok(languageButton);
+
     assert.equal(themeButton.dataset.prefFocus, 'theme');
     const themeLabel = themeButton.getAttribute('aria-label');
     assert.ok(themeLabel);
     assert.ok(themeLabel.includes('Tema atual'));
-    assert.ok(fontButton);
-    assert.equal(fontButton.dataset.action, 'preferences-font');
+
     assert.equal(fontButton.dataset.prefFocus, 'fontScale');
     const fontHint = fontButton.querySelector('[data-pref-font-scale-value]');
     assert.ok(fontHint);
@@ -175,21 +194,19 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     const fontLabel = fontButton.getAttribute('aria-label');
     assert.ok(fontLabel);
     assert.ok(fontLabel.includes('Escala atual'));
-    assert.ok(languageButton);
-    assert.equal(languageButton.dataset.action, 'preferences-language');
+
     assert.equal(languageButton.dataset.prefFocus, 'lang');
     const languageLabel = languageButton.getAttribute('aria-label');
     assert.ok(languageLabel);
     assert.ok(languageLabel.includes('Idioma atual'));
-    assert.strictEqual(env.document.activeElement, themeButton);
 
     themeButton.click();
 
     await env.flushAsync();
 
-    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
-    assert.equal(panel.hidden, true);
-    assert.equal(overlay.hidden, true);
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
+    assert.equal(panel.hidden, false);
+    assert.equal(overlay.hidden, false);
   } finally {
     teardownShell(env);
   }
@@ -255,6 +272,10 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
 
     await env.flushAsync();
 
+    const panel = env.document.getElementById('authFooterMenu');
+    assert.ok(panel);
+    assert.equal(panel.hidden, false);
+
     const themeButton = env.document.querySelector('[data-action="preferences-theme"]');
     const fontButton = env.document.querySelector('[data-action="preferences-font"]');
     const languageButton = env.document.querySelector('[data-action="preferences-language"]');
@@ -266,14 +287,11 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     themeButton.click();
     await env.flushAsync();
 
-    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
-    assert.equal(env.document.getElementById('authFooterMenu').hidden, true);
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
+    assert.equal(panel.hidden, false);
     const nextTheme = docEl.dataset.theme || 'auto';
     assert.ok(themeLabels.has(nextTheme));
     assert.notEqual(nextTheme, previousTheme);
-
-    menuButton.click();
-    await env.flushAsync();
 
     fontButton.click();
     await env.flushAsync();
@@ -287,20 +305,16 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
       assert.equal(fontHint.textContent.trim(), expectedFontLabel);
     }
 
-    menuButton.click();
-    await env.flushAsync();
-
     languageButton.click();
     await env.flushAsync();
 
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
+    assert.equal(panel.hidden, false);
     assert.equal(docEl.dataset.theme, nextTheme);
     const nextLang = docEl.getAttribute('data-lang') || 'pt-BR';
     assert.notEqual(nextLang, previousLang);
     assert.ok(languageLabels.has(nextLang));
     assert.equal(docEl.lang || nextLang, nextLang);
-
-    menuButton.click();
-    await env.flushAsync();
 
     const updatedThemeButton = env.document.querySelector('[data-action="preferences-theme"]');
     const updatedLanguageButton = env.document.querySelector('[data-action="preferences-language"]');

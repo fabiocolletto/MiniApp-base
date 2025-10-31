@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Seção Usuário adicionada ao menu principal com os botões de Cadastro e Visitante, removendo o seletor do cartão de boas-vindas.
+- Corrigido o botão do menu principal para herdar corretamente as cores dos temas claro e escuro, mesmo quando a preferência manual difere do modo do sistema.
 - Removido o painel de widgets do shell, eliminando o painel Educação duplicado abaixo do cartão principal.
 - Rebatizado o shell para MiniApp Educação, com painel inicial estático e mensagem de boas-vindas dedicada.
 - Removidos o catálogo de MiniApps, widgets e sincronizações associadas, mantendo apenas as ações rápidas de tema, idioma e texto.
@@ -75,6 +77,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 ## [3.1.2] - 2025-10-31T09:12:07-03:00 (BRT)
 - Menu principal do rodapé passa a exibir apenas um atalho em ícone para as Configurações, removendo as listas de painéis, widgets e MiniApps do overlay.
 - Versão do aplicativo atualizada para 3.1.2 (`package.json`, `public/meta/app-version.json` e `scripts/data/system-release-source.js`) refletindo o novo comportamento do menu simplificado.
+
+## [3.1.2] - 2025-10-31T18:51:16-03:00 (BRT)
+- Atalhos de tema, idioma e tamanho de fonte no menu do rodapé mantêm o painel aberto após os cliques, permitindo ajustar as preferências sem reabrir a janela.
 
 ## [3.1.1] - 2025-10-31T08:57:12-03:00 (BRT)
 - Ajustada a janela do menu principal para aproveitar até 92 vh (ou 40 rem) nas viewports compactas e até 70 vh (ou 42 rem) em desktops, exibindo o conteúdo sem exigir barras de rolagem desnecessárias.
