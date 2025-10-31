@@ -286,6 +286,15 @@ function focusPreferenceControl(target) {
     focusElement = inputs.find((input) => input.checked) ?? inputs[0] ?? null;
   } else if (target === 'lang' || target === 'language') {
     focusElement = formElement.querySelector('select[name="lang"]');
+  } else if (
+    target === 'font' ||
+    target === 'fontscale' ||
+    target === 'font-scale' ||
+    target === 'fontScale' ||
+    target === 'text' ||
+    target === 'text-size'
+  ) {
+    focusElement = formElement.querySelector('input[name="fontScale"]');
   }
 
   if (!focusElement) {
@@ -304,7 +313,12 @@ function focusPreferenceControl(target) {
 
   const InputRef = ownerDocument?.defaultView?.HTMLInputElement ?? (typeof HTMLInputElement !== 'undefined' ? HTMLInputElement : null);
 
-  if (InputRef && focusElement instanceof InputRef && typeof focusElement.select === 'function') {
+  if (
+    InputRef &&
+    focusElement instanceof InputRef &&
+    typeof focusElement.select === 'function' &&
+    focusElement.type !== 'range'
+  ) {
     focusElement.select();
   }
 

@@ -195,7 +195,7 @@ test('alterna para a tela de cadastro ao clicar no botão correspondente', async
   }
 });
 
-test('abre o menu do rodapé exibindo atalhos rápidos de tema e idioma', async () => {
+test('abre o menu do rodapé exibindo atalhos rápidos de personalização', async () => {
   const env = setupShell();
   try {
     const menuButton = env.document.querySelector('.auth-shell__menu-button');
@@ -214,12 +214,21 @@ test('abre o menu do rodapé exibindo atalhos rápidos de tema e idioma', async 
     assert.equal(overlay.hidden, false);
 
     const items = panel.querySelectorAll('.auth-shell__menu-item');
-    assert.equal(items.length, 3);
+    assert.equal(items.length, 4);
 
-    const [themeButton, languageButton, settingsButton] = items;
+    const [themeButton, fontButton, languageButton, settingsButton] = items;
     assert.ok(themeButton);
     assert.equal(themeButton.dataset.action, 'preferences-theme');
     assert.equal(themeButton.dataset.prefFocus, 'theme');
+    assert.ok(fontButton);
+    assert.equal(fontButton.dataset.action, 'preferences-font');
+    assert.equal(fontButton.dataset.prefFocus, 'fontScale');
+    const fontHint = fontButton.querySelector('[data-pref-font-scale-value]');
+    assert.ok(fontHint);
+    assert.equal(fontHint.textContent.trim(), 'Padrão');
+    const fontLabel = fontButton.getAttribute('aria-label');
+    assert.ok(fontLabel);
+    assert.ok(fontLabel.includes('Escala atual'));
     assert.ok(languageButton);
     assert.equal(languageButton.dataset.action, 'preferences-language');
     assert.equal(languageButton.dataset.prefFocus, 'lang');
