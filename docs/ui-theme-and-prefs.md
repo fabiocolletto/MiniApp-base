@@ -68,21 +68,15 @@ import { updateUserPreferences } from '../scripts/preferences/user-preferences.j
 await updateUserPreferences({ density: 'compact', theme: 'light' });
 ```
 
-## Painel de Preferências (`components/preferences/panel.*`)
+## Atalhos de preferências no menu
 
-- HTML (`panel.html`) e CSS (`panel.css`) são carregados sob demanda quando o usuário escolhe **Preferências do usuário** no menu do rodapé.
-- O módulo `panel.js` exporta `openPreferencesPanel({ document, window })` e `closePreferencesPanel()`. É possível abrir o painel programaticamente:
-
-```js
-const { openPreferencesPanel } = await import('../components/preferences/panel.js');
-await openPreferencesPanel();
-```
-
-- Cada alteração de controle chama `updateUserPreferences`, aplicando imediatamente tema, idioma, escala de fonte, densidade e redução de animações.
-- O painel usa targets de toque ≥ 24×24 px e classes utilitárias do tema (`.preferences-panel-open` desativa rolagem do `body`).
+- O menu do rodapé expõe três botões com `data-action="preferences-theme"`, `data-action="preferences-font"` e `data-action="preferences-language"`.
+- Cada clique fecha o menu principal, calcula o próximo valor disponível e chama `updateUserPreferences`, aplicando imediatamente tema, escala tipográfica ou idioma.
+- Os rótulos e dicas exibidos no menu são atualizados por `subscribeUserPreferences`, garantindo que leitores de tela anunciem o estado vigente.
+- Não há mais janela dedicada de preferências; toda a personalização acontece diretamente por esses atalhos.
 
 ## Registry de MiniApps (`miniapps/registry.json` + `shell/load-miniapp.js`)
 
 - O arquivo JSON lista objetos `{ "id": "slug", "entry": "./miniapps/<slug>/index.js" }`.
 - `shell/load-miniapp.js` expõe `loadMiniApp(id, options)` que aplica `fetch` com `cache: 'no-store'`, importa o módulo e executa `mount(target, context)`.
-- O Service Worker trata `miniapps/registry.json` e `components/preferences/panel.html` com estratégia network-first para evitar dados obsoletos em produção.
+- O Service Worker não possui mais rotas adicionais em estratégia network-first além da navegação padrão.

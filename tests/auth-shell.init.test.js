@@ -154,9 +154,9 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     assert.equal(overlay.hidden, false);
 
     const items = panel.querySelectorAll('.auth-shell__menu-item');
-    assert.equal(items.length, 4);
+    assert.equal(items.length, 3);
 
-    const [themeButton, fontButton, languageButton, settingsButton] = items;
+    const [themeButton, fontButton, languageButton] = items;
     assert.ok(themeButton);
     assert.equal(themeButton.dataset.action, 'preferences-theme');
     assert.equal(themeButton.dataset.prefFocus, 'theme');
@@ -178,8 +178,6 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     const languageLabel = languageButton.getAttribute('aria-label');
     assert.ok(languageLabel);
     assert.ok(languageLabel.includes('Idioma atual'));
-    assert.ok(settingsButton);
-    assert.equal(settingsButton.dataset.action, 'preferences');
     assert.strictEqual(env.document.activeElement, themeButton);
 
     themeButton.click();

@@ -11,25 +11,6 @@ import {
 
 const VIEW_CLEANUP_KEY = '__viewCleanup';
 
-let preferencesPanelModulePromise = null;
-
-async function openPreferencesPanelLazy({ doc, win, focus } = {}) {
-  try {
-    if (!preferencesPanelModulePromise) {
-      preferencesPanelModulePromise = import('../../components/preferences/panel.js');
-    }
-
-    const module = await preferencesPanelModulePromise;
-    if (!module || typeof module.openPreferencesPanel !== 'function') {
-      throw new Error('Módulo do painel de preferências indisponível.');
-    }
-
-    await module.openPreferencesPanel({ document: doc, window: win, focusTarget: focus });
-  } catch (error) {
-    console.error('Não foi possível abrir o painel de preferências.', error);
-  }
-}
-
 function resolveRuntime(input = {}) {
   if (input && typeof input === 'object' && input.document && !input.window) {
     return { ...input, window: input.window ?? input };
@@ -304,27 +285,6 @@ export function initAuthShell(options = {}) {
               widgetId: 'widget-account-dashboard',
               widgetTitle: 'Painel da conta',
               widgetDescription: 'Monitore dados armazenados localmente e ações de manutenção de sessão.',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'preferences',
-      label: 'Configurações',
-      types: [
-        {
-          id: 'personalization',
-          label: 'Preferências e acessibilidade',
-          entries: [
-            {
-              id: 'action-preferences',
-              label: 'Preferências do usuário',
-              description: 'Ajuste tema, idioma e privacidade específicos deste dispositivo.',
-              action: 'preferences',
-              widgetId: 'widget-preferences',
-              widgetTitle: 'Preferências do shell',
-              widgetDescription: 'Centraliza atalhos de idioma, acessibilidade e privacidade.',
             },
           ],
         },
@@ -1529,13 +1489,6 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    if (action && action.startsWith('preferences')) {
-      closeFooterMenu();
-      const focusTarget = item.dataset.prefFocus || null;
-      openPreferencesPanelLazy({ doc, win, focus: focusTarget });
-      return;
-    }
-
   }
 
   if (ensureHtmlElement(doc, footerMenuPanel)) {
@@ -1618,9 +1571,6 @@ export function initAuthShell(options = {}) {
 
         if (widget.view) {
           renderAuthView(widget.view, { shouldFocus: true });
-        } else if (widget.action === 'preferences') {
-          closeFooterMenu();
-          openPreferencesPanelLazy({ doc, win });
         }
       } else if (action === 'remove') {
         deactivateWidget(widgetId);

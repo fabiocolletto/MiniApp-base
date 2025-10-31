@@ -8,7 +8,7 @@ Aplicativo PWA oficial da 5 Horas dedicado ao MiniApp Educação. O shell aprese
 - `scripts/` – módulos JavaScript responsáveis pelo bootstrap (`app/base-boot.js`), shell (`app/auth-shell.js`), preferências (`preferences/`) e integração com o service worker/PWA (`pwa/`).
 - `styles/` – folhas de estilo da experiência (`main.css`, `auth.css`) construídas sobre os tokens do tema global.
 - `public/` – assets estáticos servidos diretamente (tema CSS, tokens, metadados da versão, ícones instaláveis e página offline).
-- `service-worker.js` – script responsável pelo cache dos assets essenciais, fallback offline e estratégia network-first para o painel de preferências.
+- `service-worker.js` – script responsável pelo cache dos assets essenciais, fallback offline e estratégia network-first (atualmente sem rotas extras além da navegação padrão).
 - `shared/` – camada IndexedDB utilizada para preferências, métricas e persistência compartilhada entre módulos do MiniApp.
 - `tests/` – suíte automatizada em Node Test Runner que cobre a inicialização do shell e os controles de personalização.
 - `reports/` e `docs/` – material histórico da limpeza PWA original e guias de manutenção do tema/instalação.
@@ -17,26 +17,25 @@ Aplicativo PWA oficial da 5 Horas dedicado ao MiniApp Educação. O shell aprese
 
 O painel principal (`renderGuestAccessPanel` no `auth-shell`) apresenta apenas a mensagem **“Bem-vindo ao MiniApp da 5 horas, Educação.”** seguida de uma orientação para personalizar tema, idioma e tamanho do texto. Widgets e listagens de MiniApps foram removidos; o espaço central permanece reservado para futuros módulos do produto.
 
-O rodapé continua oferecendo quatro ações:
+O rodapé mantém três ações rápidas:
 
 1. **Tema** – alterna entre Automático, Claro e Escuro.
 2. **Tamanho do texto** – percorre os cinco níveis de escala tipográfica.
 3. **Idioma** – alterna entre Português (Brasil), Inglês e Espanhol.
-4. **Preferências** – abre o painel completo de configuração.
 
 Os rótulos são atualizados dinamicamente conforme o estado salvo em IndexedDB (`marco_core`).
 
 ## Persistência e PWA
 
 - A camada IndexedDB é preparada em `scripts/app/base-boot.js`, que solicita armazenamento persistente, registra o service worker e emite eventos `storage:*` pelo `event-bus`.
-- `service-worker.js` usa o prefixo `miniapp-educacao::pwa::`, faz cache dos assets essenciais (`index.html`, temas, manifestos, versão) e mantém `components/preferences/panel.html` em estratégia network-first.
+- `service-worker.js` usa o prefixo `miniapp-educacao::pwa::`, faz cache dos assets essenciais (`index.html`, temas, manifestos, versão) e não possui mais rotas específicas em estratégia network-first.
 - Versões expostas no rodapé são lidas de `public/meta/app-version.json`. O utilitário `scripts/data/system-release-source.js` registra a tag atual e o horário de publicação.
 
 ## Executando localmente
 
 1. Instale as dependências com `npm install` (não há pacotes externos além das devDependencies padrão).
 2. Suba um servidor estático apontando para a raiz do projeto (`npx serve .` ou `python -m http.server 4173`).
-3. Acesse `http://localhost:<porta>/index.html` para validar o shell. A mensagem inicial deve exibir “Bem-vindo ao MiniApp da 5 horas, Educação.” e o rodapé precisa mostrar os quatro atalhos de personalização.
+3. Acesse `http://localhost:<porta>/index.html` para validar o shell. A mensagem inicial deve exibir “Bem-vindo ao MiniApp da 5 horas, Educação.” e o rodapé precisa mostrar os três atalhos de personalização.
 4. Execute `npm test` para rodar a suíte automatizada.
 
 ### Validação visual obrigatória

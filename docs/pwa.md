@@ -13,7 +13,7 @@ Este documento descreve o checklist recorrente para manter o MiniApp Base instal
 - Incrementar o valor usado na query `?v=` ao publicar nova versão (`registerServiceWorker(version)` recebe o valor do `package.json`).
 - Mantenha `CORE_ASSETS` alinhado com os arquivos essenciais do shell, offline fallback e fichas dos MiniApps.
 - Preserve a estratégia cache-first para assets estáticos e network-first para navegação, retornando `public/offline.html` quando necessário.
-- Utilize a lista `NETWORK_FIRST_PATHS` apenas para recursos dinâmicos necessários (atualmente `components/preferences/panel.html`), garantindo que alterações recentes cheguem aos usuários sem limpar o cache manualmente.
+- Utilize a lista `NETWORK_FIRST_PATHS` apenas para recursos dinâmicos necessários (no momento não há caminhos adicionais além da navegação padrão), garantindo que alterações recentes cheguem aos usuários sem limpar o cache manualmente.
 
 ## Atualização de versão
 

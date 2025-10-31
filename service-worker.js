@@ -18,7 +18,7 @@ const CORE_ASSETS = [
   './public/meta/app-version.json'
 ];
 
-const NETWORK_FIRST_PATHS = ['/components/preferences/panel.html'];
+const NETWORK_FIRST_PATHS = [];
 
 function shouldUseNetworkFirst(url) {
   return NETWORK_FIRST_PATHS.some((path) => url.pathname.endsWith(path));

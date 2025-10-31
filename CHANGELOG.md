@@ -8,6 +8,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Removidos o catálogo de MiniApps, widgets e sincronizações associadas, mantendo apenas as ações rápidas de tema, idioma e texto.
 - Atualizados manifesto PWA, service worker, documentação e testes para refletir o produto único MiniApp Educação.
 - Botões rápidos do menu de configurações agora alternam imediatamente tema, idioma e tamanho do texto, atualizando os rótulos de acessibilidade conforme o estado ativo.
+- Painel modal de preferências foi removido; as personalizações acontecem exclusivamente pelos ícones do menu do rodapé, sem janela adicional.
 - Menu de Configurações recebeu atalho rápido para ajustar o tamanho do texto, exibindo a escala atual e acessando os cinco níveis disponíveis.
 - Adicionada cobertura automatizada garantindo que o menu principal do rodapé seja fechado ao clicar novamente no botão de configurações, mantendo painel e overlay ocultos até nova interação.
 - Documentados no `AGENTS.md` e no `README.md` os procedimentos obrigatórios de validação visual com screenshots em formato paisagem e retrato do Samsung Galaxy Tab S9.
