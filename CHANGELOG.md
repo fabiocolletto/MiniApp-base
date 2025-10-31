@@ -8,7 +8,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Menu de Configurações recebeu atalho rápido para ajustar o tamanho do texto, exibindo a escala atual e acessando os cinco níveis disponíveis.
 - Adicionada cobertura automatizada garantindo que o menu principal do rodapé seja fechado ao clicar novamente no botão de configurações, mantendo painel e overlay ocultos até nova interação.
 - Documentados no `AGENTS.md` e no `README.md` os procedimentos obrigatórios de validação visual com screenshots em formato paisagem e retrato do Samsung Galaxy Tab S9.
-- Painel principal inicia com um widget flutuante listando todos os MiniApps e filtros rápidos para modalidades grátis, assinatura e produtos.
+- Painel principal volta a exibir a lista de MiniApps diretamente, removendo o widget flutuante do modo convidado.
 - Rodapé expandido mantém ícone, dados legais e controles alinhados na mesma barra, liberando a faixa inferior para distribuir atalhos e metadados em largura total.
 - Rodapé expandido passa a revelar painel multilinhas com transição suave, reservando um container para atalhos rápidos e links adicionais no futuro.
 - Corrigido o estado expandido do widget "MiniApps gratuitos" eliminando regras que mantinham o container esticado e deixavam espaços vazios mesmo após a remoção das alturas mínimas.
