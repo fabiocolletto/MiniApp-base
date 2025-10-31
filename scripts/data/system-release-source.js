@@ -1,6 +1,6 @@
 const SYSTEM_RELEASE_SOURCE = Object.freeze({
-  version: 'v3.1.3',
-  publishedAt: '2025-10-31T09:26:50-03:00',
+  version: 'v4.0.0',
+  publishedAt: '2025-10-31T11:30:00-03:00',
   changelogPath: './Log.md',
 });
 

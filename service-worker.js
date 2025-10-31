@@ -1,7 +1,7 @@
 const { location: swLocation } = self;
 const swUrl = new URL(swLocation);
 const swVersion = swUrl.searchParams.get('v')?.trim() || 'dev';
-const CACHE_PREFIX = 'miniapp-base::pwa::';
+const CACHE_PREFIX = 'miniapp-educacao::pwa::';
 const CACHE_NAME = `${CACHE_PREFIX}${swVersion}`;
 const OFFLINE_FALLBACK = './public/offline.html';
 const OFFLINE_FALLBACK_URL = new URL(OFFLINE_FALLBACK, swUrl.origin).toString();
@@ -15,13 +15,10 @@ const CORE_ASSETS = [
   './package.json',
   './manifest.webmanifest',
   './public/offline.html',
-  './docs/miniapps/task-manager.md',
-  './docs/miniapps/exam-planner.md',
-  './public/icons/shortcut-task-manager.svg',
-  './public/icons/shortcut-exam-planner.svg'
+  './public/meta/app-version.json'
 ];
 
-const NETWORK_FIRST_PATHS = ['/miniapps/registry.json', '/components/preferences/panel.html'];
+const NETWORK_FIRST_PATHS = ['/components/preferences/panel.html'];
 
 function shouldUseNetworkFirst(url) {
   return NETWORK_FIRST_PATHS.some((path) => url.pathname.endsWith(path));

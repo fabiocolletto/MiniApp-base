@@ -1,16 +1,7 @@
 import eventBusDefault from '../events/event-bus.js';
 import { registerServiceWorker as registerServiceWorkerDefault } from '../pwa/register-service-worker.js';
 import { renderRegisterPanel as renderRegisterPanelDefault } from '../views/register.js';
-import {
-  renderMiniAppStore as renderMiniAppStoreDefault,
-  normalizeMiniAppId as normalizeMiniAppIdFromStore,
-  buildMiniAppDocPath as buildMiniAppDocPathFromStore,
-} from '../views/miniapp-store.js';
 import { renderAccountDashboard as renderAccountDashboardDefault } from '../views/account-dashboard.js';
-import {
-  getMiniAppsSnapshot as getMiniAppsSnapshotDefault,
-  subscribeMiniApps as subscribeMiniAppsDefault,
-} from '../data/miniapp-store.js';
 import {
   subscribeUserPreferences as subscribeUserPreferencesDefault,
   getFontScaleLabel as getFontScaleLabelDefault,
@@ -18,11 +9,7 @@ import {
   updateUserPreferences as updateUserPreferencesDefault,
 } from '../preferences/user-preferences.js';
 
-const APP_QUERY_PARAM = 'app';
 const VIEW_CLEANUP_KEY = '__viewCleanup';
-
-export const normalizeMiniAppId = normalizeMiniAppIdFromStore;
-export const buildMiniAppDocPath = buildMiniAppDocPathFromStore;
 
 let preferencesPanelModulePromise = null;
 
@@ -133,10 +120,7 @@ function normalizeOptions(options) {
     eventBus: runtime.eventBus ?? eventBusDefault,
     registerServiceWorker: runtime.registerServiceWorker ?? registerServiceWorkerDefault,
     renderRegisterPanel: runtime.renderRegisterPanel ?? renderRegisterPanelDefault,
-    renderMiniAppStore: runtime.renderMiniAppStore ?? renderMiniAppStoreDefault,
     renderAccountDashboard: runtime.renderAccountDashboard ?? renderAccountDashboardDefault,
-    getMiniAppsSnapshot: runtime.getMiniAppsSnapshot ?? getMiniAppsSnapshotDefault,
-    subscribeMiniApps: runtime.subscribeMiniApps ?? subscribeMiniAppsDefault,
     subscribeUserPreferences: runtime.subscribeUserPreferences ?? subscribeUserPreferencesDefault,
     getFontScaleLabel: runtime.getFontScaleLabel ?? getFontScaleLabelDefault,
     getCurrentPreferences: runtime.getCurrentPreferences ?? getCurrentPreferencesDefault,
@@ -149,50 +133,6 @@ function normalizeOptions(options) {
 function ensureHtmlElement(doc, element) {
   const HTMLElementRef = doc?.defaultView?.HTMLElement ?? (typeof HTMLElement !== 'undefined' ? HTMLElement : null);
   return Boolean(HTMLElementRef) && element instanceof HTMLElementRef;
-}
-
-export function findMiniAppById(id, { getMiniAppsSnapshot = getMiniAppsSnapshotDefault } = {}) {
-  const normalized = normalizeMiniAppId(id);
-  if (!normalized) {
-    return null;
-  }
-
-  try {
-    return (
-      getMiniAppsSnapshot().find((app) => normalizeMiniAppId(app?.id) === normalized) ?? null
-    );
-  } catch (error) {
-    console.error('Erro ao localizar MiniApp pelo id.', error);
-    return null;
-  }
-}
-
-export function openMiniAppShortcut(
-  id,
-  { window: win = typeof window !== 'undefined' ? window : null, getMiniAppsSnapshot = getMiniAppsSnapshotDefault } = {},
-) {
-  const normalized = normalizeMiniAppId(id);
-  if (!normalized) {
-    return false;
-  }
-
-  const target = findMiniAppById(normalized, { getMiniAppsSnapshot });
-  if (!target) {
-    return false;
-  }
-
-  const docPath = buildMiniAppDocPath(normalized);
-  if (!docPath || !win?.location) {
-    return false;
-  }
-
-  try {
-    win.location.replace(docPath);
-    return true;
-  } catch (error) {
-    console.error('Não foi possível abrir o atalho do MiniApp.', error);
-    return false;
-  }
 }
 
 export function initAuthShell(options = {}) {
@@ -224,10 +164,6 @@ export function initAuthShell(options = {}) {
   const footerActiveViewDivider = doc.querySelector('[data-active-view-divider]');
   const footerMenuCategoriesNav = footerMenuPanel?.querySelector('[data-menu-categories]');
   const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
-  const footerMenuMiniAppsTitle = footerMenuPanel?.querySelector('[data-menu-title="miniapps"]');
-  const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
-  const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
-  const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
   const footerMenuThemeButton = footerMenuPanel?.querySelector('[data-action="preferences-theme"]');
   const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
   const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
@@ -330,29 +266,20 @@ export function initAuthShell(options = {}) {
   const FOOTER_MENU_STRUCTURE = [
     {
       id: 'shell-access',
-      label: 'Shell principal',
+      label: 'MiniApp Educação',
       types: [
         {
-          id: 'guided-journeys',
-          label: 'Jornadas guiadas',
+          id: 'education-home',
+          label: 'Painel inicial',
           entries: [
             {
-              id: 'view-guest',
-              label: 'Explorar como convidado',
-              description: 'Acesse os MiniApps liberados para visitantes sem cadastro.',
+              id: 'view-education-home',
+              label: 'Bem-vindo',
+              description: 'Abra o painel inicial do MiniApp Educação.',
               view: 'guest',
-              widgetId: 'widget-guest-overview',
-              widgetTitle: 'Explorar como convidado',
-              widgetDescription: 'Lista os MiniApps liberados e os destaques para visitantes.',
-            },
-            {
-              id: 'view-miniapps',
-              label: 'MiniApp Store',
-              description: 'Abra o catálogo completo com destaques das miniaplicações ativas.',
-              view: 'miniapps',
-              widgetId: 'widget-miniapp-store',
-              widgetTitle: 'Catálogo de MiniApps',
-              widgetDescription: 'Acompanhe novidades, destaques e jornadas do catálogo oficial.',
+              widgetId: 'widget-education-home',
+              widgetTitle: 'Painel Educação',
+              widgetDescription: 'Mensagem inicial e área base do MiniApp Educação.',
             },
           ],
         },
@@ -973,115 +900,30 @@ export function initAuthShell(options = {}) {
     }
   }
 
-  function renderGuestAccessPanel(root, options = {}) {
+  function renderGuestAccessPanel(root) {
     if (!(root instanceof HTMLElementRef)) {
       return;
     }
 
-    root.className = 'card view auth-view view--guest';
+    root.className = 'card view auth-view view--guest education-home';
     root.dataset.view = 'guest';
 
-    const highlightAppId = normalizeMiniAppId(options.highlightAppId);
-    let highlightedLink = null;
-    let highlightedApp = null;
-
     const panel = doc.createElement('section');
-    panel.className = 'auth-panel__form guest-panel';
-    panel.id = 'guestPanelContent';
+    panel.className = 'education-home__container';
+    panel.id = 'educationHomeContent';
 
     const title = doc.createElement('h2');
-    title.className = 'auth-panel__title guest-panel__title';
-    title.textContent = 'MiniApps gratuitos';
+    title.className = 'education-home__title';
+    title.textContent = 'Bem-vindo ao MiniApp da 5 horas, Educação.';
 
-    const intro = doc.createElement('p');
-    intro.className = 'auth-panel__intro guest-panel__intro';
-    intro.textContent =
-      'Explore uma seleção de MiniApps liberados sem cadastro. Você pode abrir e testar imediatamente.';
+    const description = doc.createElement('p');
+    description.className = 'education-home__description';
+    description.textContent =
+      'Aqui você encontrará os recursos educacionais conforme forem disponibilizados. Enquanto isso, personalize tema, idioma e tamanho do texto pelo menu do rodapé.';
 
-    const list = doc.createElement('ul');
-    list.className = 'guest-panel__list';
+    panel.append(title, description);
 
-    const snapshot = runtime.getMiniAppsSnapshot();
-    const guestApps = Array.isArray(snapshot) ? snapshot : [];
-
-    guestApps
-      .filter((app) => normalizeMiniAppId(app?.id))
-      .filter(
-        (app) =>
-          Array.isArray(app?.access) &&
-          app.access.includes('usuario') &&
-          String(app?.status ?? '').trim().toLowerCase() === 'active',
-      )
-      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', 'pt-BR'))
-      .forEach((app) => {
-        const item = doc.createElement('li');
-        item.className = 'guest-panel__item';
-
-        const appTitle = doc.createElement('strong');
-        appTitle.className = 'guest-panel__item-title';
-        appTitle.textContent = app?.name ?? 'MiniApp';
-
-        const description = doc.createElement('p');
-        description.className = 'guest-panel__item-description';
-        description.textContent =
-          typeof app?.description === 'string' && app.description.trim() !== ''
-            ? app.description.trim()
-            : 'MiniApp ativo disponível para convidados.';
-
-        const link = doc.createElement('a');
-        link.className = 'guest-panel__link';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-
-        const appId = normalizeMiniAppId(app?.id);
-        if (!appId) {
-          return;
-        }
-
-        item.dataset.appId = appId;
-        link.href = buildMiniAppDocPath(appId) || '#';
-        link.textContent = 'Abrir documentação do MiniApp';
-        link.title = `Ver detalhes do MiniApp ${appTitle.textContent}`;
-
-        if (appId === highlightAppId) {
-          item.classList.add('guest-panel__item--active');
-          highlightedLink = link;
-          highlightedApp = app;
-        }
-
-        item.append(appTitle, description, link);
-        list.append(item);
-      });
-
-    const note = doc.createElement('p');
-    note.className = 'guest-panel__note';
-    note.textContent =
-      'Para salvar progresso e sincronizar preferências entre dispositivos, crie uma conta quando estiver pronto.';
-
-    panel.append(title, intro, list, note);
     root.replaceChildren(panel);
-
-    function focusSafely(target, warningMessage = 'Não foi possível focar o elemento solicitado.') {
-      if (!target || typeof target.focus !== 'function') {
-        return;
-      }
-
-      runtime.queueTask(() => {
-        try {
-          target.focus();
-        } catch (error) {
-          console.warn(warningMessage, error);
-        }
-      });
-    }
-
-    if (highlightedLink) {
-      focusSafely(highlightedLink, 'Não foi possível focar o atalho solicitado.');
-
-      if (typeof options.onHighlight === 'function') {
-        options.onHighlight({ app: highlightedApp, link: highlightedLink, id: highlightAppId });
-      }
-    }
   }
 
   const VIEW_RENDERERS = {
@@ -1091,11 +933,7 @@ export function initAuthShell(options = {}) {
     },
     guest: {
       render: renderGuestAccessPanel,
-      hint: 'Conheça os MiniApps liberados para convidados sem precisar de credenciais.',
-    },
-    miniapps: {
-      render: runtime.renderMiniAppStore,
-      hint: 'Explore o catálogo completo de MiniApps e abra as documentações disponíveis.',
+      hint: 'Bem-vindo ao MiniApp Educação. Esta área será preenchida com os próximos módulos do produto.',
     },
     'account-dashboard': {
       render: runtime.renderAccountDashboard,
@@ -1105,8 +943,7 @@ export function initAuthShell(options = {}) {
 
   const FOOTER_VIEW_LABELS = {
     register: 'Criar uma nova conta',
-    guest: 'Explorar como convidado',
-    miniapps: 'MiniApp Store',
+    guest: 'MiniApp Educação',
     'account-dashboard': 'Painel da conta',
   };
 
@@ -1363,64 +1200,7 @@ export function initAuthShell(options = {}) {
     setActiveFooterMenuItem(alignWithView ? currentView : null);
   }
 
-  function renderFooterMiniAppItems(apps) {
-    if (!(footerMenuMiniAppsList instanceof HTMLElementRef)) {
-      return;
-    }
 
-    footerMenuMiniAppsList.replaceChildren();
-
-    const normalized = Array.isArray(apps)
-      ? apps
-          .filter(
-            (app) =>
-              app &&
-              Array.isArray(app.access) &&
-              app.access.includes('usuario') &&
-              String(app.status ?? '').trim().toLowerCase() === 'active',
-          )
-          .map((app) => ({
-            id: normalizeMiniAppId(app.id),
-            name: typeof app.name === 'string' && app.name.trim() ? app.name.trim() : 'MiniApp ativo',
-          }))
-          .filter((entry) => entry.id)
-          .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
-      : [];
-
-    if (ensureHtmlElement(doc, footerMenuMiniAppsTitle)) {
-      footerMenuMiniAppsTitle.hidden = normalized.length === 0;
-    }
-
-    if (ensureHtmlElement(doc, footerMenuMiniAppsEmpty)) {
-      footerMenuMiniAppsEmpty.hidden = normalized.length > 0;
-    }
-
-    if (ensureHtmlElement(doc, footerMenuMiniAppsList)) {
-      footerMenuMiniAppsList.hidden = normalized.length === 0;
-    }
-
-    if (ensureHtmlElement(doc, footerMenuMiniAppsDivider)) {
-      footerMenuMiniAppsDivider.hidden = normalized.length === 0;
-    }
-
-    if (normalized.length === 0) {
-      return;
-    }
-
-    const items = normalized.map((entry) => {
-      const listItem = doc.createElement('li');
-      const button = doc.createElement('button');
-      button.type = 'button';
-      button.className = 'auth-shell__menu-item auth-shell__menu-item--miniapp';
-      button.dataset.miniappId = entry.id;
-      button.textContent = entry.name;
-      button.title = `Abrir destaque para o MiniApp ${entry.name}`;
-      listItem.append(button);
-      return listItem;
-    });
-
-    footerMenuMiniAppsList.append(...items);
-  }
 
   function syncMenuToggleState(widgetId, isActive) {
     if (!(footerMenuPanel instanceof HTMLElementRef)) {
@@ -1470,23 +1250,14 @@ export function initAuthShell(options = {}) {
     }
 
     const fragment = doc.createDocumentFragment();
-    const appsSnapshot = runtime.getMiniAppsSnapshot();
 
     entries.forEach((entry) => {
       if (typeof entry.renderWidget === 'function') {
         try {
           const widgetElement = entry.renderWidget({
-            apps: appsSnapshot,
-            onOpenMiniApp(appId) {
-              const normalized = normalizeMiniAppId(appId);
-              if (!normalized) {
-                return;
-              }
-
-              renderAuthView('miniapps', {
-                shouldFocus: true,
-                viewProps: { highlightAppId: normalized },
-              });
+            apps: [],
+            onOpenMiniApp() {
+              renderAuthView('guest', { shouldFocus: true });
             },
           });
 
@@ -1583,7 +1354,6 @@ export function initAuthShell(options = {}) {
 
   function refreshFooterMenuItems() {
     renderFooterViewItems();
-    renderFooterMiniAppItems(runtime.getMiniAppsSnapshot());
   }
 
   if (ensureHtmlElement(doc, footerMenuButton)) {
@@ -1766,13 +1536,6 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    if (item.dataset.miniappId) {
-      closeFooterMenu();
-      renderAuthView('miniapps', {
-        shouldFocus: true,
-        viewProps: { highlightAppId },
-      });
-    }
   }
 
   if (ensureHtmlElement(doc, footerMenuPanel)) {
@@ -1874,14 +1637,7 @@ export function initAuthShell(options = {}) {
   refreshFooterMenuItems();
   renderWidgetBoard();
 
-  const unsubscribeMiniApps = runtime.subscribeMiniApps((apps) => {
-    renderFooterMiniAppItems(apps);
-    renderWidgetBoard();
-  });
-
-  if (typeof unsubscribeMiniApps === 'function') {
-    teardownCallbacks.push(unsubscribeMiniApps);
-  }
+  renderWidgetBoard();
 
   function focusFirstInteractiveElement(root) {
     if (!(root instanceof HTMLElementRef)) {
@@ -2093,30 +1849,6 @@ export function initAuthShell(options = {}) {
 
   setupPwaSupport();
 
-  const currentUrl = runtime.URL && win?.location?.href ? new runtime.URL(win.location.href) : null;
-  const requestedMiniApp = currentUrl ? normalizeMiniAppId(currentUrl.searchParams.get(APP_QUERY_PARAM)) : '';
-
-  if (requestedMiniApp) {
-    const redirected = openMiniAppShortcut(requestedMiniApp, {
-      window: win,
-      getMiniAppsSnapshot: runtime.getMiniAppsSnapshot,
-    });
-
-    if (!redirected) {
-      renderAuthView('miniapps', {
-        shouldFocus: true,
-        viewProps: {
-          highlightAppId: requestedMiniApp,
-          onHighlight({ app }) {
-            if (ensureHtmlElement(doc, statusHint) && app) {
-              statusHint.textContent = `MiniApp "${app.name}" destacado. Use o atalho para abrir a documentação oficial.`;
-            }
-          },
-        },
-      });
-    }
-  }
-
   return {
     destroy() {
       while (teardownCallbacks.length) {
@@ -2133,8 +1865,4 @@ export function initAuthShell(options = {}) {
 
 export default {
   initAuthShell,
-  normalizeMiniAppId,
-  buildMiniAppDocPath,
-  openMiniAppShortcut,
-  findMiniAppById,
 };

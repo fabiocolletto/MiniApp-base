@@ -7,7 +7,7 @@ A limpeza de 28/10/2025 consolidou o shell PWA na raiz e moveu todo o legado par
 | Componente | Antes | Depois |
 | --- | --- | --- |
 | Tela de autenticação | `app/`, `ui/`, `router/` | `index.html`, `styles/`, `scripts/views/` |
-| MiniApp Store legado | `scripts/views/miniapp-store.js` | Arquivado em `archive/2025-10-28/scripts/views/miniapp-store.js` |
+| MiniApp Store legado | `scripts/views/miniapp-store.js` | Arquivado em `archive/2025-10-28/scripts/views/miniapp-store.js` (recursos removidos na transição para o MiniApp Educação) |
 | Painéis admin/usuário | `scripts/views/{admin,user}.js` | Arquivo completo em `archive/2025-10-28/scripts/views/` |
 | Armazenamento de tarefas | `core/task-store.js` | `archive/2025-10-28/core/task-store.js` |
 
@@ -16,8 +16,8 @@ A limpeza de 28/10/2025 consolidou o shell PWA na raiz e moveu todo o legado par
 | Item | Antes | Depois |
 | --- | --- | --- |
 | Código e documentação legada | `MiniApps/` | `archive/2025-10-28/MiniApps/` |
-| Fichas ativas | – | `docs/miniapps/<slug>.md` |
-| Atalhos públicos | – | `public/icons/shortcut-*.svg` + `/?app=<slug>` |
+| Fichas ativas | – | Não aplicável (MiniApp Educação concentra todo o conteúdo no painel inicial) |
+| Atalhos públicos | – | Não aplicável (sem `/?app=<slug>` nem ícones dedicados) |
 
 ## Testes e ferramentas
 
