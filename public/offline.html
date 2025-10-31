@@ -38,74 +38,87 @@
     </main>
 
     <footer class="auth-shell__footer">
-      <nav class="auth-shell__footer-nav" aria-label="Menu principal">
+      <div class="auth-shell__footer-bar">
+        <nav class="auth-shell__footer-nav" aria-label="Menu principal">
+          <button
+            type="button"
+            class="auth-shell__menu-button"
+            aria-label="Menu principal indisponível offline"
+            title="Menu principal indisponível offline"
+            aria-haspopup="true"
+            aria-expanded="false"
+            disabled
+            aria-disabled="true"
+          >
+            <span class="auth-shell__menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+        </nav>
+
+        <small class="auth-shell__footer-text">
+          <picture
+            class="auth-shell__footer-logo"
+            aria-hidden="true"
+          >
+            <source
+              srcset="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Dark-Transparente-500x500px.webp"
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
+              width="40"
+              height="40"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <span>5 Horas • MiniApps</span>
+        </small>
+
         <button
           type="button"
-          class="auth-shell__menu-button"
-          aria-label="Menu principal indisponível offline"
-          title="Menu principal indisponível offline"
-          aria-haspopup="true"
+          class="auth-shell__footer-toggle"
+          data-footer-toggle
+          aria-controls="authShellFooterExtra"
           aria-expanded="false"
-          disabled
-          aria-disabled="true"
+          aria-label="Mostrar detalhes do rodapé"
         >
-          <span class="auth-shell__menu-icon" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
+          <svg
+            class="auth-shell__footer-toggle-icon"
+            viewBox="0 0 20 20"
+            role="presentation"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 8.25L10 12.75L15 8.25"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
         </button>
-      </nav>
+      </div>
 
-      <button
-        type="button"
-        class="auth-shell__footer-toggle"
-        data-footer-toggle
-        aria-controls="authShellFooterExtra"
-        aria-expanded="false"
-        aria-label="Mostrar detalhes do rodapé"
-      >
-        <svg
-          class="auth-shell__footer-toggle-icon"
-          viewBox="0 0 20 20"
-          role="presentation"
-          aria-hidden="true"
-        >
-          <path
-            d="M5 8.25L10 12.75L15 8.25"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-
-      <small class="auth-shell__footer-text">
-        <picture
-          class="auth-shell__footer-logo"
-          aria-hidden="true"
-        >
-          <source
-            srcset="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Dark-Transparente-500x500px.webp"
-            media="(prefers-color-scheme: dark)"
-          />
-          <img
-            src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-            width="40"
-            height="40"
-            alt=""
-            loading="lazy"
-            decoding="async"
-          />
-        </picture>
-        <span>5 Horas • MiniApps</span>
-        <span data-footer-extra id="authShellFooterExtra">
-          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-          <span>Offline</span>
-        </span>
-      </small>
+      <div data-footer-extra id="authShellFooterExtra">
+        <div class="auth-shell__footer-meta" aria-label="Informações do rodapé">
+          <span class="auth-shell__footer-meta-item">
+            <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+            <span>Offline</span>
+          </span>
+        </div>
+        <div class="auth-shell__footer-quicklinks" data-footer-quicklinks>
+          <p class="auth-shell__footer-empty auth-widget-board__empty">
+            Atalhos e widgets ficam indisponíveis sem conexão. Reconecte-se para acessá-los novamente.
+          </p>
+          <div class="auth-shell__footer-shortcuts" data-footer-shortcuts></div>
+        </div>
+      </div>
     </footer>
 
     <script>

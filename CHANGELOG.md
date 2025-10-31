@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Rodapé expandido mantém ícone, dados legais e controles alinhados na mesma barra, liberando a faixa inferior para distribuir atalhos e metadados em largura total.
+- Rodapé expandido passa a revelar painel multilinhas com transição suave, reservando um container para atalhos rápidos e links adicionais no futuro.
 - Corrigido o estado expandido do widget "MiniApps gratuitos" eliminando regras que mantinham o container esticado e deixavam espaços vazios mesmo após a remoção das alturas mínimas.
 - Ajustadas as alturas mínimas do painel "MiniApps gratuitos" para evitar espaços vazios acima e abaixo do conteúdo quando expandido.
 - Painel "MiniApps gratuitos" passa a iniciar como janela flutuante no canto superior direito e expande sob demanda para ocupar todo o painel de convidado.
