@@ -15,6 +15,8 @@ import { createMiniAppCatalogWidget } from '../views/shared/miniapp-catalog-widg
 import {
   subscribeUserPreferences as subscribeUserPreferencesDefault,
   getFontScaleLabel as getFontScaleLabelDefault,
+  getCurrentPreferences as getCurrentPreferencesDefault,
+  updateUserPreferences as updateUserPreferencesDefault,
 } from '../preferences/user-preferences.js';
 
 const APP_QUERY_PARAM = 'app';
@@ -139,6 +141,8 @@ function normalizeOptions(options) {
     subscribeMiniApps: runtime.subscribeMiniApps ?? subscribeMiniAppsDefault,
     subscribeUserPreferences: runtime.subscribeUserPreferences ?? subscribeUserPreferencesDefault,
     getFontScaleLabel: runtime.getFontScaleLabel ?? getFontScaleLabelDefault,
+    getCurrentPreferences: runtime.getCurrentPreferences ?? getCurrentPreferencesDefault,
+    updateUserPreferences: runtime.updateUserPreferences ?? updateUserPreferencesDefault,
     fetch: runtime.fetch ?? win?.fetch ?? (typeof fetch === 'function' ? fetch : null),
     URL: runtime.URL ?? win?.URL ?? (typeof URL !== 'undefined' ? URL : null),
   };
@@ -226,8 +230,10 @@ export function initAuthShell(options = {}) {
   const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
   const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
   const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
+  const footerMenuThemeButton = footerMenuPanel?.querySelector('[data-action="preferences-theme"]');
   const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
   const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
+  const footerMenuLanguageButton = footerMenuPanel?.querySelector('[data-action="preferences-language"]');
   const widgetBoard = doc.querySelector('[data-widget-board]');
   const widgetGrid = widgetBoard?.querySelector('[data-widget-grid]');
   const widgetEmptyState = doc.querySelector('[data-widget-empty]');
@@ -241,8 +247,48 @@ export function initAuthShell(options = {}) {
     collapse: 'Ocultar detalhes do rodapé',
   };
 
+  const THEME_SEQUENCE = ['auto', 'light', 'dark'];
+  const THEME_LABELS = new Map([
+    ['auto', 'Automático'],
+    ['light', 'Claro'],
+    ['dark', 'Escuro'],
+  ]);
+  const LANGUAGE_SEQUENCE = ['pt-BR', 'en', 'es'];
+  const LANGUAGE_LABELS = new Map([
+    ['pt-BR', 'Português (Brasil)'],
+    ['en', 'Inglês'],
+    ['es', 'Espanhol'],
+  ]);
+  const FONT_SCALE_SEQUENCE = [-2, -1, 0, 1, 2];
+
   const fallbackFontScaleLabel =
     typeof runtime.getFontScaleLabel === 'function' ? runtime.getFontScaleLabel(0) : 'Padrão';
+
+  function getNextValue(current, sequence) {
+    if (!Array.isArray(sequence) || sequence.length === 0) {
+      return current;
+    }
+
+    const currentIndex = sequence.indexOf(current);
+    if (currentIndex === -1) {
+      return sequence[0];
+    }
+
+    const nextIndex = (currentIndex + 1) % sequence.length;
+    return sequence[nextIndex];
+  }
+
+  function updateThemeQuickAction(themeValue = 'auto') {
+    if (!ensureHtmlElement(doc, footerMenuThemeButton)) {
+      return;
+    }
+
+    const baseLabel = 'Escolher tema';
+    const themeLabel = THEME_LABELS.get(themeValue) ?? THEME_LABELS.get('auto');
+    const ariaLabel = themeLabel ? `${baseLabel}. Tema atual: ${themeLabel}` : baseLabel;
+    footerMenuThemeButton.setAttribute('aria-label', ariaLabel);
+    footerMenuThemeButton.setAttribute('title', themeLabel ? `${baseLabel} (Tema atual: ${themeLabel})` : baseLabel);
+  }
 
   function updateFontScaleQuickAction(fontScaleValue = undefined) {
     const label =
@@ -267,7 +313,21 @@ export function initAuthShell(options = {}) {
     }
   }
 
+  function updateLanguageQuickAction(langValue = 'pt-BR') {
+    if (!ensureHtmlElement(doc, footerMenuLanguageButton)) {
+      return;
+    }
+
+    const baseLabel = 'Escolher idioma';
+    const languageLabel = LANGUAGE_LABELS.get(langValue) ?? LANGUAGE_LABELS.get('pt-BR');
+    const ariaLabel = languageLabel ? `${baseLabel}. Idioma atual: ${languageLabel}` : baseLabel;
+    footerMenuLanguageButton.setAttribute('aria-label', ariaLabel);
+    footerMenuLanguageButton.setAttribute('title', languageLabel ? `${baseLabel} (Idioma atual: ${languageLabel})` : baseLabel);
+  }
+
+  updateThemeQuickAction();
   updateFontScaleQuickAction();
+  updateLanguageQuickAction();
 
   const FOOTER_MENU_STRUCTURE = [
     {
@@ -408,9 +468,13 @@ export function initAuthShell(options = {}) {
   if (typeof runtime.subscribeUserPreferences === 'function') {
     const unsubscribePreferences = runtime.subscribeUserPreferences((prefsSnapshot) => {
       if (prefsSnapshot && typeof prefsSnapshot === 'object') {
+        updateThemeQuickAction(prefsSnapshot.theme);
         updateFontScaleQuickAction(prefsSnapshot.fontScale);
+        updateLanguageQuickAction(prefsSnapshot.lang);
       } else {
+        updateThemeQuickAction();
         updateFontScaleQuickAction();
+        updateLanguageQuickAction();
       }
     });
 
@@ -1765,6 +1829,60 @@ export function initAuthShell(options = {}) {
     const viewName = item.dataset.view;
     const highlightAppId = item.dataset.highlightAppId || item.dataset.miniappId;
     const action = item.dataset.action;
+
+    if (action === 'preferences-theme') {
+      closeFooterMenu();
+      const snapshot =
+        typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
+      const currentTheme = snapshot?.theme ?? 'auto';
+      const nextTheme = getNextValue(currentTheme, THEME_SEQUENCE);
+      const updatePromise =
+        typeof runtime.updateUserPreferences === 'function'
+          ? runtime.updateUserPreferences({ theme: nextTheme }, { window: win, document: doc })
+          : null;
+      if (updatePromise && typeof updatePromise.catch === 'function') {
+        updatePromise.catch((error) => {
+          console.error('Preferências: falha ao alternar tema pelo atalho rápido.', error);
+        });
+      }
+      return;
+    }
+
+    if (action === 'preferences-font') {
+      closeFooterMenu();
+      const snapshot =
+        typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
+      const currentFontScale = snapshot?.fontScale ?? 0;
+      const nextFontScale = getNextValue(currentFontScale, FONT_SCALE_SEQUENCE);
+      const updatePromise =
+        typeof runtime.updateUserPreferences === 'function'
+          ? runtime.updateUserPreferences({ fontScale: nextFontScale }, { window: win, document: doc })
+          : null;
+      if (updatePromise && typeof updatePromise.catch === 'function') {
+        updatePromise.catch((error) => {
+          console.error('Preferências: falha ao alternar tamanho de fonte pelo atalho rápido.', error);
+        });
+      }
+      return;
+    }
+
+    if (action === 'preferences-language') {
+      closeFooterMenu();
+      const snapshot =
+        typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
+      const currentLanguage = snapshot?.lang ?? 'pt-BR';
+      const nextLanguage = getNextValue(currentLanguage, LANGUAGE_SEQUENCE);
+      const updatePromise =
+        typeof runtime.updateUserPreferences === 'function'
+          ? runtime.updateUserPreferences({ lang: nextLanguage }, { window: win, document: doc })
+          : null;
+      if (updatePromise && typeof updatePromise.catch === 'function') {
+        updatePromise.catch((error) => {
+          console.error('Preferências: falha ao alternar idioma pelo atalho rápido.', error);
+        });
+      }
+      return;
+    }
 
     if (viewName) {
       closeFooterMenu();

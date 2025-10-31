@@ -294,7 +294,28 @@ function applyFontScale(prefs, { doc, win }) {
 
   const normalized = sanitizeFontScale(prefs.fontScale);
   const scale = FONT_SCALE_MAP.get(normalized) ?? FONT_SCALE_MAP.get(DEFAULTS.fontScale);
-  root.style.setProperty('--ac-font-scale', String(scale));
+  const token = '--ac-font-scale';
+  const style = root.style;
+
+  if (style && typeof style.setProperty === 'function') {
+    style.setProperty(token, String(scale));
+    return;
+  }
+
+  if (style && typeof style === 'object') {
+    style[token] = String(scale);
+    return;
+  }
+
+  if (typeof root.getAttribute === 'function' && typeof root.setAttribute === 'function') {
+    const existing = root.getAttribute('style') ?? '';
+    const filtered = existing
+      .split(';')
+      .map((entry) => entry.trim())
+      .filter((entry) => entry && !entry.startsWith(`${token}:`));
+    filtered.push(`${token}: ${String(scale)}`);
+    root.setAttribute('style', `${filtered.join('; ')};`);
+  }
 }
 
 function applyDensity(prefs, { doc, win }) {
