@@ -195,7 +195,7 @@ test('alterna para a tela de cadastro ao clicar no botão correspondente', async
   }
 });
 
-test('abre o menu do rodapé e mantém o foco no primeiro item', async () => {
+test('abre o menu do rodapé exibindo atalhos rápidos de tema e idioma', async () => {
   const env = setupShell();
   try {
     const menuButton = env.document.querySelector('.auth-shell__menu-button');
@@ -209,75 +209,43 @@ test('abre o menu do rodapé e mantém o foco no primeiro item', async () => {
     assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
     assert.equal(panel.hidden, false);
 
-    const firstItem = panel.querySelector('.auth-shell__menu-item');
-    assert.ok(firstItem);
-    assert.strictEqual(env.document.activeElement, firstItem);
+    const items = panel.querySelectorAll('.auth-shell__menu-item');
+    assert.equal(items.length, 3);
+
+    const [themeButton, languageButton, settingsButton] = items;
+    assert.ok(themeButton);
+    assert.equal(themeButton.dataset.action, 'preferences-theme');
+    assert.equal(themeButton.dataset.prefFocus, 'theme');
+    assert.ok(languageButton);
+    assert.equal(languageButton.dataset.action, 'preferences-language');
+    assert.equal(languageButton.dataset.prefFocus, 'lang');
+    assert.ok(settingsButton);
+    assert.equal(settingsButton.dataset.action, 'preferences');
+    assert.strictEqual(env.document.activeElement, themeButton);
+
+    themeButton.click();
+
+    await env.flushAsync();
+
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
+    assert.equal(panel.hidden, true);
   } finally {
     teardownShell(env);
   }
 });
 
-test('ativar widgets pelo menu exibe cartões no painel principal', async () => {
+test('menu não exibe toggles de widgets ou atalhos de MiniApps', async () => {
   const env = setupShell();
   try {
-    const board = env.document.querySelector('[data-widget-board]');
-    assert.ok(board);
-
     const menuButton = env.document.querySelector('.auth-shell__menu-button');
     assert.ok(menuButton);
     menuButton.click();
 
-    const toggle = env.document.querySelector(
-      '.auth-shell__menu-toggle-input[data-widget-toggle="widget-guest-overview"]',
-    );
-    assert.ok(toggle);
-    toggle.checked = true;
-    toggle.dispatchEvent(new env.window.Event('change', { bubbles: true }));
+    const toggles = env.document.querySelectorAll('.auth-shell__menu-toggle-input');
+    assert.equal(toggles.length, 0);
 
-    const widget = env.document.querySelector('[data-widget="widget-guest-overview"]');
-    assert.ok(widget);
-
-    const removeButton = widget.querySelector('[data-widget-action="remove"]');
-    assert.ok(removeButton);
-    removeButton.click();
-
-    const widgetAfterRemoval = env.document.querySelector('[data-widget="widget-guest-overview"]');
-    assert.equal(widgetAfterRemoval, null);
-  } finally {
-    teardownShell(env);
-  }
-});
-
-test('selecionar um MiniApp no menu abre a MiniApp Store destacando o item', async () => {
-  const env = setupShell();
-  try {
-    const menuButton = env.document.querySelector('.auth-shell__menu-button');
-    menuButton.click();
-
-    const miniAppTrigger = env.document.querySelector('#authFooterMenu [data-miniapp-id="exam-planner"]');
-    assert.ok(miniAppTrigger);
-    miniAppTrigger.click();
-
-    await env.flushAsync();
-
-    const viewRoot = env.document.getElementById('authViewRoot');
-    assert.equal(viewRoot.dataset.view, 'miniapps');
-
-    const highlight = env.document.querySelector('.miniapp-store__item--highlight');
-    assert.ok(highlight);
-    assert.equal(highlight.dataset.appId, 'exam-planner');
-
-    const conversationItems = env.document.querySelectorAll('.chat-shell__conversation-item');
-    assert.equal(conversationItems.length, 2);
-
-    const activeConversation = env.document.querySelector('.chat-shell__conversation-item.is-active');
-    assert.ok(activeConversation);
-    const activeButton = activeConversation.querySelector('.chat-shell__conversation-button');
-    assert.ok(activeButton);
-    assert.equal(activeButton.dataset.appId, 'exam-planner');
-
-    const composer = env.document.querySelector('.chat-shell__composer');
-    assert.ok(composer);
+    const miniAppTriggers = env.document.querySelectorAll('#authFooterMenu [data-miniapp-id]');
+    assert.equal(miniAppTriggers.length, 0);
   } finally {
     teardownShell(env);
   }

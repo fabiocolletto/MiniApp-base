@@ -59,6 +59,19 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
 - Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
 
+## [3.1.3] - 2025-10-31T09:26:50-03:00 (BRT)
+- Menu principal agora apresenta cabeçalho visível da seção de Configurações e atalhos rápidos para escolher tema e idioma diretamente do overlay.
+- Atalhos de configurações rápidas direcionam o foco para o controle correspondente ao abrir o painel completo de preferências.
+- Versão do aplicativo atualizada para 3.1.3 (`package.json`, `public/meta/app-version.json` e `scripts/data/system-release-source.js`) refletindo os novos atalhos de personalização.
+
+## [3.1.2] - 2025-10-31T09:12:07-03:00 (BRT)
+- Menu principal do rodapé passa a exibir apenas um atalho em ícone para as Configurações, removendo as listas de painéis, widgets e MiniApps do overlay.
+- Versão do aplicativo atualizada para 3.1.2 (`package.json`, `public/meta/app-version.json` e `scripts/data/system-release-source.js`) refletindo o novo comportamento do menu simplificado.
+
+## [3.1.1] - 2025-10-31T08:57:12-03:00 (BRT)
+- Ajustada a janela do menu principal para aproveitar até 92 vh (ou 40 rem) nas viewports compactas e até 70 vh (ou 42 rem) em desktops, exibindo o conteúdo sem exigir barras de rolagem desnecessárias.
+- Versão do aplicativo sincronizada para 3.1.1 nas fontes públicas (`package.json`, `public/meta/app-version.json` e `scripts/data/system-release-source.js`) refletindo o ajuste visual.
+
 ## [3.1.0] - 2025-10-30T12:15:26-03:00 (BRT)
 - Menu principal reorganizado em categorias e tipos que espelham as jornadas do shell, com descrições contextuais e toggles para
   fixar widgets correspondentes.
