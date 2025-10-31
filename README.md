@@ -90,6 +90,12 @@ const drafts = await listSurveys({ status: 'draft' });
 3. Acesse `http://localhost:<porta>/index.html` para validar a interface.
 4. Execute `npm test` para rodar a suíte automatizada que cobre as interações do shell (uma simulação de DOM já está inclusa no repositório).
 
+### Validação visual obrigatória
+
+- Após aplicar qualquer alteração aprovada para commit, execute a interface localmente e capture **dois screenshots** do shell: um em modo paisagem e outro em modo retrato.
+- Utilize a simulação de dispositivo **Samsung Galaxy Tab S9** nas DevTools do navegador para ambos os registros.
+- Anexe as imagens geradas ao relatório ou pull request correspondente e referencie os caminhos no resumo final da entrega.
+
 ### Testes manuais recomendados
 
 - **Fallback offline**: com o app aberto no navegador, abra as DevTools (`Ctrl+Shift+I` / `Cmd+Option+I`), ative o modo "Offline" na aba **Network** e recarregue a página. O shell deve exibir `public/offline.html` com o aviso de falta de conexão. Ao restaurar a conexão e atualizar novamente, o painel de autenticação volta a aparecer.

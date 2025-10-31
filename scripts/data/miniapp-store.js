@@ -12,6 +12,12 @@ export const MINI_APP_STATUS_OPTIONS = [
   { value: 'active', label: 'Em uso' },
 ];
 
+export const MINI_APP_BILLING_OPTIONS = [
+  { value: 'free', label: 'Grátis' },
+  { value: 'subscription', label: 'Assinatura' },
+  { value: 'product', label: 'Produto' },
+];
+
 export const ACCESS_LEVEL_OPTIONS = [
   { value: 'administrador', label: 'Administradores' },
   { value: 'colaborador', label: 'Colaboradores' },
@@ -28,6 +34,7 @@ const DEFAULT_MINI_APPS = [
     status: 'active',
     updatedAt: '2025-10-25T15:03:00-03:00',
     access: ['administrador', 'colaborador', 'usuario'],
+    billing: 'subscription',
     version: '0.1.234',
     downloads: 3280,
     favorites: 2840,
@@ -45,6 +52,7 @@ const DEFAULT_MINI_APPS = [
     status: 'active',
     updatedAt: '2025-10-26T15:10:00-03:00',
     access: ['administrador', 'colaborador', 'usuario'],
+    billing: 'free',
     version: '0.1.254',
     downloads: 1620,
     favorites: 1180,
@@ -65,6 +73,10 @@ let miniApps = null;
 const MINI_APP_STATUS_LABELS = new Map(
   MINI_APP_STATUS_OPTIONS.map((option) => [option.value, option.label]),
 );
+const MINI_APP_BILLING_LABELS = new Map(
+  MINI_APP_BILLING_OPTIONS.map((option) => [option.value, option.label]),
+);
+const MINI_APP_BILLING_VALUES = new Set(MINI_APP_BILLING_OPTIONS.map((option) => option.value));
 
 let suppressIndexedDBSync = false;
 let hydrateCatalogPromise = null;
@@ -206,6 +218,17 @@ function normalizePositiveInteger(value, fallback = 0) {
   return fallback;
 }
 
+function normalizeMiniAppBilling(value) {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (MINI_APP_BILLING_VALUES.has(normalized)) {
+      return normalized;
+    }
+  }
+
+  return 'free';
+}
+
 function normalizeReleaseDate(value) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value.toISOString();
@@ -293,6 +316,7 @@ function normalizeMiniAppEntry(app) {
   const featuredCategories = normalizeFeaturedCategories(app.featuredCategories);
   const icon = normalizeMiniAppIcon(app.icon);
   const route = typeof app.route === 'string' && app.route.trim() ? app.route.trim() : `/miniapps/${id}`;
+  const billing = normalizeMiniAppBilling(app.billing);
 
   return {
     id,
@@ -309,6 +333,8 @@ function normalizeMiniAppEntry(app) {
     featuredCategories,
     icon,
     route,
+    billing,
+    billingLabel: MINI_APP_BILLING_LABELS.get(billing) ?? 'Grátis',
   };
 }
 
@@ -330,6 +356,8 @@ function cloneMiniAppEntry(entry) {
       : [],
     icon: entry.icon ?? null,
     route: entry.route,
+    billing: entry.billing,
+    billingLabel: entry.billingLabel,
   };
 }
 

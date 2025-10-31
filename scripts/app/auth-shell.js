@@ -11,9 +11,11 @@ import {
   getMiniAppsSnapshot as getMiniAppsSnapshotDefault,
   subscribeMiniApps as subscribeMiniAppsDefault,
 } from '../data/miniapp-store.js';
+import { createMiniAppCatalogWidget } from '../views/shared/miniapp-catalog-widget.js';
 
 const APP_QUERY_PARAM = 'app';
 const VIEW_CLEANUP_KEY = '__viewCleanup';
+const FLOATING_CATALOG_WIDGET_ID = 'widget-floating-miniapp-catalog';
 
 export const normalizeMiniAppId = normalizeMiniAppIdFromStore;
 export const buildMiniAppDocPath = buildMiniAppDocPathFromStore;
@@ -334,6 +336,25 @@ export function initAuthShell(options = {}) {
     });
   });
 
+  FOOTER_WIDGET_LIBRARY.set(FLOATING_CATALOG_WIDGET_ID, {
+    id: FLOATING_CATALOG_WIDGET_ID,
+    label: 'MiniApps disponíveis',
+    title: 'MiniApps disponíveis',
+    description: 'Catálogo flutuante com filtros rápidos por modalidade de acesso.',
+    categoryId: 'miniapps',
+    categoryLabel: 'MiniApps',
+    typeId: 'catalog',
+    typeLabel: 'Catálogo',
+    renderWidget({ apps, onOpenMiniApp }) {
+      return createMiniAppCatalogWidget({
+        doc,
+        widgetId: FLOATING_CATALOG_WIDGET_ID,
+        apps,
+        onOpenMiniApp,
+      });
+    },
+  });
+
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
   }
@@ -343,7 +364,8 @@ export function initAuthShell(options = {}) {
   }
 
   const teardownCallbacks = [];
-  const activeWidgetIds = new Set();
+  const alwaysActiveWidgetIds = new Set([FLOATING_CATALOG_WIDGET_ID]);
+  const activeWidgetIds = new Set(alwaysActiveWidgetIds);
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
 
@@ -1457,8 +1479,39 @@ export function initAuthShell(options = {}) {
     }
 
     const fragment = doc.createDocumentFragment();
+    const appsSnapshot = runtime.getMiniAppsSnapshot();
 
     entries.forEach((entry) => {
+      if (typeof entry.renderWidget === 'function') {
+        try {
+          const widgetElement = entry.renderWidget({
+            apps: appsSnapshot,
+            onOpenMiniApp(appId) {
+              const normalized = normalizeMiniAppId(appId);
+              if (!normalized) {
+                return;
+              }
+
+              renderAuthView('miniapps', {
+                shouldFocus: true,
+                viewProps: { highlightAppId: normalized },
+              });
+            },
+          });
+
+          if (widgetElement) {
+            if (NodeRef && widgetElement instanceof NodeRef) {
+              fragment.append(widgetElement);
+            } else {
+              fragment.append(widgetElement);
+            }
+          }
+        } catch (error) {
+          console.error('Falha ao renderizar widget personalizado.', error);
+        }
+        return;
+      }
+
       const card = doc.createElement('article');
       card.className = 'auth-widget';
       card.dataset.widget = entry.id;
@@ -1522,6 +1575,10 @@ export function initAuthShell(options = {}) {
 
   function deactivateWidget(widgetId) {
     if (!widgetId || !FOOTER_WIDGET_LIBRARY.has(widgetId)) {
+      return;
+    }
+
+    if (alwaysActiveWidgetIds.has(widgetId)) {
       return;
     }
 
@@ -1773,6 +1830,7 @@ export function initAuthShell(options = {}) {
 
   const unsubscribeMiniApps = runtime.subscribeMiniApps((apps) => {
     renderFooterMiniAppItems(apps);
+    renderWidgetBoard();
   });
 
   if (typeof unsubscribeMiniApps === 'function') {

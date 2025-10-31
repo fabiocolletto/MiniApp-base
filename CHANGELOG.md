@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Documentados no `AGENTS.md` e no `README.md` os procedimentos obrigatórios de validação visual com screenshots em formato paisagem e retrato do Samsung Galaxy Tab S9.
+- Painel principal inicia com um widget flutuante listando todos os MiniApps e filtros rápidos para modalidades grátis, assinatura e produtos.
 - Rodapé expandido mantém ícone, dados legais e controles alinhados na mesma barra, liberando a faixa inferior para distribuir atalhos e metadados em largura total.
 - Rodapé expandido passa a revelar painel multilinhas com transição suave, reservando um container para atalhos rápidos e links adicionais no futuro.
 - Corrigido o estado expandido do widget "MiniApps gratuitos" eliminando regras que mantinham o container esticado e deixavam espaços vazios mesmo após a remoção das alturas mínimas.

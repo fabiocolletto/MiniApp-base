@@ -15,6 +15,9 @@
   dentro dela e mantenha todo o código, assets e documentação do trabalho em andamento restritos a esse local até que o
   usuário solicite explicitamente a integração ao aplicativo principal. Somente após essa autorização mova ou copie os
   artefatos para suas pastas definitivas.
+- Após qualquer alteração aprovada para commit, realize obrigatoriamente uma validação visual capturando **dois screenshots**
+  do shell em execução no navegador: um em modo paisagem e outro em modo retrato, ambos simulando o tablet **Samsung Galaxy Tab S9**.
+  Anexe as imagens aos relatórios/PRs e inclua os caminhos no resumo final.
 
 ## Requisitos do Aplicativo
 - O aplicativo deve ser responsivo, entregando uma experiência consistente em diferentes tamanhos de tela.
