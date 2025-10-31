@@ -89,23 +89,9 @@
           Ative widgets pelo menu para fixar aqui os painéis e atalhos que mais utiliza.
         </p>
       </header>
-      <p class="auth-widget-board__empty" data-widget-empty>
-        Nenhum widget ativo no momento. Abra o menu e selecione quais deseja exibir no painel principal.
-      </p>
       <div class="auth-widget-board__grid" data-widget-grid hidden></div>
     </section>
   </main>
-
-  <button
-    id="pwaInstallFab"
-    class="button button--primary pwa-install-fab"
-    type="button"
-    hidden
-    aria-label="Instalar o aplicativo"
-    data-i18n="pwa.install"
-  >
-    Instalar aplicativo
-  </button>
 
   <footer class="auth-shell__footer">
     <nav class="auth-shell__footer-nav" aria-label="Menu principal">
@@ -116,13 +102,13 @@
         aria-haspopup="true"
         aria-controls="authFooterMenu"
         aria-expanded="false"
+        title="Abrir menu principal"
       >
         <span class="auth-shell__menu-icon" aria-hidden="true">
           <span></span>
           <span></span>
           <span></span>
         </span>
-        <span class="sr-only" data-menu-button-label>Menu principal</span>
       </button>
     </nav>
 
@@ -171,6 +157,13 @@
       </picture>
       <span>© <span data-current-year></span> 5 Horas</span>
       <span data-footer-extra id="authShellFooterExtra">
+        <span
+          class="auth-shell__footer-empty auth-widget-board__empty"
+          data-widget-empty
+          hidden
+        >
+          Nenhum widget ativo no momento. Abra o menu e selecione quais deseja exibir no painel principal.
+        </span>
         <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
         <span>MiniApps</span>
         <span
@@ -217,6 +210,16 @@
         Nenhum MiniApp ativo disponível no momento.
       </p>
       <ul class="auth-shell__menu-list" data-menu-group="miniapps"></ul>
+      <button
+        id="pwaInstallFab"
+        class="auth-shell__menu-item pwa-install-fab"
+        type="button"
+        hidden
+        aria-label="Instalar o aplicativo"
+        data-i18n="pwa.install"
+      >
+        Instalar aplicativo
+      </button>
     </div>
   </div>
 
