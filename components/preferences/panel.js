@@ -17,6 +17,7 @@ let docRef;
 let winRef;
 let resourcesLoaded = false;
 let panelInitialized = false;
+let pendingInitialFocus = null;
 
 function resolveWindow(customWindow) {
   if (customWindow && typeof customWindow === 'object') {
@@ -270,6 +271,46 @@ function updateFontScaleLabel(value) {
   }
 }
 
+function focusPreferenceControl(target) {
+  if (!formElement || !target) {
+    return false;
+  }
+
+  const ownerDocument = formElement.ownerDocument;
+  const HTMLElementRef = ownerDocument?.defaultView?.HTMLElement ?? (typeof HTMLElement !== 'undefined' ? HTMLElement : null);
+
+  let focusElement = null;
+
+  if (target === 'theme') {
+    const inputs = Array.from(formElement.querySelectorAll('input[name="theme"]'));
+    focusElement = inputs.find((input) => input.checked) ?? inputs[0] ?? null;
+  } else if (target === 'lang' || target === 'language') {
+    focusElement = formElement.querySelector('select[name="lang"]');
+  }
+
+  if (!focusElement) {
+    return false;
+  }
+
+  if (HTMLElementRef && !(focusElement instanceof HTMLElementRef)) {
+    return false;
+  }
+
+  try {
+    focusElement.focus({ preventScroll: true });
+  } catch (error) {
+    focusElement.focus();
+  }
+
+  const InputRef = ownerDocument?.defaultView?.HTMLInputElement ?? (typeof HTMLInputElement !== 'undefined' ? HTMLInputElement : null);
+
+  if (InputRef && focusElement instanceof InputRef && typeof focusElement.select === 'function') {
+    focusElement.select();
+  }
+
+  return true;
+}
+
 function populateForm(prefs) {
   if (!formElement) {
     return;
@@ -298,6 +339,12 @@ function populateForm(prefs) {
   if (reduceCheckbox) {
     reduceCheckbox.checked = reduceMotion === true;
   }
+
+  if (pendingInitialFocus) {
+    if (focusPreferenceControl(pendingInitialFocus)) {
+      pendingInitialFocus = null;
+    }
+  }
 }
 
 function restoreFocus() {
@@ -318,6 +365,9 @@ export async function openPreferencesPanel(options = {}) {
   if (!docRef) {
     throw new Error('Documento não disponível para abrir o painel de preferências.');
   }
+
+  const focusTarget = options.focusTarget ?? options.focus ?? null;
+  pendingInitialFocus = focusTarget;
 
   ensureStyles(docRef);
   await ensureTemplate(docRef);
@@ -342,6 +392,14 @@ export async function openPreferencesPanel(options = {}) {
       panelElement.focus();
     }
   }
+
+  if (pendingInitialFocus) {
+    queueMicrotask(() => {
+      if (pendingInitialFocus && focusPreferenceControl(pendingInitialFocus)) {
+        pendingInitialFocus = null;
+      }
+    });
+  }
 }
 
 export function closePreferencesPanel() {
@@ -353,4 +411,5 @@ export function closePreferencesPanel() {
   docRef?.body?.classList.remove('preferences-panel-open');
   detachSubscription();
   restoreFocus();
+  pendingInitialFocus = null;
 }

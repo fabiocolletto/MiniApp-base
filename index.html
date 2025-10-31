@@ -204,35 +204,71 @@
       aria-labelledby="authFooterMenuTitle"
       hidden
     >
-      <p id="authFooterMenuTitle" class="auth-shell__menu-title">Menu principal</p>
-      <nav
-        class="auth-shell__menu-categories"
-        aria-label="Categorias de painéis"
-        data-menu-categories
-      ></nav>
-      <ul class="auth-shell__menu-list" data-menu-group="views"></ul>
-      <div class="auth-shell__menu-divider" role="presentation" aria-hidden="true"></div>
-      <p
-        id="authFooterMiniAppsTitle"
-        class="auth-shell__menu-section-title"
-        data-menu-title="miniapps"
-        hidden
-      >
-        MiniApps ativos
-      </p>
-      <p class="auth-shell__menu-empty" data-menu-empty="miniapps" hidden>
-        Nenhum MiniApp ativo disponível no momento.
-      </p>
-      <ul class="auth-shell__menu-list" data-menu-group="miniapps"></ul>
+      <div class="auth-shell__menu-header">
+        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Configurações</p>
+        <p class="auth-shell__menu-caption">Personalize a experiência do MiniApp.</p>
+      </div>
+      <div class="auth-shell__menu-actions" role="group" aria-label="Configurações rápidas">
+        <button
+          type="button"
+          class="auth-shell__menu-item auth-shell__menu-item--quick"
+          data-action="preferences-theme"
+          data-pref-focus="theme"
+          aria-label="Escolher tema"
+          title="Escolher tema"
+        >
+          <span class="auth-shell__menu-item-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+              <path
+                d="M12 4.75a.75.75 0 01.75-.75 6.5 6.5 0 016.5 6.5.75.75 0 01-.75.75A6.5 6.5 0 0112.75 5.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zM12 2.25a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0112 2.25zm0 17.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm9-7.75a.75.75 0 01.75.75h-1a.75.75 0 010-1.5h1a.75.75 0 01-.75.75zm-17.5 0a.75.75 0 01.75-.75h1a.75.75 0 010 1.5h-1a.75.75 0 01-.75-.75zm15.38 6.13a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zm-13.56 0a.75.75 0 010 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7a.75.75 0 011.06 0zm13.56-13.56a.75.75 0 011.06 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7zm-13.56 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 111.06-1.06z"
+                fill="currentColor"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </span>
+          <span class="auth-shell__menu-item-copy">
+            <span class="auth-shell__menu-item-label">Tema</span>
+            <span class="auth-shell__menu-item-hint">Claro, escuro ou automático</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="auth-shell__menu-item auth-shell__menu-item--quick"
+          data-action="preferences-language"
+          data-pref-focus="lang"
+          aria-label="Escolher idioma"
+          title="Escolher idioma"
+        >
+          <span class="auth-shell__menu-item-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+              <path
+                d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75-9.75-4.365-9.75-9.75 4.365-9.75 9.75-9.75zm0 1.5c-.813 0-1.6.12-2.342.344.842 1.18 1.435 2.807 1.59 4.656h3.504c-.264-1.93-.93-3.558-1.802-4.71A8.25 8.25 0 0112 3.75zm-3.24.8A8.25 8.25 0 003.75 12c0 1.884.63 3.623 1.692 5.01 1.139-.825 2.03-2.367 2.379-4.26H5.25a.75.75 0 010-1.5h2.61c.105-1.624.525-3.09 1.176-4.2-.112-.174-.222-.35-.326-.528zm6.48 0c.318.558.605 1.182.846 1.86.32.9.546 1.897.654 2.94h1.86a.75.75 0 010 1.5h-1.758c.051.48.078.978.078 1.5s-.027 1.02-.078 1.5h1.758a.75.75 0 010 1.5h-1.86c-.108 1.043-.334 2.04-.654 2.94-.241.678-.528 1.302-.846 1.86a8.22 8.22 0 002.442-1.602A8.23 8.23 0 0020.25 12c0-2.038-.739-3.9-1.968-5.34a8.22 8.22 0 00-2.442-1.61zM9.75 12c-.044 1.417-.3 2.715-.717 3.78-.22.57-.47 1.06-.741 1.47a8.2 8.2 0 003.708.924c.813 0 1.6-.12 2.342-.344-.842-1.18-1.435-2.807-1.59-4.656H9.75zm3.504-1.5c-.159-1.17-.473-2.242-.89-3.144-.22-.486-.462-.9-.717-1.245-.28.411-.53.9-.75 1.47-.417 1.065-.673 2.363-.717 3.78h3.074z"
+                fill="currentColor"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </span>
+          <span class="auth-shell__menu-item-copy">
+            <span class="auth-shell__menu-item-label">Idioma</span>
+            <span class="auth-shell__menu-item-hint">Português, inglês ou espanhol</span>
+          </span>
+        </button>
+      </div>
       <button
-        id="pwaInstallFab"
-        class="auth-shell__menu-item pwa-install-fab"
         type="button"
-        hidden
-        aria-label="Instalar o aplicativo"
-        data-i18n="pwa.install"
+        class="auth-shell__menu-item auth-shell__menu-item--icon auth-shell__menu-settings"
+        data-action="preferences"
+        aria-label="Abrir painel completo de configurações"
+        title="Abrir painel completo de configurações"
       >
-        Instalar aplicativo
+        <svg viewBox="0 0 20 20" role="presentation" aria-hidden="true">
+          <path
+            d="M11.5 2.28c-.31-.18-.69-.18-1 0l-1.44.83a.74.74 0 01-.74 0l-1.44-.83c-.31-.18-.69-.18-1 0l-1.45.84a.75.75 0 00-.37.65v1.66c0 .26-.1.5-.28.69l-1.18 1.2a.74.74 0 000 1.04l1.18 1.2c.18.19.28.43.28.69v1.66c0 .27.14.52.37.65l1.45.84c.31.18.69.18 1 0l1.44-.83a.74.74 0 01.74 0l1.44.83c.31.18.69.18 1 0l1.45-.84a.75.75 0 00.37-.65v-1.66c0-.26.1-.5.28-.69l1.18-1.2a.74.74 0 000-1.04l-1.18-1.2a.99.99 0 01-.28-.69V3.77a.75.75 0 00-.37-.65zM10 12a2 2 0 110-4 2 2 0 010 4z"
+            fill="currentColor"
+            fill-rule="evenodd"
+          />
+        </svg>
+        <span class="sr-only">Abrir painel completo de configurações</span>
       </button>
     </div>
   </div>

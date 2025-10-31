@@ -22,7 +22,7 @@ export const buildMiniAppDocPath = buildMiniAppDocPathFromStore;
 
 let preferencesPanelModulePromise = null;
 
-async function openPreferencesPanelLazy({ doc, win } = {}) {
+async function openPreferencesPanelLazy({ doc, win, focus } = {}) {
   try {
     if (!preferencesPanelModulePromise) {
       preferencesPanelModulePromise = import('../../components/preferences/panel.js');
@@ -33,7 +33,7 @@ async function openPreferencesPanelLazy({ doc, win } = {}) {
       throw new Error('Módulo do painel de preferências indisponível.');
     }
 
-    await module.openPreferencesPanel({ document: doc, window: win });
+    await module.openPreferencesPanel({ document: doc, window: win, focusTarget: focus });
   } catch (error) {
     console.error('Não foi possível abrir o painel de preferências.', error);
   }
@@ -837,6 +837,10 @@ export function initAuthShell(options = {}) {
       }
     });
 
+    if (!activeLabel && viewName && FOOTER_VIEW_LABELS[viewName]) {
+      activeLabel = FOOTER_VIEW_LABELS[viewName];
+    }
+
     if (ensureHtmlElement(doc, footerActiveViewLabel)) {
       if (activeLabel) {
         footerActiveViewLabel.textContent = `Painel atual: ${activeLabel}`;
@@ -1117,6 +1121,13 @@ export function initAuthShell(options = {}) {
       render: runtime.renderAccountDashboard,
       hint: 'Gerencie cadastros locais, revise detalhes e limpe dados salvos neste dispositivo.',
     },
+  };
+
+  const FOOTER_VIEW_LABELS = {
+    register: 'Criar uma nova conta',
+    guest: 'Explorar como convidado',
+    miniapps: 'MiniApp Store',
+    'account-dashboard': 'Painel da conta',
   };
 
   let currentView = null;
@@ -1714,9 +1725,10 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    if (action === 'preferences') {
+    if (action && action.startsWith('preferences')) {
       closeFooterMenu();
-      openPreferencesPanelLazy({ doc, win });
+      const focusTarget = item.dataset.prefFocus || null;
+      openPreferencesPanelLazy({ doc, win, focus: focusTarget });
       return;
     }
 
