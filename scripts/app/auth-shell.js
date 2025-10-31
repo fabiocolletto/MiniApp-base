@@ -149,9 +149,6 @@ export function initAuthShell(options = {}) {
   const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
   const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
   const footerMenuLanguageButton = footerMenuPanel?.querySelector('[data-action="preferences-language"]');
-  const widgetBoard = doc.querySelector('[data-widget-board]');
-  const widgetGrid = widgetBoard?.querySelector('[data-widget-grid]');
-  const widgetEmptyState = doc.querySelector('[data-widget-empty]');
   const footerViewportQuery =
     typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
   const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
@@ -258,9 +255,6 @@ export function initAuthShell(options = {}) {
               label: 'Bem-vindo',
               description: 'Abra o painel inicial do MiniApp Educação.',
               view: 'guest',
-              widgetId: 'widget-education-home',
-              widgetTitle: 'Painel Educação',
-              widgetDescription: 'Mensagem inicial e área base do MiniApp Educação.',
             },
           ],
         },
@@ -273,49 +267,18 @@ export function initAuthShell(options = {}) {
               label: 'Criar uma nova conta',
               description: 'Inicie o cadastro com validações assistidas e etapas orientadas.',
               view: 'register',
-              widgetId: 'widget-register-flow',
-              widgetTitle: 'Cadastro rápido',
-              widgetDescription: 'Resumo das etapas do fluxo de cadastro e próximos passos sugeridos.',
             },
             {
               id: 'view-account-dashboard',
               label: 'Painel da conta',
               description: 'Gerencie cadastros locais, sessões e limpeza de dados neste dispositivo.',
               view: 'account-dashboard',
-              widgetId: 'widget-account-dashboard',
-              widgetTitle: 'Painel da conta',
-              widgetDescription: 'Monitore dados armazenados localmente e ações de manutenção de sessão.',
             },
           ],
         },
       ],
     },
   ];
-
-  const FOOTER_WIDGET_LIBRARY = new Map();
-
-  FOOTER_MENU_STRUCTURE.forEach((category) => {
-    category.types.forEach((type) => {
-      type.entries.forEach((entry) => {
-        if (!entry.widgetId || FOOTER_WIDGET_LIBRARY.has(entry.widgetId)) {
-          return;
-        }
-
-        FOOTER_WIDGET_LIBRARY.set(entry.widgetId, {
-          id: entry.widgetId,
-          label: entry.label,
-          title: entry.widgetTitle ?? entry.label,
-          description: entry.widgetDescription ?? entry.description ?? '',
-          view: entry.view ?? null,
-          action: entry.action ?? null,
-          categoryId: category.id,
-          categoryLabel: category.label,
-          typeId: type.id,
-          typeLabel: type.label,
-        });
-      });
-    });
-  });
 
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
@@ -326,8 +289,6 @@ export function initAuthShell(options = {}) {
   }
 
   const teardownCallbacks = [];
-  const alwaysActiveWidgetIds = new Set();
-  const activeWidgetIds = new Set();
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
 
@@ -1097,10 +1058,6 @@ export function initAuthShell(options = {}) {
           link.dataset.action = entry.action;
         }
 
-        if (entry.widgetId) {
-          link.dataset.widgetId = entry.widgetId;
-        }
-
         let descriptionId = null;
 
         if (entry.description) {
@@ -1116,24 +1073,6 @@ export function initAuthShell(options = {}) {
           description.className = 'auth-shell__menu-item-description';
           description.textContent = entry.description;
           entryItem.append(description);
-        }
-
-        if (entry.widgetId) {
-          const toggle = doc.createElement('label');
-          toggle.className = 'auth-shell__menu-toggle';
-
-          const checkbox = doc.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.className = 'auth-shell__menu-toggle-input';
-          checkbox.dataset.widgetToggle = entry.widgetId;
-          checkbox.checked = activeWidgetIds.has(entry.widgetId);
-
-          const toggleText = doc.createElement('span');
-          toggleText.className = 'auth-shell__menu-toggle-label';
-          toggleText.textContent = 'Fixar no painel principal';
-
-          toggle.append(checkbox, toggleText);
-          entryItem.append(toggle);
         }
 
         sublist.append(entryItem);
@@ -1161,156 +1100,6 @@ export function initAuthShell(options = {}) {
   }
 
 
-
-  function syncMenuToggleState(widgetId, isActive) {
-    if (!(footerMenuPanel instanceof HTMLElementRef)) {
-      return;
-    }
-
-    const toggles = footerMenuPanel.querySelectorAll('.auth-shell__menu-toggle-input');
-    toggles.forEach((toggle) => {
-      if (!toggle) {
-        return;
-      }
-
-      if (HTMLInputElementRef && toggle instanceof HTMLInputElementRef) {
-        if (toggle.dataset.widgetToggle === widgetId) {
-          toggle.checked = Boolean(isActive);
-        }
-        return;
-      }
-
-      if (typeof toggle === 'object' && 'dataset' in toggle && toggle.dataset?.widgetToggle === widgetId) {
-        if ('checked' in toggle) {
-          try {
-            toggle.checked = Boolean(isActive);
-          } catch (error) {
-            // noop
-          }
-        }
-      }
-    });
-  }
-
-  function renderWidgetBoard() {
-    if (!(widgetGrid instanceof HTMLElementRef) || !(widgetEmptyState instanceof HTMLElementRef)) {
-      return;
-    }
-
-    const entries = Array.from(activeWidgetIds)
-      .map((id) => FOOTER_WIDGET_LIBRARY.get(id))
-      .filter(Boolean);
-
-    widgetEmptyState.hidden = entries.length > 0;
-    widgetGrid.hidden = entries.length === 0;
-
-    if (entries.length === 0) {
-      widgetGrid.replaceChildren();
-      return;
-    }
-
-    const fragment = doc.createDocumentFragment();
-
-    entries.forEach((entry) => {
-      if (typeof entry.renderWidget === 'function') {
-        try {
-          const widgetElement = entry.renderWidget({
-            apps: [],
-            onOpenMiniApp() {
-              renderAuthView('guest', { shouldFocus: true });
-            },
-          });
-
-          if (widgetElement) {
-            if (NodeRef && widgetElement instanceof NodeRef) {
-              fragment.append(widgetElement);
-            } else {
-              fragment.append(widgetElement);
-            }
-          }
-        } catch (error) {
-          console.error('Falha ao renderizar widget personalizado.', error);
-        }
-        return;
-      }
-
-      const card = doc.createElement('article');
-      card.className = 'auth-widget';
-      card.dataset.widget = entry.id;
-
-      if (entry.view && entry.view === currentView) {
-        card.classList.add('auth-widget--active');
-      }
-
-      const badge = doc.createElement('span');
-      badge.className = 'auth-widget__badge';
-      badge.textContent = `${entry.categoryLabel} • ${entry.typeLabel}`;
-
-      const title = doc.createElement('h3');
-      title.className = 'auth-widget__title';
-      title.textContent = entry.title;
-
-      const description = doc.createElement('p');
-      description.className = 'auth-widget__description';
-      description.textContent = entry.description;
-
-      const actions = doc.createElement('div');
-      actions.className = 'auth-widget__actions';
-
-      if (entry.view || entry.action) {
-        const openButton = doc.createElement('button');
-        openButton.type = 'button';
-        openButton.className = 'auth-widget__action';
-        openButton.dataset.widgetAction = 'open';
-        openButton.dataset.widgetId = entry.id;
-        openButton.textContent = entry.view ? 'Abrir painel' : 'Abrir configurações';
-        actions.append(openButton);
-      }
-
-      const removeButton = doc.createElement('button');
-      removeButton.type = 'button';
-      removeButton.className = 'auth-widget__action';
-      removeButton.dataset.widgetAction = 'remove';
-      removeButton.dataset.widgetId = entry.id;
-      removeButton.textContent = 'Remover do painel';
-      actions.append(removeButton);
-
-      card.append(badge, title, description, actions);
-      fragment.append(card);
-    });
-
-    widgetGrid.replaceChildren(fragment);
-  }
-
-  function activateWidget(widgetId) {
-    if (!widgetId || !FOOTER_WIDGET_LIBRARY.has(widgetId)) {
-      return;
-    }
-
-    if (!activeWidgetIds.has(widgetId)) {
-      activeWidgetIds.add(widgetId);
-    }
-
-    syncMenuToggleState(widgetId, true);
-    renderWidgetBoard();
-  }
-
-  function deactivateWidget(widgetId) {
-    if (!widgetId || !FOOTER_WIDGET_LIBRARY.has(widgetId)) {
-      return;
-    }
-
-    if (alwaysActiveWidgetIds.has(widgetId)) {
-      return;
-    }
-
-    if (activeWidgetIds.has(widgetId)) {
-      activeWidgetIds.delete(widgetId);
-    }
-
-    syncMenuToggleState(widgetId, false);
-    renderWidgetBoard();
-  }
 
   function refreshFooterMenuItems() {
     renderFooterViewItems();
@@ -1506,88 +1295,16 @@ export function initAuthShell(options = {}) {
       handleFooterMenuItemKeydown(event);
     };
 
-    const handlePanelChange = (event) => {
-      const rawTarget = event.target;
-
-      let input = null;
-
-      if (HTMLInputElementRef && rawTarget instanceof HTMLInputElementRef) {
-        input = rawTarget;
-      } else if (rawTarget && typeof rawTarget === 'object' && 'dataset' in rawTarget && 'checked' in rawTarget) {
-        input = rawTarget;
-      }
-
-      if (!input || !input.dataset || input.dataset.widgetToggle === undefined) {
-        return;
-      }
-
-      if (typeof input.matches === 'function' && !input.matches('.auth-shell__menu-toggle-input')) {
-        return;
-      }
-
-      const widgetId = input.dataset.widgetToggle;
-      if (!widgetId) {
-        return;
-      }
-
-      const isChecked = Boolean(input.checked);
-      if (isChecked) {
-        activateWidget(widgetId);
-      } else {
-        deactivateWidget(widgetId);
-      }
-    };
-
     footerMenuPanel.addEventListener('click', handlePanelClick);
     footerMenuPanel.addEventListener('keydown', handlePanelKeydown);
-    footerMenuPanel.addEventListener('change', handlePanelChange);
 
     teardownCallbacks.push(() => {
       footerMenuPanel.removeEventListener('click', handlePanelClick);
       footerMenuPanel.removeEventListener('keydown', handlePanelKeydown);
-      footerMenuPanel.removeEventListener('change', handlePanelChange);
-    });
-  }
-
-  if (ensureHtmlElement(doc, widgetGrid)) {
-    const handleWidgetActionClick = (event) => {
-      const trigger = event.target instanceof HTMLElementRef ? event.target.closest('[data-widget-action]') : null;
-      if (!trigger) {
-        return;
-      }
-
-      const widgetId = trigger.dataset.widgetId;
-      const action = trigger.dataset.widgetAction;
-
-      if (!widgetId || !action) {
-        return;
-      }
-
-      if (action === 'open') {
-        const widget = FOOTER_WIDGET_LIBRARY.get(widgetId);
-        if (!widget) {
-          return;
-        }
-
-        if (widget.view) {
-          renderAuthView(widget.view, { shouldFocus: true });
-        }
-      } else if (action === 'remove') {
-        deactivateWidget(widgetId);
-      }
-    };
-
-    widgetGrid.addEventListener('click', handleWidgetActionClick);
-
-    teardownCallbacks.push(() => {
-      widgetGrid.removeEventListener('click', handleWidgetActionClick);
     });
   }
 
   refreshFooterMenuItems();
-  renderWidgetBoard();
-
-  renderWidgetBoard();
 
   function focusFirstInteractiveElement(root) {
     if (!(root instanceof HTMLElementRef)) {
@@ -1652,7 +1369,6 @@ export function initAuthShell(options = {}) {
     viewRoot.replaceChildren();
     viewConfig.render(viewRoot, viewProps);
     currentView = viewName;
-    renderWidgetBoard();
 
     setActiveButton(viewName);
     setActiveFooterMenuItem(viewName);
