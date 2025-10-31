@@ -159,7 +159,7 @@ test('inicializa o shell com painel de convidado e dois MiniApps ativos', async 
     const ids = miniAppItems.map((item) => item.dataset.appId).sort();
     assert.deepEqual(ids, ['exam-planner', 'task-manager']);
     miniAppItems.forEach((item) => {
-      const link = item.querySelector('.guest-panel__cta');
+      const link = item.querySelector('.guest-panel__link');
       assert.ok(link);
       assert.equal(link.href.includes('/miniapp.md'), false);
     });

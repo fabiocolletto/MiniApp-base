@@ -11,7 +11,6 @@ import {
   getMiniAppsSnapshot as getMiniAppsSnapshotDefault,
   subscribeMiniApps as subscribeMiniAppsDefault,
 } from '../data/miniapp-store.js';
-import { createMiniAppCatalogWidget } from '../views/shared/miniapp-catalog-widget.js';
 import {
   subscribeUserPreferences as subscribeUserPreferencesDefault,
   getFontScaleLabel as getFontScaleLabelDefault,
@@ -21,7 +20,6 @@ import {
 
 const APP_QUERY_PARAM = 'app';
 const VIEW_CLEANUP_KEY = '__viewCleanup';
-const FLOATING_CATALOG_WIDGET_ID = 'widget-floating-miniapp-catalog';
 
 export const normalizeMiniAppId = normalizeMiniAppIdFromStore;
 export const buildMiniAppDocPath = buildMiniAppDocPathFromStore;
@@ -432,25 +430,6 @@ export function initAuthShell(options = {}) {
     });
   });
 
-  FOOTER_WIDGET_LIBRARY.set(FLOATING_CATALOG_WIDGET_ID, {
-    id: FLOATING_CATALOG_WIDGET_ID,
-    label: 'MiniApps disponíveis',
-    title: 'MiniApps disponíveis',
-    description: 'Catálogo flutuante com filtros rápidos por modalidade de acesso.',
-    categoryId: 'miniapps',
-    categoryLabel: 'MiniApps',
-    typeId: 'catalog',
-    typeLabel: 'Catálogo',
-    renderWidget({ apps, onOpenMiniApp }) {
-      return createMiniAppCatalogWidget({
-        doc,
-        widgetId: FLOATING_CATALOG_WIDGET_ID,
-        apps,
-        onOpenMiniApp,
-      });
-    },
-  });
-
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
   }
@@ -460,8 +439,8 @@ export function initAuthShell(options = {}) {
   }
 
   const teardownCallbacks = [];
-  const alwaysActiveWidgetIds = new Set([FLOATING_CATALOG_WIDGET_ID]);
-  const activeWidgetIds = new Set(alwaysActiveWidgetIds);
+  const alwaysActiveWidgetIds = new Set();
+  const activeWidgetIds = new Set();
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
 
@@ -999,8 +978,6 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    const SVG_NS = 'http://www.w3.org/2000/svg';
-
     root.className = 'card view auth-view view--guest';
     root.dataset.view = 'guest';
 
@@ -1008,66 +985,9 @@ export function initAuthShell(options = {}) {
     let highlightedLink = null;
     let highlightedApp = null;
 
-    const container = doc.createElement('div');
-    container.className = 'guest-panel__container';
-
-    const floatingToggle = doc.createElement('button');
-    floatingToggle.type = 'button';
-    floatingToggle.className = 'guest-panel__floating-toggle';
-    floatingToggle.setAttribute('aria-label', 'Abrir MiniApps gratuitos');
-    floatingToggle.setAttribute('title', 'Abrir MiniApps gratuitos');
-    floatingToggle.setAttribute('aria-expanded', 'false');
-
-    const floatingIcon = doc.createElementNS(SVG_NS, 'svg');
-    floatingIcon.classList.add('guest-panel__floating-icon');
-    floatingIcon.setAttribute('viewBox', '0 0 20 20');
-    floatingIcon.setAttribute('aria-hidden', 'true');
-
-    const floatingPath = doc.createElementNS(SVG_NS, 'path');
-    floatingPath.setAttribute('d', 'M9 5V9H5v2h4v4h2v-4h4V9h-4V5z');
-    floatingPath.setAttribute('fill', 'currentColor');
-    floatingIcon.append(floatingPath);
-
-    const floatingLabel = doc.createElement('span');
-    floatingLabel.className = 'guest-panel__floating-label';
-    floatingLabel.textContent = 'MiniApps gratuitos';
-
-    floatingToggle.append(floatingIcon, floatingLabel);
-
     const panel = doc.createElement('section');
     panel.className = 'auth-panel__form guest-panel';
     panel.id = 'guestPanelContent';
-    floatingToggle.setAttribute('aria-controls', panel.id);
-
-    const toolbar = doc.createElement('div');
-    toolbar.className = 'guest-panel__toolbar';
-
-    const collapseButton = doc.createElement('button');
-    collapseButton.type = 'button';
-    collapseButton.className = 'guest-panel__collapse';
-    collapseButton.setAttribute('aria-label', 'Recolher MiniApps gratuitos');
-    collapseButton.setAttribute('title', 'Recolher MiniApps gratuitos');
-
-    const collapseIcon = doc.createElementNS(SVG_NS, 'svg');
-    collapseIcon.classList.add('guest-panel__collapse-icon');
-    collapseIcon.setAttribute('viewBox', '0 0 20 20');
-    collapseIcon.setAttribute('aria-hidden', 'true');
-
-    const collapsePath = doc.createElementNS(SVG_NS, 'path');
-    collapsePath.setAttribute('d', 'M6 6L14 14M14 6L6 14');
-    collapsePath.setAttribute('fill', 'none');
-    collapsePath.setAttribute('stroke', 'currentColor');
-    collapsePath.setAttribute('stroke-width', '1.75');
-    collapsePath.setAttribute('stroke-linecap', 'round');
-    collapsePath.setAttribute('stroke-linejoin', 'round');
-    collapseIcon.append(collapsePath);
-
-    const collapseLabel = doc.createElement('span');
-    collapseLabel.className = 'sr-only';
-    collapseLabel.textContent = 'Recolher MiniApps gratuitos';
-
-    collapseButton.append(collapseIcon, collapseLabel);
-    toolbar.append(collapseButton);
 
     const title = doc.createElement('h2');
     title.className = 'auth-panel__title guest-panel__title';
@@ -1098,18 +1018,18 @@ export function initAuthShell(options = {}) {
         item.className = 'guest-panel__item';
 
         const appTitle = doc.createElement('strong');
-        appTitle.className = 'guest-panel__app-name';
+        appTitle.className = 'guest-panel__item-title';
         appTitle.textContent = app?.name ?? 'MiniApp';
 
         const description = doc.createElement('p');
-        description.className = 'guest-panel__app-description';
+        description.className = 'guest-panel__item-description';
         description.textContent =
           typeof app?.description === 'string' && app.description.trim() !== ''
             ? app.description.trim()
             : 'MiniApp ativo disponível para convidados.';
 
         const link = doc.createElement('a');
-        link.className = 'guest-panel__cta';
+        link.className = 'guest-panel__link';
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
 
@@ -1138,14 +1058,8 @@ export function initAuthShell(options = {}) {
     note.textContent =
       'Para salvar progresso e sincronizar preferências entre dispositivos, crie uma conta quando estiver pronto.';
 
-    panel.append(toolbar, title, intro, list, note);
-
-    container.append(floatingToggle, panel);
-    root.replaceChildren(container);
-
-    container.dataset.guestPanelState = 'collapsed';
-    root.dataset.guestPanelState = 'collapsed';
-    panel.hidden = true;
+    panel.append(title, intro, list, note);
+    root.replaceChildren(panel);
 
     function focusSafely(target, warningMessage = 'Não foi possível focar o elemento solicitado.') {
       if (!target || typeof target.focus !== 'function') {
@@ -1161,55 +1075,7 @@ export function initAuthShell(options = {}) {
       });
     }
 
-    let expanded = null;
-
-    const updateState = (value, { focusTarget = null, skipFocus = false } = {}) => {
-      const next = Boolean(value);
-
-      if (expanded === next) {
-        if (next && focusTarget) {
-          focusSafely(focusTarget);
-        }
-        return;
-      }
-
-      expanded = next;
-      const state = expanded ? 'expanded' : 'collapsed';
-      root.dataset.guestPanelState = state;
-      container.dataset.guestPanelState = state;
-      floatingToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      panel.hidden = !expanded;
-
-      if (skipFocus) {
-        return;
-      }
-
-      if (expanded) {
-        focusSafely(focusTarget || collapseButton);
-      } else {
-        focusSafely(floatingToggle);
-      }
-    };
-
-    floatingToggle.addEventListener('click', () => {
-      updateState(true);
-    });
-
-    collapseButton.addEventListener('click', () => {
-      updateState(false);
-    });
-
-    panel.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && expanded) {
-        event.preventDefault();
-        updateState(false);
-      }
-    });
-
-    updateState(false, { skipFocus: true });
-
     if (highlightedLink) {
-      updateState(true, { skipFocus: true });
       focusSafely(highlightedLink, 'Não foi possível focar o atalho solicitado.');
 
       if (typeof options.onHighlight === 'function') {
