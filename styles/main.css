@@ -381,26 +381,6 @@ textarea:focus-visible {
   border-color: rgba(var(--ac-primary-rgb, 16, 163, 127), 0.35);
 }
 
-.pwa-install-fab {
-  position: fixed;
-  inset-inline-end: clamp(1rem, 4vw, 1.75rem);
-  inset-block-end: clamp(1.25rem, 5vw, 2.25rem);
-  padding-inline: clamp(1.1rem, 3vw, 1.45rem);
-  padding-block: clamp(0.65rem, 2vw, 0.9rem);
-  border-radius: var(--radius-pill, 999px);
-  box-shadow: 0 1rem 2.5rem rgba(var(--ac-primary-rgb, 16, 163, 127), 0.32);
-  z-index: 1200;
-}
-
-.pwa-install-fab[hidden] {
-  display: none !important;
-}
-
-.pwa-install-fab:focus-visible {
-  box-shadow: 0 0 0 3px rgba(var(--ac-primary-rgb, 16, 163, 127), 0.35),
-    0 1rem 2.5rem rgba(var(--ac-primary-rgb, 16, 163, 127), 0.38);
-}
-
 @media (min-width: 540px) {
   .auth-panel__phone-inputs {
     grid-template-columns: minmax(4.25rem, 5rem) minmax(0, 1fr);

@@ -209,7 +209,6 @@ export function initAuthShell(options = {}) {
   const footerMenuButton = doc.querySelector('.auth-shell__menu-button');
   const footerMenuPanel = doc.getElementById('authFooterMenu');
   const footerMenuOverlay = doc.querySelector('[data-menu-overlay]');
-  const footerMenuLabel = footerMenuButton?.querySelector('[data-menu-button-label]');
   const footerToggle = doc.querySelector('[data-footer-toggle]');
   const footerActiveViewLabel = doc.querySelector('[data-active-view-label]');
   const footerActiveViewDivider = doc.querySelector('[data-active-view-divider]');
@@ -221,7 +220,7 @@ export function initAuthShell(options = {}) {
   const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
   const widgetBoard = doc.querySelector('[data-widget-board]');
   const widgetGrid = widgetBoard?.querySelector('[data-widget-grid]');
-  const widgetEmptyState = widgetBoard?.querySelector('[data-widget-empty]');
+  const widgetEmptyState = doc.querySelector('[data-widget-empty]');
   const footerViewportQuery =
     typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
   const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
@@ -537,9 +536,21 @@ export function initAuthShell(options = {}) {
       return [];
     }
 
-    return Array.from(footerMenuPanel.querySelectorAll('.auth-shell__menu-item')).filter(
-      (item) => item instanceof HTMLElementRef && !item.disabled,
-    );
+    return Array.from(footerMenuPanel.querySelectorAll('.auth-shell__menu-item')).filter((item) => {
+      if (!(item instanceof HTMLElementRef) || item.disabled) {
+        return false;
+      }
+
+      if (item.hidden || item.getAttribute('aria-hidden') === 'true') {
+        return false;
+      }
+
+      if (footerMenuOpen && item.offsetParent === null) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
   function setFooterMenuState(isOpen) {
@@ -804,12 +815,6 @@ export function initAuthShell(options = {}) {
       }
     });
 
-    if (ensureHtmlElement(doc, footerMenuLabel)) {
-      footerMenuLabel.textContent = activeLabel
-        ? `Menu principal — painel atual: ${activeLabel}`
-        : 'Menu principal';
-    }
-
     if (ensureHtmlElement(doc, footerActiveViewLabel)) {
       if (activeLabel) {
         footerActiveViewLabel.textContent = `Painel atual: ${activeLabel}`;
@@ -827,6 +832,10 @@ export function initAuthShell(options = {}) {
     if (ensureHtmlElement(doc, footerMenuButton)) {
       footerMenuButton.setAttribute(
         'aria-label',
+        activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
+      );
+      footerMenuButton.setAttribute(
+        'title',
         activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
       );
     }
@@ -850,15 +859,75 @@ export function initAuthShell(options = {}) {
       return;
     }
 
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
     root.className = 'card view auth-view view--guest';
     root.dataset.view = 'guest';
-
-    const panel = doc.createElement('section');
-    panel.className = 'auth-panel__form guest-panel';
 
     const highlightAppId = normalizeMiniAppId(options.highlightAppId);
     let highlightedLink = null;
     let highlightedApp = null;
+
+    const container = doc.createElement('div');
+    container.className = 'guest-panel__container';
+
+    const floatingToggle = doc.createElement('button');
+    floatingToggle.type = 'button';
+    floatingToggle.className = 'guest-panel__floating-toggle';
+    floatingToggle.setAttribute('aria-label', 'Abrir MiniApps gratuitos');
+    floatingToggle.setAttribute('title', 'Abrir MiniApps gratuitos');
+    floatingToggle.setAttribute('aria-expanded', 'false');
+
+    const floatingIcon = doc.createElementNS(SVG_NS, 'svg');
+    floatingIcon.classList.add('guest-panel__floating-icon');
+    floatingIcon.setAttribute('viewBox', '0 0 20 20');
+    floatingIcon.setAttribute('aria-hidden', 'true');
+
+    const floatingPath = doc.createElementNS(SVG_NS, 'path');
+    floatingPath.setAttribute('d', 'M9 5V9H5v2h4v4h2v-4h4V9h-4V5z');
+    floatingPath.setAttribute('fill', 'currentColor');
+    floatingIcon.append(floatingPath);
+
+    const floatingLabel = doc.createElement('span');
+    floatingLabel.className = 'guest-panel__floating-label';
+    floatingLabel.textContent = 'MiniApps gratuitos';
+
+    floatingToggle.append(floatingIcon, floatingLabel);
+
+    const panel = doc.createElement('section');
+    panel.className = 'auth-panel__form guest-panel';
+    panel.id = 'guestPanelContent';
+    floatingToggle.setAttribute('aria-controls', panel.id);
+
+    const toolbar = doc.createElement('div');
+    toolbar.className = 'guest-panel__toolbar';
+
+    const collapseButton = doc.createElement('button');
+    collapseButton.type = 'button';
+    collapseButton.className = 'guest-panel__collapse';
+    collapseButton.setAttribute('aria-label', 'Recolher MiniApps gratuitos');
+    collapseButton.setAttribute('title', 'Recolher MiniApps gratuitos');
+
+    const collapseIcon = doc.createElementNS(SVG_NS, 'svg');
+    collapseIcon.classList.add('guest-panel__collapse-icon');
+    collapseIcon.setAttribute('viewBox', '0 0 20 20');
+    collapseIcon.setAttribute('aria-hidden', 'true');
+
+    const collapsePath = doc.createElementNS(SVG_NS, 'path');
+    collapsePath.setAttribute('d', 'M6 6L14 14M14 6L6 14');
+    collapsePath.setAttribute('fill', 'none');
+    collapsePath.setAttribute('stroke', 'currentColor');
+    collapsePath.setAttribute('stroke-width', '1.75');
+    collapsePath.setAttribute('stroke-linecap', 'round');
+    collapsePath.setAttribute('stroke-linejoin', 'round');
+    collapseIcon.append(collapsePath);
+
+    const collapseLabel = doc.createElement('span');
+    collapseLabel.className = 'sr-only';
+    collapseLabel.textContent = 'Recolher MiniApps gratuitos';
+
+    collapseButton.append(collapseIcon, collapseLabel);
+    toolbar.append(collapseButton);
 
     const title = doc.createElement('h2');
     title.className = 'auth-panel__title guest-panel__title';
@@ -929,17 +998,79 @@ export function initAuthShell(options = {}) {
     note.textContent =
       'Para salvar progresso e sincronizar preferências entre dispositivos, crie uma conta quando estiver pronto.';
 
-    panel.append(title, intro, list, note);
-    root.replaceChildren(panel);
+    panel.append(toolbar, title, intro, list, note);
 
-    if (highlightedLink) {
+    container.append(floatingToggle, panel);
+    root.replaceChildren(container);
+
+    container.dataset.guestPanelState = 'collapsed';
+    root.dataset.guestPanelState = 'collapsed';
+    panel.hidden = true;
+
+    function focusSafely(target, warningMessage = 'Não foi possível focar o elemento solicitado.') {
+      if (!target || typeof target.focus !== 'function') {
+        return;
+      }
+
       runtime.queueTask(() => {
         try {
-          highlightedLink.focus();
+          target.focus();
         } catch (error) {
-          console.warn('Não foi possível focar o atalho solicitado.', error);
+          console.warn(warningMessage, error);
         }
       });
+    }
+
+    let expanded = null;
+
+    const updateState = (value, { focusTarget = null, skipFocus = false } = {}) => {
+      const next = Boolean(value);
+
+      if (expanded === next) {
+        if (next && focusTarget) {
+          focusSafely(focusTarget);
+        }
+        return;
+      }
+
+      expanded = next;
+      const state = expanded ? 'expanded' : 'collapsed';
+      root.dataset.guestPanelState = state;
+      container.dataset.guestPanelState = state;
+      floatingToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      panel.hidden = !expanded;
+
+      if (skipFocus) {
+        return;
+      }
+
+      if (expanded) {
+        focusSafely(focusTarget || collapseButton);
+      } else {
+        focusSafely(floatingToggle);
+      }
+    };
+
+    floatingToggle.addEventListener('click', () => {
+      updateState(true);
+    });
+
+    collapseButton.addEventListener('click', () => {
+      updateState(false);
+    });
+
+    panel.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && expanded) {
+        event.preventDefault();
+        updateState(false);
+      }
+    });
+
+    updateState(false, { skipFocus: true });
+
+    if (highlightedLink) {
+      updateState(true, { skipFocus: true });
+      focusSafely(highlightedLink, 'Não foi possível focar o atalho solicitado.');
 
       if (typeof options.onHighlight === 'function') {
         options.onHighlight({ app: highlightedApp, link: highlightedLink, id: highlightAppId });

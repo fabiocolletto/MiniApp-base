@@ -4,7 +4,17 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Corrigido o estado expandido do widget "MiniApps gratuitos" eliminando regras que mantinham o container esticado e deixavam espaços vazios mesmo após a remoção das alturas mínimas.
+- Ajustadas as alturas mínimas do painel "MiniApps gratuitos" para evitar espaços vazios acima e abaixo do conteúdo quando expandido.
+- Painel "MiniApps gratuitos" passa a iniciar como janela flutuante no canto superior direito e expande sob demanda para ocupar todo o painel de convidado.
+- Eliminado o vazamento do painel principal abaixo do rodapé bloqueando o overflow do shell e delegando a rolagem à área de conteúdo.
+- Rodapé da tela de autenticação permanece fixo na base da viewport sem revelar faixas fora do painel principal.
+- Eliminada a faixa cinza entre o painel principal e o rodapé em tablets, alinhando o preenchimento inferior da área de conteúdo ao safe area disponível.
+- Mensagem de painel vazio passa a ser exibida na área expandida do rodapé, aparecendo apenas quando o detalhe é aberto e sem a faixa residual sob o rodapé.
 - Menu principal abre com o título "Menu principal" e agora exibe uma faixa de categorias com botões em formato de pílula, sublistas com links para os painéis e preserva o ícone isolado no acionador do rodapé.
+- Botão do menu principal passa a mostrar apenas o ícone tanto online quanto offline, mantendo o rótulo dinâmico via `aria-label` e alinhando o acionador ao layout compacto solicitado.
+- Estilo do botão do menu principal foi alinhado ao controle que expande o rodapé, mantendo ambos com aparência consistente em todas as larguras de tela.
+- Ajustada a vitrine "MiniApps gratuitos" do modo convidado para contrair conforme o conteúdo, eliminando a faixa vazia percebida abaixo da lista de MiniApps.
 - Fundo do shell de autenticação foi ajustado para reutilizar o gradiente principal, eliminando a faixa clara entre o painel e o rodapé.
 - Ajustado o overlay do menu desktop para usar layout flexível ancorado ao rodapé, evitando centralização indevida da janela do menu.
 - Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
@@ -14,6 +24,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Menu principal do rodapé passa a expor o rótulo textual e organizar as opções em categorias e subcategorias expansíveis, incluindo a seção de Configurações com acesso direto às preferências do usuário.
 - Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
 - Adicionado botão flutuante de instalação do MiniApp com controlador PWA acoplado ao bootstrap do shell.
+- Botão de instalação do PWA foi movido para dentro do menu principal, ocupando a lista de ações apenas quando o prompt estiver disponível.
 - Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.
 - Eliminados os preenchimentos laterais do painel de views em telas pequenas para evitar acúmulo duplo de espaçamentos com os MiniApps renderizados.
 - Ajustado o rodapé móvel com botão de detalhes apenas em ícone, offsets dinâmicos para evitar sobreposição e alinhamento total à base da viewport.
