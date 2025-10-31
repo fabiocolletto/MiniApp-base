@@ -101,6 +101,9 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
     assert.ok(educationHome);
     assert.match(educationHome.textContent, /Bem-vindo ao MiniApp da 5 horas, Educação/);
 
+    const widgetBoard = env.document.querySelector('.auth-widget-board');
+    assert.equal(widgetBoard, null);
+
     const legacyList = env.document.querySelectorAll('.guest-panel__item, .miniapp-store');
     assert.equal(legacyList.length, 0);
 

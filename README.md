@@ -15,7 +15,7 @@ Aplicativo PWA oficial da 5 Horas dedicado ao MiniApp Educação. O shell aprese
 
 ## Painel Educação
 
-O painel principal (`renderGuestAccessPanel` no `auth-shell`) apresenta apenas a mensagem **“Bem-vindo ao MiniApp da 5 horas, Educação.”** seguida de uma orientação para personalizar tema, idioma e tamanho do texto. Widgets e listagens de MiniApps foram removidos; o espaço central permanece reservado para futuros módulos do produto.
+O painel principal (`renderGuestAccessPanel` no `auth-shell`) apresenta apenas a mensagem **“Bem-vindo ao MiniApp da 5 horas, Educação.”** seguida de uma orientação para personalizar tema, idioma e tamanho do texto. Widgets e listagens de MiniApps foram removidos e o painel extra de widgets abaixo do cartão principal foi descontinuado; o espaço central permanece reservado para futuros módulos do produto.
 
 O rodapé mantém três ações rápidas:
 

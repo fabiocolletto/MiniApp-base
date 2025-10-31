@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Removido o painel de widgets do shell, eliminando o painel Educação duplicado abaixo do cartão principal.
 - Rebatizado o shell para MiniApp Educação, com painel inicial estático e mensagem de boas-vindas dedicada.
 - Removidos o catálogo de MiniApps, widgets e sincronizações associadas, mantendo apenas as ações rápidas de tema, idioma e texto.
 - Atualizados manifesto PWA, service worker, documentação e testes para refletir o produto único MiniApp Educação.
