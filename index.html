@@ -38,35 +38,6 @@
         </p>
       </header>
 
-      <div class="auth-selector" role="tablist" aria-label="Modos de acesso">
-        <button
-          id="btnRegister"
-          class="auth-selector__button"
-          type="button"
-          role="tab"
-          aria-controls="authViewRoot"
-          aria-selected="false"
-          tabindex="-1"
-          data-view="register"
-          data-i18n="auth.register"
-        >
-          Criar conta
-        </button>
-        <button
-          id="btnGuest"
-          class="auth-selector__button is-active"
-          type="button"
-          role="tab"
-          aria-controls="authViewRoot"
-          aria-selected="true"
-          tabindex="0"
-          data-view="guest"
-          data-i18n="auth.guest"
-        >
-          MiniApp Educação
-        </button>
-      </div>
-
       <div class="auth-card__body">
         <section id="authViewRoot" class="auth-card__view" aria-live="polite"></section>
       </div>
@@ -78,7 +49,7 @@
           aria-live="polite"
           data-i18n="auth.hint"
         >
-          Use os botões acima para criar uma conta ou conhecer o MiniApp Educação.
+          Use o menu principal para criar uma conta ou explorar o MiniApp Educação.
         </small>
       </div>
     </section>
@@ -189,79 +160,144 @@
       hidden
     >
       <div class="auth-shell__menu-header">
-        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Configurações</p>
-        <p class="auth-shell__menu-caption">Personalize a experiência do MiniApp.</p>
+        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Menu principal</p>
+        <p class="auth-shell__menu-caption">Escolha como acessar e personalize a experiência do MiniApp.</p>
       </div>
-      <div class="auth-shell__menu-actions" role="group" aria-label="Configurações rápidas">
-        <button
-          type="button"
-          class="auth-shell__menu-item auth-shell__menu-item--quick"
-          data-action="preferences-theme"
-          data-pref-focus="theme"
-          aria-label="Escolher tema"
-          title="Escolher tema"
-        >
-          <span class="auth-shell__menu-item-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-              <path
-                d="M12 4.75a.75.75 0 01.75-.75 6.5 6.5 0 016.5 6.5.75.75 0 01-.75.75A6.5 6.5 0 0112.75 5.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zM12 2.25a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0112 2.25zm0 17.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm9-7.75a.75.75 0 01.75.75h-1a.75.75 0 010-1.5h1a.75.75 0 01-.75.75zm-17.5 0a.75.75 0 01.75-.75h1a.75.75 0 010 1.5h-1a.75.75 0 01-.75-.75zm15.38 6.13a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zm-13.56 0a.75.75 0 010 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7a.75.75 0 011.06 0zm13.56-13.56a.75.75 0 011.06 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7zm-13.56 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 111.06-1.06z"
-                fill="currentColor"
-                fill-rule="evenodd"
-              />
-            </svg>
-          </span>
-          <span class="auth-shell__menu-item-copy">
-            <span class="auth-shell__menu-item-label">Tema</span>
-            <span class="auth-shell__menu-item-hint">Claro, escuro ou automático</span>
-          </span>
-        </button>
-        <button
-          type="button"
-          class="auth-shell__menu-item auth-shell__menu-item--quick"
-          data-action="preferences-font"
-          data-pref-focus="fontScale"
-          aria-label="Ajustar tamanho do texto"
-          title="Ajustar tamanho do texto"
-        >
-          <span class="auth-shell__menu-item-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-              <path
-                d="M4.75 18.25a.75.75 0 01-.7-1.01l3.5-10a.75.75 0 01.71-.49h2.48a.75.75 0 01.71.49l3.5 10a.75.75 0 01-1.42.5L12.9 15.5H8.1l-.62 1.82a.75.75 0 01-.71.93zM9.13 14h2.74L10.5 9.12zM15 19.25a.75.75 0 01-.75-.75v-2.5A.75.75 0 0115 15.25h1.5V14a.75.75 0 011.5 0v1.25H20a.75.75 0 010 1.5h-2v1.75a.75.75 0 01-.75.75z"
-                fill="currentColor"
-                fill-rule="evenodd"
-              />
-            </svg>
-          </span>
-          <span class="auth-shell__menu-item-copy">
-            <span class="auth-shell__menu-item-label">Tamanho do texto</span>
-            <span class="auth-shell__menu-item-hint">
-              Cinco níveis disponíveis. Escala atual:
-              <span data-pref-font-scale-value>Padrão</span>
+      <section class="auth-shell__menu-section" data-menu-section="user">
+        <p id="authFooterMenuUserTitle" class="auth-shell__menu-section-title">Usuário</p>
+        <div class="auth-shell__menu-actions auth-shell__menu-actions--user" role="group" aria-labelledby="authFooterMenuUserTitle">
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--view"
+            data-view="register"
+            data-view-toggle
+            aria-current="false"
+            aria-label="Selecionar modo Cadastro"
+            title="Selecionar modo Cadastro"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M12 12.5a3.75 3.75 0 10-3.75-3.75A3.75 3.75 0 0012 12.5zm0-6a2.25 2.25 0 11-2.25 2.25A2.25 2.25 0 0112 6.5zm-6 12.75a.75.75 0 01-.75-.75v-.5A4.75 4.75 0 0110 13.25h4a4.75 4.75 0 014.75 4.75v.5a.75.75 0 01-.75.75zm.75-1.5h10.5v-.25a3.25 3.25 0 00-3.25-3.25h-4a3.25 3.25 0 00-3.25 3.25z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M19.25 9.25h-1.5v-1.5a.75.75 0 00-1.5 0v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5z"
+                  fill="currentColor"
+                />
+              </svg>
             </span>
-          </span>
-        </button>
-        <button
-          type="button"
-          class="auth-shell__menu-item auth-shell__menu-item--quick"
-          data-action="preferences-language"
-          data-pref-focus="lang"
-          aria-label="Escolher idioma"
-          title="Escolher idioma"
-        >
-          <span class="auth-shell__menu-item-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-              <path
-                d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75-9.75-4.365-9.75-9.75 4.365-9.75 9.75-9.75zm0 1.5c-.813 0-1.6.12-2.342.344.842 1.18 1.435 2.807 1.59 4.656h3.504c-.264-1.93-.93-3.558-1.802-4.71A8.25 8.25 0 0112 3.75zm-3.24.8A8.25 8.25 0 003.75 12c0 1.884.63 3.623 1.692 5.01 1.139-.825 2.03-2.367 2.379-4.26H5.25a.75.75 0 010-1.5h2.61c.105-1.624.525-3.09 1.176-4.2-.112-.174-.222-.35-.326-.528zm6.48 0c.318.558.605 1.182.846 1.86.32.9.546 1.897.654 2.94h1.86a.75.75 0 010 1.5h-1.758c.051.48.078.978.078 1.5s-.027 1.02-.078 1.5h1.758a.75.75 0 010 1.5h-1.86c-.108 1.043-.334 2.04-.654 2.94-.241.678-.528 1.302-.846 1.86a8.22 8.22 0 002.442-1.602A8.23 8.23 0 0020.25 12c0-2.038-.739-3.9-1.968-5.34a8.22 8.22 0 00-2.442-1.61zM9.75 12c-.044 1.417-.3 2.715-.717 3.78-.22.57-.47 1.06-.741 1.47a8.2 8.2 0 003.708.924c.813 0 1.6-.12 2.342-.344-.842-1.18-1.435-2.807-1.59-4.656H9.75zm3.504-1.5c-.159-1.17-.473-2.242-.89-3.144-.22-.486-.462-.9-.717-1.245-.28.411-.53.9-.75 1.47-.417 1.065-.673 2.363-.717 3.78h3.074z"
-                fill="currentColor"
-                fill-rule="evenodd"
-              />
-            </svg>
-          </span>
-          <span class="auth-shell__menu-item-copy">
-            <span class="auth-shell__menu-item-label">Idioma</span>
-            <span class="auth-shell__menu-item-hint">Português, inglês ou espanhol</span>
-          </span>
-        </button>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Cadastro</span>
+              <span class="auth-shell__menu-item-hint">Crie uma conta com acompanhamento passo a passo</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--view"
+            data-view="guest"
+            data-view-toggle
+            aria-current="page"
+            aria-label="Selecionar modo Visitante"
+            title="Selecionar modo Visitante"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M9.25 9a3.25 3.25 0 116.5 0 3.25 3.25 0 01-6.5 0zM5.5 19.25c0-2.9 2.35-5.25 5.25-5.25h2.5c2.9 0 5.25 2.35 5.25 5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6.75 8.75a.75.75 0 01-.75-.75 4 4 0 014-4 .75.75 0 010 1.5 2.5 2.5 0 00-2.5 2.5.75.75 0 01-.75.75z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Visitante</span>
+              <span class="auth-shell__menu-item-hint">Explore os módulos disponíveis sem criar conta</span>
+            </span>
+          </button>
+        </div>
+      </section>
+      <section class="auth-shell__menu-section" data-menu-section="settings">
+        <p id="authFooterMenuPrefsTitle" class="auth-shell__menu-section-title">Configurações</p>
+        <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuPrefsTitle">
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--quick"
+            data-action="preferences-theme"
+            data-pref-focus="theme"
+            aria-label="Escolher tema"
+            title="Escolher tema"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M12 4.75a.75.75 0 01.75-.75 6.5 6.5 0 016.5 6.5.75.75 0 01-.75.75A6.5 6.5 0 0112.75 5.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zM12 2.25a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0112 2.25zm0 17.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm9-7.75a.75.75 0 01.75.75h-1a.75.75 0 010-1.5h1a.75.75 0 01-.75.75zm-17.5 0a.75.75 0 01.75-.75h1a.75.75 0 010 1.5h-1a.75.75 0 01-.75-.75zm15.38 6.13a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zm-13.56 0a.75.75 0 010 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7a.75.75 0 011.06 0zm13.56-13.56a.75.75 0 011.06 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7zm-13.56 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 111.06-1.06z"
+                  fill="currentColor"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Tema</span>
+              <span class="auth-shell__menu-item-hint">Claro, escuro ou automático</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--quick"
+            data-action="preferences-font"
+            data-pref-focus="fontScale"
+            aria-label="Ajustar tamanho do texto"
+            title="Ajustar tamanho do texto"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M4.75 18.25a.75.75 0 01-.7-1.01l3.5-10a.75.75 0 01.71-.49h2.48a.75.75 0 01.71.49l3.5 10a.75.75 0 01-1.42.5L12.9 15.5H8.1l-.62 1.82a.75.75 0 01-.71.93zM9.13 14h2.74L10.5 9.12zM15 19.25a.75.75 0 01-.75-.75v-2.5A.75.75 0 0115 15.25h1.5V14a.75.75 0 011.5 0v1.25H20a.75.75 0 010 1.5h-2v1.75a.75.75 0 01-.75.75z"
+                  fill="currentColor"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Tamanho do texto</span>
+              <span class="auth-shell__menu-item-hint">
+                Cinco níveis disponíveis. Escala atual:
+                <span data-pref-font-scale-value>Padrão</span>
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--quick"
+            data-action="preferences-language"
+            data-pref-focus="lang"
+            aria-label="Escolher idioma"
+            title="Escolher idioma"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75-9.75-4.365-9.75-9.75 4.365-9.75 9.75-9.75zm0 1.5c-.813 0-1.6.12-2.342.344.842 1.18 1.435 2.807 1.59 4.656h3.504c-.264-1.93-.93-3.558-1.802-4.71A8.25 8.25 0 0112 3.75zm-3.24.8A8.25 8.25 0 003.75 12c0 1.884.63 3.623 1.692 5.01 1.139-.825 2.03-2.367 2.379-4.26H5.25a.75.75 0 010-1.5h2.61c.105-1.624.525-3.091 1.176-4.2-.112-.174-.222-.35-.326-.528zm6.48 0c.318.558.605 1.182.846 1.86.32.9.546 1.897.654 2.94h1.86a.75.75 0 010 1.5h-1.758c.051.48.078.978.078 1.5s-.027 1.02-.078 1.5h1.758a.75.75 0 010 1.5h-1.86c-.108 1.043-.334 2.04-.654 2.94-.241.678-.528 1.302-.846 1.86a8.22 8.22 0 002.442-1.602A8.23 8.23 0 0020.25 12c0-2.038-.739-3.9-1.968-5.34a8.22 8.22 0 00-2.442-1.61zM9.75 12c-.044 1.417-.3 2.715-.717 3.78-.22.57-.47 1.06-.741 1.47a8.2 8.2 0 003.708.924c.813 0 1.6-.12 2.342-.344-.842-1.18-1.435-2.807-1.59-4.656H9.75zm3.504-1.5c-.159-1.17-.473-2.242-.89-3.144-.22-.486-.462-.9-.717-1.245-.28.411-.53.9-.75 1.47-.417 1.065-.673 2.363-.717 3.78h3.074z"
+                  fill="currentColor"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Idioma</span>
+              <span class="auth-shell__menu-item-hint">Português, inglês ou espanhol</span>
+            </span>
+          </button>
+        </div>
+      </section>
       </div>
     </div>
   </div>

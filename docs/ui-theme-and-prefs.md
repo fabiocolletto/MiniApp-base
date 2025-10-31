@@ -70,8 +70,9 @@ await updateUserPreferences({ density: 'compact', theme: 'light' });
 
 ## Atalhos de preferências no menu
 
-- O menu do rodapé expõe três botões com `data-action="preferences-theme"`, `data-action="preferences-font"` e `data-action="preferences-language"`.
-- Cada clique fecha o menu principal, calcula o próximo valor disponível e chama `updateUserPreferences`, aplicando imediatamente tema, escala tipográfica ou idioma.
+- A seção **Usuário** do menu principal concentra as trocas de jornada (`data-view="register"` ou `data-view="guest"`), permitindo alternar entre Cadastro e Visitante sem depender de botões externos ao painel.
+- A seção **Configurações** mantém os três botões com `data-action="preferences-theme"`, `data-action="preferences-font"` e `data-action="preferences-language"`.
+- Cada clique calcula o próximo valor disponível e chama `updateUserPreferences`, mantendo o painel aberto enquanto aplica imediatamente tema, escala tipográfica ou idioma.
 - Os rótulos e dicas exibidos no menu são atualizados por `subscribeUserPreferences`, garantindo que leitores de tela anunciem o estado vigente.
 - Não há mais janela dedicada de preferências; toda a personalização acontece diretamente por esses atalhos.
 

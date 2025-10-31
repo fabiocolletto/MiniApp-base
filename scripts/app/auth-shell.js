@@ -132,8 +132,7 @@ export function initAuthShell(options = {}) {
 
   const viewRoot = doc.getElementById('authViewRoot');
   const authCard = doc.querySelector('.auth-card');
-  const selector = doc.querySelector('.auth-selector');
-  const selectorButtons = Array.from(doc.querySelectorAll('.auth-selector__button'));
+  const viewToggleButtons = Array.from(doc.querySelectorAll('[data-view-toggle]'));
   const statusHint = doc.getElementById('statusHint');
   const footer = doc.querySelector('.auth-shell__footer');
   const footerMenu = doc.querySelector('.auth-shell__footer-nav');
@@ -1216,7 +1215,6 @@ export function initAuthShell(options = {}) {
     const action = item.dataset.action;
 
     if (action === 'preferences-theme') {
-      closeFooterMenu();
       const snapshot =
         typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
       const currentTheme = snapshot?.theme ?? 'auto';
@@ -1234,7 +1232,6 @@ export function initAuthShell(options = {}) {
     }
 
     if (action === 'preferences-font') {
-      closeFooterMenu();
       const snapshot =
         typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
       const currentFontScale = snapshot?.fontScale ?? 0;
@@ -1252,7 +1249,6 @@ export function initAuthShell(options = {}) {
     }
 
     if (action === 'preferences-language') {
-      closeFooterMenu();
       const snapshot =
         typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
       const currentLanguage = snapshot?.lang ?? 'pt-BR';
@@ -1331,16 +1327,23 @@ export function initAuthShell(options = {}) {
     }
   }
 
-  function setActiveButton(viewName) {
-    selectorButtons.forEach((button) => {
+  function setActiveViewToggle(viewName) {
+    viewToggleButtons.forEach((button) => {
       if (!(button instanceof HTMLElementRef)) {
         return;
       }
 
       const isActive = button.dataset.view === viewName;
       button.classList.toggle('is-active', isActive);
-      button.setAttribute('aria-selected', String(isActive));
-      button.tabIndex = isActive ? 0 : -1;
+      if (button.hasAttribute('aria-current')) {
+        button.setAttribute('aria-current', isActive ? 'page' : 'false');
+      }
+      if (button.hasAttribute('aria-selected')) {
+        button.setAttribute('aria-selected', String(isActive));
+      }
+      if (button.hasAttribute('aria-pressed')) {
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      }
     });
   }
 
@@ -1370,7 +1373,7 @@ export function initAuthShell(options = {}) {
     viewConfig.render(viewRoot, viewProps);
     currentView = viewName;
 
-    setActiveButton(viewName);
+    setActiveViewToggle(viewName);
     setActiveFooterMenuItem(viewName);
     updateHint(viewName);
 
@@ -1398,7 +1401,7 @@ export function initAuthShell(options = {}) {
     }
   }
 
-  selectorButtons.forEach((button) => {
+  viewToggleButtons.forEach((button) => {
     if (!(button instanceof HTMLElementRef)) {
       return;
     }
@@ -1415,43 +1418,6 @@ export function initAuthShell(options = {}) {
       button.removeEventListener('click', handleClick);
     });
   });
-
-  if (ensureHtmlElement(doc, selector)) {
-    const handleSelectorKeydown = (event) => {
-      if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
-        return;
-      }
-
-      const views = selectorButtons.map((button) => button.dataset.view).filter(Boolean);
-      if (!views.length) {
-        return;
-      }
-
-      const currentIndex = views.indexOf(currentView ?? '');
-      const lastIndex = views.length - 1;
-
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-        event.preventDefault();
-        const nextIndex = currentIndex < 0 ? 0 : Math.min(currentIndex + 1, lastIndex);
-        const nextButton = selectorButtons[nextIndex];
-        if (nextButton) {
-          nextButton.click();
-        }
-      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-        event.preventDefault();
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
-        const prevButton = selectorButtons[prevIndex];
-        if (prevButton) {
-          prevButton.click();
-        }
-      }
-    };
-
-    selector.addEventListener('keydown', handleSelectorKeydown);
-    teardownCallbacks.push(() => {
-      selector.removeEventListener('keydown', handleSelectorKeydown);
-    });
-  }
 
   const unsubscribeAppNavigate = runtime.eventBus?.on('app:navigate', handleAppNavigate);
   if (typeof unsubscribeAppNavigate === 'function') {
