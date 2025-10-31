@@ -12,6 +12,10 @@ import {
   subscribeMiniApps as subscribeMiniAppsDefault,
 } from '../data/miniapp-store.js';
 import { createMiniAppCatalogWidget } from '../views/shared/miniapp-catalog-widget.js';
+import {
+  subscribeUserPreferences as subscribeUserPreferencesDefault,
+  getFontScaleLabel as getFontScaleLabelDefault,
+} from '../preferences/user-preferences.js';
 
 const APP_QUERY_PARAM = 'app';
 const VIEW_CLEANUP_KEY = '__viewCleanup';
@@ -133,6 +137,8 @@ function normalizeOptions(options) {
     renderAccountDashboard: runtime.renderAccountDashboard ?? renderAccountDashboardDefault,
     getMiniAppsSnapshot: runtime.getMiniAppsSnapshot ?? getMiniAppsSnapshotDefault,
     subscribeMiniApps: runtime.subscribeMiniApps ?? subscribeMiniAppsDefault,
+    subscribeUserPreferences: runtime.subscribeUserPreferences ?? subscribeUserPreferencesDefault,
+    getFontScaleLabel: runtime.getFontScaleLabel ?? getFontScaleLabelDefault,
     fetch: runtime.fetch ?? win?.fetch ?? (typeof fetch === 'function' ? fetch : null),
     URL: runtime.URL ?? win?.URL ?? (typeof URL !== 'undefined' ? URL : null),
   };
@@ -220,6 +226,8 @@ export function initAuthShell(options = {}) {
   const footerMenuMiniAppsEmpty = footerMenuPanel?.querySelector('[data-menu-empty="miniapps"]');
   const footerMenuMiniAppsList = footerMenuPanel?.querySelector('[data-menu-group="miniapps"]');
   const footerMenuMiniAppsDivider = footerMenuPanel?.querySelector('.auth-shell__menu-divider');
+  const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
+  const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
   const widgetBoard = doc.querySelector('[data-widget-board]');
   const widgetGrid = widgetBoard?.querySelector('[data-widget-grid]');
   const widgetEmptyState = doc.querySelector('[data-widget-empty]');
@@ -232,6 +240,34 @@ export function initAuthShell(options = {}) {
     expand: 'Mostrar detalhes do rodapé',
     collapse: 'Ocultar detalhes do rodapé',
   };
+
+  const fallbackFontScaleLabel =
+    typeof runtime.getFontScaleLabel === 'function' ? runtime.getFontScaleLabel(0) : 'Padrão';
+
+  function updateFontScaleQuickAction(fontScaleValue = undefined) {
+    const label =
+      typeof runtime.getFontScaleLabel === 'function'
+        ? runtime.getFontScaleLabel(fontScaleValue)
+        : null;
+    const resolvedLabel = label ?? fallbackFontScaleLabel;
+
+    if (footerMenuFontScaleValue) {
+      footerMenuFontScaleValue.textContent = resolvedLabel;
+    }
+
+    if (ensureHtmlElement(doc, footerMenuFontScaleButton)) {
+      const baseLabel = 'Ajustar tamanho do texto';
+      if (resolvedLabel) {
+        footerMenuFontScaleButton.setAttribute('aria-label', `${baseLabel}. Escala atual: ${resolvedLabel}`);
+        footerMenuFontScaleButton.setAttribute('title', `${baseLabel} (Escala atual: ${resolvedLabel})`);
+      } else {
+        footerMenuFontScaleButton.setAttribute('aria-label', baseLabel);
+        footerMenuFontScaleButton.setAttribute('title', baseLabel);
+      }
+    }
+  }
+
+  updateFontScaleQuickAction();
 
   const FOOTER_MENU_STRUCTURE = [
     {
@@ -368,6 +404,20 @@ export function initAuthShell(options = {}) {
   const activeWidgetIds = new Set(alwaysActiveWidgetIds);
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
+
+  if (typeof runtime.subscribeUserPreferences === 'function') {
+    const unsubscribePreferences = runtime.subscribeUserPreferences((prefsSnapshot) => {
+      if (prefsSnapshot && typeof prefsSnapshot === 'object') {
+        updateFontScaleQuickAction(prefsSnapshot.fontScale);
+      } else {
+        updateFontScaleQuickAction();
+      }
+    });
+
+    if (typeof unsubscribePreferences === 'function') {
+      teardownCallbacks.push(unsubscribePreferences);
+    }
+  }
 
   const FOOTER_OFFSET_TOKEN = '--layout-footer-offset';
 

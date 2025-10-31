@@ -234,6 +234,31 @@
         <button
           type="button"
           class="auth-shell__menu-item auth-shell__menu-item--quick"
+          data-action="preferences-font"
+          data-pref-focus="fontScale"
+          aria-label="Ajustar tamanho do texto"
+          title="Ajustar tamanho do texto"
+        >
+          <span class="auth-shell__menu-item-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+              <path
+                d="M4.75 18.25a.75.75 0 01-.7-1.01l3.5-10a.75.75 0 01.71-.49h2.48a.75.75 0 01.71.49l3.5 10a.75.75 0 01-1.42.5L12.9 15.5H8.1l-.62 1.82a.75.75 0 01-.71.93zM9.13 14h2.74L10.5 9.12zM15 19.25a.75.75 0 01-.75-.75v-2.5A.75.75 0 0115 15.25h1.5V14a.75.75 0 011.5 0v1.25H20a.75.75 0 010 1.5h-2v1.75a.75.75 0 01-.75.75z"
+                fill="currentColor"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </span>
+          <span class="auth-shell__menu-item-copy">
+            <span class="auth-shell__menu-item-label">Tamanho do texto</span>
+            <span class="auth-shell__menu-item-hint">
+              Cinco níveis disponíveis. Escala atual:
+              <span data-pref-font-scale-value>Padrão</span>
+            </span>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="auth-shell__menu-item auth-shell__menu-item--quick"
           data-action="preferences-language"
           data-pref-focus="lang"
           aria-label="Escolher idioma"
