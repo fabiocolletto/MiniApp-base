@@ -96,22 +96,27 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
     const viewRoot = env.document.getElementById('authViewRoot');
     assert.ok(viewRoot);
     assert.equal(viewRoot.dataset.view, 'guest');
-    assert.equal(viewRoot.hidden, true);
+    assert.equal(viewRoot.hidden, false);
+    assert.ok(viewRoot.classList.contains('auth-screen__view'));
+    assert.ok(viewRoot.classList.contains('auth-screen__view--surface'));
 
     const educationHome = env.document.querySelector('.education-home__container');
     assert.equal(educationHome, null);
 
-    const guestView = env.document.querySelector('#authViewRoot');
+    const guestView = viewRoot.querySelector('.auth-view.auth-view--guest');
     assert.ok(guestView);
-    assert.equal(guestView.textContent.trim(), '');
+
+    const guestTitle = guestView.querySelector('.auth-view__title');
+    assert.ok(guestTitle);
+    assert.equal(guestTitle.textContent.trim(), 'MiniApp Educação');
+
+    const guestDescription = guestView.querySelector('.auth-view__description');
+    assert.ok(guestDescription);
+    assert.match(guestDescription.textContent.trim(), /Ajuste tema, idioma e tamanho do texto/);
 
     const authScreen = env.document.querySelector('.auth-screen');
     assert.ok(authScreen);
     assert.equal(authScreen.dataset.activeView, 'guest');
-
-    const authCard = env.document.querySelector('.auth-card');
-    assert.ok(authCard);
-    assert.equal(authCard.dataset.activeView, 'guest');
 
     const widgetBoard = env.document.querySelector('.auth-widget-board');
     assert.equal(widgetBoard, null);

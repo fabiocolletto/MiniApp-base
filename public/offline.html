@@ -19,21 +19,19 @@
     </header>
 
     <main class="auth-screen">
-      <section class="auth-card" role="status" aria-live="polite">
-        <header class="auth-header">
-          <h1>Sem conexão</h1>
-          <p class="auth-sub">Não foi possível carregar o conteúdo porque você está offline.</p>
-        </header>
-        <div class="auth-card__body">
-          <div class="guest-panel" role="presentation">
-            <p class="guest-panel__intro">
-              Assim que a conexão for restabelecida, volte a esta página para acessar os MiniApps.
-            </p>
-            <p class="guest-panel__note">
-              Caso o problema persista, verifique o acesso à internet ou tente novamente mais tarde.
-            </p>
-          </div>
-        </div>
+      <section class="auth-screen__view auth-screen__view--surface" role="status" aria-live="polite">
+        <article class="auth-view auth-view--guest">
+          <h1 class="auth-view__title">Sem conexão</h1>
+          <p class="auth-view__description">
+            Não foi possível carregar o conteúdo porque você está offline.
+          </p>
+          <p class="auth-view__description">
+            Assim que a conexão for restabelecida, volte a esta página para acessar os MiniApps.
+          </p>
+          <p class="auth-view__description">
+            Caso o problema persista, verifique o acesso à internet ou tente novamente mais tarde.
+          </p>
+        </article>
       </section>
     </main>
 
