@@ -34,7 +34,7 @@ main {
 }
 
 a {
-  color: var(--color-accent, #10a37f);
+  color: var(--color-accent, #4358e6);
   text-decoration: none;
 }
 
@@ -60,7 +60,7 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid var(--color-focus-outline, rgba(16, 163, 127, 0.55));
+  outline: 3px solid var(--color-focus-outline, rgba(67, 88, 230, 0.55));
   outline-offset: 2px;
 }
 
@@ -80,18 +80,18 @@ textarea:focus-visible {
   width: 100%;
   display: grid;
   gap: clamp(0.9rem, 2vw, 1.4rem);
-  background: var(--color-bg-card, #13161b);
+  background: var(--color-bg-card, #141c2e);
   border-radius: var(--radius-lg, 18px);
-  border: 1px solid var(--color-card-border, rgba(236, 236, 241, 0.08));
-  box-shadow: var(--color-shadow-primary, 0 1.25rem 3rem rgba(5, 9, 12, 0.35));
+  border: 1px solid var(--color-card-border, rgba(231, 234, 246, 0.12));
+  box-shadow: var(--color-shadow-primary, 0 1.25rem 3rem rgba(10, 16, 32, 0.35));
   padding: clamp(1.5rem, 3.5vw, 2.25rem);
 }
 
 .surface-card {
-  background: var(--color-bg-elevated, #13161b);
+  background: var(--color-bg-elevated, #18223a);
   border-radius: var(--radius-md, 16px);
-  border: 1px solid var(--color-border-muted, rgba(236, 236, 241, 0.12));
-  box-shadow: var(--color-shadow-elevated, 0 1.5rem 3.5rem rgba(5, 9, 12, 0.28));
+  border: 1px solid var(--color-border-muted, rgba(231, 234, 246, 0.16));
+  box-shadow: var(--color-shadow-elevated, 0 1.5rem 3.5rem rgba(10, 16, 32, 0.28));
   padding: clamp(1.35rem, 3vw, 1.95rem);
 }
 
@@ -130,33 +130,33 @@ textarea:focus-visible {
 }
 
 .button--primary {
-  background: var(--color-accent, #10a37f);
-  color: var(--color-text-inverse, #f7f8f8);
-  box-shadow: 0 0.55rem 1.6rem rgba(var(--ac-primary-rgb, 16, 163, 127), 0.25);
+  background: var(--color-accent, #4358e6);
+  color: var(--color-text-inverse, #f9fafb);
+  box-shadow: 0 0.55rem 1.6rem rgba(var(--ac-primary-rgb, 67, 88, 230), 0.25);
 }
 
 .button--primary:hover,
 .button--primary:focus-visible {
   background: color-mix(in srgb, var(--color-accent) 88%, white 12%);
-  color: var(--color-text-inverse, #f7f8f8);
+  color: var(--color-text-inverse, #f9fafb);
 }
 
 .button--danger {
-  background: var(--color-error-text, #a50e0e);
-  color: var(--color-text-inverse, #f7f8f8);
-  border-color: color-mix(in srgb, var(--color-error-text, #a50e0e) 72%, transparent);
-  box-shadow: 0 0.55rem 1.6rem rgba(var(--color-error-rgb, 197, 34, 31), 0.28);
+  background: var(--color-error-text, #dc2626);
+  color: var(--color-text-inverse, #f9fafb);
+  border-color: color-mix(in srgb, var(--color-error-text, #dc2626) 72%, transparent);
+  box-shadow: 0 0.55rem 1.6rem rgba(var(--color-error-rgb, 220, 38, 38), 0.28);
 }
 
 .button--danger:hover,
 .button--danger:focus-visible {
-  background: color-mix(in srgb, var(--color-error-text, #a50e0e) 88%, white 12%);
-  color: var(--color-text-inverse, #f7f8f8);
+  background: color-mix(in srgb, var(--color-error-text, #dc2626) 88%, white 12%);
+  color: var(--color-text-inverse, #f9fafb);
 }
 
 .button--secondary {
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  color: var(--color-accent, #10a37f);
+  color: var(--color-accent, #4358e6);
   border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
@@ -181,15 +181,15 @@ textarea:focus-visible {
 
 .form-label {
   font-weight: 600;
-  color: var(--color-text-secondary, #3a3f4b);
+  color: var(--color-text-secondary, #374151);
 }
 
 .form-input,
 .form-textarea {
   font: inherit;
-  color: var(--color-text-primary, #ececf1);
-  background: var(--color-input-bg, #13161b);
-  border: 1px solid var(--color-input-border, rgba(236, 236, 241, 0.16));
+  color: var(--color-text-primary, #e8edff);
+  background: var(--color-input-bg, #141c2e);
+  border: 1px solid var(--color-input-border, rgba(231, 234, 246, 0.18));
   border-radius: var(--radius-md, 14px);
   padding: var(--panel-input-padding-block, 0.6rem)
     var(--panel-input-padding-inline, 0.85rem);
@@ -198,13 +198,13 @@ textarea:focus-visible {
 
 .form-input::placeholder,
 .form-textarea::placeholder {
-  color: var(--color-input-placeholder, rgba(236, 236, 241, 0.38));
+  color: var(--color-input-placeholder, rgba(232, 237, 255, 0.38));
 }
 
 .form-input:focus-visible,
 .form-textarea:focus-visible {
-  border-color: var(--color-input-border-strong, rgba(16, 163, 127, 0.55));
-  box-shadow: 0 0 0 3px rgba(var(--ac-primary-rgb, 16, 163, 127), 0.28);
+  border-color: var(--color-input-border-strong, rgba(124, 140, 255, 0.55));
+  box-shadow: 0 0 0 3px rgba(var(--ac-primary-rgb, 67, 88, 230), 0.28);
 }
 
 .form-textarea {
@@ -220,12 +220,12 @@ textarea:focus-visible {
 
 .form-message--error,
 .user-form__feedback--error {
-  color: var(--color-error-text, #ff6b6b);
+  color: var(--color-error-text, #ef4444);
 }
 
 .form-message--success,
 .user-form__feedback--success {
-  color: var(--color-success-text, #4ade80);
+  color: var(--color-success-text, #22c55e);
 }
 
 .user-form__field--inline {
@@ -304,7 +304,7 @@ textarea:focus-visible {
 }
 
 .auth-panel__redirect-link {
-  color: var(--color-accent, #10a37f);
+  color: var(--color-accent, #4358e6);
   font-weight: 600;
 }
 
@@ -318,8 +318,8 @@ textarea:focus-visible {
   gap: 0.75rem;
   padding: 1rem;
   border-radius: var(--radius-md, 16px);
-  border: 1px solid rgba(var(--ac-primary-rgb, 16, 163, 127), 0.25);
-  background: rgba(var(--ac-primary-rgb, 16, 163, 127), 0.1);
+  border: 1px solid rgba(var(--ac-primary-rgb, 67, 88, 230), 0.25);
+  background: rgba(var(--ac-primary-rgb, 67, 88, 230), 0.1);
 }
 
 .register-panel__legal-option {
@@ -332,7 +332,7 @@ textarea:focus-visible {
   justify-self: flex-start;
   width: 1.1rem;
   height: 1.1rem;
-  accent-color: var(--color-accent, #10a37f);
+  accent-color: var(--color-accent, #4358e6);
 }
 
 .register-panel__legal-text {
@@ -349,7 +349,7 @@ textarea:focus-visible {
 .register-success__title {
   margin: 0;
   font-size: clamp(1.4rem, 3vw, 1.9rem);
-  color: var(--color-accent, #10a37f);
+  color: var(--color-accent, #4358e6);
 }
 
 .register-success__message,
@@ -362,7 +362,7 @@ textarea:focus-visible {
   display: inline-block;
   padding: 0.25rem 0.65rem;
   border-radius: var(--radius-pill, 999px);
-  background: rgba(var(--ac-primary-rgb, 16, 163, 127), 0.16);
+  background: rgba(var(--ac-primary-rgb, 67, 88, 230), 0.16);
   color: color-mix(in srgb, var(--color-accent) 82%, black 18%);
   font-weight: 600;
 }
@@ -378,7 +378,7 @@ textarea:focus-visible {
 
 .register-success__action--secondary {
   background: transparent;
-  border-color: rgba(var(--ac-primary-rgb, 16, 163, 127), 0.35);
+  border-color: rgba(var(--ac-primary-rgb, 67, 88, 230), 0.35);
 }
 
 @media (min-width: 540px) {

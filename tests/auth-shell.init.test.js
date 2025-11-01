@@ -8,6 +8,10 @@ import { createDomEnvironment } from './helpers/dom-env.js';
 import { initAuthShell } from '../scripts/app/auth-shell.js';
 import { renderRegisterPanel } from '../scripts/views/register.js';
 import { renderAccountDashboard } from '../scripts/views/account-dashboard.js';
+import {
+  WHITE_LABEL_IDENTITY,
+  WHITE_LABEL_MINIAPP_CONTEXT,
+} from '../scripts/app/white-label-config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
@@ -60,6 +64,23 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     throw new Error(`Unexpected fetch for resource: ${resource}`);
   };
 
+  const miniAppCalls = [];
+  const loadMiniApp = async (id, options = {}) => {
+    miniAppCalls.push({ id, options });
+
+    const target = options.target ?? env.document.querySelector(options.targetSelector ?? '#content');
+    if (target) {
+      target.replaceChildren();
+      target.dataset.miniappLoaded = 'true';
+      const placeholder = env.document.createElement('p');
+      placeholder.className = 'test-miniapp-placeholder';
+      placeholder.textContent = `MiniApp ${id} montado para testes.`;
+      target.append(placeholder);
+    }
+
+    return { entry: { id } };
+  };
+
   const shell = initAuthShell({
     window: env.window,
     document: env.document,
@@ -68,6 +89,7 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     eventBus: createEventBus(),
     renderRegisterPanel,
     renderAccountDashboard,
+    loadMiniApp,
   });
 
   const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -78,6 +100,7 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     window: env.window,
     document: env.document,
     getRegisteredVersion: () => registeredVersion,
+    getMiniAppCalls: () => miniAppCalls.slice(),
     flushAsync,
     restore: env.restore,
   };
@@ -88,7 +111,7 @@ function teardownShell(env) {
   env.restore?.();
 }
 
-test('inicializa o shell com painel Educação estático e sem MiniApps listados', async () => {
+test('inicializa o shell white label com painel padrão e sem MiniApps listados', async () => {
   const env = setupShell();
   try {
     await env.flushAsync();
@@ -108,11 +131,34 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
 
     const guestTitle = guestView.querySelector('.auth-view__title');
     assert.ok(guestTitle);
-    assert.equal(guestTitle.textContent.trim(), 'MiniApp Educação');
+    assert.equal(guestTitle.textContent.trim(), WHITE_LABEL_IDENTITY.shortName);
 
     const guestDescription = guestView.querySelector('.auth-view__description');
     assert.ok(guestDescription);
-    assert.match(guestDescription.textContent.trim(), /Ajuste tema, idioma e tamanho do texto/);
+    assert.equal(guestDescription.textContent.trim(), WHITE_LABEL_IDENTITY.welcomeMessage);
+
+    const statusHint = env.document.getElementById('statusHint');
+    assert.ok(statusHint);
+    assert.equal(statusHint.textContent.trim(), WHITE_LABEL_IDENTITY.guestHint);
+
+    const miniAppHost = guestView.querySelector('[data-miniapp-host="primary"]');
+    assert.ok(miniAppHost);
+    assert.equal(miniAppHost.dataset.miniappLoaded ?? 'false', 'true');
+    const placeholder = miniAppHost.querySelector('.test-miniapp-placeholder');
+    assert.ok(placeholder);
+    assert.match(placeholder.textContent, /MiniApp primary montado/);
+
+    const miniAppCalls = env.getMiniAppCalls();
+    assert.equal(miniAppCalls.length, 1);
+    assert.equal(miniAppCalls[0].id, 'primary');
+    assert.ok(miniAppCalls[0].options?.context);
+    assert.equal(miniAppCalls[0].options.context.brandName, WHITE_LABEL_MINIAPP_CONTEXT.brandName);
+    assert.equal(miniAppCalls[0].options.context.callToAction, WHITE_LABEL_MINIAPP_CONTEXT.callToAction);
+    assert.equal(miniAppCalls[0].options.context.tagline, WHITE_LABEL_MINIAPP_CONTEXT.tagline);
+    assert.deepEqual(miniAppCalls[0].options.context.highlights, WHITE_LABEL_MINIAPP_CONTEXT.highlights);
+    assert.equal(miniAppCalls[0].options.context.ctaHref, WHITE_LABEL_MINIAPP_CONTEXT.ctaHref);
+    assert.equal(miniAppCalls[0].options.context.window, env.window);
+    assert.equal(miniAppCalls[0].options.context.document, env.document);
 
     const authScreen = env.document.querySelector('.auth-screen');
     assert.ok(authScreen);

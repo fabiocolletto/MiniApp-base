@@ -5,7 +5,7 @@ Este documento descreve o checklist recorrente para manter o MiniApp Base instal
 ## Manifesto (`manifest.webmanifest`)
 
 - Atualize `version`, `start_url`, `scope` e `shortcuts` sempre que um novo MiniApp for publicado.
-- O MiniApp Educação não utiliza atalhos `/?app=<slug>` nem fichas individuais; mantenha o painel inicial atualizado diretamente no shell.
+- O shell white label carrega apenas o MiniApp cadastrado em `miniapps/registry.json`; mantenha `shortcuts` vazio enquanto houver um único módulo.
 - Valide os ícones maskable (192 px e 512 px) usando [Maskable.app](https://maskable.app/editor).
 
 ## Service Worker (`service-worker.js`)
@@ -33,5 +33,5 @@ Este documento descreve o checklist recorrente para manter o MiniApp Base instal
 
 1. Revisar `inventory.json` para identificar novos órfãos.
 2. Consolidar assets em `public/` e mover legados para `archive/<data>/` com documentação.
-  3. Revisar se novos módulos do MiniApp Educação exigem rotas dedicadas e atualizar este guia caso atalhos externos voltem a ser necessários.
+  3. Revisar se o MiniApp publicado exige rotas dedicadas ou novos atalhos e atualizar este guia caso o shell volte a hospedar múltiplos módulos.
 4. Atualizar este guia caso políticas de cache ou suporte offline mudem.

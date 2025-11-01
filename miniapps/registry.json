@@ -1,1 +1,6 @@
-[]
+[
+  {
+    "id": "primary",
+    "entry": "./miniapps/primary/index.js"
+  }
+]

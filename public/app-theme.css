@@ -5,17 +5,17 @@
   @import url("./tokens.css");
 
   :root {
-    --ac-primary: var(--global-color-brand-primary, #10a37f);
-    --ac-secondary: var(--global-color-brand-secondary, #1f232a);
-    --ac-text: var(--light-color-text-primary, #1f232a);
-    --ac-accent: var(--global-color-brand-accent, #2bb489);
-    --ac-bg: var(--light-color-surface-background, #f7f8f8);
+    --ac-primary: var(--global-color-brand-primary, #4358e6);
+    --ac-secondary: var(--global-color-brand-secondary, #1f2933);
+    --ac-text: var(--light-color-text-primary, #1f2937);
+    --ac-accent: var(--global-color-brand-accent, #7c8cff);
+    --ac-bg: var(--light-color-surface-background, #f3f4f8);
     --ac-surface: var(--light-color-surface-card, #ffffff);
-    --ac-surface-muted: var(--light-color-surface-muted, #f1f3f5);
-    --ac-border-subtle: var(--light-color-border-subtle, rgba(15, 23, 32, 0.08));
-    --ac-border-strong: var(--light-color-border-strong, rgba(16, 163, 127, 0.35));
-    --ac-text-secondary: var(--light-color-text-secondary, #3a3f4b);
-    --ac-text-muted: var(--light-color-text-muted, #5a6270);
+    --ac-surface-muted: var(--light-color-surface-muted, #e7eaf6);
+    --ac-border-subtle: var(--light-color-border-subtle, rgba(17, 24, 39, 0.08));
+    --ac-border-strong: var(--light-color-border-strong, rgba(67, 88, 230, 0.38));
+    --ac-text-secondary: var(--light-color-text-secondary, #374151);
+    --ac-text-muted: var(--light-color-text-muted, #4b5563);
     --ac-font-primary: var(
       --e-global-typography-primary-font-family,
       var(--global-font-family-primary, "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif)
@@ -41,8 +41,8 @@
     --ac-elementor-secondary: var(--e-global-color-secondary, var(--ac-secondary));
     --ac-elementor-text: var(--e-global-color-text, var(--ac-text));
     --ac-elementor-accent: var(--e-global-color-accent, var(--ac-accent));
-    --ac-primary-rgb: 16, 163, 127;
-    --ac-accent-rgb: 43, 180, 137;
+    --ac-primary-rgb: 67, 88, 230;
+    --ac-accent-rgb: 124, 140, 255;
     --color-bg-body: var(--ac-bg);
     --color-bg-card: var(--ac-surface);
     --color-bg-elevated: color-mix(in srgb, var(--ac-surface) 95%, black 5%);
@@ -53,7 +53,7 @@
     --color-text-primary: var(--ac-text);
     --color-text-secondary: var(--ac-text-secondary);
     --color-text-muted: var(--ac-text-muted);
-    --color-text-inverse: var(--global-color-neutral-inverse, #f7f8f8);
+    --color-text-inverse: var(--global-color-neutral-inverse, #f9fafb);
     --color-focus-outline: color-mix(in srgb, var(--ac-primary) 48%, transparent);
     --color-accent: var(--ac-elementor-primary);
     --color-accent-strong: color-mix(in srgb, var(--color-accent) 86%, black 14%);
@@ -63,23 +63,23 @@
     --color-input-border: var(--ac-border-subtle);
     --color-input-border-strong: var(--ac-border-strong);
     --color-input-placeholder: color-mix(in srgb, var(--ac-text) 34%, transparent);
-    --color-success-text: var(--global-color-state-success, #0f9d58);
-    --color-error-text: var(--global-color-state-error, #d93025);
+    --color-success-text: var(--global-color-state-success, #16a34a);
+    --color-error-text: var(--global-color-state-error, #dc2626);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --ac-bg: var(--dark-color-surface-background, #0b0d10);
-      --ac-surface: var(--dark-color-surface-card, #13161b);
-      --ac-surface-muted: var(--dark-color-surface-muted, #1a1e24);
-      --ac-text: var(--dark-color-text-primary, #ececf1);
-      --ac-text-secondary: var(--dark-color-text-secondary, #bfc5d6);
-      --ac-text-muted: var(--dark-color-text-muted, #8e8ea0);
-      --ac-border-subtle: var(--dark-color-border-subtle, rgba(236, 236, 241, 0.12));
-      --ac-border-strong: var(--dark-color-border-strong, rgba(16, 163, 127, 0.45));
-      --ac-primary: var(--e-global-color-primary, var(--global-color-brand-primary, #10a37f));
-      --ac-accent: var(--e-global-color-accent, var(--global-color-brand-accent, #2bb489));
-      --ac-secondary: var(--global-color-brand-secondary, #1f232a);
+      --ac-bg: var(--dark-color-surface-background, #0f172a);
+      --ac-surface: var(--dark-color-surface-card, #141c2e);
+      --ac-surface-muted: var(--dark-color-surface-muted, #1c2740);
+      --ac-text: var(--dark-color-text-primary, #e8edff);
+      --ac-text-secondary: var(--dark-color-text-secondary, #c7d2fe);
+      --ac-text-muted: var(--dark-color-text-muted, #94a3b8);
+      --ac-border-subtle: var(--dark-color-border-subtle, rgba(231, 234, 246, 0.18));
+      --ac-border-strong: var(--dark-color-border-strong, rgba(124, 140, 255, 0.5));
+      --ac-primary: var(--e-global-color-primary, var(--global-color-brand-primary, #4358e6));
+      --ac-accent: var(--e-global-color-accent, var(--global-color-brand-accent, #7c8cff));
+      --ac-secondary: var(--global-color-brand-secondary, #1f2933);
       --color-bg-body: var(--ac-bg);
       --color-bg-card: var(--ac-surface);
       --color-bg-elevated: color-mix(in srgb, var(--ac-surface) 92%, white 8%);
@@ -90,7 +90,7 @@
       --color-text-primary: var(--ac-text);
       --color-text-secondary: var(--ac-text-secondary);
       --color-text-muted: var(--ac-text-muted);
-      --color-text-inverse: var(--global-color-neutral-base, #0f1720);
+      --color-text-inverse: var(--global-color-neutral-base, #111827);
       --color-focus-outline: color-mix(in srgb, var(--ac-primary) 56%, transparent);
       --color-accent: var(--ac-primary);
       --color-accent-strong: color-mix(in srgb, var(--color-accent) 84%, black 16%);
@@ -99,21 +99,21 @@
       --color-input-border: var(--ac-border-subtle);
       --color-input-border-strong: var(--ac-border-strong);
       --color-input-placeholder: color-mix(in srgb, var(--ac-text) 36%, transparent);
-      --color-success-text: color-mix(in srgb, var(--global-color-state-success, #0f9d58) 78%, white 22%);
-      --color-error-text: color-mix(in srgb, var(--global-color-state-error, #d93025) 78%, white 22%);
+      --color-success-text: color-mix(in srgb, var(--global-color-state-success, #16a34a) 78%, white 22%);
+      --color-error-text: color-mix(in srgb, var(--global-color-state-error, #dc2626) 78%, white 22%);
     }
   }
 
   :root[data-theme="light"] {
     color-scheme: light;
-    --ac-bg: var(--light-color-surface-background, #f7f8f8);
+    --ac-bg: var(--light-color-surface-background, #f3f4f8);
     --ac-surface: var(--light-color-surface-card, #ffffff);
-    --ac-surface-muted: var(--light-color-surface-muted, #f1f3f5);
-    --ac-text: var(--light-color-text-primary, #1f232a);
-    --ac-text-secondary: var(--light-color-text-secondary, #3a3f4b);
-    --ac-text-muted: var(--light-color-text-muted, #5a6270);
-    --ac-border-subtle: var(--light-color-border-subtle, rgba(15, 23, 32, 0.08));
-    --ac-border-strong: var(--light-color-border-strong, rgba(16, 163, 127, 0.35));
+    --ac-surface-muted: var(--light-color-surface-muted, #e7eaf6);
+    --ac-text: var(--light-color-text-primary, #1f2937);
+    --ac-text-secondary: var(--light-color-text-secondary, #374151);
+    --ac-text-muted: var(--light-color-text-muted, #4b5563);
+    --ac-border-subtle: var(--light-color-border-subtle, rgba(17, 24, 39, 0.08));
+    --ac-border-strong: var(--light-color-border-strong, rgba(67, 88, 230, 0.38));
     --color-bg-body: var(--ac-bg);
     --color-bg-card: var(--ac-surface);
     --color-bg-elevated: color-mix(in oklab, var(--ac-surface) 92%, black 8%);
@@ -124,7 +124,7 @@
     --color-text-primary: var(--ac-text);
     --color-text-secondary: var(--ac-text-secondary);
     --color-text-muted: var(--ac-text-muted);
-    --color-text-inverse: var(--global-color-neutral-inverse, #f7f8f8);
+    --color-text-inverse: var(--global-color-neutral-inverse, #f9fafb);
     --color-focus-outline: color-mix(in srgb, var(--ac-primary) 48%, transparent);
     --color-accent: var(--ac-elementor-primary);
     --color-accent-strong: color-mix(in srgb, var(--color-accent) 86%, black 14%);
@@ -133,20 +133,20 @@
     --color-input-border: var(--ac-border-subtle);
     --color-input-border-strong: var(--ac-border-strong);
     --color-input-placeholder: color-mix(in srgb, var(--ac-text) 34%, transparent);
-    --color-success-text: var(--global-color-state-success, #0f9d58);
-    --color-error-text: var(--global-color-state-error, #d93025);
+    --color-success-text: var(--global-color-state-success, #16a34a);
+    --color-error-text: var(--global-color-state-error, #dc2626);
   }
 
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --ac-bg: var(--dark-color-surface-background, #0b0d10);
-    --ac-surface: var(--dark-color-surface-card, #13161b);
-    --ac-surface-muted: var(--dark-color-surface-muted, #1a1e24);
-    --ac-text: var(--dark-color-text-primary, #ececf1);
-    --ac-text-secondary: var(--dark-color-text-secondary, #bfc5d6);
-    --ac-text-muted: var(--dark-color-text-muted, #8e8ea0);
-    --ac-border-subtle: var(--dark-color-border-subtle, rgba(236, 236, 241, 0.12));
-    --ac-border-strong: var(--dark-color-border-strong, rgba(16, 163, 127, 0.45));
+    --ac-bg: var(--dark-color-surface-background, #0f172a);
+    --ac-surface: var(--dark-color-surface-card, #141c2e);
+    --ac-surface-muted: var(--dark-color-surface-muted, #1c2740);
+    --ac-text: var(--dark-color-text-primary, #e8edff);
+    --ac-text-secondary: var(--dark-color-text-secondary, #c7d2fe);
+    --ac-text-muted: var(--dark-color-text-muted, #94a3b8);
+    --ac-border-subtle: var(--dark-color-border-subtle, rgba(231, 234, 246, 0.18));
+    --ac-border-strong: var(--dark-color-border-strong, rgba(124, 140, 255, 0.5));
     --color-bg-body: var(--ac-bg);
     --color-bg-card: var(--ac-surface);
     --color-bg-elevated: color-mix(in oklab, var(--ac-surface) 92%, white 8%);
@@ -157,7 +157,7 @@
     --color-text-primary: var(--ac-text);
     --color-text-secondary: var(--ac-text-secondary);
     --color-text-muted: var(--ac-text-muted);
-    --color-text-inverse: var(--global-color-neutral-base, #111315);
+    --color-text-inverse: var(--global-color-neutral-base, #111827);
     --color-focus-outline: color-mix(in srgb, var(--ac-primary) 50%, transparent);
     --color-accent: var(--ac-primary);
     --color-accent-strong: color-mix(in oklab, var(--color-accent) 80%, black 20%);
@@ -166,8 +166,8 @@
     --color-input-border: var(--ac-border-subtle);
     --color-input-border-strong: var(--ac-border-strong);
     --color-input-placeholder: color-mix(in srgb, var(--ac-text) 40%, transparent);
-    --color-success-text: color-mix(in srgb, var(--global-color-state-success, #0f9d58) 82%, white 18%);
-    --color-error-text: color-mix(in srgb, var(--global-color-state-error, #d93025) 82%, white 18%);
+    --color-success-text: color-mix(in srgb, var(--global-color-state-success, #16a34a) 82%, white 18%);
+    --color-error-text: color-mix(in srgb, var(--global-color-state-error, #dc2626) 82%, white 18%);
   }
 }
 

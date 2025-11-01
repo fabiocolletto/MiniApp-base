@@ -1,7 +1,7 @@
 const { location: swLocation } = self;
 const swUrl = new URL(swLocation);
 const swVersion = swUrl.searchParams.get('v')?.trim() || 'dev';
-const CACHE_PREFIX = 'miniapp-educacao::pwa::';
+const CACHE_PREFIX = 'miniapp-white-label::pwa::';
 const CACHE_NAME = `${CACHE_PREFIX}${swVersion}`;
 const OFFLINE_FALLBACK = './public/offline.html';
 const OFFLINE_FALLBACK_URL = new URL(OFFLINE_FALLBACK, swUrl.origin).toString();

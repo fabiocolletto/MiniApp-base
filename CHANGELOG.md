@@ -75,6 +75,20 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
 - Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
 
+## [4.0.1] - 2025-11-01T06:11:49-03:00 (BRT)
+- Centralizada a identidade white label em `scripts/app/white-label-config.js`, aplicando o título, hints e metadados do shell durante o bootstrap.
+- `loadMiniApp('primary')` passa a enviar o contexto configurável do white label, garantindo que marca, CTA e destaques padrão cheguem ao módulo publicado.
+- Atualizados fallbacks do tema azul/violeta e a documentação de personalização para o cenário single MiniApp (`styles/main.css`, `docs/ui-theme-and-prefs.md`, `docs/miniapps-folder-audit.md`, `docs/pwa.md`).
+- Versão do aplicativo sincronizada para 4.0.1 (`package.json`, `package-lock.json`, `public/meta/app-version.json`, `scripts/data/system-release-source.js`).
+
+## [3.2.0] - 2025-11-01T05:52:02-03:00 (BRT)
+- Shell convertido em base white label, removendo referências à 5 Horas e ao MiniApp Educação do HTML, menu e rodapé.
+- Manifesto PWA, service worker e ícones configurados para identidade neutra com assets locais reutilizáveis.
+- Documentação inicial atualizada para orientar o uso do shell como experiência white label.
+- Paleta, tokens de design e folhas de estilo revisados para o tema white label azul/violeta, mantendo contraste AA e integração com a API de preferências.
+- MiniApp primário registrado em `miniapps/registry.json`, carregado automaticamente no painel convidado via `loadMiniApp` com host dedicado e tratamento de erros.
+- Bootstrap e camada IndexedDB preservados como base de produção, mantendo preferências, eventos e prompt PWA ativos no shell white label.
+
 ## [3.1.3] - 2025-10-31T09:26:50-03:00 (BRT)
 - Menu principal agora apresenta cabeçalho visível da seção de Configurações e atalhos rápidos para escolher tema e idioma diretamente do overlay.
 - Atalhos de configurações rápidas direcionam o foco para o controle correspondente ao abrir o painel completo de preferências.

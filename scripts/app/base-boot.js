@@ -5,6 +5,7 @@ import { openMarcoCore, openPesquisaStudio } from '../../shared/storage/idb/data
 import { migrateLegacyStorage } from '../../shared/storage/idb/migrate.js';
 import { loadUserPreferences } from '../preferences/user-preferences.js';
 import { initPwaInstallPrompt } from '../pwa/install-prompt.js';
+import { WHITE_LABEL_IDENTITY } from './white-label-config.js';
 
 function emitStorageReady(payload) {
   eventBus.emit('storage:ready', payload);
@@ -112,6 +113,27 @@ export function bootstrapMiniAppBase(runtimeWindow = typeof window !== 'undefine
   const resolvedDocument =
     (resolvedWindow && typeof resolvedWindow.document === 'object' ? resolvedWindow.document : undefined) ??
     (typeof document !== 'undefined' ? document : undefined);
+
+  if (resolvedDocument) {
+    resolvedDocument.title = WHITE_LABEL_IDENTITY.windowTitle;
+
+    const metaSelectors = [
+      ['meta[name="application-name"]', WHITE_LABEL_IDENTITY.appName],
+      ['meta[name="apple-mobile-web-app-title"]', WHITE_LABEL_IDENTITY.shortName],
+    ];
+
+    metaSelectors.forEach(([selector, value]) => {
+      const meta = resolvedDocument.querySelector(selector);
+      if (meta) {
+        meta.setAttribute('content', value);
+      }
+    });
+
+    const statusHint = resolvedDocument.getElementById('statusHint');
+    if (statusHint && typeof statusHint.textContent === 'string') {
+      statusHint.textContent = WHITE_LABEL_IDENTITY.statusHint;
+    }
+  }
 
   loadUserPreferences({ window: resolvedWindow, document: resolvedDocument }).catch((error) => {
     console.error('Falha ao carregar preferências do usuário.', error);
