@@ -8,6 +8,11 @@ import {
   getCurrentPreferences as getCurrentPreferencesDefault,
   updateUserPreferences as updateUserPreferencesDefault,
 } from '../preferences/user-preferences.js';
+import loadMiniAppDefault from '../../shell/load-miniapp.js';
+import {
+  WHITE_LABEL_IDENTITY,
+  resolveMiniAppContext,
+} from './white-label-config.js';
 
 const VIEW_CLEANUP_KEY = '__viewCleanup';
 
@@ -107,6 +112,7 @@ function normalizeOptions(options) {
     getCurrentPreferences: runtime.getCurrentPreferences ?? getCurrentPreferencesDefault,
     updateUserPreferences: runtime.updateUserPreferences ?? updateUserPreferencesDefault,
     fetch: runtime.fetch ?? win?.fetch ?? (typeof fetch === 'function' ? fetch : null),
+    loadMiniApp: runtime.loadMiniApp ?? loadMiniAppDefault,
     URL: runtime.URL ?? win?.URL ?? (typeof URL !== 'undefined' ? URL : null),
   };
 }
@@ -411,16 +417,16 @@ export function initAuthShell(options = {}) {
   const FOOTER_MENU_STRUCTURE = [
     {
       id: 'shell-access',
-      label: 'MiniApp Educação',
+      label: WHITE_LABEL_IDENTITY.shortName,
       types: [
         {
-          id: 'education-home',
+          id: 'shell-home',
           label: 'Painel inicial',
           entries: [
             {
-              id: 'view-education-home',
+              id: 'view-white-label-home',
               label: 'Bem-vindo',
-              description: 'Abra o painel inicial do MiniApp Educação.',
+              description: 'Abra o painel inicial pronto para receber o MiniApp da sua marca.',
               view: 'guest',
             },
           ],
@@ -1089,15 +1095,46 @@ export function initAuthShell(options = {}) {
     const heading = doc.createElement('h1');
     heading.className = 'auth-view__title';
     heading.dataset.i18n = 'auth.welcome';
-    heading.textContent = 'MiniApp Educação';
+    heading.textContent = WHITE_LABEL_IDENTITY.shortName;
 
     const description = doc.createElement('p');
     description.className = 'auth-view__description';
     description.dataset.i18n = 'auth.subtitle';
-    description.textContent = 'Ajuste tema, idioma e tamanho do texto antes de começar sua jornada.';
+    description.textContent = WHITE_LABEL_IDENTITY.welcomeMessage;
 
-    guestView.append(heading, description);
+    const miniAppHost = doc.createElement('section');
+    miniAppHost.className = 'auth-view__miniapp-host';
+    miniAppHost.dataset.miniappHost = 'primary';
+    miniAppHost.setAttribute('role', 'region');
+    miniAppHost.setAttribute('aria-live', 'polite');
+    miniAppHost.textContent = WHITE_LABEL_IDENTITY.miniAppLoadingMessage;
+
+    guestView.append(heading, description, miniAppHost);
     root.append(guestView);
+
+    runtime.queueTask(() => {
+      runtime
+        .loadMiniApp('primary', {
+          document: doc,
+          target: miniAppHost,
+          fetch: runtime.fetch,
+          context: {
+            ...resolveMiniAppContext({ window: win, document: doc }),
+          },
+        })
+        .then(() => {
+          miniAppHost.dataset.miniappLoaded = 'true';
+        })
+        .catch((error) => {
+          console.error('Não foi possível carregar o MiniApp cadastrado.', error);
+          miniAppHost.innerHTML = '';
+          const errorMessage = doc.createElement('p');
+          errorMessage.className = 'auth-view__miniapp-error';
+          errorMessage.textContent =
+            'Não foi possível carregar o MiniApp configurado no momento. Tente novamente mais tarde.';
+          miniAppHost.append(errorMessage);
+        });
+    });
   }
 
   const VIEW_RENDERERS = {
@@ -1107,7 +1144,7 @@ export function initAuthShell(options = {}) {
     },
     guest: {
       render: renderGuestAccessPanel,
-      hint: 'Bem-vindo ao MiniApp Educação. Esta área será preenchida com os próximos módulos do produto.',
+      hint: WHITE_LABEL_IDENTITY.guestHint,
     },
     'account-dashboard': {
       render: runtime.renderAccountDashboard,
@@ -1117,7 +1154,7 @@ export function initAuthShell(options = {}) {
 
   const FOOTER_VIEW_LABELS = {
     register: 'Criar uma nova conta',
-    guest: 'MiniApp Educação',
+    guest: WHITE_LABEL_IDENTITY.shortName,
     'account-dashboard': 'Painel da conta',
   };
 

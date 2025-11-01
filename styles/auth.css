@@ -1,37 +1,37 @@
 :root {
-  --auth-primary: var(--ac-primary, #10a37f);
-  --auth-primary-rgb: 16, 163, 127;
+  --auth-primary: var(--ac-primary, #4358e6);
+  --auth-primary-rgb: 67, 88, 230;
   --auth-primary-strong: color-mix(in srgb, var(--auth-primary) 82%, black 18%);
-  --auth-primary-soft: rgba(16, 163, 127, 0.16);
-  --auth-text: var(--ac-text, #ececf1);
-  --auth-muted: var(--ac-text-muted, #8e8ea0);
-  --auth-border: var(--ac-border-subtle, rgba(236, 236, 241, 0.12));
-  --auth-surface: var(--ac-surface, #13161b);
-  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #13161b) 94%, black 6%);
-  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(236, 236, 241, 0.12)) 100%, transparent 0%);
+  --auth-primary-soft: rgba(67, 88, 230, 0.18);
+  --auth-text: var(--ac-text, #e8edff);
+  --auth-muted: var(--ac-text-muted, #94a3b8);
+  --auth-border: var(--ac-border-subtle, rgba(231, 234, 246, 0.18));
+  --auth-surface: var(--ac-surface, #141c2e);
+  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 94%, black 6%);
+  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(231, 234, 246, 0.18)) 100%, transparent 0%);
   --auth-shell-blur: 22px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141b22) 88%, transparent 12%);
+    --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 88%, transparent 12%);
     --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
-    --auth-text: var(--ac-text, #ececf1);
-    --auth-muted: var(--ac-text-muted, #8e8ea0);
+    --auth-text: var(--ac-text, #e8edff);
+    --auth-muted: var(--ac-text-muted, #94a3b8);
   }
 }
 
 :root[data-theme="light"] {
   --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #ffffff) 94%, transparent 6%);
-  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(15, 23, 32, 0.08)) 100%, transparent 0%);
-  --auth-text: var(--ac-text, #1f232a);
-  --auth-muted: var(--ac-text-muted, #5a6270);
+  --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(17, 24, 39, 0.08)) 100%, transparent 0%);
+  --auth-text: var(--ac-text, #1f2937);
+  --auth-muted: var(--ac-text-muted, #4b5563);
 }
 
 :root[data-theme="dark"] {
-  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141b22) 88%, transparent 12%);
+  --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 88%, transparent 12%);
   --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
-  --auth-text: var(--ac-text, #ebeff3);
+  --auth-text: var(--ac-text, #e8edff);
   --auth-muted: var(--ac-text-muted, #94a3b8);
 }
 
@@ -59,8 +59,8 @@ body.auth-only {
   --content-padding-block-start: 0px;
   --content-padding-block-end: 0px;
   --view-max-block-size: auto;
-  background: var(--color-bg-body, var(--ac-bg, #0b0d10));
-  color: var(--color-text-primary, var(--ac-text, #ececf1));
+  background: var(--color-bg-body, var(--ac-bg, #0f172a));
+  color: var(--color-text-primary, var(--ac-text, #e8edff));
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -276,11 +276,11 @@ body.auth-only.auth-shell--menu-open {
   background: linear-gradient(130deg, var(--auth-primary), var(--auth-primary-strong));
   border-color: transparent;
   color: #ffffff;
-  box-shadow: 0 0.9rem 1.8rem rgba(var(--auth-primary-rgb, 16, 163, 127), 0.22);
+  box-shadow: 0 0.9rem 1.8rem rgba(var(--auth-primary-rgb, 67, 88, 230), 0.22);
 }
 
 .auth-shell__menu-category-button.is-active:focus-visible {
-  outline-color: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
+  outline-color: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
 }
 
 .auth-shell__menu-categories + .auth-shell__menu-list {
@@ -351,7 +351,7 @@ body.auth-only.auth-shell--menu-open {
   width: 100%;
   border: 1px solid transparent;
   border-radius: 14px;
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.08);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.08);
   color: var(--auth-text);
   padding: clamp(0.75rem, 2.2vw, 0.9rem) clamp(0.85rem, 3vw, 1.15rem);
   font: 600 clamp(0.95rem, 2.3vw, 1.05rem) / 1.3 system-ui, sans-serif;
@@ -361,11 +361,11 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-shell__menu-item:hover {
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.14);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.14);
 }
 
 .auth-shell__menu-item:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
+  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
   outline-offset: 2px;
 }
 
@@ -374,7 +374,7 @@ body.auth-only.auth-shell--menu-open {
   background: linear-gradient(130deg, var(--auth-primary), var(--auth-primary-strong));
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.25);
+  box-shadow: 0 12px 28px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.25);
 }
 
 .auth-shell__menu-item--miniapp {
@@ -404,11 +404,11 @@ body.auth-only.auth-shell--menu-open {
   border-radius: 14px;
   background: linear-gradient(
     130deg,
-    var(--auth-primary, #10a37f),
+    var(--auth-primary, #4358e6),
     var(--auth-primary-strong, color-mix(in srgb, var(--auth-primary) 82%, black 18%))
   );
   color: #ffffff;
-  box-shadow: 0 12px 28px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.28);
+  box-shadow: 0 12px 28px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.28);
   font: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -416,16 +416,16 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-shell__menu-panel .pwa-install-fab:hover {
-  background: color-mix(in srgb, var(--auth-primary, #10a37f) 92%, white 8%);
-  box-shadow: 0 16px 36px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.32);
+  background: color-mix(in srgb, var(--auth-primary, #4358e6) 92%, white 8%);
+  box-shadow: 0 16px 36px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.32);
   transform: translateY(-1px);
 }
 
 .auth-shell__menu-panel .pwa-install-fab:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.4);
+  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.4);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.25),
-    0 16px 36px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.32);
+  box-shadow: 0 0 0 4px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.25),
+    0 16px 36px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.32);
 }
 
 .auth-shell__menu-panel .pwa-install-fab[hidden] {
@@ -760,7 +760,7 @@ body.auth-only.auth-shell--menu-open {
 .auth-view__title {
   margin: 0;
   font: 800 clamp(2.1rem, 6vw, 3rem) / 1.05 var(--ac-font-primary, system-ui, sans-serif);
-  color: var(--color-text-primary, var(--ac-text, #ececf1));
+  color: var(--color-text-primary, var(--ac-text, #e8edff));
   letter-spacing: -0.015em;
   text-wrap: balance;
 }
@@ -771,6 +771,32 @@ body.auth-only.auth-shell--menu-open {
   color: var(--color-text-secondary, var(--ac-text-secondary, #bfc5d6));
   max-width: 62ch;
   text-wrap: balance;
+}
+
+.auth-view__miniapp-host {
+  margin-block-start: clamp(1.25rem, 3vw, 1.75rem);
+  padding: clamp(1.5rem, 3.8vw, 2.25rem);
+  border-radius: var(--radius-lg, 18px);
+  border: 1px solid var(--auth-border);
+  background: color-mix(in srgb, var(--auth-surface) 94%, transparent 6%);
+  min-height: clamp(12rem, 38vh, 20rem);
+  display: grid;
+  align-content: start;
+  gap: clamp(0.9rem, 2.4vw, 1.4rem);
+  transition: min-height 0.3s ease;
+}
+
+.auth-view__miniapp-host[data-miniapp-loaded='true'] {
+  min-height: clamp(8rem, 30vh, 16rem);
+}
+
+.auth-view__miniapp-host > * {
+  margin: 0;
+}
+
+.auth-view__miniapp-error {
+  color: var(--color-error-text, #ef4444);
+  font-weight: 600;
 }
 
 .auth-view--guest {
@@ -833,7 +859,7 @@ body.auth-only.auth-shell--menu-open {
   height: clamp(2.5rem, 7vw, 3rem);
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--auth-border) 70%, transparent 30%);
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.1);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.1);
   color: color-mix(in srgb, var(--auth-primary-strong) 75%, var(--auth-text) 25%);
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
@@ -843,11 +869,11 @@ body.auth-only.auth-shell--menu-open {
   border-color: var(--auth-primary);
   background: var(--auth-primary-soft);
   color: var(--auth-primary-strong);
-  box-shadow: 0 0 0 3px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.28);
+  box-shadow: 0 0 0 3px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.28);
 }
 
 .miniapp-catalog-widget__filter:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
+  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
   outline-offset: 2px;
 }
 
@@ -898,7 +924,7 @@ body.auth-only.auth-shell--menu-open {
   font: 600 clamp(0.7rem, 1.8vw, 0.85rem) / 1.2 system-ui, sans-serif;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.1);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.1);
   color: var(--auth-primary-strong);
   border: 1px solid color-mix(in srgb, var(--auth-primary) 45%, transparent);
 }
@@ -941,7 +967,7 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .miniapp-catalog-widget__open:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
+  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
   outline-offset: 2px;
 }
 
@@ -1499,7 +1525,7 @@ body.auth-only.auth-shell--menu-open {
 
   border-color: color-mix(in srgb, var(--auth-primary) 55%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--auth-primary) 65%, transparent),
-    0 22px 48px rgba(16, 163, 127, 0.24);
+    0 22px 48px rgba(67, 88, 230, 0.24);
 }
 
   display: grid;
@@ -1546,7 +1572,7 @@ body.auth-only.auth-shell--menu-open {
   border-color: color-mix(in srgb, var(--auth-primary) 45%, transparent);
   background: var(--auth-primary);
   color: #ffffff;
-  box-shadow: 0 14px 32px rgba(16, 163, 127, 0.32);
+  box-shadow: 0 14px 32px rgba(67, 88, 230, 0.32);
 }
 
   border-color: color-mix(in srgb, var(--auth-primary) 60%, transparent);
@@ -1805,8 +1831,8 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .account-dashboard__item--active .account-dashboard__card {
-  border-color: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
-  box-shadow: 0 1.1rem 2.6rem rgba(var(--auth-primary-rgb, 16, 163, 127), 0.18);
+  border-color: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
+  box-shadow: 0 1.1rem 2.6rem rgba(var(--auth-primary-rgb, 67, 88, 230), 0.18);
 }
 
 .account-dashboard__header {
@@ -1829,8 +1855,8 @@ body.auth-only.auth-shell--menu-open {
   gap: 0.35rem;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.12);
-  border: 1px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.24);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.12);
+  border: 1px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.24);
   color: var(--auth-primary-strong);
   font: 600 clamp(0.75rem, 2vw, 0.85rem) / 1.2 system-ui, sans-serif;
 }
@@ -1869,13 +1895,13 @@ body.auth-only.auth-shell--menu-open {
   margin: clamp(0.35rem, 1.6vw, 0.75rem) 0 0;
   padding: clamp(0.75rem, 2.2vw, 1.1rem);
   border-radius: 14px;
-  background: rgba(var(--auth-primary-rgb, 16, 163, 127), 0.08);
-  border: 1px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.16);
+  background: rgba(var(--auth-primary-rgb, 67, 88, 230), 0.08);
+  border: 1px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.16);
 }
 
 .account-dashboard__details:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--auth-primary-rgb, 16, 163, 127), 0.22);
+  box-shadow: 0 0 0 3px rgba(var(--auth-primary-rgb, 67, 88, 230), 0.22);
 }
 
 .account-dashboard__details-content {
@@ -2087,7 +2113,7 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-shell__menu-panel .auth-shell__menu-item:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 16, 163, 127), 0.35);
+  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
   outline-offset: 4px;
 }
 
