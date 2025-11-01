@@ -13,7 +13,8 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Botões rápidos do menu de configurações agora alternam imediatamente tema, idioma e tamanho do texto, atualizando os rótulos de acessibilidade conforme o estado ativo.
 - Painel modal de preferências foi removido; as personalizações acontecem exclusivamente pelos ícones do menu do rodapé, sem janela adicional.
 - Menu de Configurações recebeu atalho rápido para ajustar o tamanho do texto, exibindo a escala atual e acessando os cinco níveis disponíveis.
-- Adicionada cobertura automatizada garantindo que o menu principal do rodapé seja fechado ao clicar novamente no botão de configurações, mantendo painel e overlay ocultos até nova interação.
+- Cobertura automatizada atualizada para garantir que o menu principal do rodapé permaneça aberto ao clicar novamente no botão de configurações, preservando painel e overlay visíveis.
+- Botão do menu principal deixa de funcionar como alternância e passa a apenas abrir o menu, evitando que cliques repetidos recolham o painel.
 - Documentados no `AGENTS.md` e no `README.md` os procedimentos obrigatórios de validação visual com screenshots em formato paisagem e retrato do Samsung Galaxy Tab S9.
 - Painel principal volta a exibir a lista de MiniApps diretamente, removendo o widget flutuante do modo convidado.
 - Rodapé expandido mantém ícone, dados legais e controles alinhados na mesma barra, liberando a faixa inferior para distribuir atalhos e metadados em largura total.

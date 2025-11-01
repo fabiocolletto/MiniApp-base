@@ -1106,7 +1106,9 @@ export function initAuthShell(options = {}) {
 
   if (ensureHtmlElement(doc, footerMenuButton)) {
     const handleFooterMenuClick = () => {
-      toggleFooterMenu();
+      if (!footerMenuOpen) {
+        openFooterMenu();
+      }
     };
 
     const handleFooterMenuKeydown = (event) => {
