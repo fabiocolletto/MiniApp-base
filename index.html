@@ -29,8 +29,8 @@
 <body class="auth-only">
   <header class="auth-shell__header" aria-label="Identidade do MiniApp"></header>
 
-  <main id="app" class="auth-screen">
-    <section class="auth-card" aria-labelledby="authWelcomeTitle">
+  <main id="app" class="auth-screen" data-active-view="guest">
+    <section class="auth-card" aria-labelledby="authWelcomeTitle" data-active-view="guest">
       <header class="auth-header">
         <h1 id="authWelcomeTitle" data-i18n="auth.welcome">MiniApp Educação</h1>
         <p class="auth-sub" data-i18n="auth.subtitle">
@@ -39,7 +39,7 @@
       </header>
 
       <div class="auth-card__body">
-        <section id="authViewRoot" class="auth-card__view" aria-live="polite"></section>
+        <section id="authViewRoot" class="auth-card__view" aria-live="polite" hidden></section>
       </div>
 
       <div class="auth-footer">

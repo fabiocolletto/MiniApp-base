@@ -96,10 +96,22 @@ test('inicializa o shell com painel Educação estático e sem MiniApps listados
     const viewRoot = env.document.getElementById('authViewRoot');
     assert.ok(viewRoot);
     assert.equal(viewRoot.dataset.view, 'guest');
+    assert.equal(viewRoot.hidden, true);
 
     const educationHome = env.document.querySelector('.education-home__container');
-    assert.ok(educationHome);
-    assert.match(educationHome.textContent, /Bem-vindo ao MiniApp da 5 horas, Educação/);
+    assert.equal(educationHome, null);
+
+    const guestView = env.document.querySelector('#authViewRoot');
+    assert.ok(guestView);
+    assert.equal(guestView.textContent.trim(), '');
+
+    const authScreen = env.document.querySelector('.auth-screen');
+    assert.ok(authScreen);
+    assert.equal(authScreen.dataset.activeView, 'guest');
+
+    const authCard = env.document.querySelector('.auth-card');
+    assert.ok(authCard);
+    assert.equal(authCard.dataset.activeView, 'guest');
 
     const widgetBoard = env.document.querySelector('.auth-widget-board');
     assert.equal(widgetBoard, null);
