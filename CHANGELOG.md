@@ -15,7 +15,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Rebatizado o shell para MiniApp Educação, com painel inicial estático e mensagem de boas-vindas dedicada.
 - Removidos o catálogo de MiniApps, widgets e sincronizações associadas, mantendo apenas as ações rápidas de tema, idioma e texto.
 - Atualizados manifesto PWA, service worker, documentação e testes para refletir o produto único MiniApp Educação.
-- Botões rápidos do menu de configurações agora alternam imediatamente tema, idioma e tamanho do texto, atualizando os rótulos de acessibilidade conforme o estado ativo.
+- Atalhos rápidos do menu de configurações continuam alternando imediatamente tema e tamanho do texto, enquanto o botão de idioma abre um seletor dedicado com as opções disponíveis e aplica a escolha confirmada, preservando os rótulos de acessibilidade conforme o estado ativo.
 - Painel modal de preferências foi removido; as personalizações acontecem exclusivamente pelos ícones do menu do rodapé, sem janela adicional.
 - Menu de Configurações recebeu atalho rápido para ajustar o tamanho do texto, exibindo a escala atual e acessando os cinco níveis disponíveis.
 - Cobertura automatizada atualizada para garantir que o menu principal do rodapé permaneça aberto ao clicar novamente no botão de configurações, preservando painel e overlay visíveis.

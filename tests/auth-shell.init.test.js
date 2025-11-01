@@ -195,9 +195,12 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     const themeButton = panel.querySelector('[data-action="preferences-theme"]');
     const fontButton = panel.querySelector('[data-action="preferences-font"]');
     const languageButton = panel.querySelector('[data-action="preferences-language"]');
+    const languagePicker = panel.querySelector('[data-pref-language-picker]');
     assert.ok(themeButton);
     assert.ok(fontButton);
     assert.ok(languageButton);
+    assert.ok(languagePicker);
+    assert.equal(languagePicker.hidden, true);
 
     assert.equal(themeButton.dataset.prefFocus, 'theme');
     const themeLabel = themeButton.getAttribute('aria-label');
@@ -325,11 +328,26 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     languageButton.click();
     await env.flushAsync();
 
-    assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
-    assert.equal(panel.hidden, false);
+    const languagePicker = env.document.querySelector('[data-pref-language-picker]');
+    assert.ok(languagePicker);
+    assert.equal(languageButton.getAttribute('aria-expanded'), 'true');
+    assert.equal(languagePicker.hidden, false);
+    assert.equal(docEl.getAttribute('data-lang') || 'pt-BR', previousLang);
+
+    const languageOptions = Array.from(languagePicker.querySelectorAll('[data-language-option]'));
+    assert.ok(languageOptions.length >= 2);
+    const targetOption = languageOptions.find((option) => option.dataset.languageOption !== previousLang);
+    assert.ok(targetOption);
+    const targetLanguage = targetOption.dataset.languageOption;
+
+    targetOption.click();
+    await env.flushAsync();
+
+    assert.equal(languageButton.getAttribute('aria-expanded'), 'false');
+    assert.equal(languagePicker.hidden, true);
     assert.equal(docEl.dataset.theme, nextTheme);
     const nextLang = docEl.getAttribute('data-lang') || 'pt-BR';
-    assert.notEqual(nextLang, previousLang);
+    assert.equal(nextLang, targetLanguage);
     assert.ok(languageLabels.has(nextLang));
     assert.equal(docEl.lang || nextLang, nextLang);
 

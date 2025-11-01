@@ -274,6 +274,9 @@
             data-pref-focus="lang"
             aria-label="Escolher idioma"
             title="Escolher idioma"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="authFooterMenuLanguagePicker"
           >
             <span class="auth-shell__menu-item-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
@@ -289,6 +292,40 @@
               <span class="auth-shell__menu-item-hint">Português, inglês ou espanhol</span>
             </span>
           </button>
+          <div
+            id="authFooterMenuLanguagePicker"
+            class="auth-shell__menu-language-picker"
+            data-pref-language-picker
+            hidden
+          >
+            <p class="auth-shell__menu-language-title">Selecione o idioma preferido</p>
+            <div class="auth-shell__menu-language-options" role="group" aria-label="Idiomas disponíveis">
+              <button
+                type="button"
+                class="auth-shell__menu-item auth-shell__menu-item--language"
+                data-language-option="pt-BR"
+                aria-pressed="false"
+              >
+                Português (Brasil)
+              </button>
+              <button
+                type="button"
+                class="auth-shell__menu-item auth-shell__menu-item--language"
+                data-language-option="en"
+                aria-pressed="false"
+              >
+                Inglês
+              </button>
+              <button
+                type="button"
+                class="auth-shell__menu-item auth-shell__menu-item--language"
+                data-language-option="es"
+                aria-pressed="false"
+              >
+                Espanhol
+              </button>
+            </div>
+          </div>
         </div>
       </section>
       </div>
