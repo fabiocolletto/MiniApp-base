@@ -4,6 +4,10 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Painel convidado ocupa toda a área útil entre cabeçalho e rodapé, centralizando o título de boas-vindas em container compacto
+  e ocultando o placeholder vazio até que módulos reais sejam publicados.
+- Cartão principal do MiniApp Educação ajustado para contrair conforme o conteúdo em tablets verticais, evitando que o widget ocupe a altura inteira sem necessidade.
+- Painel convidado do MiniApp Educação deixa de exibir o container textual temporário, liberando a área para os módulos definitivos.
 - Seção Usuário adicionada ao menu principal com os botões de Cadastro e Visitante, removendo o seletor do cartão de boas-vindas.
 - Corrigido o botão do menu principal para herdar corretamente as cores dos temas claro e escuro, mesmo quando a preferência manual difere do modo do sistema.
 - Removido o painel de widgets do shell, eliminando o painel Educação duplicado abaixo do cartão principal.

@@ -131,6 +131,7 @@ export function initAuthShell(options = {}) {
     doc.defaultView?.HTMLInputElement ?? (typeof HTMLInputElement !== 'undefined' ? HTMLInputElement : null);
 
   const viewRoot = doc.getElementById('authViewRoot');
+  const authScreen = doc.querySelector('.auth-screen');
   const authCard = doc.querySelector('.auth-card');
   const viewToggleButtons = Array.from(doc.querySelectorAll('[data-view-toggle]'));
   const statusHint = doc.getElementById('statusHint');
@@ -825,25 +826,9 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    root.className = 'card view auth-view view--guest education-home';
+    root.hidden = true;
+    root.className = 'auth-card__view auth-view view--guest';
     root.dataset.view = 'guest';
-
-    const panel = doc.createElement('section');
-    panel.className = 'education-home__container';
-    panel.id = 'educationHomeContent';
-
-    const title = doc.createElement('h2');
-    title.className = 'education-home__title';
-    title.textContent = 'Bem-vindo ao MiniApp da 5 horas, Educação.';
-
-    const description = doc.createElement('p');
-    description.className = 'education-home__description';
-    description.textContent =
-      'Aqui você encontrará os recursos educacionais conforme forem disponibilizados. Enquanto isso, personalize tema, idioma e tamanho do texto pelo menu do rodapé.';
-
-    panel.append(title, description);
-
-    root.replaceChildren(panel);
   }
 
   const VIEW_RENDERERS = {
@@ -1371,6 +1356,9 @@ export function initAuthShell(options = {}) {
     }
     viewRoot[VIEW_CLEANUP_KEY] = null;
 
+    viewRoot.hidden = false;
+    viewRoot.className = 'auth-card__view';
+    viewRoot.dataset.view = viewName;
     viewRoot.replaceChildren();
     viewConfig.render(viewRoot, viewProps);
     currentView = viewName;
@@ -1381,6 +1369,10 @@ export function initAuthShell(options = {}) {
 
     if (ensureHtmlElement(doc, authCard)) {
       authCard.setAttribute('data-active-view', viewName);
+    }
+
+    if (ensureHtmlElement(doc, authScreen)) {
+      authScreen.setAttribute('data-active-view', viewName);
     }
 
     if (shouldFocus) {
