@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2025-11-01",
+  "idioma": "pt-BR",
+  "disciplinas": ["historia"],
+  "rotas": {
+    "historia.EF8": "/data/historia.EF8.json"
+  }
+}

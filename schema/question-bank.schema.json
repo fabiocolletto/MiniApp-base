@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuestionBank",
+  "type": "object",
+  "required": ["meta", "itens"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["schemaVersion", "contentVersion", "disciplina", "etapa_ano"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 1 },
+        "contentVersion": { "type": "string" },
+        "disciplina": { "type": "string" },
+        "etapa_ano": { "type": "string" }
+      }
+    },
+    "itens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id_item", "disciplina", "etapa_ano", "bncc_codigo", "tema",
+          "tipo_item", "nivel_dificuldade", "nivel_cognitivo",
+          "enunciado_html", "gabarito_tipo", "gabarito_valor", "tempo_estimado_min", "status_item"
+        ],
+        "properties": {
+          "id_item": { "type": "string" },
+          "disciplina": { "type": "string" },
+          "etapa_ano": { "type": "string" },
+          "bncc_codigo": { "type": "string" },
+          "bncc_habilidade": { "type": "string" },
+          "eixo_tematico": { "type": "string" },
+          "tema": { "type": "string" },
+          "subtema": { "type": "string" },
+          "topico_slug": { "type": "string" },
+          "sinonimos": { "type": "array", "items": {"type": "string"} },
+          "palavras_chave": { "type": "array", "items": {"type": "string"} },
+          "periodo": { "type": "string" },
+          "localidade": { "type": "string" },
+          "personagens": { "type": "array", "items": {"type": "string"} },
+          "tipo_item": { "type": "string", "enum": ["objetiva", "vf", "associacao", "lacuna", "resposta_curta", "dissertativa"] },
+          "nivel_dificuldade": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "nivel_cognitivo": { "type": "string", "enum": ["lembrar", "entender", "aplicar", "analisar", "avaliar", "criar"] },
+          "tempo_estimado_min": { "type": "number", "minimum": 0.5 },
+          "enunciado_html": { "type": "string" },
+          "alternativas_json": { "type": "array" },
+          "gabarito_tipo": { "type": "string", "enum": ["alternativa", "verdadeiro", "respostas", "pares", "expectativa"] },
+          "gabarito_valor": { "type": "object" },
+          "status_item": { "type": "string", "enum": ["validado", "revisao", "rascunho"] },
+          "tokens": { "type": "array" },
+          "midias_json": { "type": "array" },
+          "acess_alt_text": { "type": ["string", "null"] },
+          "print_safe": { "type": ["boolean", "null"] },
+          "search_text": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

@@ -23,9 +23,9 @@
   --global-radius-md: 12px;
   --global-radius-pill: 999px;
   --global-radius-sm: 8px;
-  --global-shadow-lg: 0 18px 48px rgba(17, 24, 39, 0.16);
-  --global-shadow-md: 0 12px 30px rgba(17, 24, 39, 0.12);
-  --global-shadow-sm: 0 6px 16px rgba(17, 24, 39, 0.08);
+  --global-shadow-lg: 0 18px 48px rgba(17, 19, 21, 0.18);
+  --global-shadow-md: 0 10px 24px rgba(17, 19, 21, 0.12);
+  --global-shadow-sm: 0 6px 12px rgba(17, 19, 21, 0.08);
   --global-space-2xs: 0.5rem;
   --global-space-lg: 2rem;
   --global-space-md: 1.5rem;

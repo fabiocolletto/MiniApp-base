@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TopicsCatalog",
+  "type": "object",
+  "required": ["schemaVersion", "topicos"],
+  "properties": {
+    "schemaVersion": { "type": "integer" },
+    "topicos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slug", "rotulo"],
+        "properties": {
+          "slug": { "type": "string" },
+          "rotulo": { "type": "string" },
+          "sinonimos": { "type": "array", "items": {"type": "string"} },
+          "palavras_chave": { "type": "array", "items": {"type": "string"} },
+          "bncc_sugeridos": { "type": "array", "items": {"type": "string"} }
+        }
+      }
+    }
+  }
+}
