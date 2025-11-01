@@ -337,7 +337,7 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
   }
 });
 
-test('fecha o menu do rodapé ao clicar novamente no botão do painel', async () => {
+test('mantém o menu do rodapé aberto ao clicar novamente no botão do painel', async () => {
   const env = setupShell();
   try {
     const menuButton = env.document.querySelector('.auth-shell__menu-button');
@@ -357,9 +357,9 @@ test('fecha o menu do rodapé ao clicar novamente no botão do painel', async ()
 
     await env.flushAsync();
 
-    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
-    assert.equal(panel.hidden, true);
-    assert.equal(overlay.hidden, true);
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
+    assert.equal(panel.hidden, false);
+    assert.equal(overlay.hidden, false);
   } finally {
     teardownShell(env);
   }
