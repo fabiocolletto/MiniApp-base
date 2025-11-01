@@ -10,12 +10,18 @@
   --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 94%, black 6%);
   --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(231, 234, 246, 0.18)) 100%, transparent 0%);
   --auth-shell-blur: 22px;
+  --auth-overlay-rgb: 15, 23, 42;
+  --auth-overlay-opacity: 0.42;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 88%, transparent 12%);
     --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
+    --auth-surface: var(--ac-surface, #141c2e);
+    --auth-border: var(--ac-border-subtle, rgba(148, 163, 184, 0.22));
+    --auth-overlay-rgb: 8, 12, 24;
+    --auth-overlay-opacity: 0.55;
     --auth-text: var(--ac-text, #e8edff);
     --auth-muted: var(--ac-text-muted, #94a3b8);
   }
@@ -24,6 +30,10 @@
 :root[data-theme="light"] {
   --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #ffffff) 94%, transparent 6%);
   --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(17, 24, 39, 0.08)) 100%, transparent 0%);
+  --auth-surface: var(--ac-surface, #ffffff);
+  --auth-border: var(--ac-border-subtle, rgba(17, 24, 39, 0.12));
+  --auth-overlay-rgb: 15, 23, 42;
+  --auth-overlay-opacity: 0.28;
   --auth-text: var(--ac-text, #1f2937);
   --auth-muted: var(--ac-text-muted, #4b5563);
 }
@@ -31,6 +41,10 @@
 :root[data-theme="dark"] {
   --auth-shell-surface: color-mix(in srgb, var(--ac-surface, #141c2e) 88%, transparent 12%);
   --auth-shell-border: color-mix(in srgb, var(--ac-border-subtle, rgba(148, 163, 184, 0.22)) 100%, transparent 0%);
+  --auth-surface: var(--ac-surface, #141c2e);
+  --auth-border: var(--ac-border-subtle, rgba(148, 163, 184, 0.22));
+  --auth-overlay-rgb: 8, 12, 24;
+  --auth-overlay-opacity: 0.55;
   --auth-text: var(--ac-text, #e8edff);
   --auth-muted: var(--ac-text-muted, #94a3b8);
 }
@@ -176,17 +190,57 @@ body.auth-only.auth-shell--menu-open {
   background: transparent;
   color: var(--auth-text);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.3s ease,
+    transform 0.22s ease;
   flex-shrink: 0;
   width: clamp(2.4rem, 7vw, 2.9rem);
   aspect-ratio: 1;
   line-height: 0;
 }
 
+.auth-shell__menu-button {
+  background-color: color-mix(in srgb, var(--auth-shell-surface) 82%, transparent 18%);
+  border-color: color-mix(in srgb, var(--auth-shell-border) 70%, transparent 30%);
+  color: color-mix(in srgb, var(--auth-text) 94%, transparent 6%);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--auth-shell-surface) 94%, transparent 6%) 0%,
+    color-mix(in srgb, var(--auth-shell-surface) 78%, black 22%) 100%
+  );
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.22);
+}
+
+body.auth-shell--menu-open .auth-shell__menu-button {
+  background-color: color-mix(in srgb, var(--auth-primary) 28%, var(--auth-shell-surface) 72%);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--auth-primary) 32%, transparent 68%) 0%,
+    color-mix(in srgb, var(--auth-primary) 18%, var(--auth-shell-surface) 82%) 100%
+  );
+  border-color: color-mix(in srgb, var(--auth-primary) 52%, transparent 48%);
+  color: var(--auth-primary-strong);
+  box-shadow: 0 12px 30px rgba(var(--auth-primary-rgb), 0.38);
+}
+
+body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(1) {
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(2) {
+  opacity: 0;
+  transform: translateY(-50%) scaleX(0.45);
+}
+
+body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(3) {
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
 .auth-shell__footer-toggle:hover,
-.auth-shell__footer-toggle:focus-visible,
-.auth-shell__menu-button:hover,
-.auth-shell__menu-button:focus-visible {
+.auth-shell__footer-toggle:focus-visible {
   background: var(--auth-primary-soft);
   border-color: var(--auth-primary-soft);
   color: var(--auth-primary-strong);
@@ -196,6 +250,20 @@ body.auth-only.auth-shell--menu-open {
 .auth-shell__menu-button:focus-visible {
   outline: 3px solid var(--auth-primary-soft);
   outline-offset: 3px;
+}
+
+.auth-shell__menu-button:hover,
+.auth-shell__menu-button:focus-visible {
+  background-color: color-mix(in srgb, var(--auth-primary) 24%, var(--auth-shell-surface) 76%);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--auth-primary) 28%, transparent 72%) 0%,
+    color-mix(in srgb, var(--auth-primary) 16%, var(--auth-shell-surface) 84%) 100%
+  );
+  border-color: color-mix(in srgb, var(--auth-primary) 46%, transparent 54%);
+  color: var(--auth-primary-strong);
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(var(--auth-primary-rgb), 0.28);
 }
 
 .auth-shell__footer-toggle-icon {
@@ -216,7 +284,7 @@ body.auth-only.auth-shell--menu-open {
   justify-items: center;
   align-content: center;
   padding: clamp(1rem, 6vw, 3rem);
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(var(--auth-overlay-rgb, 15, 23, 42), var(--auth-overlay-opacity, 0.42));
   backdrop-filter: blur(18px);
   z-index: 40;
 }
@@ -289,10 +357,14 @@ body.auth-only.auth-shell--menu-open {
 
 .auth-shell__menu-panel {
   position: relative;
-  background: var(--auth-surface);
-  border: 1px solid var(--auth-border);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--auth-surface) 96%, transparent 4%) 0%,
+    color-mix(in srgb, var(--auth-surface) 82%, black 18%) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--auth-border) 85%, transparent 15%);
   border-radius: 18px;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 26px 52px rgba(var(--auth-overlay-rgb, 15, 23, 42), 0.32);
   padding: clamp(1rem, 3vw, 1.5rem);
   width: min(90vw, 24rem);
   display: grid;
@@ -569,20 +641,38 @@ body.auth-only.auth-shell--menu-open {
 }
 
 .auth-shell__menu-icon {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.25rem, 1vw, 0.35rem);
   width: clamp(1.1rem, 3vw, 1.35rem);
+  height: clamp(0.95rem, 2.8vw, 1.15rem);
 }
 
 .auth-shell__menu-icon span {
-  display: block;
+  position: absolute;
+  inset-inline: 0;
+  margin-inline: auto;
   width: 100%;
-  height: 2px;
+  height: clamp(0.16rem, 0.55vw, 0.2rem);
   border-radius: 999px;
   background: currentColor;
+  transition: transform 0.3s ease, opacity 0.22s ease, top 0.3s ease, width 0.3s ease;
+}
+
+.auth-shell__menu-icon span:nth-child(1) {
+  top: 0;
+}
+
+.auth-shell__menu-icon span:nth-child(2) {
+  top: 50%;
+  width: 72%;
+  transform: translateY(-50%);
+}
+
+.auth-shell__menu-icon span:nth-child(3) {
+  top: 100%;
+  transform: translateY(-100%);
 }
 
 .auth-shell__footer-text {
@@ -1032,102 +1122,6 @@ body.auth-only.auth-shell--menu-open {
   .auth-screen__status small {
     font-size: clamp(1rem, 1.6vw, 1.15rem);
   }
-}
-
-@media (min-width: 64rem) {
-  body.auth-only.auth-shell--menu-open {
-    overflow: auto;
-  }
-
-  .auth-shell__menu-overlay {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
-    padding: 0 clamp(1.5rem, 3vw, 2.25rem) clamp(1.75rem, 3vw, 2.5rem);
-    background: transparent;
-    backdrop-filter: none;
-  }
-
-  .auth-shell__menu-panel {
-    width: clamp(18rem, 20vw, 20rem);
-    max-height: clamp(24rem, 70vh, 42rem);
-    border-radius: 8px;
-    border: 2px solid #3d3d3d;
-    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45);
-    background: linear-gradient(180deg, #ffffff 0%, #d4d0c8 100%);
-    padding: 0.85rem 1rem 1.15rem;
-    gap: clamp(0.65rem, 2vw, 0.9rem);
-  }
-
-  @supports (height: 100dvh) {
-    .auth-shell__menu-panel {
-      max-height: clamp(24rem, 70dvh, 42rem);
-    }
-  }
-
-  .auth-shell__menu-icon {
-    width: clamp(1.25rem, 2vw, 1.5rem);
-  }
-
-  .auth-shell__menu-icon span {
-    background: #000000;
-  }
-
-  .auth-shell__menu-category + .auth-shell__menu-category {
-    border-top-color: rgba(0, 0, 0, 0.18);
-  }
-
-  .auth-shell__menu-category-title {
-    color: #000000;
-    letter-spacing: 0.12em;
-  }
-
-  .auth-shell__menu-type-title {
-    color: #000000;
-  }
-
-  .auth-shell__menu-item {
-    border-radius: 4px;
-    border: 1px solid #808080;
-    background: linear-gradient(180deg, #ffffff 0%, #dcdcdc 100%);
-    color: #000000;
-    box-shadow: inset -1px -1px 0 0 rgba(0, 0, 0, 0.35), inset 1px 1px 0 0 rgba(255, 255, 255, 0.8);
-  }
-
-  .auth-shell__menu-item:hover {
-    background: linear-gradient(180deg, #ffffff 0%, #ececec 100%);
-  }
-
-  .auth-shell__menu-item.is-active {
-    border-color: #0b4c85;
-    background: linear-gradient(180deg, #0a64ad 0%, #0b4c85 100%);
-    color: #ffffff;
-    box-shadow: inset -1px -1px 0 0 rgba(255, 255, 255, 0.35), inset 1px 1px 0 0 rgba(0, 0, 0, 0.4);
-    transform: translateY(0);
-  }
-
-  .auth-shell__menu-toggle {
-    color: #2f2f2f;
-    font-weight: 600;
-  }
-
-  .auth-shell__menu-toggle-input {
-    accent-color: #0b4c85;
-  }
-
-  .auth-shell__menu-panel::-webkit-scrollbar {
-    width: 12px;
-  }
-
-  .auth-shell__menu-panel::-webkit-scrollbar-thumb {
-    background: #9e9e9e;
-    border: 2px solid #d4d0c8;
-  }
-
-  .auth-shell__menu-panel::-webkit-scrollbar-track {
-    background: #d4d0c8;
-  }
-
 }
 
 @media (max-width: 30rem) {
@@ -2070,21 +2064,34 @@ body.auth-only.auth-shell--menu-open {
 
 .auth-shell__menu-item--view {
   border-radius: 24px;
-  border-color: color-mix(in srgb, var(--auth-border) 55%, transparent);
-  background: color-mix(in srgb, var(--auth-surface) 82%, transparent);
+  border-color: color-mix(in srgb, var(--auth-border) 65%, transparent 35%);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--auth-surface) 96%, transparent 4%) 0%,
+    color-mix(in srgb, var(--auth-surface) 88%, transparent 12%) 55%,
+    color-mix(in srgb, var(--auth-primary-soft) 65%, transparent 35%) 100%
+  );
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 
 .auth-shell__menu-item--view:hover,
 .auth-shell__menu-item--view:focus-visible {
-  background: color-mix(in srgb, var(--auth-primary-soft) 42%, transparent);
-  border-color: color-mix(in srgb, var(--auth-primary) 55%, transparent);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--auth-primary-soft) 48%, transparent 52%) 0%,
+    color-mix(in srgb, var(--auth-primary) 32%, transparent 68%) 100%
+  );
+  border-color: color-mix(in srgb, var(--auth-primary) 62%, transparent 38%);
 }
 
 .auth-shell__menu-panel .auth-shell__menu-item {
-  border: 1px solid color-mix(in srgb, var(--auth-border) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--auth-border) 70%, transparent 30%);
   border-radius: 20px;
-  background: color-mix(in srgb, var(--auth-primary-soft) 28%, transparent);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--auth-surface) 96%, transparent 4%) 0%,
+    color-mix(in srgb, var(--auth-primary-soft) 72%, transparent 28%) 100%
+  );
   color: var(--auth-text);
   padding: clamp(0.85rem, 2.5vw, 1.05rem) clamp(1rem, 3vw, 1.25rem);
   display: inline-flex;
@@ -2121,8 +2128,12 @@ body.auth-only.auth-shell--menu-open {
 
 .auth-shell__menu-panel .auth-shell__menu-item:hover,
 .auth-shell__menu-panel .auth-shell__menu-item:focus-visible {
-  background: color-mix(in srgb, var(--auth-primary-soft) 55%, transparent);
-  border-color: color-mix(in srgb, var(--auth-primary) 65%, transparent);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--auth-primary-soft) 55%, transparent 45%) 0%,
+    color-mix(in srgb, var(--auth-primary) 35%, transparent 65%) 100%
+  );
+  border-color: color-mix(in srgb, var(--auth-primary) 68%, transparent 32%);
   color: var(--auth-primary-strong);
 }
 
@@ -2139,7 +2150,11 @@ body.auth-only.auth-shell--menu-open {
   width: clamp(2rem, 7vw, 2.5rem);
   height: clamp(2rem, 7vw, 2.5rem);
   border-radius: 18px;
-  background: color-mix(in srgb, var(--auth-primary) 18%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--auth-primary) 22%, transparent 78%) 0%,
+    color-mix(in srgb, var(--auth-primary) 16%, var(--auth-surface) 84%) 100%
+  );
   color: inherit;
 }
 
