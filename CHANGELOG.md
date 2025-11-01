@@ -4,6 +4,7 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Layout principal do MiniApp simplificado para que cada view ocupe o espaço entre cabeçalho e rodapé sem o cartão fixo, herdando diretamente o tema global do 5horas.com.br.
 - Painel convidado ocupa toda a área útil entre cabeçalho e rodapé, centralizando o título de boas-vindas em container compacto
   e ocultando o placeholder vazio até que módulos reais sejam publicados.
 - Cartão principal do MiniApp Educação ajustado para contrair conforme o conteúdo em tablets verticais, evitando que o widget ocupe a altura inteira sem necessidade.

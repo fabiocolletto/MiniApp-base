@@ -30,29 +30,22 @@
   <header class="auth-shell__header" aria-label="Identidade do MiniApp"></header>
 
   <main id="app" class="auth-screen" data-active-view="guest">
-    <section class="auth-card" aria-labelledby="authWelcomeTitle" data-active-view="guest">
-      <header class="auth-header">
-        <h1 id="authWelcomeTitle" data-i18n="auth.welcome">MiniApp Educação</h1>
-        <p class="auth-sub" data-i18n="auth.subtitle">
-          Ajuste tema, idioma e tamanho do texto antes de começar sua jornada.
-        </p>
-      </header>
-
-      <div class="auth-card__body">
-        <section id="authViewRoot" class="auth-card__view" aria-live="polite" hidden></section>
-      </div>
-
-      <div class="auth-footer">
-        <small
-          id="statusHint"
-          role="status"
-          aria-live="polite"
-          data-i18n="auth.hint"
-        >
-          Use o menu principal para criar uma conta ou explorar o MiniApp Educação.
-        </small>
-      </div>
-    </section>
+    <section
+      id="authViewRoot"
+      class="auth-screen__view"
+      aria-live="polite"
+      data-view="guest"
+    ></section>
+    <div class="auth-screen__status">
+      <small
+        id="statusHint"
+        role="status"
+        aria-live="polite"
+        data-i18n="auth.hint"
+      >
+        Use o menu principal para criar uma conta ou explorar o MiniApp Educação.
+      </small>
+    </div>
   </main>
 
   <footer class="auth-shell__footer">

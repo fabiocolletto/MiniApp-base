@@ -132,7 +132,6 @@ export function initAuthShell(options = {}) {
 
   const viewRoot = doc.getElementById('authViewRoot');
   const authScreen = doc.querySelector('.auth-screen');
-  const authCard = doc.querySelector('.auth-card');
   const viewToggleButtons = Array.from(doc.querySelectorAll('[data-view-toggle]'));
   const statusHint = doc.getElementById('statusHint');
   const footer = doc.querySelector('.auth-shell__footer');
@@ -826,9 +825,25 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    root.hidden = true;
-    root.className = 'auth-card__view auth-view view--guest';
+    root.hidden = false;
     root.dataset.view = 'guest';
+    root.classList.add('auth-screen__view--surface');
+
+    const guestView = doc.createElement('article');
+    guestView.className = 'auth-view auth-view--guest';
+
+    const heading = doc.createElement('h1');
+    heading.className = 'auth-view__title';
+    heading.dataset.i18n = 'auth.welcome';
+    heading.textContent = 'MiniApp Educação';
+
+    const description = doc.createElement('p');
+    description.className = 'auth-view__description';
+    description.dataset.i18n = 'auth.subtitle';
+    description.textContent = 'Ajuste tema, idioma e tamanho do texto antes de começar sua jornada.';
+
+    guestView.append(heading, description);
+    root.append(guestView);
   }
 
   const VIEW_RENDERERS = {
@@ -1357,19 +1372,16 @@ export function initAuthShell(options = {}) {
     viewRoot[VIEW_CLEANUP_KEY] = null;
 
     viewRoot.hidden = false;
-    viewRoot.className = 'auth-card__view';
+    viewRoot.className = 'auth-screen__view';
     viewRoot.dataset.view = viewName;
     viewRoot.replaceChildren();
     viewConfig.render(viewRoot, viewProps);
+    viewRoot.classList.add('auth-screen__view');
     currentView = viewName;
 
     setActiveViewToggle(viewName);
     setActiveFooterMenuItem(viewName);
     updateHint(viewName);
-
-    if (ensureHtmlElement(doc, authCard)) {
-      authCard.setAttribute('data-active-view', viewName);
-    }
 
     if (ensureHtmlElement(doc, authScreen)) {
       authScreen.setAttribute('data-active-view', viewName);
