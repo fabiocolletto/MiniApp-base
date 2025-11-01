@@ -148,7 +148,47 @@
         <p id="authFooterMenuTitle" class="auth-shell__menu-title">Menu principal</p>
         <p class="auth-shell__menu-caption">Escolha como acessar e personalize a experiência do MiniApp.</p>
       </div>
-      <section class="auth-shell__menu-section" data-menu-section="user">
+      <div class="auth-shell__menu-categories" data-menu-tabs-wrapper>
+        <div
+          class="auth-shell__menu-category-tabs"
+          role="tablist"
+          aria-label="Seções do menu principal"
+          data-menu-tabs
+        >
+          <button
+            id="authFooterMenuTab-user"
+            type="button"
+            class="auth-shell__menu-category-button is-active"
+            role="tab"
+            data-menu-tab="user"
+            aria-controls="authFooterMenuSection-user"
+            aria-selected="true"
+            tabindex="0"
+          >
+            Usuário
+          </button>
+          <button
+            id="authFooterMenuTab-settings"
+            type="button"
+            class="auth-shell__menu-category-button"
+            role="tab"
+            data-menu-tab="settings"
+            aria-controls="authFooterMenuSection-settings"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            Configurações
+          </button>
+        </div>
+      </div>
+      <section
+        id="authFooterMenuSection-user"
+        class="auth-shell__menu-section"
+        data-menu-section="user"
+        role="tabpanel"
+        aria-labelledby="authFooterMenuTab-user"
+        tabindex="0"
+      >
         <p id="authFooterMenuUserTitle" class="auth-shell__menu-section-title">Usuário</p>
         <div class="auth-shell__menu-actions auth-shell__menu-actions--user" role="group" aria-labelledby="authFooterMenuUserTitle">
           <button
@@ -209,7 +249,16 @@
           </button>
         </div>
       </section>
-      <section class="auth-shell__menu-section" data-menu-section="settings">
+      <section
+        id="authFooterMenuSection-settings"
+        class="auth-shell__menu-section"
+        data-menu-section="settings"
+        role="tabpanel"
+        aria-labelledby="authFooterMenuTab-settings"
+        tabindex="-1"
+        hidden
+        aria-hidden="true"
+      >
         <p id="authFooterMenuPrefsTitle" class="auth-shell__menu-section-title">Configurações</p>
         <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuPrefsTitle">
           <button

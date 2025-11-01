@@ -223,11 +223,25 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     assert.ok(overlay);
     assert.equal(overlay.hidden, false);
 
+    const tablist = panel.querySelector('[data-menu-tabs]');
+    assert.ok(tablist);
+    const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
+    assert.ok(userTab);
+    assert.ok(settingsTab);
+    assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
+
     const userSection = panel.querySelector('[data-menu-section="user"]');
     assert.ok(userSection);
     const userTitle = userSection.querySelector('.auth-shell__menu-section-title');
     assert.ok(userTitle);
     assert.equal(userTitle.textContent.trim(), 'Usuário');
+
+    const settingsSection = panel.querySelector('[data-menu-section="settings"]');
+    assert.ok(settingsSection);
+    assert.equal(userSection.hidden, false);
+    assert.equal(settingsSection.hidden, true);
 
     const registerButton = panel.querySelector('[data-view-toggle][data-view="register"]');
     const guestButton = panel.querySelector('[data-view-toggle][data-view="guest"]');
@@ -273,6 +287,65 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
     assert.equal(panel.hidden, false);
     assert.equal(overlay.hidden, false);
+  } finally {
+    teardownShell(env);
+  }
+});
+
+test('alternar abas do menu exibe apenas as ações da seção ativa', async () => {
+  const env = setupShell();
+  try {
+    const menuButton = env.document.querySelector('.auth-shell__menu-button');
+    assert.ok(menuButton);
+    menuButton.click();
+
+    const panel = env.document.getElementById('authFooterMenu');
+    assert.ok(panel);
+
+    const tablist = panel.querySelector('[data-menu-tabs]');
+    assert.ok(tablist);
+    const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
+    assert.ok(userTab);
+    assert.ok(settingsTab);
+
+    const userSection = panel.querySelector('[data-menu-section="user"]');
+    const settingsSection = panel.querySelector('[data-menu-section="settings"]');
+    assert.ok(userSection);
+    assert.ok(settingsSection);
+
+    assert.equal(userSection.hidden, false);
+    assert.equal(settingsSection.hidden, true);
+
+    settingsTab.click();
+
+    assert.equal(settingsTab.getAttribute('aria-selected'), 'true');
+    assert.equal(userTab.getAttribute('aria-selected'), 'false');
+    assert.equal(settingsSection.hidden, false);
+    assert.equal(settingsSection.getAttribute('aria-hidden'), 'false');
+    assert.equal(userSection.hidden, true);
+    assert.equal(userSection.getAttribute('aria-hidden'), 'true');
+
+    const themeButton = settingsSection.querySelector('[data-action="preferences-theme"]');
+    const languageButton = settingsSection.querySelector('[data-action="preferences-language"]');
+    const languagePicker = settingsSection.querySelector('[data-pref-language-picker]');
+    assert.ok(themeButton);
+    assert.ok(languageButton);
+    assert.ok(languagePicker);
+    assert.equal(languagePicker.hidden, true);
+
+    languageButton.click();
+    assert.equal(languagePicker.hidden, false);
+
+    userTab.click();
+
+    assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
+    assert.equal(userSection.hidden, false);
+    assert.equal(userSection.getAttribute('aria-hidden'), 'false');
+    assert.equal(settingsSection.hidden, true);
+    assert.equal(settingsSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(languagePicker.hidden, true);
   } finally {
     teardownShell(env);
   }

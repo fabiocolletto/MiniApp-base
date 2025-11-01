@@ -149,6 +149,7 @@ export function initAuthShell(options = {}) {
   const footerActiveViewLabel = doc.querySelector('[data-active-view-label]');
   const footerActiveViewDivider = doc.querySelector('[data-active-view-divider]');
   const footerMenuCategoriesNav = footerMenuPanel?.querySelector('[data-menu-categories]');
+  const footerMenuTabs = footerMenuPanel?.querySelector('[data-menu-tabs]');
   const footerMenuViewsList = footerMenuPanel?.querySelector('[data-menu-group="views"]');
   const footerMenuThemeButton = footerMenuPanel?.querySelector('[data-action="preferences-theme"]');
   const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
@@ -414,6 +415,82 @@ export function initAuthShell(options = {}) {
     }
   }
 
+  function getQuickActionTabs() {
+    if (!ensureHtmlElement(doc, footerMenuTabs)) {
+      return [];
+    }
+
+    return Array.from(footerMenuTabs.querySelectorAll('[data-menu-tab]')).filter((tab) => ensureHtmlElement(doc, tab));
+  }
+
+  function getQuickActionSections() {
+    if (!(footerMenuPanel instanceof HTMLElementRef)) {
+      return [];
+    }
+
+    return Array.from(footerMenuPanel.querySelectorAll('[data-menu-section]')).filter((section) =>
+      ensureHtmlElement(doc, section),
+    );
+  }
+
+  function setActiveFooterMenuSection(sectionId, { focusTab = false } = {}) {
+    const sections = getQuickActionSections();
+
+    if (!sections.length) {
+      activeQuickActionsSectionId = null;
+      return;
+    }
+
+    const tabs = getQuickActionTabs();
+
+    let resolvedId = null;
+
+    if (sectionId && sections.some((section) => section.dataset.menuSection === sectionId)) {
+      resolvedId = sectionId;
+    } else if (
+      activeQuickActionsSectionId &&
+      sections.some((section) => section.dataset.menuSection === activeQuickActionsSectionId)
+    ) {
+      resolvedId = activeQuickActionsSectionId;
+    } else if (tabs.length) {
+      resolvedId = tabs[0]?.dataset.menuTab ?? sections[0]?.dataset.menuSection ?? null;
+    } else {
+      resolvedId = sections[0]?.dataset.menuSection ?? null;
+    }
+
+    if (!resolvedId) {
+      activeQuickActionsSectionId = null;
+      return;
+    }
+
+    activeQuickActionsSectionId = resolvedId;
+
+    if (resolvedId !== 'settings') {
+      closeLanguagePicker();
+    }
+
+    tabs.forEach((tab) => {
+      const isActive = tab.dataset.menuTab === resolvedId;
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+
+    sections.forEach((section) => {
+      const isActive = section.dataset.menuSection === resolvedId;
+      section.hidden = !isActive;
+      section.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      section.tabIndex = isActive ? 0 : -1;
+    });
+
+    if (focusTab) {
+      const targetTab = tabs.find((tab) => tab.dataset.menuTab === resolvedId);
+      if (targetTab) {
+        focusWithoutScreenShift(doc, win, targetTab);
+      }
+    }
+  }
+
   const FOOTER_MENU_STRUCTURE = [
     {
       id: 'shell-access',
@@ -465,6 +542,10 @@ export function initAuthShell(options = {}) {
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
   let languagePickerOpen = false;
+  let activeQuickActionsSectionId =
+    footerMenuPanel?.querySelector('[data-menu-section]:not([hidden])')?.dataset.menuSection ??
+    footerMenuPanel?.querySelector('[data-menu-section]')?.dataset.menuSection ??
+    null;
   const languagePickerListeners = new Set();
 
   if (footerMenuLanguagePicker instanceof HTMLElementRef) {
@@ -1395,6 +1476,84 @@ export function initAuthShell(options = {}) {
     renderFooterViewItems();
   }
 
+  if (ensureHtmlElement(doc, footerMenuTabs)) {
+    const handleTabClick = (event) => {
+      const trigger =
+        event.target instanceof HTMLElementRef ? event.target.closest('[data-menu-tab]') : null;
+
+      if (!trigger || !ensureHtmlElement(doc, trigger)) {
+        return;
+      }
+
+      const sectionId = trigger.dataset.menuTab;
+
+      if (!sectionId || sectionId === activeQuickActionsSectionId) {
+        return;
+      }
+
+      setActiveFooterMenuSection(sectionId);
+    };
+
+    const handleTabKeydown = (event) => {
+      if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+        return;
+      }
+
+      const trigger =
+        event.target instanceof HTMLElementRef ? event.target.closest('[data-menu-tab]') : null;
+
+      if (!trigger || !ensureHtmlElement(doc, trigger)) {
+        return;
+      }
+
+      const tabs = getQuickActionTabs();
+
+      if (!tabs.length) {
+        return;
+      }
+
+      const currentIndex = tabs.indexOf(trigger);
+
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % tabs.length : 0;
+        const nextTab = tabs[nextIndex];
+        if (nextTab) {
+          setActiveFooterMenuSection(nextTab.dataset.menuTab, { focusTab: true });
+        }
+      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + tabs.length) % tabs.length : 0;
+        const prevTab = tabs[prevIndex];
+        if (prevTab) {
+          setActiveFooterMenuSection(prevTab.dataset.menuTab, { focusTab: true });
+        }
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        const firstTab = tabs[0];
+        if (firstTab) {
+          setActiveFooterMenuSection(firstTab.dataset.menuTab, { focusTab: true });
+        }
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        const lastTab = tabs[tabs.length - 1];
+        if (lastTab) {
+          setActiveFooterMenuSection(lastTab.dataset.menuTab, { focusTab: true });
+        }
+      }
+    };
+
+    footerMenuTabs.addEventListener('click', handleTabClick);
+    footerMenuTabs.addEventListener('keydown', handleTabKeydown);
+
+    teardownCallbacks.push(() => {
+      footerMenuTabs.removeEventListener('click', handleTabClick);
+      footerMenuTabs.removeEventListener('keydown', handleTabKeydown);
+    });
+  }
+
+  setActiveFooterMenuSection(activeQuickActionsSectionId);
+
   if (ensureHtmlElement(doc, footerMenuButton)) {
     const handleFooterMenuClick = () => {
       if (!footerMenuOpen) {
@@ -1551,10 +1710,10 @@ export function initAuthShell(options = {}) {
     }
 
     if (viewName) {
-      closeFooterMenu();
       renderAuthView(viewName, {
         shouldFocus: true,
         viewProps: highlightAppId ? { highlightAppId } : {},
+        keepMenuOpen: true,
       });
       return;
     }
@@ -1632,8 +1791,10 @@ export function initAuthShell(options = {}) {
     });
   }
 
-  function renderAuthView(viewName, { shouldFocus = true, viewProps = {} } = {}) {
-    closeFooterMenu();
+  function renderAuthView(viewName, { shouldFocus = true, viewProps = {}, keepMenuOpen = false } = {}) {
+    if (!keepMenuOpen) {
+      closeFooterMenu();
+    }
 
     if (!(viewRoot instanceof HTMLElementRef)) {
       return;
