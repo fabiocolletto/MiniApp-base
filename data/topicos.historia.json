@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "topicos": [
+    {
+      "slug": "hist.colonia.inconfidencia_mineira",
+      "rotulo": "Inconfidência Mineira",
+      "sinonimos": ["Conjuração Mineira", "Tiradentes"],
+      "palavras_chave": ["derrama", "Vila Rica", "Minas Gerais", "século XVIII"],
+      "bncc_sugeridos": ["EF08HI05"]
+    },
+    {
+      "slug": "hist.colonia.conjuracoes_coloniais",
+      "rotulo": "Conjurações Coloniais",
+      "sinonimos": ["Conjuração Mineira", "Conjuração Baiana"],
+      "palavras_chave": ["movimentos", "contestação", "colonial"],
+      "bncc_sugeridos": ["EF08HI05", "EF08HI06"]
+    }
+  ]
+}

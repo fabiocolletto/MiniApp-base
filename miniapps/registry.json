@@ -1,6 +1,6 @@
 [
   {
     "id": "primary",
-    "entry": "./miniapps/primary/index.js"
+    "entry": "./miniapps/education/ripple/index.js"
   }
 ]

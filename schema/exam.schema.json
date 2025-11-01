@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExamDoc",
+  "type": "object",
+  "required": ["id", "title", "meta", "stage", "items", "seed", "targetItems"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "escola": { "type": ["string", "null"] },
+        "professor": { "type": ["string", "null"] },
+        "turma": { "type": ["string", "null"] },
+        "etapaAno": { "type": ["string", "null"] },
+        "disciplina": { "type": ["string", "null"] },
+        "data": { "type": ["string", "null"] }
+      }
+    },
+    "stage": { "type": "string" },
+    "status": { "type": ["string", "null"] },
+    "seed": { "type": "integer" },
+    "targetItems": { "type": "integer" },
+    "shuffleQuestions": { "type": "boolean" },
+    "shuffleAlternatives": { "type": "boolean" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["refId"],
+        "properties": {
+          "refId": { "type": "string" },
+          "locked": { "type": ["boolean", "null"] },
+          "pickPolicy": { "type": ["string", "null"] },
+          "altShuffleSeed": { "type": ["integer", "null"] },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "answerKeyMode": { "type": ["string", "null"] },
+    "teacherNotes": { "type": ["string", "null"] },
+    "derived": { "type": ["object", "null"] },
+    "rev": { "type": ["integer", "null"] },
+    "createdAt": { "type": ["string", "null"] },
+    "updatedAt": { "type": ["string", "null"] }
+  }
+}
