@@ -1998,6 +1998,15 @@ body.auth-only.auth-shell--menu-open {
   display: none !important;
 }
 
+.auth-shell__menu-panel .auth-shell__menu-categories[data-menu-tabs-wrapper] {
+  display: block !important;
+  margin-block-end: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.auth-shell__menu-panel [data-menu-tabs] {
+  justify-content: center;
+}
+
 .auth-shell__menu-header {
   display: grid;
   gap: clamp(0.35rem, 1.8vw, 0.65rem);
@@ -2043,6 +2052,11 @@ body.auth-only.auth-shell--menu-open {
 .auth-shell__menu-section {
   display: grid;
   gap: clamp(0.85rem, 2.6vw, 1.25rem);
+}
+
+.auth-shell__menu-section[hidden],
+.auth-shell__menu-section[aria-hidden='true'] {
+  display: none !important;
 }
 
 .auth-shell__menu-section + .auth-shell__menu-section {

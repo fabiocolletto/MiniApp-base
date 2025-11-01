@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Menu principal organiza as seções Usuário e Configurações como abas exclusivas, exibindo apenas os botões da aba ativa e
+  recolhendo o seletor de idioma ao retornar para Usuário.
 - Layout principal do MiniApp simplificado para que cada view ocupe o espaço entre cabeçalho e rodapé sem o cartão fixo, herdando diretamente o tema global do 5horas.com.br.
 - Painel convidado ocupa toda a área útil entre cabeçalho e rodapé, centralizando o título de boas-vindas em container compacto
   e ocultando o placeholder vazio até que módulos reais sejam publicados.
