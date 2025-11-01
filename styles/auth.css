@@ -1990,6 +1990,30 @@ body.auth-only.auth-shell--menu-open {
   gap: clamp(0.75rem, 2.4vw, 1.15rem);
 }
 
+.auth-shell__menu-language-picker {
+  display: grid;
+  gap: clamp(0.65rem, 2.2vw, 0.9rem);
+  padding: clamp(0.75rem, 2.3vw, 1rem);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--auth-border) 60%, transparent);
+  background: color-mix(in srgb, var(--auth-surface) 88%, transparent);
+}
+
+.auth-shell__menu-language-picker[hidden] {
+  display: none;
+}
+
+.auth-shell__menu-language-title {
+  margin: 0;
+  font: 600 clamp(0.85rem, 2vw, 0.95rem) / 1.35 system-ui, sans-serif;
+  color: color-mix(in srgb, var(--auth-text) 88%, transparent);
+}
+
+.auth-shell__menu-language-options {
+  display: grid;
+  gap: clamp(0.6rem, 1.8vw, 0.85rem);
+}
+
 .auth-shell__menu-section {
   display: grid;
   gap: clamp(0.85rem, 2.6vw, 1.25rem);
@@ -2029,6 +2053,30 @@ body.auth-only.auth-shell--menu-open {
   gap: clamp(0.65rem, 2vw, 0.85rem);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   min-height: clamp(3.5rem, 12vw, 3.75rem);
+}
+
+.auth-shell__menu-item--language {
+  justify-content: space-between;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.auth-shell__menu-item--language::after {
+  content: '';
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--auth-border) 60%, transparent);
+  background: transparent;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.auth-shell__menu-item--language.is-active::after,
+.auth-shell__menu-item--language[aria-pressed='true']::after {
+  border-color: color-mix(in srgb, var(--auth-primary) 80%, transparent);
+  background: color-mix(in srgb, var(--auth-primary) 70%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--auth-primary) 22%, transparent);
 }
 
 .auth-shell__menu-panel .auth-shell__menu-item:hover,

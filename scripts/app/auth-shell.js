@@ -148,6 +148,7 @@ export function initAuthShell(options = {}) {
   const footerMenuFontScaleButton = footerMenuPanel?.querySelector('[data-action="preferences-font"]');
   const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
   const footerMenuLanguageButton = footerMenuPanel?.querySelector('[data-action="preferences-language"]');
+  const footerMenuLanguagePicker = footerMenuPanel?.querySelector('[data-pref-language-picker]');
   const footerViewportQuery =
     typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
   const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
@@ -164,7 +165,6 @@ export function initAuthShell(options = {}) {
     ['light', 'Claro'],
     ['dark', 'Escuro'],
   ]);
-  const LANGUAGE_SEQUENCE = ['pt-BR', 'en', 'es'];
   const LANGUAGE_LABELS = new Map([
     ['pt-BR', 'Português (Brasil)'],
     ['en', 'Inglês'],
@@ -234,11 +234,179 @@ export function initAuthShell(options = {}) {
     const ariaLabel = languageLabel ? `${baseLabel}. Idioma atual: ${languageLabel}` : baseLabel;
     footerMenuLanguageButton.setAttribute('aria-label', ariaLabel);
     footerMenuLanguageButton.setAttribute('title', languageLabel ? `${baseLabel} (Idioma atual: ${languageLabel})` : baseLabel);
+
+    if (!languagePickerOpen) {
+      footerMenuLanguageButton.setAttribute('aria-expanded', 'false');
+    }
+
+    updateLanguagePicker(langValue);
   }
 
-  updateThemeQuickAction();
-  updateFontScaleQuickAction();
-  updateLanguageQuickAction();
+  function getLanguageOptions() {
+    if (!(footerMenuLanguagePicker instanceof HTMLElementRef)) {
+      return [];
+    }
+
+    return Array.from(footerMenuLanguagePicker.querySelectorAll('[data-language-option]')).filter((option) =>
+      option instanceof HTMLElementRef,
+    );
+  }
+
+  function updateLanguagePicker(langValue = 'pt-BR') {
+    if (!(footerMenuLanguagePicker instanceof HTMLElementRef)) {
+      return;
+    }
+
+    const options = getLanguageOptions();
+    options.forEach((option) => {
+      if (!(option instanceof HTMLElementRef)) {
+        return;
+      }
+
+      const isActive = option.dataset.languageOption === langValue;
+      option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      option.classList.toggle('is-active', isActive);
+    });
+  }
+
+  function registerLanguagePickerListeners(listeners) {
+    listeners.forEach(({ target, type, handler, options }) => {
+      if (!target || typeof target.addEventListener !== 'function') {
+        return;
+      }
+
+      target.addEventListener(type, handler, options);
+
+      const remove = () => {
+        target.removeEventListener(type, handler, options);
+      };
+
+      languagePickerListeners.add(remove);
+    });
+  }
+
+  function cleanupLanguagePickerListeners() {
+    languagePickerListeners.forEach((remove) => {
+      try {
+        remove();
+      } catch (error) {
+        console.error('Preferências: falha ao remover listener do seletor de idioma.', error);
+      }
+    });
+
+    languagePickerListeners.clear();
+  }
+
+  function focusLanguageOptionByOffset(currentOption, offset) {
+    const options = getLanguageOptions();
+
+    if (!options.length) {
+      return;
+    }
+
+    const currentIndex = currentOption ? options.indexOf(currentOption) : -1;
+    const normalizedIndex = currentIndex >= 0 ? currentIndex : 0;
+    const nextIndex = (normalizedIndex + offset + options.length) % options.length;
+    const nextOption = options[nextIndex];
+
+    if (nextOption) {
+      focusWithoutScreenShift(doc, win, nextOption);
+    }
+  }
+
+  function openLanguagePicker() {
+    if (languagePickerOpen || !ensureHtmlElement(doc, footerMenuLanguagePicker)) {
+      return;
+    }
+
+    languagePickerOpen = true;
+    footerMenuLanguagePicker.hidden = false;
+
+    if (ensureHtmlElement(doc, footerMenuLanguageButton)) {
+      footerMenuLanguageButton.setAttribute('aria-expanded', 'true');
+    }
+
+    const snapshot =
+      typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
+    const currentLanguage = snapshot?.lang ?? doc.documentElement?.getAttribute('data-lang') ?? 'pt-BR';
+
+    updateLanguagePicker(currentLanguage);
+
+    const options = getLanguageOptions();
+    const activeOption = options.find((option) => option.dataset.languageOption === currentLanguage) ?? options[0];
+
+    if (activeOption) {
+      focusWithoutScreenShift(doc, win, activeOption);
+    }
+
+    const handlePointerDown = (event) => {
+      if (!NodeRef || !(event.target instanceof NodeRef)) {
+        return;
+      }
+
+      const isInsidePicker = footerMenuLanguagePicker.contains(event.target);
+      const isTrigger = ensureHtmlElement(doc, footerMenuLanguageButton) && footerMenuLanguageButton.contains(event.target);
+
+      if (!isInsidePicker && !isTrigger) {
+        closeLanguagePicker();
+      }
+    };
+
+    const handleFocusIn = (event) => {
+      if (!NodeRef || !(event.target instanceof NodeRef)) {
+        return;
+      }
+
+      const isInsidePicker = footerMenuLanguagePicker.contains(event.target);
+      const isTrigger = ensureHtmlElement(doc, footerMenuLanguageButton) && footerMenuLanguageButton.contains(event.target);
+
+      if (!isInsidePicker && !isTrigger) {
+        closeLanguagePicker();
+      }
+    };
+
+    const handleKeydown = (event) => {
+      if (KeyboardEventRef && event instanceof KeyboardEventRef && event.key === 'Escape') {
+        event.preventDefault();
+        closeLanguagePicker({ focusButton: true });
+      }
+    };
+
+    registerLanguagePickerListeners([
+      { target: doc, type: 'pointerdown', handler: handlePointerDown },
+      { target: doc, type: 'focusin', handler: handleFocusIn },
+      { target: doc, type: 'keydown', handler: handleKeydown },
+    ]);
+  }
+
+  function closeLanguagePicker({ focusButton = false } = {}) {
+    if (!languagePickerOpen) {
+      return;
+    }
+
+    languagePickerOpen = false;
+    cleanupLanguagePickerListeners();
+
+    if (ensureHtmlElement(doc, footerMenuLanguagePicker)) {
+      footerMenuLanguagePicker.hidden = true;
+    }
+
+    if (ensureHtmlElement(doc, footerMenuLanguageButton)) {
+      footerMenuLanguageButton.setAttribute('aria-expanded', 'false');
+
+      if (focusButton) {
+        focusWithoutScreenShift(doc, win, footerMenuLanguageButton);
+      }
+    }
+  }
+
+  function toggleLanguagePicker() {
+    if (languagePickerOpen) {
+      closeLanguagePicker({ focusButton: true });
+    } else {
+      openLanguagePicker();
+    }
+  }
 
   const FOOTER_MENU_STRUCTURE = [
     {
@@ -290,6 +458,89 @@ export function initAuthShell(options = {}) {
   const teardownCallbacks = [];
   let footerMenuOpen = false;
   let footerDetailsExpanded = false;
+  let languagePickerOpen = false;
+  const languagePickerListeners = new Set();
+
+  if (footerMenuLanguagePicker instanceof HTMLElementRef) {
+    const options = getLanguageOptions();
+
+    options.forEach((option) => {
+      if (!(option instanceof HTMLElementRef)) {
+        return;
+      }
+
+      const handleClick = (event) => {
+        event.preventDefault();
+
+        const langValue = option.dataset.languageOption;
+        if (!langValue) {
+          return;
+        }
+
+        const snapshot =
+          typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
+        const currentLanguage = snapshot?.lang ?? doc.documentElement?.getAttribute('data-lang') ?? 'pt-BR';
+
+        if (langValue !== currentLanguage) {
+          const updatePromise =
+            typeof runtime.updateUserPreferences === 'function'
+              ? runtime.updateUserPreferences({ lang: langValue }, { window: win, document: doc })
+              : null;
+
+          if (updatePromise && typeof updatePromise.catch === 'function') {
+            updatePromise.catch((error) => {
+              console.error('Preferências: falha ao aplicar idioma escolhido.', error);
+            });
+          }
+        }
+
+        closeLanguagePicker({ focusButton: true });
+      };
+
+      const handleKeydown = (event) => {
+        if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+          return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          focusLanguageOptionByOffset(option, 1);
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+          event.preventDefault();
+          focusLanguageOptionByOffset(option, -1);
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          focusLanguageOptionByOffset(options[0], 0);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          focusLanguageOptionByOffset(options[options.length - 1], 0);
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          closeLanguagePicker({ focusButton: true });
+        } else if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          option.click();
+        }
+      };
+
+      option.addEventListener('click', handleClick);
+      option.addEventListener('keydown', handleKeydown);
+
+      teardownCallbacks.push(() => {
+        option.removeEventListener('click', handleClick);
+        option.removeEventListener('keydown', handleKeydown);
+      });
+    });
+  }
+
+  teardownCallbacks.push(() => {
+    closeLanguagePicker();
+    cleanupLanguagePickerListeners();
+  });
+
+  updateThemeQuickAction();
+  updateFontScaleQuickAction();
+  updateLanguageQuickAction();
 
   if (typeof runtime.subscribeUserPreferences === 'function') {
     const unsubscribePreferences = runtime.subscribeUserPreferences((prefsSnapshot) => {
@@ -567,11 +818,14 @@ export function initAuthShell(options = {}) {
 
   function closeFooterMenu({ focusToggle = false } = {}) {
     if (!footerMenuOpen) {
+      closeLanguagePicker();
       return;
     }
 
     footerMenuOpen = false;
     setFooterMenuState(false);
+
+    closeLanguagePicker();
 
     cleanupFooterMenuListeners();
 
@@ -1216,6 +1470,10 @@ export function initAuthShell(options = {}) {
     const highlightAppId = item.dataset.highlightAppId || item.dataset.miniappId;
     const action = item.dataset.action;
 
+    if (action && action !== 'preferences-language') {
+      closeLanguagePicker();
+    }
+
     if (action === 'preferences-theme') {
       const snapshot =
         typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
@@ -1251,19 +1509,7 @@ export function initAuthShell(options = {}) {
     }
 
     if (action === 'preferences-language') {
-      const snapshot =
-        typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
-      const currentLanguage = snapshot?.lang ?? 'pt-BR';
-      const nextLanguage = getNextValue(currentLanguage, LANGUAGE_SEQUENCE);
-      const updatePromise =
-        typeof runtime.updateUserPreferences === 'function'
-          ? runtime.updateUserPreferences({ lang: nextLanguage }, { window: win, document: doc })
-          : null;
-      if (updatePromise && typeof updatePromise.catch === 'function') {
-        updatePromise.catch((error) => {
-          console.error('Preferências: falha ao alternar idioma pelo atalho rápido.', error);
-        });
-      }
+      toggleLanguagePicker();
       return;
     }
 

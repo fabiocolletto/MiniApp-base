@@ -72,7 +72,7 @@ await updateUserPreferences({ density: 'compact', theme: 'light' });
 
 - A seção **Usuário** do menu principal concentra as trocas de jornada (`data-view="register"` ou `data-view="guest"`), permitindo alternar entre Cadastro e Visitante sem depender de botões externos ao painel.
 - A seção **Configurações** mantém os três botões com `data-action="preferences-theme"`, `data-action="preferences-font"` e `data-action="preferences-language"`.
-- Cada clique calcula o próximo valor disponível e chama `updateUserPreferences`, mantendo o painel aberto enquanto aplica imediatamente tema, escala tipográfica ou idioma.
+- Cliques em tema e escala tipográfica calculam o próximo valor disponível e chamam `updateUserPreferences` imediatamente. O botão de idioma abre uma lista com as opções (`pt-BR`, `en`, `es`) para que o usuário escolha explicitamente qual idioma aplicar.
 - Os rótulos e dicas exibidos no menu são atualizados por `subscribeUserPreferences`, garantindo que leitores de tela anunciem o estado vigente.
 - Não há mais janela dedicada de preferências; toda a personalização acontece diretamente por esses atalhos.
 

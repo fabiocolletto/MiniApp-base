@@ -26,9 +26,9 @@ O rodapé mantém três ações rápidas:
 
 1. **Tema** – alterna entre Automático, Claro e Escuro.
 2. **Tamanho do texto** – percorre os cinco níveis de escala tipográfica.
-3. **Idioma** – alterna entre Português (Brasil), Inglês e Espanhol.
+3. **Idioma** – abre a lista com Português (Brasil), Inglês e Espanhol para selecionar a preferência ativa.
 
-Os rótulos são atualizados dinamicamente conforme o estado salvo em IndexedDB (`marco_core`).
+Os rótulos são atualizados dinamicamente conforme o estado salvo em IndexedDB (`marco_core`). Ao escolher um idioma, o menu mantém a lista aberta até que o usuário confirme a seleção desejada.
 
 ## Persistência e PWA
 
