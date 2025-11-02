@@ -6,8 +6,6 @@ import { fileURLToPath } from 'node:url';
 import { createDomEnvironment } from './helpers/dom-env.js';
 
 import { initAuthShell } from '../scripts/app/auth-shell.js';
-import { renderRegisterPanel } from '../scripts/views/register.js';
-import { renderAccountDashboard } from '../scripts/views/account-dashboard.js';
 import {
   WHITE_LABEL_IDENTITY,
   WHITE_LABEL_MINIAPP_CONTEXT,
@@ -87,8 +85,6 @@ function setupShell({ url = 'http://localhost/', prepare } = {}) {
     fetch: fetchMock,
     registerServiceWorker,
     eventBus: createEventBus(),
-    renderRegisterPanel,
-    renderAccountDashboard,
     loadMiniApp,
   });
 
@@ -172,7 +168,11 @@ test('inicializa o shell white label com painel padrão e sem MiniApps listados'
 
     const footerLabel = env.document.querySelector('[data-active-view-label]');
     assert.ok(footerLabel);
-    assert.match(footerLabel.textContent, /Painel atual: Visitante/);
+    assert.ok(
+      footerLabel.textContent.includes('Painel atual: Painel principal') ||
+        footerLabel.textContent.includes(`Painel atual: ${WHITE_LABEL_IDENTITY.shortName}`),
+      'o rótulo do rodapé deve destacar o painel principal aberto',
+    );
 
     await env.flushAsync();
 
@@ -185,21 +185,26 @@ test('inicializa o shell white label com painel padrão e sem MiniApps listados'
   }
 });
 
-test('alterna para a tela de cadastro ao clicar no botão correspondente', async () => {
+test('menu de experiência exibe apenas o painel principal liberado', async () => {
   const env = setupShell();
   try {
     const menuButton = env.document.querySelector('.auth-shell__menu-button');
     assert.ok(menuButton);
     menuButton.click();
 
-    const registerButton = env.document.querySelector('[data-view-toggle][data-view="register"]');
-    assert.ok(registerButton);
-    registerButton.click();
+    const experienceSection = env.document.querySelector('[data-menu-section="experience"]');
+    assert.ok(experienceSection);
+    const registerButton = experienceSection.querySelector('[data-view-toggle][data-view="register"]');
+    assert.equal(registerButton, null, 'fluxo de cadastro deve estar ausente');
+
+    const guestButton = experienceSection.querySelector('[data-view-toggle][data-view="guest"]');
+    assert.ok(guestButton);
+    guestButton.click();
 
     await env.flushAsync();
 
     const viewRoot = env.document.getElementById('authViewRoot');
-    assert.equal(viewRoot.dataset.view, 'register');
+    assert.equal(viewRoot.dataset.view, 'guest');
   } finally {
     teardownShell(env);
   }
@@ -225,21 +230,21 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
 
     const tablist = panel.querySelector('[data-menu-tabs]');
     assert.ok(tablist);
-    const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const experienceTab = tablist.querySelector('[data-menu-tab="experience"]');
     const interfacesTab = tablist.querySelector('[data-menu-tab="interfaces"]');
     const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
-    assert.ok(userTab);
+    assert.ok(experienceTab);
     assert.ok(interfacesTab);
     assert.ok(settingsTab);
-    assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(experienceTab.getAttribute('aria-selected'), 'true');
     assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
 
-    const userSection = panel.querySelector('[data-menu-section="user"]');
-    assert.ok(userSection);
-    const userTitle = userSection.querySelector('.auth-shell__menu-section-title');
+    const experienceSection = panel.querySelector('[data-menu-section="experience"]');
+    assert.ok(experienceSection);
+    const userTitle = experienceSection.querySelector('.auth-shell__menu-section-title');
     assert.ok(userTitle);
-    assert.equal(userTitle.textContent.trim(), 'Usuário');
+    assert.equal(userTitle.textContent.trim(), 'Experiência');
 
     const interfacesSection = panel.querySelector('[data-menu-section="interfaces"]');
     assert.ok(interfacesSection);
@@ -250,17 +255,14 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
 
     const settingsSection = panel.querySelector('[data-menu-section="settings"]');
     assert.ok(settingsSection);
-    assert.equal(userSection.hidden, false);
+    assert.equal(experienceSection.hidden, false);
     assert.equal(settingsSection.hidden, true);
 
-    const registerButton = panel.querySelector('[data-view-toggle][data-view="register"]');
     const guestButton = panel.querySelector('[data-view-toggle][data-view="guest"]');
-    assert.ok(registerButton);
     assert.ok(guestButton);
-    assert.equal(registerButton.getAttribute('aria-current'), 'false');
     assert.equal(guestButton.getAttribute('aria-current'), 'page');
     assert.ok(guestButton.classList.contains('is-active'));
-    assert.strictEqual(env.document.activeElement, registerButton);
+    assert.strictEqual(env.document.activeElement, guestButton);
 
     const themeButton = panel.querySelector('[data-action="preferences-theme"]');
     const fontButton = panel.querySelector('[data-action="preferences-font"]');
@@ -314,33 +316,33 @@ test('alternar abas do menu exibe apenas as ações da seção ativa', async () 
 
     const tablist = panel.querySelector('[data-menu-tabs]');
     assert.ok(tablist);
-    const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const experienceTab = tablist.querySelector('[data-menu-tab="experience"]');
     const interfacesTab = tablist.querySelector('[data-menu-tab="interfaces"]');
     const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
-    assert.ok(userTab);
+    assert.ok(experienceTab);
     assert.ok(interfacesTab);
     assert.ok(settingsTab);
 
-    const userSection = panel.querySelector('[data-menu-section="user"]');
+    const experienceSection = panel.querySelector('[data-menu-section="experience"]');
     const settingsSection = panel.querySelector('[data-menu-section="settings"]');
     const interfacesSection = panel.querySelector('[data-menu-section="interfaces"]');
-    assert.ok(userSection);
+    assert.ok(experienceSection);
     assert.ok(settingsSection);
     assert.ok(interfacesSection);
 
-    assert.equal(userSection.hidden, false);
+    assert.equal(experienceSection.hidden, false);
     assert.equal(settingsSection.hidden, true);
     assert.equal(interfacesSection.hidden, true);
 
     settingsTab.click();
 
     assert.equal(settingsTab.getAttribute('aria-selected'), 'true');
-    assert.equal(userTab.getAttribute('aria-selected'), 'false');
+    assert.equal(experienceTab.getAttribute('aria-selected'), 'false');
     assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsSection.hidden, false);
     assert.equal(settingsSection.getAttribute('aria-hidden'), 'false');
-    assert.equal(userSection.hidden, true);
-    assert.equal(userSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(experienceSection.hidden, true);
+    assert.equal(experienceSection.getAttribute('aria-hidden'), 'true');
     assert.equal(interfacesSection.hidden, true);
     assert.equal(interfacesSection.getAttribute('aria-hidden'), 'true');
 
@@ -359,24 +361,24 @@ test('alternar abas do menu exibe apenas as ações da seção ativa', async () 
 
     assert.equal(interfacesTab.getAttribute('aria-selected'), 'true');
     assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
-    assert.equal(userTab.getAttribute('aria-selected'), 'false');
+    assert.equal(experienceTab.getAttribute('aria-selected'), 'false');
     assert.equal(interfacesSection.hidden, false);
     assert.equal(interfacesSection.getAttribute('aria-hidden'), 'false');
     assert.equal(settingsSection.hidden, true);
     assert.equal(settingsSection.getAttribute('aria-hidden'), 'true');
-    assert.equal(userSection.hidden, true);
-    assert.equal(userSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(experienceSection.hidden, true);
+    assert.equal(experienceSection.getAttribute('aria-hidden'), 'true');
     const interfacesCta = interfacesSection.querySelector('[data-action="open-miniapp"][data-miniapp-id="primary"]');
     assert.ok(interfacesCta);
     assert.equal(languagePicker.hidden, true);
 
-    userTab.click();
+    experienceTab.click();
 
-    assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(experienceTab.getAttribute('aria-selected'), 'true');
     assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
-    assert.equal(userSection.hidden, false);
-    assert.equal(userSection.getAttribute('aria-hidden'), 'false');
+    assert.equal(experienceSection.hidden, false);
+    assert.equal(experienceSection.getAttribute('aria-hidden'), 'false');
     assert.equal(settingsSection.hidden, true);
     assert.equal(settingsSection.getAttribute('aria-hidden'), 'true');
     assert.equal(interfacesSection.hidden, true);

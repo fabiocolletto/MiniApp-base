@@ -1,7 +1,5 @@
 import eventBusDefault from '../events/event-bus.js';
 import { registerServiceWorker as registerServiceWorkerDefault } from '../pwa/register-service-worker.js';
-import { renderRegisterPanel as renderRegisterPanelDefault } from '../views/register.js';
-import { renderAccountDashboard as renderAccountDashboardDefault } from '../views/account-dashboard.js';
 import {
   subscribeUserPreferences as subscribeUserPreferencesDefault,
   getFontScaleLabel as getFontScaleLabelDefault,
@@ -92,12 +90,31 @@ function normalizeOptions(options) {
   const runtime = resolveRuntime(options);
   const doc = getDocument(runtime);
   const win = getWindow(runtime);
-  const queueTask =
+  const queueMicrotaskRef =
     typeof runtime.queueMicrotask === 'function'
       ? runtime.queueMicrotask
       : typeof queueMicrotask === 'function'
       ? queueMicrotask
+      : null;
+  const queueTask =
+    typeof queueMicrotaskRef === 'function'
+      ? queueMicrotaskRef.bind(win ?? globalThis)
       : (cb) => Promise.resolve().then(cb);
+  let fetchRef = null;
+
+  if (typeof runtime.fetch === 'function') {
+    if (win && runtime.fetch === win.fetch) {
+      fetchRef = win.fetch.bind(win);
+    } else if (typeof fetch === 'function' && runtime.fetch === fetch) {
+      fetchRef = fetch.bind(globalThis);
+    } else {
+      fetchRef = runtime.fetch;
+    }
+  } else if (win && typeof win.fetch === 'function') {
+    fetchRef = win.fetch.bind(win);
+  } else if (typeof fetch === 'function') {
+    fetchRef = fetch.bind(globalThis);
+  }
 
   return {
     doc,
@@ -105,13 +122,11 @@ function normalizeOptions(options) {
     queueTask,
     eventBus: runtime.eventBus ?? eventBusDefault,
     registerServiceWorker: runtime.registerServiceWorker ?? registerServiceWorkerDefault,
-    renderRegisterPanel: runtime.renderRegisterPanel ?? renderRegisterPanelDefault,
-    renderAccountDashboard: runtime.renderAccountDashboard ?? renderAccountDashboardDefault,
     subscribeUserPreferences: runtime.subscribeUserPreferences ?? subscribeUserPreferencesDefault,
     getFontScaleLabel: runtime.getFontScaleLabel ?? getFontScaleLabelDefault,
     getCurrentPreferences: runtime.getCurrentPreferences ?? getCurrentPreferencesDefault,
     updateUserPreferences: runtime.updateUserPreferences ?? updateUserPreferencesDefault,
-    fetch: runtime.fetch ?? win?.fetch ?? (typeof fetch === 'function' ? fetch : null),
+    fetch: fetchRef,
     loadMiniApp: runtime.loadMiniApp ?? loadMiniAppDefault,
     URL: runtime.URL ?? win?.URL ?? (typeof URL !== 'undefined' ? URL : null),
   };
@@ -501,31 +516,13 @@ export function initAuthShell(options = {}) {
       types: [
         {
           id: 'shell-home',
-          label: 'Painel inicial',
+          label: 'Experiência',
           entries: [
             {
               id: 'view-white-label-home',
-              label: 'Bem-vindo',
-              description: 'Abra o painel inicial pronto para receber o MiniApp da sua marca.',
+              label: 'Painel principal',
+              description: 'Acesse o MiniApp configurado sem cadastro. Tudo fica salvo neste dispositivo.',
               view: 'guest',
-            },
-          ],
-        },
-        {
-          id: 'account-management',
-          label: 'Conta e segurança',
-          entries: [
-            {
-              id: 'view-register',
-              label: 'Criar uma nova conta',
-              description: 'Inicie o cadastro com validações assistidas e etapas orientadas.',
-              view: 'register',
-            },
-            {
-              id: 'view-account-dashboard',
-              label: 'Painel da conta',
-              description: 'Gerencie cadastros locais, sessões e limpeza de dados neste dispositivo.',
-              view: 'account-dashboard',
             },
           ],
         },
@@ -1267,24 +1264,14 @@ export function initAuthShell(options = {}) {
   }
 
   const VIEW_RENDERERS = {
-    register: {
-      render: runtime.renderRegisterPanel,
-      hint: 'Preencha os dados abaixo para criar sua conta com segurança.',
-    },
     guest: {
       render: renderGuestAccessPanel,
       hint: WHITE_LABEL_IDENTITY.guestHint,
     },
-    'account-dashboard': {
-      render: runtime.renderAccountDashboard,
-      hint: 'Gerencie cadastros locais, revise detalhes e limpe dados salvos neste dispositivo.',
-    },
   };
 
   const FOOTER_VIEW_LABELS = {
-    register: 'Criar uma nova conta',
     guest: WHITE_LABEL_IDENTITY.shortName,
-    'account-dashboard': 'Painel da conta',
   };
 
   let currentView = null;

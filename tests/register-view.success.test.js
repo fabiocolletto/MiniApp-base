@@ -2,8 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import eventBus from '../scripts/events/event-bus.js';
-import { resetUserStoreForTests } from '../scripts/data/user-store.js';
-import { clearActiveUser, getActiveUserId } from '../scripts/data/session-store.js';
+import { getActiveUserId } from '../scripts/data/session-store.js';
 import { setupFakeDom } from './helpers/fake-dom.js';
 
 function createLocalStorageMock() {
@@ -28,7 +27,7 @@ function createLocalStorageMock() {
   };
 }
 
-test('renderRegisterPanel envia usuário à MiniApp Store após cadastro bem-sucedido', async (t) => {
+test('renderRegisterPanel informa que o cadastro está desativado e retorna ao painel principal', async (t) => {
   const restoreDom = setupFakeDom();
 
   const originalWindow = globalThis.window;
@@ -49,8 +48,6 @@ test('renderRegisterPanel envia usuário à MiniApp Store após cadastro bem-suc
     HTMLElement.prototype.select = () => {};
   }
 
-  await resetUserStoreForTests();
-  clearActiveUser();
   eventBus.clear();
 
   const emittedEvents = [];
@@ -61,68 +58,26 @@ test('renderRegisterPanel envia usuário à MiniApp Store após cadastro bem-suc
   const viewRoot = document.createElement('div');
   renderRegisterPanel(viewRoot);
 
-  const form = viewRoot.querySelector('form');
-  assert.ok(form, 'formulário deve ser renderizado');
+  assert.equal(viewRoot.dataset.view, 'register-disabled');
+  assert.ok(viewRoot.classList.contains('register-view--disabled'));
 
-  const countryInputWrapper = form.querySelector('.auth-panel__phone-subfield--country');
-  const numberInputWrapper = form.querySelector('.auth-panel__phone-subfield--number');
-  const formInputs = form.querySelectorAll('.form-input');
-  const passwordInput = formInputs.find((input) => input.type === 'password');
-  const legalCheckbox = form.querySelector('.register-panel__legal-checkbox');
+  const message = viewRoot.querySelector('.register-disabled__message');
+  const hint = viewRoot.querySelector('.register-disabled__hint');
+  const actionButton = viewRoot.querySelector('.register-disabled__action');
 
-  assert.ok(countryInputWrapper, 'campo de código do país deve estar presente');
-  assert.ok(numberInputWrapper, 'campo de telefone deve estar presente');
-  assert.ok(passwordInput, 'campo de senha deve estar presente');
-  assert.ok(legalCheckbox, 'campo de aceite legal deve estar presente');
+  assert.ok(message, 'mensagem explicativa deve ser exibida');
+  assert.ok(hint, 'dica complementar deve ser exibida');
+  assert.ok(actionButton, 'ação para abrir o painel principal deve estar disponível');
 
-  const phoneCountryInput = countryInputWrapper.querySelector('.form-input');
-  const phoneNumberInput = numberInputWrapper.querySelector('.form-input');
-
-  assert.ok(phoneCountryInput, 'input do código do país deve estar acessível');
-  assert.ok(phoneNumberInput, 'input do número de telefone deve estar acessível');
-
-  phoneCountryInput.value = '55';
-  phoneNumberInput.value = '11988887777';
-  passwordInput.value = 'SenhaForte123!';
-  legalCheckbox.checked = true;
-  legalCheckbox.dispatchEvent({ type: 'change' });
-
-  form.dispatchEvent({
-    type: 'submit',
-    preventDefault() {},
-  });
-
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  actionButton.dispatchEvent({ type: 'click' });
 
   assert.ok(
-    emittedEvents.some((payload) => payload?.view === 'miniapps' && payload?.source === 'register:success'),
-    'fluxo de sucesso deve navegar automaticamente para a MiniApp Store',
+    emittedEvents.some((payload) => payload?.view === 'guest' && payload?.source === 'register:disabled'),
+    'botão deve encaminhar para o painel principal como convidado',
   );
-
-  assert.equal(viewRoot.dataset.view, 'register-success', 'visão deve indicar estado de sucesso');
-  assert.ok(
-    viewRoot.className.includes('register-view--success'),
-    'classe de sucesso deve ser aplicada ao contêiner',
-  );
-
-  const successButton = viewRoot.querySelector('.register-success__action--primary');
-  assert.ok(successButton, 'botão principal de sucesso deve estar disponível para navegação');
-
-  successButton.dispatchEvent({ type: 'click' });
-
-  const manualNavigations = emittedEvents.filter(
-    (payload) => payload?.view === 'miniapps' && payload?.source === 'register:success:cta',
-  );
-  assert.ok(manualNavigations.length >= 1, 'botão de sucesso deve encaminhar para a MiniApp Store');
-
-  const autoNavigations = emittedEvents.filter(
-    (payload) => payload?.view === 'miniapps' && payload?.source === 'register:success',
-  );
-  assert.ok(autoNavigations.length === 1, 'navegação automática deve ocorrer uma única vez');
 
   const activeUserId = typeof getActiveUserId === 'function' ? getActiveUserId() : null;
-  assert.ok(Number.isFinite(activeUserId), 'usuário cadastrado deve ser definido como sessão ativa');
+  assert.equal(activeUserId, null, 'nenhuma sessão deve ser criada ao abrir o painel desativado');
 
   t.after(() => {
     unsubscribe?.();

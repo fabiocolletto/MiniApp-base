@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Fluxo de acesso simplificado: removidos cadastro e painel da conta, mantendo apenas o painel convidado com todos os recursos liberados localmente.
+- Preferências de MiniApps passam a ser salvas diretamente no dispositivo (IndexedDB), sem dependência de usuários cadastrados.
 - Adicionado teste de integração `tests/ripple.panel-visual.test.js` cobrindo o painel do criador de provas com a prova de Histó
   ria carregada no MiniApp Base, validando filtros à esquerda e pré-visualização no painel direito.
 - Botão do menu principal do rodapé recebeu preenchimento dedicado, gradiente sutil, sombra reforçada e animação em “X” para
@@ -16,6 +18,9 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Menu principal organiza as seções Usuário e Configurações como abas exclusivas, exibindo apenas os botões da aba ativa e
   recolhendo o seletor de idioma ao retornar para Usuário.
 - Layout principal do MiniApp simplificado para que cada view ocupe o espaço entre cabeçalho e rodapé sem o cartão fixo, herdando diretamente o tema global do 5horas.com.br.
+- Loader de MiniApps passa a resolver caminhos relativos com a URL ativa do shell, garantindo que o Criador de Provas seja importado e renderizado corretamente.
+- Shell convidado adapta o painel principal para largura total em tablets e desktops, preservando layout compacto nos celulares e mantendo o rodapé fixo durante a transição para o MiniApp.
+- MiniApp Criador de Provas reorganizado em grade responsiva com colunas extras em telas maiores, ajustes de espaçamento em mobile e widgets ampliados para ocupar toda a área útil.
 - Painel convidado ocupa toda a área útil entre cabeçalho e rodapé, centralizando o título de boas-vindas em container compacto
   e ocultando o placeholder vazio até que módulos reais sejam publicados.
 - Cartão principal do MiniApp Educação ajustado para contrair conforme o conteúdo em tablets verticais, evitando que o widget ocupe a altura inteira sem necessidade.
