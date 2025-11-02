@@ -18,6 +18,8 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Menu principal organiza as seções Usuário e Configurações como abas exclusivas, exibindo apenas os botões da aba ativa e
   recolhendo o seletor de idioma ao retornar para Usuário.
 - Layout principal do MiniApp simplificado para que cada view ocupe o espaço entre cabeçalho e rodapé sem o cartão fixo, herdando diretamente o tema global do 5horas.com.br.
+- Painel do menu principal mantém a mesma grade responsiva com rolagem em qualquer viewport, evitando que o overlay extrapole a área útil em tablets e desktops.
+- Paleta do menu principal atualizada para tons neutros alinhados aos tokens globais, com foco/hover consistentes nos modos claro e escuro.
 - Loader de MiniApps passa a resolver caminhos relativos com a URL ativa do shell, garantindo que o Criador de Provas seja importado e renderizado corretamente.
 - Shell convidado adapta o painel principal para largura total em tablets e desktops, preservando layout compacto nos celulares e mantendo o rodapé fixo durante a transição para o MiniApp.
 - MiniApp Criador de Provas reorganizado em grade responsiva com colunas extras em telas maiores, ajustes de espaçamento em mobile e widgets ampliados para ocupar toda a área útil.
