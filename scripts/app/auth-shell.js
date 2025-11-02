@@ -142,7 +142,10 @@ export function initAuthShell(options = {}) {
   const statusHint = doc.getElementById('statusHint');
   const footer = doc.querySelector('.auth-shell__footer');
   const footerMenu = doc.querySelector('.auth-shell__footer-nav');
-  const footerMenuButton = doc.querySelector('.auth-shell__menu-button');
+  const footerMenuButtons = Array.from(doc.querySelectorAll('.auth-shell__menu-button')).filter((button) =>
+    ensureHtmlElement(doc, button),
+  );
+  const primaryFooterMenuButton = footerMenuButtons[0] ?? null;
   const footerMenuPanel = doc.getElementById('authFooterMenu');
   const footerMenuOverlay = doc.querySelector('[data-menu-overlay]');
   const footerToggle = doc.querySelector('[data-footer-toggle]');
@@ -540,6 +543,7 @@ export function initAuthShell(options = {}) {
 
   const teardownCallbacks = [];
   let footerMenuOpen = false;
+  let activeFooterMenuTrigger = null;
   let footerDetailsExpanded = false;
   let languagePickerOpen = false;
   let activeQuickActionsSectionId =
@@ -858,9 +862,11 @@ export function initAuthShell(options = {}) {
       footerMenu.dataset.state = isOpen ? 'open' : 'closed';
     }
 
-    if (ensureHtmlElement(doc, footerMenuButton)) {
-      footerMenuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    }
+    footerMenuButtons.forEach((button) => {
+      if (ensureHtmlElement(doc, button)) {
+        button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+    });
 
     if (ensureHtmlElement(doc, footerMenuPanel)) {
       footerMenuPanel.hidden = !isOpen;
@@ -916,9 +922,17 @@ export function initAuthShell(options = {}) {
 
     cleanupFooterMenuListeners();
 
-    if (focusToggle && ensureHtmlElement(doc, footerMenuButton)) {
-      focusWithoutScreenShift(doc, win, footerMenuButton);
+    if (focusToggle) {
+      const focusTarget = ensureHtmlElement(doc, activeFooterMenuTrigger)
+        ? activeFooterMenuTrigger
+        : primaryFooterMenuButton;
+
+      if (ensureHtmlElement(doc, focusTarget)) {
+        focusWithoutScreenShift(doc, win, focusTarget);
+      }
     }
+
+    activeFooterMenuTrigger = null;
   }
 
   function focusFooterMenuItemByOffset(currentIndex, offset) {
@@ -985,7 +999,7 @@ export function initAuthShell(options = {}) {
     });
   }
 
-  function openFooterMenu({ focus = 'first' } = {}) {
+  function openFooterMenu({ focus = 'first', trigger = null } = {}) {
     if (footerMenuOpen) {
       return;
     }
@@ -993,6 +1007,7 @@ export function initAuthShell(options = {}) {
     collapseFooterDetails();
     footerMenuOpen = true;
     setFooterMenuState(true);
+    activeFooterMenuTrigger = ensureHtmlElement(doc, trigger) ? trigger : null;
 
     const handlePointerDown = (event) => {
       if (!NodeRef || !(event.target instanceof NodeRef)) {
@@ -1000,7 +1015,9 @@ export function initAuthShell(options = {}) {
       }
 
       const isInsidePanel = ensureHtmlElement(doc, footerMenuPanel) && footerMenuPanel.contains(event.target);
-      const isToggle = ensureHtmlElement(doc, footerMenuButton) && footerMenuButton.contains(event.target);
+      const isToggle = footerMenuButtons.some(
+        (button) => ensureHtmlElement(doc, button) && button.contains(event.target),
+      );
 
       if (!isInsidePanel && !isToggle) {
         closeFooterMenu();
@@ -1013,7 +1030,9 @@ export function initAuthShell(options = {}) {
       }
 
       const isInsidePanel = ensureHtmlElement(doc, footerMenuPanel) && footerMenuPanel.contains(event.target);
-      const isToggle = ensureHtmlElement(doc, footerMenuButton) && footerMenuButton.contains(event.target);
+      const isToggle = footerMenuButtons.some(
+        (button) => ensureHtmlElement(doc, button) && button.contains(event.target),
+      );
 
       if (!isInsidePanel && !isToggle) {
         closeFooterMenu();
@@ -1136,16 +1155,20 @@ export function initAuthShell(options = {}) {
       footerActiveViewDivider.hidden = !activeLabel;
     }
 
-    if (ensureHtmlElement(doc, footerMenuButton)) {
-      footerMenuButton.setAttribute(
+    footerMenuButtons.forEach((button) => {
+      if (!ensureHtmlElement(doc, button)) {
+        return;
+      }
+
+      button.setAttribute(
         'aria-label',
         activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
       );
-      footerMenuButton.setAttribute(
+      button.setAttribute(
         'title',
         activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
       );
-    }
+    });
 
     if (ensureHtmlElement(doc, footerMenuCategoriesNav)) {
       const buttons = Array.from(footerMenuCategoriesNav.querySelectorAll('[data-category-id]'));
@@ -1554,36 +1577,47 @@ export function initAuthShell(options = {}) {
 
   setActiveFooterMenuSection(activeQuickActionsSectionId);
 
-  if (ensureHtmlElement(doc, footerMenuButton)) {
-    const handleFooterMenuClick = () => {
-      if (!footerMenuOpen) {
-        openFooterMenu();
-      }
-    };
-
-    const handleFooterMenuKeydown = (event) => {
-      if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+  if (footerMenuButtons.length > 0) {
+    footerMenuButtons.forEach((button) => {
+      if (!ensureHtmlElement(doc, button)) {
         return;
       }
 
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        openFooterMenu({ focus: 'first' });
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        openFooterMenu({ focus: 'last' });
-      } else if (event.key === 'Escape' && footerMenuOpen) {
-        event.preventDefault();
-        closeFooterMenu({ focusToggle: true });
-      }
-    };
+      const handleFooterMenuClick = (event) => {
+        if (footerMenuOpen) {
+          return;
+        }
 
-    footerMenuButton.addEventListener('click', handleFooterMenuClick);
-    footerMenuButton.addEventListener('keydown', handleFooterMenuKeydown);
+        const trigger = event?.currentTarget instanceof HTMLElementRef ? event.currentTarget : button;
+        openFooterMenu({ trigger });
+      };
 
-    teardownCallbacks.push(() => {
-      footerMenuButton.removeEventListener('click', handleFooterMenuClick);
-      footerMenuButton.removeEventListener('keydown', handleFooterMenuKeydown);
+      const handleFooterMenuKeydown = (event) => {
+        if (!KeyboardEventRef || !(event instanceof KeyboardEventRef)) {
+          return;
+        }
+
+        const trigger = event.currentTarget instanceof HTMLElementRef ? event.currentTarget : button;
+
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          openFooterMenu({ focus: 'first', trigger });
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          openFooterMenu({ focus: 'last', trigger });
+        } else if (event.key === 'Escape' && footerMenuOpen) {
+          event.preventDefault();
+          closeFooterMenu({ focusToggle: true });
+        }
+      };
+
+      button.addEventListener('click', handleFooterMenuClick);
+      button.addEventListener('keydown', handleFooterMenuKeydown);
+
+      teardownCallbacks.push(() => {
+        button.removeEventListener('click', handleFooterMenuClick);
+        button.removeEventListener('keydown', handleFooterMenuKeydown);
+      });
     });
   }
 
