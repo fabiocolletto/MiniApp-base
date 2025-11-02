@@ -1184,10 +1184,13 @@ export function initAuthShell(options = {}) {
     }
   }
 
-  function renderGuestAccessPanel(root) {
+  function renderGuestAccessPanel(root, viewProps = {}) {
     if (!(root instanceof HTMLElementRef)) {
       return;
     }
+
+    const { highlightAppId = null, focusMiniAppHost = false } =
+      viewProps && typeof viewProps === 'object' ? viewProps : {};
 
     root.hidden = false;
     root.dataset.view = 'guest';
@@ -1211,10 +1214,24 @@ export function initAuthShell(options = {}) {
     miniAppHost.dataset.miniappHost = 'primary';
     miniAppHost.setAttribute('role', 'region');
     miniAppHost.setAttribute('aria-live', 'polite');
+    miniAppHost.tabIndex = -1;
+
+    if (highlightAppId) {
+      miniAppHost.dataset.miniappHighlight = highlightAppId;
+    } else {
+      delete miniAppHost.dataset.miniappHighlight;
+    }
+
     miniAppHost.textContent = WHITE_LABEL_IDENTITY.miniAppLoadingMessage;
 
     guestView.append(heading, description, miniAppHost);
     root.append(guestView);
+
+    if (focusMiniAppHost) {
+      runtime.queueTask(() => {
+        focusWithoutScreenShift(doc, win, miniAppHost);
+      });
+    }
 
     runtime.queueTask(() => {
       runtime
@@ -1228,6 +1245,10 @@ export function initAuthShell(options = {}) {
         })
         .then(() => {
           miniAppHost.dataset.miniappLoaded = 'true';
+
+          if (focusMiniAppHost) {
+            focusWithoutScreenShift(doc, win, miniAppHost);
+          }
         })
         .catch((error) => {
           console.error('Não foi possível carregar o MiniApp cadastrado.', error);
@@ -1237,6 +1258,10 @@ export function initAuthShell(options = {}) {
           errorMessage.textContent =
             'Não foi possível carregar o MiniApp configurado no momento. Tente novamente mais tarde.';
           miniAppHost.append(errorMessage);
+
+          if (focusMiniAppHost) {
+            focusWithoutScreenShift(doc, win, miniAppHost);
+          }
         });
     });
   }
@@ -1740,6 +1765,19 @@ export function initAuthShell(options = {}) {
 
     if (action === 'preferences-language') {
       toggleLanguagePicker();
+      return;
+    }
+
+    if (action === 'open-miniapp') {
+      const targetMiniAppId = highlightAppId || 'primary';
+
+      renderAuthView('guest', {
+        shouldFocus: true,
+        viewProps: {
+          highlightAppId: targetMiniAppId,
+          focusMiniAppHost: true,
+        },
+      });
       return;
     }
 

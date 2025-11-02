@@ -168,6 +168,18 @@
             Usuário
           </button>
           <button
+            id="authFooterMenuTab-interfaces"
+            type="button"
+            class="auth-shell__menu-category-button"
+            role="tab"
+            data-menu-tab="interfaces"
+            aria-controls="authFooterMenuSection-interfaces"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            Interfaces
+          </button>
+          <button
             id="authFooterMenuTab-settings"
             type="button"
             class="auth-shell__menu-category-button"
@@ -245,6 +257,46 @@
             <span class="auth-shell__menu-item-copy">
               <span class="auth-shell__menu-item-label">Visitante</span>
               <span class="auth-shell__menu-item-hint">Explore os módulos disponíveis sem criar conta</span>
+            </span>
+          </button>
+        </div>
+      </section>
+      <section
+        id="authFooterMenuSection-interfaces"
+        class="auth-shell__menu-section"
+        data-menu-section="interfaces"
+        role="tabpanel"
+        aria-labelledby="authFooterMenuTab-interfaces"
+        tabindex="-1"
+        hidden
+        aria-hidden="true"
+      >
+        <p id="authFooterMenuInterfacesTitle" class="auth-shell__menu-section-title">Interfaces</p>
+        <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuInterfacesTitle">
+          <button
+            type="button"
+            class="auth-shell__menu-item auth-shell__menu-item--view"
+            data-action="open-miniapp"
+            data-miniapp-id="primary"
+            aria-current="false"
+            aria-label="Abrir Criador de Provas"
+            title="Abrir Criador de Provas"
+          >
+            <span class="auth-shell__menu-item-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                <path
+                  d="M9 3.25a1 1 0 00-1 1V5H7A2.75 2.75 0 004.25 7.75v9.5A2.75 2.75 0 007 20h10a2.75 2.75 0 002.75-2.75v-9.5A2.75 2.75 0 0017 5h-1V4.25a1 1 0 00-1-1zM10.5 4.75h3v1.5h-3z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M8 7h8a1.25 1.25 0 011.25 1.25v9A1.25 1.25 0 0116 18.5H8a1.25 1.25 0 01-1.25-1.25v-9A1.25 1.25 0 018 7zm1.5 3a.75.75 0 000 1.5H15a.75.75 0 000-1.5zm0 3a.75.75 0 000 1.5h3a.75.75 0 000-1.5z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span class="auth-shell__menu-item-copy">
+              <span class="auth-shell__menu-item-label">Criador de provas</span>
+              <span class="auth-shell__menu-item-hint">Monte avaliações com filtros e pré-visualização</span>
             </span>
           </button>
         </div>

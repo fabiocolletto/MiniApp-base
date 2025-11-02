@@ -226,10 +226,13 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     const tablist = panel.querySelector('[data-menu-tabs]');
     assert.ok(tablist);
     const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const interfacesTab = tablist.querySelector('[data-menu-tab="interfaces"]');
     const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
     assert.ok(userTab);
+    assert.ok(interfacesTab);
     assert.ok(settingsTab);
     assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
 
     const userSection = panel.querySelector('[data-menu-section="user"]');
@@ -237,6 +240,13 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     const userTitle = userSection.querySelector('.auth-shell__menu-section-title');
     assert.ok(userTitle);
     assert.equal(userTitle.textContent.trim(), 'Usuário');
+
+    const interfacesSection = panel.querySelector('[data-menu-section="interfaces"]');
+    assert.ok(interfacesSection);
+    assert.equal(interfacesSection.hidden, true);
+    assert.equal(interfacesSection.getAttribute('aria-hidden'), 'true');
+    const interfaceButton = interfacesSection.querySelector('[data-action="open-miniapp"][data-miniapp-id="primary"]');
+    assert.ok(interfaceButton);
 
     const settingsSection = panel.querySelector('[data-menu-section="settings"]');
     assert.ok(settingsSection);
@@ -305,26 +315,34 @@ test('alternar abas do menu exibe apenas as ações da seção ativa', async () 
     const tablist = panel.querySelector('[data-menu-tabs]');
     assert.ok(tablist);
     const userTab = tablist.querySelector('[data-menu-tab="user"]');
+    const interfacesTab = tablist.querySelector('[data-menu-tab="interfaces"]');
     const settingsTab = tablist.querySelector('[data-menu-tab="settings"]');
     assert.ok(userTab);
+    assert.ok(interfacesTab);
     assert.ok(settingsTab);
 
     const userSection = panel.querySelector('[data-menu-section="user"]');
     const settingsSection = panel.querySelector('[data-menu-section="settings"]');
+    const interfacesSection = panel.querySelector('[data-menu-section="interfaces"]');
     assert.ok(userSection);
     assert.ok(settingsSection);
+    assert.ok(interfacesSection);
 
     assert.equal(userSection.hidden, false);
     assert.equal(settingsSection.hidden, true);
+    assert.equal(interfacesSection.hidden, true);
 
     settingsTab.click();
 
     assert.equal(settingsTab.getAttribute('aria-selected'), 'true');
     assert.equal(userTab.getAttribute('aria-selected'), 'false');
+    assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsSection.hidden, false);
     assert.equal(settingsSection.getAttribute('aria-hidden'), 'false');
     assert.equal(userSection.hidden, true);
     assert.equal(userSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(interfacesSection.hidden, true);
+    assert.equal(interfacesSection.getAttribute('aria-hidden'), 'true');
 
     const themeButton = settingsSection.querySelector('[data-action="preferences-theme"]');
     const languageButton = settingsSection.querySelector('[data-action="preferences-language"]');
@@ -337,15 +355,87 @@ test('alternar abas do menu exibe apenas as ações da seção ativa', async () 
     languageButton.click();
     assert.equal(languagePicker.hidden, false);
 
+    interfacesTab.click();
+
+    assert.equal(interfacesTab.getAttribute('aria-selected'), 'true');
+    assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
+    assert.equal(userTab.getAttribute('aria-selected'), 'false');
+    assert.equal(interfacesSection.hidden, false);
+    assert.equal(interfacesSection.getAttribute('aria-hidden'), 'false');
+    assert.equal(settingsSection.hidden, true);
+    assert.equal(settingsSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(userSection.hidden, true);
+    assert.equal(userSection.getAttribute('aria-hidden'), 'true');
+    const interfacesCta = interfacesSection.querySelector('[data-action="open-miniapp"][data-miniapp-id="primary"]');
+    assert.ok(interfacesCta);
+    assert.equal(languagePicker.hidden, true);
+
     userTab.click();
 
     assert.equal(userTab.getAttribute('aria-selected'), 'true');
+    assert.equal(interfacesTab.getAttribute('aria-selected'), 'false');
     assert.equal(settingsTab.getAttribute('aria-selected'), 'false');
     assert.equal(userSection.hidden, false);
     assert.equal(userSection.getAttribute('aria-hidden'), 'false');
     assert.equal(settingsSection.hidden, true);
     assert.equal(settingsSection.getAttribute('aria-hidden'), 'true');
+    assert.equal(interfacesSection.hidden, true);
+    assert.equal(interfacesSection.getAttribute('aria-hidden'), 'true');
     assert.equal(languagePicker.hidden, true);
+  } finally {
+    teardownShell(env);
+  }
+});
+
+test('aba Interfaces abre o criador de provas com foco no painel do MiniApp', async () => {
+  const env = setupShell();
+  try {
+    await env.flushAsync();
+
+    const menuButton = env.document.querySelector('.auth-shell__menu-button');
+    assert.ok(menuButton);
+    menuButton.click();
+
+    const panel = env.document.getElementById('authFooterMenu');
+    assert.ok(panel);
+
+    const interfacesTab = panel.querySelector('[data-menu-tab="interfaces"]');
+    assert.ok(interfacesTab);
+    interfacesTab.click();
+
+    const interfacesSection = panel.querySelector('[data-menu-section="interfaces"]');
+    assert.ok(interfacesSection);
+    assert.equal(interfacesSection.hidden, false);
+
+    const openButton = interfacesSection.querySelector('[data-action="open-miniapp"][data-miniapp-id="primary"]');
+    assert.ok(openButton);
+
+    openButton.click();
+
+    await env.flushAsync();
+    await env.flushAsync();
+
+    assert.equal(menuButton.getAttribute('aria-expanded'), 'false');
+
+    const overlay = env.document.querySelector('[data-menu-overlay]');
+    assert.ok(overlay);
+    assert.equal(overlay.hidden, true);
+
+    const viewRoot = env.document.getElementById('authViewRoot');
+    assert.ok(viewRoot);
+    assert.equal(viewRoot.dataset.view, 'guest');
+
+    const miniAppHost = viewRoot.querySelector('[data-miniapp-host="primary"]');
+    assert.ok(miniAppHost);
+    assert.equal(miniAppHost.dataset.miniappHighlight, 'primary');
+    assert.equal(miniAppHost.dataset.miniappLoaded, 'true');
+    assert.strictEqual(env.document.activeElement, miniAppHost);
+
+    const miniAppCalls = env.getMiniAppCalls();
+    assert.ok(miniAppCalls.length >= 2);
+    const lastCall = miniAppCalls[miniAppCalls.length - 1];
+    assert.equal(lastCall.id, 'primary');
+    assert.equal(lastCall.options?.target, miniAppHost);
   } finally {
     teardownShell(env);
   }
@@ -529,8 +619,20 @@ test('menu não exibe toggles de widgets ou atalhos de MiniApps', async () => {
     const toggles = env.document.querySelectorAll('.auth-shell__menu-toggle-input');
     assert.equal(toggles.length, 0);
 
-    const miniAppTriggers = env.document.querySelectorAll('#authFooterMenu [data-miniapp-id]');
-    assert.equal(miniAppTriggers.length, 0);
+    const miniAppTriggers = env.document.querySelectorAll(
+      '#authFooterMenu [data-action="open-miniapp"][data-miniapp-id]'
+    );
+    const interfaceTriggers = Array.from(miniAppTriggers).filter(
+      (miniAppTrigger) =>
+        miniAppTrigger instanceof env.window.HTMLElement && miniAppTrigger.dataset?.miniappId
+    );
+    assert.ok(interfaceTriggers.length >= 1);
+    interfaceTriggers.forEach((miniAppTrigger) => {
+      assert.equal(miniAppTrigger.dataset.miniappId, 'primary');
+      const triggerSection = miniAppTrigger.closest('[data-menu-section]');
+      assert.ok(triggerSection);
+      assert.equal(triggerSection.dataset.menuSection, 'interfaces');
+    });
   } finally {
     teardownShell(env);
   }

@@ -10,6 +10,7 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
   indicar o menu aberto e destacar estados de foco.
 - Variações do botão de menu reutilizam a mesma lógica de abertura do painel em qualquer viewport, mantendo o overlay móvel em
   telas desktop, tablets e smartphones.
+- Menu principal ganha aba Interfaces com atalho dedicado para abrir o Criador de Provas diretamente do shell.
 - Painel do menu principal adota o mesmo gradiente translúcido do shell em qualquer largura de tela, unificando overlay, cards e
   estados de foco nos temas claro e escuro.
 - Menu principal organiza as seções Usuário e Configurações como abas exclusivas, exibindo apenas os botões da aba ativa e
