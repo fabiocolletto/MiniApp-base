@@ -2071,36 +2071,16 @@ body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(3) {
 }
 
 .auth-shell__menu-panel {
-  width: clamp(18rem, 45vw, 22rem);
+  width: min(90vw, 24rem);
   max-width: min(90vw, 24rem);
-  max-height: none;
-  padding: clamp(1.75rem, 5vw, 2.75rem);
-  border-radius: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  gap: clamp(1rem, 4vw, 1.5rem);
-  text-align: left;
-  overflow: visible;
-}
-
-.auth-shell__menu-panel .auth-shell__menu-list,
-.auth-shell__menu-panel .auth-shell__menu-divider,
-.auth-shell__menu-panel .auth-shell__menu-empty,
-.auth-shell__menu-panel .auth-shell__menu-category,
-.auth-shell__menu-panel .auth-shell__menu-categories,
-.auth-shell__menu-panel .pwa-install-fab {
-  display: none !important;
-}
-
-.auth-shell__menu-panel .auth-shell__menu-categories[data-menu-tabs-wrapper] {
-  display: block !important;
-  margin-block-end: clamp(0.5rem, 2vw, 0.75rem);
-}
-
-.auth-shell__menu-panel [data-menu-tabs] {
-  justify-content: center;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border-radius: 18px;
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  max-height: clamp(22rem, 92vh, 40rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
 }
 
 .auth-shell__menu-header {
@@ -2165,36 +2145,25 @@ body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(3) {
 }
 
 .auth-shell__menu-item--view {
+  border: 1px solid color-mix(in srgb, var(--color-border-muted, rgba(17, 24, 39, 0.08)) 88%, transparent 12%);
   border-radius: 24px;
-  border-color: color-mix(in srgb, var(--auth-border) 65%, transparent 35%);
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--auth-surface) 96%, transparent 4%) 0%,
-    color-mix(in srgb, var(--auth-surface) 88%, transparent 12%) 55%,
-    color-mix(in srgb, var(--auth-primary-soft) 65%, transparent 35%) 100%
-  );
+  background: color-mix(in srgb, var(--color-bg-card, #ffffff) 94%, transparent 6%);
+  color: var(--color-text-primary, var(--auth-text));
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 
 .auth-shell__menu-item--view:hover,
 .auth-shell__menu-item--view:focus-visible {
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--auth-primary-soft) 48%, transparent 52%) 0%,
-    color-mix(in srgb, var(--auth-primary) 32%, transparent 68%) 100%
-  );
-  border-color: color-mix(in srgb, var(--auth-primary) 62%, transparent 38%);
+  background: color-mix(in srgb, var(--color-bg-elevated, #f3f4f8) 90%, transparent 10%);
+  border-color: color-mix(in srgb, var(--color-border-muted, rgba(17, 24, 39, 0.08)) 72%, transparent 28%);
+  color: var(--color-text-primary, var(--auth-text));
 }
 
 .auth-shell__menu-panel .auth-shell__menu-item {
-  border: 1px solid color-mix(in srgb, var(--auth-border) 70%, transparent 30%);
+  border: 1px solid color-mix(in srgb, var(--color-border-muted, rgba(17, 24, 39, 0.08)) 86%, transparent 14%);
   border-radius: 20px;
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--auth-surface) 96%, transparent 4%) 0%,
-    color-mix(in srgb, var(--auth-primary-soft) 72%, transparent 28%) 100%
-  );
-  color: var(--auth-text);
+  background: color-mix(in srgb, var(--color-bg-card, #ffffff) 96%, transparent 4%);
+  color: var(--color-text-primary, var(--auth-text));
   padding: clamp(0.85rem, 2.5vw, 1.05rem) clamp(1rem, 3vw, 1.25rem);
   display: inline-flex;
   align-items: center;
@@ -2230,17 +2199,13 @@ body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(3) {
 
 .auth-shell__menu-panel .auth-shell__menu-item:hover,
 .auth-shell__menu-panel .auth-shell__menu-item:focus-visible {
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--auth-primary-soft) 55%, transparent 45%) 0%,
-    color-mix(in srgb, var(--auth-primary) 35%, transparent 65%) 100%
-  );
-  border-color: color-mix(in srgb, var(--auth-primary) 68%, transparent 32%);
-  color: var(--auth-primary-strong);
+  background: color-mix(in srgb, var(--color-bg-elevated, #f3f4f8) 92%, transparent 8%);
+  border-color: color-mix(in srgb, var(--color-border-muted, rgba(17, 24, 39, 0.08)) 72%, transparent 28%);
+  color: var(--color-text-primary, var(--auth-text));
 }
 
 .auth-shell__menu-panel .auth-shell__menu-item:focus-visible {
-  outline: 3px solid rgba(var(--auth-primary-rgb, 67, 88, 230), 0.35);
+  outline: 3px solid var(--color-focus-outline, rgba(67, 88, 230, 0.4));
   outline-offset: 4px;
 }
 
@@ -2252,11 +2217,7 @@ body.auth-shell--menu-open .auth-shell__menu-icon span:nth-child(3) {
   width: clamp(2rem, 7vw, 2.5rem);
   height: clamp(2rem, 7vw, 2.5rem);
   border-radius: 18px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--auth-primary) 22%, transparent 78%) 0%,
-    color-mix(in srgb, var(--auth-primary) 16%, var(--auth-surface) 84%) 100%
-  );
+  background: color-mix(in srgb, var(--color-bg-elevated, #f3f4f8) 88%, transparent 12%);
   color: inherit;
 }
 
