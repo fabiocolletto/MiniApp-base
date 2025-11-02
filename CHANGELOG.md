@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
+- Adicionado teste de integração `tests/ripple.panel-visual.test.js` cobrindo o painel do criador de provas com a prova de Histó
+  ria carregada no MiniApp Base, validando filtros à esquerda e pré-visualização no painel direito.
 - Botão do menu principal do rodapé recebeu preenchimento dedicado, gradiente sutil, sombra reforçada e animação em “X” para
   indicar o menu aberto e destacar estados de foco.
 - Painel do menu principal adota o mesmo gradiente translúcido do shell em qualquer largura de tela, unificando overlay, cards e
