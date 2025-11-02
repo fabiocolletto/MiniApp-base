@@ -4,9 +4,9 @@ export const WHITE_LABEL_IDENTITY = Object.freeze({
   windowTitle: 'MiniApp Base • White Label',
   legalName: 'MiniApp Base White Label',
   welcomeMessage: 'Ajuste tema, idioma e tamanho do texto antes de começar sua jornada.',
-  statusHint: 'Use o menu principal para criar uma conta ou abrir o MiniApp da sua marca.',
+  statusHint: 'Use o menu principal para abrir o MiniApp da sua marca e ajustar preferências.',
   miniAppLoadingMessage: 'Carregando MiniApp configurado…',
-  guestHint: 'Bem-vindo ao shell white label. Esta área será preenchida com o MiniApp da sua marca.',
+  guestHint: 'Bem-vindo ao shell white label. Tudo está liberado sem cadastro e os dados ficam no seu dispositivo.',
 });
 
 export const WHITE_LABEL_MINIAPP_CONTEXT = Object.freeze({

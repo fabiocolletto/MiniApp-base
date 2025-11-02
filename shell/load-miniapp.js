@@ -1,9 +1,21 @@
 const DEFAULT_REGISTRY_URL = './miniapps/registry.json';
 const DEFAULT_TARGET_SELECTOR = '#content';
 
-function resolveFetch(customFetch) {
+function resolveFetch(customFetch, runtimeWindow) {
   if (typeof customFetch === 'function') {
+    if (runtimeWindow && customFetch === runtimeWindow.fetch) {
+      return runtimeWindow.fetch.bind(runtimeWindow);
+    }
+
+    if (typeof fetch === 'function' && customFetch === fetch) {
+      return fetch.bind(globalThis);
+    }
+
     return customFetch;
+  }
+
+  if (runtimeWindow && typeof runtimeWindow.fetch === 'function') {
+    return runtimeWindow.fetch.bind(runtimeWindow);
   }
 
   if (typeof fetch === 'function') {
@@ -39,7 +51,9 @@ export async function loadMiniApp(id, options = {}) {
     throw new Error('É necessário informar o identificador do MiniApp.');
   }
 
-  const runtimeFetch = resolveFetch(options.fetch);
+  const runtimeDocument = resolveDocument(options.document);
+  const runtimeWindow = runtimeDocument?.defaultView ?? (typeof window !== 'undefined' ? window : undefined);
+  const runtimeFetch = resolveFetch(options.fetch, runtimeWindow);
   const response = await runtimeFetch(options.registryUrl ?? DEFAULT_REGISTRY_URL, { cache: 'no-store' });
 
   if (!response || !response.ok) {
@@ -56,13 +70,17 @@ export async function loadMiniApp(id, options = {}) {
     throw new Error('MiniApp não encontrado');
   }
 
-  const module = await import(entry.entry);
+  const moduleUrl = new URL(
+    entry.entry,
+    runtimeDocument?.baseURI ?? runtimeWindow?.location?.href ?? import.meta.url,
+  );
+
+  const module = await import(moduleUrl.href);
   const mount = module?.mount ?? module?.default?.mount;
   if (typeof mount !== 'function') {
     throw new Error('Módulo de MiniApp não expõe função mount.');
   }
 
-  const runtimeDocument = resolveDocument(options.document);
   const elementConstructor =
     runtimeDocument?.defaultView?.HTMLElement ?? (typeof HTMLElement !== 'undefined' ? HTMLElement : null);
 

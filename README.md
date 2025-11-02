@@ -4,7 +4,7 @@ Aplicativo PWA white label preparado para hospedar um único MiniApp personaliza
 
 ## Estrutura do repositório
 
-- `index.html` – shell principal com o painel de acesso, seletor entre cadastro e painel white label e menu rápido no rodapé.
+- `index.html` – shell principal com o painel de acesso aberto, atalhos diretos para o MiniApp configurado e menu rápido no rodapé.
 - `scripts/` – módulos JavaScript responsáveis pelo bootstrap (`app/base-boot.js`), shell (`app/auth-shell.js`), preferências (`preferences/`) e integração com o service worker/PWA (`pwa/`).
 - `styles/` – folhas de estilo da experiência (`main.css`, `auth.css`) construídas sobre os tokens do tema global.
 - `public/` – assets estáticos servidos diretamente (tema CSS, tokens, metadados da versão, ícones instaláveis e página offline).
@@ -17,9 +17,10 @@ Aplicativo PWA white label preparado para hospedar um único MiniApp personaliza
 
 O painel principal (`renderGuestAccessPanel` no `auth-shell`) exibe o título **“MiniApp Base”** e uma orientação para personalizar tema, idioma e tamanho do texto. Um contêiner dedicado (`.auth-view__miniapp-host`) carrega automaticamente o módulo cadastrado em `miniapps/registry.json`, permitindo publicar o MiniApp oficial da marca diretamente dentro do shell.
 
-O menu principal reúne duas seções:
+O menu principal reúne três seções:
 
-- **Usuário** – alterna entre Cadastro e acesso como Visitante diretamente do painel inferior.
+- **Experiência** – mantém o painel principal disponível sem cadastro e permite reabrir o MiniApp em destaque a qualquer momento.
+- **Interfaces** – oferece o atalho "Abrir MiniApp" para carregar imediatamente o módulo configurado na vitrine.
 - **Configurações** – mantém os atalhos de preferências descritos abaixo.
 
 O rodapé mantém três ações rápidas:

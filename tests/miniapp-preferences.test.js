@@ -2,42 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  addUser,
-  resetUserStoreForTests,
-} from '../scripts/data/user-store.js';
-import { setActiveUser, clearActiveUser } from '../scripts/data/session-store.js';
-import {
   getActiveMiniAppPreferences,
   toggleMiniAppSaved,
   toggleMiniAppFavorite,
   MINIAPP_FAVORITE_LIMIT,
+  resetMiniAppPreferencesForTests,
 } from '../scripts/data/miniapp-preferences.js';
 
-const baseUser = {
-  name: 'Usuário Teste',
-  password: 'SenhaForte!123',
-  device: 'Node Test Runner',
-  profile: {},
-  userType: 'usuario',
-  preferences: {},
-};
-
-async function prepareActiveUser(t, phoneSuffix = '0001') {
-  await resetUserStoreForTests();
-  const user = await addUser({ ...baseUser, phone: `1199999${phoneSuffix}` });
-  setActiveUser(user.id);
-  await new Promise((resolve) => setTimeout(resolve, 0));
-
-  t.after(async () => {
-    clearActiveUser();
-    await resetUserStoreForTests();
-  });
-
-  return user;
-}
-
-test('toggleMiniAppSaved persiste IDs únicos e remove favoritos ao limpar', async (t) => {
-  await prepareActiveUser(t, '1001');
+test('toggleMiniAppSaved persiste IDs únicos e remove favoritos ao limpar', async () => {
+  await resetMiniAppPreferencesForTests();
 
   let snapshot = getActiveMiniAppPreferences();
   assert.deepEqual(snapshot.saved, [], 'estado inicial deve conter lista vazia de MiniApps salvos');
@@ -62,8 +35,8 @@ test('toggleMiniAppSaved persiste IDs únicos e remove favoritos ao limpar', asy
   assert.deepEqual(snapshot.favorites, [], 'remover MiniApp salvo deve limpar favoritos associados');
 });
 
-test('toggleMiniAppFavorite respeita limite e mantém sincronismo com salvos', async (t) => {
-  await prepareActiveUser(t, '2002');
+test('toggleMiniAppFavorite respeita limite e mantém sincronismo com salvos', async () => {
+  await resetMiniAppPreferencesForTests();
 
   for (let index = 0; index < MINIAPP_FAVORITE_LIMIT; index += 1) {
     const id = `mini-${index}`;
@@ -105,17 +78,16 @@ test('toggleMiniAppFavorite respeita limite e mantém sincronismo com salvos', a
   assert.ok(snapshot.saved.includes('overflow-app'), 'novo favorito deve permanecer sincronizado com salvos');
 });
 
-test('ações de favoritos e salvos exigem sessão ativa', async () => {
-  await resetUserStoreForTests();
-  clearActiveUser();
+test('miniapp preferences continuam disponíveis sem cadastro', async () => {
+  await resetMiniAppPreferencesForTests();
 
-  await assert.rejects(() => toggleMiniAppSaved('sample-app', { targetState: true }), (error) => {
-    assert.equal(error.reason, 'inactive-session');
-    return true;
-  });
+  const saved = await toggleMiniAppSaved('sample-app', { targetState: true });
+  assert.equal(saved.saved, true, 'salvar MiniApp deve funcionar sem sessão');
 
-  await assert.rejects(() => toggleMiniAppFavorite('sample-app', { targetState: true }), (error) => {
-    assert.equal(error.reason, 'inactive-session');
-    return true;
-  });
+  const favorite = await toggleMiniAppFavorite('sample-app', { targetState: true });
+  assert.equal(favorite.favorite, true, 'favoritar MiniApp deve funcionar sem sessão');
+
+  const snapshot = getActiveMiniAppPreferences();
+  assert.deepEqual(snapshot.saved, ['sample-app'], 'MiniApp salvo deve permanecer registrado');
+  assert.deepEqual(snapshot.favorites, ['sample-app'], 'MiniApp favoritado deve ser preservado');
 });
