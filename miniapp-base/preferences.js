@@ -5,6 +5,7 @@ export const DEFAULT_PREFS = {
   theme: 'auto',
   lang: 'pt-BR',
   fontScale: 0,
+  navCollapsed: false,
 };
 
 const FONT_SCALE_MAP = {
@@ -38,6 +39,13 @@ function normalizeFontScale(value) {
     return 0;
   }
   return Math.min(2, Math.max(-2, parsed));
+}
+
+function normalizeNavCollapsed(value) {
+  if (value === true || value === 'true' || value === 1 || value === '1') {
+    return true;
+  }
+  return false;
 }
 
 function getSystemTheme() {
@@ -88,16 +96,25 @@ export function applyFontScale(fontScale) {
   root.style.setProperty('font-size', `${percentage}%`);
 }
 
+export function applyNavCollapsed(navCollapsed) {
+  const root = typeof document !== 'undefined' ? document.documentElement : null;
+  if (!root) return;
+  const collapsed = normalizeNavCollapsed(navCollapsed);
+  root.dataset.navCollapsed = collapsed ? 'true' : 'false';
+}
+
 export function applyPreferences(prefs) {
   if (!prefs) return;
   currentPrefs = {
     theme: normalizeTheme(prefs.theme ?? DEFAULT_PREFS.theme),
     lang: normalizeLang(prefs.lang ?? DEFAULT_PREFS.lang),
     fontScale: normalizeFontScale(prefs.fontScale ?? DEFAULT_PREFS.fontScale),
+    navCollapsed: normalizeNavCollapsed(prefs.navCollapsed ?? DEFAULT_PREFS.navCollapsed),
   };
   applyTheme(currentPrefs.theme);
   applyLanguage(currentPrefs.lang);
   applyFontScale(currentPrefs.fontScale);
+  applyNavCollapsed(currentPrefs.navCollapsed);
 }
 
 export function getCurrentPreferences() {
@@ -111,6 +128,9 @@ export async function loadPreferences() {
       theme: normalizeTheme(stored.theme ?? DB_DEFAULTS.theme ?? DEFAULT_PREFS.theme),
       lang: normalizeLang(stored.lang ?? DB_DEFAULTS.lang ?? DEFAULT_PREFS.lang),
       fontScale: normalizeFontScale(stored.fontScale ?? DB_DEFAULTS.fontScale ?? DEFAULT_PREFS.fontScale),
+      navCollapsed: normalizeNavCollapsed(
+        stored.navCollapsed ?? DB_DEFAULTS.navCollapsed ?? DEFAULT_PREFS.navCollapsed,
+      ),
     };
     currentPrefs = normalized;
     return normalized;
@@ -129,12 +149,14 @@ export async function savePreferences(partial) {
   payload.theme = normalizeTheme(payload.theme);
   payload.lang = normalizeLang(payload.lang);
   payload.fontScale = normalizeFontScale(payload.fontScale);
+  payload.navCollapsed = normalizeNavCollapsed(payload.navCollapsed);
   try {
     const result = await setPrefs(payload);
     currentPrefs = {
       theme: normalizeTheme(result.theme),
       lang: normalizeLang(result.lang),
       fontScale: normalizeFontScale(result.fontScale),
+      navCollapsed: normalizeNavCollapsed(result.navCollapsed),
     };
     return getCurrentPreferences();
   } catch (error) {

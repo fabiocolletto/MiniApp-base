@@ -1,7 +1,7 @@
 import { openDB } from '../../vendor/idb.min.js';
 
 const MARCO_CORE_DB_NAME = 'marco_core';
-const MARCO_CORE_DB_VERSION = 2;
+const MARCO_CORE_DB_VERSION = 3;
 const PESQUISA_STUDIO_DB_NAME = 'pesquisa_studio';
 const PESQUISA_STUDIO_DB_VERSION = 1;
 
@@ -70,6 +70,14 @@ function setupMarcoCore(db, tx) {
   );
 
   ensureStore(db, tx, 'prefs');
+
+  ensureStore(
+    db,
+    tx,
+    'sync_state',
+    { keyPath: 'key' },
+    [{ name: 'by_updated_at', keyPath: 'updatedAt' }],
+  );
 }
 
 function setupPesquisaStudio(db, tx) {

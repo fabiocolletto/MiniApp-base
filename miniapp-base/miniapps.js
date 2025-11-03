@@ -6,6 +6,11 @@ export const MINIAPPS = [
       'en-US': 'Surveys ▸ Cities',
       'es-ES': 'Encuestas ▸ Ciudades',
     },
+    shortTitle: {
+      'pt-BR': 'Pesquisas',
+      'en-US': 'Surveys',
+      'es-ES': 'Encuestas',
+    },
     description: {
       'pt-BR': 'Gerencie coletas urbanas, acompanhe indicadores e sincronize com a equipe em campo.',
       'en-US': 'Manage urban survey runs, monitor indicators and synchronise with the field team.',
@@ -33,4 +38,9 @@ export function getMiniAppLabel(item, lang = 'pt-BR') {
 export function getMiniAppDescription(item, lang = 'pt-BR') {
   if (!item) return '';
   return item.description?.[lang] ?? item.description?.['pt-BR'] ?? '';
+}
+
+export function getMiniAppShortLabel(item, lang = 'pt-BR') {
+  if (!item) return '';
+  return item.shortTitle?.[lang] ?? item.shortTitle?.['pt-BR'] ?? getMiniAppLabel(item, lang);
 }
