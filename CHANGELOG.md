@@ -93,6 +93,12 @@ Entradas passam a ser geradas automaticamente pelo Release Please após merges n
 - Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
 - Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
 
+## [4.1.0] - 2025-11-03T04:43:01-03:00 (BRT)
+- Botões do menu principal foram simplificados com nova hierarquia de conteúdo (`.auth-shell__menu-item-content`), removendo descrições redundantes e mantendo o visual consistente no CSS (`styles/auth.css`, `index.html`, `scripts/app/auth-shell.js`).
+- Rodapé ganhou indicador de armazenamento com estado traduzido e cálculo de uso/quota em tempo real, alimentado pelos eventos `storage:ready` e `storage:estimate` (`scripts/app/auth-shell.js`, `index.html`).
+- Camada de internacionalização adicionada (`scripts/app/i18n.js`), aplicada às ações rápidas, labels dinâmicos e dicas do shell, com testes atualizados para validar troca de idioma e metadados (`tests/auth-shell.init.test.js`).
+- Registrado o MiniApp de testes "Good Morning" com saudação multi-idioma e suíte dedicada validando montagem e callbacks (`miniapps/good-morning/index.js`, `miniapps/registry.json`, `tests/miniapps/good-morning.test.js`).
+
 ## [4.0.1] - 2025-11-01T06:11:49-03:00 (BRT)
 - Centralizada a identidade white label em `scripts/app/white-label-config.js`, aplicando o título, hints e metadados do shell durante o bootstrap.
 - `loadMiniApp('primary')` passa a enviar o contexto configurável do white label, garantindo que marca, CTA e destaques padrão cheguem ao módulo publicado.

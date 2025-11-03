@@ -10,9 +10,26 @@ import {
   WHITE_LABEL_IDENTITY,
   WHITE_LABEL_MINIAPP_CONTEXT,
 } from '../scripts/app/white-label-config.js';
+import {
+  translate,
+  getThemeLabel as getThemeLabelI18n,
+  getLanguageDisplayName as getLanguageDisplayNameI18n,
+  getFontScaleLabel as getLocalizedFontScaleLabel,
+  getThemeMetaPrefix,
+  getFontMetaPrefix,
+  getLanguageMetaPrefix,
+} from '../scripts/app/i18n.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
+
+const FONT_SCALE_VALUES = new Map([
+  [-2, '0.9'],
+  [-1, '0.95'],
+  [0, '1'],
+  [1, '1.1'],
+  [2, '1.25'],
+]);
 
 function createEventBus() {
   const listeners = new Map();
@@ -135,7 +152,22 @@ test('inicializa o shell white label com painel padrão e sem MiniApps listados'
 
     const statusHint = env.document.getElementById('statusHint');
     assert.ok(statusHint);
-    assert.equal(statusHint.textContent.trim(), WHITE_LABEL_IDENTITY.guestHint);
+    const expectedHint = translate('views.guest.hint', 'pt-BR', {
+      fallback: WHITE_LABEL_IDENTITY.guestHint,
+    });
+    assert.equal(statusHint.textContent.trim(), expectedHint);
+
+    const storageIndicator = env.document.querySelector('[data-storage-indicator]');
+    assert.ok(storageIndicator);
+    const storageState = storageIndicator.querySelector('[data-storage-state]');
+    assert.ok(storageState);
+    const expectedStorageState = translate('storage.status.checking', 'pt-BR', {
+      fallback: 'Armazenamento: verificando…',
+    });
+    assert.equal(storageState.textContent.trim(), expectedStorageState.trim());
+    const storageUsage = storageIndicator.querySelector('[data-storage-usage]');
+    assert.ok(storageUsage);
+    assert.ok(storageUsage.hidden || storageUsage.hasAttribute('hidden'));
 
     const miniAppHost = guestView.querySelector('[data-miniapp-host="primary"]');
     assert.ok(miniAppHost);
@@ -277,20 +309,29 @@ test('abre o menu do rodapé exibindo atalhos rápidos de personalização', asy
     assert.equal(themeButton.dataset.prefFocus, 'theme');
     const themeLabel = themeButton.getAttribute('aria-label');
     assert.ok(themeLabel);
-    assert.ok(themeLabel.includes('Tema atual'));
+    const themePrefixPt = getThemeMetaPrefix('pt-BR');
+    const themeNamePt = getThemeLabelI18n('auto', 'pt-BR');
+    assert.ok(themeLabel.includes(themePrefixPt));
+    assert.ok(themeLabel.includes(themeNamePt));
 
     assert.equal(fontButton.dataset.prefFocus, 'fontScale');
     const fontHint = fontButton.querySelector('[data-pref-font-scale-value]');
     assert.ok(fontHint);
-    assert.equal(fontHint.textContent.trim(), 'Padrão');
+    const expectedFontLabel = getLocalizedFontScaleLabel(0, 'pt-BR');
+    assert.equal(fontHint.textContent.trim(), expectedFontLabel);
     const fontLabel = fontButton.getAttribute('aria-label');
     assert.ok(fontLabel);
-    assert.ok(fontLabel.includes('Escala atual'));
+    const fontPrefixPt = getFontMetaPrefix('pt-BR');
+    assert.ok(fontLabel.includes(fontPrefixPt));
+    assert.ok(fontLabel.includes(expectedFontLabel));
 
     assert.equal(languageButton.dataset.prefFocus, 'lang');
     const languageLabel = languageButton.getAttribute('aria-label');
     assert.ok(languageLabel);
-    assert.ok(languageLabel.includes('Idioma atual'));
+    const languagePrefixPt = getLanguageMetaPrefix('pt-BR');
+    const languageNamePt = getLanguageDisplayNameI18n('pt-BR', 'pt-BR');
+    assert.ok(languageLabel.includes(languagePrefixPt));
+    assert.ok(languageLabel.includes(languageNamePt));
 
     themeButton.click();
 
@@ -474,23 +515,8 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
       }
       return '';
     };
-    const fontScaleLabels = new Map([
-      ['0.9', 'Muito pequeno'],
-      ['0.95', 'Pequeno'],
-      ['1', 'Padrão'],
-      ['1.1', 'Grande'],
-      ['1.25', 'Muito grande'],
-    ]);
-    const themeLabels = new Map([
-      ['auto', 'Automático'],
-      ['light', 'Claro'],
-      ['dark', 'Escuro'],
-    ]);
-    const languageLabels = new Map([
-      ['pt-BR', 'Português (Brasil)'],
-      ['en', 'Inglês'],
-      ['es', 'Espanhol'],
-    ]);
+    const validThemes = new Set(['auto', 'light', 'dark']);
+    const supportedLanguages = new Set(['pt-BR', 'en', 'es']);
 
     const previousTheme = docEl.dataset.theme || 'auto';
     const previousLang = docEl.getAttribute('data-lang') || 'pt-BR';
@@ -521,7 +547,7 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     assert.equal(menuButton.getAttribute('aria-expanded'), 'true');
     assert.equal(panel.hidden, false);
     const nextTheme = docEl.dataset.theme || 'auto';
-    assert.ok(themeLabels.has(nextTheme));
+    assert.ok(validThemes.has(nextTheme));
     assert.notEqual(nextTheme, previousTheme);
 
     fontButton.click();
@@ -531,7 +557,9 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     assert.ok(fontHint);
     const nextFontScale = readFontScale();
     assert.notEqual(nextFontScale, previousFontScale);
-    const expectedFontLabel = fontScaleLabels.get(nextFontScale) ?? '';
+    const fontScaleEntry = Array.from(FONT_SCALE_VALUES.entries()).find(([, value]) => value === nextFontScale);
+    const fontScaleIndex = fontScaleEntry ? fontScaleEntry[0] : 0;
+    const expectedFontLabel = getLocalizedFontScaleLabel(fontScaleIndex, previousLang);
     if (expectedFontLabel) {
       assert.equal(fontHint.textContent.trim(), expectedFontLabel);
     }
@@ -559,7 +587,7 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     assert.equal(docEl.dataset.theme, nextTheme);
     const nextLang = docEl.getAttribute('data-lang') || 'pt-BR';
     assert.equal(nextLang, targetLanguage);
-    assert.ok(languageLabels.has(nextLang));
+    assert.ok(supportedLanguages.has(nextLang));
     assert.equal(docEl.lang || nextLang, nextLang);
 
     const updatedThemeButton = env.document.querySelector('[data-action="preferences-theme"]');
@@ -568,16 +596,23 @@ test('atalhos rápidos alternam tema, idioma e tamanho do texto imediatamente', 
     assert.ok(updatedLanguageButton);
     const themeLabel = updatedThemeButton.getAttribute('aria-label');
     assert.ok(themeLabel);
-    const expectedThemeLabel = themeLabels.get(nextTheme) ?? '';
-    if (expectedThemeLabel) {
-      assert.ok(themeLabel.includes(expectedThemeLabel));
-    }
+    const expectedThemeLabel = getThemeLabelI18n(nextTheme, nextLang);
+    const themePrefixAfter = getThemeMetaPrefix(nextLang);
+    assert.ok(themeLabel.includes(expectedThemeLabel));
+    assert.ok(themeLabel.includes(themePrefixAfter));
     const languageLabel = updatedLanguageButton.getAttribute('aria-label');
     assert.ok(languageLabel);
-    const expectedLanguageLabel = languageLabels.get(nextLang) ?? '';
-    if (expectedLanguageLabel) {
-      assert.ok(languageLabel.includes(expectedLanguageLabel));
-    }
+    const expectedLanguageLabel = getLanguageDisplayNameI18n(nextLang, nextLang);
+    const languagePrefix = getLanguageMetaPrefix(nextLang);
+    assert.ok(languageLabel.includes(expectedLanguageLabel));
+    assert.ok(languageLabel.includes(languagePrefix));
+
+    const statusHint = env.document.getElementById('statusHint');
+    assert.ok(statusHint);
+    const translatedHint = translate('views.guest.hint', nextLang, {
+      fallback: WHITE_LABEL_IDENTITY.guestHint,
+    });
+    assert.equal(statusHint.textContent.trim(), translatedHint);
   } finally {
     teardownShell(env);
   }

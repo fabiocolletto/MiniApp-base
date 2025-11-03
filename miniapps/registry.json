@@ -2,5 +2,9 @@
   {
     "id": "primary",
     "entry": "./miniapps/education/ripple/index.js"
+  },
+  {
+    "id": "good-morning",
+    "entry": "./miniapps/good-morning/index.js"
   }
 ]

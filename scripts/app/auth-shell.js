@@ -11,6 +11,22 @@ import {
   WHITE_LABEL_IDENTITY,
   resolveMiniAppContext,
 } from './white-label-config.js';
+import {
+  translate,
+  applyTranslations,
+  getThemeLabel,
+  getThemeMetaPrefix,
+  getFontScaleLabel as getLocalizedFontScaleLabel,
+  getFontMetaPrefix,
+  getLanguageMetaPrefix,
+  getLanguageDisplayName,
+  getLanguageOptionLabel,
+  getFooterToggleLabel,
+  getStorageStatusLabel,
+  getStorageUsageLabels,
+  DEFAULT_LANG,
+  SUPPORTED_LANGS,
+} from './i18n.js';
 
 const VIEW_CLEANUP_KEY = '__viewCleanup';
 
@@ -174,31 +190,130 @@ export function initAuthShell(options = {}) {
   const footerMenuFontScaleValue = footerMenuPanel?.querySelector('[data-pref-font-scale-value]');
   const footerMenuLanguageButton = footerMenuPanel?.querySelector('[data-action="preferences-language"]');
   const footerMenuLanguagePicker = footerMenuPanel?.querySelector('[data-pref-language-picker]');
+  const footerMenuThemeMeta = footerMenuPanel?.querySelector('[data-theme-active]');
+  const footerMenuLanguageMeta = footerMenuPanel?.querySelector('[data-language-active]');
   const footerViewportQuery =
     typeof win?.matchMedia === 'function' ? win.matchMedia('(max-width: 48rem)') : null;
   const ResizeObserverRef = win?.ResizeObserver ?? (typeof ResizeObserver !== 'undefined' ? ResizeObserver : null);
   const BodyElementRef = doc.defaultView?.HTMLBodyElement ?? (typeof HTMLBodyElement !== 'undefined' ? HTMLBodyElement : null);
   const rootElement = doc.body && (!BodyElementRef || doc.body instanceof BodyElementRef) ? doc.body : null;
-  const FOOTER_TOGGLE_LABELS = {
-    expand: 'Mostrar detalhes do rodapé',
-    collapse: 'Ocultar detalhes do rodapé',
-  };
-
+  const storageIndicator = doc.querySelector('[data-storage-indicator]');
+  const storageStateLabel = storageIndicator?.querySelector('[data-storage-state]');
+  const storageUsageLabel = storageIndicator?.querySelector('[data-storage-usage]');
   const THEME_SEQUENCE = ['auto', 'light', 'dark'];
-  const THEME_LABELS = new Map([
-    ['auto', 'Automático'],
-    ['light', 'Claro'],
-    ['dark', 'Escuro'],
-  ]);
-  const LANGUAGE_LABELS = new Map([
-    ['pt-BR', 'Português (Brasil)'],
-    ['en', 'Inglês'],
-    ['es', 'Espanhol'],
-  ]);
   const FONT_SCALE_SEQUENCE = [-2, -1, 0, 1, 2];
 
-  const fallbackFontScaleLabel =
-    typeof runtime.getFontScaleLabel === 'function' ? runtime.getFontScaleLabel(0) : 'Padrão';
+  function resolveLanguageValue(value) {
+    if (typeof value !== 'string') {
+      return DEFAULT_LANG;
+    }
+
+    const normalized = value.trim();
+    return SUPPORTED_LANGS.includes(normalized) ? normalized : DEFAULT_LANG;
+  }
+
+  let currentLanguage = resolveLanguageValue(doc.documentElement?.getAttribute('data-lang') ?? DEFAULT_LANG);
+
+  if (doc.documentElement) {
+    doc.documentElement.setAttribute('data-lang', currentLanguage);
+    if (!doc.documentElement.lang || doc.documentElement.lang !== currentLanguage) {
+      doc.documentElement.lang = currentLanguage;
+    }
+  }
+
+  const storageState = {
+    persistent: null,
+    persisted: null,
+    usage: null,
+    quota: null,
+    success: null,
+  };
+
+  let currentView = null;
+  const FOOTER_OFFSET_TOKEN = '--layout-footer-offset';
+
+  function formatNumberForLocale(value, { minimumFractionDigits = 0, maximumFractionDigits = 0 } = {}) {
+    try {
+      return new Intl.NumberFormat(currentLanguage, {
+        minimumFractionDigits,
+        maximumFractionDigits,
+      }).format(value);
+    } catch (error) {
+      const digits = Math.max(minimumFractionDigits, Math.min(maximumFractionDigits, 3));
+      return Number.isFinite(value) ? value.toFixed(digits) : '0';
+    }
+  }
+
+  function formatStorageSize(bytes) {
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+      return '0 B';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let value = bytes;
+    let unitIndex = 0;
+
+    while (value >= 1024 && unitIndex < units.length - 1) {
+      value /= 1024;
+      unitIndex += 1;
+    }
+
+    const needsDecimals = unitIndex > 0 && value < 10;
+    const formatted = formatNumberForLocale(value, {
+      minimumFractionDigits: needsDecimals ? 1 : 0,
+      maximumFractionDigits: needsDecimals ? 1 : 0,
+    });
+
+    return `${formatted} ${units[unitIndex]}`;
+  }
+
+  function formatStorageUsageText(usage, quota) {
+    if (!Number.isFinite(usage) || usage < 0 || !Number.isFinite(quota) || quota <= 0) {
+      return null;
+    }
+
+    const labels = getStorageUsageLabels(currentLanguage);
+    const usageSize = formatStorageSize(usage);
+    const quotaSize = formatStorageSize(quota);
+    const percentValue = Math.min(100, Math.max(0, Math.round((usage / quota) * 100)));
+    const percentText = labels.percent.replace('{percent}', String(percentValue));
+
+    return `${labels.label} ${usageSize} ${labels.of} ${quotaSize} ${percentText}`.trim();
+  }
+
+  function renderStorageIndicator() {
+    if (!(storageIndicator instanceof HTMLElementRef)) {
+      return;
+    }
+
+    let statusKey = 'checking';
+    if (storageState.success === false) {
+      statusKey = 'unavailable';
+    } else if (storageState.persistent === true || storageState.persisted === true) {
+      statusKey = 'persistent';
+    } else if (storageState.persistent === false || storageState.persisted === false) {
+      statusKey = 'temporary';
+    }
+
+    if (ensureHtmlElement(doc, storageStateLabel)) {
+      storageStateLabel.textContent = getStorageStatusLabel(statusKey, currentLanguage);
+    }
+
+    if (storageUsageLabel) {
+      const usageText =
+        storageState.success && storageState.usage !== null && storageState.quota !== null
+          ? formatStorageUsageText(storageState.usage, storageState.quota)
+          : null;
+
+      if (usageText) {
+        storageUsageLabel.textContent = usageText;
+        storageUsageLabel.hidden = false;
+      } else {
+        storageUsageLabel.textContent = '';
+        storageUsageLabel.hidden = true;
+      }
+    }
+  }
 
   function getNextValue(current, sequence) {
     if (!Array.isArray(sequence) || sequence.length === 0) {
@@ -219,29 +334,45 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    const baseLabel = 'Escolher tema';
-    const themeLabel = THEME_LABELS.get(themeValue) ?? THEME_LABELS.get('auto');
-    const ariaLabel = themeLabel ? `${baseLabel}. Tema atual: ${themeLabel}` : baseLabel;
+    const resolvedTheme = THEME_SEQUENCE.includes(themeValue) ? themeValue : 'auto';
+    const baseLabel = translate('menu.actions.themeControl', currentLanguage, {
+      fallback: 'Escolher tema',
+    });
+    const themeLabel = getThemeLabel(resolvedTheme, currentLanguage);
+    const metaPrefix = getThemeMetaPrefix(currentLanguage);
+    const ariaLabel = themeLabel ? `${baseLabel}. ${metaPrefix} ${themeLabel}` : baseLabel;
     footerMenuThemeButton.setAttribute('aria-label', ariaLabel);
-    footerMenuThemeButton.setAttribute('title', themeLabel ? `${baseLabel} (Tema atual: ${themeLabel})` : baseLabel);
+    footerMenuThemeButton.setAttribute('title', ariaLabel);
+
+    if (ensureHtmlElement(doc, footerMenuThemeMeta)) {
+      footerMenuThemeMeta.textContent = themeLabel ? `${metaPrefix} ${themeLabel}` : metaPrefix;
+    }
   }
 
   function updateFontScaleQuickAction(fontScaleValue = undefined) {
-    const label =
+    const normalizedValue =
+      typeof fontScaleValue === 'number' && FONT_SCALE_SEQUENCE.includes(fontScaleValue)
+        ? fontScaleValue
+        : FONT_SCALE_SEQUENCE.find((value) => value === fontScaleValue) ?? 0;
+    const localizedLabel = getLocalizedFontScaleLabel(normalizedValue, currentLanguage);
+    const runtimeLabel =
       typeof runtime.getFontScaleLabel === 'function'
         ? runtime.getFontScaleLabel(fontScaleValue)
         : null;
-    const resolvedLabel = label ?? fallbackFontScaleLabel;
+    const resolvedLabel = localizedLabel || runtimeLabel || getLocalizedFontScaleLabel(0, currentLanguage);
 
     if (footerMenuFontScaleValue) {
       footerMenuFontScaleValue.textContent = resolvedLabel;
     }
 
     if (ensureHtmlElement(doc, footerMenuFontScaleButton)) {
-      const baseLabel = 'Ajustar tamanho do texto';
+      const baseLabel = translate('menu.actions.fontControl', currentLanguage, {
+        fallback: 'Ajustar tamanho do texto',
+      });
+      const prefix = getFontMetaPrefix(currentLanguage);
       if (resolvedLabel) {
-        footerMenuFontScaleButton.setAttribute('aria-label', `${baseLabel}. Escala atual: ${resolvedLabel}`);
-        footerMenuFontScaleButton.setAttribute('title', `${baseLabel} (Escala atual: ${resolvedLabel})`);
+        footerMenuFontScaleButton.setAttribute('aria-label', `${baseLabel}. ${prefix} ${resolvedLabel}`);
+        footerMenuFontScaleButton.setAttribute('title', `${baseLabel} (${prefix} ${resolvedLabel})`);
       } else {
         footerMenuFontScaleButton.setAttribute('aria-label', baseLabel);
         footerMenuFontScaleButton.setAttribute('title', baseLabel);
@@ -254,17 +385,25 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    const baseLabel = 'Escolher idioma';
-    const languageLabel = LANGUAGE_LABELS.get(langValue) ?? LANGUAGE_LABELS.get('pt-BR');
-    const ariaLabel = languageLabel ? `${baseLabel}. Idioma atual: ${languageLabel}` : baseLabel;
+    const normalizedLang = resolveLanguageValue(langValue);
+    const baseLabel = translate('menu.actions.languageControl', currentLanguage, {
+      fallback: 'Escolher idioma',
+    });
+    const languageLabel = getLanguageDisplayName(normalizedLang, currentLanguage);
+    const prefix = getLanguageMetaPrefix(currentLanguage);
+    const ariaLabel = languageLabel ? `${baseLabel}. ${prefix} ${languageLabel}` : baseLabel;
     footerMenuLanguageButton.setAttribute('aria-label', ariaLabel);
-    footerMenuLanguageButton.setAttribute('title', languageLabel ? `${baseLabel} (Idioma atual: ${languageLabel})` : baseLabel);
+    footerMenuLanguageButton.setAttribute('title', ariaLabel);
 
     if (!languagePickerOpen) {
       footerMenuLanguageButton.setAttribute('aria-expanded', 'false');
     }
 
-    updateLanguagePicker(langValue);
+    if (ensureHtmlElement(doc, footerMenuLanguageMeta)) {
+      footerMenuLanguageMeta.textContent = languageLabel ? `${prefix} ${languageLabel}` : prefix;
+    }
+
+    updateLanguagePicker(normalizedLang);
   }
 
   function getLanguageOptions() {
@@ -277,18 +416,21 @@ export function initAuthShell(options = {}) {
     );
   }
 
-  function updateLanguagePicker(langValue = 'pt-BR') {
+  function updateLanguagePicker(langValue = DEFAULT_LANG) {
     if (!(footerMenuLanguagePicker instanceof HTMLElementRef)) {
       return;
     }
 
+    const normalizedLang = resolveLanguageValue(langValue);
     const options = getLanguageOptions();
     options.forEach((option) => {
       if (!(option instanceof HTMLElementRef)) {
         return;
       }
 
-      const isActive = option.dataset.languageOption === langValue;
+      const optionLang = option.dataset.languageOption ?? DEFAULT_LANG;
+      option.textContent = getLanguageOptionLabel(optionLang, currentLanguage);
+      const isActive = optionLang === normalizedLang;
       option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       option.classList.toggle('is-active', isActive);
     });
@@ -509,26 +651,29 @@ export function initAuthShell(options = {}) {
     }
   }
 
-  const FOOTER_MENU_STRUCTURE = [
-    {
-      id: 'shell-access',
-      label: WHITE_LABEL_IDENTITY.shortName,
-      types: [
-        {
-          id: 'shell-home',
-          label: 'Experiência',
-          entries: [
-            {
-              id: 'view-white-label-home',
-              label: 'Painel principal',
-              description: 'Acesse o MiniApp configurado sem cadastro. Tudo fica salvo neste dispositivo.',
-              view: 'guest',
-            },
-          ],
-        },
-      ],
-    },
-  ];
+  function buildFooterMenuStructure() {
+    return [
+      {
+        id: 'shell-access',
+        label: WHITE_LABEL_IDENTITY.shortName,
+        types: [
+          {
+            id: 'shell-home',
+            label: translate('menu.sections.experience', currentLanguage, { fallback: 'Experiência' }),
+            entries: [
+              {
+                id: 'view-white-label-home',
+                label: translate('menu.actions.guest', currentLanguage, { fallback: 'Painel principal' }),
+                view: 'guest',
+              },
+            ],
+          },
+        ],
+      },
+    ];
+  }
+
+  let footerMenuStructure = buildFooterMenuStructure();
 
   if (!ensureHtmlElement(doc, viewRoot)) {
     throw new Error('Elemento raiz da view de autenticação não encontrado.');
@@ -549,6 +694,46 @@ export function initAuthShell(options = {}) {
     null;
   const languagePickerListeners = new Set();
 
+  const unsubscribeStorageReady =
+    typeof runtime.eventBus?.on === 'function'
+      ? runtime.eventBus.on('storage:ready', (payload = {}) => {
+          if (payload && typeof payload === 'object' && typeof payload.persistent === 'boolean') {
+            storageState.persistent = payload.persistent;
+          }
+          renderStorageIndicator();
+        })
+      : null;
+
+  if (typeof unsubscribeStorageReady === 'function') {
+    teardownCallbacks.push(unsubscribeStorageReady);
+  }
+
+  const unsubscribeStorageEstimate =
+    typeof runtime.eventBus?.on === 'function'
+      ? runtime.eventBus.on('storage:estimate', (payload = {}) => {
+          if (payload && typeof payload === 'object') {
+            if (Object.prototype.hasOwnProperty.call(payload, 'success')) {
+              storageState.success = Boolean(payload.success);
+            }
+            if (typeof payload.usage === 'number') {
+              storageState.usage = payload.usage;
+            }
+            if (typeof payload.quota === 'number') {
+              storageState.quota = payload.quota;
+            }
+            if (typeof payload.persisted === 'boolean') {
+              storageState.persisted = payload.persisted;
+            }
+          }
+
+          renderStorageIndicator();
+        })
+      : null;
+
+  if (typeof unsubscribeStorageEstimate === 'function') {
+    teardownCallbacks.push(unsubscribeStorageEstimate);
+  }
+
   if (footerMenuLanguagePicker instanceof HTMLElementRef) {
     const options = getLanguageOptions();
 
@@ -565,14 +750,15 @@ export function initAuthShell(options = {}) {
           return;
         }
 
+        const normalizedChoice = resolveLanguageValue(langValue);
         const snapshot =
           typeof runtime.getCurrentPreferences === 'function' ? runtime.getCurrentPreferences() : null;
-        const currentLanguage = snapshot?.lang ?? doc.documentElement?.getAttribute('data-lang') ?? 'pt-BR';
+        const activeLanguage = resolveLanguageValue(snapshot?.lang ?? currentLanguage);
 
-        if (langValue !== currentLanguage) {
+        if (normalizedChoice !== activeLanguage) {
           const updatePromise =
             typeof runtime.updateUserPreferences === 'function'
-              ? runtime.updateUserPreferences({ lang: langValue }, { window: win, document: doc })
+              ? runtime.updateUserPreferences({ lang: normalizedChoice }, { window: win, document: doc })
               : null;
 
           if (updatePromise && typeof updatePromise.catch === 'function') {
@@ -629,13 +815,38 @@ export function initAuthShell(options = {}) {
   updateThemeQuickAction();
   updateFontScaleQuickAction();
   updateLanguageQuickAction();
+  applyTranslations(doc, currentLanguage);
+  renderStorageIndicator();
 
   if (typeof runtime.subscribeUserPreferences === 'function') {
     const unsubscribePreferences = runtime.subscribeUserPreferences((prefsSnapshot) => {
-      if (prefsSnapshot && typeof prefsSnapshot === 'object') {
-        updateThemeQuickAction(prefsSnapshot.theme);
-        updateFontScaleQuickAction(prefsSnapshot.fontScale);
-        updateLanguageQuickAction(prefsSnapshot.lang);
+      const snapshot = prefsSnapshot && typeof prefsSnapshot === 'object' ? prefsSnapshot : null;
+
+      if (snapshot) {
+        const resolvedLang = resolveLanguageValue(snapshot.lang ?? currentLanguage);
+        const languageChanged = resolvedLang !== currentLanguage;
+
+        if (languageChanged) {
+          currentLanguage = resolvedLang;
+          if (doc.documentElement) {
+            doc.documentElement.setAttribute('data-lang', currentLanguage);
+            doc.documentElement.lang = currentLanguage;
+          }
+
+          applyTranslations(doc, currentLanguage);
+          footerMenuStructure = buildFooterMenuStructure();
+          refreshFooterMenuItems();
+          setActiveViewToggle(currentView);
+          runtime.queueTask(() => {
+            updateHint(currentView);
+          });
+          renderStorageIndicator();
+          setFooterDetailsExpanded(footerDetailsExpanded);
+        }
+
+        updateThemeQuickAction(snapshot.theme ?? 'auto');
+        updateFontScaleQuickAction(snapshot.fontScale);
+        updateLanguageQuickAction(resolvedLang);
       } else {
         updateThemeQuickAction();
         updateFontScaleQuickAction();
@@ -647,8 +858,6 @@ export function initAuthShell(options = {}) {
       teardownCallbacks.push(unsubscribePreferences);
     }
   }
-
-  const FOOTER_OFFSET_TOKEN = '--layout-footer-offset';
 
   function applyFooterOffset(value) {
     if (!rootElement) {
@@ -743,10 +952,9 @@ export function initAuthShell(options = {}) {
 
     if (ensureHtmlElement(doc, footerToggle)) {
       footerToggle.setAttribute('aria-expanded', footerDetailsExpanded ? 'true' : 'false');
-      footerToggle.setAttribute(
-        'aria-label',
-        footerDetailsExpanded ? FOOTER_TOGGLE_LABELS.collapse : FOOTER_TOGGLE_LABELS.expand,
-      );
+      const toggleLabel = getFooterToggleLabel(footerDetailsExpanded ? 'collapse' : 'expand', currentLanguage);
+      footerToggle.setAttribute('aria-label', toggleLabel);
+      footerToggle.setAttribute('title', toggleLabel);
     }
 
     updateFooterOffset();
@@ -1134,13 +1342,20 @@ export function initAuthShell(options = {}) {
       }
     });
 
-    if (!activeLabel && viewName && FOOTER_VIEW_LABELS[viewName]) {
-      activeLabel = FOOTER_VIEW_LABELS[viewName];
+    if (!activeLabel && viewName) {
+      activeLabel = getFooterViewLabel(viewName);
     }
+
+    const activeViewPrefix = translate('menu.activeViewPrefix', currentLanguage, {
+      fallback: 'Painel atual:',
+    });
+    const menuButtonLabel = translate('menu.buttonOpen', currentLanguage, {
+      fallback: 'Abrir menu principal',
+    });
 
     if (ensureHtmlElement(doc, footerActiveViewLabel)) {
       if (activeLabel) {
-        footerActiveViewLabel.textContent = `Painel atual: ${activeLabel}`;
+        footerActiveViewLabel.textContent = `${activeViewPrefix} ${activeLabel}`;
         footerActiveViewLabel.hidden = false;
       } else {
         footerActiveViewLabel.textContent = '';
@@ -1157,14 +1372,11 @@ export function initAuthShell(options = {}) {
         return;
       }
 
-      button.setAttribute(
-        'aria-label',
-        activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
-      );
-      button.setAttribute(
-        'title',
-        activeLabel ? `Abrir menu principal. Painel atual: ${activeLabel}` : 'Abrir menu principal',
-      );
+      const ariaLabel = activeLabel
+        ? `${menuButtonLabel}. ${activeViewPrefix} ${activeLabel}`
+        : menuButtonLabel;
+      button.setAttribute('aria-label', ariaLabel);
+      button.setAttribute('title', ariaLabel);
     });
 
     if (ensureHtmlElement(doc, footerMenuCategoriesNav)) {
@@ -1198,7 +1410,6 @@ export function initAuthShell(options = {}) {
 
     const heading = doc.createElement('h1');
     heading.className = 'auth-view__title';
-    heading.dataset.i18n = 'auth.welcome';
     heading.textContent = WHITE_LABEL_IDENTITY.shortName;
 
     const description = doc.createElement('p');
@@ -1220,6 +1431,7 @@ export function initAuthShell(options = {}) {
     }
 
     miniAppHost.textContent = WHITE_LABEL_IDENTITY.miniAppLoadingMessage;
+    miniAppHost.dataset.i18n = 'auth.miniapp.loading';
 
     guestView.append(heading, description, miniAppHost);
     root.append(guestView);
@@ -1266,17 +1478,23 @@ export function initAuthShell(options = {}) {
   const VIEW_RENDERERS = {
     guest: {
       render: renderGuestAccessPanel,
-      hint: WHITE_LABEL_IDENTITY.guestHint,
+      hintKey: 'views.guest.hint',
+      hintFallback: WHITE_LABEL_IDENTITY.guestHint,
     },
   };
 
-  const FOOTER_VIEW_LABELS = {
-    guest: WHITE_LABEL_IDENTITY.shortName,
-  };
+  function getFooterViewLabel(viewName) {
+    if (viewName === 'guest') {
+      return translate('menu.actions.guest', currentLanguage, {
+        fallback: WHITE_LABEL_IDENTITY.shortName,
+      });
+    }
 
-  let currentView = null;
+    return '';
+  }
+
   const expandedTypes = new Set();
-  let activeCategoryId = FOOTER_MENU_STRUCTURE.find((category) => category && category.id)?.id ?? null;
+  let activeCategoryId = footerMenuStructure.find((category) => category && category.id)?.id ?? null;
 
   function getTypeKey(categoryId, typeId) {
     return `${categoryId}::${typeId}`;
@@ -1287,9 +1505,7 @@ export function initAuthShell(options = {}) {
       return null;
     }
 
-    return (
-      FOOTER_MENU_STRUCTURE.find((category) => category && category.id === categoryId) ?? null
-    );
+    return footerMenuStructure.find((category) => category && category.id === categoryId) ?? null;
   }
 
   function findCategoryByView(viewName) {
@@ -1298,7 +1514,7 @@ export function initAuthShell(options = {}) {
     }
 
     return (
-      FOOTER_MENU_STRUCTURE.find((category) => {
+      footerMenuStructure.find((category) => {
         if (!category || !Array.isArray(category.types)) {
           return false;
         }
@@ -1319,7 +1535,7 @@ export function initAuthShell(options = {}) {
       return;
     }
 
-    const categories = FOOTER_MENU_STRUCTURE.filter((category) => category && category.id && category.label);
+    const categories = footerMenuStructure.filter((category) => category && category.id && category.label);
 
     if (categories.length === 0) {
       footerMenuCategoriesNav.replaceChildren();
@@ -1362,7 +1578,7 @@ export function initAuthShell(options = {}) {
 
     footerMenuViewsList.replaceChildren();
 
-    const categories = FOOTER_MENU_STRUCTURE.filter((category) => category && category.id);
+    const categories = footerMenuStructure.filter((category) => category && category.id);
     if (categories.length === 0) {
       return;
     }
@@ -1449,12 +1665,28 @@ export function initAuthShell(options = {}) {
         link.className = 'auth-shell__menu-item';
         link.dataset.categoryId = category.id;
         link.dataset.typeId = type.id;
-        link.textContent = entry.label ?? 'Painel';
         link.href = entry.view
           ? `#${entry.view}`
           : entry.action
           ? `#${entry.action}`
           : `#${entry.id ?? 'painel'}`;
+
+        const linkContent = doc.createElement('span');
+        linkContent.className = 'auth-shell__menu-item-content';
+
+        const linkLabel = doc.createElement('span');
+        linkLabel.className = 'auth-shell__menu-item-label';
+        linkLabel.textContent = entry.label ?? 'Painel';
+        linkContent.append(linkLabel);
+
+        if (entry.meta) {
+          const linkMeta = doc.createElement('span');
+          linkMeta.className = 'auth-shell__menu-item-meta';
+          linkMeta.textContent = entry.meta;
+          linkContent.append(linkMeta);
+        }
+
+        link.append(linkContent);
 
         if (entry.view) {
           link.dataset.view = entry.view;
@@ -1463,23 +1695,7 @@ export function initAuthShell(options = {}) {
         if (entry.action) {
           link.dataset.action = entry.action;
         }
-
-        let descriptionId = null;
-
-        if (entry.description) {
-          descriptionId = `${entry.id}-description`;
-          link.setAttribute('aria-describedby', descriptionId);
-        }
-
         entryItem.append(link);
-
-        if (entry.description) {
-          const description = doc.createElement('p');
-          description.id = descriptionId;
-          description.className = 'auth-shell__menu-item-description';
-          description.textContent = entry.description;
-          entryItem.append(description);
-        }
 
         sublist.append(entryItem);
       });
@@ -1825,6 +2041,14 @@ export function initAuthShell(options = {}) {
     }
 
     const viewConfig = VIEW_RENDERERS[viewName];
+    if (viewConfig?.hintKey) {
+      const hintText = translate(viewConfig.hintKey, currentLanguage, {
+        fallback: viewConfig.hintFallback ?? viewConfig.hint ?? '',
+      });
+      statusHint.textContent = hintText;
+      return;
+    }
+
     if (viewConfig?.hint) {
       statusHint.textContent = viewConfig.hint;
     }
@@ -1880,6 +2104,7 @@ export function initAuthShell(options = {}) {
     viewRoot.replaceChildren();
     viewConfig.render(viewRoot, viewProps);
     viewRoot.classList.add('auth-screen__view');
+    applyTranslations(doc, currentLanguage);
     currentView = viewName;
 
     setActiveViewToggle(viewName);
