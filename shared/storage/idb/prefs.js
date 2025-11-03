@@ -9,6 +9,7 @@ export const DEFAULTS = Object.freeze({
   fontScale: 0,
   density: 'comfort',
   reduceMotion: false,
+  navCollapsed: false,
 });
 
 const ALLOWED_KEYS = new Set(Object.keys(DEFAULTS));
@@ -49,13 +50,21 @@ async function readPrefs(db) {
 
 export async function getPrefs() {
   const db = await openMarcoCore();
-  return readPrefs(db);
+  try {
+    return await readPrefs(db);
+  } finally {
+    db.close();
+  }
 }
 
 export async function setPrefs(partial) {
   const db = await openMarcoCore();
-  const current = await readPrefs(db);
-  const next = { ...current, ...sanitizePartialPrefs(partial) };
-  await db.put(STORE_NAME, next, PREFS_KEY);
-  return next;
+  try {
+    const current = await readPrefs(db);
+    const next = { ...current, ...sanitizePartialPrefs(partial) };
+    await db.put(STORE_NAME, next, PREFS_KEY);
+    return next;
+  } finally {
+    db.close();
+  }
 }

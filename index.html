@@ -106,6 +106,41 @@
               <input type="range" min="-2" max="2" step="1" value="0" data-setting-input="fontScale" />
               <span class="settings-field__description" data-font-preview>100%</span>
             </label>
+            <section class="settings-group" data-sync-section>
+              <header class="settings-group__header">
+                <h2 data-i18n="settings.sync.title">Sincronização com Google Drive</h2>
+                <p data-i18n="settings.sync.caption">Controle quando o backup em nuvem deve ser ligado, desligado ou limpo.</p>
+              </header>
+              <div class="settings-group__controls">
+                <button type="button" class="sync-toggle" data-sync-toggle>
+                  <span data-i18n="settings.sync.enable">Ligar sincronização</span>
+                </button>
+                <button type="button" class="sync-delete" data-sync-delete>
+                  <span data-i18n="settings.sync.delete">Excluir backups</span>
+                </button>
+              </div>
+              <dl class="settings-sync-summary">
+                <div>
+                  <dt data-i18n="settings.sync.status.label">Status</dt>
+                  <dd data-sync-status data-i18n="sync.status.disconnected">Sincronização desligada</dd>
+                </div>
+                <div>
+                  <dt data-i18n="settings.sync.lastSync.label">Última sincronização</dt>
+                  <dd data-sync-last-sync data-i18n="sync.lastSync.never">Nunca sincronizado</dd>
+                </div>
+                <div data-sync-error-row hidden>
+                  <dt data-i18n="settings.sync.error.label">Erro</dt>
+                  <dd data-sync-error>—</dd>
+                </div>
+              </dl>
+            </section>
+            <section class="settings-group">
+              <h2 data-i18n="settings.layout.title">Layout</h2>
+              <label class="settings-field settings-field--switch">
+                <span data-i18n="settings.layout.menu">Ocultar menu ao abrir MiniApp</span>
+                <input type="checkbox" data-setting-input="navCollapsed" />
+              </label>
+            </section>
           </form>
         </section>
 
@@ -195,6 +230,15 @@
               <p data-miniapp-description></p>
             </div>
             <div class="miniapp-actions">
+              <button
+                type="button"
+                class="miniapp-actions__button"
+                data-toggle-main-menu
+                aria-pressed="false"
+              >
+                <span aria-hidden="true">▤</span>
+                <span data-menu-toggle-label data-i18n="miniapp.menuHide">Ocultar menu</span>
+              </button>
               <button type="button" class="miniapp-actions__button" data-close-miniapp>
                 <span aria-hidden="true">⟲</span>
                 <span data-i18n="miniapp.close">Voltar ao Início</span>
@@ -225,6 +269,8 @@
         </div>
         <div class="app-footer__status" role="status" aria-live="polite">
           <span data-autosave-label data-i18n="status.synced">Sincronizado</span>
+          <span aria-hidden="true" class="app-footer__status-separator">•</span>
+          <span data-sync-label data-i18n="sync.status.disconnected">Sincronização desligada</span>
         </div>
       </footer>
     </div>

@@ -1,29 +1,49 @@
 import { applyTranslations, getTranslation, formatDate } from './i18n.js';
 import {
-  loadPreferences,
-  applyPreferences,
-  savePreferences,
-  getCurrentPreferences,
-  getFontMultiplier,
-} from './preferences.js';
-import { listMiniApps, getMiniAppById, getMiniAppLabel, getMiniAppDescription } from './miniapps.js';
-import { createPrefsBus, createStoreBus } from './event-bus.js';
+  listMiniApps,
+  getMiniAppById,
+  getMiniAppLabel,
+  getMiniAppDescription,
+  getMiniAppShortLabel,
+} from './miniapps.js';
 import { checkStorageStatus } from './storage.js';
+import { sdk } from './sdk.js';
+import { SYNC_STATUSES } from './sync.js';
 
 const state = {
   prefs: null,
   miniapps: listMiniApps(),
   currentView: 'home',
   activeMiniApp: null,
-  autosaveState: 'synced',
-  autosaveTimer: null,
   storageStatus: null,
   version: null,
   updatedAtRaw: null,
+  syncState: {
+    enabled: false,
+    status: SYNC_STATUSES.DISCONNECTED,
+    lastSyncAt: null,
+    lastError: null,
+  },
 };
 
-const prefsBus = createPrefsBus();
-const storeBus = createStoreBus();
+const {
+  loadPreferences,
+  applyPreferences,
+  savePreferences,
+  getCurrentPreferences,
+  getFontMultiplier,
+} = sdk.preferences;
+
+const prefsBus = sdk.events.createPrefsBus();
+const storeBus = sdk.events.createStoreBus();
+const autosaveController = sdk.autosave.createAutosaveController({ bus: storeBus, source: 'shell' });
+const syncController = sdk.sync.initSync({ storeBus });
+
+autosaveController.subscribe(handleAutosaveStateChange);
+syncController.ready.then(() => {
+  handleSyncStateChange(syncController.getState());
+});
+syncController.subscribe(handleSyncStateChange);
 
 const elements = {
   navButtons: Array.from(document.querySelectorAll('[data-nav]')),
@@ -47,6 +67,15 @@ const elements = {
   storageQuota: document.querySelector('[data-storage-quota]'),
   storageUsage: document.querySelector('[data-storage-usage]'),
   storageUpdated: document.querySelector('[data-storage-updated]'),
+  syncToggle: document.querySelector('[data-sync-toggle]'),
+  syncDelete: document.querySelector('[data-sync-delete]'),
+  syncStatus: document.querySelector('[data-sync-status]'),
+  syncLastSync: document.querySelector('[data-sync-last-sync]'),
+  syncErrorRow: document.querySelector('[data-sync-error-row]'),
+  syncError: document.querySelector('[data-sync-error]'),
+  syncFooter: document.querySelector('[data-sync-label]'),
+  menuVisibilityToggle: document.querySelector('[data-toggle-main-menu]'),
+  menuVisibilityToggleLabel: document.querySelector('[data-menu-toggle-label]'),
 };
 
 document.querySelectorAll('[data-view-section]').forEach((section) => {
@@ -104,52 +133,30 @@ function updateSettingsForm(prefs) {
   const themeSelect = elements.settingsForm.querySelector('[data-setting-input="theme"]');
   const langSelect = elements.settingsForm.querySelector('[data-setting-input="lang"]');
   const fontRange = elements.settingsForm.querySelector('[data-setting-input="fontScale"]');
+  const navToggle = elements.settingsForm.querySelector('[data-setting-input="navCollapsed"]');
   if (themeSelect) themeSelect.value = prefs.theme;
   if (langSelect) langSelect.value = prefs.lang;
   if (fontRange) {
     fontRange.value = String(prefs.fontScale);
     updateFontPreview(prefs.fontScale);
   }
-}
-
-function clearAutosaveTimer() {
-  if (state.autosaveTimer) {
-    clearTimeout(state.autosaveTimer);
-    state.autosaveTimer = null;
-  }
-}
-
-function updateAutosaveState(nextState, { broadcast = false, source = 'shell' } = {}) {
-  state.autosaveState = nextState;
-  clearAutosaveTimer();
-  const translationKey = {
-    synced: 'status.synced',
-    dirty: 'status.dirty',
-    saving: 'status.saving',
-    saved: 'status.saved',
-    error: 'status.error',
-  }[nextState] || 'status.synced';
-  const lang = state.prefs?.lang ?? 'pt-BR';
-  if (elements.autosaveLabel) {
-    elements.autosaveLabel.textContent = getTranslation(lang, translationKey);
-  }
-  if (broadcast) {
-    storeBus.post({ type: 'status', state: nextState, source });
-  }
-  if (nextState === 'saved') {
-    state.autosaveTimer = setTimeout(() => {
-      updateAutosaveState('synced', { broadcast: broadcast, source });
-    }, 1800);
+  if (navToggle) {
+    navToggle.checked = Boolean(prefs.navCollapsed);
   }
 }
 
 function renderMiniAppCard(miniapp, lang) {
-  const card = document.createElement('article');
-  card.className = 'app-card';
-  card.setAttribute('role', 'listitem');
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'miniapp-launcher';
+  button.dataset.appId = miniapp.id;
+  button.addEventListener('click', () => {
+    openMiniApp(miniapp.id);
+  });
+  button.setAttribute('aria-label', getMiniAppLabel(miniapp, lang));
 
-  const icon = document.createElement('div');
-  icon.className = 'app-card__icon';
+  const icon = document.createElement('span');
+  icon.className = 'miniapp-launcher__icon';
   const img = document.createElement('img');
   img.src = miniapp.icon;
   img.alt = '';
@@ -157,33 +164,140 @@ function renderMiniAppCard(miniapp, lang) {
   img.loading = 'lazy';
   icon.appendChild(img);
 
-  const title = document.createElement('h3');
-  title.className = 'app-card__title';
-  title.textContent = getMiniAppLabel(miniapp, lang);
+  const label = document.createElement('span');
+  label.className = 'miniapp-launcher__label';
+  label.textContent = getMiniAppShortLabel(miniapp, lang);
 
-  const description = document.createElement('p');
-  description.className = 'app-card__description';
-  description.textContent = getMiniAppDescription(miniapp, lang);
+  button.appendChild(icon);
+  button.appendChild(label);
+  return button;
+}
 
-  const footer = document.createElement('div');
-  footer.className = 'app-card__footer';
+const AUTOSAVE_TRANSLATIONS = {
+  synced: 'status.synced',
+  dirty: 'status.dirty',
+  saving: 'status.saving',
+  saved: 'status.saved',
+  error: 'status.error',
+};
 
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'app-card__button';
-  button.dataset.appId = miniapp.id;
-  button.textContent = getTranslation(lang, 'miniapp.open');
-  button.addEventListener('click', () => {
-    openMiniApp(miniapp.id);
-  });
+function handleAutosaveStateChange(nextState) {
+  const lang = state.prefs?.lang ?? 'pt-BR';
+  const translationKey = AUTOSAVE_TRANSLATIONS[nextState] ?? AUTOSAVE_TRANSLATIONS.synced;
+  if (elements.autosaveLabel) {
+    elements.autosaveLabel.textContent = getTranslation(lang, translationKey);
+  }
+}
 
-  footer.appendChild(button);
+const SYNC_STATUS_TRANSLATIONS = {
+  [SYNC_STATUSES.DISCONNECTED]: 'sync.status.disconnected',
+  [SYNC_STATUSES.AUTHORIZING]: 'sync.status.authorizing',
+  [SYNC_STATUSES.SYNCING]: 'sync.status.syncing',
+  [SYNC_STATUSES.SYNCED]: 'sync.status.synced',
+  [SYNC_STATUSES.ERROR]: 'sync.status.error',
+};
 
-  card.appendChild(icon);
-  card.appendChild(title);
-  card.appendChild(description);
-  card.appendChild(footer);
-  return card;
+function formatSyncDate(timestamp, lang) {
+  if (!timestamp) return getTranslation(lang, 'sync.lastSync.never');
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return getTranslation(lang, 'sync.lastSync.never');
+  }
+  return formatDate(date, lang);
+}
+
+function updateSyncUi(syncState) {
+  if (!syncState) return;
+  state.syncState = {
+    ...state.syncState,
+    ...syncState,
+  };
+  const lang = state.prefs?.lang ?? 'pt-BR';
+  const statusKey = SYNC_STATUS_TRANSLATIONS[state.syncState.status] ?? SYNC_STATUS_TRANSLATIONS[SYNC_STATUSES.DISCONNECTED];
+  const statusLabel = getTranslation(lang, statusKey);
+  if (elements.syncStatus) {
+    if (elements.syncStatus.dataset) {
+      elements.syncStatus.dataset.i18n = statusKey;
+    }
+    elements.syncStatus.textContent = statusLabel;
+  }
+  if (elements.syncFooter) {
+    if (elements.syncFooter.dataset) {
+      elements.syncFooter.dataset.i18n = statusKey;
+    }
+    elements.syncFooter.textContent = statusLabel;
+  }
+  if (elements.syncToggle) {
+    const actionKey = state.syncState.enabled ? 'settings.sync.disable' : 'settings.sync.enable';
+    const toggleLabel = elements.syncToggle.querySelector('[data-i18n]');
+    const target = toggleLabel ?? elements.syncToggle;
+    if (toggleLabel?.dataset) {
+      toggleLabel.dataset.i18n = actionKey;
+    } else if (elements.syncToggle.dataset) {
+      elements.syncToggle.dataset.i18n = actionKey;
+    }
+    target.textContent = getTranslation(lang, actionKey);
+    elements.syncToggle.dataset.state = state.syncState.enabled ? 'on' : 'off';
+    elements.syncToggle.setAttribute('aria-pressed', state.syncState.enabled ? 'true' : 'false');
+    const busy =
+      state.syncState.status === SYNC_STATUSES.AUTHORIZING || state.syncState.status === SYNC_STATUSES.SYNCING;
+    elements.syncToggle.disabled = busy;
+  }
+  if (elements.syncDelete) {
+    const busy =
+      state.syncState.status === SYNC_STATUSES.AUTHORIZING || state.syncState.status === SYNC_STATUSES.SYNCING;
+    elements.syncDelete.disabled = busy;
+  }
+  if (elements.syncLastSync) {
+    if (state.syncState.lastSyncAt) {
+      if (elements.syncLastSync.dataset) {
+        delete elements.syncLastSync.dataset.i18n;
+      }
+      elements.syncLastSync.textContent = formatSyncDate(state.syncState.lastSyncAt, lang);
+    } else {
+      if (elements.syncLastSync.dataset) {
+        elements.syncLastSync.dataset.i18n = 'sync.lastSync.never';
+      }
+      elements.syncLastSync.textContent = getTranslation(lang, 'sync.lastSync.never');
+    }
+  }
+  if (elements.syncErrorRow && elements.syncError) {
+    if (state.syncState.lastError) {
+      elements.syncError.textContent = state.syncState.lastError;
+      elements.syncErrorRow.hidden = false;
+    } else {
+      elements.syncError.textContent = '';
+      elements.syncErrorRow.hidden = true;
+    }
+  }
+}
+
+function updateMenuToggleUi() {
+  if (!elements.menuVisibilityToggle) return;
+  const lang = state.prefs?.lang ?? 'pt-BR';
+  const collapsed = Boolean(state.prefs?.navCollapsed);
+  const labelKey = collapsed ? 'miniapp.menuShow' : 'miniapp.menuHide';
+  if (elements.menuVisibilityToggleLabel) {
+    if (elements.menuVisibilityToggleLabel.dataset) {
+      elements.menuVisibilityToggleLabel.dataset.i18n = labelKey;
+    }
+    elements.menuVisibilityToggleLabel.textContent = getTranslation(lang, labelKey);
+  } else {
+    if (elements.menuVisibilityToggle.dataset) {
+      elements.menuVisibilityToggle.dataset.i18n = labelKey;
+    }
+    elements.menuVisibilityToggle.textContent = getTranslation(lang, labelKey);
+  }
+  elements.menuVisibilityToggle.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+}
+
+function handleSyncStateChange(next) {
+  const previousError = state.syncState?.lastError ?? null;
+  updateSyncUi(next);
+  if (next?.lastError && next.lastError !== previousError && next.status === SYNC_STATUSES.ERROR) {
+    const lang = state.prefs?.lang ?? 'pt-BR';
+    showToast(getTranslation(lang, 'settings.sync.errorToast'));
+  }
 }
 
 function renderMiniAppGrids() {
@@ -199,6 +313,31 @@ function renderMiniAppGrids() {
     state.miniapps.forEach((miniapp) => {
       elements.secondaryGrid.appendChild(renderMiniAppCard(miniapp, lang));
     });
+  }
+}
+
+async function persistPreferences(partial, { broadcast = true } = {}) {
+  try {
+    autosaveController.markSaving();
+    const saved = await savePreferences(partial);
+    state.prefs = saved;
+    applyPreferences(saved);
+    applyTranslations(document, saved.lang);
+    renderMiniAppGrids();
+    updateSettingsForm(saved);
+    updateFontPreview(saved.fontScale);
+    updateVersionDisplay();
+    refreshStorageStatus();
+    updateSyncUi(state.syncState);
+    updateMenuToggleUi();
+    autosaveController.markSaved();
+    if (broadcast) {
+      prefsBus.post({ type: 'preferences', prefs: saved });
+    }
+  } catch (error) {
+    console.error('Erro ao salvar preferências', error);
+    autosaveController.markError();
+    throw error;
   }
 }
 
@@ -230,23 +369,9 @@ function attachSettingsListeners() {
       theme: formData.get('theme'),
       lang: formData.get('language') ?? formData.get('lang'),
       fontScale: Number.parseInt(formData.get('fontScale'), 10),
+      navCollapsed: formData.get('navCollapsed') === 'on' || formData.get('navCollapsed') === 'true',
     };
-    try {
-      updateAutosaveState('saving', { broadcast: true, source: 'shell:prefs' });
-      const saved = await savePreferences(next);
-      state.prefs = saved;
-      applyPreferences(saved);
-      applyTranslations(document, saved.lang);
-      renderMiniAppGrids();
-      updateSettingsForm(saved);
-      updateVersionDisplay();
-      refreshStorageStatus();
-      updateAutosaveState('saved', { broadcast: true, source: 'shell:prefs' });
-      prefsBus.post({ type: 'preferences', prefs: saved });
-    } catch (error) {
-      console.error('Erro ao salvar preferências', error);
-      updateAutosaveState('error', { broadcast: true, source: 'shell:prefs' });
-    }
+    await persistPreferences(next);
   });
 
   elements.settingsForm.addEventListener('input', (event) => {
@@ -257,6 +382,40 @@ function attachSettingsListeners() {
   });
 }
 
+function attachSyncListeners() {
+  if (elements.syncToggle) {
+    elements.syncToggle.addEventListener('click', async () => {
+      const lang = state.prefs?.lang ?? 'pt-BR';
+      try {
+        if (!state.syncState.enabled) {
+          await syncController.enable();
+        } else {
+          await syncController.disable();
+        }
+      } catch (error) {
+        console.error('Erro ao alternar sincronização', error);
+        showToast(getTranslation(lang, 'settings.sync.toggleError'));
+      }
+    });
+  }
+
+  if (elements.syncDelete) {
+    elements.syncDelete.addEventListener('click', async () => {
+      const lang = state.prefs?.lang ?? 'pt-BR';
+      const confirmation = getTranslation(lang, 'settings.sync.deleteConfirm');
+      const confirmed = typeof window !== 'undefined' ? window.confirm(confirmation) : true;
+      if (!confirmed) return;
+      try {
+        await syncController.deleteBackups();
+        showToast(getTranslation(lang, 'settings.sync.deleteSuccess'));
+      } catch (error) {
+        console.error('Erro ao excluir backups', error);
+        showToast(getTranslation(lang, 'settings.sync.deleteError'));
+      }
+    });
+  }
+}
+
 function attachMenuToggle() {
   if (!elements.mobileMenu) return;
   elements.mobileMenu.addEventListener('click', () => {
@@ -264,6 +423,14 @@ function attachMenuToggle() {
     elements.mobileMenu.setAttribute('aria-expanded', expanded ? 'false' : 'true');
     const firstButton = elements.nav?.querySelector('button');
     firstButton?.focus();
+  });
+}
+
+function attachMenuVisibilityToggle() {
+  if (!elements.menuVisibilityToggle) return;
+  elements.menuVisibilityToggle.addEventListener('click', async () => {
+    const next = !Boolean(state.prefs?.navCollapsed);
+    await persistPreferences({ navCollapsed: next });
   });
 }
 
@@ -309,6 +476,9 @@ function openMiniApp(id, { updateHistory = true } = {}) {
     return;
   }
   state.activeMiniApp = miniapp;
+  if (typeof document !== 'undefined') {
+    document.documentElement.dataset.miniappActive = 'true';
+  }
   setView('miniapp-host', { navTarget: 'miniapps' });
   if (elements.miniappTitle) {
     elements.miniappTitle.textContent = getMiniAppLabel(miniapp, lang);
@@ -336,6 +506,9 @@ function openMiniApp(id, { updateHistory = true } = {}) {
 
 function closeMiniApp({ updateHistory = true } = {}) {
   state.activeMiniApp = null;
+  if (typeof document !== 'undefined') {
+    document.documentElement.dataset.miniappActive = 'false';
+  }
   removeFrameListeners();
   if (elements.miniappFrame) {
     elements.miniappFrame.src = 'about:blank';
@@ -408,8 +581,13 @@ async function loadVersionMetadata() {
 
 function handleStoreMessages(message) {
   if (!message || typeof message !== 'object') return;
-  if (message.type === 'status' && typeof message.state === 'string') {
-    updateAutosaveState(message.state, { broadcast: false, source: message.source ?? 'miniapp' });
+  if (
+    message.type === 'status' &&
+    typeof message.state === 'string' &&
+    message.state === 'saved' &&
+    state.syncState.enabled
+  ) {
+    syncController.syncNow({ reason: 'autosave' }).catch(() => {});
   }
 }
 
@@ -421,6 +599,10 @@ function handlePrefsMessages(message) {
     applyTranslations(document, message.prefs.lang);
     renderMiniAppGrids();
     updateSettingsForm(message.prefs);
+    updateFontPreview(message.prefs.fontScale);
+    updateMenuToggleUi();
+    handleAutosaveStateChange(autosaveController.getState());
+    updateSyncUi(state.syncState);
     updateVersionDisplay();
     refreshStorageStatus();
   }
@@ -447,6 +629,8 @@ async function bootstrap() {
   attachNavListeners();
   attachSettingsListeners();
   attachMenuToggle();
+  attachMenuVisibilityToggle();
+  attachSyncListeners();
   attachMiniAppActions();
   setupEventBuses();
 
@@ -456,7 +640,9 @@ async function bootstrap() {
   renderMiniAppGrids();
   updateSettingsForm(state.prefs);
   updateFontPreview(state.prefs.fontScale);
-  updateAutosaveState('synced');
+  updateMenuToggleUi();
+  handleAutosaveStateChange(autosaveController.getState());
+  updateSyncUi(state.syncState);
   updateVersionDisplay();
   loadVersionMetadata();
   refreshStorageStatus();

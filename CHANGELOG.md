@@ -4,7 +4,11 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
-- Nenhuma alteração registrada.
+- Adicionada sincronização opcional com Google Drive, incluindo fluxo de consentimento, exclusão manual de backups e estados discretos no rodapé.
+- Consolidado SDK do MiniApp Base com módulos de preferências, autosave e sincronização reutilizáveis para todos os MiniApps.
+- Painel principal atualizado com lançadores minimalistas, preferências persistentes de menu recolhido e feedbacks de salvamento integrados.
+- MiniApp Pesquisas ▸ Cidades adaptado ao novo modelo de documentos versionados com mescla por campo e notificações via barramento.
+- Criados testes automatizados cobrindo controlador de autosave, armazenamento de sincronização e cliente de sincronização com stubs do Drive.
 
 ## [1.0.0] - 2025-11-01T09:00:00-03:00 (BRT)
 - Menu principal simplificado com navegação responsiva (Início, MiniApps, Ajustes, Ajuda e Diagnóstico).

@@ -1,12 +1,18 @@
-import { createPrefsBus, createStoreBus } from '../../miniapp-base/event-bus.js';
-import { loadPreferences, applyPreferences } from '../../miniapp-base/preferences.js';
+import { sdk } from '../../miniapp-base/sdk.js';
 import { formatDate } from '../../miniapp-base/i18n.js';
-import { openMarcoCore } from '../../shared/storage/idb/databases.js';
+import {
+  readDocument,
+  writeDocument,
+  touchField,
+  getPlainValues,
+  getLatestFieldTimestamp,
+  normalizeDocument,
+} from './storage.js';
 
-const prefsBus = createPrefsBus();
-const storeBus = createStoreBus();
-
-const STORAGE_KEY = 'pesquisas-cidades::draft';
+const prefsBus = sdk.events.createPrefsBus();
+const storeBus = sdk.events.createStoreBus();
+const autosave = sdk.autosave.createAutosaveController({ bus: storeBus, source: 'pesquisas-cidades' });
+const { loadPreferences, applyPreferences } = sdk.preferences;
 
 const TEXTS = {
   'pt-BR': {
@@ -90,15 +96,9 @@ const TEXTS = {
 };
 
 const state = {
-  data: {
-    city: '',
-    reference: '',
-    notes: '',
-  },
+  doc: normalizeDocument(null, null),
   lang: 'pt-BR',
   saveTimer: null,
-  lastSaved: null,
-  dbPromise: null,
 };
 
 const elements = {
@@ -133,18 +133,57 @@ function clearSaveTimer() {
   }
 }
 
-function setStatus(stateKey, { broadcast = false } = {}) {
+async function saveDraft() {
+  clearSaveTimer();
+  try {
+    autosave.markSaving();
+    state.doc = await writeDocument(state.doc);
+    updateLastSaved();
+    autosave.markSaved();
+  } catch (error) {
+    console.error('MiniApp Pesquisas: falha ao salvar', error);
+    autosave.markError();
+  }
+}
+
+function scheduleSave() {
+  clearSaveTimer();
+  state.saveTimer = setTimeout(saveDraft, 800);
+}
+
+function updateStatusLabel(nextState) {
   const copy = getCopy(state.lang);
-  const label = copy.status[stateKey] ?? copy.status.synced;
+  const label = copy.status[nextState] ?? copy.status.synced;
   if (elements.statusValue) {
     elements.statusValue.textContent = label;
   }
-  if (broadcast) {
-    storeBus.post({ type: 'status', state: stateKey, source: 'pesquisas-cidades' });
+}
+
+function updateLastSaved() {
+  const copy = getCopy(state.lang);
+  if (!elements.lastSavedValue) return;
+  const latest = getLatestFieldTimestamp(state.doc);
+  if (latest) {
+    elements.lastSavedValue.textContent = formatDate(new Date(latest), state.lang);
+  } else {
+    elements.lastSavedValue.textContent = copy.aside.empty;
   }
-  if (stateKey === 'saved') {
-    setTimeout(() => setStatus('synced', { broadcast }), 1800);
-  }
+}
+
+function applyDocumentToForm() {
+  const plain = getPlainValues(state.doc);
+  if (elements.fields.city) elements.fields.city.value = plain.city ?? '';
+  if (elements.fields.reference) elements.fields.reference.value = plain.reference ?? '';
+  if (elements.fields.notes) elements.fields.notes.value = plain.notes ?? '';
+}
+
+function handleInput(event) {
+  const field = event.target?.dataset?.field;
+  if (!field) return;
+  const value = event.target.value;
+  state.doc = touchField(state.doc, field, value, state.doc?.deviceId);
+  autosave.markDirty();
+  scheduleSave();
 }
 
 function applyLanguage(lang) {
@@ -161,79 +200,19 @@ function applyLanguage(lang) {
   if (elements.asideTitle) elements.asideTitle.textContent = copy.aside.title;
   if (elements.statusLabel) elements.statusLabel.textContent = copy.aside.status;
   if (elements.lastSavedLabel) elements.lastSavedLabel.textContent = copy.aside.lastSaved;
+  updateStatusLabel(autosave.getState());
   updateLastSaved();
-}
-
-function updateLastSaved() {
-  const copy = getCopy(state.lang);
-  if (!elements.lastSavedValue) return;
-  if (state.lastSaved) {
-    elements.lastSavedValue.textContent = formatDate(state.lastSaved, state.lang);
-  } else {
-    elements.lastSavedValue.textContent = copy.aside.empty;
-  }
-}
-
-async function getDb() {
-  if (!state.dbPromise) {
-    state.dbPromise = openMarcoCore();
-  }
-  return state.dbPromise;
-}
-
-async function saveDraft() {
-  clearSaveTimer();
-  try {
-    setStatus('saving', { broadcast: true });
-    const db = await getDb();
-    const payload = {
-      key: STORAGE_KEY,
-      value: { ...state.data },
-      updatedAt: new Date().toISOString(),
-    };
-    await db.put('kv_cache', payload);
-    state.lastSaved = new Date(payload.updatedAt);
-    updateLastSaved();
-    setStatus('saved', { broadcast: true });
-  } catch (error) {
-    console.error('MiniApp Pesquisas: falha ao salvar', error);
-    setStatus('error', { broadcast: true });
-  }
-}
-
-function scheduleSave() {
-  clearSaveTimer();
-  state.saveTimer = setTimeout(saveDraft, 800);
-}
-
-function handleInput(event) {
-  const field = event.target?.dataset?.field;
-  if (!field || !(field in state.data)) return;
-  state.data[field] = event.target.value;
-  setStatus('dirty', { broadcast: true });
-  scheduleSave();
 }
 
 async function loadDraft() {
   try {
-    const db = await getDb();
-    const record = await db.get('kv_cache', STORAGE_KEY);
-    if (record?.value) {
-      state.data = {
-        city: record.value.city ?? '',
-        reference: record.value.reference ?? '',
-        notes: record.value.notes ?? '',
-      };
-      if (elements.fields.city) elements.fields.city.value = state.data.city;
-      if (elements.fields.reference) elements.fields.reference.value = state.data.reference;
-      if (elements.fields.notes) elements.fields.notes.value = state.data.notes;
-      if (record.updatedAt) {
-        state.lastSaved = new Date(record.updatedAt);
-      }
-      updateLastSaved();
-    }
+    const { document } = await readDocument();
+    state.doc = document;
+    applyDocumentToForm();
+    updateLastSaved();
   } catch (error) {
     console.warn('MiniApp Pesquisas: falha ao carregar rascunho', error);
+    state.doc = normalizeDocument(null, state.doc?.deviceId ?? null);
   }
 }
 
@@ -250,18 +229,20 @@ function subscribeBuses() {
   storeBus.subscribe((message) => {
     if (!message || typeof message !== 'object') return;
     if (message.source === 'pesquisas-cidades') return;
-    if (message.type === 'status' && typeof message.state === 'string') {
-      setStatus(message.state, { broadcast: false });
+    if (message.type === 'sync:update' && message.miniappId === 'pesquisas-cidades') {
+      loadDraft();
+      return;
     }
   });
 }
 
 async function bootstrap() {
+  autosave.subscribe((nextState) => updateStatusLabel(nextState));
   const prefs = await loadPreferences();
   state.lang = prefs.lang;
   applyPreferences(prefs);
   applyLanguage(state.lang);
-  setStatus('synced');
+  autosave.setState('synced', { broadcast: false });
   await loadDraft();
   subscribeBuses();
   if (elements.form) {
