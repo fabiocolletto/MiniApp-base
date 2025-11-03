@@ -1,64 +1,64 @@
-# MiniApp Base White Label
+# MiniApp Base
 
-Aplicativo PWA white label preparado para hospedar um único MiniApp personalizado por cada marca parceira. O shell oferece uma base neutra com painel inicial enxuto, mensagem de boas-vindas configurável e controles rápidos de tema, idioma e escala tipográfica. Toda a experiência é centralizada: não há catálogo de MiniApps, e o conteúdo definitivo deve ser carregado diretamente dentro do painel principal conforme o módulo oficial for disponibilizado.
+Shell web/PWA pronto para hospedar MiniApps internos sob a mesma origem, sincronizando preferências globais, armazenamento IndexedDB e canais de comunicação via BroadcastChannel.
 
-## Estrutura do repositório
+## Estrutura principal
 
-- `index.html` – shell principal com o painel de acesso aberto, atalhos diretos para o MiniApp configurado e menu rápido no rodapé.
-- `scripts/` – módulos JavaScript responsáveis pelo bootstrap (`app/base-boot.js`), shell (`app/auth-shell.js`), preferências (`preferences/`) e integração com o service worker/PWA (`pwa/`).
-- `styles/` – folhas de estilo da experiência (`main.css`, `auth.css`) construídas sobre os tokens do tema global.
-- `public/` – assets estáticos servidos diretamente (tema CSS, tokens, metadados da versão, ícones instaláveis e página offline).
-- `service-worker.js` – script responsável pelo cache dos assets essenciais, fallback offline e estratégia network-first (sem rotas adicionais além da navegação padrão).
-- `shared/` – camada IndexedDB utilizada para preferências, métricas e persistência compartilhada entre módulos do MiniApp.
-- `tests/` – suíte automatizada em Node Test Runner que cobre a inicialização do shell e os controles de personalização.
-- `reports/` e `docs/` – material histórico da limpeza PWA original e guias de manutenção do tema/instalação.
+```
+/miniapp-base/          # Shell, scripts e estilos compartilhados
+/miniapps/pesquisas-cidades/  # Primeiro MiniApp interno publicado
+/assets/brand/          # Referências oficiais de logotipos/ícones
+/docs/                  # Guias operacionais (inclui miniapp-interno.md)
+/public/                # Metadados públicos (manifesto, versão, offline)
+/shared/storage/idb/    # Camada oficial de IndexedDB (mesma origem)
+/tests/                 # Suíte de testes automatizados em Node Test Runner
+```
 
-## Painel white label
+## Recursos do shell
 
-O painel principal (`renderGuestAccessPanel` no `auth-shell`) exibe o título **“MiniApp Base”** e uma orientação para personalizar tema, idioma e tamanho do texto. Um contêiner dedicado (`.auth-view__miniapp-host`) carrega automaticamente o módulo cadastrado em `miniapps/registry.json`, permitindo publicar o MiniApp oficial da marca diretamente dentro do shell.
+- **Menu principal simplificado** (Início, MiniApps, Ajustes, Ajuda e Diagnóstico) com layout responsivo: barra inferior em mobile e lateral em telas maiores.
+- **Painel inicial** com grade de MiniApps configurados, carregando o conteúdo interno `Pesquisas ▸ Cidades` diretamente no host quando disponível.
+- **Tela “Sobre o MiniApp Base”** obrigatória com logotipos oficiais, links legais, versão (`public/meta/app-version.json`) e data da última atualização.
+- **Rodapé dinâmico** com ícone temático (claro/escuro), link para 5 Horas e indicador de auto-salvamento (`Desatualizado ▸ Salvando… ▸ Salvo`).
+- **Preferências globais** (tema, idioma, escala tipográfica) persistidas em IndexedDB e propagadas via BroadcastChannel (`marco:prefs`).
+- **Diagnóstico** exibindo persistência solicitada (`navigator.storage.persist()`), quota e uso do storage (`navigator.storage.estimate()`).
+- **Fallback de incorporação**: se um MiniApp bloquear `<iframe>` por CSP/X-Frame-Options, o shell exibe toast e abre o destino em nova aba.
 
-O menu principal reúne três seções:
+## MiniApp interno: Pesquisas ▸ Cidades
 
-- **Experiência** – mantém o painel principal disponível sem cadastro e permite reabrir o MiniApp em destaque a qualquer momento.
-- **Interfaces** – oferece o atalho "Abrir MiniApp" para carregar imediatamente o módulo configurado na vitrine.
-- **Configurações** – mantém os atalhos de preferências descritos abaixo.
-
-O rodapé mantém três ações rápidas:
-
-1. **Tema** – alterna entre Automático, Claro e Escuro.
-2. **Tamanho do texto** – percorre os cinco níveis de escala tipográfica.
-3. **Idioma** – abre a lista com Português (Brasil), Inglês e Espanhol para selecionar a preferência ativa.
-
-Os rótulos são atualizados dinamicamente conforme o estado salvo em IndexedDB (`marco_core`). Ao escolher um idioma, o menu mantém a lista aberta até que o usuário confirme a seleção desejada.
-
-## Persistência e PWA
-
-- A camada IndexedDB é preparada em `scripts/app/base-boot.js`, que solicita armazenamento persistente, registra o service worker e emite eventos `storage:*` pelo `event-bus`.
-- `service-worker.js` usa o prefixo `miniapp-white-label::pwa::`, faz cache dos assets essenciais (`index.html`, temas, manifestos, versão) e não possui rotas específicas extras além da navegação padrão.
-- Versões expostas no rodapé são lidas de `public/meta/app-version.json`. O utilitário `scripts/data/system-release-source.js` registra a tag atual e o horário de publicação.
+- Hospedado em `miniapps/pesquisas-cidades/` com HTML/CSS/JS modulares.
+- O script consome preferências do shell, publica estados de auto-salvamento no canal `marco:store` e salva rascunhos no `kv_cache` do `marco_core` (IndexedDB compartilhado).
+- Layout responsivo com painel de sincronização exibindo status atual e horário da última gravação.
 
 ## Executando localmente
 
-1. Instale as dependências com `npm install` (não há pacotes externos além das devDependencies padrão).
+1. Instale dependências: `npm install`.
 2. Suba um servidor estático apontando para a raiz do projeto (`npx serve .` ou `python -m http.server 4173`).
-3. Acesse `http://localhost:<porta>/index.html` para validar o shell. A mensagem inicial deve exibir “MiniApp Base” e o rodapé precisa mostrar os três atalhos de personalização.
-4. Execute `npm test` para rodar a suíte automatizada.
-
-### Validação visual obrigatória
-
-Após qualquer alteração que vá para commit, execute a interface e capture **dois screenshots** (modo retrato e modo paisagem) simulando o tablet **Samsung Galaxy Tab S9**. Anexe as imagens ao relatório/PR e cite os caminhos no resumo final.
+3. Acesse `http://localhost:<porta>/index.html`.
+4. Ajuste tema, idioma e escala; abra `/?app=pesquisas-cidades` para validar a sincronização imediata entre shell e MiniApp.
 
 ## Testes automatizados
 
-A suíte utiliza `node --test` com o ambiente DOM em `tests/helpers/dom-env.js`. Os cenários cobrem:
+- `npm test` executa os cenários em Node Test Runner (`tests/*.test.js`).
+- Cobertura mínima exigida para esta release:
+  - Propagação de mensagens pelos canais `marco:prefs` e `marco:store`.
+  - Persistência de preferências no IndexedDB compartilhado (`marco_core`).
+  - Formatação/relato de persistência, quota e uso via `checkStorageStatus`.
 
-- Renderização do painel white label e ausência de listas/atalhos de MiniApps.
-- Funcionamento do menu rápido do rodapé e atualização dos rótulos de acessibilidade.
-- Alternância de tema, idioma e escala tipográfica sem recarregar a página.
-- Fechamento do menu principal ao clicar novamente no botão.
+> A suíte utiliza `fake-indexeddb` para simular IndexedDB no ambiente de teste.
 
-Execute `npm test` para verificar a cobertura antes de enviar alterações.
+## Validação visual obrigatória
 
-## Histórico e documentação
+Antes de qualquer commit definitivo:
 
-O histórico da limpeza PWA original permanece em `archive/2025-10-28/`. Guias complementares continuam disponíveis em `docs/` (tema, tokens, validações PWA e integração com WordPress). Ajustes específicos de cada MiniApp hospedado devem ser documentados no `CHANGELOG.md` e, quando aplicável, em novos arquivos dentro de `docs/`.
+1. Execute o shell em um navegador.
+2. Capture **dois screenshots** do Samsung Galaxy Tab S9 (modo retrato e modo paisagem) destacando:
+   - Menu principal, painel Início e rodapé com feedback de salvamento.
+   - MiniApp `Pesquisas ▸ Cidades` carregado internamente mostrando auto-salvamento.
+3. Anexe as imagens ao relatório/PR e cite os caminhos no resumo final.
+
+## Publicação
+
+- Habilite o GitHub Pages apontando para a branch principal (`index.html` na raiz).
+- Para WordPress/Elementor, incorpore o shell via widget HTML apontando para a URL pública.
+- Garanta que todos os MiniApps internos sigam o checklist documentado em [`docs/miniapp-interno.md`](docs/miniapp-interno.md).
