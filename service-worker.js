@@ -8,14 +8,23 @@ const OFFLINE_FALLBACK_URL = new URL(OFFLINE_FALLBACK, swUrl.origin).toString();
 
 const CORE_ASSETS = [
   './index.html',
-  './public/app-theme.css',
-  './public/tokens.css',
-  './styles/main.css',
-  './styles/auth.css',
-  './package.json',
+  './miniapp-base/styles.css',
+  './miniapp-base/app.js',
+  './miniapp-base/i18n.js',
+  './miniapp-base/miniapps.js',
+  './miniapp-base/preferences.js',
+  './miniapp-base/event-bus.js',
+  './miniapp-base/storage.js',
+  './miniapps/pesquisas-cidades/index.html',
+  './miniapps/pesquisas-cidades/styles.css',
+  './miniapps/pesquisas-cidades/app.js',
   './manifest.webmanifest',
   './public/offline.html',
-  './public/meta/app-version.json'
+  './public/meta/app-version.json',
+  './shared/storage/idb/prefs.js',
+  './shared/storage/idb/databases.js',
+  './shared/storage/idb/persistence.js',
+  './shared/vendor/idb.min.js'
 ];
 
 const NETWORK_FIRST_PATHS = [];

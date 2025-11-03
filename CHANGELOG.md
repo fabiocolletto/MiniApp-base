@@ -4,119 +4,17 @@ Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
 ## [Unreleased]
-- Fluxo de acesso simplificado: removidos cadastro e painel da conta, mantendo apenas o painel convidado com todos os recursos liberados localmente.
-- Preferências de MiniApps passam a ser salvas diretamente no dispositivo (IndexedDB), sem dependência de usuários cadastrados.
-- Adicionado teste de integração `tests/ripple.panel-visual.test.js` cobrindo o painel do criador de provas com a prova de Histó
-  ria carregada no MiniApp Base, validando filtros à esquerda e pré-visualização no painel direito.
-- Botão do menu principal do rodapé recebeu preenchimento dedicado, gradiente sutil, sombra reforçada e animação em “X” para
-  indicar o menu aberto e destacar estados de foco.
-- Variações do botão de menu reutilizam a mesma lógica de abertura do painel em qualquer viewport, mantendo o overlay móvel em
-  telas desktop, tablets e smartphones.
-- Menu principal ganha aba Interfaces com atalho dedicado para abrir o Criador de Provas diretamente do shell.
-- Painel do menu principal adota o mesmo gradiente translúcido do shell em qualquer largura de tela, unificando overlay, cards e
-  estados de foco nos temas claro e escuro.
-- Menu principal organiza as seções Usuário e Configurações como abas exclusivas, exibindo apenas os botões da aba ativa e
-  recolhendo o seletor de idioma ao retornar para Usuário.
-- Layout principal do MiniApp simplificado para que cada view ocupe o espaço entre cabeçalho e rodapé sem o cartão fixo, herdando diretamente o tema global do 5horas.com.br.
-- Painel do menu principal mantém a mesma grade responsiva com rolagem em qualquer viewport, evitando que o overlay extrapole a área útil em tablets e desktops.
-- Paleta do menu principal atualizada para tons neutros alinhados aos tokens globais, com foco/hover consistentes nos modos claro e escuro.
-- Loader de MiniApps passa a resolver caminhos relativos com a URL ativa do shell, garantindo que o Criador de Provas seja importado e renderizado corretamente.
-- Shell convidado adapta o painel principal para largura total em tablets e desktops, preservando layout compacto nos celulares e mantendo o rodapé fixo durante a transição para o MiniApp.
-- MiniApp Criador de Provas reorganizado em grade responsiva com colunas extras em telas maiores, ajustes de espaçamento em mobile e widgets ampliados para ocupar toda a área útil.
-- Painel convidado ocupa toda a área útil entre cabeçalho e rodapé, centralizando o título de boas-vindas em container compacto
-  e ocultando o placeholder vazio até que módulos reais sejam publicados.
-- Cartão principal do MiniApp Educação ajustado para contrair conforme o conteúdo em tablets verticais, evitando que o widget ocupe a altura inteira sem necessidade.
-- Painel convidado do MiniApp Educação deixa de exibir o container textual temporário, liberando a área para os módulos definitivos.
-- Seção Usuário adicionada ao menu principal com os botões de Cadastro e Visitante, removendo o seletor do cartão de boas-vindas.
-- Corrigido o botão do menu principal para herdar corretamente as cores dos temas claro e escuro, mesmo quando a preferência manual difere do modo do sistema.
-- Removido o painel de widgets do shell, eliminando o painel Educação duplicado abaixo do cartão principal.
-- Rebatizado o shell para MiniApp Educação, com painel inicial estático e mensagem de boas-vindas dedicada.
-- Removidos o catálogo de MiniApps, widgets e sincronizações associadas, mantendo apenas as ações rápidas de tema, idioma e texto.
-- Atualizados manifesto PWA, service worker, documentação e testes para refletir o produto único MiniApp Educação.
-- Atalhos rápidos do menu de configurações continuam alternando imediatamente tema e tamanho do texto, enquanto o botão de idioma abre um seletor dedicado com as opções disponíveis e aplica a escolha confirmada, preservando os rótulos de acessibilidade conforme o estado ativo.
-- Painel modal de preferências foi removido; as personalizações acontecem exclusivamente pelos ícones do menu do rodapé, sem janela adicional.
-- Menu de Configurações recebeu atalho rápido para ajustar o tamanho do texto, exibindo a escala atual e acessando os cinco níveis disponíveis.
-- Cobertura automatizada atualizada para garantir que o menu principal do rodapé permaneça aberto ao clicar novamente no botão de configurações, preservando painel e overlay visíveis.
-- Botão do menu principal deixa de funcionar como alternância e passa a apenas abrir o menu, evitando que cliques repetidos recolham o painel.
-- Documentados no `AGENTS.md` e no `README.md` os procedimentos obrigatórios de validação visual com screenshots em formato paisagem e retrato do Samsung Galaxy Tab S9.
-- Painel principal volta a exibir a lista de MiniApps diretamente, removendo o widget flutuante do modo convidado.
-- Rodapé expandido mantém ícone, dados legais e controles alinhados na mesma barra, liberando a faixa inferior para distribuir atalhos e metadados em largura total.
-- Rodapé expandido passa a revelar painel multilinhas com transição suave, reservando um container para atalhos rápidos e links adicionais no futuro.
-- Corrigido o estado expandido do widget "MiniApps gratuitos" eliminando regras que mantinham o container esticado e deixavam espaços vazios mesmo após a remoção das alturas mínimas.
-- Ajustadas as alturas mínimas do painel "MiniApps gratuitos" para evitar espaços vazios acima e abaixo do conteúdo quando expandido.
-- Painel "MiniApps gratuitos" passa a iniciar como janela flutuante no canto superior direito e expande sob demanda para ocupar todo o painel de convidado.
-- Eliminado o vazamento do painel principal abaixo do rodapé bloqueando o overflow do shell e delegando a rolagem à área de conteúdo.
-- Rodapé da tela de autenticação permanece fixo na base da viewport sem revelar faixas fora do painel principal.
-- Eliminada a faixa cinza entre o painel principal e o rodapé em tablets, alinhando o preenchimento inferior da área de conteúdo ao safe area disponível.
-- Mensagem de painel vazio passa a ser exibida na área expandida do rodapé, aparecendo apenas quando o detalhe é aberto e sem a faixa residual sob o rodapé.
-- Menu principal abre com o título "Menu principal" e agora exibe uma faixa de categorias com botões em formato de pílula, sublistas com links para os painéis e preserva o ícone isolado no acionador do rodapé.
-- Botão do menu principal passa a mostrar apenas o ícone tanto online quanto offline, mantendo o rótulo dinâmico via `aria-label` e alinhando o acionador ao layout compacto solicitado.
-- Estilo do botão do menu principal foi alinhado ao controle que expande o rodapé, mantendo ambos com aparência consistente em todas as larguras de tela.
-- Ajustada a vitrine "MiniApps gratuitos" do modo convidado para contrair conforme o conteúdo, eliminando a faixa vazia percebida abaixo da lista de MiniApps.
-- Fundo do shell de autenticação foi ajustado para reutilizar o gradiente principal, eliminando a faixa clara entre o painel e o rodapé.
-- Ajustado o overlay do menu desktop para usar layout flexível ancorado ao rodapé, evitando centralização indevida da janela do menu.
-- Registro do Service Worker valida o cache local em cada carregamento e força atualização automática quando uma versão nova é publicada.
-- Painel principal do shell de autenticação passa a alinhar-se ao topo, ocupar toda a área entre cabeçalho e rodapé e abandona os cantos arredondados para seguir o layout solicitado.
-- Botão de detalhes do rodapé permanece disponível em qualquer largura de tela e mantém o menu com as mesmas informações exibidas no modo mobile.
-- Adicionada versão legada do bootstrap com script `nomodule` garantindo o menu principal e o rodapé funcionais em tablets sem suporte a módulos ES.
-- Menu principal do rodapé passa a expor o rótulo textual e organizar as opções em categorias e subcategorias expansíveis, incluindo a seção de Configurações com acesso direto às preferências do usuário.
-- Botão de instalação do PWA agora só aparece em navegadores móveis compatíveis e garante que o fluxo de download seja iniciado no dispositivo.
-- Adicionado botão flutuante de instalação do MiniApp com controlador PWA acoplado ao bootstrap do shell.
-- Botão de instalação do PWA foi movido para dentro do menu principal, ocupando a lista de ações apenas quando o prompt estiver disponível.
-- Compactados os paddings do shell de autenticação e os espaçamentos dos painéis de convidado/MiniApp Store em viewports até 480px, ampliando a área útil em mobile sem perder a compensação de safe area.
-- Eliminados os preenchimentos laterais do painel de views em telas pequenas para evitar acúmulo duplo de espaçamentos com os MiniApps renderizados.
-- Ajustado o rodapé móvel com botão de detalhes apenas em ícone, offsets dinâmicos para evitar sobreposição e alinhamento total à base da viewport.
-- Rodapé móvel expandido passa a quebrar os rótulos completos (MiniApps, painel atual e versão) sem cortes, com espaçamentos reorganizados para leitura integral.
-- Preferências de usuário passam a incluir listas `miniApps.saved` e `miniApps.favorites`, com saneamento de IDs, deduplicação e compatibilidade com dados existentes.
-- Criado módulo de preferências de MiniApps com operações de salvar/favoritar, limite de favoritos, sincronização da sessão ativa e cobertura de testes para os novos fluxos.
-- Implantada camada oficial de IndexedDB com vendor `idb` 7.x, bancos `marco_core`/`pesquisa_studio`, APIs compartilhadas, migrador de `localStorage` e monitoramento de persistência/cota.
-- Boot do shell sincroniza o catálogo com IndexedDB, solicita persistência, expõe eventos `storage:*` no MarcoBus e atualiza o estado do painel.
-- Painel "Painel da conta" exibe status do armazenamento (persistência, uso/cota e auditoria local dos últimos eventos).
-- Documentação atualizada (README e AGENTS.md) descrevendo arquitetura IndexedDB, convenções, boas práticas e acesso oficial por MiniApps.
-- Extraído o bootstrap do shell de autenticação para `scripts/app/auth-shell.js` com a função pública `initAuthShell`.
-- Exportados utilitários das views de cadastro e MiniApp Store para permitir testes modulares.
-- Adicionada suíte de testes de integração do shell com Node Test Runner + jsdom e documentação atualizada sobre execução local.
-- Substituída a dependência externa do jsdom por um simulador de DOM embutido utilizado pela suíte de testes, permitindo execuções sem acesso à internet.
-- Adicionada rotina de limpeza completa do dispositivo acionável pelo painel de gerenciamento, removendo cadastros locais,
-  encerrando a sessão e sincronizando o banco global vazio.
-- Adicionado painel "Painel da conta" com lista de cadastros locais, ações rápidas e limpeza completa dos dados do dispositivo.
-- Corrigido o botão do menu principal para manter a sobreposição aberta mesmo quando não há itens disponíveis.
-- Rodapé exibe novamente o ícone da 5 Horas com variação automática para temas claro e escuro.
-- Menu principal do shell de autenticação agora abre como sobreposição centralizada com desfoco do plano de fundo.
-- Corrigida a sobreposição do menu principal para ocupar toda a viewport e desfocar corretamente o plano de fundo.
-- Reativado o painel MiniApp Store com vitrine detalhada dos MiniApps ativos e destaque automático para atalhos acionados.
-- Menu do rodapé reorganizado para listar páginas do shell e atalhos dos MiniApps publicados, com estados acessíveis e navegação por teclado.
-- Botão principal de menu movido para o rodapé com painel suspenso listando os modos Convidado e Cadastro.
-- Painel de menu respeita o atributo `hidden`, impedindo exibição antes da interação do usuário.
-- Ajustado o rodapé do shell de autenticação para permanecer alinhado à base da tela em qualquer altura de conteúdo.
-- Painel inicial abre diretamente no modo convidado e remove o formulário de login para simplificar o acesso sem credenciais.
-- Textos do shell atualizados para refletir o fluxo baseado em cadastro ou navegação como convidado.
-- Manifesto PWA atualizado para abrir explicitamente a página de boas-vindas ao iniciar o aplicativo instalado.
+- Nenhuma alteração registrada.
 
-## [4.1.0] - 2025-11-03T04:43:01-03:00 (BRT)
-- Botões do menu principal foram simplificados com nova hierarquia de conteúdo (`.auth-shell__menu-item-content`), removendo descrições redundantes e mantendo o visual consistente no CSS (`styles/auth.css`, `index.html`, `scripts/app/auth-shell.js`).
-- Rodapé ganhou indicador de armazenamento com estado traduzido e cálculo de uso/quota em tempo real, alimentado pelos eventos `storage:ready` e `storage:estimate` (`scripts/app/auth-shell.js`, `index.html`).
-- Camada de internacionalização adicionada (`scripts/app/i18n.js`), aplicada às ações rápidas, labels dinâmicos e dicas do shell, com testes atualizados para validar troca de idioma e metadados (`tests/auth-shell.init.test.js`).
-- Registrado o MiniApp de testes "Good Morning" com saudação multi-idioma e suíte dedicada validando montagem e callbacks (`miniapps/good-morning/index.js`, `miniapps/registry.json`, `tests/miniapps/good-morning.test.js`).
-
-## [4.0.1] - 2025-11-01T06:11:49-03:00 (BRT)
-- Centralizada a identidade white label em `scripts/app/white-label-config.js`, aplicando o título, hints e metadados do shell durante o bootstrap.
-- `loadMiniApp('primary')` passa a enviar o contexto configurável do white label, garantindo que marca, CTA e destaques padrão cheguem ao módulo publicado.
-- Atualizados fallbacks do tema azul/violeta e a documentação de personalização para o cenário single MiniApp (`styles/main.css`, `docs/ui-theme-and-prefs.md`, `docs/miniapps-folder-audit.md`, `docs/pwa.md`).
-- Versão do aplicativo sincronizada para 4.0.1 (`package.json`, `package-lock.json`, `public/meta/app-version.json`, `scripts/data/system-release-source.js`).
-
-## [3.2.0] - 2025-11-01T05:52:02-03:00 (BRT)
-- Shell convertido em base white label, removendo referências à 5 Horas e ao MiniApp Educação do HTML, menu e rodapé.
-- Manifesto PWA, service worker e ícones configurados para identidade neutra com assets locais reutilizáveis.
-- Documentação inicial atualizada para orientar o uso do shell como experiência white label.
-- Paleta, tokens de design e folhas de estilo revisados para o tema white label azul/violeta, mantendo contraste AA e integração com a API de preferências.
-- MiniApp primário registrado em `miniapps/registry.json`, carregado automaticamente no painel convidado via `loadMiniApp` com host dedicado e tratamento de erros.
-- Bootstrap e camada IndexedDB preservados como base de produção, mantendo preferências, eventos e prompt PWA ativos no shell white label.
-
-## [3.1.3] - 2025-10-31T09:26:50-03:00 (BRT)
-- Menu principal agora apresenta cabeçalho visível da seção de Configurações e atalhos rápidos para escolher tema e idioma diretamente do overlay.
-- Atalhos de configurações rápidas direcionam o foco para o controle correspondente ao abrir o painel completo de preferências.
-- Versão do aplicativo atualizada para 3.1.3 (`package.json`, `public/meta/app-version.json` e `scripts/data/system-release-source.js`) refletindo os novos atalhos de personalização.
+## [1.0.0] - 2025-11-01T09:00:00-03:00 (BRT)
+- Menu principal simplificado com navegação responsiva (Início, MiniApps, Ajustes, Ajuda e Diagnóstico).
+- Painel inicial renovado com grade de MiniApps internos e carregamento integrado do Pesquisas ▸ Cidades.
+- Tela “Sobre o MiniApp Base” com logotipos temáticos, links legais e metadados de versão sincronizados.
+- Rodapé com ícone dinâmico conforme tema e indicador de status de auto-salvamento (desatualizado ▸ salvando ▸ salvo).
+- Preferências globais (tema, idioma e escala de fonte) persistidas em IndexedDB e propagadas via BroadcastChannel.
+- Diagnóstico de armazenamento exibindo persistência, quota e uso compartilhados entre Shell e MiniApp.
+- MiniApp Pesquisas ▸ Cidades publicado como conteúdo interno com sincronização de rascunhos no IndexedDB comum.
+- Documentação de integração em `/docs/miniapp-interno.md` descrevendo requisitos de MiniApps internos.
 
 ## [3.1.2] - 2025-10-31T09:12:07-03:00 (BRT)
 - Menu principal do rodapé passa a exibir apenas um atalho em ícone para as Configurações, removendo as listas de painéis, widgets e MiniApps do overlay.

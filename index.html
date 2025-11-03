@@ -1,453 +1,238 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-pref-theme="auto">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MiniApp Base • White Label</title>
-    <link rel="stylesheet" href="./public/app-theme.css" />
-    <link rel="stylesheet" href="./styles/main.css" />
-    <link rel="stylesheet" href="./styles/auth.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>MiniApp Base</title>
     <link rel="manifest" href="./manifest.webmanifest" />
-    <meta name="theme-color" content="#4358e6" />
-    <meta name="application-name" content="MiniApp Base White Label" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="MiniApp Base" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="./public/icons/miniapp-icon-512.svg"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="512x512"
-      href="./public/icons/miniapp-icon-512.svg"
-    />
+    <link rel="stylesheet" href="./miniapp-base/styles.css" />
+    <link rel="preload" href="./public/meta/app-version.json" as="fetch" crossorigin="anonymous" />
   </head>
-<body class="auth-only">
-  <header class="auth-shell__header" aria-label="Identidade do MiniApp"></header>
-
-  <main id="app" class="auth-screen" data-active-view="guest">
-    <section
-      id="authViewRoot"
-      class="auth-screen__view"
-      aria-live="polite"
-      data-view="guest"
-    ></section>
-    <div class="auth-screen__status">
-      <small
-        id="statusHint"
-        role="status"
-        aria-live="polite"
-        data-i18n="auth.hint"
-      >
-        Use o menu principal para criar uma conta ou abrir o MiniApp da sua marca.
-      </small>
-    </div>
-  </main>
-
-  <footer class="auth-shell__footer">
-    <div class="auth-shell__footer-bar">
-      <nav
-        class="auth-shell__footer-nav"
-        aria-label="Menu principal"
-        data-i18n-attr="aria-label:menu.title"
-      >
-        <button
-          type="button"
-          class="auth-shell__menu-button"
-          aria-label="Abrir menu principal"
-          aria-haspopup="true"
-          aria-controls="authFooterMenu"
-          aria-expanded="false"
-          title="Abrir menu principal"
-          data-i18n-attr="aria-label:menu.buttonOpen,title:menu.buttonOpen"
-        >
-          <span class="auth-shell__menu-icon" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
+  <body>
+    <div class="app-shell" data-view="home">
+      <header class="app-header" role="banner">
+        <div class="app-brand">
+          <span class="app-brand__title" data-i18n="brand.title">MiniApp Base</span>
+          <span class="app-brand__subtitle" data-i18n="brand.subtitle">Shell pronto para MiniApps internos</span>
+        </div>
+        <button type="button" class="app-header__menu" data-mobile-menu aria-expanded="false" aria-controls="appPrimaryNav">
+          <span class="sr-only" data-i18n="nav.toggle">Alternar menu</span>
+          <span aria-hidden="true"></span>
         </button>
+      </header>
+
+      <nav id="appPrimaryNav" class="app-nav" aria-label="Navegação principal">
+        <ul>
+          <li>
+            <button type="button" data-nav="home" class="is-active" aria-current="page">
+              <span aria-hidden="true" class="app-nav__icon">🏠</span>
+              <span data-i18n="nav.home">Início</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-nav="miniapps">
+              <span aria-hidden="true" class="app-nav__icon">🧩</span>
+              <span data-i18n="nav.miniapps">MiniApps</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-nav="settings">
+              <span aria-hidden="true" class="app-nav__icon">⚙️</span>
+              <span data-i18n="nav.settings">Ajustes</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-nav="help">
+              <span aria-hidden="true" class="app-nav__icon">❓</span>
+              <span data-i18n="nav.help">Ajuda</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-nav="diagnostics">
+              <span aria-hidden="true" class="app-nav__icon">🩺</span>
+              <span data-i18n="nav.diagnostics">Diagnóstico</span>
+            </button>
+          </li>
+        </ul>
       </nav>
 
-      <small class="auth-shell__footer-text">
-        <picture class="auth-shell__footer-logo" aria-hidden="true">
-          <img
-            src="./public/icons/miniapp-icon-192.svg"
-            width="40"
-            height="40"
-            alt=""
-            loading="lazy"
-            decoding="async"
-          />
-        </picture>
-        <span>© <span data-current-year></span> MiniApp Base</span>
-      </small>
+      <main class="app-main" role="main">
+        <section class="view view--home is-active" data-view-section="home">
+          <header class="view__header">
+            <h1 data-i18n="home.title">MiniApp Base</h1>
+            <p data-i18n="home.caption">Ajuste tema, idioma e tamanho do texto antes de começar.</p>
+          </header>
+          <section class="view__body">
+            <h2 data-i18n="home.gridTitle">MiniApps configurados</h2>
+            <div class="app-grid" role="list" data-miniapp-grid></div>
+          </section>
+        </section>
 
-      <button
-        type="button"
-        class="auth-shell__footer-toggle"
-        data-footer-toggle
-        aria-controls="authShellFooterExtra"
-        aria-expanded="false"
-        aria-label="Mostrar detalhes do rodapé"
-      >
-        <svg
-          class="auth-shell__footer-toggle-icon"
-          viewBox="0 0 20 20"
-          role="presentation"
-          aria-hidden="true"
-        >
-          <path
-            d="M5 8.25L10 12.75L15 8.25"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-    </div>
-
-    <div data-footer-extra id="authShellFooterExtra">
-      <div class="auth-shell__footer-meta" aria-label="Informações do rodapé">
-        <span class="auth-shell__footer-meta-item">
-          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-          <span>MiniApp Base White Label</span>
-        </span>
-        <span class="auth-shell__footer-meta-item">
-          <span
-            class="auth-shell__footer-divider"
-            aria-hidden="true"
-            data-active-view-divider
-            hidden
-          >
-            •
-          </span>
-          <span data-active-view-label hidden></span>
-        </span>
-        <span class="auth-shell__footer-meta-item" data-storage-indicator>
-          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-          <span data-storage-state data-i18n="storage.status.checking">
-            Armazenamento: verificando…
-          </span>
-          <span data-storage-usage hidden></span>
-        </span>
-        <span class="auth-shell__footer-meta-item">
-          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-          <span>Versão <strong data-app-version>carregando…</strong></span>
-        </span>
-      </div>
-      <div class="auth-shell__footer-quicklinks" data-footer-quicklinks>
-        <div class="auth-shell__footer-shortcuts" data-footer-shortcuts></div>
-      </div>
-    </div>
-  </footer>
-
-  <div class="auth-shell__menu-overlay" data-menu-overlay hidden>
-    <div
-      id="authFooterMenu"
-      class="auth-shell__menu-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="authFooterMenuTitle"
-      hidden
-    >
-      <div class="auth-shell__menu-header">
-        <p id="authFooterMenuTitle" class="auth-shell__menu-title" data-i18n="menu.title">Menu principal</p>
-        <p class="auth-shell__menu-caption" data-i18n="menu.caption">
-          Escolha como acessar e personalize a experiência do MiniApp.
-        </p>
-      </div>
-      <div class="auth-shell__menu-categories" data-menu-tabs-wrapper>
-        <div
-          class="auth-shell__menu-category-tabs"
-          role="tablist"
-          aria-label="Seções do menu principal"
-          data-menu-tabs
-        >
-          <button
-            id="authFooterMenuTab-experience"
-            type="button"
-            class="auth-shell__menu-category-button is-active"
-            role="tab"
-            data-menu-tab="experience"
-            aria-controls="authFooterMenuSection-experience"
-            aria-selected="true"
-            tabindex="0"
-            data-i18n="menu.tabs.experience"
-          >
-            Experiência
-          </button>
-          <button
-            id="authFooterMenuTab-interfaces"
-            type="button"
-            class="auth-shell__menu-category-button"
-            role="tab"
-            data-menu-tab="interfaces"
-            aria-controls="authFooterMenuSection-interfaces"
-            aria-selected="false"
-            tabindex="-1"
-            data-i18n="menu.tabs.interfaces"
-          >
-            Interfaces
-          </button>
-          <button
-            id="authFooterMenuTab-settings"
-            type="button"
-            class="auth-shell__menu-category-button"
-            role="tab"
-            data-menu-tab="settings"
-            aria-controls="authFooterMenuSection-settings"
-            aria-selected="false"
-            tabindex="-1"
-            data-i18n="menu.tabs.settings"
-          >
-            Configurações
-          </button>
-        </div>
-      </div>
-      <section
-        id="authFooterMenuSection-experience"
-        class="auth-shell__menu-section"
-        data-menu-section="experience"
-        role="tabpanel"
-        aria-labelledby="authFooterMenuTab-experience"
-        tabindex="0"
-      >
-        <p
-          id="authFooterMenuExperienceTitle"
-          class="auth-shell__menu-section-title"
-          data-i18n="menu.sections.experience"
-        >
-          Experiência
-        </p>
-        <div
-          class="auth-shell__menu-actions auth-shell__menu-actions--user"
-          role="group"
-          aria-labelledby="authFooterMenuExperienceTitle"
-        >
-          <button
-            type="button"
-            class="auth-shell__menu-item auth-shell__menu-item--view"
-            data-view="guest"
-            data-view-toggle
-            aria-current="page"
-            aria-label="Abrir painel principal"
-            title="Abrir painel principal"
-          >
-            <span class="auth-shell__menu-item-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                <path
-                  d="M9.25 9a3.25 3.25 0 116.5 0 3.25 3.25 0 01-6.5 0zM5.5 19.25c0-2.9 2.35-5.25 5.25-5.25h2.5c2.9 0 5.25 2.35 5.25 5.25"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M6.75 8.75a.75.75 0 01-.75-.75 4 4 0 014-4 .75.75 0 010 1.5 2.5 2.5 0 00-2.5 2.5.75.75 0 01-.75.75z"
-                  fill="currentColor"
-                />
-              </svg>
-            </span>
-            <span class="auth-shell__menu-item-content">
-              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.guest">Painel principal</span>
-            </span>
-          </button>
-        </div>
-      </section>
-      <section
-        id="authFooterMenuSection-interfaces"
-        class="auth-shell__menu-section"
-        data-menu-section="interfaces"
-        role="tabpanel"
-        aria-labelledby="authFooterMenuTab-interfaces"
-        tabindex="-1"
-        hidden
-        aria-hidden="true"
-      >
-        <p
-          id="authFooterMenuInterfacesTitle"
-          class="auth-shell__menu-section-title"
-          data-i18n="menu.sections.interfaces"
-        >
-          Interfaces
-        </p>
-        <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuInterfacesTitle">
-          <button
-            type="button"
-            class="auth-shell__menu-item auth-shell__menu-item--view"
-            data-action="open-miniapp"
-            data-miniapp-id="primary"
-            aria-current="false"
-            aria-label="Abrir MiniApp configurado"
-            title="Abrir MiniApp configurado"
-          >
-            <span class="auth-shell__menu-item-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                <path
-                  d="M9 3.25a1 1 0 00-1 1V5H7A2.75 2.75 0 004.25 7.75v9.5A2.75 2.75 0 007 20h10a2.75 2.75 0 002.75-2.75v-9.5A2.75 2.75 0 0017 5h-1V4.25a1 1 0 00-1-1zM10.5 4.75h3v1.5h-3z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M8 7h8a1.25 1.25 0 011.25 1.25v9A1.25 1.25 0 0116 18.5H8a1.25 1.25 0 01-1.25-1.25v-9A1.25 1.25 0 018 7zm1.5 3a.75.75 0 000 1.5H15a.75.75 0 000-1.5zm0 3a.75.75 0 000 1.5h3a.75.75 0 000-1.5z"
-                  fill="currentColor"
-                />
-              </svg>
-            </span>
-            <span class="auth-shell__menu-item-content">
-              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.openMiniApp">Abrir MiniApp</span>
-            </span>
-          </button>
-        </div>
-      </section>
-      <section
-        id="authFooterMenuSection-settings"
-        class="auth-shell__menu-section"
-        data-menu-section="settings"
-        role="tabpanel"
-        aria-labelledby="authFooterMenuTab-settings"
-        tabindex="-1"
-        hidden
-        aria-hidden="true"
-      >
-        <p
-          id="authFooterMenuPrefsTitle"
-          class="auth-shell__menu-section-title"
-          data-i18n="menu.sections.settings"
-        >
-          Configurações
-        </p>
-        <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuPrefsTitle">
-          <button
-            type="button"
-            class="auth-shell__menu-item auth-shell__menu-item--quick"
-            data-action="preferences-theme"
-            data-pref-focus="theme"
-            aria-label="Escolher tema"
-            title="Escolher tema"
-          >
-            <span class="auth-shell__menu-item-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                <path
-                  d="M12 4.75a.75.75 0 01.75-.75 6.5 6.5 0 016.5 6.5.75.75 0 01-.75.75A6.5 6.5 0 0112.75 5.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zM12 2.25a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0112 2.25zm0 17.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm9-7.75a.75.75 0 01.75.75h-1a.75.75 0 010-1.5h1a.75.75 0 01-.75.75zm-17.5 0a.75.75 0 01.75-.75h1a.75.75 0 010 1.5h-1a.75.75 0 01-.75-.75zm15.38 6.13a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zm-13.56 0a.75.75 0 010 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7a.75.75 0 011.06 0zm13.56-13.56a.75.75 0 011.06 1.06l-.7.7a.75.75 0 01-1.06-1.06l.7-.7zm-13.56 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 111.06-1.06z"
-                  fill="currentColor"
-                  fill-rule="evenodd"
-                />
-              </svg>
-            </span>
-            <span class="auth-shell__menu-item-content">
-              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.theme">Tema</span>
-              <span class="auth-shell__menu-item-meta" data-theme-active>Tema atual: Automático</span>
-            </span>
-          </button>
-          <button
-            type="button"
-            class="auth-shell__menu-item auth-shell__menu-item--quick"
-            data-action="preferences-font"
-            data-pref-focus="fontScale"
-            aria-label="Ajustar tamanho do texto"
-            title="Ajustar tamanho do texto"
-          >
-            <span class="auth-shell__menu-item-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                <path
-                  d="M4.75 18.25a.75.75 0 01-.7-1.01l3.5-10a.75.75 0 01.71-.49h2.48a.75.75 0 01.71.49l3.5 10a.75.75 0 01-1.42.5L12.9 15.5H8.1l-.62 1.82a.75.75 0 01-.71.93zM9.13 14h2.74L10.5 9.12zM15 19.25a.75.75 0 01-.75-.75v-2.5A.75.75 0 0115 15.25h1.5V14a.75.75 0 011.5 0v1.25H20a.75.75 0 010 1.5h-2v1.75a.75.75 0 01-.75.75z"
-                  fill="currentColor"
-                  fill-rule="evenodd"
-                />
-              </svg>
-            </span>
-            <span class="auth-shell__menu-item-content">
-              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.font">Tamanho do texto</span>
-              <span class="auth-shell__menu-item-meta">
-                <span data-i18n="menu.actions.font.metaPrefix">Escala:</span>
-                <span data-pref-font-scale-value>Padrão</span>
-              </span>
-            </span>
-          </button>
-          <button
-            type="button"
-            class="auth-shell__menu-item auth-shell__menu-item--quick"
-            data-action="preferences-language"
-            data-pref-focus="lang"
-            aria-label="Escolher idioma"
-            title="Escolher idioma"
-            aria-haspopup="true"
-            aria-expanded="false"
-            aria-controls="authFooterMenuLanguagePicker"
-          >
-            <span class="auth-shell__menu-item-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                <path
-                  d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75-9.75-4.365-9.75-9.75 4.365-9.75 9.75-9.75zm0 1.5c-.813 0-1.6.12-2.342.344.842 1.18 1.435 2.807 1.59 4.656h3.504c-.264-1.93-.93-3.558-1.802-4.71A8.25 8.25 0 0112 3.75zm-3.24.8A8.25 8.25 0 003.75 12c0 1.884.63 3.623 1.692 5.01 1.139-.825 2.03-2.367 2.379-4.26H5.25a.75.75 0 010-1.5h2.61c.105-1.624.525-3.091 1.176-4.2-.112-.174-.222-.35-.326-.528zm6.48 0c.318.558.605 1.182.846 1.86.32.9.546 1.897.654 2.94h1.86a.75.75 0 010 1.5h-1.758c.051.48.078.978.078 1.5s-.027 1.02-.078 1.5h1.758a.75.75 0 010 1.5h-1.86c-.108 1.043-.334 2.04-.654 2.94-.241.678-.528 1.302-.846 1.86a8.22 8.22 0 002.442-1.602A8.23 8.23 0 0020.25 12c0-2.038-.739-3.9-1.968-5.34a8.22 8.22 0 00-2.442-1.61zM9.75 12c-.044 1.417-.3 2.715-.717 3.78-.22.57-.47 1.06-.741 1.47a8.2 8.2 0 003.708.924c.813 0 1.6-.12 2.342-.344-.842-1.18-1.435-2.807-1.59-4.656H9.75zm3.504-1.5c-.159-1.17-.473-2.242-.89-3.144-.22-.486-.462-.9-.717-1.245-.28.411-.53.9-.75 1.47-.417 1.065-.673 2.363-.717 3.78h3.074z"
-                  fill="currentColor"
-                  fill-rule="evenodd"
-                />
-              </svg>
-            </span>
-            <span class="auth-shell__menu-item-content">
-              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.language">Idioma</span>
-              <span class="auth-shell__menu-item-meta" data-language-active>Português (Brasil)</span>
-            </span>
-          </button>
-          <div
-            id="authFooterMenuLanguagePicker"
-            class="auth-shell__menu-language-picker"
-            data-pref-language-picker
-            hidden
-          >
-            <p class="auth-shell__menu-language-title" data-i18n="menu.language.title">
-              Selecione o idioma preferido
-            </p>
-            <div
-              class="auth-shell__menu-language-options"
-              role="group"
-              aria-label="Idiomas disponíveis"
-              data-i18n-attr="aria-label:menu.language.groupLabel"
-            >
-              <button
-                type="button"
-                class="auth-shell__menu-item auth-shell__menu-item--language"
-                data-language-option="pt-BR"
-                aria-pressed="false"
-                data-i18n="menu.language.option.pt-BR"
-              >
-                Português (Brasil)
-              </button>
-              <button
-                type="button"
-                class="auth-shell__menu-item auth-shell__menu-item--language"
-                data-language-option="en"
-                aria-pressed="false"
-                data-i18n="menu.language.option.en"
-              >
-                Inglês
-              </button>
-              <button
-                type="button"
-                class="auth-shell__menu-item auth-shell__menu-item--language"
-                data-language-option="es"
-                aria-pressed="false"
-                data-i18n="menu.language.option.es"
-              >
-                Espanhol
-              </button>
-            </div>
+        <section class="view view--miniapps" data-view-section="miniapps" hidden>
+          <header class="view__header">
+            <h1 data-i18n="miniapps.title">MiniApps</h1>
+            <p data-i18n="miniapps.caption">Escolha um MiniApp interno para abrir no painel.</p>
+          </header>
+          <div class="view__body">
+            <div class="app-grid" role="list" data-miniapp-grid-secondary></div>
           </div>
+        </section>
+
+        <section class="view view--settings" data-view-section="settings" hidden>
+          <header class="view__header">
+            <h1 data-i18n="settings.title">Ajustes globais</h1>
+            <p data-i18n="settings.caption">Preferências compartilhadas com todos os MiniApps internos.</p>
+          </header>
+          <form class="settings-form" data-settings-form>
+            <label class="settings-field">
+              <span data-i18n="settings.theme">Tema</span>
+              <select name="theme" data-setting-input="theme">
+                <option value="auto" data-i18n="settings.theme.auto">Automático</option>
+                <option value="light" data-i18n="settings.theme.light">Claro</option>
+                <option value="dark" data-i18n="settings.theme.dark">Escuro</option>
+              </select>
+            </label>
+            <label class="settings-field">
+              <span data-i18n="settings.language">Idioma</span>
+              <select name="language" data-setting-input="lang">
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="en-US">English (US)</option>
+                <option value="es-ES">Español (ES)</option>
+              </select>
+            </label>
+            <label class="settings-field">
+              <span data-i18n="settings.font">Escala da fonte</span>
+              <input type="range" min="-2" max="2" step="1" value="0" data-setting-input="fontScale" />
+              <span class="settings-field__description" data-font-preview>100%</span>
+            </label>
+          </form>
+        </section>
+
+        <section class="view view--help" data-view-section="help" hidden>
+          <header class="view__header">
+            <h1 data-i18n="help.title">Ajuda e suporte</h1>
+            <p data-i18n="help.caption">Documentação essencial do MiniApp Base.</p>
+          </header>
+          <div class="view__body help-content">
+            <article class="about-card" aria-labelledby="aboutTitle">
+              <header>
+                <h2 id="aboutTitle" data-i18n="about.title">Sobre o MiniApp Base</h2>
+              </header>
+              <p data-i18n="about.version">Versão <span data-app-version>1.0.0</span> — última atualização em <span data-app-updated>--/--/----</span>.</p>
+              <p>
+                <a href="https://www.5horas.com.br" target="_blank" rel="noopener" class="about-logo" data-about-logo>
+                  <picture>
+                    <source media="(prefers-color-scheme: dark)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp" />
+                    <img src="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp" alt="5 Horas" loading="lazy" decoding="async" />
+                  </picture>
+                </a>
+              </p>
+              <dl class="about-details">
+                <div>
+                  <dt data-i18n="about.owner.label">Proprietário</dt>
+                  <dd data-i18n="about.owner.value">5 Horas Tecnologia e Consultoria LTDA.</dd>
+                </div>
+                <div>
+                  <dt data-i18n="about.privacy.label">Privacidade e termos</dt>
+                  <dd>
+                    <a href="https://www.5horas.com.br/politica-de-privacidade/" target="_blank" rel="noopener" data-i18n="about.privacy.value">Política de Privacidade</a>
+                  </dd>
+                </div>
+                <div>
+                  <dt data-i18n="about.contact.label">Contato</dt>
+                  <dd>
+                    <a href="mailto:contato@5horas.com.br" data-i18n="about.contact.value">contato@5horas.com.br</a>
+                  </dd>
+                </div>
+                <div>
+                  <dt data-i18n="about.tech.label">Tecnologias</dt>
+                  <dd data-i18n="about.tech.value">HTML5, CSS, JavaScript, IndexedDB, BroadcastChannel.</dd>
+                </div>
+              </dl>
+            </article>
+            <article class="help-links">
+              <h3 data-i18n="help.resources.title">Recursos rápidos</h3>
+              <ul>
+                <li><a href="./docs/miniapp-interno.md" target="_blank" data-i18n="help.resources.guide">Guia de integração de MiniApps internos</a></li>
+                <li><a href="https://elementor.com/help/html-widget/" target="_blank" rel="noopener" data-i18n="help.resources.elementor">Integração via Elementor</a></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="view view--diagnostics" data-view-section="diagnostics" hidden>
+          <header class="view__header">
+            <h1 data-i18n="diagnostics.title">Diagnóstico</h1>
+            <p data-i18n="diagnostics.caption">Status do armazenamento e sincronização.</p>
+          </header>
+          <div class="view__body diagnostics">
+            <dl>
+              <div>
+                <dt data-i18n="diagnostics.storage.persisted">Armazenamento persistente</dt>
+                <dd data-storage-persisted>—</dd>
+              </div>
+              <div>
+                <dt data-i18n="diagnostics.storage.quota">Quota disponível</dt>
+                <dd data-storage-quota>—</dd>
+              </div>
+              <div>
+                <dt data-i18n="diagnostics.storage.usage">Uso atual</dt>
+                <dd data-storage-usage>—</dd>
+              </div>
+              <div>
+                <dt data-i18n="diagnostics.storage.updated">Última atualização</dt>
+                <dd data-storage-updated>—</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="view view--miniapp-host" data-view-section="miniapp-host" hidden>
+          <header class="view__header miniapp-header">
+            <div>
+              <h1 data-miniapp-title>MiniApp</h1>
+              <p data-miniapp-description></p>
+            </div>
+            <div class="miniapp-actions">
+              <button type="button" class="miniapp-actions__button" data-close-miniapp>
+                <span aria-hidden="true">⟲</span>
+                <span data-i18n="miniapp.close">Voltar ao Início</span>
+              </button>
+              <a href="#" target="_blank" rel="noopener" class="miniapp-actions__button" data-open-miniapp-external hidden>
+                <span aria-hidden="true">↗</span>
+                <span data-i18n="miniapp.external">Abrir em nova aba</span>
+              </a>
+            </div>
+          </header>
+          <div class="miniapp-frame" role="region" aria-live="polite">
+            <iframe title="" data-miniapp-frame loading="lazy"></iframe>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer" role="contentinfo">
+        <a class="app-footer__brand" href="https://www.5horas.com.br" target="_blank" rel="noopener" data-footer-logo>
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Dark-Transparente-500x500px.webp" />
+            <img src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp" alt="5 Horas" width="36" height="36" loading="lazy" decoding="async" />
+          </picture>
+        </a>
+        <div class="app-footer__meta">
+          <span data-i18n="footer.product">MiniApp Base</span>
+          <span aria-hidden="true">•</span>
+          <span data-footer-version>v1.0.0</span>
         </div>
-      </section>
-      </div>
+        <div class="app-footer__status" role="status" aria-live="polite">
+          <span data-autosave-label data-i18n="status.synced">Sincronizado</span>
+        </div>
+      </footer>
     </div>
-  </div>
 
-  <script type="module" src="./scripts/app/base-boot.js"></script>
-  <script nomodule src="./scripts/app/base-boot.legacy.js"></script>
+    <div class="toast" role="status" aria-live="polite" hidden>
+      <p data-toast-message></p>
+    </div>
 
-</body>
+    <script type="module" src="./miniapp-base/app.js"></script>
+  </body>
 </html>

@@ -1,8 +1,8 @@
 {
-  "id": "miniapp-white-label",
-  "name": "MiniApp Base • White Label",
+  "id": "miniapp-base",
+  "name": "MiniApp Base",
   "short_name": "MiniApp Base",
-  "description": "Shell white label preparado para hospedar um único MiniApp sob a identidade da sua marca.",
+  "description": "Shell oficial pronto para hospedar MiniApps internos na mesma origem.",
   "lang": "pt-BR",
   "dir": "ltr",
   "display": "standalone",

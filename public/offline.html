@@ -2,210 +2,53 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MiniApps offline</title>
-    <link rel="stylesheet" href="./app-theme.css" />
-    <link rel="stylesheet" href="../styles/auth.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MiniApp Base • Offline</title>
+    <style>
+      :root {
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f172a;
+        color: #f8fafc;
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        background: radial-gradient(circle at top, rgba(67, 88, 230, 0.35), rgba(15, 23, 42, 1));
+      }
+      main {
+        max-width: 32rem;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 24px;
+        box-shadow: 0 24px 48px rgba(8, 13, 24, 0.45);
+        padding: 2.5rem 2rem;
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 1rem;
+        font-size: 1.8rem;
+      }
+      p {
+        margin: 0.75rem 0;
+        color: rgba(226, 232, 240, 0.75);
+        line-height: 1.6;
+      }
+      a {
+        color: #7d92ff;
+        font-weight: 600;
+      }
+    </style>
   </head>
-  <body class="auth-only">
-    <header class="auth-shell__header" aria-label="Aplicativo indisponível offline">
-      <button type="button" class="auth-shell__menu-button" aria-label="Abrir menu principal" title="Abrir menu principal">
-        <span class="auth-shell__menu-icon" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-    </header>
-
-    <main class="auth-screen">
-      <section class="auth-screen__view auth-screen__view--surface" role="status" aria-live="polite">
-        <article class="auth-view auth-view--guest">
-          <h1 class="auth-view__title">Sem conexão</h1>
-          <p class="auth-view__description">
-            Não foi possível carregar o conteúdo porque você está offline.
-          </p>
-          <p class="auth-view__description">
-            Assim que a conexão for restabelecida, volte a esta página para acessar os MiniApps.
-          </p>
-          <p class="auth-view__description">
-            Caso o problema persista, verifique o acesso à internet ou tente novamente mais tarde.
-          </p>
-        </article>
-      </section>
+  <body>
+    <main role="status" aria-live="polite">
+      <h1>Você está offline</h1>
+      <p>Não foi possível carregar o MiniApp Base porque a conexão caiu.</p>
+      <p>Reconecte-se à internet e recarregue esta página para acessar o shell e os MiniApps internos.</p>
+      <p>Se preferir, acompanhe novidades em <a href="https://www.5horas.com.br" target="_blank" rel="noopener">5horas.com.br</a>.</p>
     </main>
-
-    <footer class="auth-shell__footer">
-      <div class="auth-shell__footer-bar">
-        <nav class="auth-shell__footer-nav" aria-label="Menu principal">
-          <button
-            type="button"
-            class="auth-shell__menu-button"
-            aria-label="Menu principal indisponível offline"
-            title="Menu principal indisponível offline"
-            aria-haspopup="true"
-            aria-expanded="false"
-            disabled
-            aria-disabled="true"
-          >
-            <span class="auth-shell__menu-icon" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
-          </button>
-        </nav>
-
-        <small class="auth-shell__footer-text">
-          <picture class="auth-shell__footer-logo" aria-hidden="true">
-            <img
-              src="./icons/miniapp-icon-192.svg"
-              width="40"
-              height="40"
-              alt=""
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
-          <span>MiniApp Base • Offline</span>
-        </small>
-
-        <button
-          type="button"
-          class="auth-shell__footer-toggle"
-          data-footer-toggle
-          aria-controls="authShellFooterExtra"
-          aria-expanded="false"
-          aria-label="Mostrar detalhes do rodapé"
-        >
-          <svg
-            class="auth-shell__footer-toggle-icon"
-            viewBox="0 0 20 20"
-            role="presentation"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 8.25L10 12.75L15 8.25"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div data-footer-extra id="authShellFooterExtra">
-        <div class="auth-shell__footer-meta" aria-label="Informações do rodapé">
-          <span class="auth-shell__footer-meta-item">
-            <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
-            <span>Offline</span>
-          </span>
-        </div>
-        <div class="auth-shell__footer-quicklinks" data-footer-quicklinks>
-          <p class="auth-shell__footer-empty auth-widget-board__empty">
-            Atalhos de personalização ficam indisponíveis sem conexão. Reconecte-se para acessá-los novamente.
-          </p>
-          <div class="auth-shell__footer-shortcuts" data-footer-shortcuts></div>
-        </div>
-      </div>
-    </footer>
-
-    <script>
-      (() => {
-        const footer = document.querySelector('.auth-shell__footer');
-        const toggle = document.querySelector('[data-footer-toggle]');
-        const root = document.body;
-        const labels = {
-          expand: 'Mostrar detalhes do rodapé',
-          collapse: 'Ocultar detalhes do rodapé',
-        };
-
-        const mediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 48rem)') : null;
-
-        function updateFooterOffset() {
-          if (!footer || !root) {
-            return;
-          }
-
-          const isMobile = Boolean(mediaQuery?.matches);
-          const footerHeight = isMobile ? Math.ceil(footer.getBoundingClientRect().height) : 0;
-
-          if (footerHeight > 0) {
-            root.style.setProperty('--layout-footer-offset', `${footerHeight}px`);
-          } else {
-            root.style.removeProperty('--layout-footer-offset');
-          }
-        }
-
-        function setExpanded(state) {
-          const expanded = Boolean(state);
-
-          if (footer) {
-            if (expanded) {
-              footer.setAttribute('data-footer-expanded', 'true');
-            } else {
-              footer.removeAttribute('data-footer-expanded');
-            }
-          }
-
-          if (toggle) {
-            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-            toggle.setAttribute('aria-label', expanded ? labels.collapse : labels.expand);
-          }
-
-          updateFooterOffset();
-        }
-
-        function collapse() {
-          setExpanded(false);
-        }
-
-        function syncViewport() {
-          if (toggle) {
-            toggle.hidden = false;
-            toggle.removeAttribute('aria-hidden');
-          }
-
-          updateFooterOffset();
-        }
-
-        if (toggle) {
-          toggle.addEventListener('click', () => {
-            const expanded = footer?.getAttribute('data-footer-expanded') === 'true';
-            setExpanded(!expanded);
-          });
-
-          toggle.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && footer?.getAttribute('data-footer-expanded') === 'true') {
-              event.preventDefault();
-              collapse();
-            }
-          });
-        }
-
-        if (mediaQuery) {
-          const handleChange = () => syncViewport();
-          if (typeof mediaQuery.addEventListener === 'function') {
-            mediaQuery.addEventListener('change', handleChange);
-          } else if (typeof mediaQuery.addListener === 'function') {
-            mediaQuery.addListener(handleChange);
-          }
-          syncViewport();
-        } else if (toggle) {
-          toggle.hidden = false;
-          toggle.removeAttribute('aria-hidden');
-        }
-
-        if (footer && 'ResizeObserver' in window) {
-          const resizeObserver = new ResizeObserver(() => updateFooterOffset());
-          resizeObserver.observe(footer);
-        }
-
-        collapse();
-        updateFooterOffset();
-      })();
-    </script>
   </body>
 </html>
