@@ -49,7 +49,11 @@
 
   <footer class="auth-shell__footer">
     <div class="auth-shell__footer-bar">
-      <nav class="auth-shell__footer-nav" aria-label="Menu principal">
+      <nav
+        class="auth-shell__footer-nav"
+        aria-label="Menu principal"
+        data-i18n-attr="aria-label:menu.title"
+      >
         <button
           type="button"
           class="auth-shell__menu-button"
@@ -58,6 +62,7 @@
           aria-controls="authFooterMenu"
           aria-expanded="false"
           title="Abrir menu principal"
+          data-i18n-attr="aria-label:menu.buttonOpen,title:menu.buttonOpen"
         >
           <span class="auth-shell__menu-icon" aria-hidden="true">
             <span></span>
@@ -124,6 +129,13 @@
           </span>
           <span data-active-view-label hidden></span>
         </span>
+        <span class="auth-shell__footer-meta-item" data-storage-indicator>
+          <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
+          <span data-storage-state data-i18n="storage.status.checking">
+            Armazenamento: verificando…
+          </span>
+          <span data-storage-usage hidden></span>
+        </span>
         <span class="auth-shell__footer-meta-item">
           <span class="auth-shell__footer-divider" aria-hidden="true">•</span>
           <span>Versão <strong data-app-version>carregando…</strong></span>
@@ -145,8 +157,10 @@
       hidden
     >
       <div class="auth-shell__menu-header">
-        <p id="authFooterMenuTitle" class="auth-shell__menu-title">Menu principal</p>
-        <p class="auth-shell__menu-caption">Escolha como acessar e personalize a experiência do MiniApp.</p>
+        <p id="authFooterMenuTitle" class="auth-shell__menu-title" data-i18n="menu.title">Menu principal</p>
+        <p class="auth-shell__menu-caption" data-i18n="menu.caption">
+          Escolha como acessar e personalize a experiência do MiniApp.
+        </p>
       </div>
       <div class="auth-shell__menu-categories" data-menu-tabs-wrapper>
         <div
@@ -164,6 +178,7 @@
             aria-controls="authFooterMenuSection-experience"
             aria-selected="true"
             tabindex="0"
+            data-i18n="menu.tabs.experience"
           >
             Experiência
           </button>
@@ -176,6 +191,7 @@
             aria-controls="authFooterMenuSection-interfaces"
             aria-selected="false"
             tabindex="-1"
+            data-i18n="menu.tabs.interfaces"
           >
             Interfaces
           </button>
@@ -188,6 +204,7 @@
             aria-controls="authFooterMenuSection-settings"
             aria-selected="false"
             tabindex="-1"
+            data-i18n="menu.tabs.settings"
           >
             Configurações
           </button>
@@ -201,7 +218,13 @@
         aria-labelledby="authFooterMenuTab-experience"
         tabindex="0"
       >
-        <p id="authFooterMenuExperienceTitle" class="auth-shell__menu-section-title">Experiência</p>
+        <p
+          id="authFooterMenuExperienceTitle"
+          class="auth-shell__menu-section-title"
+          data-i18n="menu.sections.experience"
+        >
+          Experiência
+        </p>
         <div
           class="auth-shell__menu-actions auth-shell__menu-actions--user"
           role="group"
@@ -232,9 +255,8 @@
                 />
               </svg>
             </span>
-            <span class="auth-shell__menu-item-copy">
-              <span class="auth-shell__menu-item-label">Painel principal</span>
-              <span class="auth-shell__menu-item-hint">Tudo liberado sem cadastro. Os dados ficam neste dispositivo.</span>
+            <span class="auth-shell__menu-item-content">
+              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.guest">Painel principal</span>
             </span>
           </button>
         </div>
@@ -249,7 +271,13 @@
         hidden
         aria-hidden="true"
       >
-        <p id="authFooterMenuInterfacesTitle" class="auth-shell__menu-section-title">Interfaces</p>
+        <p
+          id="authFooterMenuInterfacesTitle"
+          class="auth-shell__menu-section-title"
+          data-i18n="menu.sections.interfaces"
+        >
+          Interfaces
+        </p>
         <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuInterfacesTitle">
           <button
             type="button"
@@ -272,9 +300,8 @@
                 />
               </svg>
             </span>
-            <span class="auth-shell__menu-item-copy">
-              <span class="auth-shell__menu-item-label">Abrir MiniApp</span>
-              <span class="auth-shell__menu-item-hint">Carregue o conteúdo publicado imediatamente</span>
+            <span class="auth-shell__menu-item-content">
+              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.openMiniApp">Abrir MiniApp</span>
             </span>
           </button>
         </div>
@@ -289,7 +316,13 @@
         hidden
         aria-hidden="true"
       >
-        <p id="authFooterMenuPrefsTitle" class="auth-shell__menu-section-title">Configurações</p>
+        <p
+          id="authFooterMenuPrefsTitle"
+          class="auth-shell__menu-section-title"
+          data-i18n="menu.sections.settings"
+        >
+          Configurações
+        </p>
         <div class="auth-shell__menu-actions" role="group" aria-labelledby="authFooterMenuPrefsTitle">
           <button
             type="button"
@@ -308,9 +341,9 @@
                 />
               </svg>
             </span>
-            <span class="auth-shell__menu-item-copy">
-              <span class="auth-shell__menu-item-label">Tema</span>
-              <span class="auth-shell__menu-item-hint">Claro, escuro ou automático</span>
+            <span class="auth-shell__menu-item-content">
+              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.theme">Tema</span>
+              <span class="auth-shell__menu-item-meta" data-theme-active>Tema atual: Automático</span>
             </span>
           </button>
           <button
@@ -330,10 +363,10 @@
                 />
               </svg>
             </span>
-            <span class="auth-shell__menu-item-copy">
-              <span class="auth-shell__menu-item-label">Tamanho do texto</span>
-              <span class="auth-shell__menu-item-hint">
-                Cinco níveis disponíveis. Escala atual:
+            <span class="auth-shell__menu-item-content">
+              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.font">Tamanho do texto</span>
+              <span class="auth-shell__menu-item-meta">
+                <span data-i18n="menu.actions.font.metaPrefix">Escala:</span>
                 <span data-pref-font-scale-value>Padrão</span>
               </span>
             </span>
@@ -358,9 +391,9 @@
                 />
               </svg>
             </span>
-            <span class="auth-shell__menu-item-copy">
-              <span class="auth-shell__menu-item-label">Idioma</span>
-              <span class="auth-shell__menu-item-hint">Português, inglês ou espanhol</span>
+            <span class="auth-shell__menu-item-content">
+              <span class="auth-shell__menu-item-label" data-i18n="menu.actions.language">Idioma</span>
+              <span class="auth-shell__menu-item-meta" data-language-active>Português (Brasil)</span>
             </span>
           </button>
           <div
@@ -369,13 +402,21 @@
             data-pref-language-picker
             hidden
           >
-            <p class="auth-shell__menu-language-title">Selecione o idioma preferido</p>
-            <div class="auth-shell__menu-language-options" role="group" aria-label="Idiomas disponíveis">
+            <p class="auth-shell__menu-language-title" data-i18n="menu.language.title">
+              Selecione o idioma preferido
+            </p>
+            <div
+              class="auth-shell__menu-language-options"
+              role="group"
+              aria-label="Idiomas disponíveis"
+              data-i18n-attr="aria-label:menu.language.groupLabel"
+            >
               <button
                 type="button"
                 class="auth-shell__menu-item auth-shell__menu-item--language"
                 data-language-option="pt-BR"
                 aria-pressed="false"
+                data-i18n="menu.language.option.pt-BR"
               >
                 Português (Brasil)
               </button>
@@ -384,6 +425,7 @@
                 class="auth-shell__menu-item auth-shell__menu-item--language"
                 data-language-option="en"
                 aria-pressed="false"
+                data-i18n="menu.language.option.en"
               >
                 Inglês
               </button>
@@ -392,6 +434,7 @@
                 class="auth-shell__menu-item auth-shell__menu-item--language"
                 data-language-option="es"
                 aria-pressed="false"
+                data-i18n="menu.language.option.es"
               >
                 Espanhol
               </button>
