@@ -5,10 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel do Prefeito — v1.0.0</title>
   <!-- Estilos do miniapp -->
+  <!-- Ordem recomendada: reset → tokens → base/ui → tema → página -->
+  <link rel="stylesheet" href="https://unpkg.com/modern-normalize/modern-normalize.css" />
+  <!-- CSS compartilhado do repo (mantém caso já exista) -->
+  <link rel="stylesheet" href="https://unpkg.com/modern-normalize/modern-normalize.css" />
+  <!-- Folha canônica do projeto: miniapp-base/styles.css -->
+  <link rel="stylesheet" href="../miniapp-base/styles.css" />
+  <!-- Estilos locais opcionais deste miniapp (se existirem) -->
   <link rel="stylesheet" href="./style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Fallback mínimo para não quebrar caso os CSS acima não sejam encontrados -->
+  <style id="fallback-ui">
+    :root{
+      --bg:#0b0c0f;--surface:#11131a;--surface-2:#1a1d26;--text:#e9edf1;--muted:#9aa3ad;--border:#232735;--accent:#4f46e5;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .appbar{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);z-index:10}
+    .appbar-left,.appbar-right{display:flex;gap:8px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);background:transparent;color:var(--text);padding:.45rem .7rem;border-radius:10px}
+    .btn-ghost{border-color:transparent}
+    .badge{font-size:.75rem;background:var(--surface-2);color:var(--muted);padding:.2rem .5rem;border:1px solid var(--border);border-radius:999px}
+    .chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text)}
+    .container{padding:16px;max-width:1280px;margin:0 auto}
+    .grid{display:grid;gap:12px}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(max-width:1100px){.grid-5{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:860px){.grid-3,.grid-5,.grid-2{grid-template-columns:1fr}}
+    .card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .card-head,.panel-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-bottom:1px solid var(--border)}
+    .card-body,.panel-body{padding:12px}
+    .panel-body.empty{display:flex;align-items:center;justify-content:center;height:220px;color:var(--muted);font-size:.95rem}
+    .kpi{font-size:1.25rem;font-weight:600}
+    .kpi-pair{display:flex;align-items:baseline;gap:8px}
+    .delta{font-size:.85rem;padding:.15rem .45rem;border-radius:8px;border:1px solid var(--border);color:var(--muted)}
+    .delta.up{color:var(--good);border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.08)}
+    .delta.down{color:var(--bad);border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.08)}
+    .delta.stable{color:var(--muted);background:rgba(148,163,184,.08)}
+    .muted{color:var(--muted)}
+  </style>
 </head>
 <body>
   <header class="appbar">
@@ -20,10 +61,10 @@
       <span class="badge">v1.0.0</span>
     </nav>
     <nav class="appbar-right">
-      <button class="chip" id="toolbar.filters"><i data-lucide="filter"></i><span>toolbar.filters</span></button>
-      <button class="chip" id="toolbar.studies"><i data-lucide="book-open"></i><span>toolbar.studies</span></button>
-      <button class="chip" id="toolbar.theme"><i data-lucide="sun"></i><span>toolbar.theme</span></button>
-      <button class="chip" id="toolbar.language"><i data-lucide="languages"></i><span>toolbar.language</span></button>
+      <button class="chipbtn" id="toolbar.filters"><i data-lucide="filter"></i><span>toolbar.filters</span></button>
+      <button class="chipbtn" id="toolbar.studies"><i data-lucide="book-open"></i><span>toolbar.studies</span></button>
+      <button class="chipbtn" id="toolbar.theme"><i data-lucide="sun"></i><span>toolbar.theme</span></button>
+      <button class="chipbtn" id="toolbar.language"><i data-lucide="languages"></i><span>toolbar.language</span></button>
     </nav>
   </header>
 
@@ -128,7 +169,9 @@
         <header class="panel-head">
           <i data-lucide="bar-chart-3"></i>
           <strong>charts.avg_by_sector</strong>
-          <span class="hint"><i data-lucide="info"></i></span>
+          <button type="button" class="chipbtn info-btn" aria-label="Mais informações" data-title="Média por Setor" data-content="Média ponderada das notas por setor. Escala 1–5. 1–2: ruim, 3–4: médio, 5: bom. Atualiza quando filtros mudam.">
+            <i data-lucide="info"></i>
+          </button>
         </header>
         <div class="panel-body empty">Colunas (placeholder)</div>
       </article>
@@ -137,7 +180,9 @@
         <header class="panel-head">
           <i data-lucide="chart-bar"></i>
           <strong>charts.distribution</strong>
-          <span class="hint"><i data-lucide="info"></i></span>
+          <button type="button" class="chipbtn info-btn" aria-label="Mais informações" data-title="Distribuição de Notas" data-content="Histograma de frequências por nota (1–5). Útil para ver concentração, caudas e assimetria das respostas.">
+            <i data-lucide="info"></i>
+          </button>
         </header>
         <div class="panel-body empty">Barras (placeholder)</div>
       </article>
@@ -168,6 +213,57 @@
       }
     });
     mo.observe(document.body, { childList: true, subtree: true });
+  </script>
+  
+  <!-- Popover Info: estética consistente com chips/badges -->
+  <div id="info-popover" class="info-popover hidden" role="dialog" aria-modal="true" aria-labelledby="info-popover-title">
+    <div class="info-popover-card">
+      <header class="info-popover-head">
+        <strong id="info-popover-title">Título</strong>
+        <button class="btn btn-ghost info-popover-close" aria-label="Fechar"><i data-lucide="x"></i></button>
+      </header>
+      <div class="info-popover-body">Conteúdo</div>
+    </div>
+  </div>
+
+  <style>
+    /* Estética: segue chips/cards existentes sem mudar style.css */
+    .info-popover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);z-index:50}
+    .info-popover.hidden{display:none}
+    .info-popover-card{background:var(--surface, #fff);color:var(--text, #111);border:1px solid var(--border, #e5e7eb);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:min(560px,92vw)}
+    .info-popover-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border, #e5e7eb)}
+    .info-popover-body{padding:16px;line-height:1.5}
+    .info-btn{display:inline-flex;align-items:center;gap:.35rem}
+    .info-btn:hover{background:var(--hover, rgba(0,0,0,.04))}
+  </style>
+
+  <script>
+    // Inicializa listeners dos botões de informação usando a mesma estética de chips
+    (function(){
+      const pop = document.getElementById('info-popover');
+      const titleEl = pop.querySelector('#info-popover-title');
+      const bodyEl = pop.querySelector('.info-popover-body');
+      const closeBtn = pop.querySelector('.info-popover-close');
+
+      function openInfo(btn){
+        titleEl.textContent = btn.getAttribute('data-title') || 'Informação';
+        bodyEl.textContent = btn.getAttribute('data-content') || '';
+        pop.classList.remove('hidden');
+        renderIconsSafely && renderIconsSafely();
+      }
+      function closeInfo(){ pop.classList.add('hidden'); }
+
+      document.addEventListener('click', (ev)=>{
+        const b = ev.target.closest('.info-btn');
+        if(b){ openInfo(b); }
+        if(ev.target.closest('.info-popover-close')){ closeInfo(); }
+        if(ev.target === pop){ closeInfo(); }
+      });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeInfo(); });
+
+      // garante ícones dos novos botões
+      renderIconsSafely && renderIconsSafely();
+    })();
   </script>
 </body>
 </html>
