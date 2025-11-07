@@ -28,6 +28,102 @@
 
   <main id="cards" class="grid" aria-live="polite"></main>
 
+  <section id="filters" class="modal" aria-labelledby="fl1">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="fl1" data-i18n="filters.title">Filtros do painel</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <form id="filters-form" class="modal-body-flow" aria-describedby="filters-hint">
+          <p id="filters-hint" class="hint" data-i18n="filters.subtitle">Refine os resultados do painel para públicos e períodos específicos.</p>
+          <div class="filters-grid">
+            <div class="form-field">
+              <label for="filter-gender" data-i18n="filters.gender.label">Gênero</label>
+              <select id="filter-gender" name="gender">
+                <option value="all" data-i18n="filters.gender.all">Todos</option>
+                <option value="female" data-i18n="filters.gender.female">Feminino</option>
+                <option value="male" data-i18n="filters.gender.male">Masculino</option>
+                <option value="nonbinary" data-i18n="filters.gender.nonbinary">Não binário</option>
+                <option value="other" data-i18n="filters.gender.other">Outro</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="filter-age" data-i18n="filters.age.label">Faixa etária</label>
+              <select id="filter-age" name="age">
+                <option value="all" data-i18n="filters.age.all">Todas as faixas</option>
+                <option value="16_24" data-i18n="filters.age.16_24">16–24 anos</option>
+                <option value="25_34" data-i18n="filters.age.25_34">25–34 anos</option>
+                <option value="35_44" data-i18n="filters.age.35_44">35–44 anos</option>
+                <option value="45_59" data-i18n="filters.age.45_59">45–59 anos</option>
+                <option value="60_plus" data-i18n="filters.age.60_plus">60+ anos</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="filter-period" data-i18n="filters.period.label">Período</label>
+              <select id="filter-period" name="period">
+                <option value="last30" data-i18n="filters.period.last30">Últimos 30 dias</option>
+                <option value="last90" data-i18n="filters.period.last90">Últimos 90 dias</option>
+                <option value="q1" data-i18n="filters.period.q1">1º trimestre</option>
+                <option value="q2" data-i18n="filters.period.q2">2º trimestre</option>
+                <option value="semester" data-i18n="filters.period.semester">Último semestre</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="filter-sector" data-i18n="filters.sector.label">Setor</label>
+              <select id="filter-sector" name="sector">
+                <option value="all" data-i18n="filters.sector.all">Todos os setores</option>
+                <option value="saude" data-i18n="sector.saude">Saúde</option>
+                <option value="educacao" data-i18n="sector.educacao">Educação</option>
+                <option value="transporte" data-i18n="sector.transporte">Transporte</option>
+                <option value="seguranca" data-i18n="sector.seguranca">Segurança</option>
+                <option value="meioambiente" data-i18n="sector.meioambiente">Meio ambiente</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="filter-channel" data-i18n="filters.channel.label">Canal de coleta</label>
+              <select id="filter-channel" name="channel">
+                <option value="all" data-i18n="filters.channel.all">Todos os canais</option>
+                <option value="online" data-i18n="filters.channel.online">Online</option>
+                <option value="field" data-i18n="filters.channel.field">Em campo</option>
+                <option value="phone" data-i18n="filters.channel.phone">Telefone</option>
+              </select>
+            </div>
+          </div>
+          <div class="togglebar" role="group" aria-label="Atalhos de filtros" data-i18n-attr="aria-label:filters.toggleGroup">
+            <button type="button" class="chipbtn toggle" data-field="includeInactive" aria-pressed="false" data-i18n="filters.toggle.inactive">Incluir pesquisas inativas</button>
+            <button type="button" class="chipbtn toggle" data-field="favoritesOnly" aria-pressed="false" data-i18n="filters.toggle.favorites">Somente favoritas</button>
+            <button type="button" class="chipbtn toggle" data-field="comparePrevious" aria-pressed="false" data-i18n="filters.toggle.compare">Comparar período anterior</button>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" id="filters-reset" data-i18n="filters.reset">Limpar filtros</button>
+            <button type="submit" class="btn primary" data-i18n="filters.apply">Aplicar filtros</button>
+          </div>
+          <p class="meta" data-i18n="filters.hint">As preferências ficam salvas localmente para acelerar análises futuras.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="manage-studies" class="modal" aria-labelledby="st1">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="st1" data-i18n="studies.title">Gerenciar pesquisas</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <div class="modal-body-flow">
+          <p class="hint" data-i18n="studies.subtitle">Ative ou pause as pesquisas disponíveis. Os indicadores respeitam apenas as pesquisas ativas.</p>
+          <p class="meta" id="studies-summary" data-i18n="studies.loading">Carregando catálogos…</p>
+          <p class="pill warn" id="studies-offline-hint" style="display:none" data-i18n="studies.offlineHint">Alterações visíveis apenas nesta sessão. Sincronize para persistir.</p>
+          <ul id="studies-list" class="studies-list" role="list"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="theme" class="modal" aria-labelledby="th1">
     <a class="backdrop" href="#" aria-hidden="true"></a>
     <div class="sheet compact" role="dialog" aria-modal="true">
@@ -105,6 +201,59 @@
     "toolbar.theme": "Tema",
     "toolbar.language": "Idioma",
     "toolbar.multidevice": "Multi-dispositivo",
+    "filters.title": "Filtros do painel",
+    "filters.subtitle": "Refine os resultados do painel para públicos e períodos específicos.",
+    "filters.gender.label": "Gênero",
+    "filters.gender.all": "Todos",
+    "filters.gender.female": "Feminino",
+    "filters.gender.male": "Masculino",
+    "filters.gender.nonbinary": "Não binário",
+    "filters.gender.other": "Outro",
+    "filters.age.label": "Faixa etária",
+    "filters.age.all": "Todas as faixas",
+    "filters.age.16_24": "16–24 anos",
+    "filters.age.25_34": "25–34 anos",
+    "filters.age.35_44": "35–44 anos",
+    "filters.age.45_59": "45–59 anos",
+    "filters.age.60_plus": "60+ anos",
+    "filters.period.label": "Período",
+    "filters.period.last30": "Últimos 30 dias",
+    "filters.period.last90": "Últimos 90 dias",
+    "filters.period.q1": "1º trimestre",
+    "filters.period.q2": "2º trimestre",
+    "filters.period.semester": "Último semestre",
+    "filters.sector.label": "Setor",
+    "filters.sector.all": "Todos os setores",
+    "filters.channel.label": "Canal de coleta",
+    "filters.channel.all": "Todos os canais",
+    "filters.channel.online": "Online",
+    "filters.channel.field": "Em campo",
+    "filters.channel.phone": "Telefone",
+    "filters.toggle.inactive": "Incluir pesquisas inativas",
+    "filters.toggle.favorites": "Somente favoritas",
+    "filters.toggle.compare": "Comparar período anterior",
+    "filters.toggleGroup": "Atalhos de filtros",
+    "filters.apply": "Aplicar filtros",
+    "filters.reset": "Limpar filtros",
+    "filters.hint": "As preferências ficam salvas localmente para acelerar análises futuras.",
+    "studies.title": "Gerenciar pesquisas",
+    "studies.subtitle": "Ative ou pause as pesquisas disponíveis. Os indicadores respeitam apenas as pesquisas ativas.",
+    "studies.loading": "Carregando catálogos…",
+    "studies.empty": "Nenhuma pesquisa cadastrada.",
+    "studies.emptyTooltip": "Cadastre ou sincronize pesquisas para habilitar este painel.",
+    "studies.offlineHint": "Alterações visíveis apenas nesta sessão. Sincronize para persistir.",
+    "studies.summary": "Pesquisas ativas: {{count}}",
+    "studies.status.active": "Ativa",
+    "studies.status.inactive": "Inativa",
+    "studies.status.primary": "Principal",
+    "studies.actions.activate": "Ativar",
+    "studies.actions.deactivate": "Desativar",
+    "studies.meta.sector": "Setor",
+    "studies.meta.period": "Período",
+    "studies.meta.channel": "Canal",
+    "studies.channel.online": "Online",
+    "studies.channel.field": "Em campo",
+    "studies.channel.phone": "Telefone",
     "theme.title": "Tema do painel",
     "theme.light": "Claro",
     "theme.dark": "Escuro",
@@ -221,21 +370,394 @@
     try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){ }
   }
 
+  var FILTER_DEFAULTS = {
+    gender:'all',
+    age:'all',
+    period:'last90',
+    sector:'all',
+    channel:'all',
+    includeInactive:false,
+    favoritesOnly:false,
+    comparePrevious:false
+  };
+  var filterState = Object.assign({}, FILTER_DEFAULTS);
+  var filterDraft = Object.assign({}, FILTER_DEFAULTS);
+  var filtersDirty = false;
+
+  var STUDY_SEED = [
+    { id:'survey-saude-2024', name:'Pesquisa de Satisfação Saúde 2024', segmentKey:'sector.saude', period:'Jan–Abr 2024', channelKey:'studies.channel.online', active:true, primary:true },
+    { id:'survey-mobilidade-2024', name:'Mobilidade Urbana 2024', segmentKey:'sector.transporte', period:'Mar–Jun 2024', channelKey:'studies.channel.field', active:true },
+    { id:'survey-educacao-2023', name:'Rede Escolar 2023', segmentKey:'sector.educacao', period:'Set–Dez 2023', channelKey:'studies.channel.phone', active:false }
+  ];
+  var studiesState = { list:[], ready:false, persisted:false };
+
+  function getConfigStore(){
+    return window.indexed?.stores?.config || null;
+  }
+
+  function cloneFilters(obj){
+    return Object.assign({}, obj);
+  }
+
+  function areFiltersEqual(a, b){
+    if(!a || !b) return false;
+    var keys = Object.keys(FILTER_DEFAULTS);
+    for(var i=0;i<keys.length;i++){
+      var k = keys[i];
+      if((a[k]||false) !== (b[k]||false)) return false;
+    }
+    return true;
+  }
+
+  function isFiltersDefault(state){
+    return areFiltersEqual(state, FILTER_DEFAULTS);
+  }
+
+  function applyFilterDraftToForm(){
+    var form = document.getElementById('filters-form');
+    if(!form) return;
+    var controls = form.elements || [];
+    for(var i=0;i<controls.length;i++){
+      var ctrl = controls[i];
+      if(!ctrl || !ctrl.name) continue;
+      if(Object.prototype.hasOwnProperty.call(filterDraft, ctrl.name)){
+        if(ctrl.tagName === 'SELECT'){
+          ctrl.value = filterDraft[ctrl.name];
+        }
+      }
+    }
+    form.querySelectorAll('.toggle[data-field]').forEach(function(btn){
+      var field = btn.getAttribute('data-field');
+      if(!field) return;
+      var val = !!filterDraft[field];
+      btn.setAttribute('aria-pressed', val ? 'true' : 'false');
+    });
+  }
+
+  function updateFiltersDirtyFlag(){
+    var previous = filtersDirty;
+    filtersDirty = !areFiltersEqual(filterState, filterDraft);
+    var form = document.getElementById('filters-form');
+    if(form){
+      form.dataset.dirty = filtersDirty ? 'true' : 'false';
+    }
+    var applyBtn = form ? form.querySelector('button[type="submit"]') : null;
+    if(applyBtn){
+      applyBtn.disabled = !filtersDirty;
+      applyBtn.classList.toggle('is-disabled', !filtersDirty);
+      if(!filtersDirty){
+        applyBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        applyBtn.removeAttribute('aria-disabled');
+      }
+    }
+    if(previous !== filtersDirty){
+      renderToolbar();
+    }
+  }
+
+  async function loadFilterPreferences(){
+    var store = getConfigStore();
+    if(!(store && window.indexed?.get)) return null;
+    try{
+      var rec = await window.indexed.get(store, 'filters_prefs');
+      return rec && rec.value ? cloneFilters(rec.value) : null;
+    }catch(_){
+      return null;
+    }
+  }
+
+  async function saveFilterPreferences(state){
+    var store = getConfigStore();
+    if(!(store && window.indexed?.put)) return;
+    try{
+      await window.indexed.put(store, {key:'filters_prefs', value:cloneFilters(state), ts:Date.now()});
+    }catch(_){ }
+  }
+
+  function setFilterDraftFromState(){
+    filterDraft = cloneFilters(filterState);
+    applyFilterDraftToForm();
+    updateFiltersDirtyFlag();
+  }
+
+  async function initFiltersUI(){
+    var form = document.getElementById('filters-form');
+    if(!form) return;
+    var saved = await loadFilterPreferences();
+    if(saved){
+      filterState = Object.assign({}, FILTER_DEFAULTS, saved);
+    } else {
+      filterState = cloneFilters(FILTER_DEFAULTS);
+    }
+    setFilterDraftFromState();
+
+    form.addEventListener('change', function(e){
+      var target = e.target;
+      if(!target || target.tagName !== 'SELECT') return;
+      if(!Object.prototype.hasOwnProperty.call(filterDraft, target.name)) return;
+      filterDraft[target.name] = target.value;
+      updateFiltersDirtyFlag();
+    });
+
+    form.querySelectorAll('.toggle[data-field]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        var field = btn.getAttribute('data-field');
+        if(!field) return;
+        var next = !filterDraft[field];
+        filterDraft[field] = next;
+        btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+        updateFiltersDirtyFlag();
+      });
+    });
+
+    var resetBtn = document.getElementById('filters-reset');
+    if(resetBtn){
+      resetBtn.addEventListener('click', function(){
+        filterDraft = cloneFilters(FILTER_DEFAULTS);
+        applyFilterDraftToForm();
+        updateFiltersDirtyFlag();
+        report('filters', 'reset', 'reset-filtros');
+      });
+    }
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      if(!filtersDirty){
+        closeActiveModal();
+        return;
+      }
+      filterState = cloneFilters(filterDraft);
+      await saveFilterPreferences(filterState);
+      updateFiltersDirtyFlag();
+      renderToolbar();
+      report('filters', 'apply', JSON.stringify(filterState));
+      closeActiveModal();
+    });
+  }
+
+  function cloneStudies(list){
+    return (list || []).map(function(item){
+      return Object.assign({}, item);
+    });
+  }
+
+  async function loadStudiesCatalog(){
+    var defaults = { list: cloneStudies(STUDY_SEED), persisted:false };
+    var store = getConfigStore();
+    if(!(store && window.indexed?.get && window.indexed?.put)){
+      return defaults;
+    }
+    try{
+      var rec = await window.indexed.get(store, 'studies_catalog');
+      if(rec && Array.isArray(rec.value) && rec.value.length){
+        return { list: cloneStudies(rec.value), persisted:true };
+      }
+      await window.indexed.put(store, {key:'studies_catalog', value:cloneStudies(STUDY_SEED), ts:Date.now()});
+      return { list: cloneStudies(STUDY_SEED), persisted:true };
+    }catch(_){
+      return defaults;
+    }
+  }
+
+  async function saveStudiesCatalog(list){
+    var store = getConfigStore();
+    if(!(store && window.indexed?.put)){
+      studiesState.persisted = false;
+      return;
+    }
+    try{
+      await window.indexed.put(store, {key:'studies_catalog', value:cloneStudies(list), ts:Date.now()});
+      studiesState.persisted = true;
+    }catch(_){
+      studiesState.persisted = false;
+    }
+  }
+
+  function updateStudiesSummary(){
+    var summary = document.getElementById('studies-summary');
+    if(!summary) return;
+    if(!studiesState.ready){
+      summary.textContent = $t('studies.loading');
+      summary.setAttribute('data-i18n', 'studies.loading');
+      return;
+    }
+    var activeCount = (studiesState.list || []).filter(function(item){ return !!item.active; }).length;
+    summary.textContent = $t('studies.summary', { count: activeCount });
+    summary.removeAttribute('data-i18n');
+  }
+
+  function updateStudiesHint(){
+    var hint = document.getElementById('studies-offline-hint');
+    if(!hint) return;
+    var shouldShow = studiesState.ready && !studiesState.persisted;
+    hint.style.display = shouldShow ? 'inline-flex' : 'none';
+  }
+
+  function renderStudiesList(){
+    var list = document.getElementById('studies-list');
+    if(!list) return;
+    if(!studiesState.ready){
+      list.innerHTML = '<li class="empty" data-i18n="studies.loading">'+$t('studies.loading')+'</li>';
+      window.I18nManager?.apply?.();
+      updateStudiesSummary();
+      updateStudiesHint();
+      return;
+    }
+    var studies = studiesState.list || [];
+    if(!studies.length){
+      list.innerHTML = '<li class="empty" data-i18n="studies.empty">'+$t('studies.empty')+'</li>';
+      window.I18nManager?.apply?.();
+      updateStudiesSummary();
+      updateStudiesHint();
+      return;
+    }
+    list.innerHTML = studies.map(function(study){
+      var statusKey = study.active ? 'studies.status.active' : 'studies.status.inactive';
+      var statusIcon = study.active ? 'toggle_on' : 'toggle_off';
+      var actionKey = study.active ? 'studies.actions.deactivate' : 'studies.actions.activate';
+      var segmentLabel = study.segmentKey ? $t(study.segmentKey) : (study.segment || '');
+      var channelLabel = study.channelKey ? $t(study.channelKey) : (study.channel || '');
+      var segmentAttr = study.segmentKey ? ' data-i18n="'+study.segmentKey+'"' : '';
+      var channelAttr = study.channelKey ? ' data-i18n="'+study.channelKey+'"' : '';
+      return '<li class="study-item" data-id="'+study.id+'">'
+        + '<div class="study-header">'
+        +   '<div class="study-title">'
+        +     '<span>'+study.name+'</span>'
+        +     (study.primary ? '<span class="tag primary" data-i18n="studies.status.primary">'+$t('studies.status.primary')+'</span>' : '')
+        +   '</div>'
+        +   '<span class="study-status '+(study.active ? 'active' : 'inactive')+'">'
+        +     '<span class="material-symbols-rounded" aria-hidden="true">'+statusIcon+'</span>'
+        +     '<span data-i18n="'+statusKey+'">'+$t(statusKey)+'</span>'
+        +   '</span>'
+        + '</div>'
+        + '<div class="study-meta">'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.sector')+'" data-i18n-attr="aria-label:studies.meta.sector"><span class="material-symbols-rounded" aria-hidden="true">category</span><span'+segmentAttr+'>'+segmentLabel+'</span></span>'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.period')+'" data-i18n-attr="aria-label:studies.meta.period"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span><span>'+study.period+'</span></span>'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.channel')+'" data-i18n-attr="aria-label:studies.meta.channel"><span class="material-symbols-rounded" aria-hidden="true">hub</span><span'+channelAttr+'>'+channelLabel+'</span></span>'
+        + '</div>'
+        + '<div class="study-actions">'
+        +   '<button type="button" class="btn inline" data-action="toggle" data-id="'+study.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+(study.active?'pause_circle':'play_circle')+'</span><span data-i18n="'+actionKey+'">'+$t(actionKey)+'</span></button>'
+        + '</div>'
+        + '</li>';
+    }).join('');
+    list.querySelectorAll('button[data-action="toggle"]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-id');
+        if(id) toggleStudyActive(id);
+      });
+    });
+    window.I18nManager?.apply?.();
+    updateStudiesSummary();
+    updateStudiesHint();
+  }
+
+  async function toggleStudyActive(id){
+    var updated = (studiesState.list || []).map(function(item){
+      if(item.id !== id) return Object.assign({}, item);
+      var next = Object.assign({}, item, { active: !item.active });
+      report('studies', next.active ? 'on' : 'off', id);
+      return next;
+    });
+    studiesState.list = updated;
+    await saveStudiesCatalog(updated);
+    renderStudiesList();
+    renderToolbar();
+  }
+
+  async function initStudiesManager(){
+    var host = document.getElementById('studies-list');
+    if(!host) return;
+    studiesState.ready = false;
+    renderStudiesList();
+    var loaded = await loadStudiesCatalog();
+    studiesState.list = loaded.list;
+    studiesState.ready = true;
+    studiesState.persisted = loaded.persisted;
+    renderStudiesList();
+    renderToolbar();
+  }
+
+  function clearModalHash(){
+    try{
+      if(window.history && typeof window.history.replaceState === 'function'){
+        var base = window.location.pathname + window.location.search;
+        window.history.replaceState(null, '', base);
+      } else {
+        window.location.hash = '';
+      }
+    }catch(_){ window.location.hash = ''; }
+  }
+
+  function handleModalHashChange(){
+    var hash = window.location.hash;
+    if(hash === '#'){
+      clearModalHash();
+      hash = '';
+    }
+    var modal = null;
+    if(hash && hash.charAt(0) === '#'){
+      modal = document.querySelector(hash);
+      if(modal && !modal.classList.contains('modal')){
+        modal = null;
+      }
+    }
+    if(hash === '#filters' && document.getElementById('filters-form')){
+      setFilterDraftFromState();
+    }
+    document.body.classList.toggle('modal-open', !!modal);
+    if(hash && !modal){
+      clearModalHash();
+    }
+  }
+
+  function closeActiveModal(){
+    clearModalHash();
+    handleModalHashChange();
+  }
+
   function renderToolbar(){
     var el = document.getElementById('toolbar-split');
     if(!el) return;
-    var items = [
-      { href:'#filters', icon:'filter_list', key:'toolbar.filters' },
-      { href:'#manage-studies', icon:'inventory_2', key:'toolbar.studies' },
+    var items = [];
+    if(document.getElementById('filters')){
+      items.push({
+        href:'#filters',
+        icon:'filter_list',
+        key:'toolbar.filters',
+        id:'toolbar-filters',
+        className: isFiltersDefault(filterState) ? '' : 'active',
+        extra: filtersDirty ? '<span class="status-dot warn" aria-hidden="true"></span>' : ''
+      });
+    }
+    if(document.getElementById('manage-studies')){
+      var studiesDisabled = !studiesState.ready || !(studiesState.list && studiesState.list.length);
+      items.push({
+        href:'#manage-studies',
+        icon:'inventory_2',
+        key:'toolbar.studies',
+        id:'toolbar-studies',
+        disabled: studiesDisabled,
+        disabledTitle:'studies.emptyTooltip'
+      });
+    }
+    items.push(
       { href:'#theme', icon:'light_mode', key:'toolbar.theme' },
       { href:'#language', icon:'translate', key:'toolbar.language' },
       { href:'#sync', icon:'devices', key:'toolbar.multidevice', id:'toolbar-sync', extra:'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span>' }
-    ];
+    );
     el.innerHTML = items.map(function(item){
       var idAttr = item.id ? ' id="'+item.id+'"' : '';
-      var title = $t(item.key);
+      var isDisabled = !!item.disabled;
+      var titleKey = isDisabled && item.disabledTitle ? item.disabledTitle : item.key;
+      var title = $t(titleKey);
+      var dataAttr = ' data-i18n-attr="title:'+titleKey+'"';
       var extra = item.extra || '';
-      return '<a class="btn" href="'+item.href+'"'+idAttr+' data-i18n-attr="title:'+item.key+'" title="'+title+'">'
+      var cls = 'btn' + (item.className ? ' '+item.className : '') + (isDisabled ? ' is-disabled' : '');
+      var href = isDisabled ? '#' : item.href;
+      var disabledAttr = isDisabled ? ' aria-disabled="true"' : '';
+      return '<a class="'+cls+'" href="'+href+'"'+idAttr+dataAttr+disabledAttr+' title="'+title+'">'
         + '<span class="material-symbols-rounded" aria-hidden="true">'+item.icon+'</span>'
         + '<span data-i18n="'+item.key+'">'+title+'</span>'
         + extra
@@ -323,6 +845,11 @@
           renderPersona();
           renderKPIs();
           renderIndicators();
+          applyFilterDraftToForm();
+          updateFiltersDirtyFlag();
+          renderStudiesList();
+          updateStudiesSummary();
+          updateStudiesHint();
           window.I18nManager.apply();
           var syncBtn = document.getElementById('sync-toggle');
           var isOn = !!(syncBtn && syncBtn.getAttribute('aria-pressed') === 'true');
@@ -351,6 +878,10 @@
     }catch(_){
       updateSyncUI(false);
     }
+
+    await initFiltersUI();
+    await initStudiesManager();
+    renderToolbar();
 
     const btn = document.getElementById('sync-toggle');
     const openTab = document.getElementById('sync-open-tab');
@@ -407,8 +938,24 @@
         document.querySelectorAll('details.info[open]').forEach(function(d){
           d.removeAttribute('open');
         });
+        if(window.location.hash){
+          var modal = document.querySelector(window.location.hash);
+          if(modal && modal.classList && modal.classList.contains('modal')){
+            closeActiveModal();
+          }
+        }
       }
     });
+
+    document.querySelectorAll('.modal .close, .modal .backdrop').forEach(function(node){
+      node.addEventListener('click', function(ev){
+        ev.preventDefault();
+        closeActiveModal();
+      });
+    });
+
+    window.addEventListener('hashchange', handleModalHashChange);
+    handleModalHashChange();
   }
 
   function showSyncTip(message, warn){

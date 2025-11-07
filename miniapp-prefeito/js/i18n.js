@@ -36,6 +36,42 @@
     return target;
   }
 
+  function collectKeys(obj, prefix, bucket) {
+    bucket = bucket || {};
+    if (!obj) return bucket;
+    Object.keys(obj).forEach(function (key) {
+      const value = obj[key];
+      const next = prefix ? prefix + '.' + key : key;
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        collectKeys(value, next, bucket);
+      } else {
+        bucket[next] = true;
+      }
+    });
+    return bucket;
+  }
+
+  async function auditTranslations(baseData) {
+    const baseMap = collectKeys(baseData, '', {});
+    const missingByLang = {};
+    await Promise.all(SUPPORTED.map(async function (lang) {
+      const data = lang === DEFAULT_LANG ? baseData : await fetchBundle(lang);
+      const map = collectKeys(data, '', {});
+      const missing = Object.keys(baseMap).filter(function (key) { return !map[key]; });
+      if (missing.length) {
+        missingByLang[lang] = missing;
+      }
+    }));
+    if (Object.keys(missingByLang).length) {
+      try {
+        console.warn('[i18n] Missing translations detected', missingByLang);
+      } catch (_) {
+        /* eslint-disable-line no-empty */
+      }
+    }
+    return missingByLang;
+  }
+
   function applyInterpolation(str, options) {
     if (typeof str !== 'string' || !options) return str;
     return str.replace(/\{\{\s*(\w+)\s*\}\}/g, function (_, token) {
@@ -168,6 +204,7 @@
       }
 
       cache[DEFAULT_LANG] = fallbackData;
+      await auditTranslations(fallbackData);
       if (!root.i18next.isInitialized) {
         await root.i18next.init({
           lng: preferred,

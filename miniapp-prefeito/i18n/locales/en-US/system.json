@@ -11,6 +11,83 @@
     "language": "Language",
     "multidevice": "Multi-device"
   },
+  "filters": {
+    "title": "Dashboard filters",
+    "subtitle": "Refine the dashboard results for specific audiences and time frames.",
+    "gender": {
+      "label": "Gender",
+      "all": "All",
+      "female": "Female",
+      "male": "Male",
+      "nonbinary": "Non-binary",
+      "other": "Other"
+    },
+    "age": {
+      "label": "Age range",
+      "all": "All ranges",
+      "16_24": "16–24 years",
+      "25_34": "25–34 years",
+      "35_44": "35–44 years",
+      "45_59": "45–59 years",
+      "60_plus": "60+ years"
+    },
+    "period": {
+      "label": "Time period",
+      "last30": "Last 30 days",
+      "last90": "Last 90 days",
+      "q1": "1st quarter",
+      "q2": "2nd quarter",
+      "semester": "Last semester"
+    },
+    "sector": {
+      "label": "Sector",
+      "all": "All sectors"
+    },
+    "channel": {
+      "label": "Collection channel",
+      "all": "All channels",
+      "online": "Online",
+      "field": "Field",
+      "phone": "Phone"
+    },
+    "toggle": {
+      "inactive": "Include inactive surveys",
+      "favorites": "Favorites only",
+      "compare": "Compare previous period"
+    },
+    "toggleGroup": "Filter shortcuts",
+    "apply": "Apply filters",
+    "reset": "Reset filters",
+    "hint": "Preferences are stored locally to speed up future analysis."
+  },
+  "studies": {
+    "title": "Manage surveys",
+    "subtitle": "Activate or pause the available surveys. Indicators only reflect active surveys.",
+    "loading": "Loading catalogs…",
+    "empty": "No surveys registered.",
+    "emptyTooltip": "Add or sync surveys to enable this panel.",
+    "offlineHint": "Changes visible only in this session. Sync to persist.",
+    "summary": "Active surveys: {{count}}",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "primary": "Primary"
+    },
+    "actions": {
+      "activate": "Activate",
+      "deactivate": "Deactivate"
+    },
+    "meta": {
+      "sector": "Sector",
+      "period": "Period",
+      "channel": "Channel"
+    },
+    "channel": {
+      "online": "Online",
+      "field": "Field",
+      "phone": "Phone"
+    }
+  },
   "theme": {
     "title": "Dashboard theme",
     "light": "Light",
