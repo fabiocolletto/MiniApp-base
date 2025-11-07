@@ -1,7 +1,0 @@
-@page { size: A4; margin: 3cm 2cm 2cm 3cm; }
-@media print {
-  html, body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; }
-  header.prova-cabecalho { margin-bottom: 12pt; }
-  footer.prova-rodape { position: fixed; bottom: 0; width: 100%; font-size: 10pt; }
-  .page-break { break-before: page; }
-}
