@@ -88,6 +88,11 @@
       "phone": "Teléfono"
     }
   },
+  "reports": {
+    "loading": "Cargando indicadores…",
+    "error": "No fue posible cargar los indicadores.",
+    "empty": "Sincroniza tus encuestas para ver indicadores aquí."
+  },
   "theme": {
     "title": "Tema del panel",
     "light": "Claro",
@@ -116,37 +121,43 @@
       "title": "Promedio de satisfacción por sector",
       "infoTitle": "Cómo leer",
       "infoCopy": "Cada barra representa la nota media 1–5 por sector. 1–2 = malo; 3–4 = regular; 5 = excelente.",
-      "placeholder": "Columnas (placeholder)"
+      "placeholder": "Columnas (placeholder)",
+      "summary": "Mejor promedio: {{sector}} ({{value}})"
     },
     "distribution": {
       "title": "Distribución de notas",
       "infoTitle": "Cómo leer",
       "infoCopy": "Proporción de buenas/medias/malas por sector después de aplicar filtros.",
-      "placeholder": "Barras apiladas (placeholder)"
+      "placeholder": "Barras apiladas (placeholder)",
+      "summary": "Buenas: {{positive}} · Regulares: {{neutral}} · Malas: {{negative}}"
     },
     "trend_sector": {
       "title": "Tendencia mensual por sector",
       "infoTitle": "Cómo leer",
       "infoCopy": "Evolución de los promedios mensuales por sector considerando solo encuestas activas.",
-      "placeholder": "Líneas (placeholder)"
+      "placeholder": "Líneas (placeholder)",
+      "summary": "Mayor variación: {{sector}} ({{delta}})"
     },
     "reviews_month": {
       "title": "Evaluaciones por mes",
       "infoTitle": "Cómo leer",
       "infoCopy": "Respuestas recopiladas por mes después de los filtros (sector/género/edad/período).",
-      "placeholder": "Columnas agrupadas (placeholder)"
+      "placeholder": "Columnas agrupadas (placeholder)",
+      "summary": "Último mes {{month}} — {{count}} respuestas"
     },
     "map_neighborhoods": {
       "title": "Mapa de la ciudad — puntos por barrio",
       "infoTitle": "Cómo leer",
       "infoCopy": "Distribución espacial basada en las geohashes/barrios informados en las encuestas.",
-      "placeholder": "Mapa (placeholder)"
+      "placeholder": "Mapa (placeholder)",
+      "summary": "Mayor presencia: {{neighborhood}} ({{share}})"
     },
     "share_sector": {
       "title": "Participación por sector",
       "infoTitle": "Cómo leer",
       "infoCopy": "Porcentaje de participación de cada sector dentro del conjunto de encuestas activas.",
-      "placeholder": "Torta (placeholder)"
+      "placeholder": "Torta (placeholder)",
+      "summary": "Sectores destacados: {{list}}"
     }
   },
   "info": {

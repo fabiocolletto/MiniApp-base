@@ -88,6 +88,11 @@
       "phone": "Telefone"
     }
   },
+  "reports": {
+    "loading": "Carregando indicadores…",
+    "error": "Não foi possível carregar os indicadores.",
+    "empty": "Sincronize pesquisas para ver os indicadores aqui."
+  },
   "theme": {
     "title": "Tema do painel",
     "light": "Claro",
@@ -116,37 +121,43 @@
       "title": "Média de satisfação por setor",
       "infoTitle": "Como ler",
       "infoCopy": "Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.",
-      "placeholder": "Colunas (placeholder)"
+      "placeholder": "Colunas (placeholder)",
+      "summary": "Maior média: {{sector}} ({{value}})"
     },
     "distribution": {
       "title": "Distribuição de notas",
       "infoTitle": "Como ler",
       "infoCopy": "Proporção de boas/médias/ruins por setor após filtros aplicados.",
-      "placeholder": "Barras empilhadas (placeholder)"
+      "placeholder": "Barras empilhadas (placeholder)",
+      "summary": "Boas: {{positive}} · Regulares: {{neutral}} · Ruins: {{negative}}"
     },
     "trend_sector": {
       "title": "Tendência mensal por setor",
       "infoTitle": "Como ler",
       "infoCopy": "Evolução das médias mensais por setor considerando apenas pesquisas ativas.",
-      "placeholder": "Linhas (placeholder)"
+      "placeholder": "Linhas (placeholder)",
+      "summary": "Maior variação: {{sector}} ({{delta}})"
     },
     "reviews_month": {
       "title": "Avaliações por mês",
       "infoTitle": "Como ler",
       "infoCopy": "Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).",
-      "placeholder": "Colunas agrupadas (placeholder)"
+      "placeholder": "Colunas agrupadas (placeholder)",
+      "summary": "Último mês {{month}} — {{count}} respostas"
     },
     "map_neighborhoods": {
       "title": "Mapa do município — pontos por bairro",
       "infoTitle": "Como ler",
       "infoCopy": "Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.",
-      "placeholder": "Mapa (placeholder)"
+      "placeholder": "Mapa (placeholder)",
+      "summary": "Maior presença: {{neighborhood}} ({{share}})"
     },
     "share_sector": {
       "title": "Participação por setor",
       "infoTitle": "Como ler",
       "infoCopy": "Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.",
-      "placeholder": "Pizza (placeholder)"
+      "placeholder": "Pizza (placeholder)",
+      "summary": "Top setores: {{list}}"
     }
   },
   "info": {
