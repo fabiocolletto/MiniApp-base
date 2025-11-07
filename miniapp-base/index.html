@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MiniApps — Catálogo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/miniapp-base/styles.css?v=1.0.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.0.0" media="print" onload="this.media='all'">
   <style>
@@ -21,13 +20,13 @@
     .app-card .actions{display:flex;gap:8px;justify-content:flex-end}
     .btn{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--card-border,#cbd5e1);padding:10px 12px;border-radius:12px;background:#fff;text-decoration:none;color:inherit}
     .btn.primary{background:#0b57d0;border-color:#0b57d0;color:#fff}
-    .btn .material-symbols-rounded{font-size:18px}
+    .btn .app-icon{font-size:18px}
   </style>
 </head>
 <body>
   <header>
     <div class="title">
-      <span class="material-symbols-rounded">apps</span>
+      <span class="app-icon" aria-hidden="true">🧩</span>
       <div>
         <h1>Catálogo de MiniApps</h1>
         <p class="subtitle">Selecione um mini‑app para abrir</p>
@@ -47,7 +46,7 @@
       </div>
       <div class="actions">
         <a class="btn" href="../miniapp-prefeito/index.html" title="Abrir">
-          <span class="material-symbols-rounded">open_in_new</span>
+          <span class="app-icon" aria-hidden="true">🔗</span>
           Abrir
         </a>
       </div>
