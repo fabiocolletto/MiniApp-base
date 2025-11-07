@@ -3,26 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>Painel de Indicadores — i18n (i18next) + Templates (v1.0.10)</title>
+  <title>Painel de Indicadores — Versão Estática (6 indicadores)</title>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
-  <!-- GH Pages-safe: relativo à pasta miniapp-prefeito/ -->
-  <link rel="stylesheet" href="../miniapp-base/styles.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@main/miniapp-base/styles.css" media="print" onload="this.media='all'">
-  <style>
-    .modal{position:fixed;inset:0;display:none}
-    .modal:target{display:block}
-    .kpi{position:relative}
-    .kpi details.info{position:absolute;top:6px;right:6px}
-    .kpi details.info summary{list-style:none;border:none;background:transparent;width:28px;height:28px;display:grid;place-items:center;padding:0}
-    .kpi details.info[open] .panel{min-width:260px}
-    .toolbar .chipbtn{display:inline-flex;align-items:center;gap:.5rem}
-    .kpi-bar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:stretch}
-    .kpi-bar .kpi{display:flex;flex-direction:column}
-    @media (max-width:700px){.kpi-bar{grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);overflow-x:auto;padding-bottom:4px}}
-  </style>
-  <script defer src="https://unpkg.com/i18next@23/dist/umd/i18next.min.js"></script>
-  <script defer src="https://unpkg.com/i18next-http-backend@2/dist/umd/i18nextHttpBackend.min.js"></script>
+  <link rel="stylesheet" href="/miniapp-base/styles.css?v=0.9.4">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=0.9.4" media="print" onload="this.media='all'">
 </head>
 <body>
   <header>
@@ -30,9 +14,9 @@
       <span class="material-symbols-rounded" aria-hidden="true">insights</span>
       <div>
         <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
-        <p class="subtitle" data-i18n="app.subtitle">Versão com i18n (i18next) e templates remotos</p>
+        <p class="subtitle" data-i18n="app.subtitle">Versão estática com botão de permissão para Google Drive</p>
       </div>
-      <span class="version" aria-label="versão do arquivo">v1.0.10</span>
+      <span class="version" aria-label="versão do arquivo">v0.9.5</span>
     </div>
     <div class="toolbar" role="group" aria-label="Controles de exibição">
       <div class="split" id="toolbar-split"></div>
@@ -53,9 +37,9 @@
       </header>
       <div class="sheet-body">
         <div class="quickbar" role="group">
-          <a class="chipbtn" id="theme-light-btn" href="#" data-theme="light"><span class="material-symbols-rounded">light_mode</span><span data-i18n="theme.light">Claro</span></a>
-          <a class="chipbtn" id="theme-dark-btn" href="#" data-theme="dark"><span class="material-symbols-rounded">dark_mode</span><span data-i18n="theme.dark">Escuro</span></a>
-          <a class="chipbtn" id="theme-auto-btn" href="#" data-theme="auto"><span class="material-symbols-rounded">autorenew</span><span data-i18n="theme.auto">Automático</span></a>
+          <a class="chipbtn" href="#" data-theme="light"><span class="material-symbols-rounded">light_mode</span><span data-i18n="theme.light">Claro</span></a>
+          <a class="chipbtn" href="#" data-theme="dark"><span class="material-symbols-rounded">dark_mode</span><span data-i18n="theme.dark">Escuro</span></a>
+          <a class="chipbtn" href="#" data-theme="auto"><span class="material-symbols-rounded">autorenew</span><span data-i18n="theme.auto">Automático</span></a>
         </div>
       </div>
     </div>
@@ -70,9 +54,9 @@
       </header>
       <div class="sheet-body">
         <div class="quickbar" role="group">
-          <a class="chipbtn" id="lang-pt-btn" href="#" data-lang="pt-BR"><span class="flag">🇧🇷</span><span data-i18n="lang.pt">Português</span></a>
-          <a class="chipbtn" id="lang-en-btn" href="#" data-lang="en-US"><span class="flag">🇺🇸</span><span data-i18n="lang.en">English</span></a>
-          <a class="chipbtn" id="lang-es-btn" href="#" data-lang="es-ES"><span class="flag">🇪🇸</span><span data-i18n="lang.es">Español</span></a>
+          <a class="chipbtn" href="#" data-lang="pt-BR"><span class="flag">🇧🇷</span><span data-i18n="lang.pt">Português</span></a>
+          <a class="chipbtn" href="#" data-lang="es-ES"><span class="flag">🇪🇸</span><span data-i18n="lang.es">Español</span></a>
+          <a class="chipbtn" href="#" data-lang="en-US"><span class="flag">🇺🇸</span><span data-i18n="lang.en">English</span></a>
         </div>
       </div>
     </div>
@@ -109,244 +93,126 @@
   <section id="kpi-seguranca" class="modal" aria-labelledby="k4"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k4">Segurança — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
   <section id="kpi-meioambiente" class="modal" aria-labelledby="k5"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k5">Meio ambiente — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
 
-  <section id="info-modal" class="modal" aria-label="Informações"></section>
+  <footer data-i18n="app.footer">Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.</footer>
 
-  <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
+  <script id="i18n-pt-BR" type="application/json">{"app.title":"Município de Curitiba — Painel de Indicadores","app.subtitle":"Versão estática com botão de permissão para Google Drive","app.footer":"Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.","toolbar.filters":"Filtros","toolbar.studies":"Pesquisas","toolbar.theme":"Tema","toolbar.language":"Idioma","toolbar.multidevice":"Multi-dispositivo","sector.saude":"Saúde","sector.educacao":"Educação","sector.transporte":"Transporte","sector.seguranca":"Segurança","sector.meioambiente":"Meio ambiente","delta.stable":"estável","charts.avg_by_sector":"Média de satisfação por setor","charts.distribution":"Distribuição de notas","info.howto.title":"Como ler","info.howto.copy":"Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.","info.hint":"Toque no ícone novamente para fechar.","theme.title":"Tema do painel","theme.light":"Claro","theme.dark":"Escuro","theme.auto":"Automático","lang.title":"Idioma do painel","lang.pt":"Português","lang.es":"Español","lang.en":"English","sync.title":"Múltiplos dispositivos","sync.lead":"Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.","sync.ctaTitle":"Sincronizar com Google Drive","sync.ctaHint":"Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.","sync.enable":"Permitir e ativar","sync.state.off":"Sincronização desativada","sync.state.pending":"Aguardando autorização…","sync.state.on":"Sincronização ativa","sync.openTab":"Abrir em nova aba","persona.title":"Perfil da amostra","persona.gender":"Distribuição por gênero","persona.age":"Distribuição por faixa etária","persona.neighborhood":"Bairros mais presentes"}</script>
 
   <script>
-    const I18N_NAMESPACES = ['common','kpi','charts','reports','miniapp_prefeito','system'];
-    const THEME_STORAGE_KEY = 'miniapp-prefeito-theme';
-    const LANG_STORAGE_KEY  = 'miniapp-prefeito-lang';
+  window.__INDEXED_LIB_CANDIDATES__ = [
+    'modules/indexed/indexed.min.js','modules/indexed/indexed.js',
+    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.min.js',
+    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.js',
+    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.min.js',
+    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.js'
+  ];
+  window.__RELATORIO_LIB_CANDIDATES__ = [
+    'miniapp-base/relatorio_utils.js','/miniapp-base/relatorio_utils.js','modules/relatorio_utils.js',
+    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/relatorio_utils.js',
+    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/miniapp-base/relatorio_utils.js'
+  ];
 
-    // Garantia: candidatos definidos mesmo se o ambiente não injetar variáveis globais
-    window.__INDEXED_LIB_CANDIDATES__   = Array.isArray(window.__INDEXED_LIB_CANDIDATES__)   ? window.__INDEXED_LIB_CANDIDATES__   : [];
-    window.__RELATORIO_LIB_CANDIDATES__ = Array.isArray(window.__RELATORIO_LIB_CANDIDATES__) ? window.__RELATORIO_LIB_CANDIDATES__ : [];
+  function $t(k){ try{ var dict=JSON.parse(document.getElementById('i18n-pt-BR').textContent||'{}'); return dict[k]||k; }catch(_){ return k; } }
 
-    function computeDocBase(){ return location.pathname.replace(/\/[^/]*$/, ''); }
-    function buildCandidates(lng, ns){
-      const DOC_BASE = computeDocBase();
-      return [
-        `${DOC_BASE}/i18n/locales/${lng}/${ns}.json`,
-        `i18n/locales/${lng}/${ns}.json`
-      ];
-    }
+  (function loadScripts(){
+    function loadOne(list, cb){ if(!list||!list.length) return cb&&cb(); var src=list.shift(); var s=document.createElement('script'); s.src=src; s.async=true; s.onload=function(){ cb&&cb(true,src); }; s.onerror=function(){ loadOne(list, cb); }; document.head.appendChild(s); }
+    loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){ loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){ initPanel(); }); });
+  })();
 
-    function applyI18n(root){
-      try{
-        (root||document).querySelectorAll('[data-i18n]').forEach(function(n){
-          const key=n.getAttribute('data-i18n');
-          const val=i18next.t(key);
-          if(!val || val===key){ console.warn('i18n: tradução ausente para', key); return; }
-          n.textContent=val;
-        });
-      }catch(_){ }
-    }
-    function $t(k){ try{ return i18next.t(k) || k; }catch(_){ return k; } }
+  function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
 
-    function applyTheme(theme){
-      const html=document.documentElement; if(history.replaceState){history.replaceState(null,'',location.pathname+location.search);} else {window.location.hash='';}
-      if(theme==='auto'){ html.removeAttribute('data-theme'); localStorage.removeItem(THEME_STORAGE_KEY); }
-      else{ html.setAttribute('data-theme', theme); localStorage.setItem(THEME_STORAGE_KEY, theme); }
-    }
-    function loadInitialTheme(){
-      const saved=localStorage.getItem(THEME_STORAGE_KEY); const html=document.documentElement;
-      if(saved==='auto'){ html.removeAttribute('data-theme'); }
-      else if(saved){ html.setAttribute('data-theme', saved); }
-      else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){ html.setAttribute('data-theme','dark'); }
-      else{ html.setAttribute('data-theme','light'); }
-    }
-    function bindThemeToggles(){
-      const m=document.getElementById('theme'); if(!m) return;
-      m.querySelectorAll('.chipbtn').forEach(btn=>{ if(btn.dataset.bound) return; btn.dataset.bound='1';
-        const v=btn.getAttribute('data-theme'); if(!v) return; btn.addEventListener('click',e=>{e.preventDefault();applyTheme(v);},{passive:true});
-      });
-    }
+  function renderToolbar(){
+    var el=document.getElementById('toolbar-split');
+    if(!el) return;
+    el.innerHTML=''
+      + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
+      + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
+      + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
+      + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
+      + '<a class="btn" href="#sync" id="toolbar-sync" title="Multi"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
+  }
 
-    function applyLanguage(lang){
-      if(lang){ localStorage.setItem(LANG_STORAGE_KEY,lang);} else {localStorage.removeItem(LANG_STORAGE_KEY);} 
-      if(history.replaceState){history.replaceState(null,'',location.pathname+location.search);} else {window.location.hash='';}
-      if(window.i18next && i18next.isInitialized){ i18next.changeLanguage(lang||'pt-BR').then(()=>applyI18n(document)); }
-      document.documentElement.lang=lang||'pt-BR';
-    }
-    function loadInitialLanguage(){ const saved=localStorage.getItem(LANG_STORAGE_KEY)||document.documentElement.lang||'pt-BR'; document.documentElement.lang=saved; return saved; }
-    function bindLanguageToggles(){
-      const m=document.getElementById('language'); if(!m) return;
-      m.querySelectorAll('.chipbtn').forEach(btn=>{ if(btn.dataset.bound) return; btn.dataset.bound='1';
-        const L=btn.getAttribute('data-lang'); if(!L) return; btn.addEventListener('click',e=>{e.preventDefault();applyLanguage(L);},{passive:true});
-      });
-    }
+  function renderPersona(){
+    var wrap=document.getElementById('persona-bar');
+    var cards=[
+      {id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:'Após filtros'},
+      {id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:'Faixas dominantes'},
+      {id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:'Top 3'}
+    ];
+    wrap.innerHTML=cards.map(function(c){
+      return '<div class="kpi" role="group" aria-label="'+c.title+'">\
+        <div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>\
+        <div class="value" style="font-size:18px">'+c.value+'</div>\
+        <div class="delta neutral" style="opacity:.8">'+c.hint+'</div>\
+      </div>';
+    }).join('');
+  }
 
-    (function loadScripts(){
-      function loadOne(list, cb){
-        if(!list||!list.length) return cb&&cb();
-        var src=list.shift(); var s=document.createElement('script'); var done=false;
-        var t=setTimeout(function(){ if(done) return; done=true; loadOne(list, cb); }, 5000);
-        s.src=src; s.async=true;
-        s.onload=function(){ if(done) return; done=true; clearTimeout(t); cb&&cb(true,src); };
-        s.onerror=function(){ if(done) return; done=true; clearTimeout(t); loadOne(list, cb); };
-        document.head.appendChild(s);
-      }
-      loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){
-        loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){ window.__libsReady__=true; tryInit(); });
-      });
-    })();
+  function renderKPIs(){
+    var list=[
+      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3 vs. mês anterior', cls:'positive'},
+      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral'},
+      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative'},
+      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral'},
+      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive'}
+    ];
+    var wrap=document.getElementById('kpi-bar');
+    wrap.innerHTML=list.map(function(s){
+      return '<div class="kpi" role="group" aria-label="'+s.label+'">\
+        <a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+s.id+'" aria-label="Mais informações"><span class="material-symbols-rounded">info</span></a>\
+        <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>\
+        <div class="value">'+s.val+'</div>\
+        <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>\
+      </div>';
+    }).join('');
+  }
 
-    function initI18n(){
-      if(window.__i18nStarted__) return; window.__i18nStarted__=true;
-      const initialLang=loadInitialLanguage();
-      try{
-        i18next
-          .use(i18nextHttpBackend)
-          .init({
-            lng: initialLang,
-            fallbackLng: 'pt-BR',
-            ns: I18N_NAMESPACES,
-            defaultNS: 'common',
-            backend: {
-              loadPath: '{{lng}}|{{ns}}',
-              request: function(options, url, payload, callback){
-                try{
-                  var parts = url.split('|');
-                  var lng = parts[0];
-                  var ns  = parts[1];
-                  var urls = buildCandidates(lng, ns);
-                  var i = 0;
-                  (function tryNext(){
-                    if(i>=urls.length){ callback('not found', { status: 404 }); return; }
-                    var u = urls[i++];
-                    fetch(u, { cache:'no-store' })
-                      .then(function(r){ if(!r.ok){ tryNext(); return; } return r.text().then(function(data){ callback(null, { status:200, data:data }); }); })
-                      .catch(function(){ tryNext(); });
-                  })();
-                }catch(err){ callback(err && err.message ? err.message : 'request error', { status: 0 }); }
-              }
-            },
-            interpolation: { escapeValue: false }
-          })
-          .then(function(){
-            applyI18n(document);
-            initPanel();
-            (async function quickLangAudit(){
-              const langs=['pt-BR','en-US','es-ES']; const misses=[];
-              for(const L of langs){
-                for(const ns of I18N_NAMESPACES){
-                  const u=buildCandidates(L,ns)[0];
-                  try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok){ misses.push(`${L}/${ns} → HTTP ${r.status}`); } }
-                  catch(err){ misses.push(`${L}/${ns} → ${err&&err.message?err.message:'erro'}`); }
-                }
-              }
-              if(misses.length){ console.warn('[i18n-audit] Ausentes/inacessíveis:', misses); }
-              else{ console.info('[i18n-audit] OK: idiomas e namespaces acessíveis.'); }
-            })();
-          });
-      }catch(e){ console.error('i18n init error', e); initPanel(); }
-    }
+  function renderIndicators(){
+    var cards=[
+      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), ph:'Colunas (placeholder)'},
+      {id:'distribution', icon:'stacked_bar_chart', title:'Distribuição de notas', infoTitle:'Como ler', infoCopy:'Proporção de boas/médias/ruins por setor após filtros aplicados.', infoHint:$t('info.hint'), ph:'Barras empilhadas (placeholder)'},
+      {id:'trend-sector', icon:'show_chart', title:'Tendência mensal por setor', infoTitle:'Como ler', infoCopy:'Evolução das médias mensais por setor considerando apenas pesquisas ativas.', infoHint:$t('info.hint'), ph:'Linhas (placeholder)'},
+      {id:'reviews-month', icon:'insert_chart', title:'Avaliações por mês', infoTitle:'Como ler', infoCopy:'Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).', infoHint:$t('info.hint'), ph:'Colunas agrupadas (placeholder)'},
+      {id:'map-bairros', icon:'map', title:'Mapa do município — pontos por bairro', infoTitle:'Como ler', infoCopy:'Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.', infoHint:$t('info.hint'), ph:'Mapa (placeholder)'},
+      {id:'share-sector', icon:'pie_chart', title:'Participação por setor', infoTitle:'Como ler', infoCopy:'Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.', infoHint:$t('info.hint'), ph:'Pizza (placeholder)'}
+    ];
+    var grid=document.getElementById('cards');
+    grid.innerHTML=cards.map(function(c){ return '<section class="card" aria-labelledby="t-'+c.id+'">\
+      <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
+      <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
+      <div class="panel" role="dialog" aria-labelledby="t-'+c.id+'"><h4>'+c.infoTitle+'</h4><p>'+c.infoCopy+'</p><p class="hint">'+c.infoHint+'</p></div></details>\
+      <div class="ph">'+c.ph+'</div></section>'; }).join('');
+  }
 
-    function report(kind,state,text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind,state,text); }catch(_){} }
-    function renderToolbar(){
-      const host=document.getElementById('toolbar-split'); if(!host) return;
-      host.innerHTML=`
-        <a class="chipbtn" href="#theme" title="Tema"><span class="material-symbols-rounded">palette</span><span data-i18n="theme.title">Tema do painel</span></a>
-        <a class="chipbtn" href="#language" title="Idioma"><span class="material-symbols-rounded">translate</span><span data-i18n="lang.title">Idioma do painel</span></a>
-        <a class="chipbtn" href="#sync" title="Sincronização"><span class="material-symbols-rounded">cloud_sync</span><span data-i18n="sync.title">Múltiplos dispositivos</span></a>`;
-    }
-    function renderPersona(){
-      const host=document.getElementById('persona-bar'); if(!host) return;
-      const demo=[{k:'Gênero',v:'53% mulheres'},{k:'Faixa etária',v:'34% 25–39'},{k:'Renda',v:'R$ 2k–5k predominante'},{k:'Escolaridade',v:'Ensino médio (48%)'}];
-      host.innerHTML=demo.map(d=>`<span class="chip"><strong>${d.k}</strong> ${d.v}</span>`).join('');
-    }
-    function renderKPIs(){
-      const host=document.getElementById('kpi-bar'); if(!host) return;
-      const kpis=[
-        {id:'saude',label:'Saúde',value:72,trend:+4,href:'#kpi-saude'},
-        {id:'educacao',label:'Educação',value:68,trend:+2,href:'#kpi-educacao'},
-        {id:'transporte',label:'Transporte',value:41,trend:-3,href:'#kpi-transporte'},
-        {id:'seguranca',label:'Segurança',value:57,trend:+1,href:'#kpi-seguranca'},
-        {id:'meioambiente',label:'Meio ambiente',value:63,trend:+5,href:'#kpi-meioambiente'}
-      ];
-      host.innerHTML=kpis.map(k=>{
-        const t=k.trend>0?`<span class="pill success" title="Variação">+${k.trend}pp</span>`:(k.trend<0?`<span class="pill warn" title="Variação">${k.trend}pp</span>`:'');
-        return `<a class="kpi" href="${k.href}" aria-label="${k.label}">
-          <div class="meter" role="img" aria-label="${k.label} ${k.value}%"><span style="width:${k.value}%"></span></div>
-          <div class="kpi-body"><strong>${k.label}</strong><span class="muted">${k.value}% satisfação</span></div>
-          ${t}
-        </a>`;
-      }).join('');
-    }
-    function renderIndicators(){
-      const grid=document.getElementById('cards'); if(!grid) return;
-      const sections=[
-        {icon:'local_hospital', title:'Saúde', info:'Atendimento básico, tempo de espera, disponibilidade de medicamentos.', items:[
-          {name:'Tempo de espera em UBS', scale:'1–5', good:[4,5], avg:3.7, n:812},
-          {name:'Disponibilidade de medicamentos', scale:'1–5', good:[4,5], avg:3.4, n:799},
-          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.6, n:820}
-        ]},
-        {icon:'school', title:'Educação', info:'Qualidade do ensino, infraestrutura e segurança escolar.', items:[
-          {name:'Qualidade do ensino', scale:'1–5', good:[4,5], avg:3.5, n:756},
-          {name:'Infraestrutura', scale:'1–5', good:[4,5], avg:3.3, n:741},
-          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.4, n:770}
-        ]},
-        {icon:'directions_bus', title:'Transporte', info:'Frequência, lotação e percepção de segurança.', items:[
-          {name:'Frequência dos ônibus', scale:'1–5', good:[4,5], avg:2.8, n:934},
-          {name:'Lotação', scale:'1–5', good:[4,5], avg:2.6, n:928},
-          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:2.9, n:940}
-        ]},
-        {icon:'shield_person', title:'Segurança', info:'Iluminação pública, patrulhamento e sensação de segurança.', items:[
-          {name:'Iluminação pública', scale:'1–5', good:[4,5], avg:3.1, n:680},
-          {name:'Patrulhamento', scale:'1–5', good:[4,5], avg:3.0, n:672},
-          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.2, n:690}
-        ]},
-        {icon:'forest', title:'Meio ambiente', info:'Coleta seletiva, áreas verdes e limpeza urbana.', items:[
-          {name:'Coleta seletiva', scale:'1–5', good:[4,5], avg:3.6, n:720},
-          {name:'Conservação de praças', scale:'1–5', good:[4,5], avg:3.3, n:702},
-          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.5, n:730}
-        ]}
-      ];
-      function meter(p){ return `<div class="meter small"><span style="width:${Math.round(p*20)}%"></span></div>`; }
-      function legend(scale,good){ return `<div class="legend muted">Escala ${scale}. Bom: ${good.join(' ou ')}. <em>Leitura:</em> 1–2 = ruim, 3–4 = médio, 5 = bom.</div>`; }
-      grid.innerHTML=sections.map(sec=>{
-        const list=sec.items.map(it=>`<li class="row"><div class="row-main"><span>${it.name}</span>${meter(it.avg)}</div><span class="pill" title="amostra">n=${it.n}</span></li>`).join('');
-        return `<article class="card"><header class="card-head">
-          <span class="material-symbols-rounded" aria-hidden="true">${sec.icon}</span>
-          <div><h3>${sec.title}</h3><p class="subtitle">${sec.info}</p></div>
-          <details class="info"><summary class="btn icon" title="Ajuda">info</summary><div class="panel"><strong>Como ler:</strong><p>Usamos escala de 1–5. Para cada item, exibimos a média e a amostra (n). ${legend('1–5',['4','5'])}</p></div></details>
-        </header><ul class="list kpi-list">${list}</ul><footer class="card-foot muted">${legend('1–5',['4','5'])}</footer></article>`;
-      }).join('');
-    }
-    function showSyncTip(message,warn){ const el=document.getElementById('sync-tip'); if(!el) return; el.textContent=message||''; el.style.display=message?'block':'none'; el.classList.toggle('warn',!!warn); }
-    function updateSyncUI(enabled){ const btn=document.getElementById('sync-toggle'); const st=document.getElementById('sync-state'); if(btn){ btn.setAttribute('aria-pressed', enabled?'true':'false'); btn.querySelector('.sync-label').textContent=enabled?($t('sync.disable')||'Desativar'):($t('sync.enable')||'Permitir e ativar'); } if(st){ st.textContent=enabled?($t('sync.state.on')||'Sincronização ativada'):($t('sync.state.off')||'Sincronização desativada'); } }
-    async function setSyncEnabled(enabled){ updateSyncUI(enabled); return Promise.resolve(true); }
+  async function initPanel(){
+    renderToolbar();
+    renderPersona();
+    renderKPIs();
+    renderIndicators();
 
-    async function initPanel(){
-      bindThemeToggles();
-      bindLanguageToggles();
-      renderToolbar();
-      renderPersona();
-      renderKPIs();
-      renderIndicators();
-      applyI18n(document);
-      const btn=document.getElementById('sync-toggle'); const openTab=document.getElementById('sync-open-tab');
-      if(openTab){ openTab.style.display='none'; }
-      if(btn){ btn.addEventListener('click', async function(){
-        const on=btn.getAttribute('aria-pressed')==='true';
-        if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return; }
-        showSyncTip('Solicitando permissão do Google…'); setTimeout(async function(){ await setSyncEnabled(true); showSyncTip('Sincronização ativada'); }, 500);
-      }); }
-      document.addEventListener('click', function(e){ document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); }); });
-      document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
+    if(window.indexed && window.indexed.open){
+      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } });
     }
-    function tryInit(){ if(!window.__libsReady__) return; if(document.readyState!=='loading') initI18n(); else document.addEventListener('DOMContentLoaded', initI18n, {once:true}); }
-    loadInitialTheme();
-    tryInit();
+    try{ const flag = await (window.indexed?.get?.(window.indexed.stores?.config, 'sync_enabled')); updateSyncUI(!!(flag && flag.value)); }catch(_){ updateSyncUI(false); }
 
-    // Testes rápidos
-    (function selfTests(){
-      console.assert(!!window.i18next, '[test] i18next não carregou');
-      console.assert(Array.isArray(window.__INDEXED_LIB_CANDIDATES__), '[test] __INDEXED_LIB_CANDIDATES__ não é array');
-      console.assert(Array.isArray(window.__RELATORIO_LIB_CANDIDATES__), '[test] __RELATORIO_LIB_CANDIDATES__ não é array');
-      const check=['pt-BR','en-US','es-ES'].map(function(L){return `${computeDocBase()}/i18n/locales/${L}/system.json`;});
-      console.log('[test] candidatos de caminho i18n:', check);
-    })();
+    const btn = document.getElementById('sync-toggle');
+    const openTab = document.getElementById('sync-open-tab');
+    const ready = canRequestGIS();
+    if(openTab){ openTab.style.display = ready.code==='sandboxed' ? 'inline-flex' : 'none'; openTab.addEventListener('click', function(e){ e.preventDefault(); openStandalone('#sync-consent'); }); }
+    if(btn){ btn.addEventListener('click', async function(){ const on = btn.getAttribute('aria-pressed')==='true'; if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return;} const chk=canRequestGIS(); if(!chk.ok){ if(chk.code==='sandboxed'){ openStandalone('#sync-consent'); return;} showSyncTip(chk.msg,true); report('drive','warn',chk.code||'ambiente-invalido'); return;} try{ report('drive','info','solicitando consentimento'); const token=await requestGoogleDriveToken(); if(token){ await setSyncEnabled(true); report('drive','ok','consentimento concedido'); } else { showSyncTip('Não foi possível obter o token do Google.',true); report('drive','warn','sem-token'); } }catch(err){ showSyncTip('Falha ao solicitar permissão Google. Verifique se o popup não foi bloqueado.',true); report('drive','warn','falha-consentimento'); } }); }
+
+    document.addEventListener('click', function(e){ document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); }); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
+  }
+
+  function showSyncTip(message, warn){ var el=document.getElementById('sync-tip'); if(!el) return; el.textContent = message || ''; el.style.display = message? 'inline-flex':'none'; el.classList.remove('ok','warn','info'); el.classList.add(warn? 'warn':'ok'); var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (warn? 'err':'ok'); dot.title = message || (warn? 'Problema de sincronização' : 'Sincronização ok'); } }
+  function updateSyncUI(enabled){ var tbtn=document.getElementById('toolbar-sync'); if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; } var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (enabled? 'ok':'warn'); } var sbtn=document.getElementById('sync-toggle'); var lab=sbtn? sbtn.querySelector('.sync-label'):null; if(sbtn){ sbtn.setAttribute('aria-pressed', enabled? 'true':'false'); if(lab) lab.textContent = enabled? 'Ativado (clique para desligar)' : 'Permitir e ativar'; } var st=document.getElementById('sync-state'); if(st){ st.textContent = enabled? 'Sincronização ativada' : 'Sincronização desativada'; } }
+  async function setSyncEnabled(enabled){ if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){ updateSyncUI(enabled); return; } await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()}); updateSyncUI(enabled); }
+  function getClientId(){ var m=document.querySelector('meta[name="google-oauth-client-id"]'); if(m && m.content) return m.content.trim(); if(window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID; return 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com'; }
+  function canRequestGIS(){ if(self !== top){ return {ok:false, code:'sandboxed', msg:'Abra em aba própria (fora de iframe) para autorizar o Google.'}; } var cid=getClientId(); if(!cid || /^YOUR_/.test(cid)){ return {ok:false, code:'clientid-missing', msg:'Client ID do Google não configurado. Adicione a meta tag google-oauth-client-id.'}; } if(!(window.google && google.accounts && google.accounts.oauth2)){ return {ok:false, code:'gis-missing', msg:'Biblioteca de identidade Google não carregou ainda. Tente novamente.'}; } return {ok:true}; }
+  function openStandalone(hash){ try{ var url = new URL(window.location.href); url.hash = hash || ''; window.open(url.toString(), '_blank', 'noopener,noreferrer'); }catch(e){} }
+  function requestGoogleDriveToken(){ return new Promise(function(resolve, reject){ try{ var client = google.accounts.oauth2.initTokenClient({ client_id: getClientId(), scope: 'https://www.googleapis.com/auth/drive.file', prompt: 'consent', callback: function(resp){ if(resp && resp.access_token) return resolve(resp.access_token); reject(new Error('Sem token')); } }); client.requestAccessToken(); }catch(e){ reject(e); } }); }
+
+  if(document.readyState!=='loading') initPanel(); else document.addEventListener('DOMContentLoaded', initPanel);
   </script>
 </body>
 </html>
