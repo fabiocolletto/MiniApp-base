@@ -116,14 +116,14 @@ header{max-width:var(--container);margin:0 auto;padding:22px var(--pad) 8px}
 .info-trigger:focus-visible{outline:none;box-shadow:var(--ring)}
 
 /* Modais genéricos */
-.modal{position:fixed;inset:0;display:none}
-.modal:target{display:block}
-.modal .backdrop{position:absolute;inset:0;background:rgba(2,6,23,.45)}
-.sheet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,96vw);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md)}
-.sheet.compact{width:min(640px,96vw)}
-.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:clamp(16px,4vw,40px);z-index:100}
+.modal:target{display:flex}
+.modal .backdrop{position:fixed;inset:0;display:block;background:rgba(2,6,23,.45);z-index:0}
+.sheet{position:relative;width:min(760px,96vw);max-height:min(90vh,560px);display:flex;flex-direction:column;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:1}
+.sheet.compact{width:min(640px,96vw);max-height:min(90vh,520px)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
 .sheet-head h2{margin:0;font-size:16px}
-.sheet-body{padding:14px}
+.sheet-body{padding:14px;flex:1 1 auto;overflow-y:auto;min-height:0}
 .close{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;color:var(--muted)}
 
 .modal-body-flow{display:flex;flex-direction:column;gap:10px}
@@ -150,6 +150,10 @@ header{max-width:var(--container);margin:0 auto;padding:22px var(--pad) 8px}
 .flag{font-size:18px}
 
 /* ===== Responsividade ===== */
+@media (max-height:600px){
+  .modal{align-items:flex-start;padding:clamp(12px,4vw,24px)}
+  .sheet,.sheet.compact{border-radius:var(--radius-sm)}
+}
 @media (max-width:1200px){
   .kpi-bar{grid-template-columns:repeat(3,1fr)} /* tablet landscape ~ 3 colunas */
 }
