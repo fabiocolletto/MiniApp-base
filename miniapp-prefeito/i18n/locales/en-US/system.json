@@ -1,0 +1,67 @@
+{
+  "app": {
+    "title": "City of Curitiba — Indicators Dashboard",
+    "subtitle": "Version with i18n and remote templates",
+    "footer": "Base prepared for i18n (i18next) and versioned external templates."
+  },
+  "toolbar": {
+    "filters": "Filters",
+    "studies": "Studies",
+    "theme": "Theme",
+    "language": "Language",
+    "multidevice": "Multi-device"
+  },
+  "theme": {
+    "title": "Panel theme",
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Automatic"
+  },
+  "lang": {
+    "title": "Panel language",
+    "pt": "Portuguese",
+    "es": "Spanish",
+    "en": "English"
+  },
+  "info": {
+    "hint": "Tap the icon again to close."
+  },
+  "persona": {
+    "title": "Sample profile",
+    "gender": "Gender distribution",
+    "age": "Age distribution",
+    "neighborhood": "Top neighborhoods",
+    "hint": "After filters",
+    "hintTop": "Top 3"
+  },
+  "sector": {
+    "saude": "Health",
+    "educacao": "Education",
+    "transporte": "Transport",
+    "seguranca": "Public Safety",
+    "meioambiente": "Environment"
+  },
+  "delta": {
+    "stable": "stable"
+  },
+  "charts": {
+    "avg_by_sector": "Average satisfaction by sector",
+    "distribution": "Score distribution",
+    "distributionDesc": "Proportion after filters.",
+    "trendBySector": "Monthly trend by sector",
+    "trendBySectorDesc": "Evolution of monthly averages.",
+    "reviewsByMonth": "Reviews by month",
+    "reviewsByMonthDesc": "Volume of responses collected.",
+    "mapByNeighborhood": "City map — points by neighborhood",
+    "mapByNeighborhoodDesc": "Spatial distribution.",
+    "shareBySector": "Share by sector",
+    "shareBySectorDesc": "Percentage by sector."
+  },
+  "kpi": {
+    "labels": {
+      "avg": "Average",
+      "delta": "Variation",
+      "topMetrics": "Top metrics"
+    }
+  }
+}

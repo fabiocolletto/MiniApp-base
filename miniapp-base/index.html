@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniApps — Catálogo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/miniapp-base/styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.0.0" media="print" onload="this.media='all'">
+  <style>
+    body{padding:24px}
+    header .title{display:flex;gap:12px;align-items:center}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:16px}
+    @media (max-width: 1000px){ .grid{grid-template-columns:repeat(2,minmax(220px,1fr));} }
+    @media (max-width: 640px){ .grid{grid-template-columns:1fr;} }
+    .app-card{background:var(--card,#fff);border:1px solid var(--card-border,#cbd5e1);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .app-card .row{display:flex;gap:12px;align-items:center}
+    .app-card img{width:56px;height:56px;object-fit:contain;border-radius:12px;border:1px solid var(--card-border,#cbd5e1);background:#fff}
+    .app-card h3{margin:0;font-size:16px}
+    .app-card p{margin:0;font-size:13px;color:var(--muted,#64748b)}
+    .app-card .actions{display:flex;gap:8px;justify-content:flex-end}
+    .btn{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--card-border,#cbd5e1);padding:10px 12px;border-radius:12px;background:#fff;text-decoration:none;color:inherit}
+    .btn.primary{background:#0b57d0;border-color:#0b57d0;color:#fff}
+    .btn .material-symbols-rounded{font-size:18px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <span class="material-symbols-rounded">apps</span>
+      <div>
+        <h1>Catálogo de MiniApps</h1>
+        <p class="subtitle">Selecione um mini‑app para abrir</p>
+      </div>
+      <span class="version">v1.0.0</span>
+    </div>
+  </header>
+
+  <main class="grid" aria-live="polite">
+    <article class="app-card">
+      <div class="row">
+        <img src="./assets/icons/prefeito.png" alt="Ícone do Mini‑App Prefeito">
+        <div>
+          <h3>Painel do Prefeito</h3>
+          <p>Painel com KPIs, filtros e relatórios setoriais.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../miniapp-prefeito/index.html" title="Abrir">
+          <span class="material-symbols-rounded">open_in_new</span>
+          Abrir
+        </a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

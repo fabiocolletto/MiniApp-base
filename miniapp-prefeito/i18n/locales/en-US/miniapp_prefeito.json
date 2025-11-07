@@ -1,0 +1,14 @@
+{
+  "miniapp": {
+    "name": "Mayor's Dashboard",
+    "legend": {
+      "ratingBands": "1–2: poor · 3–4: fair · 5: excellent"
+    },
+    "kpi": {
+      "templateNote": "This text may change according to filters."
+    },
+    "chart": {
+      "drilldownHint": "Tap to see more details for this chart."
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "app": {
+    "title": "Municipio de Curitiba — Panel de Indicadores",
+    "subtitle": "Versión con i18n y plantillas remotas",
+    "footer": "Base preparada para i18n (i18next) y plantillas externas versionadas."
+  },
+  "toolbar": {
+    "filters": "Filtros",
+    "studies": "Estudios",
+    "theme": "Tema",
+    "language": "Idioma",
+    "multidevice": "Multi-dispositivo"
+  },
+  "theme": {
+    "title": "Tema del panel",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "auto": "Automático"
+  },
+  "lang": {
+    "title": "Idioma del panel",
+    "pt": "Portugués",
+    "es": "Español",
+    "en": "Inglés"
+  },
+  "info": {
+    "hint": "Toque el ícono otra vez para cerrar."
+  },
+  "persona": {
+    "title": "Perfil de la muestra",
+    "gender": "Distribución por género",
+    "age": "Distribución por edad",
+    "neighborhood": "Barrios principales",
+    "hint": "Después de los filtros",
+    "hintTop": "Top 3"
+  },
+  "sector": {
+    "saude": "Salud",
+    "educacao": "Educación",
+    "transporte": "Transporte",
+    "seguranca": "Seguridad",
+    "meioambiente": "Medio ambiente"
+  },
+  "delta": {
+    "stable": "estable"
+  },
+  "charts": {
+    "avg_by_sector": "Promedio de satisfacción por sector",
+    "distribution": "Distribución de puntajes",
+    "distributionDesc": "Proporción después de los filtros.",
+    "trendBySector": "Tendencia mensual por sector",
+    "trendBySectorDesc": "Evolución de promedios mensuales.",
+    "reviewsByMonth": "Reseñas por mes",
+    "reviewsByMonthDesc": "Volumen de respuestas recolectadas.",
+    "mapByNeighborhood": "Mapa de la ciudad — puntos por barrio",
+    "mapByNeighborhoodDesc": "Distribución espacial.",
+    "shareBySector": "Participación por sector",
+    "shareBySectorDesc": "Porcentaje por sector."
+  },
+  "kpi": {
+    "labels": {
+      "avg": "Promedio",
+      "delta": "Variación",
+      "topMetrics": "Métricas destacadas"
+    }
+  }
+}

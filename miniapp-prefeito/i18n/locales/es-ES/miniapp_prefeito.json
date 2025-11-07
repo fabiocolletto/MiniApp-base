@@ -1,0 +1,14 @@
+{
+  "miniapp": {
+    "name": "Panel del Alcalde",
+    "legend": {
+      "ratingBands": "1–2: malo · 3–4: regular · 5: excelente"
+    },
+    "kpi": {
+      "templateNote": "Este texto puede cambiar según los filtros."
+    },
+    "chart": {
+      "drilldownHint": "Toque para ver más detalles del gráfico."
+    }
+  }
+}
