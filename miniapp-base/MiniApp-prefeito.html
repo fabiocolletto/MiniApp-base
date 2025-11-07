@@ -263,11 +263,16 @@
     if(!opts.skipStore) saveLocalPref('lang', normalized);
     updateLanguageButtons(normalized);
     if(!opts.skipRender){
-      renderAll();
-      updateThemeButtons(currentThemePref);
-      refreshLocalStatus();
-      refreshIndexedStatus(currentIndexedState);
-      refreshDriveStatus(currentDriveState);
+      var schedule = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+        ? window.requestAnimationFrame.bind(window)
+        : function(cb){ return setTimeout(cb, 0); };
+      schedule(function(){
+        renderAll();
+        updateThemeButtons(currentThemePref);
+        refreshLocalStatus();
+        refreshIndexedStatus(currentIndexedState);
+        refreshDriveStatus(currentDriveState);
+      });
     }
   }
 
@@ -278,7 +283,12 @@
       btn.addEventListener('click', function(ev){ ev.preventDefault(); applyThemePreference(btn.dataset.theme || 'auto'); closeModalSection('theme'); });
     });
     document.querySelectorAll('#language .chipbtn[data-lang]').forEach(function(btn){
-      btn.addEventListener('click', function(ev){ ev.preventDefault(); applyLanguagePreference(btn.dataset.lang || 'pt-BR'); closeModalSection('language'); });
+      btn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        var lang = btn.dataset.lang || 'pt-BR';
+        closeModalSection('language');
+        applyLanguagePreference(lang);
+      });
     });
   }
 
