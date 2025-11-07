@@ -1,14 +1,1 @@
-{
-  "miniapp": {
-    "name": "Painel do Prefeito",
-    "legend": {
-      "ratingBands": "1–2: ruim · 3–4: regular · 5: excelente"
-    },
-    "kpi": {
-      "templateNote": "Este texto pode ser substituído dinamicamente conforme filtros aplicados."
-    },
-    "chart": {
-      "drilldownHint": "Toque para ver mais detalhes deste gráfico."
-    }
-  }
-}
+{}

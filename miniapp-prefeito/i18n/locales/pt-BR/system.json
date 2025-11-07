@@ -1,15 +1,8 @@
 {
   "app": {
     "title": "Município de Curitiba — Painel de Indicadores",
-    "subtitle": "Versão com i18n e templates remotos",
+    "subtitle": "Versão com i18n (i18next) e templates remotos",
     "footer": "Base preparada para i18n (i18next) e templates externos versionados."
-  },
-  "toolbar": {
-    "filters": "Filtros",
-    "studies": "Pesquisas",
-    "theme": "Tema",
-    "language": "Idioma",
-    "multidevice": "Multi-dispositivo"
   },
   "theme": {
     "title": "Tema do painel",
@@ -20,48 +13,20 @@
   "lang": {
     "title": "Idioma do painel",
     "pt": "Português",
-    "es": "Español",
-    "en": "English"
+    "en": "English",
+    "es": "Español"
   },
-  "info": {
-    "hint": "Toque no ícone novamente para fechar."
-  },
-  "persona": {
-    "title": "Perfil da amostra",
-    "gender": "Distribuição por gênero",
-    "age": "Distribuição por faixa etária",
-    "neighborhood": "Bairros mais presentes",
-    "hint": "Após filtros",
-    "hintTop": "Top 3"
-  },
-  "sector": {
-    "saude": "Saúde",
-    "educacao": "Educação",
-    "transporte": "Transporte",
-    "seguranca": "Segurança",
-    "meioambiente": "Meio ambiente"
-  },
-  "delta": {
-    "stable": "estável"
-  },
-  "charts": {
-    "avg_by_sector": "Média de satisfação por setor",
-    "distribution": "Distribuição de notas",
-    "distributionDesc": "Proporção após filtros.",
-    "trendBySector": "Tendência mensal por setor",
-    "trendBySectorDesc": "Evolução das médias mensais.",
-    "reviewsByMonth": "Avaliações por mês",
-    "reviewsByMonthDesc": "Volume de respostas coletadas.",
-    "mapByNeighborhood": "Mapa do município — pontos por bairro",
-    "mapByNeighborhoodDesc": "Distribuição espacial.",
-    "shareBySector": "Participação por setor",
-    "shareBySectorDesc": "Percentual por setor."
-  },
-  "kpi": {
-    "labels": {
-      "avg": "Média",
-      "delta": "Variação",
-      "topMetrics": "Top métricas"
+  "sync": {
+    "title": "Múltiplos dispositivos",
+    "lead": "Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.",
+    "ctaTitle": "Sincronizar com Google Drive",
+    "ctaHint": "Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.",
+    "enable": "Permitir e ativar",
+    "disable": "Desativar",
+    "openTab": "Abrir em nova aba",
+    "state": {
+      "on": "Sincronização ativada",
+      "off": "Sincronização desativada"
     }
   }
 }

@@ -1,99 +1,107 @@
 <!doctype html>
 <html lang="pt-BR" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel de Indicadores — i18next + Templates (v1.0.0)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/miniapp-base/styles.css?v=1.0.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.0.0" media="print" onload="this.media='all'">
-  <style>
-    .modal{position:fixed;inset:0;display:none}
-    .modal:target{display:block}
-    .kpi{position:relative}
-    .kpi details.info{position:absolute;top:6px;right:6px}
-    .kpi details.info summary{list-style:none;border:none;background:transparent;width:28px;height:28px;display:grid;place-items:center;padding:0}
-    .kpi details.info[open] .panel{min-width:260px}
-  </style>
-  <script src="https://unpkg.com/i18next@23/dist/umd/i18next.min.js"></script>
-  <script src="https://unpkg.com/i18next-http-backend@2/dist/umd/i18nextHttpBackend.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Painel de Indicadores — i18n (i18next) + Templates (v1.0.10)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- GH Pages-safe: relativo à pasta miniapp-prefeito/ -->
+  <link rel="stylesheet" href="../miniapp-base/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@main/miniapp-base/styles.css" media="print" onload="this.media='all'">
+  <style>
+    .modal{position:fixed;inset:0;display:none}
+    .modal:target{display:block}
+    .kpi{position:relative}
+    .kpi details.info{position:absolute;top:6px;right:6px}
+    .kpi details.info summary{list-style:none;border:none;background:transparent;width:28px;height:28px;display:grid;place-items:center;padding:0}
+    .kpi details.info[open] .panel{min-width:260px}
+    .toolbar .chipbtn{display:inline-flex;align-items:center;gap:.5rem}
+    .kpi-bar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:stretch}
+    .kpi-bar .kpi{display:flex;flex-direction:column}
+    @media (max-width:700px){.kpi-bar{grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);overflow-x:auto;padding-bottom:4px}}
+  </style>
+  <script defer src="https://unpkg.com/i18next@23/dist/umd/i18next.min.js"></script>
+  <script defer src="https://unpkg.com/i18next-http-backend@2/dist/umd/i18nextHttpBackend.min.js"></script>
 </head>
 <body>
-  <header>
-    <div class="title">
-      <span class="material-symbols-rounded" aria-hidden="true">insights</span>
-      <div>
-        <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
-        <p class="subtitle" data-i18n="app.subtitle">Versão com i18n e templates remotos</p>
-      </div>
-      <span class="version" aria-label="versão do arquivo">v1.0.0</span>
-    </div>
-    <div class="toolbar" role="group" aria-label="Controles de exibição">
-      <div class="split" id="toolbar-split"></div>
-    </div>
-  </header>
+  <header>
+    <div class="title">
+      <span class="material-symbols-rounded" aria-hidden="true">insights</span>
+      <div>
+        <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
+        <p class="subtitle" data-i18n="app.subtitle">Versão com i18n (i18next) e templates remotos</p>
+      </div>
+      <span class="version" aria-label="versão do arquivo">v1.0.10</span>
+    </div>
+    <div class="toolbar" role="group" aria-label="Controles de exibição">
+      <div class="split" id="toolbar-split"></div>
+    </div>
+  </header>
 
-  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
-  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor"></section>
+  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
+  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor"></section>
 
-  <main id="cards" class="grid" aria-live="polite"></main>
+  <main id="cards" class="grid" aria-live="polite"></main>
 
-  <section id="theme" class="modal" aria-labelledby="th1">
-    <a class="backdrop" href="#" aria-hidden="true"></a>
-    <div class="sheet compact" role="dialog" aria-modal="true">
-      <header class="sheet-head">
-        <h2 id="th1" data-i18n="theme.title">Tema do painel</h2>
-        <a class="close" href="#" aria-label="Fechar">✕</a>
-      </header>
-      <div class="sheet-body">
-        <div class="quickbar" role="group">
-                    <a class="chipbtn" id="theme-light-btn" href="#" data-theme="light"><span class="material-symbols-rounded">light_mode</span><span data-i18n="theme.light">Claro</span></a>
-          <a class="chipbtn" id="theme-dark-btn" href="#" data-theme="dark"><span class="material-symbols-rounded">dark_mode</span><span data-i18n="theme.dark">Escuro</span></a>
-          <a class="chipbtn" id="theme-auto-btn" href="#" data-theme="auto"><span class="material-symbols-rounded">autorenew</span><span data-i18n="theme.auto">Automático</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section id="theme" class="modal" aria-labelledby="th1">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet compact" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="th1" data-i18n="theme.title">Tema do painel</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <div class="quickbar" role="group">
+          <a class="chipbtn" id="theme-light-btn" href="#" data-theme="light"><span class="material-symbols-rounded">light_mode</span><span data-i18n="theme.light">Claro</span></a>
+          <a class="chipbtn" id="theme-dark-btn" href="#" data-theme="dark"><span class="material-symbols-rounded">dark_mode</span><span data-i18n="theme.dark">Escuro</span></a>
+          <a class="chipbtn" id="theme-auto-btn" href="#" data-theme="auto"><span class="material-symbols-rounded">autorenew</span><span data-i18n="theme.auto">Automático</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section id="language" class="modal" aria-labelledby="lg1">
-    <a class="backdrop" href="#" aria-hidden="true"></a>
-    <div class="sheet compact" role="dialog" aria-modal="true">
-      <header class="sheet-head">
-        <h2 id="lg1" data-i18n="lang.title">Idioma do painel</h2>
-        <a class="close" href="#" aria-label="Fechar">✕</a>
-      </header>
-      <div class="sheet-body">
-        <div class="quickbar" role="group">
-                    <a class="chipbtn" id="lang-pt-btn" href="#" data-lang="pt-BR"><span class="flag">🇧🇷</span><span data-i18n="lang.pt">Português</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section id="language" class="modal" aria-labelledby="lg1">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet compact" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="lg1" data-i18n="lang.title">Idioma do painel</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <div class="quickbar" role="group">
+          <a class="chipbtn" id="lang-pt-btn" href="#" data-lang="pt-BR"><span class="flag">🇧🇷</span><span data-i18n="lang.pt">Português</span></a>
+          <a class="chipbtn" id="lang-en-btn" href="#" data-lang="en-US"><span class="flag">🇺🇸</span><span data-i18n="lang.en">English</span></a>
+          <a class="chipbtn" id="lang-es-btn" href="#" data-lang="es-ES"><span class="flag">🇪🇸</span><span data-i18n="lang.es">Español</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section id="sync" class="modal" aria-labelledby="gd1">
-    <a class="backdrop" href="#" aria-hidden="true"></a>
-    <div class="sheet compact" role="dialog" aria-modal="true">
-      <header class="sheet-head">
-        <h2 id="gd1" data-i18n="sync.title">Múltiplos dispositivos</h2>
-        <a class="close" href="#" aria-label="Fechar">✕</a>
-      </header>
-      <div class="sheet-body">
-        <p style="margin-top:0;color:var(--muted)" data-i18n="sync.lead">Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.</p>
-        <div class="subcard" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <strong data-i18n="sync.ctaTitle">Sincronizar com Google Drive</strong>
-            <span style="font-size:12px;color:var(--muted)" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
-          </div>
-          <button id="sync-toggle" class="btn" aria-pressed="false" title="Habilitar sincronização"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
-        </div>
-        <p id="sync-state" style="margin:10px 0 0;color:var(--muted)" data-i18n="sync.state.off">Sincronização desativada</p>
-        <div id="sync-tip" class="pill info" style="margin-top:10px;display:none"></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba"><span class="material-symbols-rounded">open_in_new</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section id="sync" class="modal" aria-labelledby="gd1">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet compact" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="gd1" data-i18n="sync.title">Múltiplos dispositivos</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <p style="margin-top:0;color:var(--muted)" data-i18n="sync.lead">Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.</p>
+        <div class="subcard" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <strong data-i18n="sync.ctaTitle">Sincronizar com Google Drive</strong>
+            <span style="font-size:12px;color:var(--muted)" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
+          </div>
+          <button id="sync-toggle" class="btn" aria-pressed="false" title="Habilitar sincronização"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
+        </div>
+        <p id="sync-state" style="margin:10px 0 0;color:var(--muted)" data-i18n="sync.state.off">Sincronização desativada</p>
+        <div id="sync-tip" class="pill info" style="margin-top:10px;display:none"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba"><span class="material-symbols-rounded">open_in_new</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="kpi-saude" class="modal" aria-labelledby="k1"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k1">Saúde — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão. Este painel replica o layout dos detalhes dos gráficos, com foco no setor.</p></div></div></section>
   <section id="kpi-educacao" class="modal" aria-labelledby="k2"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k2">Educação — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
@@ -101,256 +109,244 @@
   <section id="kpi-seguranca" class="modal" aria-labelledby="k4"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k4">Segurança — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
   <section id="kpi-meioambiente" class="modal" aria-labelledby="k5"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k5">Meio ambiente — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
 
-  <section id="info-modal" class="modal" aria-label="Informações"></section>
+  <section id="info-modal" class="modal" aria-label="Informações"></section>
 
-  <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
+  <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
 
-  <script>
-    // CORREÇÕES I18N
-    // Caminho relativo para os JSONs locais do miniapp-prefeito/i18n/locales/
-    const I18N_BACKEND_PATH = 'i18n/locales/{{lng}}/{{ns}}.json';
-    // Adicionando namespaces específicos do MiniApp
-    const I18N_NAMESPACES = ['common','kpi','charts','reports', 'miniapp_prefeito', 'system'];
-    
-    // CONSTANTES DE PERSISTÊNCIA
+  <script>
+    const I18N_NAMESPACES = ['common','kpi','charts','reports','miniapp_prefeito','system'];
     const THEME_STORAGE_KEY = 'miniapp-prefeito-theme';
-    const LANG_STORAGE_KEY = 'miniapp-prefeito-lang';
+    const LANG_STORAGE_KEY  = 'miniapp-prefeito-lang';
 
-  window.__INDEXED_LIB_CANDIDATES__ = [
-    'modules/indexed/indexed.min.js','modules/indexed/indexed.js',
-    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.min.js',
-    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.js',
-    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.min.js',
-    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.js'
-  ];
-  window.__RELATORIO_LIB_CANDIDATES__ = [
-    'miniapp-base/relatorio_utils.js','/miniapp-base/relatorio_utils.js','modules/relatorio_utils.js',
-    'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/relatorio_utils.js',
-    'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/miniapp-base/relatorio_utils.js'
-  ];
+    // Garantia: candidatos definidos mesmo se o ambiente não injetar variáveis globais
+    window.__INDEXED_LIB_CANDIDATES__   = Array.isArray(window.__INDEXED_LIB_CANDIDATES__)   ? window.__INDEXED_LIB_CANDIDATES__   : [];
+    window.__RELATORIO_LIB_CANDIDATES__ = Array.isArray(window.__RELATORIO_LIB_CANDIDATES__) ? window.__RELATORIO_LIB_CANDIDATES__ : [];
 
-  function applyI18n(root){
-    try{ (root||document).querySelectorAll('[data-i18n]').forEach(function(n){ var k=n.getAttribute('data-i18n'); if(k) n.textContent = i18next.t(k); }); }catch(_){ }
-  }
-  function $t(k){ try{ return i18next.t(k) || k; }catch(_){ return k; } }
-
-
-    // --- LÓGICA DE TEMA ---
-  function applyTheme(theme) {
-      const html = document.documentElement;
-      window.location.hash = ''; // Fecha o modal
-      
-      if (theme === 'auto') {
-          html.removeAttribute('data-theme');
-          localStorage.removeItem(THEME_STORAGE_KEY);
-      } else {
-          html.setAttribute('data-theme', theme);
-          localStorage.setItem(THEME_STORAGE_KEY, theme);
-      }
-  }
-
-  function loadInitialTheme() {
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-      const html = document.documentElement;
-
-      if (savedTheme === 'auto') {
-          html.removeAttribute('data-theme');
-      } else if (savedTheme) {
-          html.setAttribute('data-theme', savedTheme);
-      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          html.setAttribute('data-theme', 'dark');
-      } else {
-          html.setAttribute('data-theme', 'light');
-      }
-  }
-
-  function bindThemeToggles() {
-      const themeModal = document.getElementById('theme');
-      if (!themeModal) return;
-
-      themeModal.querySelectorAll('.chipbtn').forEach(button => {
-          const theme = button.getAttribute('data-theme');
-          if (theme) {
-              button.addEventListener('click', function(e) {
-                  e.preventDefault();
-                  applyTheme(theme);
-              });
-          }
-      });
-  }
-    // --- FIM LÓGICA DE TEMA ---
-
-
-    // --- LÓGICA DE IDIOMA ---
-    function applyLanguage(lang) {
-        const newLang = lang || 'pt-BR';
-        localStorage.setItem(LANG_STORAGE_KEY, newLang);
-        window.location.hash = '';
-
-        // Se o i18next já estiver rodando, muda e re-renderiza
-        if (window.i18next && i18next.isInitialized) {
-            i18next.changeLanguage(newLang).then(() => {
-                renderToolbar(); // RE-RENDERIZA A TOOLBAR com novo idioma
-                renderPersona(); // RE-RENDERIZA PERSONA
-                renderKPIs();    // RE-RENDERIZA KPIs
-                renderIndicators(); // RE-RENDERIZA INDICATORS
-                applyI18n(document); // Aplica em todo o resto
-            });
-        }
-        document.documentElement.lang = newLang;
+    function computeDocBase(){ return location.pathname.replace(/\/[^/]*$/, ''); }
+    function buildCandidates(lng, ns){
+      const DOC_BASE = computeDocBase();
+      return [
+        `${DOC_BASE}/i18n/locales/${lng}/${ns}.json`,
+        `i18n/locales/${lng}/${ns}.json`
+      ];
     }
 
-    function loadInitialLanguage() {
-        const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || document.documentElement.lang || 'pt-BR';
-        document.documentElement.lang = savedLang;
-        return savedLang;
-    }
-
-    function bindLanguageToggles() {
-        const langModal = document.getElementById('language');
-        if (!langModal) return;
-
-        langModal.querySelectorAll('.chipbtn').forEach(button => {
-            const lang = button.getAttribute('data-lang');
-            if (lang) {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    applyLanguage(lang);
-                });
-            }
+    function applyI18n(root){
+      try{
+        (root||document).querySelectorAll('[data-i18n]').forEach(function(n){
+          const key=n.getAttribute('data-i18n');
+          const val=i18next.t(key);
+          if(!val || val===key){ console.warn('i18n: tradução ausente para', key); return; }
+          n.textContent=val;
         });
+      }catch(_){ }
     }
-    // --- FIM LÓGICA DE IDIOMA ---
+    function $t(k){ try{ return i18next.t(k) || k; }catch(_){ return k; } }
 
+    function applyTheme(theme){
+      const html=document.documentElement; if(history.replaceState){history.replaceState(null,'',location.pathname+location.search);} else {window.location.hash='';}
+      if(theme==='auto'){ html.removeAttribute('data-theme'); localStorage.removeItem(THEME_STORAGE_KEY); }
+      else{ html.setAttribute('data-theme', theme); localStorage.setItem(THEME_STORAGE_KEY, theme); }
+    }
+    function loadInitialTheme(){
+      const saved=localStorage.getItem(THEME_STORAGE_KEY); const html=document.documentElement;
+      if(saved==='auto'){ html.removeAttribute('data-theme'); }
+      else if(saved){ html.setAttribute('data-theme', saved); }
+      else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){ html.setAttribute('data-theme','dark'); }
+      else{ html.setAttribute('data-theme','light'); }
+    }
+    function bindThemeToggles(){
+      const m=document.getElementById('theme'); if(!m) return;
+      m.querySelectorAll('.chipbtn').forEach(btn=>{ if(btn.dataset.bound) return; btn.dataset.bound='1';
+        const v=btn.getAttribute('data-theme'); if(!v) return; btn.addEventListener('click',e=>{e.preventDefault();applyTheme(v);},{passive:true});
+      });
+    }
 
-  (function loadScripts(){
-    function loadOne(list, cb){ if(!list||!list.length) return cb&&cb(); var src=list.shift(); var s=document.createElement('script'); s.src=src; s.async=true; s.onload=function(){ cb&&cb(true,src); }; s.onerror=function(){ loadOne(list, cb); }; document.head.appendChild(s); }
-    loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){ loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){ initI18n(); }); });
-  })();
+    function applyLanguage(lang){
+      if(lang){ localStorage.setItem(LANG_STORAGE_KEY,lang);} else {localStorage.removeItem(LANG_STORAGE_KEY);} 
+      if(history.replaceState){history.replaceState(null,'',location.pathname+location.search);} else {window.location.hash='';}
+      if(window.i18next && i18next.isInitialized){ i18next.changeLanguage(lang||'pt-BR').then(()=>applyI18n(document)); }
+      document.documentElement.lang=lang||'pt-BR';
+    }
+    function loadInitialLanguage(){ const saved=localStorage.getItem(LANG_STORAGE_KEY)||document.documentElement.lang||'pt-BR'; document.documentElement.lang=saved; return saved; }
+    function bindLanguageToggles(){
+      const m=document.getElementById('language'); if(!m) return;
+      m.querySelectorAll('.chipbtn').forEach(btn=>{ if(btn.dataset.bound) return; btn.dataset.bound='1';
+        const L=btn.getAttribute('data-lang'); if(!L) return; btn.addEventListener('click',e=>{e.preventDefault();applyLanguage(L);},{passive:true});
+      });
+    }
 
-  function initI18n(){
-    const initialLang = loadInitialLanguage(); // Usa o idioma persistido ou padrão
-    try{
-      i18next.use(i18nextHttpBackend).init({
-        lng: initialLang, // Usa o idioma inicial persistido
-        fallbackLng: 'pt-BR',
-        ns: I18N_NAMESPACES,
-        defaultNS: 'common',
-        backend: { loadPath: I18N_BACKEND_PATH },
-        interpolation: { escapeValue: false }
-      }).then(function(){ initPanel(); });
-    }catch(e){ initPanel(); }
-  }
+    (function loadScripts(){
+      function loadOne(list, cb){
+        if(!list||!list.length) return cb&&cb();
+        var src=list.shift(); var s=document.createElement('script'); var done=false;
+        var t=setTimeout(function(){ if(done) return; done=true; loadOne(list, cb); }, 5000);
+        s.src=src; s.async=true;
+        s.onload=function(){ if(done) return; done=true; clearTimeout(t); cb&&cb(true,src); };
+        s.onerror=function(){ if(done) return; done=true; clearTimeout(t); loadOne(list, cb); };
+        document.head.appendChild(s);
+      }
+      loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){
+        loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){ window.__libsReady__=true; tryInit(); });
+      });
+    })();
 
-  function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
+    function initI18n(){
+      if(window.__i18nStarted__) return; window.__i18nStarted__=true;
+      const initialLang=loadInitialLanguage();
+      try{
+        i18next
+          .use(i18nextHttpBackend)
+          .init({
+            lng: initialLang,
+            fallbackLng: 'pt-BR',
+            ns: I18N_NAMESPACES,
+            defaultNS: 'common',
+            backend: {
+              loadPath: '{{lng}}|{{ns}}',
+              request: function(options, url, payload, callback){
+                try{
+                  var parts = url.split('|');
+                  var lng = parts[0];
+                  var ns  = parts[1];
+                  var urls = buildCandidates(lng, ns);
+                  var i = 0;
+                  (function tryNext(){
+                    if(i>=urls.length){ callback('not found', { status: 404 }); return; }
+                    var u = urls[i++];
+                    fetch(u, { cache:'no-store' })
+                      .then(function(r){ if(!r.ok){ tryNext(); return; } return r.text().then(function(data){ callback(null, { status:200, data:data }); }); })
+                      .catch(function(){ tryNext(); });
+                  })();
+                }catch(err){ callback(err && err.message ? err.message : 'request error', { status: 0 }); }
+              }
+            },
+            interpolation: { escapeValue: false }
+          })
+          .then(function(){
+            applyI18n(document);
+            initPanel();
+            (async function quickLangAudit(){
+              const langs=['pt-BR','en-US','es-ES']; const misses=[];
+              for(const L of langs){
+                for(const ns of I18N_NAMESPACES){
+                  const u=buildCandidates(L,ns)[0];
+                  try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok){ misses.push(`${L}/${ns} → HTTP ${r.status}`); } }
+                  catch(err){ misses.push(`${L}/${ns} → ${err&&err.message?err.message:'erro'}`); }
+                }
+              }
+              if(misses.length){ console.warn('[i18n-audit] Ausentes/inacessíveis:', misses); }
+              else{ console.info('[i18n-audit] OK: idiomas e namespaces acessíveis.'); }
+            })();
+          });
+      }catch(e){ console.error('i18n init error', e); initPanel(); }
+    }
 
-  function renderToolbar(){
-    var el=document.getElementById('toolbar-split');
-    if(!el) return;
-    el.innerHTML=''
-      + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
-      + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
-      + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
-      + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
-      + '<a class="btn" href="#sync" id="toolbar-sync" title="Multi"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
-  }
-  // ... (renderPersona, renderKPIs, renderIndicators permanecem inalteradas, mas garantem a tradução via $t() na primeira renderização) ...
+    function report(kind,state,text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind,state,text); }catch(_){} }
+    function renderToolbar(){
+      const host=document.getElementById('toolbar-split'); if(!host) return;
+      host.innerHTML=`
+        <a class="chipbtn" href="#theme" title="Tema"><span class="material-symbols-rounded">palette</span><span data-i18n="theme.title">Tema do painel</span></a>
+        <a class="chipbtn" href="#language" title="Idioma"><span class="material-symbols-rounded">translate</span><span data-i18n="lang.title">Idioma do painel</span></a>
+        <a class="chipbtn" href="#sync" title="Sincronização"><span class="material-symbols-rounded">cloud_sync</span><span data-i18n="sync.title">Múltiplos dispositivos</span></a>`;
+    }
+    function renderPersona(){
+      const host=document.getElementById('persona-bar'); if(!host) return;
+      const demo=[{k:'Gênero',v:'53% mulheres'},{k:'Faixa etária',v:'34% 25–39'},{k:'Renda',v:'R$ 2k–5k predominante'},{k:'Escolaridade',v:'Ensino médio (48%)'}];
+      host.innerHTML=demo.map(d=>`<span class="chip"><strong>${d.k}</strong> ${d.v}</span>`).join('');
+    }
+    function renderKPIs(){
+      const host=document.getElementById('kpi-bar'); if(!host) return;
+      const kpis=[
+        {id:'saude',label:'Saúde',value:72,trend:+4,href:'#kpi-saude'},
+        {id:'educacao',label:'Educação',value:68,trend:+2,href:'#kpi-educacao'},
+        {id:'transporte',label:'Transporte',value:41,trend:-3,href:'#kpi-transporte'},
+        {id:'seguranca',label:'Segurança',value:57,trend:+1,href:'#kpi-seguranca'},
+        {id:'meioambiente',label:'Meio ambiente',value:63,trend:+5,href:'#kpi-meioambiente'}
+      ];
+      host.innerHTML=kpis.map(k=>{
+        const t=k.trend>0?`<span class="pill success" title="Variação">+${k.trend}pp</span>`:(k.trend<0?`<span class="pill warn" title="Variação">${k.trend}pp</span>`:'');
+        return `<a class="kpi" href="${k.href}" aria-label="${k.label}">
+          <div class="meter" role="img" aria-label="${k.label} ${k.value}%"><span style="width:${k.value}%"></span></div>
+          <div class="kpi-body"><strong>${k.label}</strong><span class="muted">${k.value}% satisfação</span></div>
+          ${t}
+        </a>`;
+      }).join('');
+    }
+    function renderIndicators(){
+      const grid=document.getElementById('cards'); if(!grid) return;
+      const sections=[
+        {icon:'local_hospital', title:'Saúde', info:'Atendimento básico, tempo de espera, disponibilidade de medicamentos.', items:[
+          {name:'Tempo de espera em UBS', scale:'1–5', good:[4,5], avg:3.7, n:812},
+          {name:'Disponibilidade de medicamentos', scale:'1–5', good:[4,5], avg:3.4, n:799},
+          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.6, n:820}
+        ]},
+        {icon:'school', title:'Educação', info:'Qualidade do ensino, infraestrutura e segurança escolar.', items:[
+          {name:'Qualidade do ensino', scale:'1–5', good:[4,5], avg:3.5, n:756},
+          {name:'Infraestrutura', scale:'1–5', good:[4,5], avg:3.3, n:741},
+          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.4, n:770}
+        ]},
+        {icon:'directions_bus', title:'Transporte', info:'Frequência, lotação e percepção de segurança.', items:[
+          {name:'Frequência dos ônibus', scale:'1–5', good:[4,5], avg:2.8, n:934},
+          {name:'Lotação', scale:'1–5', good:[4,5], avg:2.6, n:928},
+          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:2.9, n:940}
+        ]},
+        {icon:'shield_person', title:'Segurança', info:'Iluminação pública, patrulhamento e sensação de segurança.', items:[
+          {name:'Iluminação pública', scale:'1–5', good:[4,5], avg:3.1, n:680},
+          {name:'Patrulhamento', scale:'1–5', good:[4,5], avg:3.0, n:672},
+          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.2, n:690}
+        ]},
+        {icon:'forest', title:'Meio ambiente', info:'Coleta seletiva, áreas verdes e limpeza urbana.', items:[
+          {name:'Coleta seletiva', scale:'1–5', good:[4,5], avg:3.6, n:720},
+          {name:'Conservação de praças', scale:'1–5', good:[4,5], avg:3.3, n:702},
+          {name:'Satisfação geral', scale:'1–5', good:[4,5], avg:3.5, n:730}
+        ]}
+      ];
+      function meter(p){ return `<div class="meter small"><span style="width:${Math.round(p*20)}%"></span></div>`; }
+      function legend(scale,good){ return `<div class="legend muted">Escala ${scale}. Bom: ${good.join(' ou ')}. <em>Leitura:</em> 1–2 = ruim, 3–4 = médio, 5 = bom.</div>`; }
+      grid.innerHTML=sections.map(sec=>{
+        const list=sec.items.map(it=>`<li class="row"><div class="row-main"><span>${it.name}</span>${meter(it.avg)}</div><span class="pill" title="amostra">n=${it.n}</span></li>`).join('');
+        return `<article class="card"><header class="card-head">
+          <span class="material-symbols-rounded" aria-hidden="true">${sec.icon}</span>
+          <div><h3>${sec.title}</h3><p class="subtitle">${sec.info}</p></div>
+          <details class="info"><summary class="btn icon" title="Ajuda">info</summary><div class="panel"><strong>Como ler:</strong><p>Usamos escala de 1–5. Para cada item, exibimos a média e a amostra (n). ${legend('1–5',['4','5'])}</p></div></details>
+        </header><ul class="list kpi-list">${list}</ul><footer class="card-foot muted">${legend('1–5',['4','5'])}</footer></article>`;
+      }).join('');
+    }
+    function showSyncTip(message,warn){ const el=document.getElementById('sync-tip'); if(!el) return; el.textContent=message||''; el.style.display=message?'block':'none'; el.classList.toggle('warn',!!warn); }
+    function updateSyncUI(enabled){ const btn=document.getElementById('sync-toggle'); const st=document.getElementById('sync-state'); if(btn){ btn.setAttribute('aria-pressed', enabled?'true':'false'); btn.querySelector('.sync-label').textContent=enabled?($t('sync.disable')||'Desativar'):($t('sync.enable')||'Permitir e ativar'); } if(st){ st.textContent=enabled?($t('sync.state.on')||'Sincronização ativada'):($t('sync.state.off')||'Sincronização desativada'); } }
+    async function setSyncEnabled(enabled){ updateSyncUI(enabled); return Promise.resolve(true); }
 
-  function renderPersona(){
-    var wrap=document.getElementById('persona-bar');
-    var cards=[
-      {id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:$t('persona.hint')||'Após filtros'},
-      {id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:$t('persona.hint')||'Faixas dominantes'},
-      {id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:$t('persona.hintTop')||'Top 3'}
-    ];
-    wrap.innerHTML=cards.map(function(c){
-      return '<div class="kpi" role="group" aria-label="'+c.title+'">\
-        <div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>\
-        <div class="value" style="font-size:18px">'+c.value+'</div>\
-        <div class="delta neutral" style="opacity:.8">'+c.hint+'</div>\
-      </div>';
-    }).join('');
-  }
+    async function initPanel(){
+      bindThemeToggles();
+      bindLanguageToggles();
+      renderToolbar();
+      renderPersona();
+      renderKPIs();
+      renderIndicators();
+      applyI18n(document);
+      const btn=document.getElementById('sync-toggle'); const openTab=document.getElementById('sync-open-tab');
+      if(openTab){ openTab.style.display='none'; }
+      if(btn){ btn.addEventListener('click', async function(){
+        const on=btn.getAttribute('aria-pressed')==='true';
+        if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return; }
+        showSyncTip('Solicitando permissão do Google…'); setTimeout(async function(){ await setSyncEnabled(true); showSyncTip('Sincronização ativada'); }, 500);
+      }); }
+      document.addEventListener('click', function(e){ document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); }); });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
+    }
+    function tryInit(){ if(!window.__libsReady__) return; if(document.readyState!=='loading') initI18n(); else document.addEventListener('DOMContentLoaded', initI18n, {once:true}); }
+    loadInitialTheme();
+    tryInit();
 
-  function renderKPIs(){
-    var list=[
-      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3', cls:'positive', summaryKey:'reports.kpi.saude.summary'},
-      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral', summaryKey:'reports.kpi.educacao.summary'},
-      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative', summaryKey:'reports.kpi.transporte.summary'},
-      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral', summaryKey:'reports.kpi.seguranca.summary'},
-      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive', summaryKey:'reports.kpi.meioambiente.summary'}
-    ];
-    var wrap=document.getElementById('kpi-bar');
-    wrap.innerHTML=list.map(function(s){
-      return '<div class="kpi" role="group" aria-label="'+s.label+'">\
-        <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
-          <div class="panel" role="dialog" aria-labelledby="kpi-'+s.id+'"><h4>'+s.label+'</h4><p data-i18n="'+s.summaryKey+'">'+i18next.t(s.summaryKey,{avg:s.val,delta:s.delta})+'</p><p class="hint" data-i18n="info.hint">Toque no ícone novamente para fechar.</p></div>\
-        </details>\
-        <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>\
-        <div class="value">'+s.val+'</div>\
-        <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>\
-      </div>';
-    }).join('');
-  }
-
-  function renderIndicators(){
-    var cards=[
-      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), ph:'Colunas (placeholder)'},
-      {id:'distribution', icon:'stacked_bar_chart', title:$t('charts.distribution'), infoTitle:$t('info.howto.title'), infoCopy:$t('charts.distributionDesc')||'Proporção após filtros.', infoHint:$t('info.hint'), ph:'Barras empilhadas (placeholder)'},
-      {id:'trend-sector', icon:'show_chart', title:$t('charts.trendBySector')||'Tendência mensal por setor', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.trendBySectorDesc')||'Evolução das médias mensais.', infoHint:$t('info.hint'), ph:'Linhas (placeholder)'},
-      {id:'reviews-month', icon:'insert_chart', title:$t('charts.reviewsByMonth')||'Avaliações por mês', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.reviewsByMonthDesc')||'Volume de respostas coletadas.', infoHint:$t('info.hint'), ph:'Colunas agrupadas (placeholder)'},
-      {id:'map-bairros', icon:'map', title:$t('charts.mapByNeighborhood')||'Mapa do município — pontos por bairro', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.mapByNeighborhoodDesc')||'Distribuição espacial.', infoHint:$t('info.hint'), ph:'Mapa (placeholder)'},
-      {id:'share-sector', icon:'pie_chart', title:$t('charts.shareBySector')||'Participação por setor', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.shareBySectorDesc')||'Percentual por setor.', infoHint:$t('info.hint'), ph:'Pizza (placeholder)'}
-    ];
-    var grid=document.getElementById('cards');
-    grid.innerHTML=cards.map(function(c){ return '<section class="card" aria-labelledby="t-'+c.id+'">\
-      <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
-      <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
-      <div class="panel" role="dialog" aria-labelledby="t-'+c.id+'"><p>'+c.infoCopy+'</p><p class="hint">'+c.infoHint+'</p></div></details>\
-      <div class="ph">'+c.ph+'</div></section>'; }).join('');
-  }
-
-  async function initPanel(){
-    // GARANTE QUE A ORDEM DE RENDERIZAÇÃO ESTÁ CORRETA
-    renderToolbar();
-    renderPersona();
-    renderKPIs();
-    renderIndicators();
-
-    // APLICAR I18N DEPOIS QUE OS ELEMENTOS FORAM CRIADOS POR renderXXX()
-    applyI18n(document);
-
-    // CONECTA OS EVENTOS DE TEMA E IDIOMA APÓS O DOM SER RENDERIZADO
-    bindThemeToggles();
-    bindLanguageToggles();
-    
-    // ... (Lógica de IndexedDB e Sync permanece inalterada) ...
-
-    if(window.indexed && window.indexed.open){
-      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } if(!window.indexed.stores.tpl){ window.indexed.defineStore('tpl', {keyPath:'key'});} });
-    }
-
-    const btn = document.getElementById('sync-toggle');
-    const openTab = document.getElementById('sync-open-tab');
-    const ready = {ok:true};
-    if(openTab){ openTab.style.display = 'none'; }
-    if(btn){ btn.addEventListener('click', async function(){ const on = btn.getAttribute('aria-pressed')==='true'; if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return;} showSyncTip('Solicitando permissão do Google…'); setTimeout(async function(){ await setSyncEnabled(true); showSyncTip('Sincronização ativada'); }, 500); }); }
-
-    document.addEventListener('click', function(e){
-      document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); });
-    });
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
-  }
-
-  function showSyncTip(message, warn){ var el=document.getElementById('sync-tip'); if(!el) return; el.textContent = message || ''; el.style.display = message? 'inline-flex':'none'; el.classList.remove('ok','warn','info'); el.classList.add(warn? 'warn':'ok'); var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (warn? 'err':'ok'); dot.title = message || (warn? 'Problema de sincronização' : 'Sincronização ok'); } }
-  function updateSyncUI(enabled){ var tbtn=document.getElementById('toolbar-sync'); if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; } var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (enabled? 'ok':'warn'); } var sbtn=document.getElementById('sync-toggle'); var lab=sbtn? sbtn.querySelector('.sync-label'):null; if(sbtn){ sbtn.setAttribute('aria-pressed', enabled? 'true':'false'); if(lab) lab.textContent = enabled? 'Ativado (clique para desligar)' : 'Permitir e ativar'; } var st=document.getElementById('sync-state'); if(st){ st.textContent = enabled? 'Sincronização ativada' : 'Sincronização desativada'; } }
-  async function setSyncEnabled(enabled){ if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){ updateSyncUI(enabled); return; } await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()}); updateSyncUI(enabled); }
-
-
-  // Garante que o tema seja carregado antes de qualquer outra inicialização, mas 
-  // que o initI18n e initPanel só rodem após o DOM estar carregado.
-  initThemeSystem();
-  if(document.readyState!=='loading') initI18n(); else document.addEventListener('DOMContentLoaded', initI18n);
-  </script>
+    // Testes rápidos
+    (function selfTests(){
+      console.assert(!!window.i18next, '[test] i18next não carregou');
+      console.assert(Array.isArray(window.__INDEXED_LIB_CANDIDATES__), '[test] __INDEXED_LIB_CANDIDATES__ não é array');
+      console.assert(Array.isArray(window.__RELATORIO_LIB_CANDIDATES__), '[test] __RELATORIO_LIB_CANDIDATES__ não é array');
+      const check=['pt-BR','en-US','es-ES'].map(function(L){return `${computeDocBase()}/i18n/locales/${L}/system.json`;});
+      console.log('[test] candidatos de caminho i18n:', check);
+    })();
+  </script>
 </body>
 </html>

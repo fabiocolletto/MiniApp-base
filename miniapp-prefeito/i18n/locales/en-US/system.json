@@ -1,67 +1,32 @@
 {
   "app": {
     "title": "City of Curitiba — Indicators Dashboard",
-    "subtitle": "Version with i18n and remote templates",
+    "subtitle": "Version with i18n (i18next) and remote templates",
     "footer": "Base prepared for i18n (i18next) and versioned external templates."
   },
-  "toolbar": {
-    "filters": "Filters",
-    "studies": "Studies",
-    "theme": "Theme",
-    "language": "Language",
-    "multidevice": "Multi-device"
-  },
   "theme": {
-    "title": "Panel theme",
+    "title": "Dashboard theme",
     "light": "Light",
     "dark": "Dark",
     "auto": "Automatic"
   },
   "lang": {
-    "title": "Panel language",
+    "title": "Dashboard language",
     "pt": "Portuguese",
-    "es": "Spanish",
-    "en": "English"
+    "en": "English",
+    "es": "Spanish"
   },
-  "info": {
-    "hint": "Tap the icon again to close."
-  },
-  "persona": {
-    "title": "Sample profile",
-    "gender": "Gender distribution",
-    "age": "Age distribution",
-    "neighborhood": "Top neighborhoods",
-    "hint": "After filters",
-    "hintTop": "Top 3"
-  },
-  "sector": {
-    "saude": "Health",
-    "educacao": "Education",
-    "transporte": "Transport",
-    "seguranca": "Public Safety",
-    "meioambiente": "Environment"
-  },
-  "delta": {
-    "stable": "stable"
-  },
-  "charts": {
-    "avg_by_sector": "Average satisfaction by sector",
-    "distribution": "Score distribution",
-    "distributionDesc": "Proportion after filters.",
-    "trendBySector": "Monthly trend by sector",
-    "trendBySectorDesc": "Evolution of monthly averages.",
-    "reviewsByMonth": "Reviews by month",
-    "reviewsByMonthDesc": "Volume of responses collected.",
-    "mapByNeighborhood": "City map — points by neighborhood",
-    "mapByNeighborhoodDesc": "Spatial distribution.",
-    "shareBySector": "Share by sector",
-    "shareBySectorDesc": "Percentage by sector."
-  },
-  "kpi": {
-    "labels": {
-      "avg": "Average",
-      "delta": "Variation",
-      "topMetrics": "Top metrics"
+  "sync": {
+    "title": "Multi‑device",
+    "lead": "Enable Google Drive sync so your surveys and preferences are available on all your devices. You'll see a Google permission prompt.",
+    "ctaTitle": "Sync with Google Drive",
+    "ctaHint": "Stores settings and survey catalogs in your Drive, with consent.",
+    "enable": "Allow & enable",
+    "disable": "Disable",
+    "openTab": "Open in new tab",
+    "state": {
+      "on": "Sync enabled",
+      "off": "Sync disabled"
     }
   }
 }

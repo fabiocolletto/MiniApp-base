@@ -1,15 +1,8 @@
 {
   "app": {
     "title": "Municipio de Curitiba — Panel de Indicadores",
-    "subtitle": "Versión con i18n y plantillas remotas",
+    "subtitle": "Versión con i18n (i18next) y plantillas remotas",
     "footer": "Base preparada para i18n (i18next) y plantillas externas versionadas."
-  },
-  "toolbar": {
-    "filters": "Filtros",
-    "studies": "Estudios",
-    "theme": "Tema",
-    "language": "Idioma",
-    "multidevice": "Multi-dispositivo"
   },
   "theme": {
     "title": "Tema del panel",
@@ -20,48 +13,20 @@
   "lang": {
     "title": "Idioma del panel",
     "pt": "Portugués",
-    "es": "Español",
-    "en": "Inglés"
+    "en": "Inglés",
+    "es": "Español"
   },
-  "info": {
-    "hint": "Toque el ícono otra vez para cerrar."
-  },
-  "persona": {
-    "title": "Perfil de la muestra",
-    "gender": "Distribución por género",
-    "age": "Distribución por edad",
-    "neighborhood": "Barrios principales",
-    "hint": "Después de los filtros",
-    "hintTop": "Top 3"
-  },
-  "sector": {
-    "saude": "Salud",
-    "educacao": "Educación",
-    "transporte": "Transporte",
-    "seguranca": "Seguridad",
-    "meioambiente": "Medio ambiente"
-  },
-  "delta": {
-    "stable": "estable"
-  },
-  "charts": {
-    "avg_by_sector": "Promedio de satisfacción por sector",
-    "distribution": "Distribución de puntajes",
-    "distributionDesc": "Proporción después de los filtros.",
-    "trendBySector": "Tendencia mensual por sector",
-    "trendBySectorDesc": "Evolución de promedios mensuales.",
-    "reviewsByMonth": "Reseñas por mes",
-    "reviewsByMonthDesc": "Volumen de respuestas recolectadas.",
-    "mapByNeighborhood": "Mapa de la ciudad — puntos por barrio",
-    "mapByNeighborhoodDesc": "Distribución espacial.",
-    "shareBySector": "Participación por sector",
-    "shareBySectorDesc": "Porcentaje por sector."
-  },
-  "kpi": {
-    "labels": {
-      "avg": "Promedio",
-      "delta": "Variación",
-      "topMetrics": "Métricas destacadas"
+  "sync": {
+    "title": "Multidispositivo",
+    "lead": "Active la sincronización con Google Drive para que sus encuestas y preferencias estén disponibles en todos sus dispositivos. Verá una solicitud de permiso de Google.",
+    "ctaTitle": "Sincronizar con Google Drive",
+    "ctaHint": "Almacena configuraciones y catálogos de encuestas en su Drive, con consentimiento.",
+    "enable": "Permitir y activar",
+    "disable": "Desactivar",
+    "openTab": "Abrir en nueva pestaña",
+    "state": {
+      "on": "Sincronización activada",
+      "off": "Sincronización desactivada"
     }
   }
 }
