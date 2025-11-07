@@ -88,6 +88,11 @@
       "phone": "Phone"
     }
   },
+  "reports": {
+    "loading": "Loading indicators…",
+    "error": "We couldn't load the indicators.",
+    "empty": "Sync your surveys to populate the indicators."
+  },
   "theme": {
     "title": "Dashboard theme",
     "light": "Light",
@@ -116,37 +121,43 @@
       "title": "Average satisfaction by sector",
       "infoTitle": "How to read",
       "infoCopy": "Each bar represents the 1–5 average score per sector. 1–2 = poor; 3–4 = neutral; 5 = excellent.",
-      "placeholder": "Columns (placeholder)"
+      "placeholder": "Columns (placeholder)",
+      "summary": "Top score: {{sector}} ({{value}})"
     },
     "distribution": {
       "title": "Score distribution",
       "infoTitle": "How to read",
       "infoCopy": "Share of good/neutral/poor ratings per sector after filters are applied.",
-      "placeholder": "Stacked bars (placeholder)"
+      "placeholder": "Stacked bars (placeholder)",
+      "summary": "Good: {{positive}} · Neutral: {{neutral}} · Poor: {{negative}}"
     },
     "trend_sector": {
       "title": "Monthly trend by sector",
       "infoTitle": "How to read",
       "infoCopy": "Monthly averages per sector considering active surveys only.",
-      "placeholder": "Line chart (placeholder)"
+      "placeholder": "Line chart (placeholder)",
+      "summary": "Largest change: {{sector}} ({{delta}})"
     },
     "reviews_month": {
       "title": "Reviews per month",
       "infoTitle": "How to read",
       "infoCopy": "Responses collected per month after filters (sector/gender/age range/period).",
-      "placeholder": "Grouped columns (placeholder)"
+      "placeholder": "Grouped columns (placeholder)",
+      "summary": "Latest month {{month}} — {{count}} responses"
     },
     "map_neighborhoods": {
       "title": "City map — responses by neighborhood",
       "infoTitle": "How to read",
       "infoCopy": "Spatial distribution based on the geohashes/neighborhoods reported in surveys.",
-      "placeholder": "Map (placeholder)"
+      "placeholder": "Map (placeholder)",
+      "summary": "Highest share: {{neighborhood}} ({{share}})"
     },
     "share_sector": {
       "title": "Sector share",
       "infoTitle": "How to read",
       "infoCopy": "Share of each sector inside the active survey set.",
-      "placeholder": "Pie (placeholder)"
+      "placeholder": "Pie (placeholder)",
+      "summary": "Top sectors: {{list}}"
     }
   },
   "info": {

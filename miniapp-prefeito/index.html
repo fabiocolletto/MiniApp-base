@@ -384,6 +384,143 @@
   var filterDraft = Object.assign({}, FILTER_DEFAULTS);
   var filtersDirty = false;
 
+  var PERSONA_CARD_META = [
+    { id:'p-genero', icon:'diversity_3', titleKey:'persona.gender', hintKey:'persona.hintFilters' },
+    { id:'p-idade', icon:'cake', titleKey:'persona.age', hintKey:'persona.hintDominant' },
+    { id:'p-bairro', icon:'location_city', titleKey:'persona.neighborhood', hintKey:'persona.hintTop3' }
+  ];
+  var KPI_CARD_META = [
+    { id:'saude', icon:'vaccines', labelKey:'sector.saude' },
+    { id:'educacao', icon:'school', labelKey:'sector.educacao' },
+    { id:'transporte', icon:'directions_bus', labelKey:'sector.transporte' },
+    { id:'seguranca', icon:'shield_person', labelKey:'sector.seguranca' },
+    { id:'meioambiente', icon:'eco', labelKey:'sector.meioambiente' }
+  ];
+  var INDICATOR_CARD_META = [
+    { id:'sector-avg', icon:'bar_chart_4_bars', titleKey:'charts.avg_by_sector.title', infoTitleKey:'charts.avg_by_sector.infoTitle', infoCopyKey:'charts.avg_by_sector.infoCopy', placeholderKey:'charts.avg_by_sector.placeholder' },
+    { id:'distribution', icon:'stacked_bar_chart', titleKey:'charts.distribution.title', infoTitleKey:'charts.distribution.infoTitle', infoCopyKey:'charts.distribution.infoCopy', placeholderKey:'charts.distribution.placeholder' },
+    { id:'trend-sector', icon:'show_chart', titleKey:'charts.trend_sector.title', infoTitleKey:'charts.trend_sector.infoTitle', infoCopyKey:'charts.trend_sector.infoCopy', placeholderKey:'charts.trend_sector.placeholder' },
+    { id:'reviews-month', icon:'insert_chart', titleKey:'charts.reviews_month.title', infoTitleKey:'charts.reviews_month.infoTitle', infoCopyKey:'charts.reviews_month.infoCopy', placeholderKey:'charts.reviews_month.placeholder' },
+    { id:'map-bairros', icon:'map', titleKey:'charts.map_neighborhoods.title', infoTitleKey:'charts.map_neighborhoods.infoTitle', infoCopyKey:'charts.map_neighborhoods.infoCopy', placeholderKey:'charts.map_neighborhoods.placeholder' },
+    { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder' }
+  ];
+
+  var reportState = { ready:false, loading:false, data:null, unsubscribe:null };
+
+  var GENDER_SYMBOLS = { female:'♀', male:'♂', nonbinary:'⁄', other:'∗' };
+  var AGE_LABEL_FALLBACK = { '16_24':'16–24', '25_34':'25–34', '35_44':'35–44', '45_59':'45–59', '60_plus':'60+' };
+  var KPI_DELTA_THRESHOLD = 0.05;
+
+  function escapeHtml(value){
+    return String(value ?? '').replace(/[&<>"']/g, function(ch){
+      switch(ch){
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return ch;
+      }
+    });
+  }
+
+  function getCurrentLocale(){
+    return (window.i18next && window.i18next.language) || document.documentElement.lang || 'pt-BR';
+  }
+
+  function formatScore(value, locale){
+    if(!Number.isFinite(value)) return '—';
+    var formatter = new Intl.NumberFormat(locale || getCurrentLocale(), { minimumFractionDigits:1, maximumFractionDigits:1 });
+    return formatter.format(value);
+  }
+
+  function formatPercent(value, locale, fractionDigits){
+    if(!Number.isFinite(value)) return '—';
+    var digits = (typeof fractionDigits === 'number') ? fractionDigits : 0;
+    var formatter = new Intl.NumberFormat(locale || getCurrentLocale(), { style:'percent', minimumFractionDigits:digits, maximumFractionDigits:digits });
+    return formatter.format(value);
+  }
+
+  function formatSignedDelta(value, locale){
+    if(!Number.isFinite(value)) return null;
+    var formatter = new Intl.NumberFormat(locale || getCurrentLocale(), { minimumFractionDigits:1, maximumFractionDigits:1 });
+    var abs = formatter.format(Math.abs(value));
+    if(value > 0) return '+'+abs;
+    if(value < 0) return '−'+abs;
+    return '±'+abs;
+  }
+
+  function formatAgeLabel(key){
+    return AGE_LABEL_FALLBACK[key] || key;
+  }
+
+  function formatSectorLabel(key){
+    var labelKey = 'sector.'+key;
+    var translated = $t(labelKey, { defaultValue:'' });
+    if(translated && translated !== labelKey) return translated;
+    return key.charAt(0).toUpperCase() + key.slice(1);
+  }
+
+  function formatPeriodLabel(period, locale){
+    if(!period) return '—';
+    var parts = String(period).split('-');
+    if(parts.length === 2){
+      var year = Number(parts[0]);
+      var month = Number(parts[1]);
+      if(Number.isFinite(year) && Number.isFinite(month)){
+        var date = new Date(Date.UTC(year, month - 1, 1));
+        try{
+          return new Intl.DateTimeFormat(locale || getCurrentLocale(), { month:'short', year:'numeric' }).format(date);
+        }catch(_){
+          return date.toISOString().slice(0,7);
+        }
+      }
+    }
+    return String(period);
+  }
+
+  async function hydrateReportData(options){
+    var relatorio = window.relatorioUtils;
+    if(!relatorio || typeof relatorio.getReportAggregates !== 'function'){
+      reportState.ready = false;
+      reportState.data = null;
+      return null;
+    }
+    reportState.loading = true;
+    try{
+      var result = await relatorio.getReportAggregates({ forceRefresh: !!(options && options.forceRefresh) });
+      reportState.data = result;
+      reportState.ready = true;
+      return result;
+    }catch(err){
+      reportState.ready = false;
+      reportState.data = null;
+      throw err;
+    }finally{
+      reportState.loading = false;
+    }
+  }
+
+  function ensureReportSubscription(){
+    var relatorio = window.relatorioUtils;
+    if(!relatorio || typeof relatorio.subscribeToReportAggregates !== 'function') return;
+    if(typeof reportState.unsubscribe === 'function') return;
+    reportState.unsubscribe = relatorio.subscribeToReportAggregates(function(payload){
+      if(payload){
+        reportState.data = payload;
+        reportState.ready = true;
+        renderPersona();
+        renderKPIs();
+        renderIndicators();
+      }
+    });
+    if(typeof window !== 'undefined'){
+      window.addEventListener('beforeunload', function(){
+        try{ reportState.unsubscribe?.(); }catch(_){ }
+      }, { once:true });
+    }
+  }
+
   var STUDY_SEED = [
     { id:'survey-saude-2024', name:'Pesquisa de Satisfação Saúde 2024', segmentKey:'sector.saude', period:'Jan–Abr 2024', channelKey:'studies.channel.online', active:true, primary:true },
     { id:'survey-mobilidade-2024', name:'Mobilidade Urbana 2024', segmentKey:'sector.transporte', period:'Mar–Jun 2024', channelKey:'studies.channel.field', active:true },
@@ -765,74 +902,356 @@
     }).join('');
   }
 
-  function renderPersona(){
-    var wrap = document.getElementById('persona-bar');
-    if(!wrap) return;
-    var cards = [
-      { id:'p-genero', icon:'diversity_3', titleKey:'persona.gender', value:'♀ 54% · ♂ 44% · ⁄ 2%', hintKey:'persona.hintFilters' },
-      { id:'p-idade', icon:'cake', titleKey:'persona.age', value:'25–34 (31%) · 35–44 (27%)', hintKey:'persona.hintDominant' },
-      { id:'p-bairro', icon:'location_city', titleKey:'persona.neighborhood', value:'Boqueirão, CIC, Bairro Novo', hintKey:'persona.hintTop3' }
-    ];
-    wrap.innerHTML = cards.map(function(card){
-      var title = $t(card.titleKey);
-      var hint = card.hintKey ? $t(card.hintKey) : '';
-      var hintAttr = card.hintKey ? ' data-i18n="'+card.hintKey+'"' : '';
-      return '<div class="kpi" role="group" aria-label="'+title+'">'
-        + '<div class="label"><span class="material-symbols-rounded">'+card.icon+'</span><span data-i18n="'+card.titleKey+'">'+title+'</span></div>'
-        + '<div class="value" style="font-size:18px">'+card.value+'</div>'
-        + '<div class="delta neutral" style="opacity:.8"'+hintAttr+'>'+hint+'</div>'
-        + '</div>';
-    }).join('');
+  function getReportLoadingMessage(){
+    return $t('reports.loading', { defaultValue:'Carregando indicadores…' });
   }
 
-  function renderKPIs(){
-    var wrap = document.getElementById('kpi-bar');
-    if(!wrap) return;
-    var list = [
-      { id:'saude', icon:'vaccines', labelKey:'sector.saude', value:'4,2', deltaKey:'delta.change', deltaValue:'+0,3', cls:'positive' },
-      { id:'educacao', icon:'school', labelKey:'sector.educacao', value:'3,8', deltaKey:'delta.stable', cls:'neutral' },
-      { id:'transporte', icon:'directions_bus', labelKey:'sector.transporte', value:'3,2', deltaKey:'delta.change', deltaValue:'-0,2', cls:'negative' },
-      { id:'seguranca', icon:'shield_person', labelKey:'sector.seguranca', value:'4,0', deltaKey:'delta.stable', cls:'neutral' },
-      { id:'meioambiente', icon:'eco', labelKey:'sector.meioambiente', value:'4,4', deltaKey:'delta.change', deltaValue:'+0,1', cls:'positive' }
-    ];
-    var summaryLabel = $t('kpi.moreInfo');
-    wrap.innerHTML = list.map(function(item){
-      var label = $t(item.labelKey);
-      var delta = item.deltaKey ? $t(item.deltaKey, { value:item.deltaValue }) : (item.delta || '');
-      return '<div class="kpi" role="group" aria-label="'+label+'">'
-        + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+item.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+summaryLabel+'"><span class="material-symbols-rounded">info</span></a>'
-        + '<div class="label"><span class="material-symbols-rounded">'+item.icon+'</span><span data-i18n="'+item.labelKey+'">'+label+'</span></div>'
-        + '<div class="value">'+item.value+'</div>'
-        + '<div class="delta '+item.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(item.cls==='positive'?'trending_up':item.cls==='negative'?'trending_down':'trending_flat')+'</span>'+delta+'</div>'
-        + '</div>';
-    }).join('');
+  function getReportErrorMessage(){
+    return $t('reports.error', { defaultValue:'Não foi possível carregar os indicadores.' });
   }
 
-  function renderIndicators(){
-    var grid = document.getElementById('cards');
-    if(!grid) return;
-    var cards = [
-      { id:'sector-avg', icon:'bar_chart_4_bars', titleKey:'charts.avg_by_sector.title', infoTitleKey:'charts.avg_by_sector.infoTitle', infoCopyKey:'charts.avg_by_sector.infoCopy', placeholderKey:'charts.avg_by_sector.placeholder' },
-      { id:'distribution', icon:'stacked_bar_chart', titleKey:'charts.distribution.title', infoTitleKey:'charts.distribution.infoTitle', infoCopyKey:'charts.distribution.infoCopy', placeholderKey:'charts.distribution.placeholder' },
-      { id:'trend-sector', icon:'show_chart', titleKey:'charts.trend_sector.title', infoTitleKey:'charts.trend_sector.infoTitle', infoCopyKey:'charts.trend_sector.infoCopy', placeholderKey:'charts.trend_sector.placeholder' },
-      { id:'reviews-month', icon:'insert_chart', titleKey:'charts.reviews_month.title', infoTitleKey:'charts.reviews_month.infoTitle', infoCopyKey:'charts.reviews_month.infoCopy', placeholderKey:'charts.reviews_month.placeholder' },
-      { id:'map-bairros', icon:'map', titleKey:'charts.map_neighborhoods.title', infoTitleKey:'charts.map_neighborhoods.infoTitle', infoCopyKey:'charts.map_neighborhoods.infoCopy', placeholderKey:'charts.map_neighborhoods.placeholder' },
-      { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder' }
-    ];
+  function getReportEmptyMessage(){
+    return $t('reports.empty', { defaultValue:'Sem dados sincronizados.' });
+  }
+
+  function buildPersonaCard(meta, value, options){
+    options = options || {};
+    var iconName = options.icon || meta.icon;
+    var title = $t(meta.titleKey);
+    var hintText;
+    var hintAttr = '';
+    if(Object.prototype.hasOwnProperty.call(options, 'hintText')){
+      hintText = options.hintText;
+    } else if(meta.hintKey){
+      hintText = $t(meta.hintKey);
+      hintAttr = ' data-i18n="'+meta.hintKey+'"';
+    } else {
+      hintText = '';
+    }
+    var extraClass = options.extraClass ? ' '+options.extraClass : '';
+    return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(title)+'">'
+      + '<div class="label"><span class="material-symbols-rounded">'+iconName+'</span><span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></div>'
+      + '<div class="value" style="font-size:18px">'+escapeHtml(value || '—')+'</div>'
+      + '<div class="delta neutral"'+hintAttr+'>'+escapeHtml(hintText || '')+'</div>'
+      + '</div>';
+  }
+
+  function buildKpiCard(meta, config){
+    config = config || {};
+    var iconName = config.icon || meta.icon;
+    var label = $t(meta.labelKey);
+    var summaryLabel = config.summaryLabel || $t('kpi.moreInfo');
+    var value = config.value !== undefined ? config.value : '—';
+    var deltaClass = config.cls || 'neutral';
+    var deltaIcon = deltaClass === 'positive' ? 'trending_up' : (deltaClass === 'negative' ? 'trending_down' : 'trending_flat');
+    var deltaText = '—';
+    if(config.deltaKey){
+      var options = config.deltaValue != null ? { value: config.deltaValue } : undefined;
+      deltaText = $t(config.deltaKey, options);
+    } else if(config.deltaText){
+      deltaText = config.deltaText;
+    }
+    var extraClass = config.extraClass ? ' '+config.extraClass : '';
+    return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(label)+'">'
+      + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+meta.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+escapeHtml(summaryLabel)+'"><span class="material-symbols-rounded">info</span></a>'
+      + '<div class="label"><span class="material-symbols-rounded">'+iconName+'</span><span data-i18n="'+meta.labelKey+'">'+escapeHtml(label)+'</span></div>'
+      + '<div class="value">'+escapeHtml(value)+'</div>'
+      + '<div class="delta '+deltaClass+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+deltaIcon+'</span>'+escapeHtml(deltaText || '')+'</div>'
+      + '</div>';
+  }
+
+  function buildIndicatorCard(meta, summaryText, options){
+    options = options || {};
+    var title = $t(meta.titleKey);
+    var infoTitle = $t(meta.infoTitleKey);
+    var infoCopy = $t(meta.infoCopyKey);
+    var placeholder = $t(meta.placeholderKey);
     var summaryLabel = $t('info.summary');
     var hint = $t('info.hint');
-    grid.innerHTML = cards.map(function(card){
-      var title = $t(card.titleKey);
-      var infoTitle = $t(card.infoTitleKey);
-      var infoCopy = $t(card.infoCopyKey);
-      var placeholder = $t(card.placeholderKey);
-      return '<section class="card" aria-labelledby="t-'+card.id+'">'
-        + '<h3 id="t-'+card.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+card.icon+'</span><span data-i18n="'+card.titleKey+'">'+title+'</span></h3>'
-        + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+summaryLabel+'"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>'
-        + '<div class="panel" role="dialog" aria-labelledby="t-'+card.id+'"><h4 data-i18n="'+card.infoTitleKey+'">'+infoTitle+'</h4><p data-i18n="'+card.infoCopyKey+'">'+infoCopy+'</p><p class="hint" data-i18n="info.hint">'+hint+'</p></div></details>'
-        + '<div class="ph" data-i18n="'+card.placeholderKey+'">'+placeholder+'</div>'
-        + '</section>';
+    var extraClass = options.extraClass ? ' '+options.extraClass : '';
+    var summaryHtml = summaryText ? '<p class="meta indicator-summary">'+escapeHtml(summaryText)+'</p>' : '';
+    return '<section class="card'+extraClass+'" aria-labelledby="t-'+meta.id+'">'
+      + '<h3 id="t-'+meta.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+meta.icon+'</span><span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></h3>'
+      + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+escapeHtml(summaryLabel)+'"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>'
+      + '<div class="panel" role="dialog" aria-labelledby="t-'+meta.id+'"><h4 data-i18n="'+meta.infoTitleKey+'">'+escapeHtml(infoTitle)+'</h4><p data-i18n="'+meta.infoCopyKey+'">'+escapeHtml(infoCopy)+'</p><p class="hint" data-i18n="info.hint">'+escapeHtml(hint)+'</p></div></details>'
+      + '<div class="ph" data-i18n="'+meta.placeholderKey+'">'+escapeHtml(placeholder)+'</div>'
+      + summaryHtml
+      + '</section>';
+  }
+
+  function renderPersonaLoading(wrap){
+    var message = getReportLoadingMessage();
+    wrap.innerHTML = PERSONA_CARD_META.map(function(meta){
+      return buildPersonaCard(meta, message, { icon:'hourglass_empty', extraClass:'is-loading' });
     }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderPersonaError(wrap){
+    var message = getReportErrorMessage();
+    wrap.innerHTML = PERSONA_CARD_META.map(function(meta, index){
+      return buildPersonaCard(meta, index === 0 ? message : '—', { icon:index === 0 ? 'error' : meta.icon, extraClass:index === 0 ? 'has-error' : '' });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderPersonaEmpty(wrap){
+    var message = getReportEmptyMessage();
+    wrap.innerHTML = PERSONA_CARD_META.map(function(meta, index){
+      return buildPersonaCard(meta, index === 0 ? message : '—', { icon:index === 0 ? 'info' : meta.icon, extraClass:index === 0 ? 'is-empty' : '' });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderKpiLoading(wrap){
+    var summaryLabel = $t('kpi.moreInfo');
+    wrap.innerHTML = KPI_CARD_META.map(function(meta){
+      return buildKpiCard(meta, { value:'—', deltaText:'—', cls:'neutral', icon:'hourglass_empty', extraClass:'is-loading', summaryLabel:summaryLabel });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderKpiError(wrap){
+    var summaryLabel = $t('kpi.moreInfo');
+    var message = getReportErrorMessage();
+    wrap.innerHTML = KPI_CARD_META.map(function(meta, index){
+      return buildKpiCard(meta, { value:index === 0 ? message : '—', deltaText:index === 0 ? message : '—', cls:index === 0 ? 'negative' : 'neutral', icon:index === 0 ? 'error' : meta.icon, extraClass:index === 0 ? 'has-error' : '', summaryLabel:summaryLabel });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderKpiEmpty(wrap){
+    var summaryLabel = $t('kpi.moreInfo');
+    var message = getReportEmptyMessage();
+    wrap.innerHTML = KPI_CARD_META.map(function(meta, index){
+      return buildKpiCard(meta, { value:index === 0 ? message : '—', deltaText:'—', cls:'neutral', icon:index === 0 ? 'info' : meta.icon, extraClass:index === 0 ? 'is-empty' : '', summaryLabel:summaryLabel });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderIndicatorsLoading(grid){
+    var message = getReportLoadingMessage();
+    grid.setAttribute('aria-busy', 'true');
+    grid.innerHTML = INDICATOR_CARD_META.map(function(meta){
+      return buildIndicatorCard(meta, message, { extraClass:'is-loading' });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function renderIndicatorsError(grid){
+    var message = getReportErrorMessage();
+    grid.removeAttribute('aria-busy');
+    var used = false;
+    grid.innerHTML = INDICATOR_CARD_META.map(function(meta){
+      var summary = used ? '' : message;
+      used = true;
+      return buildIndicatorCard(meta, summary, { extraClass: summary ? 'has-error' : '' });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  function buildIndicatorSummaries(data, locale){
+    var summaries = {};
+    if(!data) return summaries;
+    var persona = data.persona || {};
+    var kpis = Array.isArray(data.kpis) ? data.kpis : [];
+    var indicators = data.indicators || {};
+    var localeRef = locale || getCurrentLocale();
+
+    var bestSector = kpis.filter(function(item){ return Number.isFinite(item.average); }).sort(function(a, b){ return (b.average || 0) - (a.average || 0); })[0];
+    if(bestSector){
+      summaries['sector-avg'] = $t('charts.avg_by_sector.summary', {
+        sector: formatSectorLabel(bestSector.key),
+        value: formatScore(bestSector.average, localeRef)
+      });
+    }
+
+    var distribution = indicators.distribution || {};
+    if(Number.isFinite(distribution.total) && distribution.total > 0){
+      summaries['distribution'] = $t('charts.distribution.summary', {
+        positive: formatPercent(distribution.positive / distribution.total, localeRef, 0),
+        neutral: formatPercent(distribution.neutral / distribution.total, localeRef, 0),
+        negative: formatPercent(distribution.negative / distribution.total, localeRef, 0)
+      });
+    }
+
+    var trending = kpis.filter(function(item){ return Number.isFinite(item.delta); }).sort(function(a, b){
+      return Math.abs((b.delta || 0)) - Math.abs((a.delta || 0));
+    })[0];
+    if(trending && Math.abs(trending.delta) >= KPI_DELTA_THRESHOLD){
+      summaries['trend-sector'] = $t('charts.trend_sector.summary', {
+        sector: formatSectorLabel(trending.key),
+        delta: formatSignedDelta(trending.delta, localeRef)
+      });
+    }
+
+    var monthly = Array.isArray(indicators.monthly) ? indicators.monthly : [];
+    if(monthly.length){
+      var latest = monthly[monthly.length - 1];
+      var countText = Number.isFinite(latest.count) ? new Intl.NumberFormat(localeRef).format(latest.count) : '—';
+      summaries['reviews-month'] = $t('charts.reviews_month.summary', {
+        month: formatPeriodLabel(latest.period, localeRef),
+        count: countText
+      });
+    }
+
+    var neighborhoods = Array.isArray(persona.neighborhoods) ? persona.neighborhoods : [];
+    if(neighborhoods.length && Number.isFinite(neighborhoods[0].percentage)){
+      summaries['map-bairros'] = $t('charts.map_neighborhoods.summary', {
+        neighborhood: neighborhoods[0].label,
+        share: formatPercent(neighborhoods[0].percentage, localeRef, 0)
+      });
+    }
+
+    var sectorShare = Array.isArray(indicators.sectorShare) ? indicators.sectorShare : [];
+    if(sectorShare.length){
+      var sortedShare = sectorShare.slice().sort(function(a, b){ return (b.percentage || 0) - (a.percentage || 0); });
+      var parts = sortedShare.slice(0, 3).map(function(item){
+        return formatSectorLabel(item.key) + ' ' + formatPercent(item.percentage, localeRef, 0);
+      }).filter(Boolean);
+      if(parts.length){
+        summaries['share-sector'] = $t('charts.share_sector.summary', { list: parts.join(' · ') });
+      }
+    }
+
+    return summaries;
+  }
+
+  async function renderPersona(options){
+    var wrap = document.getElementById('persona-bar');
+    if(!wrap) return;
+    if(!reportState.ready || (options && options.forceRefresh)){
+      renderPersonaLoading(wrap);
+      try{
+        await hydrateReportData(options);
+      }catch(err){
+        console.error('Falha ao carregar dados de persona', err);
+        renderPersonaError(wrap);
+        return;
+      }
+    }
+    var data = reportState.data;
+    if(!data || !data.persona || !(data.persona.total > 0)){
+      renderPersonaEmpty(wrap);
+      return;
+    }
+    var persona = data.persona;
+    var locale = getCurrentLocale();
+    var genders = Array.isArray(persona.genders) ? persona.genders.slice() : [];
+    var genderParts = [];
+    ['female','male','nonbinary','other'].forEach(function(key){
+      var item = genders.find(function(entry){ return entry.key === key; });
+      if(item && Number.isFinite(item.percentage) && item.percentage > 0){
+        genderParts.push((GENDER_SYMBOLS[key] || key) + ' ' + formatPercent(item.percentage, locale, 0));
+      }
+    });
+    if(!genderParts.length){
+      genders.slice(0, 3).forEach(function(item){
+        if(item && Number.isFinite(item.percentage)){
+          genderParts.push((GENDER_SYMBOLS[item.key] || item.key) + ' ' + formatPercent(item.percentage, locale, 0));
+        }
+      });
+    }
+
+    var ages = Array.isArray(persona.ages) ? persona.ages.slice(0, 2) : [];
+    var ageParts = ages.map(function(item){
+      if(!item || !Number.isFinite(item.percentage)) return null;
+      var labelKey = 'filters.age.'+item.key;
+      var label = $t(labelKey, { defaultValue: formatAgeLabel(item.key) });
+      return label + ' (' + formatPercent(item.percentage, locale, 0) + ')';
+    }).filter(Boolean);
+
+    var neighborhoodParts = (Array.isArray(persona.neighborhoods) ? persona.neighborhoods : []).slice(0, 3).map(function(item){
+      return item && item.label ? item.label : null;
+    }).filter(Boolean);
+
+    var cardValues = {
+      'p-genero': genderParts.length ? genderParts.join(' · ') : '—',
+      'p-idade': ageParts.length ? ageParts.join(' · ') : '—',
+      'p-bairro': neighborhoodParts.length ? neighborhoodParts.join(', ') : '—'
+    };
+
+    wrap.innerHTML = PERSONA_CARD_META.map(function(meta){
+      return buildPersonaCard(meta, cardValues[meta.id] || '—');
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  async function renderKPIs(options){
+    var wrap = document.getElementById('kpi-bar');
+    if(!wrap) return;
+    if(!reportState.ready || (options && options.forceRefresh)){
+      renderKpiLoading(wrap);
+      try{
+        await hydrateReportData(options);
+      }catch(err){
+        console.error('Falha ao carregar KPIs agregados', err);
+        renderKpiError(wrap);
+        return;
+      }
+    }
+    var data = reportState.data;
+    if(!data || !Array.isArray(data.kpis) || !data.kpis.length){
+      renderKpiEmpty(wrap);
+      return;
+    }
+    var locale = getCurrentLocale();
+    var summaryLabel = $t('kpi.moreInfo');
+    wrap.innerHTML = KPI_CARD_META.map(function(meta){
+      var stats = data.kpis.find(function(item){ return item.key === meta.id; }) || null;
+      var average = stats && Number.isFinite(stats.average) ? stats.average : null;
+      var deltaRaw = stats && Number.isFinite(stats.delta) ? stats.delta : null;
+      var value = average !== null ? formatScore(average, locale) : '—';
+      var deltaKey = 'delta.stable';
+      var deltaValue = null;
+      var deltaClass = 'neutral';
+      if(deltaRaw !== null){
+        if(Math.abs(deltaRaw) >= KPI_DELTA_THRESHOLD){
+          deltaKey = 'delta.change';
+          deltaValue = formatSignedDelta(deltaRaw, locale);
+          deltaClass = deltaRaw > 0 ? 'positive' : 'negative';
+        }
+      }
+      return buildKpiCard(meta, {
+        value: value,
+        deltaKey: deltaKey,
+        deltaValue: deltaValue,
+        cls: deltaClass,
+        summaryLabel: summaryLabel
+      });
+    }).join('');
+    window.I18nManager?.apply?.();
+  }
+
+  async function renderIndicators(options){
+    var grid = document.getElementById('cards');
+    if(!grid) return;
+    if(!reportState.ready || (options && options.forceRefresh)){
+      renderIndicatorsLoading(grid);
+      try{
+        await hydrateReportData(options);
+      }catch(err){
+        console.error('Falha ao carregar indicadores agregados', err);
+        renderIndicatorsError(grid);
+        return;
+      }
+    }
+    var data = reportState.data;
+    var locale = getCurrentLocale();
+    var summaries = buildIndicatorSummaries(data, locale);
+    var hasSummary = Object.keys(summaries).some(function(key){ return summaries[key]; });
+    var fallbackSummary = (!hasSummary && data && data.meta && !(data.meta.totalEntries > 0)) ? getReportEmptyMessage() : '';
+    var fallbackUsed = false;
+    grid.removeAttribute('aria-busy');
+    grid.innerHTML = INDICATOR_CARD_META.map(function(meta){
+      var summary = summaries[meta.id];
+      if((summary === undefined || summary === null || summary === '') && fallbackSummary && !fallbackUsed){
+        summary = fallbackSummary;
+        fallbackUsed = true;
+      }
+      return buildIndicatorCard(meta, summary || '');
+    }).join('');
+    window.I18nManager?.apply?.();
   }
 
   async function initPanel(){
@@ -859,9 +1278,15 @@
     }
 
     renderToolbar();
-    renderPersona();
-    renderKPIs();
-    renderIndicators();
+    try{
+      await hydrateReportData();
+    }catch(err){
+      console.error('Falha inicial ao hidratar indicadores', err);
+    }
+    ensureReportSubscription();
+    await renderPersona();
+    await renderKPIs();
+    await renderIndicators();
     window.I18nManager?.apply?.();
 
     if(window.indexed && window.indexed.open){
