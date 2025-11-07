@@ -4,14 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel de Indicadores — Versão Estática (6 indicadores)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../miniapp-base/styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css" media="print" onload="this.media='all'">
 </head>
 <body>
   <header>
     <div class="title">
-      <span class="material-symbols-rounded" aria-hidden="true">insights</span>
+      <span class="app-icon" aria-hidden="true">📊</span>
       <div>
         <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
         <p class="subtitle" data-i18n="app.subtitle">Versão estática com botão de permissão para Google Drive</p>
@@ -133,9 +132,9 @@
       </header>
       <div class="sheet-body">
         <div class="quickbar" role="group">
-          <a class="chipbtn" href="#" data-theme="light"><span class="material-symbols-rounded">light_mode</span><span data-i18n="theme.light">Claro</span></a>
-          <a class="chipbtn" href="#" data-theme="dark"><span class="material-symbols-rounded">dark_mode</span><span data-i18n="theme.dark">Escuro</span></a>
-          <a class="chipbtn" href="#" data-theme="auto"><span class="material-symbols-rounded">autorenew</span><span data-i18n="theme.auto">Automático</span></a>
+          <a class="chipbtn" href="#" data-theme="light"><span class="app-icon" aria-hidden="true">🌞</span><span data-i18n="theme.light">Claro</span></a>
+          <a class="chipbtn" href="#" data-theme="dark"><span class="app-icon" aria-hidden="true">🌙</span><span data-i18n="theme.dark">Escuro</span></a>
+          <a class="chipbtn" href="#" data-theme="auto"><span class="app-icon" aria-hidden="true">🌓</span><span data-i18n="theme.auto">Automático</span></a>
         </div>
       </div>
     </div>
@@ -172,12 +171,12 @@
             <strong data-i18n="sync.ctaTitle">Sincronizar com Google Drive</strong>
             <span style="font-size:12px;color:var(--muted)" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
           </div>
-          <button id="sync-toggle" class="btn" aria-pressed="false" title="Permitir e ativar" data-i18n-attr="title:sync.enable"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
+          <button id="sync-toggle" class="btn" aria-pressed="false" title="Permitir e ativar" data-i18n-attr="title:sync.enable"><span class="app-icon" aria-hidden="true">☁️</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
         </div>
         <p id="sync-state" style="margin:10px 0 0;color:var(--muted)" data-i18n="sync.state.off">Sincronização desativada</p>
         <div id="sync-tip" class="pill info" style="margin-top:10px;display:none"></div>
         <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba" data-i18n-attr="title:sync.openTab"><span class="material-symbols-rounded">open_in_new</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
+          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba" data-i18n-attr="title:sync.openTab"><span class="app-icon" aria-hidden="true">🔗</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
         </div>
       </div>
     </div>
@@ -421,10 +420,67 @@
     { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder', chartType:'PieChart' }
   ];
 
+  var ICON_SYMBOLS = {
+    insights:'📊',
+    filter_list:'🎛️',
+    inventory_2:'🗂️',
+    light_mode:'🌞',
+    dark_mode:'🌙',
+    autorenew:'🔄',
+    translate:'🌐',
+    devices:'💻',
+    cloud_sync:'☁️',
+    open_in_new:'🔗',
+    toggle_on:'✅',
+    toggle_off:'🚫',
+    category:'🗂️',
+    calendar_month:'🗓️',
+    hub:'🔌',
+    pause_circle:'⏸️',
+    play_circle:'▶️',
+    info:'ℹ️',
+    diversity_3:'👥',
+    cake:'🎂',
+    location_city:'📍',
+    vaccines:'🩺',
+    school:'🎓',
+    directions_bus:'🚌',
+    shield_person:'🛡️',
+    eco:'🌱',
+    bar_chart_4_bars:'📊',
+    stacked_bar_chart:'📶',
+    show_chart:'📈',
+    insert_chart:'📝',
+    map:'🗺️',
+    pie_chart:'🥧',
+    hourglass_empty:'⏳',
+    error:'⚠️',
+    database:'🗄️',
+    save:'💾',
+    trending_up:'📈',
+    trending_down:'📉',
+    trending_flat:'➡️'
+  };
+
   var GOOGLE_CHART_PACKAGES = ['corechart','bar','geochart'];
   var googleChartsLocale = null;
   var googleChartsPromise = null;
   var indicatorCharts = Object.create(null);
+
+  function iconToEmoji(name){
+    if(!name) return '❔';
+    return ICON_SYMBOLS[name] || name;
+  }
+
+  function renderIcon(name, options){
+    var symbol = iconToEmoji(name);
+    var className = 'app-icon';
+    if(options && options.className){
+      className += ' ' + options.className;
+    }
+    var ariaAttr = (options && options.ariaHidden === false) ? '' : ' aria-hidden="true"';
+    return '<span class="'+className+'"'+ariaAttr+'>'+escapeHtml(symbol)+'</span>';
+  }
 
   function resolveCssColor(varName, fallback){
     try{
@@ -935,17 +991,17 @@
         +     (study.primary ? '<span class="tag primary" data-i18n="studies.status.primary">'+$t('studies.status.primary')+'</span>' : '')
         +   '</div>'
         +   '<span class="study-status '+(study.active ? 'active' : 'inactive')+'">'
-        +     '<span class="material-symbols-rounded" aria-hidden="true">'+statusIcon+'</span>'
+        +     renderIcon(statusIcon)
         +     '<span data-i18n="'+statusKey+'">'+$t(statusKey)+'</span>'
         +   '</span>'
         + '</div>'
         + '<div class="study-meta">'
-        +   '<span class="meta" aria-label="'+$t('studies.meta.sector')+'" data-i18n-attr="aria-label:studies.meta.sector"><span class="material-symbols-rounded" aria-hidden="true">category</span><span'+segmentAttr+'>'+segmentLabel+'</span></span>'
-        +   '<span class="meta" aria-label="'+$t('studies.meta.period')+'" data-i18n-attr="aria-label:studies.meta.period"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span><span>'+study.period+'</span></span>'
-        +   '<span class="meta" aria-label="'+$t('studies.meta.channel')+'" data-i18n-attr="aria-label:studies.meta.channel"><span class="material-symbols-rounded" aria-hidden="true">hub</span><span'+channelAttr+'>'+channelLabel+'</span></span>'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.sector')+'" data-i18n-attr="aria-label:studies.meta.sector">'+renderIcon('category')+'<span'+segmentAttr+'>'+segmentLabel+'</span></span>'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.period')+'" data-i18n-attr="aria-label:studies.meta.period">'+renderIcon('calendar_month')+'<span>'+study.period+'</span></span>'
+        +   '<span class="meta" aria-label="'+$t('studies.meta.channel')+'" data-i18n-attr="aria-label:studies.meta.channel">'+renderIcon('hub')+'<span'+channelAttr+'>'+channelLabel+'</span></span>'
         + '</div>'
         + '<div class="study-actions">'
-        +   '<button type="button" class="btn inline" data-action="toggle" data-id="'+study.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+(study.active?'pause_circle':'play_circle')+'</span><span data-i18n="'+actionKey+'">'+$t(actionKey)+'</span></button>'
+        +   '<button type="button" class="btn inline" data-action="toggle" data-id="'+study.id+'">'+renderIcon(study.active?'pause_circle':'play_circle')+'<span data-i18n="'+actionKey+'">'+$t(actionKey)+'</span></button>'
         + '</div>'
         + '</li>';
     }).join('');
@@ -1065,7 +1121,7 @@
       var href = isDisabled ? '#' : item.href;
       var disabledAttr = isDisabled ? ' aria-disabled="true"' : '';
       return '<a class="'+cls+'" href="'+href+'"'+idAttr+dataAttr+disabledAttr+' title="'+title+'">'
-        + '<span class="material-symbols-rounded" aria-hidden="true">'+item.icon+'</span>'
+        + renderIcon(item.icon)
         + '<span data-i18n="'+item.key+'">'+title+'</span>'
         + extra
         + '</a>';
@@ -1100,7 +1156,7 @@
     }
     var extraClass = options.extraClass ? ' '+options.extraClass : '';
     return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(title)+'">'
-      + '<div class="label"><span class="material-symbols-rounded">'+iconName+'</span><span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></div>'
+      + '<div class="label">'+renderIcon(iconName)+'<span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></div>'
       + '<div class="value" style="font-size:18px">'+escapeHtml(value || '—')+'</div>'
       + '<div class="delta neutral"'+hintAttr+'>'+escapeHtml(hintText || '')+'</div>'
       + '</div>';
@@ -1123,10 +1179,10 @@
     }
     var extraClass = config.extraClass ? ' '+config.extraClass : '';
     return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(label)+'">'
-      + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+meta.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+escapeHtml(summaryLabel)+'"><span class="material-symbols-rounded">info</span></a>'
-      + '<div class="label"><span class="material-symbols-rounded">'+iconName+'</span><span data-i18n="'+meta.labelKey+'">'+escapeHtml(label)+'</span></div>'
+      + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:30px;height:30px;border:none;background:transparent" href="#kpi-'+meta.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+escapeHtml(summaryLabel)+'">'+renderIcon('info')+'</a>'
+      + '<div class="label">'+renderIcon(iconName)+'<span data-i18n="'+meta.labelKey+'">'+escapeHtml(label)+'</span></div>'
       + '<div class="value">'+escapeHtml(value)+'</div>'
-      + '<div class="delta '+deltaClass+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+deltaIcon+'</span>'+escapeHtml(deltaText || '')+'</div>'
+      + '<div class="delta '+deltaClass+'">'+renderIcon(deltaIcon,{className:'delta-icon'})+escapeHtml(deltaText || '')+'</div>'
       + '</div>';
   }
 
@@ -1146,8 +1202,8 @@
     }
     var chartHtml = '<div class="chart-area" data-chart-id="'+meta.id+'" aria-hidden="true"><div class="chart-canvas" id="chart-'+meta.id+'"></div></div>';
     return '<section class="card'+extraClass+'"'+attrs+' aria-labelledby="t-'+meta.id+'">'
-      + '<h3 id="t-'+meta.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+meta.icon+'</span><span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></h3>'
-      + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+escapeHtml(summaryLabel)+'"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>'
+      + '<h3 id="t-'+meta.id+'">'+renderIcon(meta.icon)+'<span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></h3>'
+      + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+escapeHtml(summaryLabel)+'">'+renderIcon('info',{className:'info-icon'})+'</summary>'
       + '<div class="panel" role="dialog" aria-labelledby="t-'+meta.id+'"><h4 data-i18n="'+meta.infoTitleKey+'">'+escapeHtml(infoTitle)+'</h4><p data-i18n="'+meta.infoCopyKey+'">'+escapeHtml(infoCopy)+'</p><p class="hint" data-i18n="info.hint">'+escapeHtml(hint)+'</p></div></details>'
       + chartHtml
       + '<div class="ph" data-i18n="'+meta.placeholderKey+'">'+escapeHtml(placeholder)+'</div>'
