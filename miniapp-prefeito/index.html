@@ -6,10 +6,6 @@
   <title>Painel de Indicadores — Versão Estática (6 indicadores)</title>
   <link rel="stylesheet" href="../miniapp-base/styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css" media="print" onload="this.media='all'">
-  <style>
-    header{margin:0 auto clamp(28px,6vw,48px);}
-    .grid{display:flex;flex-direction:column;gap:clamp(18px,4vw,26px);}
-  </style>
 </head>
 <body>
   <header>
@@ -120,7 +116,7 @@
         <div class="modal-body-flow">
           <p class="hint" data-i18n="studies.subtitle">Ative ou pause as pesquisas disponíveis. Os indicadores respeitam apenas as pesquisas ativas.</p>
           <p class="meta" id="studies-summary" data-i18n="studies.loading">Carregando catálogos…</p>
-          <p class="pill warn" id="studies-offline-hint" style="display:none" data-i18n="studies.offlineHint">Alterações visíveis apenas nesta sessão. Sincronize para persistir.</p>
+          <p class="pill warn u-hidden" id="studies-offline-hint" data-i18n="studies.offlineHint">Alterações visíveis apenas nesta sessão. Sincronize para persistir.</p>
           <ul id="studies-list" class="studies-list" role="list"></ul>
         </div>
       </div>
@@ -169,18 +165,18 @@
         <a class="close" href="#" aria-label="Fechar">✕</a>
       </header>
       <div class="sheet-body">
-        <p style="margin-top:0;color:var(--muted)" data-i18n="sync.lead">Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.</p>
-        <div class="subcard" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <div style="display:flex;flex-direction:column;gap:4px">
+        <p class="lead" data-i18n="sync.lead">Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.</p>
+        <div class="subcard">
+          <div class="stack stack-xs">
             <strong data-i18n="sync.ctaTitle">Sincronizar com Google Drive</strong>
-            <span style="font-size:12px;color:var(--muted)" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
+            <span class="text-sm text-muted" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
           </div>
           <button id="sync-toggle" class="btn" aria-pressed="false" title="Permitir e ativar" data-i18n-attr="title:sync.enable"><span class="app-icon" aria-hidden="true">☁️</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
         </div>
-        <p id="sync-state" style="margin:10px 0 0;color:var(--muted)" data-i18n="sync.state.off">Sincronização desativada</p>
-        <div id="sync-tip" class="pill info" style="margin-top:10px;display:none"></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba" data-i18n-attr="title:sync.openTab"><span class="app-icon" aria-hidden="true">🔗</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
+        <p id="sync-state" class="text-sm text-muted mt-sm" data-i18n="sync.state.off">Sincronização desativada</p>
+        <div id="sync-tip" class="pill info mt-sm u-hidden"></div>
+        <div class="actions-end mt-sm">
+          <a id="sync-open-tab" class="btn u-hidden" href="#" title="Abrir em nova aba" data-i18n-attr="title:sync.openTab"><span class="app-icon" aria-hidden="true">🔗</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
         </div>
       </div>
     </div>
@@ -1161,7 +1157,7 @@
     var extraClass = options.extraClass ? ' '+options.extraClass : '';
     return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(title)+'">'
       + '<div class="label">'+renderIcon(iconName)+'<span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></div>'
-      + '<div class="value" style="font-size:18px">'+escapeHtml(value || '—')+'</div>'
+      + '<div class="value value--sm">'+escapeHtml(value || '—')+'</div>'
       + '<div class="delta neutral"'+hintAttr+'>'+escapeHtml(hintText || '')+'</div>'
       + '</div>';
   }
@@ -1183,7 +1179,7 @@
     }
     var extraClass = config.extraClass ? ' '+config.extraClass : '';
     return '<div class="kpi'+extraClass+'" role="group" aria-label="'+escapeHtml(label)+'">'
-      + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:30px;height:30px;border:none;background:transparent" href="#kpi-'+meta.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+escapeHtml(summaryLabel)+'">'+renderIcon('info')+'</a>'
+      + '<a class="kinfo" href="#kpi-'+meta.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+escapeHtml(summaryLabel)+'">'+renderIcon('info')+'</a>'
       + '<div class="label">'+renderIcon(iconName)+'<span data-i18n="'+meta.labelKey+'">'+escapeHtml(label)+'</span></div>'
       + '<div class="value">'+escapeHtml(value)+'</div>'
       + '<div class="delta '+deltaClass+'">'+renderIcon(deltaIcon,{className:'delta-icon'})+escapeHtml(deltaText || '')+'</div>'
