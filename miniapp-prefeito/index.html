@@ -1,269 +1,182 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel do Prefeito — v1.0.0</title>
-  <!-- Estilos do miniapp -->
-  <!-- Ordem recomendada: reset → tokens → base/ui → tema → página -->
-  <link rel="stylesheet" href="https://unpkg.com/modern-normalize/modern-normalize.css" />
-  <!-- CSS compartilhado do repo (mantém caso já exista) -->
-  <link rel="stylesheet" href="https://unpkg.com/modern-normalize/modern-normalize.css" />
-  <!-- Folha canônica do projeto: miniapp-base/styles.css -->
-  <link rel="stylesheet" href="../miniapp-base/styles.css" />
-  <!-- Estilos locais opcionais deste miniapp (se existirem) -->
-  <link rel="stylesheet" href="./style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-  <!-- Fallback mínimo para não quebrar caso os CSS acima não sejam encontrados -->
-  <style id="fallback-ui">
-    :root{
-      --bg:#0b0c0f;--surface:#11131a;--surface-2:#1a1d26;--text:#e9edf1;--muted:#9aa3ad;--border:#232735;--accent:#4f46e5;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .appbar{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);z-index:10}
-    .appbar-left,.appbar-right{display:flex;gap:8px;align-items:center}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);background:transparent;color:var(--text);padding:.45rem .7rem;border-radius:10px}
-    .btn-ghost{border-color:transparent}
-    .badge{font-size:.75rem;background:var(--surface-2);color:var(--muted);padding:.2rem .5rem;border:1px solid var(--border);border-radius:999px}
-    .chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text)}
-    .container{padding:16px;max-width:1280px;margin:0 auto}
-    .grid{display:grid;gap:12px}
-    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
-    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(max-width:1100px){.grid-5{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:860px){.grid-3,.grid-5,.grid-2{grid-template-columns:1fr}}
-    .card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-    .card-head,.panel-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-bottom:1px solid var(--border)}
-    .card-body,.panel-body{padding:12px}
-    .panel-body.empty{display:flex;align-items:center;justify-content:center;height:220px;color:var(--muted);font-size:.95rem}
-    .kpi{font-size:1.25rem;font-weight:600}
-    .kpi-pair{display:flex;align-items:baseline;gap:8px}
-    .delta{font-size:.85rem;padding:.15rem .45rem;border-radius:8px;border:1px solid var(--border);color:var(--muted)}
-    .delta.up{color:var(--good);border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.08)}
-    .delta.down{color:var(--bad);border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.08)}
-    .delta.stable{color:var(--muted);background:rgba(148,163,184,.08)}
-    .muted{color:var(--muted)}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/miniapp-base/styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.0.0" media="print" onload="this.media='all'">
+  <style>
+    .modal{position:fixed;inset:0;display:none}
+    .modal:target{display:block}
+    .kpi{position:relative}
+    .kpi .kinfo{position:absolute;top:6px;right:6px;border:none;background:transparent;width:28px;height:28px;display:grid;place-items:center;padding:0}
+    .back-btn{position:fixed;left:12px;top:12px;z-index:50}
+    .back-btn .btn{background:#fff;border:1px solid var(--card-border,#cbd5e1);}
   </style>
+  <script src="https://unpkg.com/i18next@23/dist/umd/i18next.min.js"></script>
+  <script src="https://unpkg.com/i18next-http-backend@2/dist/umd/i18nextHttpBackend.min.js"></script>
 </head>
 <body>
-  <header class="appbar">
-    <nav class="appbar-left">
-      <button class="btn btn-ghost" id="btn-back">
-        <i data-lucide="arrow-left"></i>
-        <span>Voltar</span>
-      </button>
-      <span class="badge">v1.0.0</span>
-    </nav>
-    <nav class="appbar-right">
-      <button class="chipbtn" id="toolbar.filters"><i data-lucide="filter"></i><span>toolbar.filters</span></button>
-      <button class="chipbtn" id="toolbar.studies"><i data-lucide="book-open"></i><span>toolbar.studies</span></button>
-      <button class="chipbtn" id="toolbar.theme"><i data-lucide="sun"></i><span>toolbar.theme</span></button>
-      <button class="chipbtn" id="toolbar.language"><i data-lucide="languages"></i><span>toolbar.language</span></button>
-    </nav>
+  <div class="back-btn">
+    <a class="btn" href="../miniapp-base/index.html" title="Voltar ao Catálogo">
+      <span class="material-symbols-rounded">arrow_back</span>
+      Voltar
+    </a>
+  </div>
+  <header>
+    <div class="title">
+      <span class="material-symbols-rounded" aria-hidden="true">insights</span>
+      <div>
+        <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
+        <p class="subtitle" data-i18n="app.subtitle">Versão com i18n e templates remotos</p>
+      </div>
+      <span class="version" aria-label="versão do arquivo">v1.0.0</span>
+    </div>
+    <div class="toolbar" role="group" aria-label="Controles de exibição">
+      <div class="split" id="toolbar-split"></div>
+    </div>
   </header>
 
-  <main class="container">
-    <!-- TOP PERSONA SUMMARY -->
-    <section class="grid grid-3 persona">
-      <article class="card" id="persona.gender">
-        <header class="card-head">
-          <i data-lucide="users"></i>
-          <strong>persona.gender</strong>
-        </header>
-        <div class="card-body">
-          <div class="kpi">54% • ♂ 44% • ♀ 2%</div>
-          <small class="muted">persona.hint</small>
-        </div>
-      </article>
+  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
+  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor"></section>
+  <main id="cards" class="grid" aria-live="polite"></main>
+  <section id="info-modal" class="modal" aria-label="Informações"></section>
+  <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
 
-      <article class="card" id="persona.age">
-        <header class="card-head">
-          <i data-lucide="calendar"></i>
-          <strong>persona.age</strong>
-        </header>
-        <div class="card-body">
-          <div class="kpi">25–34 (31%) • 35–44 (27%)</div>
-          <small class="muted">persona.hint</small>
-        </div>
-      </article>
-
-      <article class="card" id="persona.neighborhood">
-        <header class="card-head">
-          <i data-lucide="map-pin"></i>
-          <strong>persona.neighborhood</strong>
-        </header>
-        <div class="card-body">
-          <div class="kpi">Boqueirão, CIC, Bairro Novo</div>
-          <small class="muted">persona.hintTop</small>
-        </div>
-      </article>
-    </section>
-
-    <!-- SECTORS KPIs -->
-    <section class="grid grid-5 sectors">
-      <article class="card" id="sector.saude">
-        <header class="card-head">
-          <i data-lucide="heart-pulse"></i>
-          <strong>sector.saude</strong>
-        </header>
-        <div class="card-body kpi-pair">
-          <div class="kpi">4,2</div>
-          <div class="delta up">+0,3</div>
-        </div>
-      </article>
-
-      <article class="card" id="sector.educacao">
-        <header class="card-head">
-          <i data-lucide="graduation-cap"></i>
-          <strong>sector.educacao</strong>
-        </header>
-        <div class="card-body kpi-pair">
-          <div class="kpi">3,8</div>
-          <div class="delta stable">delta.stable</div>
-        </div>
-      </article>
-
-      <article class="card" id="sector.transporte">
-        <header class="card-head">
-          <i data-lucide="bus"></i>
-          <strong>sector.transporte</strong>
-        </header>
-        <div class="card-body kpi-pair">
-          <div class="kpi">3,2</div>
-          <div class="delta down">−0,2</div>
-        </div>
-      </article>
-
-      <article class="card" id="sector.seguranca">
-        <header class="card-head">
-          <i data-lucide="shield"></i>
-          <strong>sector.seguranca</strong>
-        </header>
-        <div class="card-body kpi-pair">
-          <div class="kpi">4,0</div>
-          <div class="delta stable">delta.stable</div>
-        </div>
-      </article>
-
-      <article class="card" id="sector.meioambiente">
-        <header class="card-head">
-          <i data-lucide="leaf"></i>
-          <strong>sector.meioambiente</strong>
-        </header>
-        <div class="card-body kpi-pair">
-          <div class="kpi">4,4</div>
-          <div class="delta up">+0,1</div>
-        </div>
-      </article>
-    </section>
-
-    <!-- CHARTS ROW -->
-    <section class="grid grid-2 charts">
-      <article class="panel" id="charts.avg_by_sector">
-        <header class="panel-head">
-          <i data-lucide="bar-chart-3"></i>
-          <strong>charts.avg_by_sector</strong>
-          <button type="button" class="chipbtn info-btn" aria-label="Mais informações" data-title="Média por Setor" data-content="Média ponderada das notas por setor. Escala 1–5. 1–2: ruim, 3–4: médio, 5: bom. Atualiza quando filtros mudam.">
-            <i data-lucide="info"></i>
-          </button>
-        </header>
-        <div class="panel-body empty">Colunas (placeholder)</div>
-      </article>
-
-      <article class="panel" id="charts.distribution">
-        <header class="panel-head">
-          <i data-lucide="chart-bar"></i>
-          <strong>charts.distribution</strong>
-          <button type="button" class="chipbtn info-btn" aria-label="Mais informações" data-title="Distribuição de Notas" data-content="Histograma de frequências por nota (1–5). Útil para ver concentração, caudas e assimetria das respostas.">
-            <i data-lucide="info"></i>
-          </button>
-        </header>
-        <div class="panel-body empty">Barras (placeholder)</div>
-      </article>
-    </section>
-  </main>
-
-  <!-- Scripts do app -->
-  <script src="./main.js"></script>
-  <!-- Lucide: correção de renderização de ícones -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
-    // Garante renderização inicial e re-render após atualizações do DOM
-    function renderIconsSafely() {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        try { window.lucide.createIcons(); } catch (e) { /* no-op */ }
+    const I18N_NAMESPACES = ['system','miniapp_prefeito'];
+    const BASE_PATH = window.location.origin + '/MiniApp-base/miniapp-prefeito';
+    const I18N_BACKEND_PATH = BASE_PATH + '/i18n/locales/{{lng}}/{{ns}}.json';
+
+    window.__INDEXED_LIB_CANDIDATES__ = [
+      'modules/indexed/indexed.min.js','modules/indexed/indexed.js',
+      'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.min.js',
+      'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.js',
+      'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.min.js',
+      'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.js'
+    ];
+
+    function applyI18n(root){
+      try{
+        (root||document).querySelectorAll('[data-i18n]').forEach(function(n){
+          const k = n.getAttribute('data-i18n');
+          if(k) n.textContent = i18next.t(k);
+        });
+      }catch(_){}
+    }
+    function $t(k){
+      try{ return i18next.t(k) || k; } catch(_){ return k; }
+    }
+
+    (function loadScripts(){
+      function loadOne(list, cb){
+        if(!list || !list.length) return cb && cb();
+        const src = list.shift();
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => { cb(true, src); };
+        s.onerror = () => { loadOne(list, cb); };
+        document.head.appendChild(s);
+      }
+      loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){
+        initI18n();
+      });
+    })();
+
+    function initI18n(){
+      try {
+        i18next
+          .use(i18nextHttpBackend)
+          .init({
+            lng: (navigator.language || 'pt-BR'),
+            fallbackLng: 'pt-BR',
+            ns: I18N_NAMESPACES,
+            defaultNS: 'system',
+            backend: { loadPath: I18N_BACKEND_PATH },
+            interpolation: { escapeValue: false }
+          })
+          .then(() => { initPanel(); });
+      } catch(e) {
+        console.error('Erro i18n:', e);
+        initPanel();
       }
     }
 
-    document.addEventListener('DOMContentLoaded', renderIconsSafely);
+    function renderToolbar(){
+      const el = document.getElementById('toolbar-split');
+      if(!el) return;
+      el.innerHTML =
+        '<a class="btn" href="#filters" title="'+$t('toolbar.filters')+'"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>' +
+        '<a class="btn" href="#manage-studies" title="'+$t('toolbar.studies')+'"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>' +
+        '<a class="btn" href="#theme" title="'+$t('toolbar.theme')+'"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>' +
+        '<a class="btn" href="#language" title="'+$t('toolbar.language')+'"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>';
+    }
 
-    // Caso o app dispare eventos após atualizar UI (ex.: quando dados chegam do IndexedDB)
-    window.addEventListener('ui:updated', renderIconsSafely);
+    function renderPersona(){
+      const wrap = document.getElementById('persona-bar');
+      const cards = [
+        { id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:$t('persona.hint') },
+        { id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:$t('persona.hint') },
+        { id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:$t('persona.hintTop') }
+      ];
+      wrap.innerHTML = cards.map(c =>
+        '<div class="kpi" role="group" aria-label="'+c.title+'">' +
+          '<button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'kpi\', {title:\''+c.title+'\', avg:\''+c.value+'\', deltaText:\'\', deltaClass:\'neutral\', topMetrics:[]})"><span class="material-symbols-rounded">info</span></button>' +
+          '<div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>' +
+          '<div class="value">'+c.value+'</div>' +
+          '<div class="delta neutral">'+c.hint+'</div>' +
+        '</div>'
+      ).join('');
+    }
 
-    // Observa mudanças em nós principais para re-render (leve e seguro)
-    const mo = new MutationObserver((m) => {
-      for (const rec of m) {
-        if (rec.addedNodes && rec.addedNodes.length) { renderIconsSafely(); break; }
-      }
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
+    function renderKPIs(){
+      const list = [
+        { id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3', cls:'positive' },
+        { id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral' },
+        { id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative' },
+        { id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral' },
+        { id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive' }
+      ];
+      const wrap = document.getElementById('kpi-bar');
+      wrap.innerHTML = list.map(s =>
+        '<div class="kpi" role="group" aria-label="'+s.label+'">' +
+          '<button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'kpi\', {title:\''+s.label+'\', avg:\''+s.val+'\', deltaText:\''+s.delta+'\', deltaClass:\''+s.cls+'\', topMetrics:[{code:\'T1P1\',label:\'LIMPEZA E HIGIENE\',score:\'4,6\'}]})"><span class="material-symbols-rounded">info</span></button>' +
+          '<div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>' +
+          '<div class="value">'+s.val+'</div>' +
+          '<div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>' +
+        '</div>'
+      ).join('');
+    }
+
+    function renderIndicators(){
+      const cards = [
+        { id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), desc:$t('charts.distributionDesc'), ph:'Colunas (placeholder)' },
+        { id:'distribution', icon:'stacked_bar_chart', title:$t('charts.distribution'), desc:$t('charts.distributionDesc'), ph:'Barras (placeholder)' }
+      ];
+      const grid = document.getElementById('cards');
+      grid.innerHTML = cards.map(c =>
+        '<section class="card" aria-labelledby="t-'+c.id+'">' +
+          '<h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>' +
+          '<button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'chart\', {title:\''+c.title+'\', description:\''+c.desc+'\'})"><span class="material-symbols-rounded">info</span></button>' +
+          '<div class="ph">'+c.ph+'</div>' +
+        '</section>'
+      ).join('');
+    }
+
+    async function initPanel(){
+      renderToolbar();
+      renderPersona();
+      renderKPIs();
+      renderIndicators();
+      applyI18n(document);
+    }
+
+    if(document.readyState !== 'loading') initI18n();
+    else document.addEventListener('DOMContentLoaded', initI18n);
   </script>
-  
-  <!-- Popover Info: estética consistente com chips/badges -->
-  <div id="info-popover" class="info-popover hidden" role="dialog" aria-modal="true" aria-labelledby="info-popover-title">
-    <div class="info-popover-card">
-      <header class="info-popover-head">
-        <strong id="info-popover-title">Título</strong>
-        <button class="btn btn-ghost info-popover-close" aria-label="Fechar"><i data-lucide="x"></i></button>
-      </header>
-      <div class="info-popover-body">Conteúdo</div>
-    </div>
-  </div>
-
-  <style>
-    /* Estética: segue chips/cards existentes sem mudar style.css */
-    .info-popover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);z-index:50}
-    .info-popover.hidden{display:none}
-    .info-popover-card{background:var(--surface, #fff);color:var(--text, #111);border:1px solid var(--border, #e5e7eb);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:min(560px,92vw)}
-    .info-popover-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border, #e5e7eb)}
-    .info-popover-body{padding:16px;line-height:1.5}
-    .info-btn{display:inline-flex;align-items:center;gap:.35rem}
-    .info-btn:hover{background:var(--hover, rgba(0,0,0,.04))}
-  </style>
-
-  <script>
-    // Inicializa listeners dos botões de informação usando a mesma estética de chips
-    (function(){
-      const pop = document.getElementById('info-popover');
-      const titleEl = pop.querySelector('#info-popover-title');
-      const bodyEl = pop.querySelector('.info-popover-body');
-      const closeBtn = pop.querySelector('.info-popover-close');
-
-      function openInfo(btn){
-        titleEl.textContent = btn.getAttribute('data-title') || 'Informação';
-        bodyEl.textContent = btn.getAttribute('data-content') || '';
-        pop.classList.remove('hidden');
-        renderIconsSafely && renderIconsSafely();
-      }
-      function closeInfo(){ pop.classList.add('hidden'); }
-
-      document.addEventListener('click', (ev)=>{
-        const b = ev.target.closest('.info-btn');
-        if(b){ openInfo(b); }
-        if(ev.target.closest('.info-popover-close')){ closeInfo(); }
-        if(ev.target === pop){ closeInfo(); }
-      });
-      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeInfo(); });
-
-      // garante ícones dos novos botões
-      renderIconsSafely && renderIconsSafely();
-    })();
-  </script>
+  <script src="./js/template_loader.js"></script>
 </body>
 </html>
