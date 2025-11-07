@@ -1,1 +1,16 @@
-{}
+{
+  "labels": {
+    "sector": "Sector",
+    "current": "Current",
+    "previous": "Previous",
+    "rating": "Average score (1–5)",
+    "category": "Category",
+    "responses": "Responses",
+    "positive": "Positive",
+    "neutral": "Neutral",
+    "negative": "Negative",
+    "month": "Month",
+    "neighborhood": "Neighborhood",
+    "share": "Share"
+  }
+}

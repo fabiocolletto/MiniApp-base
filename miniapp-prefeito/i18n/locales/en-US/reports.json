@@ -1,1 +1,5 @@
-{}
+{
+  "loading": "Loading indicators…",
+  "error": "Unable to load indicators.",
+  "empty": "No synchronized data."
+}
