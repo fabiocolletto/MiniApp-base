@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel de Indicadores — Versão Estática (6 indicadores)</title>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/miniapp-base/styles.css?v=0.9.4">
+  <link rel="stylesheet" href="../miniapp-base/styles.css?v=0.9.4">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=0.9.4" media="print" onload="this.media='all'">
 </head>
 <body>
@@ -76,12 +76,12 @@
             <strong data-i18n="sync.ctaTitle">Sincronizar com Google Drive</strong>
             <span style="font-size:12px;color:var(--muted)" data-i18n="sync.ctaHint">Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.</span>
           </div>
-          <button id="sync-toggle" class="btn" aria-pressed="false" title="Habilitar sincronização"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
+          <button id="sync-toggle" class="btn" aria-pressed="false" title="Permitir e ativar" data-i18n-attr="title:sync.enable"><span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span><span class="sync-label" data-i18n="sync.enable">Permitir e ativar</span></button>
         </div>
         <p id="sync-state" style="margin:10px 0 0;color:var(--muted)" data-i18n="sync.state.off">Sincronização desativada</p>
         <div id="sync-tip" class="pill info" style="margin-top:10px;display:none"></div>
         <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba"><span class="material-symbols-rounded">open_in_new</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
+          <a id="sync-open-tab" class="btn" href="#" style="display:none" title="Abrir em nova aba" data-i18n-attr="title:sync.openTab"><span class="material-symbols-rounded">open_in_new</span><span data-i18n="sync.openTab">Abrir em nova aba</span></a>
         </div>
       </div>
     </div>
@@ -95,7 +95,84 @@
 
   <footer data-i18n="app.footer">Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.</footer>
 
-  <script id="i18n-pt-BR" type="application/json">{"app.title":"Município de Curitiba — Painel de Indicadores","app.subtitle":"Versão estática com botão de permissão para Google Drive","app.footer":"Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.","toolbar.filters":"Filtros","toolbar.studies":"Pesquisas","toolbar.theme":"Tema","toolbar.language":"Idioma","toolbar.multidevice":"Multi-dispositivo","sector.saude":"Saúde","sector.educacao":"Educação","sector.transporte":"Transporte","sector.seguranca":"Segurança","sector.meioambiente":"Meio ambiente","delta.stable":"estável","charts.avg_by_sector":"Média de satisfação por setor","charts.distribution":"Distribuição de notas","info.howto.title":"Como ler","info.howto.copy":"Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.","info.hint":"Toque no ícone novamente para fechar.","theme.title":"Tema do painel","theme.light":"Claro","theme.dark":"Escuro","theme.auto":"Automático","lang.title":"Idioma do painel","lang.pt":"Português","lang.es":"Español","lang.en":"English","sync.title":"Múltiplos dispositivos","sync.lead":"Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.","sync.ctaTitle":"Sincronizar com Google Drive","sync.ctaHint":"Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.","sync.enable":"Permitir e ativar","sync.state.off":"Sincronização desativada","sync.state.pending":"Aguardando autorização…","sync.state.on":"Sincronização ativa","sync.openTab":"Abrir em nova aba","persona.title":"Perfil da amostra","persona.gender":"Distribuição por gênero","persona.age":"Distribuição por faixa etária","persona.neighborhood":"Bairros mais presentes"}</script>
+  <script id="i18n-pt-BR" type="application/json">
+  {
+    "app.title": "Município de Curitiba — Painel de Indicadores",
+    "app.subtitle": "Versão com i18n (i18next) e templates remotos",
+    "app.footer": "Base preparada para i18n (i18next) e templates externos versionados.",
+    "toolbar.filters": "Filtros",
+    "toolbar.studies": "Pesquisas",
+    "toolbar.theme": "Tema",
+    "toolbar.language": "Idioma",
+    "toolbar.multidevice": "Multi-dispositivo",
+    "theme.title": "Tema do painel",
+    "theme.light": "Claro",
+    "theme.dark": "Escuro",
+    "theme.auto": "Automático",
+    "lang.title": "Idioma do painel",
+    "lang.pt": "Português",
+    "lang.es": "Español",
+    "lang.en": "English",
+    "sector.saude": "Saúde",
+    "sector.educacao": "Educação",
+    "sector.transporte": "Transporte",
+    "sector.seguranca": "Segurança",
+    "sector.meioambiente": "Meio ambiente",
+    "delta.stable": "estável",
+    "delta.change": "{{value}} vs. mês anterior",
+    "charts.avg_by_sector.title": "Média de satisfação por setor",
+    "charts.avg_by_sector.infoTitle": "Como ler",
+    "charts.avg_by_sector.infoCopy": "Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.",
+    "charts.avg_by_sector.placeholder": "Colunas (placeholder)",
+    "charts.distribution.title": "Distribuição de notas",
+    "charts.distribution.infoTitle": "Como ler",
+    "charts.distribution.infoCopy": "Proporção de boas/médias/ruins por setor após filtros aplicados.",
+    "charts.distribution.placeholder": "Barras empilhadas (placeholder)",
+    "charts.trend_sector.title": "Tendência mensal por setor",
+    "charts.trend_sector.infoTitle": "Como ler",
+    "charts.trend_sector.infoCopy": "Evolução das médias mensais por setor considerando apenas pesquisas ativas.",
+    "charts.trend_sector.placeholder": "Linhas (placeholder)",
+    "charts.reviews_month.title": "Avaliações por mês",
+    "charts.reviews_month.infoTitle": "Como ler",
+    "charts.reviews_month.infoCopy": "Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).",
+    "charts.reviews_month.placeholder": "Colunas agrupadas (placeholder)",
+    "charts.map_neighborhoods.title": "Mapa do município — pontos por bairro",
+    "charts.map_neighborhoods.infoTitle": "Como ler",
+    "charts.map_neighborhoods.infoCopy": "Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.",
+    "charts.map_neighborhoods.placeholder": "Mapa (placeholder)",
+    "charts.share_sector.title": "Participação por setor",
+    "charts.share_sector.infoTitle": "Como ler",
+    "charts.share_sector.infoCopy": "Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.",
+    "charts.share_sector.placeholder": "Pizza (placeholder)",
+    "info.hint": "Toque no ícone novamente para fechar.",
+    "info.summary": "Informações",
+    "persona.title": "Perfil da amostra",
+    "persona.gender": "Distribuição por gênero",
+    "persona.age": "Distribuição por faixa etária",
+    "persona.neighborhood": "Bairros mais presentes",
+    "persona.hintFilters": "Após filtros",
+    "persona.hintDominant": "Faixas dominantes",
+    "persona.hintTop3": "Top 3",
+    "kpi.labels.avg": "Média",
+    "kpi.labels.delta": "Variação",
+    "kpi.labels.topMetrics": "Top métricas",
+    "kpi.moreInfo": "Mais informações",
+    "sync.title": "Múltiplos dispositivos",
+    "sync.lead": "Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.",
+    "sync.ctaTitle": "Sincronizar com Google Drive",
+    "sync.ctaHint": "Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.",
+    "sync.enable": "Permitir e ativar",
+    "sync.disable": "Desativar",
+    "sync.openTab": "Abrir em nova aba",
+    "sync.tip.ok": "Sincronização ok",
+    "sync.tip.error": "Problema de sincronização",
+    "sync.state.on": "Sincronização ativada",
+    "sync.state.off": "Sincronização desativada",
+    "sync.state.pending": "Aguardando autorização…"
+  }
+  </script>
+  <script src="https://unpkg.com/i18next@23.10.1/dist/umd/i18next.min.js"></script>
+  <script src="./js/i18n.js"></script>
 
   <script>
   window.__INDEXED_LIB_CANDIDATES__ = [
@@ -111,108 +188,340 @@
     'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/miniapp-base/relatorio_utils.js'
   ];
 
-  function $t(k){ try{ var dict=JSON.parse(document.getElementById('i18n-pt-BR').textContent||'{}'); return dict[k]||k; }catch(_){ return k; } }
+  function $t(key, options){
+    if(window.I18nManager && typeof window.I18nManager.t === 'function'){
+      return window.I18nManager.t(key, options);
+    }
+    if(window.i18next && typeof window.i18next.t === 'function'){
+      var out = window.i18next.t(key, options);
+      if(typeof out === 'string' && out !== key) return out;
+    }
+    return (options && options.defaultValue) || key;
+  }
 
   (function loadScripts(){
-    function loadOne(list, cb){ if(!list||!list.length) return cb&&cb(); var src=list.shift(); var s=document.createElement('script'); s.src=src; s.async=true; s.onload=function(){ cb&&cb(true,src); }; s.onerror=function(){ loadOne(list, cb); }; document.head.appendChild(s); }
-    loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){ loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){ initPanel(); }); });
+    function loadOne(list, cb){
+      if(!list || !list.length) return cb && cb();
+      var src = list.shift();
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = function(){ cb && cb(true, src); };
+      s.onerror = function(){ loadOne(list, cb); };
+      document.head.appendChild(s);
+    }
+    loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){
+      loadOne(window.__RELATORIO_LIB_CANDIDATES__.slice(), function(){
+        initPanel();
+      });
+    });
   })();
 
-  function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
+  function report(kind, state, text){
+    try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){ }
+  }
 
   function renderToolbar(){
-    var el=document.getElementById('toolbar-split');
+    var el = document.getElementById('toolbar-split');
     if(!el) return;
-    el.innerHTML=''
-      + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
-      + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
-      + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
-      + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
-      + '<a class="btn" href="#sync" id="toolbar-sync" title="Multi"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
+    var items = [
+      { href:'#filters', icon:'filter_list', key:'toolbar.filters' },
+      { href:'#manage-studies', icon:'inventory_2', key:'toolbar.studies' },
+      { href:'#theme', icon:'light_mode', key:'toolbar.theme' },
+      { href:'#language', icon:'translate', key:'toolbar.language' },
+      { href:'#sync', icon:'devices', key:'toolbar.multidevice', id:'toolbar-sync', extra:'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span>' }
+    ];
+    el.innerHTML = items.map(function(item){
+      var idAttr = item.id ? ' id="'+item.id+'"' : '';
+      var title = $t(item.key);
+      var extra = item.extra || '';
+      return '<a class="btn" href="'+item.href+'"'+idAttr+' data-i18n-attr="title:'+item.key+'" title="'+title+'">'
+        + '<span class="material-symbols-rounded" aria-hidden="true">'+item.icon+'</span>'
+        + '<span data-i18n="'+item.key+'">'+title+'</span>'
+        + extra
+        + '</a>';
+    }).join('');
   }
 
   function renderPersona(){
-    var wrap=document.getElementById('persona-bar');
-    var cards=[
-      {id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:'Após filtros'},
-      {id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:'Faixas dominantes'},
-      {id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:'Top 3'}
+    var wrap = document.getElementById('persona-bar');
+    if(!wrap) return;
+    var cards = [
+      { id:'p-genero', icon:'diversity_3', titleKey:'persona.gender', value:'♀ 54% · ♂ 44% · ⁄ 2%', hintKey:'persona.hintFilters' },
+      { id:'p-idade', icon:'cake', titleKey:'persona.age', value:'25–34 (31%) · 35–44 (27%)', hintKey:'persona.hintDominant' },
+      { id:'p-bairro', icon:'location_city', titleKey:'persona.neighborhood', value:'Boqueirão, CIC, Bairro Novo', hintKey:'persona.hintTop3' }
     ];
-    wrap.innerHTML=cards.map(function(c){
-      return '<div class="kpi" role="group" aria-label="'+c.title+'">\
-        <div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>\
-        <div class="value" style="font-size:18px">'+c.value+'</div>\
-        <div class="delta neutral" style="opacity:.8">'+c.hint+'</div>\
-      </div>';
+    wrap.innerHTML = cards.map(function(card){
+      var title = $t(card.titleKey);
+      var hint = card.hintKey ? $t(card.hintKey) : '';
+      var hintAttr = card.hintKey ? ' data-i18n="'+card.hintKey+'"' : '';
+      return '<div class="kpi" role="group" aria-label="'+title+'">'
+        + '<div class="label"><span class="material-symbols-rounded">'+card.icon+'</span><span data-i18n="'+card.titleKey+'">'+title+'</span></div>'
+        + '<div class="value" style="font-size:18px">'+card.value+'</div>'
+        + '<div class="delta neutral" style="opacity:.8"'+hintAttr+'>'+hint+'</div>'
+        + '</div>';
     }).join('');
   }
 
   function renderKPIs(){
-    var list=[
-      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3 vs. mês anterior', cls:'positive'},
-      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral'},
-      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative'},
-      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral'},
-      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive'}
+    var wrap = document.getElementById('kpi-bar');
+    if(!wrap) return;
+    var list = [
+      { id:'saude', icon:'vaccines', labelKey:'sector.saude', value:'4,2', deltaKey:'delta.change', deltaValue:'+0,3', cls:'positive' },
+      { id:'educacao', icon:'school', labelKey:'sector.educacao', value:'3,8', deltaKey:'delta.stable', cls:'neutral' },
+      { id:'transporte', icon:'directions_bus', labelKey:'sector.transporte', value:'3,2', deltaKey:'delta.change', deltaValue:'-0,2', cls:'negative' },
+      { id:'seguranca', icon:'shield_person', labelKey:'sector.seguranca', value:'4,0', deltaKey:'delta.stable', cls:'neutral' },
+      { id:'meioambiente', icon:'eco', labelKey:'sector.meioambiente', value:'4,4', deltaKey:'delta.change', deltaValue:'+0,1', cls:'positive' }
     ];
-    var wrap=document.getElementById('kpi-bar');
-    wrap.innerHTML=list.map(function(s){
-      return '<div class="kpi" role="group" aria-label="'+s.label+'">\
-        <a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+s.id+'" aria-label="Mais informações"><span class="material-symbols-rounded">info</span></a>\
-        <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>\
-        <div class="value">'+s.val+'</div>\
-        <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>\
-      </div>';
+    var summaryLabel = $t('kpi.moreInfo');
+    wrap.innerHTML = list.map(function(item){
+      var label = $t(item.labelKey);
+      var delta = item.deltaKey ? $t(item.deltaKey, { value:item.deltaValue }) : (item.delta || '');
+      return '<div class="kpi" role="group" aria-label="'+label+'">'
+        + '<a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+item.id+'" data-i18n-attr="aria-label:kpi.moreInfo" aria-label="'+summaryLabel+'"><span class="material-symbols-rounded">info</span></a>'
+        + '<div class="label"><span class="material-symbols-rounded">'+item.icon+'</span><span data-i18n="'+item.labelKey+'">'+label+'</span></div>'
+        + '<div class="value">'+item.value+'</div>'
+        + '<div class="delta '+item.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(item.cls==='positive'?'trending_up':item.cls==='negative'?'trending_down':'trending_flat')+'</span>'+delta+'</div>'
+        + '</div>';
     }).join('');
   }
 
   function renderIndicators(){
-    var cards=[
-      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), ph:'Colunas (placeholder)'},
-      {id:'distribution', icon:'stacked_bar_chart', title:'Distribuição de notas', infoTitle:'Como ler', infoCopy:'Proporção de boas/médias/ruins por setor após filtros aplicados.', infoHint:$t('info.hint'), ph:'Barras empilhadas (placeholder)'},
-      {id:'trend-sector', icon:'show_chart', title:'Tendência mensal por setor', infoTitle:'Como ler', infoCopy:'Evolução das médias mensais por setor considerando apenas pesquisas ativas.', infoHint:$t('info.hint'), ph:'Linhas (placeholder)'},
-      {id:'reviews-month', icon:'insert_chart', title:'Avaliações por mês', infoTitle:'Como ler', infoCopy:'Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).', infoHint:$t('info.hint'), ph:'Colunas agrupadas (placeholder)'},
-      {id:'map-bairros', icon:'map', title:'Mapa do município — pontos por bairro', infoTitle:'Como ler', infoCopy:'Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.', infoHint:$t('info.hint'), ph:'Mapa (placeholder)'},
-      {id:'share-sector', icon:'pie_chart', title:'Participação por setor', infoTitle:'Como ler', infoCopy:'Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.', infoHint:$t('info.hint'), ph:'Pizza (placeholder)'}
+    var grid = document.getElementById('cards');
+    if(!grid) return;
+    var cards = [
+      { id:'sector-avg', icon:'bar_chart_4_bars', titleKey:'charts.avg_by_sector.title', infoTitleKey:'charts.avg_by_sector.infoTitle', infoCopyKey:'charts.avg_by_sector.infoCopy', placeholderKey:'charts.avg_by_sector.placeholder' },
+      { id:'distribution', icon:'stacked_bar_chart', titleKey:'charts.distribution.title', infoTitleKey:'charts.distribution.infoTitle', infoCopyKey:'charts.distribution.infoCopy', placeholderKey:'charts.distribution.placeholder' },
+      { id:'trend-sector', icon:'show_chart', titleKey:'charts.trend_sector.title', infoTitleKey:'charts.trend_sector.infoTitle', infoCopyKey:'charts.trend_sector.infoCopy', placeholderKey:'charts.trend_sector.placeholder' },
+      { id:'reviews-month', icon:'insert_chart', titleKey:'charts.reviews_month.title', infoTitleKey:'charts.reviews_month.infoTitle', infoCopyKey:'charts.reviews_month.infoCopy', placeholderKey:'charts.reviews_month.placeholder' },
+      { id:'map-bairros', icon:'map', titleKey:'charts.map_neighborhoods.title', infoTitleKey:'charts.map_neighborhoods.infoTitle', infoCopyKey:'charts.map_neighborhoods.infoCopy', placeholderKey:'charts.map_neighborhoods.placeholder' },
+      { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder' }
     ];
-    var grid=document.getElementById('cards');
-    grid.innerHTML=cards.map(function(c){ return '<section class="card" aria-labelledby="t-'+c.id+'">\
-      <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
-      <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
-      <div class="panel" role="dialog" aria-labelledby="t-'+c.id+'"><h4>'+c.infoTitle+'</h4><p>'+c.infoCopy+'</p><p class="hint">'+c.infoHint+'</p></div></details>\
-      <div class="ph">'+c.ph+'</div></section>'; }).join('');
+    var summaryLabel = $t('info.summary');
+    var hint = $t('info.hint');
+    grid.innerHTML = cards.map(function(card){
+      var title = $t(card.titleKey);
+      var infoTitle = $t(card.infoTitleKey);
+      var infoCopy = $t(card.infoCopyKey);
+      var placeholder = $t(card.placeholderKey);
+      return '<section class="card" aria-labelledby="t-'+card.id+'">'
+        + '<h3 id="t-'+card.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+card.icon+'</span><span data-i18n="'+card.titleKey+'">'+title+'</span></h3>'
+        + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+summaryLabel+'"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>'
+        + '<div class="panel" role="dialog" aria-labelledby="t-'+card.id+'"><h4 data-i18n="'+card.infoTitleKey+'">'+infoTitle+'</h4><p data-i18n="'+card.infoCopyKey+'">'+infoCopy+'</p><p class="hint" data-i18n="info.hint">'+hint+'</p></div></details>'
+        + '<div class="ph" data-i18n="'+card.placeholderKey+'">'+placeholder+'</div>'
+        + '</section>';
+    }).join('');
   }
 
   async function initPanel(){
+    if(window.I18nManager && typeof window.I18nManager.ready === 'function'){
+      await window.I18nManager.ready();
+      if(!window.I18nManager.__panelHooked){
+        window.I18nManager.__panelHooked = true;
+        window.I18nManager.onChange(function(){
+          renderToolbar();
+          renderPersona();
+          renderKPIs();
+          renderIndicators();
+          window.I18nManager.apply();
+          var syncBtn = document.getElementById('sync-toggle');
+          var isOn = !!(syncBtn && syncBtn.getAttribute('aria-pressed') === 'true');
+          updateSyncUI(isOn);
+        });
+      }
+    }
+
     renderToolbar();
     renderPersona();
     renderKPIs();
     renderIndicators();
+    window.I18nManager?.apply?.();
 
     if(window.indexed && window.indexed.open){
-      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } });
+      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){
+        window.indexed.stores = stores || window.indexed.stores || {};
+        if(!window.indexed.stores.config){
+          window.indexed.defineStore('config', {keyPath:'key'});
+        }
+      });
     }
-    try{ const flag = await (window.indexed?.get?.(window.indexed.stores?.config, 'sync_enabled')); updateSyncUI(!!(flag && flag.value)); }catch(_){ updateSyncUI(false); }
+    try{
+      const flag = await (window.indexed?.get?.(window.indexed.stores?.config, 'sync_enabled'));
+      updateSyncUI(!!(flag && flag.value));
+    }catch(_){
+      updateSyncUI(false);
+    }
 
     const btn = document.getElementById('sync-toggle');
     const openTab = document.getElementById('sync-open-tab');
     const ready = canRequestGIS();
-    if(openTab){ openTab.style.display = ready.code==='sandboxed' ? 'inline-flex' : 'none'; openTab.addEventListener('click', function(e){ e.preventDefault(); openStandalone('#sync-consent'); }); }
-    if(btn){ btn.addEventListener('click', async function(){ const on = btn.getAttribute('aria-pressed')==='true'; if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return;} const chk=canRequestGIS(); if(!chk.ok){ if(chk.code==='sandboxed'){ openStandalone('#sync-consent'); return;} showSyncTip(chk.msg,true); report('drive','warn',chk.code||'ambiente-invalido'); return;} try{ report('drive','info','solicitando consentimento'); const token=await requestGoogleDriveToken(); if(token){ await setSyncEnabled(true); report('drive','ok','consentimento concedido'); } else { showSyncTip('Não foi possível obter o token do Google.',true); report('drive','warn','sem-token'); } }catch(err){ showSyncTip('Falha ao solicitar permissão Google. Verifique se o popup não foi bloqueado.',true); report('drive','warn','falha-consentimento'); } }); }
+    if(openTab){
+      openTab.style.display = ready.code === 'sandboxed' ? 'inline-flex' : 'none';
+      openTab.addEventListener('click', function(e){
+        e.preventDefault();
+        openStandalone('#sync-consent');
+      });
+    }
+    if(btn){
+      btn.addEventListener('click', async function(){
+        const on = btn.getAttribute('aria-pressed') === 'true';
+        if(on){
+          await setSyncEnabled(false);
+          report('drive','off','sync desativada');
+          return;
+        }
+        const chk = canRequestGIS();
+        if(!chk.ok){
+          if(chk.code==='sandboxed'){
+            openStandalone('#sync-consent');
+            return;
+          }
+          showSyncTip(chk.msg, true);
+          report('drive','warn',chk.code||'ambiente-invalido');
+          return;
+        }
+        try{
+          report('drive','info','solicitando consentimento');
+          const token = await requestGoogleDriveToken();
+          if(token){
+            await setSyncEnabled(true);
+            report('drive','ok','consentimento concedido');
+          } else {
+            showSyncTip('Não foi possível obter o token do Google.', true);
+            report('drive','warn','sem-token');
+          }
+        }catch(err){
+          showSyncTip('Falha ao solicitar permissão Google. Verifique se o popup não foi bloqueado.', true);
+          report('drive','warn','falha-consentimento');
+        }
+      });
+    }
 
-    document.addEventListener('click', function(e){ document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); }); });
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
+    document.addEventListener('click', function(e){
+      document.querySelectorAll('details.info[open]').forEach(function(d){
+        if(!d.contains(e.target)) d.removeAttribute('open');
+      });
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        document.querySelectorAll('details.info[open]').forEach(function(d){
+          d.removeAttribute('open');
+        });
+      }
+    });
   }
 
-  function showSyncTip(message, warn){ var el=document.getElementById('sync-tip'); if(!el) return; el.textContent = message || ''; el.style.display = message? 'inline-flex':'none'; el.classList.remove('ok','warn','info'); el.classList.add(warn? 'warn':'ok'); var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (warn? 'err':'ok'); dot.title = message || (warn? 'Problema de sincronização' : 'Sincronização ok'); } }
-  function updateSyncUI(enabled){ var tbtn=document.getElementById('toolbar-sync'); if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; } var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (enabled? 'ok':'warn'); } var sbtn=document.getElementById('sync-toggle'); var lab=sbtn? sbtn.querySelector('.sync-label'):null; if(sbtn){ sbtn.setAttribute('aria-pressed', enabled? 'true':'false'); if(lab) lab.textContent = enabled? 'Ativado (clique para desligar)' : 'Permitir e ativar'; } var st=document.getElementById('sync-state'); if(st){ st.textContent = enabled? 'Sincronização ativada' : 'Sincronização desativada'; } }
-  async function setSyncEnabled(enabled){ if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){ updateSyncUI(enabled); return; } await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()}); updateSyncUI(enabled); }
-  function getClientId(){ var m=document.querySelector('meta[name="google-oauth-client-id"]'); if(m && m.content) return m.content.trim(); if(window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID; return 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com'; }
-  function canRequestGIS(){ if(self !== top){ return {ok:false, code:'sandboxed', msg:'Abra em aba própria (fora de iframe) para autorizar o Google.'}; } var cid=getClientId(); if(!cid || /^YOUR_/.test(cid)){ return {ok:false, code:'clientid-missing', msg:'Client ID do Google não configurado. Adicione a meta tag google-oauth-client-id.'}; } if(!(window.google && google.accounts && google.accounts.oauth2)){ return {ok:false, code:'gis-missing', msg:'Biblioteca de identidade Google não carregou ainda. Tente novamente.'}; } return {ok:true}; }
-  function openStandalone(hash){ try{ var url = new URL(window.location.href); url.hash = hash || ''; window.open(url.toString(), '_blank', 'noopener,noreferrer'); }catch(e){} }
-  function requestGoogleDriveToken(){ return new Promise(function(resolve, reject){ try{ var client = google.accounts.oauth2.initTokenClient({ client_id: getClientId(), scope: 'https://www.googleapis.com/auth/drive.file', prompt: 'consent', callback: function(resp){ if(resp && resp.access_token) return resolve(resp.access_token); reject(new Error('Sem token')); } }); client.requestAccessToken(); }catch(e){ reject(e); } }); }
+  function showSyncTip(message, warn){
+    var el = document.getElementById('sync-tip');
+    if(!el) return;
+    var text = message || '';
+    el.textContent = text;
+    el.style.display = text ? 'inline-flex' : 'none';
+    el.classList.remove('ok','warn','info');
+    el.classList.add(warn ? 'warn' : 'ok');
+    if(!text){
+      el.removeAttribute('data-i18n');
+    }
+    var dot = document.getElementById('toolbar-sync-dot');
+    if(dot){
+      var fallbackTitle = warn ? $t('sync.tip.error') : $t('sync.tip.ok');
+      dot.className = 'status-dot ' + (warn ? 'err' : 'ok');
+      dot.title = text || fallbackTitle;
+    }
+  }
+
+  function updateSyncUI(enabled){
+    var tbtn = document.getElementById('toolbar-sync');
+    if(tbtn){
+      tbtn.dataset.active = enabled ? 'true' : 'false';
+      tbtn.setAttribute('title', $t('toolbar.multidevice'));
+      tbtn.setAttribute('data-i18n-attr', 'title:toolbar.multidevice');
+    }
+    var dot = document.getElementById('toolbar-sync-dot');
+    if(dot){
+      dot.className = 'status-dot ' + (enabled ? 'ok' : 'warn');
+      dot.title = $t(enabled ? 'sync.state.on' : 'sync.state.off');
+    }
+    var sbtn = document.getElementById('sync-toggle');
+    var lab = sbtn ? sbtn.querySelector('.sync-label') : null;
+    var labelKey = enabled ? 'sync.disable' : 'sync.enable';
+    if(sbtn){
+      sbtn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      sbtn.setAttribute('title', $t(labelKey));
+      sbtn.setAttribute('data-i18n-attr', 'title:'+labelKey);
+    }
+    if(lab){
+      lab.textContent = $t(labelKey);
+      lab.setAttribute('data-i18n', labelKey);
+    }
+    var st = document.getElementById('sync-state');
+    if(st){
+      var stateKey = enabled ? 'sync.state.on' : 'sync.state.off';
+      st.textContent = $t(stateKey);
+      st.setAttribute('data-i18n', stateKey);
+    }
+    window.I18nManager?.apply?.();
+  }
+
+  async function setSyncEnabled(enabled){
+    if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){
+      updateSyncUI(enabled);
+      return;
+    }
+    await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()});
+    updateSyncUI(enabled);
+  }
+
+  function getClientId(){
+    var m = document.querySelector('meta[name="google-oauth-client-id"]');
+    if(m && m.content) return m.content.trim();
+    if(window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
+    return 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+  }
+
+  function canRequestGIS(){
+    if(self !== top){
+      return {ok:false, code:'sandboxed', msg:'Abra em aba própria (fora de iframe) para autorizar o Google.'};
+    }
+    var cid = getClientId();
+    if(!cid || /^YOUR_/.test(cid)){
+      return {ok:false, code:'clientid-missing', msg:'Client ID do Google não configurado. Adicione a meta tag google-oauth-client-id.'};
+    }
+    if(!(window.google && google.accounts && google.accounts.oauth2)){
+      return {ok:false, code:'gis-missing', msg:'Biblioteca de identidade Google não carregou ainda. Tente novamente.'};
+    }
+    return {ok:true};
+  }
+
+  function openStandalone(hash){
+    try{
+      var url = new URL(window.location.href);
+      url.hash = hash || '';
+      window.open(url.toString(), '_blank', 'noopener,noreferrer');
+    }catch(e){}
+  }
+
+  function requestGoogleDriveToken(){
+    return new Promise(function(resolve, reject){
+      try{
+        var client = google.accounts.oauth2.initTokenClient({
+          client_id: getClientId(),
+          scope: 'https://www.googleapis.com/auth/drive.file',
+          prompt: 'consent',
+          callback: function(resp){
+            if(resp && resp.access_token) return resolve(resp.access_token);
+            reject(new Error('Sem token'));
+          }
+        });
+        client.requestAccessToken();
+      }catch(e){
+        reject(e);
+      }
+    });
+  }
 
   if(document.readyState!=='loading') initPanel(); else document.addEventListener('DOMContentLoaded', initPanel);
   </script>
+
 </body>
 </html>

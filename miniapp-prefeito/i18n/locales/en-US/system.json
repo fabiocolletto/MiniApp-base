@@ -4,6 +4,13 @@
     "subtitle": "Version with i18n (i18next) and remote templates",
     "footer": "Base prepared for i18n (i18next) and versioned external templates."
   },
+  "toolbar": {
+    "filters": "Filters",
+    "studies": "Studies",
+    "theme": "Theme",
+    "language": "Language",
+    "multidevice": "Multi-device"
+  },
   "theme": {
     "title": "Dashboard theme",
     "light": "Light",
@@ -16,17 +23,92 @@
     "en": "English",
     "es": "Spanish"
   },
+  "sector": {
+    "saude": "Health",
+    "educacao": "Education",
+    "transporte": "Transport",
+    "seguranca": "Public safety",
+    "meioambiente": "Environment"
+  },
+  "delta": {
+    "stable": "stable",
+    "change": "{{value}} vs. previous month"
+  },
+  "charts": {
+    "avg_by_sector": {
+      "title": "Average satisfaction by sector",
+      "infoTitle": "How to read",
+      "infoCopy": "Each bar represents the 1–5 average score per sector. 1–2 = poor; 3–4 = neutral; 5 = excellent.",
+      "placeholder": "Columns (placeholder)"
+    },
+    "distribution": {
+      "title": "Score distribution",
+      "infoTitle": "How to read",
+      "infoCopy": "Share of good/neutral/poor ratings per sector after filters are applied.",
+      "placeholder": "Stacked bars (placeholder)"
+    },
+    "trend_sector": {
+      "title": "Monthly trend by sector",
+      "infoTitle": "How to read",
+      "infoCopy": "Monthly averages per sector considering active surveys only.",
+      "placeholder": "Line chart (placeholder)"
+    },
+    "reviews_month": {
+      "title": "Reviews per month",
+      "infoTitle": "How to read",
+      "infoCopy": "Responses collected per month after filters (sector/gender/age range/period).",
+      "placeholder": "Grouped columns (placeholder)"
+    },
+    "map_neighborhoods": {
+      "title": "City map — responses by neighborhood",
+      "infoTitle": "How to read",
+      "infoCopy": "Spatial distribution based on the geohashes/neighborhoods reported in surveys.",
+      "placeholder": "Map (placeholder)"
+    },
+    "share_sector": {
+      "title": "Sector share",
+      "infoTitle": "How to read",
+      "infoCopy": "Share of each sector inside the active survey set.",
+      "placeholder": "Pie (placeholder)"
+    }
+  },
+  "info": {
+    "hint": "Tap the icon again to close.",
+    "summary": "Information"
+  },
+  "persona": {
+    "title": "Sample profile",
+    "gender": "Gender distribution",
+    "age": "Age range distribution",
+    "neighborhood": "Top neighborhoods",
+    "hintFilters": "After filters",
+    "hintDominant": "Dominant ranges",
+    "hintTop3": "Top 3"
+  },
+  "kpi": {
+    "labels": {
+      "avg": "Average",
+      "delta": "Variation",
+      "topMetrics": "Top metrics"
+    },
+    "moreInfo": "More information"
+  },
   "sync": {
-    "title": "Multi‑device",
+    "title": "Multi-device",
     "lead": "Enable Google Drive sync so your surveys and preferences are available on all your devices. You'll see a Google permission prompt.",
     "ctaTitle": "Sync with Google Drive",
     "ctaHint": "Stores settings and survey catalogs in your Drive, with consent.",
     "enable": "Allow & enable",
     "disable": "Disable",
     "openTab": "Open in new tab",
+    "tip": {
+      "ok": "Sync ok",
+      "error": "Sync issue"
+    },
     "state": {
       "on": "Sync enabled",
-      "off": "Sync disabled"
+      "off": "Sync disabled",
+      "pending": "Waiting for authorization…"
     }
   }
 }

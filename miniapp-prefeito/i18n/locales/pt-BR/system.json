@@ -4,6 +4,13 @@
     "subtitle": "Versão com i18n (i18next) e templates remotos",
     "footer": "Base preparada para i18n (i18next) e templates externos versionados."
   },
+  "toolbar": {
+    "filters": "Filtros",
+    "studies": "Pesquisas",
+    "theme": "Tema",
+    "language": "Idioma",
+    "multidevice": "Multi-dispositivo"
+  },
   "theme": {
     "title": "Tema do painel",
     "light": "Claro",
@@ -16,6 +23,76 @@
     "en": "English",
     "es": "Español"
   },
+  "sector": {
+    "saude": "Saúde",
+    "educacao": "Educação",
+    "transporte": "Transporte",
+    "seguranca": "Segurança",
+    "meioambiente": "Meio ambiente"
+  },
+  "delta": {
+    "stable": "estável",
+    "change": "{{value}} vs. mês anterior"
+  },
+  "charts": {
+    "avg_by_sector": {
+      "title": "Média de satisfação por setor",
+      "infoTitle": "Como ler",
+      "infoCopy": "Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.",
+      "placeholder": "Colunas (placeholder)"
+    },
+    "distribution": {
+      "title": "Distribuição de notas",
+      "infoTitle": "Como ler",
+      "infoCopy": "Proporção de boas/médias/ruins por setor após filtros aplicados.",
+      "placeholder": "Barras empilhadas (placeholder)"
+    },
+    "trend_sector": {
+      "title": "Tendência mensal por setor",
+      "infoTitle": "Como ler",
+      "infoCopy": "Evolução das médias mensais por setor considerando apenas pesquisas ativas.",
+      "placeholder": "Linhas (placeholder)"
+    },
+    "reviews_month": {
+      "title": "Avaliações por mês",
+      "infoTitle": "Como ler",
+      "infoCopy": "Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).",
+      "placeholder": "Colunas agrupadas (placeholder)"
+    },
+    "map_neighborhoods": {
+      "title": "Mapa do município — pontos por bairro",
+      "infoTitle": "Como ler",
+      "infoCopy": "Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.",
+      "placeholder": "Mapa (placeholder)"
+    },
+    "share_sector": {
+      "title": "Participação por setor",
+      "infoTitle": "Como ler",
+      "infoCopy": "Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.",
+      "placeholder": "Pizza (placeholder)"
+    }
+  },
+  "info": {
+    "hint": "Toque no ícone novamente para fechar.",
+    "summary": "Informações"
+  },
+  "persona": {
+    "title": "Perfil da amostra",
+    "gender": "Distribuição por gênero",
+    "age": "Distribuição por faixa etária",
+    "neighborhood": "Bairros mais presentes",
+    "hintFilters": "Após filtros",
+    "hintDominant": "Faixas dominantes",
+    "hintTop3": "Top 3"
+  },
+  "kpi": {
+    "labels": {
+      "avg": "Média",
+      "delta": "Variação",
+      "topMetrics": "Top métricas"
+    },
+    "moreInfo": "Mais informações"
+  },
   "sync": {
     "title": "Múltiplos dispositivos",
     "lead": "Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.",
@@ -24,9 +101,14 @@
     "enable": "Permitir e ativar",
     "disable": "Desativar",
     "openTab": "Abrir em nova aba",
+    "tip": {
+      "ok": "Sincronização ok",
+      "error": "Problema de sincronização"
+    },
     "state": {
       "on": "Sincronização ativada",
-      "off": "Sincronização desativada"
+      "off": "Sincronização desativada",
+      "pending": "Aguardando autorização…"
     }
   }
 }
