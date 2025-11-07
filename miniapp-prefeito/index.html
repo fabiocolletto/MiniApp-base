@@ -293,6 +293,18 @@
     "charts.share_sector.infoTitle": "Como ler",
     "charts.share_sector.infoCopy": "Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.",
     "charts.share_sector.placeholder": "Pizza (placeholder)",
+    "charts.labels.sector": "Setor",
+    "charts.labels.current": "Atual",
+    "charts.labels.previous": "Anterior",
+    "charts.labels.rating": "Nota média (1–5)",
+    "charts.labels.category": "Categoria",
+    "charts.labels.responses": "Respostas",
+    "charts.labels.positive": "Positivas",
+    "charts.labels.neutral": "Neutras",
+    "charts.labels.negative": "Negativas",
+    "charts.labels.month": "Mês",
+    "charts.labels.neighborhood": "Bairro",
+    "charts.labels.share": "Participação",
     "info.hint": "Toque no ícone novamente para fechar.",
     "info.summary": "Informações",
     "persona.title": "Perfil da amostra",
@@ -317,10 +329,14 @@
     "sync.tip.error": "Problema de sincronização",
     "sync.state.on": "Sincronização ativada",
     "sync.state.off": "Sincronização desativada",
-    "sync.state.pending": "Aguardando autorização…"
+    "sync.state.pending": "Aguardando autorização…",
+    "reports.loading": "Carregando indicadores…",
+    "reports.error": "Não foi possível carregar os indicadores.",
+    "reports.empty": "Sem dados sincronizados."
   }
   </script>
   <script src="https://unpkg.com/i18next@23.10.1/dist/umd/i18next.min.js"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="./js/i18n.js"></script>
 
   <script>
@@ -397,13 +413,167 @@
     { id:'meioambiente', icon:'eco', labelKey:'sector.meioambiente' }
   ];
   var INDICATOR_CARD_META = [
-    { id:'sector-avg', icon:'bar_chart_4_bars', titleKey:'charts.avg_by_sector.title', infoTitleKey:'charts.avg_by_sector.infoTitle', infoCopyKey:'charts.avg_by_sector.infoCopy', placeholderKey:'charts.avg_by_sector.placeholder' },
-    { id:'distribution', icon:'stacked_bar_chart', titleKey:'charts.distribution.title', infoTitleKey:'charts.distribution.infoTitle', infoCopyKey:'charts.distribution.infoCopy', placeholderKey:'charts.distribution.placeholder' },
-    { id:'trend-sector', icon:'show_chart', titleKey:'charts.trend_sector.title', infoTitleKey:'charts.trend_sector.infoTitle', infoCopyKey:'charts.trend_sector.infoCopy', placeholderKey:'charts.trend_sector.placeholder' },
-    { id:'reviews-month', icon:'insert_chart', titleKey:'charts.reviews_month.title', infoTitleKey:'charts.reviews_month.infoTitle', infoCopyKey:'charts.reviews_month.infoCopy', placeholderKey:'charts.reviews_month.placeholder' },
-    { id:'map-bairros', icon:'map', titleKey:'charts.map_neighborhoods.title', infoTitleKey:'charts.map_neighborhoods.infoTitle', infoCopyKey:'charts.map_neighborhoods.infoCopy', placeholderKey:'charts.map_neighborhoods.placeholder' },
-    { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder' }
+    { id:'sector-avg', icon:'bar_chart_4_bars', titleKey:'charts.avg_by_sector.title', infoTitleKey:'charts.avg_by_sector.infoTitle', infoCopyKey:'charts.avg_by_sector.infoCopy', placeholderKey:'charts.avg_by_sector.placeholder', chartType:'ColumnChart' },
+    { id:'distribution', icon:'stacked_bar_chart', titleKey:'charts.distribution.title', infoTitleKey:'charts.distribution.infoTitle', infoCopyKey:'charts.distribution.infoCopy', placeholderKey:'charts.distribution.placeholder', chartType:'BarChart' },
+    { id:'trend-sector', icon:'show_chart', titleKey:'charts.trend_sector.title', infoTitleKey:'charts.trend_sector.infoTitle', infoCopyKey:'charts.trend_sector.infoCopy', placeholderKey:'charts.trend_sector.placeholder', chartType:'LineChart' },
+    { id:'reviews-month', icon:'insert_chart', titleKey:'charts.reviews_month.title', infoTitleKey:'charts.reviews_month.infoTitle', infoCopyKey:'charts.reviews_month.infoCopy', placeholderKey:'charts.reviews_month.placeholder', chartType:'ColumnChart' },
+    { id:'map-bairros', icon:'map', titleKey:'charts.map_neighborhoods.title', infoTitleKey:'charts.map_neighborhoods.infoTitle', infoCopyKey:'charts.map_neighborhoods.infoCopy', placeholderKey:'charts.map_neighborhoods.placeholder', chartType:'GeoChart' },
+    { id:'share-sector', icon:'pie_chart', titleKey:'charts.share_sector.title', infoTitleKey:'charts.share_sector.infoTitle', infoCopyKey:'charts.share_sector.infoCopy', placeholderKey:'charts.share_sector.placeholder', chartType:'PieChart' }
   ];
+
+  var GOOGLE_CHART_PACKAGES = ['corechart','bar','geochart'];
+  var googleChartsLocale = null;
+  var googleChartsPromise = null;
+  var indicatorCharts = Object.create(null);
+
+  function resolveCssColor(varName, fallback){
+    try{
+      var root = document.documentElement;
+      if(!root) return fallback;
+      var value = getComputedStyle(root).getPropertyValue(varName);
+      return value ? value.trim() || fallback : fallback;
+    }catch(_){
+      return fallback;
+    }
+  }
+
+  function getChartPalette(){
+    return {
+      primary: resolveCssColor('--brand-secondary', '#2563eb'),
+      accent: resolveCssColor('--brand-accent', '#16a34a'),
+      warn: resolveCssColor('--brand-warn', '#f59e0b'),
+      danger: resolveCssColor('--brand-danger', '#dc2626'),
+      info: resolveCssColor('--brand-info', '#0ea5e9'),
+      surface: resolveCssColor('--surface', '#ffffff'),
+      border: resolveCssColor('--border', '#e2e8f0'),
+      muted: resolveCssColor('--muted', '#64748b'),
+      text: resolveCssColor('--text', '#0f172a')
+    };
+  }
+
+  function resetIndicatorCharts(){
+    indicatorCharts = Object.create(null);
+    if(scheduleIndicatorRedraw._raf){
+      cancelAnimationFrame(scheduleIndicatorRedraw._raf);
+      scheduleIndicatorRedraw._raf = null;
+    }
+  }
+
+  function scheduleIndicatorRedraw(){
+    if(!indicatorCharts || !Object.keys(indicatorCharts).length) return;
+    if(scheduleIndicatorRedraw._raf){
+      cancelAnimationFrame(scheduleIndicatorRedraw._raf);
+    }
+    scheduleIndicatorRedraw._raf = requestAnimationFrame(function(){
+      scheduleIndicatorRedraw._raf = null;
+      Object.keys(indicatorCharts).forEach(function(key){
+        var entry = indicatorCharts[key];
+        if(entry && typeof entry.draw === 'function'){
+          try{
+            entry.draw();
+          }catch(err){
+            console.warn('Falha ao redesenhar gráfico', err);
+          }
+        }
+      });
+    });
+  }
+
+  function ensureIndicatorResizeListener(){
+    if(ensureIndicatorResizeListener._bound) return;
+    ensureIndicatorResizeListener._bound = true;
+    window.addEventListener('resize', scheduleIndicatorRedraw);
+    if(typeof window.matchMedia === 'function'){
+      try{
+        var mq = window.matchMedia('(orientation: portrait)');
+        var handler = function(){ scheduleIndicatorRedraw(); };
+        if(mq && typeof mq.addEventListener === 'function'){
+          mq.addEventListener('change', handler);
+        } else if(mq && typeof mq.addListener === 'function'){
+          mq.addListener(handler);
+        }
+        ensureIndicatorResizeListener._mq = { query: mq, handler: handler };
+      }catch(_){ }
+    }
+  }
+
+  function ensureGoogleCharts(locale){
+    if(!(window.google && google.charts)) return Promise.resolve(false);
+    var lang = (locale || getCurrentLocale() || 'pt-BR').split('-')[0];
+    if(googleChartsPromise && googleChartsLocale === lang){
+      return googleChartsPromise;
+    }
+    googleChartsLocale = lang;
+    googleChartsPromise = new Promise(function(resolve){
+      try{
+        google.charts.load('current', { packages:GOOGLE_CHART_PACKAGES, language:lang });
+        google.charts.setOnLoadCallback(function(){ resolve(true); });
+      }catch(err){
+        console.error('Falha ao carregar Google Charts', err);
+        resolve(false);
+      }
+    });
+    return googleChartsPromise;
+  }
+
+  function computeChartOptions(dataset, container){
+    if(!dataset || !container) return {};
+    if(typeof dataset.buildOptions === 'function'){
+      return dataset.buildOptions(container);
+    }
+    var base = Object.assign({}, dataset.baseOptions || {});
+    var bounds = container.getBoundingClientRect();
+    var width = Math.max(Math.round(bounds.width || container.offsetWidth || 320), dataset.minWidth || 240);
+    var ratio = dataset.ratio || 0.6;
+    var minHeight = dataset.minHeight || 240;
+    var maxHeight = typeof dataset.maxHeight === 'number' ? dataset.maxHeight : null;
+    var height = Math.max(minHeight, Math.round(width * ratio));
+    if(maxHeight){ height = Math.min(height, maxHeight); }
+    base.height = height;
+    base.width = width;
+    if(dataset.chartAreaDefaults !== false){
+      var defaultArea = {
+        left: width < 420 ? '12%' : '8%',
+        top: 56,
+        width: '82%',
+        height: Math.max(120, height - 96)
+      };
+      base.chartArea = Object.assign(defaultArea, base.chartArea || {});
+    }
+    return base;
+  }
+
+  function createGoogleChartInstance(type, container){
+    if(!(window.google && google.visualization)) return null;
+    try{
+      switch(type){
+        case 'ColumnChart': return new google.visualization.ColumnChart(container);
+        case 'BarChart': return new google.visualization.BarChart(container);
+        case 'LineChart': return new google.visualization.LineChart(container);
+        case 'PieChart': return new google.visualization.PieChart(container);
+        case 'GeoChart': return new google.visualization.GeoChart(container);
+        default: return null;
+      }
+    }catch(err){
+      console.error('Falha ao instanciar gráfico', type, err);
+      return null;
+    }
+  }
+
+  function createChartRecord(id, chart, dataTable, dataset, card, container){
+    return {
+      id:id,
+      chart:chart,
+      dataTable:dataTable,
+      dataset:dataset,
+      card:card,
+      container:container,
+      draw:function(){
+        var options = computeChartOptions(dataset, container);
+        chart.draw(dataTable, options);
+      }
+    };
+  }
 
   var reportState = { ready:false, loading:false, data:null, unsubscribe:null };
 
@@ -970,13 +1140,357 @@
     var hint = $t('info.hint');
     var extraClass = options.extraClass ? ' '+options.extraClass : '';
     var summaryHtml = summaryText ? '<p class="meta indicator-summary">'+escapeHtml(summaryText)+'</p>' : '';
-    return '<section class="card'+extraClass+'" aria-labelledby="t-'+meta.id+'">'
+    var attrs = ' data-card-id="'+meta.id+'"';
+    if(meta.chartType){
+      attrs += ' data-chart-type="'+meta.chartType+'"';
+    }
+    var chartHtml = '<div class="chart-area" data-chart-id="'+meta.id+'" aria-hidden="true"><div class="chart-canvas" id="chart-'+meta.id+'"></div></div>';
+    return '<section class="card'+extraClass+'"'+attrs+' aria-labelledby="t-'+meta.id+'">'
       + '<h3 id="t-'+meta.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+meta.icon+'</span><span data-i18n="'+meta.titleKey+'">'+escapeHtml(title)+'</span></h3>'
       + '<details class="info"><summary data-i18n-attr="aria-label:info.summary" aria-label="'+escapeHtml(summaryLabel)+'"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>'
       + '<div class="panel" role="dialog" aria-labelledby="t-'+meta.id+'"><h4 data-i18n="'+meta.infoTitleKey+'">'+escapeHtml(infoTitle)+'</h4><p data-i18n="'+meta.infoCopyKey+'">'+escapeHtml(infoCopy)+'</p><p class="hint" data-i18n="info.hint">'+escapeHtml(hint)+'</p></div></details>'
+      + chartHtml
       + '<div class="ph" data-i18n="'+meta.placeholderKey+'">'+escapeHtml(placeholder)+'</div>'
       + summaryHtml
       + '</section>';
+  }
+
+  function showCardPlaceholder(card, key){
+    if(!card) return;
+    card.classList.remove('has-chart');
+    var placeholder = card.querySelector('.ph');
+    if(placeholder){
+      if(key){
+        placeholder.setAttribute('data-i18n', key);
+        placeholder.textContent = $t(key);
+      }
+      placeholder.style.display = 'grid';
+    }
+    var canvas = card.querySelector('.chart-canvas');
+    if(canvas){
+      canvas.innerHTML = '';
+    }
+  }
+
+  function prepareIndicatorDataset(metaId, data, locale){
+    data = data || {};
+    var persona = data.persona || {};
+    var kpis = Array.isArray(data.kpis) ? data.kpis : [];
+    var indicators = data.indicators || {};
+    var localeRef = locale || getCurrentLocale();
+    var palette = getChartPalette();
+    var numberFormatter = new Intl.NumberFormat(localeRef);
+
+    if(metaId === 'sector-avg'){
+      var sectorRows = kpis.map(function(item){
+        if(!item) return null;
+        var avg = Number.isFinite(item.average) ? Number(item.average) : null;
+        var prev = Number.isFinite(item.previousAverage) ? Number(item.previousAverage) : null;
+        if(!Number.isFinite(avg) && !Number.isFinite(prev)) return null;
+        return [formatSectorLabel(item.key), avg, prev];
+      }).filter(Boolean);
+      if(!sectorRows.length) return null;
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.sector') },
+          { type:'number', label:$t('charts.labels.current') },
+          { type:'number', label:$t('charts.labels.previous') }
+        ],
+        rows: sectorRows,
+        ratio:0.6,
+        minHeight:260,
+        maxHeight:420,
+        baseOptions:{
+          legend:{ position:'top', alignment:'center', textStyle:{ color: palette.muted } },
+          vAxis:{
+            minValue:0,
+            maxValue:5,
+            viewWindow:{ min:0, max:5 },
+            title:$t('charts.labels.rating'),
+            titleTextStyle:{ color: palette.muted },
+            textStyle:{ color: palette.muted },
+            gridlines:{ color: palette.border },
+            baselineColor: palette.border,
+            format:'0.0'
+          },
+          hAxis:{ textStyle:{ color: palette.muted } },
+          colors:[palette.primary, palette.info],
+          focusTarget:'category',
+          backgroundColor:{ fill:'transparent' }
+        }
+      };
+    }
+
+    if(metaId === 'distribution'){
+      var distribution = indicators.distribution || {};
+      var positive = Number(distribution.positive) || 0;
+      var neutral = Number(distribution.neutral) || 0;
+      var negative = Number(distribution.negative) || 0;
+      var distTotal = positive + neutral + negative;
+      if(!(distTotal > 0)) return null;
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.category') },
+          { type:'number', label:$t('charts.labels.positive') },
+          { type:'number', label:$t('charts.labels.neutral') },
+          { type:'number', label:$t('charts.labels.negative') }
+        ],
+        rows:[[ $t('charts.labels.responses'), positive, neutral, negative ]],
+        ratio:0.36,
+        minHeight:220,
+        maxHeight:300,
+        chartAreaDefaults:false,
+        baseOptions:{
+          legend:{ position:'top', alignment:'center', textStyle:{ color: palette.muted } },
+          isStacked:true,
+          backgroundColor:{ fill:'transparent' },
+          hAxis:{
+            minValue:0,
+            textStyle:{ color: palette.muted },
+            title:$t('charts.labels.responses'),
+            titleTextStyle:{ color: palette.muted },
+            gridlines:{ color: palette.border },
+            baselineColor: palette.border
+          },
+          vAxis:{ textPosition:'none', baselineColor: palette.border },
+          bar:{ groupWidth:'70%' },
+          colors:[palette.accent, palette.info, palette.danger],
+          chartArea:{ top:56, left:'12%', width:'70%', height:'55%' }
+        }
+      };
+    }
+
+    if(metaId === 'trend-sector'){
+      var trendRows = kpis.map(function(item){
+        if(!item) return null;
+        var current = Number.isFinite(item.average) ? Number(item.average) : null;
+        var previous = Number.isFinite(item.previousAverage) ? Number(item.previousAverage) : null;
+        if(current === null && previous === null) return null;
+        return [formatSectorLabel(item.key), previous, current];
+      }).filter(Boolean);
+      if(!trendRows.length) return null;
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.sector') },
+          { type:'number', label:$t('charts.labels.previous') },
+          { type:'number', label:$t('charts.labels.current') }
+        ],
+        rows: trendRows,
+        ratio:0.55,
+        minHeight:260,
+        maxHeight:420,
+        baseOptions:{
+          legend:{ position:'top', alignment:'center', textStyle:{ color: palette.muted } },
+          backgroundColor:{ fill:'transparent' },
+          curveType:'function',
+          lineWidth:3,
+          pointsVisible:true,
+          vAxis:{
+            minValue:0,
+            maxValue:5,
+            viewWindow:{ min:0, max:5 },
+            title:$t('charts.labels.rating'),
+            titleTextStyle:{ color: palette.muted },
+            textStyle:{ color: palette.muted },
+            gridlines:{ color: palette.border },
+            baselineColor: palette.border,
+            format:'0.0'
+          },
+          hAxis:{ textStyle:{ color: palette.muted } },
+          colors:[palette.primary, palette.accent],
+          focusTarget:'category'
+        }
+      };
+    }
+
+    if(metaId === 'reviews-month'){
+      var monthly = Array.isArray(indicators.monthly) ? indicators.monthly : [];
+      var monthRows = monthly.map(function(item){
+        if(!item) return null;
+        var count = Number(item.count);
+        if(!Number.isFinite(count)) return null;
+        return [formatPeriodLabel(item.period, localeRef), count];
+      }).filter(Boolean);
+      if(!monthRows.length) return null;
+      var slanted = monthRows.length > 4;
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.month') },
+          { type:'number', label:$t('charts.labels.responses') }
+        ],
+        rows: monthRows,
+        ratio:0.6,
+        minHeight:260,
+        maxHeight:420,
+        baseOptions:{
+          legend:'none',
+          backgroundColor:{ fill:'transparent' },
+          bar:{ groupWidth:'60%' },
+          colors:[palette.primary],
+          vAxis:{
+            minValue:0,
+            textStyle:{ color: palette.muted },
+            title:$t('charts.labels.responses'),
+            titleTextStyle:{ color: palette.muted },
+            gridlines:{ color: palette.border },
+            baselineColor: palette.border
+          },
+          hAxis:{
+            textStyle:{ color: palette.muted },
+            slantedText: slanted,
+            slantedTextAngle: monthRows.length > 8 ? 75 : 45
+          }
+        }
+      };
+    }
+
+    if(metaId === 'map-bairros'){
+      var neighborhoods = Array.isArray(persona.neighborhoods) ? persona.neighborhoods.slice(0, 10) : [];
+      var mapRows = neighborhoods.map(function(item){
+        if(!item || !item.label) return null;
+        var count = Number(item.count);
+        var percentage = Number(item.percentage);
+        var normalizedPercentage = Number.isFinite(percentage) ? Math.max(percentage, 0) : null;
+        var value = Number.isFinite(count) && count > 0 ? count : (normalizedPercentage !== null ? normalizedPercentage * 100 : null);
+        if(!(value > 0)) return null;
+        var tooltipParts = [item.label];
+        if(normalizedPercentage !== null){
+          tooltipParts.push(formatPercent(normalizedPercentage, localeRef, 0));
+        }
+        if(Number.isFinite(count) && count > 0){
+          tooltipParts.push(numberFormatter.format(count));
+        }
+        return [item.label, value, tooltipParts.join(' · ')];
+      }).filter(Boolean);
+      if(!mapRows.length) return null;
+      var geoBase = {
+        region:'BR',
+        displayMode:'markers',
+        legend:'none',
+        backgroundColor:{ fill:'transparent' },
+        datalessRegionColor: resolveCssColor('--surface-alt', '#f1f5f9'),
+        colorAxis:{ colors:[palette.primary, palette.accent] },
+        tooltip:{ textStyle:{ color: palette.text } },
+        sizeAxis:{ minValue:0 }
+      };
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.neighborhood') },
+          { type:'number', label:$t('charts.labels.responses') },
+          { type:'string', role:'tooltip' }
+        ],
+        rows: mapRows,
+        ratio:0.62,
+        minHeight:260,
+        maxHeight:420,
+        chartAreaDefaults:false,
+        baseOptions: geoBase,
+        buildOptions:function(container){
+          var bounds = container.getBoundingClientRect();
+          var width = Math.max(Math.round(bounds.width || container.offsetWidth || 320), 240);
+          var height = Math.max(260, Math.min(420, Math.round(width * 0.62)));
+          var options = Object.assign({}, geoBase);
+          options.width = width;
+          options.height = height;
+          return options;
+        }
+      };
+    }
+
+    if(metaId === 'share-sector'){
+      var share = Array.isArray(indicators.sectorShare) ? indicators.sectorShare : [];
+      var shareRows = share.map(function(item){
+        if(!item) return null;
+        var percentage = Number(item.percentage);
+        if(!Number.isFinite(percentage) || percentage <= 0) return null;
+        var label = formatSectorLabel(item.key);
+        var tooltip = label + ' · ' + formatPercent(percentage, localeRef, 0);
+        return [label, percentage, tooltip];
+      }).filter(Boolean);
+      if(!shareRows.length) return null;
+      var paletteOrder = [palette.primary, palette.accent, palette.warn, palette.info, palette.danger];
+      var sliceColors = shareRows.map(function(_, index){ return paletteOrder[index % paletteOrder.length]; });
+      return {
+        columns:[
+          { type:'string', label:$t('charts.labels.sector') },
+          { type:'number', label:$t('charts.labels.share') },
+          { type:'string', role:'tooltip' }
+        ],
+        rows: shareRows,
+        ratio:0.6,
+        minHeight:260,
+        maxHeight:420,
+        chartAreaDefaults:false,
+        baseOptions:{
+          legend:{ position:'right', alignment:'center', textStyle:{ color: palette.muted } },
+          pieHole:0.35,
+          pieSliceText:'percentage',
+          tooltip:{ text:'percentage', textStyle:{ color: palette.text } },
+          colors: sliceColors,
+          chartArea:{ left:'4%', top:32, width:'84%', height:'80%' },
+          backgroundColor:{ fill:'transparent' }
+        }
+      };
+    }
+
+    return null;
+  }
+
+  function renderIndicatorCharts(grid, data, locale){
+    if(!grid || !data || !(window.google && google.visualization)) return;
+    resetIndicatorCharts();
+    var hasRendered = false;
+    INDICATOR_CARD_META.forEach(function(meta){
+      var card = grid.querySelector('[data-card-id="'+meta.id+'"]');
+      if(!card) return;
+      var canvas = card.querySelector('.chart-canvas');
+      if(!canvas) return;
+      var dataset = prepareIndicatorDataset(meta.id, data, locale);
+      if(!dataset || !Array.isArray(dataset.rows) || !dataset.rows.length){
+        showCardPlaceholder(card, 'reports.empty');
+        delete indicatorCharts[meta.id];
+        return;
+      }
+      card.classList.add('has-chart');
+      canvas.innerHTML = '';
+      var dataTable = new google.visualization.DataTable();
+      (dataset.columns || []).forEach(function(column){
+        dataTable.addColumn(column);
+      });
+      dataTable.addRows(dataset.rows);
+      if(Array.isArray(dataset.formatters)){
+        dataset.formatters.forEach(function(formatter){
+          try{ formatter(dataTable); }
+          catch(err){ console.warn('Formatter error', err); }
+        });
+      }
+      var chart = createGoogleChartInstance(meta.chartType, canvas);
+      if(!chart){
+        showCardPlaceholder(card, 'reports.error');
+        return;
+      }
+      var record = createChartRecord(meta.id, chart, dataTable, dataset, card, canvas);
+      indicatorCharts[meta.id] = record;
+      hasRendered = true;
+      google.visualization.events.addListener(chart, 'error', function(){
+        showCardPlaceholder(card, 'reports.error');
+      });
+      google.visualization.events.addListener(chart, 'ready', function(){
+        scheduleIndicatorRedraw();
+      });
+      requestAnimationFrame(function(){
+        try{
+          record.draw();
+        }catch(err){
+          console.error('Falha ao desenhar gráfico', err);
+          showCardPlaceholder(card, 'reports.error');
+        }
+      });
+    });
+    if(hasRendered){
+      ensureIndicatorResizeListener();
+      scheduleIndicatorRedraw();
+    }
   }
 
   function renderPersonaLoading(wrap){
@@ -1030,6 +1544,7 @@
   }
 
   function renderIndicatorsLoading(grid){
+    resetIndicatorCharts();
     var message = getReportLoadingMessage();
     grid.setAttribute('aria-busy', 'true');
     grid.innerHTML = INDICATOR_CARD_META.map(function(meta){
@@ -1039,6 +1554,7 @@
   }
 
   function renderIndicatorsError(grid){
+    resetIndicatorCharts();
     var message = getReportErrorMessage();
     grid.removeAttribute('aria-busy');
     var used = false;
@@ -1226,6 +1742,7 @@
   async function renderIndicators(options){
     var grid = document.getElementById('cards');
     if(!grid) return;
+    resetIndicatorCharts();
     if(!reportState.ready || (options && options.forceRefresh)){
       renderIndicatorsLoading(grid);
       try{
@@ -1251,6 +1768,19 @@
       }
       return buildIndicatorCard(meta, summary || '');
     }).join('');
+    window.I18nManager?.apply?.();
+
+    var chartsReady = await ensureGoogleCharts(locale);
+    if(chartsReady){
+      try{
+        renderIndicatorCharts(grid, data, locale);
+      }catch(err){
+        console.error('Falha ao renderizar gráficos', err);
+        grid.querySelectorAll('.card').forEach(function(card){
+          showCardPlaceholder(card, 'reports.error');
+        });
+      }
+    }
     window.I18nManager?.apply?.();
   }
 

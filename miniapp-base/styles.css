@@ -109,6 +109,10 @@ header{max-width:var(--container);margin:0 auto;padding:22px var(--pad) 8px}
 .card h3{margin:0 0 10px;display:flex;gap:8px;align-items:center;font-size:var(--h3)}
 .card h3 .material-symbols-rounded{color:var(--muted-ink)}
 .ph{height:220px;border:1px dashed var(--border);border-radius:var(--radius-sm);display:grid;place-items:center;color:var(--muted)}
+.card .chart-area{display:none;width:100%;min-height:220px;height:clamp(220px,45vw,360px);align-items:center;justify-content:center;position:relative;padding:6px 0}
+.card .chart-area .chart-canvas{width:100%;height:100%}
+.card.has-chart .chart-area{display:flex}
+.card.has-chart .ph{display:none}
 
 .info-trigger{position:absolute;right:10px;top:10px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:color .18s ease,background .18s ease}
 .info-trigger .material-symbols-rounded{font-size:18px}

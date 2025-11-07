@@ -1,1 +1,5 @@
-{}
+{
+  "loading": "Carregando indicadores…",
+  "error": "Não foi possível carregar os indicadores.",
+  "empty": "Sem dados sincronizados."
+}
