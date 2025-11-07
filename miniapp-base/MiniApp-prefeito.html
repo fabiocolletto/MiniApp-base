@@ -21,6 +21,29 @@
     <div class="toolbar" role="group" aria-label="Controles de exibição">
       <div class="split" id="toolbar-split"></div>
     </div>
+    <section id="status-indicators" class="status-bar" aria-label="Status de armazenamento" aria-live="polite">
+      <div id="status-indexed" class="pill info status-pill" role="status">
+        <span class="material-symbols-rounded" aria-hidden="true">database</span>
+        <div>
+          <strong>IndexedDB</strong>
+          <span class="status-text">Verificando…</span>
+        </div>
+      </div>
+      <div id="status-local" class="pill info status-pill" role="status">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <div>
+          <strong>LocalStorage</strong>
+          <span class="status-text">Verificando…</span>
+        </div>
+      </div>
+      <div id="status-drive" class="pill info status-pill" role="status">
+        <span class="material-symbols-rounded" aria-hidden="true">cloud_sync</span>
+        <div>
+          <strong>Google Drive</strong>
+          <span class="status-text">Verificando…</span>
+        </div>
+      </div>
+    </section>
   </header>
 
   <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
@@ -87,15 +110,50 @@
     </div>
   </section>
 
-  <section id="kpi-saude" class="modal" aria-labelledby="k1"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k1">Saúde — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão. Este painel replica o layout dos detalhes dos gráficos, com foco no setor.</p></div></div></section>
-  <section id="kpi-educacao" class="modal" aria-labelledby="k2"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k2">Educação — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-transporte" class="modal" aria-labelledby="k3"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k3">Transporte — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-seguranca" class="modal" aria-labelledby="k4"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k4">Segurança — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-meioambiente" class="modal" aria-labelledby="k5"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k5">Meio ambiente — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
+  <section id="info-center" class="modal" aria-labelledby="info-title">
+    <a class="backdrop" href="#" aria-hidden="true"></a>
+    <div class="sheet compact" role="dialog" aria-modal="true">
+      <header class="sheet-head">
+        <h2 id="info-title">Informações</h2>
+        <a class="close" href="#" aria-label="Fechar">✕</a>
+      </header>
+      <div class="sheet-body">
+        <div id="info-modal-body" class="modal-body-flow"></div>
+      </div>
+    </div>
+  </section>
+
+  <template id="info-template-chart">
+    <p data-slot="copy"></p>
+    <p class="hint" data-slot="hint"></p>
+    <p class="meta" data-slot="meta"></p>
+  </template>
+
+  <template id="info-template-map">
+    <p data-slot="copy"></p>
+    <div class="pill info" data-slot="hint"></div>
+    <p class="meta" data-slot="meta"></p>
+  </template>
+
+  <template id="info-template-kpi">
+    <p data-slot="copy"></p>
+    <p class="hint" data-slot="hint"></p>
+    <p class="meta" data-slot="meta"></p>
+  </template>
+
+  <template id="info-template-default">
+    <p data-slot="copy"></p>
+    <p class="hint" data-slot="hint"></p>
+    <p class="meta" data-slot="meta"></p>
+  </template>
 
   <footer data-i18n="app.footer">Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.</footer>
 
-  <script id="i18n-pt-BR" type="application/json">{"app.title":"Município de Curitiba — Painel de Indicadores","app.subtitle":"Versão estática com botão de permissão para Google Drive","app.footer":"Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.","toolbar.filters":"Filtros","toolbar.studies":"Pesquisas","toolbar.theme":"Tema","toolbar.language":"Idioma","toolbar.multidevice":"Multi-dispositivo","sector.saude":"Saúde","sector.educacao":"Educação","sector.transporte":"Transporte","sector.seguranca":"Segurança","sector.meioambiente":"Meio ambiente","delta.stable":"estável","charts.avg_by_sector":"Média de satisfação por setor","charts.distribution":"Distribuição de notas","info.howto.title":"Como ler","info.howto.copy":"Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.","info.hint":"Toque no ícone novamente para fechar.","theme.title":"Tema do painel","theme.light":"Claro","theme.dark":"Escuro","theme.auto":"Automático","lang.title":"Idioma do painel","lang.pt":"Português","lang.es":"Español","lang.en":"English","sync.title":"Múltiplos dispositivos","sync.lead":"Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.","sync.ctaTitle":"Sincronizar com Google Drive","sync.ctaHint":"Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.","sync.enable":"Permitir e ativar","sync.state.off":"Sincronização desativada","sync.state.pending":"Aguardando autorização…","sync.state.on":"Sincronização ativa","sync.openTab":"Abrir em nova aba","persona.title":"Perfil da amostra","persona.gender":"Distribuição por gênero","persona.age":"Distribuição por faixa etária","persona.neighborhood":"Bairros mais presentes"}</script>
+  <script id="i18n-pt-BR" type="application/json">{"app.title": "Município de Curitiba — Painel de Indicadores", "app.subtitle": "Versão estática com botão de permissão para Google Drive", "app.footer": "Base preparada para pedir consentimento do Google e registrar no armazenamento local via IndexedDB. Nenhum gráfico ativo nesta versão.", "toolbar.filters": "Filtros", "toolbar.studies": "Pesquisas", "toolbar.theme": "Tema", "toolbar.language": "Idioma", "toolbar.multidevice": "Multi-dispositivo", "sector.saude": "Saúde", "sector.educacao": "Educação", "sector.transporte": "Transporte", "sector.seguranca": "Segurança", "sector.meioambiente": "Meio ambiente", "delta.stable": "estável", "charts.avg_by_sector": "Média de satisfação por setor", "charts.distribution": "Distribuição de notas", "charts.trend_by_sector": "Tendência mensal por setor", "charts.reviews_month": "Avaliações por mês", "charts.map_neighborhoods": "Mapa do município — pontos por bairro", "charts.share_sector": "Participação por setor", "info.howto.title": "Como ler", "info.howto.copy": "Cada barra representa a nota média 1–5 por setor. 1–2 = ruim; 3–4 = regular; 5 = excelente.", "info.hint": "Toque no ícone novamente para fechar.", "info.chart.avg.meta": "Use filtros acima para refinar setores comparados.", "info.distribution.copy": "Proporção de boas/médias/ruins por setor após filtros aplicados.", "info.distribution.hint": "Cada barra representa 100% das respostas no setor.", "info.distribution.meta": "Base mínima: 30 respostas por setor.", "info.trend.copy": "Evolução das médias mensais por setor considerando apenas pesquisas ativas.", "info.trend.hint": "Passe o cursor nas linhas para ver valores exatos.", "info.trend.meta": "Período: jan–mai/2024.", "info.reviews.copy": "Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).", "info.reviews.hint": "As colunas destacam meses com coleta acima da média.", "info.reviews.meta": "Amostra combinada de todos os setores.", "info.map.copy": "Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.", "info.map.hint": "Agrupamento automático por bairro quando há densidade.", "info.map.meta": "Última atualização do mapa: 14/05/2024.", "info.share.copy": "Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.", "info.share.hint": "Somatório sempre igual a 100% considerando filtros vigentes.", "info.share.meta": "Atualiza em tempo real com os filtros aplicados.", "info.kpi.saude.copy": "Índice de satisfação do setor de Saúde com base nas pesquisas validadas do mês.", "info.kpi.saude.hint": "Variação mensal: +0,3 ponto.", "info.kpi.saude.meta": "Amostra: 1 280 respostas · Atualizado em mai/2024", "info.kpi.educacao.copy": "Desempenho médio da Educação considerando 2 pesquisas contínuas.", "info.kpi.educacao.hint": "Situação: estável.", "info.kpi.educacao.meta": "Amostra: 980 respostas · Atualizado em mai/2024", "info.kpi.transporte.copy": "Satisfação com Transporte coletivo e vias urbanas.", "info.kpi.transporte.hint": "Variação mensal: -0,2 ponto.", "info.kpi.transporte.meta": "Amostra: 1 050 respostas · Atualizado em mai/2024", "info.kpi.seguranca.copy": "Percepção sobre segurança pública nas regionais atendidas.", "info.kpi.seguranca.hint": "Situação: estável.", "info.kpi.seguranca.meta": "Amostra: 860 respostas · Atualizado em mai/2024", "info.kpi.meioambiente.copy": "Avaliação dos programas ambientais e de limpeza urbana.", "info.kpi.meioambiente.hint": "Variação mensal: +0,1 ponto.", "info.kpi.meioambiente.meta": "Amostra: 720 respostas · Atualizado em mai/2024", "kpi.delta.saude": "+0,3 vs. mês anterior", "kpi.delta.transporte": "-0,2 vs. mês anterior", "kpi.delta.meioambiente": "+0,1 vs. mês anterior", "theme.title": "Tema do painel", "theme.light": "Claro", "theme.dark": "Escuro", "theme.auto": "Automático", "lang.title": "Idioma do painel", "lang.pt": "Português", "lang.es": "Español", "lang.en": "English", "sync.title": "Múltiplos dispositivos", "sync.lead": "Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.", "sync.ctaTitle": "Sincronizar com Google Drive", "sync.ctaHint": "Armazena configurações e catálogos de pesquisas no seu Drive, com consentimento.", "sync.enable": "Permitir e ativar", "sync.state.off": "Sincronização desativada", "sync.state.pending": "Aguardando autorização…", "sync.state.on": "Sincronização ativa", "sync.openTab": "Abrir em nova aba", "persona.title": "Perfil da amostra", "persona.gender": "Distribuição por gênero", "persona.age": "Distribuição por faixa etária", "persona.neighborhood": "Bairros mais presentes", "status.loading": "Verificando…", "status.indexed.ok": "IndexedDB ativo", "status.indexed.fail": "IndexedDB indisponível", "status.local.ok": "LocalStorage ativo", "status.local.fail": "Sem acesso ao LocalStorage", "status.drive.enabled": "Drive sincronizando", "status.drive.disabled": "Drive desligado", "status.drive.unavailable": "Drive indisponível", "status.drive.pending": "Aguardando autorização", "sync.disable": "Desativar sincronização", "sync.error.noToken": "Não foi possível obter o token do Google.", "sync.error.popupBlocked": "Falha ao solicitar permissão Google. Verifique se o popup não foi bloqueado.", "sync.error.sandboxed": "Abra em aba própria (fora de iframe) para autorizar o Google.", "sync.error.clientId": "Client ID do Google não configurado. Adicione a meta tag google-oauth-client-id.", "sync.error.gis": "Biblioteca de identidade Google não carregou ainda. Tente novamente."}</script>
+  <script id="i18n-en-US" type="application/json">{"app.title": "City of Curitiba — Indicators Dashboard", "app.subtitle": "Static version with Google Drive permission button", "app.footer": "Base prepared to request Google consent and register in local storage via IndexedDB. No charts active in this version.", "toolbar.filters": "Filters", "toolbar.studies": "Studies", "toolbar.theme": "Theme", "toolbar.language": "Language", "toolbar.multidevice": "Multi-device", "sector.saude": "Health", "sector.educacao": "Education", "sector.transporte": "Transport", "sector.seguranca": "Public Safety", "sector.meioambiente": "Environment", "delta.stable": "stable", "charts.avg_by_sector": "Average satisfaction per sector", "charts.distribution": "Score distribution", "charts.trend_by_sector": "Monthly trend by sector", "charts.reviews_month": "Reviews per month", "charts.map_neighborhoods": "City map — responses by neighbourhood", "charts.share_sector": "Share by sector", "info.howto.title": "How to read", "info.howto.copy": "Each bar shows the 1–5 average score per sector. 1–2 = poor; 3–4 = fair; 5 = excellent.", "info.hint": "Tap the icon again to close.", "info.chart.avg.meta": "Use the filters above to refine the sectors compared.", "info.distribution.copy": "Share of good/average/poor scores per sector after filters.", "info.distribution.hint": "Each bar represents 100% of the answers for that sector.", "info.distribution.meta": "Minimum base: 30 answers per sector.", "info.trend.copy": "Monthly average trend per sector considering only active surveys.", "info.trend.hint": "Hover the lines to see exact values.", "info.trend.meta": "Period: Jan–May/2024.", "info.reviews.copy": "Number of answers collected per month after filters (sector/gender/age range/period).", "info.reviews.hint": "Columns highlight months with above-average collection.", "info.reviews.meta": "Combined sample of every sector.", "info.map.copy": "Spatial distribution based on the neighbourhoods informed in the surveys.", "info.map.hint": "Automatic clustering by neighbourhood when density is high.", "info.map.meta": "Latest map refresh: 14/05/2024.", "info.share.copy": "Share of each sector within the active surveys set.", "info.share.hint": "Totals always add up to 100% considering the active filters.", "info.share.meta": "Updates in real time with the applied filters.", "info.kpi.saude.copy": "Health sector satisfaction index based on the validated surveys this month.", "info.kpi.saude.hint": "Monthly variation: +0.3 point.", "info.kpi.saude.meta": "Sample: 1,280 answers · Updated May/2024", "info.kpi.educacao.copy": "Education performance average across two ongoing surveys.", "info.kpi.educacao.hint": "Status: stable.", "info.kpi.educacao.meta": "Sample: 980 answers · Updated May/2024", "info.kpi.transporte.copy": "Satisfaction with public transport and urban roads.", "info.kpi.transporte.hint": "Monthly variation: -0.2 point.", "info.kpi.transporte.meta": "Sample: 1,050 answers · Updated May/2024", "info.kpi.seguranca.copy": "Perception about public safety across the served districts.", "info.kpi.seguranca.hint": "Status: stable.", "info.kpi.seguranca.meta": "Sample: 860 answers · Updated May/2024", "info.kpi.meioambiente.copy": "Assessment of environmental programmes and city cleaning.", "info.kpi.meioambiente.hint": "Monthly variation: +0.1 point.", "info.kpi.meioambiente.meta": "Sample: 720 answers · Updated May/2024", "kpi.delta.saude": "+0.3 vs. previous month", "kpi.delta.transporte": "-0.2 vs. previous month", "kpi.delta.meioambiente": "+0.1 vs. previous month", "theme.title": "Panel theme", "theme.light": "Light", "theme.dark": "Dark", "theme.auto": "Automatic", "lang.title": "Panel language", "lang.pt": "Portuguese", "lang.es": "Spanish", "lang.en": "English", "sync.title": "Multi-device", "sync.lead": "Enable Google Drive sync to keep your surveys and preferences on every device. You will see Google's consent screen.", "sync.ctaTitle": "Sync with Google Drive", "sync.ctaHint": "Stores settings and survey catalogues in your Drive, with consent.", "sync.enable": "Allow and enable", "sync.state.off": "Sync disabled", "sync.state.pending": "Waiting for authorisation…", "sync.state.on": "Sync enabled", "sync.openTab": "Open in new tab", "persona.title": "Sample profile", "persona.gender": "Gender distribution", "persona.age": "Age distribution", "persona.neighborhood": "Top neighbourhoods", "status.loading": "Checking…", "status.indexed.ok": "IndexedDB ready", "status.indexed.fail": "IndexedDB unavailable", "status.local.ok": "Local storage ready", "status.local.fail": "Local storage blocked", "status.drive.enabled": "Drive syncing", "status.drive.disabled": "Drive off", "status.drive.unavailable": "Drive unavailable", "status.drive.pending": "Waiting for authorisation", "sync.disable": "Disable sync", "sync.error.noToken": "Couldn't obtain a Google token.", "sync.error.popupBlocked": "Failed to request Google permission. Check if the popup was blocked.", "sync.error.sandboxed": "Open in its own tab (outside of an iframe) to grant Google access.", "sync.error.clientId": "Google Client ID not configured. Add the google-oauth-client-id meta tag.", "sync.error.gis": "Google Identity Services library hasn't loaded yet. Try again."}</script>
+  <script id="i18n-es-ES" type="application/json">{"app.title": "Municipio de Curitiba — Panel de Indicadores", "app.subtitle": "Versión estática con botón de permiso de Google Drive", "app.footer": "Base preparada para solicitar el consentimiento de Google y registrar en el almacenamiento local mediante IndexedDB. Ningún gráfico activo en esta versión.", "toolbar.filters": "Filtros", "toolbar.studies": "Estudios", "toolbar.theme": "Tema", "toolbar.language": "Idioma", "toolbar.multidevice": "Multidispositivo", "sector.saude": "Salud", "sector.educacao": "Educación", "sector.transporte": "Transporte", "sector.seguranca": "Seguridad", "sector.meioambiente": "Medio ambiente", "delta.stable": "estable", "charts.avg_by_sector": "Promedio de satisfacción por sector", "charts.distribution": "Distribución de notas", "charts.trend_by_sector": "Tendencia mensual por sector", "charts.reviews_month": "Evaluaciones por mes", "charts.map_neighborhoods": "Mapa de la ciudad — puntos por barrio", "charts.share_sector": "Participación por sector", "info.howto.title": "Cómo leer", "info.howto.copy": "Cada barra muestra la nota media 1–5 por sector. 1–2 = malo; 3–4 = regular; 5 = excelente.", "info.hint": "Toca el ícono nuevamente para cerrar.", "info.chart.avg.meta": "Usa los filtros superiores para refinar los sectores comparados.", "info.distribution.copy": "Proporción de notas buenas/medias/malas por sector después de aplicar filtros.", "info.distribution.hint": "Cada barra representa el 100% de las respuestas del sector.", "info.distribution.meta": "Base mínima: 30 respuestas por sector.", "info.trend.copy": "Evolución mensual de las medias por sector considerando solo encuestas activas.", "info.trend.hint": "Pasa el cursor sobre las líneas para ver valores exactos.", "info.trend.meta": "Período: ene–may/2024.", "info.reviews.copy": "Volumen de respuestas recolectadas por mes después de filtros (sector/género/edad/período).", "info.reviews.hint": "Las columnas destacan meses con recolección por encima del promedio.", "info.reviews.meta": "Muestra combinada de todos los sectores.", "info.map.copy": "Distribución espacial basada en los barrios informados en las encuestas.", "info.map.hint": "Agrupación automática por barrio cuando hay densidad.", "info.map.meta": "Última actualización del mapa: 14/05/2024.", "info.share.copy": "Porcentaje de participación de cada sector dentro del conjunto de encuestas activas.", "info.share.hint": "El total siempre suma 100% considerando los filtros vigentes.", "info.share.meta": "Se actualiza en tiempo real con los filtros aplicados.", "info.kpi.saude.copy": "Índice de satisfacción del sector Salud basado en las encuestas validadas del mes.", "info.kpi.saude.hint": "Variación mensual: +0,3 punto.", "info.kpi.saude.meta": "Muestra: 1.280 respuestas · Actualizado may/2024", "info.kpi.educacao.copy": "Desempeño medio de Educación considerando dos encuestas continuas.", "info.kpi.educacao.hint": "Situación: estable.", "info.kpi.educacao.meta": "Muestra: 980 respuestas · Actualizado may/2024", "info.kpi.transporte.copy": "Satisfacción con el transporte público y las vías urbanas.", "info.kpi.transporte.hint": "Variación mensual: -0,2 punto.", "info.kpi.transporte.meta": "Muestra: 1.050 respuestas · Actualizado may/2024", "info.kpi.seguranca.copy": "Percepción sobre la seguridad pública en las regionales atendidas.", "info.kpi.seguranca.hint": "Situación: estable.", "info.kpi.seguranca.meta": "Muestra: 860 respuestas · Actualizado may/2024", "info.kpi.meioambiente.copy": "Evaluación de los programas ambientales y de limpieza urbana.", "info.kpi.meioambiente.hint": "Variación mensual: +0,1 punto.", "info.kpi.meioambiente.meta": "Muestra: 720 respuestas · Actualizado may/2024", "kpi.delta.saude": "+0,3 vs. mes anterior", "kpi.delta.transporte": "-0,2 vs. mes anterior", "kpi.delta.meioambiente": "+0,1 vs. mes anterior", "theme.title": "Tema del panel", "theme.light": "Claro", "theme.dark": "Oscuro", "theme.auto": "Automático", "lang.title": "Idioma del panel", "lang.pt": "Portugués", "lang.es": "Español", "lang.en": "Inglés", "sync.title": "Multidispositivo", "sync.lead": "Activa la sincronización con Google Drive para que tus encuestas y preferencias estén disponibles en todos tus dispositivos. Verás la pantalla de consentimiento de Google.", "sync.ctaTitle": "Sincronizar con Google Drive", "sync.ctaHint": "Almacena configuraciones y catálogos de encuestas en tu Drive, con consentimiento.", "sync.enable": "Permitir y activar", "sync.state.off": "Sincronización desactivada", "sync.state.pending": "Esperando autorización…", "sync.state.on": "Sincronización activa", "sync.openTab": "Abrir en una pestaña nueva", "persona.title": "Perfil de la muestra", "persona.gender": "Distribución por género", "persona.age": "Distribución por edad", "persona.neighborhood": "Barrios más presentes", "status.loading": "Verificando…", "status.indexed.ok": "IndexedDB activo", "status.indexed.fail": "IndexedDB no disponible", "status.local.ok": "Almacenamiento local activo", "status.local.fail": "Almacenamiento local bloqueado", "status.drive.enabled": "Drive sincronizando", "status.drive.disabled": "Drive apagado", "status.drive.unavailable": "Drive no disponible", "status.drive.pending": "Esperando autorización", "sync.disable": "Desactivar sincronización", "sync.error.noToken": "No se pudo obtener el token de Google.", "sync.error.popupBlocked": "Error al solicitar permiso de Google. Comprueba si el popup fue bloqueado.", "sync.error.sandboxed": "Ábrelo en una pestaña propia (fuera del iframe) para autorizar a Google.", "sync.error.clientId": "ID de cliente de Google no configurado. Agrega la metaetiqueta google-oauth-client-id.", "sync.error.gis": "La librería de Identidad de Google aún no se cargó. Inténtalo otra vez."}</script>, con consentimiento.", "sync.enable": "Permitir y activar", "sync.state.off": "Sincronización desactivada", "sync.state.pending": "Esperando autorización…", "sync.state.on": "Sincronización activa", "sync.openTab": "Abrir en una pestaña nueva", "persona.title": "Perfil de la muestra", "persona.gender": "Distribución por género", "persona.age": "Distribución por edad", "persona.neighborhood": "Barrios más presentes"}</script>
+  <script id="i18n-en-US" type="application/json">{"app.title": "City of Curitiba — Indicators Dashboard", "app.subtitle": "Static version with Google Drive permission button", "app.footer": "Base prepared to request Google consent and register in local storage via IndexedDB. No charts active in this version.", "toolbar.filters": "Filters", "toolbar.studies": "Studies", "toolbar.theme": "Theme", "toolbar.language": "Language", "toolbar.multidevice": "Multi-device", "sector.saude": "Health", "sector.educacao": "Education", "sector.transporte": "Transport", "sector.seguranca": "Public Safety", "sector.meioambiente": "Environment", "delta.stable": "stable", "charts.avg_by_sector": "Average satisfaction per sector", "charts.distribution": "Score distribution", "info.howto.title": "How to read", "info.howto.copy": "Each bar shows the 1–5 average score per sector. 1–2 = poor; 3–4 = fair; 5 = excellent.", "info.hint": "Tap the icon again to close.", "info.chart.avg.meta": "Use the filters above to refine the sectors compared.", "info.distribution.copy": "Share of good/average/poor scores per sector after filters.", "info.distribution.hint": "Each bar represents 100% of the answers for that sector.", "info.distribution.meta": "Minimum base: 30 answers per sector.", "info.trend.copy": "Monthly average trend per sector considering only active surveys.", "info.trend.hint": "Hover the lines to see exact values.", "info.trend.meta": "Period: Jan–May/2024.", "info.reviews.copy": "Number of answers collected per month after filters (sector/gender/age range/period).", "info.reviews.hint": "Columns highlight months with above-average collection.", "info.reviews.meta": "Combined sample of every sector.", "info.map.copy": "Spatial distribution based on the neighbourhoods informed in the surveys.", "info.map.hint": "Automatic clustering by neighbourhood when density is high.", "info.map.meta": "Latest map refresh: 14/05/2024.", "info.share.copy": "Share of each sector within the active surveys set.", "info.share.hint": "Totals always add up to 100% considering the active filters.", "info.share.meta": "Updates in real time with the applied filters.", "info.kpi.saude.copy": "Health sector satisfaction index based on the validated surveys this month.", "info.kpi.saude.hint": "Monthly variation: +0.3 point.", "info.kpi.saude.meta": "Sample: 1,280 answers · Updated May/2024", "info.kpi.educacao.copy": "Education performance average across two ongoing surveys.", "info.kpi.educacao.hint": "Status: stable.", "info.kpi.educacao.meta": "Sample: 980 answers · Updated May/2024", "info.kpi.transporte.copy": "Satisfaction with public transport and urban roads.", "info.kpi.transporte.hint": "Monthly variation: -0.2 point.", "info.kpi.transporte.meta": "Sample: 1,050 answers · Updated May/2024", "info.kpi.seguranca.copy": "Perception about public safety across the served districts.", "info.kpi.seguranca.hint": "Status: stable.", "info.kpi.seguranca.meta": "Sample: 860 answers · Updated May/2024", "info.kpi.meioambiente.copy": "Assessment of environmental programmes and city cleaning.", "info.kpi.meioambiente.hint": "Monthly variation: +0.1 point.", "info.kpi.meioambiente.meta": "Sample: 720 answers · Updated May/2024", "theme.title": "Panel theme", "theme.light": "Light", "theme.dark": "Dark", "theme.auto": "Automatic", "lang.title": "Panel language", "lang.pt": "Portuguese", "lang.es": "Spanish", "lang.en": "English", "sync.title": "Multi-device", "sync.lead": "Enable Google Drive sync to keep your surveys and preferences on every device. You will see Google's consent screen.", "sync.ctaTitle": "Sync with Google Drive", "sync.ctaHint": "Stores settings and survey catalogues in your Drive, with consent.", "sync.enable": "Allow and enable", "sync.state.off": "Sync disabled", "sync.state.pending": "Waiting for authorisation…", "sync.state.on": "Sync enabled", "sync.openTab": "Open in new tab", "persona.title": "Sample profile", "persona.gender": "Gender distribution", "persona.age": "Age distribution", "persona.neighborhood": "Top neighbourhoods", "sync.disable": "Disable sync", "sync.error.noToken": "Couldn't obtain a Google token.", "sync.error.popupBlocked": "Failed to request Google permission. Check if the popup was blocked.", "sync.error.sandboxed": "Open in its own tab (outside of an iframe) to grant Google access.", "sync.error.clientId": "Google Client ID not configured. Add the google-oauth-client-id meta tag.", "sync.error.gis": "Google Identity Services library hasn't loaded yet. Try again."}</script>
+  <script id="i18n-es-ES" type="application/json">{"app.title": "Municipio de Curitiba — Panel de Indicadores", "app.subtitle": "Versión estática con botón de permiso de Google Drive", "app.footer": "Base preparada para solicitar el consentimiento de Google y registrar en el almacenamiento local mediante IndexedDB. Ningún gráfico activo en esta versión.", "toolbar.filters": "Filtros", "toolbar.studies": "Estudios", "toolbar.theme": "Tema", "toolbar.language": "Idioma", "toolbar.multidevice": "Multidispositivo", "sector.saude": "Salud", "sector.educacao": "Educación", "sector.transporte": "Transporte", "sector.seguranca": "Seguridad", "sector.meioambiente": "Medio ambiente", "delta.stable": "estable", "charts.avg_by_sector": "Promedio de satisfacción por sector", "charts.distribution": "Distribución de notas", "info.howto.title": "Cómo leer", "info.howto.copy": "Cada barra muestra la nota media 1–5 por sector. 1–2 = malo; 3–4 = regular; 5 = excelente.", "info.hint": "Toca el ícono nuevamente para cerrar.", "info.chart.avg.meta": "Usa los filtros superiores para refinar los sectores comparados.", "info.distribution.copy": "Proporción de notas buenas/medias/malas por sector después de aplicar filtros.", "info.distribution.hint": "Cada barra representa el 100% de las respuestas del sector.", "info.distribution.meta": "Base mínima: 30 respuestas por sector.", "info.trend.copy": "Evolución mensual de las medias por sector considerando solo encuestas activas.", "info.trend.hint": "Pasa el cursor sobre las líneas para ver valores exactos.", "info.trend.meta": "Período: ene–may/2024.", "info.reviews.copy": "Volumen de respuestas recolectadas por mes después de filtros (sector/género/edad/período).", "info.reviews.hint": "Las columnas destacan meses con recolección por encima del promedio.", "info.reviews.meta": "Muestra combinada de todos los sectores.", "info.map.copy": "Distribución espacial basada en los barrios informados en las encuestas.", "info.map.hint": "Agrupación automática por barrio cuando hay densidad.", "info.map.meta": "Última actualización del mapa: 14/05/2024.", "info.share.copy": "Porcentaje de participación de cada sector dentro del conjunto de encuestas activas.", "info.share.hint": "El total siempre suma 100% considerando los filtros vigentes.", "info.share.meta": "Se actualiza en tiempo real con los filtros aplicados.", "info.kpi.saude.copy": "Índice de satisfacción del sector Salud basado en las encuestas validadas del mes.", "info.kpi.saude.hint": "Variación mensual: +0,3 punto.", "info.kpi.saude.meta": "Muestra: 1.280 respuestas · Actualizado may/2024", "info.kpi.educacao.copy": "Desempeño medio de Educación considerando dos encuestas continuas.", "info.kpi.educacao.hint": "Situación: estable.", "info.kpi.educacao.meta": "Muestra: 980 respuestas · Actualizado may/2024", "info.kpi.transporte.copy": "Satisfacción con el transporte público y las vías urbanas.", "info.kpi.transporte.hint": "Variación mensual: -0,2 punto.", "info.kpi.transporte.meta": "Muestra: 1.050 respuestas · Actualizado may/2024", "info.kpi.seguranca.copy": "Percepción sobre la seguridad pública en las regionales atendidas.", "info.kpi.seguranca.hint": "Situación: estable.", "info.kpi.seguranca.meta": "Muestra: 860 respuestas · Actualizado may/2024", "info.kpi.meioambiente.copy": "Evaluación de los programas ambientales y de limpieza urbana.", "info.kpi.meioambiente.hint": "Variación mensual: +0,1 punto.", "info.kpi.meioambiente.meta": "Muestra: 720 respuestas · Actualizado may/2024", "theme.title": "Tema del panel", "theme.light": "Claro", "theme.dark": "Oscuro", "theme.auto": "Automático", "lang.title": "Idioma del panel", "lang.pt": "Portugués", "lang.es": "Español", "lang.en": "Inglés", "sync.title": "Multidispositivo", "sync.lead": "Activa la sincronización con Google Drive para que tus encuestas y preferencias estén disponibles en todos tus dispositivos. Verás la pantalla de consentimiento de Google.", "sync.ctaTitle": "Sincronizar con Google Drive", "sync.ctaHint": "Almacena configuraciones y catálogos de encuestas en tu Drive, con consentimiento.", "sync.enable": "Permitir y activar", "sync.state.off": "Sincronización desactivada", "sync.state.pending": "Esperando autorización…", "sync.state.on": "Sincronización activa", "sync.openTab": "Abrir en una pestaña nueva", "persona.title": "Perfil de la muestra", "persona.gender": "Distribución por género", "persona.age": "Distribución por edad", "persona.neighborhood": "Barrios más presentes", "sync.disable": "Desactivar sincronización", "sync.error.noToken": "No se pudo obtener el token de Google.", "sync.error.popupBlocked": "Error al solicitar permiso de Google. Comprueba si el popup fue bloqueado.", "sync.error.sandboxed": "Ábrelo en una pestaña propia (fuera del iframe) para autorizar a Google.", "sync.error.clientId": "ID de cliente de Google no configurado. Agrega la metaetiqueta google-oauth-client-id.", "sync.error.gis": "La librería de Identidad de Google aún no se cargó. Inténtalo otra vez."}</script>
 
   <script>
   window.__INDEXED_LIB_CANDIDATES__ = [
@@ -111,7 +169,182 @@
     'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/miniapp-base/relatorio_utils.js'
   ];
 
-  function $t(k){ try{ var dict=JSON.parse(document.getElementById('i18n-pt-BR').textContent||'{}'); return dict[k]||k; }catch(_){ return k; } }
+  var __dictCache = {};
+  var currentLang = document.documentElement.lang || 'pt-BR';
+  var currentThemePref = 'auto';
+  var systemThemeMedia;
+  var currentIndexedState = 'info';
+  var currentDriveState = 'pending';
+  var currentDriveMessage = null;
+  var currentDriveMessageKey = null;
+  var isDriveReady = true;
+
+  function getDict(lang){
+    if(!__dictCache[lang]){
+      var node = document.getElementById('i18n-' + lang);
+      if(node){
+        try{ __dictCache[lang] = JSON.parse(node.textContent || '{}'); }
+        catch(_){ __dictCache[lang] = {}; }
+      }else{
+        __dictCache[lang] = {};
+      }
+    }
+    return __dictCache[lang];
+  }
+
+  function $t(k){
+    var dict = getDict(currentLang);
+    if(dict && Object.prototype.hasOwnProperty.call(dict, k)) return dict[k];
+    var fallback = getDict('pt-BR');
+    if(fallback && Object.prototype.hasOwnProperty.call(fallback, k)) return fallback[k];
+    return k;
+  }
+
+  function saveLocalPref(key, value){ try{ localStorage.setItem('pref-'+key, value); }catch(_){ /* ignore */ } }
+  function loadLocalPref(key){ try{ return localStorage.getItem('pref-'+key); }catch(_){ return null; } }
+
+  function resolveSystemTheme(){
+    if(typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light';
+    if(!systemThemeMedia){
+      systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+      systemThemeMedia.addEventListener('change', function(){ if(currentThemePref === 'auto') applyThemePreference('auto', {skipStore:true}); });
+    }
+    return systemThemeMedia.matches ? 'dark' : 'light';
+  }
+
+  function updateThemeButtons(selected){
+    var buttons = document.querySelectorAll('#theme .chipbtn[data-theme]');
+    buttons.forEach(function(btn){
+      var isActive = btn.dataset.theme === selected;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  function updateLanguageButtons(selected){
+    var buttons = document.querySelectorAll('#language .chipbtn[data-lang]');
+    buttons.forEach(function(btn){
+      var isActive = btn.dataset.lang === selected;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  function closeModalSection(modalId){
+    if(!modalId) return;
+    var hash = '#'+modalId;
+    if(window.location.hash === hash){
+      try{ history.replaceState(null, '', '#'); }
+      catch(_){ window.location.hash = ''; }
+    }else if(window.location.hash){
+      window.location.hash = '#';
+      try{ history.replaceState(null, '', '#'); }catch(_){}
+    }
+  }
+
+  function applyThemePreference(theme, opts){
+    opts = opts || {};
+    var root = document.documentElement;
+    if(!root) return;
+    var normalized = (theme === 'dark' || theme === 'light' || theme === 'auto') ? theme : 'auto';
+    currentThemePref = normalized;
+    var resolved = normalized === 'auto' ? resolveSystemTheme() : normalized;
+    root.dataset.prefTheme = normalized;
+    root.dataset.theme = resolved;
+    if(!opts.skipButtons) updateThemeButtons(normalized);
+    if(!opts.skipStore) saveLocalPref('theme', normalized);
+  }
+
+  function applyLanguagePreference(lang, opts){
+    opts = opts || {};
+    var normalized = lang || 'pt-BR';
+    currentLang = normalized;
+    document.documentElement.lang = normalized;
+    if(!opts.skipStore) saveLocalPref('lang', normalized);
+    updateLanguageButtons(normalized);
+    if(!opts.skipRender){
+      renderAll();
+      updateThemeButtons(currentThemePref);
+      refreshLocalStatus();
+      refreshIndexedStatus(currentIndexedState);
+      refreshDriveStatus(currentDriveState);
+    }
+  }
+
+  function setupPreferenceButtons(){
+    if(setupPreferenceButtons._bound) return;
+    setupPreferenceButtons._bound = true;
+    document.querySelectorAll('#theme .chipbtn[data-theme]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){ ev.preventDefault(); applyThemePreference(btn.dataset.theme || 'auto'); closeModalSection('theme'); });
+    });
+    document.querySelectorAll('#language .chipbtn[data-lang]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){ ev.preventDefault(); applyLanguagePreference(btn.dataset.lang || 'pt-BR'); closeModalSection('language'); });
+    });
+  }
+
+  function initializePreferencesState(){
+    var storedLang = loadLocalPref('lang');
+    if(storedLang){ currentLang = storedLang; }
+    document.documentElement.lang = currentLang;
+    var initialTheme = loadLocalPref('theme') || document.documentElement.dataset.prefTheme || document.documentElement.dataset.theme || 'auto';
+    applyThemePreference(initialTheme, {skipStore:true});
+  }
+
+  function renderAll(){
+    renderToolbar();
+    renderPersona();
+    renderKPIs();
+    renderIndicators();
+  }
+
+  function setStatusPill(kind, level, message){
+    var pill=document.getElementById('status-'+kind);
+    if(!pill) return;
+    pill.classList.remove('ok','warn','err','info');
+    pill.classList.add(level||'info');
+    var text=pill.querySelector('.status-text');
+    if(text){ text.textContent = message || $t('status.loading'); }
+  }
+
+  function refreshLocalStatus(){
+    var ok=false;
+    try{ var key='pref-check'; localStorage.setItem(key,'1'); localStorage.removeItem(key); ok=true; }catch(_){ ok=false; }
+    setStatusPill('local', ok? 'ok':'err', ok? $t('status.local.ok') : $t('status.local.fail'));
+  }
+
+  function refreshIndexedStatus(state){
+    if(state){ currentIndexedState = state; }
+    var mode = currentIndexedState || 'info';
+    if(mode === 'ok'){ setStatusPill('indexed','ok',$t('status.indexed.ok')); }
+    else if(mode === 'err'){ setStatusPill('indexed','err',$t('status.indexed.fail')); }
+    else { setStatusPill('indexed','info',$t('status.loading')); }
+  }
+
+  function refreshDriveStatus(mode, customText, messageKey){
+    if(mode){ currentDriveState = mode; }
+    if(messageKey !== undefined){
+      currentDriveMessageKey = messageKey;
+      if(messageKey === null){ currentDriveMessage = null; }
+    }
+    if(customText !== undefined){ currentDriveMessage = customText; }
+    var levelMap = {enabled:'ok', disabled:'warn', pending:'warn', unavailable:'err', info:'info'};
+    var state = currentDriveState || 'info';
+    var level = levelMap[state] || 'info';
+    var message;
+    if(customText !== undefined){
+      message = customText;
+    }else if(currentDriveMessageKey){
+      message = $t(currentDriveMessageKey);
+      currentDriveMessage = message;
+    }else if(currentDriveMessage != null){
+      message = currentDriveMessage;
+    }else if(state && state !== 'info'){
+      message = $t('status.drive.'+state);
+    }else{
+      message = $t('status.loading');
+    }
+    setStatusPill('drive', level, message);
+  }
 
   (function loadScripts(){
     function loadOne(list, cb){ if(!list||!list.length) return cb&&cb(); var src=list.shift(); var s=document.createElement('script'); s.src=src; s.async=true; s.onload=function(){ cb&&cb(true,src); }; s.onerror=function(){ loadOne(list, cb); }; document.head.appendChild(s); }
@@ -120,15 +353,75 @@
 
   function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
 
+  function escAttr(value){
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getInfoTemplate(category){
+    var tpl = document.getElementById('info-template-' + (category || 'default'));
+    if(!tpl){ tpl = document.getElementById('info-template-default'); }
+    return tpl ? tpl.content.cloneNode(true) : document.createDocumentFragment();
+  }
+
+  function populateInfoTemplate(fragment, data){
+    if(!fragment){ return document.createDocumentFragment(); }
+    fragment.querySelectorAll('[data-slot]').forEach(function(node){
+      var slot = node.getAttribute('data-slot');
+      var value = data && data.hasOwnProperty(slot) ? data[slot] : undefined;
+      if(value == null || value === ''){
+        node.remove();
+      }else{
+        node.textContent = value;
+      }
+    });
+    return fragment;
+  }
+
+  function openInfoPanel(category, title, copy, hint, meta){
+    var heading = document.getElementById('info-title');
+    var body = document.getElementById('info-modal-body');
+    if(!heading || !body) return;
+    heading.textContent = title || 'Informações';
+    var fragment = populateInfoTemplate(getInfoTemplate(category), {copy:copy, hint:hint, meta:meta});
+    body.innerHTML = '';
+    body.appendChild(fragment);
+    if(window.location.hash === '#info-center'){
+      try{ history.replaceState(null, '', '#'); }catch(_){ window.location.hash = ''; }
+    }
+    requestAnimationFrame(function(){ window.location.hash = '#info-center'; });
+  }
+
+  function setupInfoTriggers(){
+    if(setupInfoTriggers._bound) return;
+    setupInfoTriggers._bound = true;
+    document.addEventListener('click', function(ev){
+      var trigger = ev.target.closest('[data-info-category]');
+      if(!trigger) return;
+      ev.preventDefault();
+      openInfoPanel(
+        trigger.dataset.infoCategory || 'default',
+        trigger.dataset.infoTitle || trigger.getAttribute('aria-label') || 'Informações',
+        trigger.dataset.infoCopy || '',
+        trigger.dataset.infoHint || '',
+        trigger.dataset.infoMeta || ''
+      );
+    });
+  }
+
   function renderToolbar(){
     var el=document.getElementById('toolbar-split');
     if(!el) return;
     el.innerHTML=''
-      + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
-      + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
-      + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
-      + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
-      + '<a class="btn" href="#sync" id="toolbar-sync" title="Multi"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
+      + '<a class="btn" href="#filters" title="'+$t('toolbar.filters')+'"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
+      + '<a class="btn" href="#manage-studies" title="'+$t('toolbar.studies')+'"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
+      + '<a class="btn" href="#theme" title="'+$t('toolbar.theme')+'"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
+      + '<a class="btn" href="#language" title="'+$t('toolbar.language')+'"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
+      + '<a class="btn" href="#sync" id="toolbar-sync" title="'+$t('toolbar.multidevice')+'"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
   }
 
   function renderPersona(){
@@ -149,16 +442,17 @@
 
   function renderKPIs(){
     var list=[
-      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3 vs. mês anterior', cls:'positive'},
-      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral'},
-      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative'},
-      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral'},
-      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive'}
+      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:$t('kpi.delta.saude'), cls:'positive', infoCopy:$t('info.kpi.saude.copy'), infoHint:$t('info.kpi.saude.hint'), infoMeta:$t('info.kpi.saude.meta')},
+      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral', infoCopy:$t('info.kpi.educacao.copy'), infoHint:$t('info.kpi.educacao.hint'), infoMeta:$t('info.kpi.educacao.meta')},
+      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:$t('kpi.delta.transporte'), cls:'negative', infoCopy:$t('info.kpi.transporte.copy'), infoHint:$t('info.kpi.transporte.hint'), infoMeta:$t('info.kpi.transporte.meta')},
+      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral', infoCopy:$t('info.kpi.seguranca.copy'), infoHint:$t('info.kpi.seguranca.hint'), infoMeta:$t('info.kpi.seguranca.meta')},
+      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:$t('kpi.delta.meioambiente'), cls:'positive', infoCopy:$t('info.kpi.meioambiente.copy'), infoHint:$t('info.kpi.meioambiente.hint'), infoMeta:$t('info.kpi.meioambiente.meta')}
     ];
     var wrap=document.getElementById('kpi-bar');
     wrap.innerHTML=list.map(function(s){
+      var infoMeta = s.infoMeta ? ' data-info-meta="'+escAttr(s.infoMeta)+'"' : '';
       return '<div class="kpi" role="group" aria-label="'+s.label+'">\
-        <a class="kinfo" style="position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border:none;background:transparent" href="#kpi-'+s.id+'" aria-label="Mais informações"><span class="material-symbols-rounded">info</span></a>\
+        <button type="button" class="info-trigger" aria-label="Mais informações" data-info-category="kpi" data-info-title="'+escAttr(s.label)+'" data-info-copy="'+escAttr(s.infoCopy||'')+'" data-info-hint="'+escAttr(s.infoHint||s.delta||'')+'"'+infoMeta+'><span class="material-symbols-rounded" aria-hidden="true">info</span></button>\
         <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>\
         <div class="value">'+s.val+'</div>\
         <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>\
@@ -168,47 +462,171 @@
 
   function renderIndicators(){
     var cards=[
-      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), ph:'Colunas (placeholder)'},
-      {id:'distribution', icon:'stacked_bar_chart', title:'Distribuição de notas', infoTitle:'Como ler', infoCopy:'Proporção de boas/médias/ruins por setor após filtros aplicados.', infoHint:$t('info.hint'), ph:'Barras empilhadas (placeholder)'},
-      {id:'trend-sector', icon:'show_chart', title:'Tendência mensal por setor', infoTitle:'Como ler', infoCopy:'Evolução das médias mensais por setor considerando apenas pesquisas ativas.', infoHint:$t('info.hint'), ph:'Linhas (placeholder)'},
-      {id:'reviews-month', icon:'insert_chart', title:'Avaliações por mês', infoTitle:'Como ler', infoCopy:'Volume de respostas coletadas por mês após filtros (setor/gênero/faixa etária/período).', infoHint:$t('info.hint'), ph:'Colunas agrupadas (placeholder)'},
-      {id:'map-bairros', icon:'map', title:'Mapa do município — pontos por bairro', infoTitle:'Como ler', infoCopy:'Distribuição espacial com base nas geohashes/bairros informados nas pesquisas.', infoHint:$t('info.hint'), ph:'Mapa (placeholder)'},
-      {id:'share-sector', icon:'pie_chart', title:'Participação por setor', infoTitle:'Como ler', infoCopy:'Percentual de participação de cada setor dentro do conjunto de pesquisas ativas.', infoHint:$t('info.hint'), ph:'Pizza (placeholder)'}
+      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), infoMeta:$t('info.chart.avg.meta'), category:'chart', ph:'Colunas (placeholder)'},
+      {id:'distribution', icon:'stacked_bar_chart', title:$t('charts.distribution'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.distribution.copy'), infoHint:$t('info.distribution.hint'), infoMeta:$t('info.distribution.meta'), category:'chart', ph:'Barras empilhadas (placeholder)'},
+      {id:'trend-sector', icon:'show_chart', title:$t('charts.trend_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.trend.copy'), infoHint:$t('info.trend.hint'), infoMeta:$t('info.trend.meta'), category:'chart', ph:'Linhas (placeholder)', wide:true},
+      {id:'reviews-month', icon:'insert_chart', title:$t('charts.reviews_month'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.reviews.copy'), infoHint:$t('info.reviews.hint'), infoMeta:$t('info.reviews.meta'), category:'chart', ph:'Colunas agrupadas (placeholder)'},
+      {id:'map-bairros', icon:'map', title:$t('charts.map_neighborhoods'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.map.copy'), infoHint:$t('info.map.hint'), infoMeta:$t('info.map.meta'), category:'map', ph:'Mapa (placeholder)', wide:true},
+      {id:'share-sector', icon:'pie_chart', title:$t('charts.share_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.share.copy'), infoHint:$t('info.share.hint'), infoMeta:$t('info.share.meta'), category:'chart', ph:'Pizza (placeholder)'}
     ];
     var grid=document.getElementById('cards');
-    grid.innerHTML=cards.map(function(c){ return '<section class="card" aria-labelledby="t-'+c.id+'">\
-      <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
-      <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
-      <div class="panel" role="dialog" aria-labelledby="t-'+c.id+'"><h4>'+c.infoTitle+'</h4><p>'+c.infoCopy+'</p><p class="hint">'+c.infoHint+'</p></div></details>\
-      <div class="ph">'+c.ph+'</div></section>'; }).join('');
+    grid.classList.add('align-left');
+    grid.innerHTML=cards.map(function(c){
+      var classes='card'+(c.wide?' card--wide':'');
+      var infoMeta=c.infoMeta ? ' data-info-meta="'+escAttr(c.infoMeta)+'"' : '';
+      return '<section class="'+classes+'" aria-labelledby="t-'+c.id+'">\
+        <button type="button" class="info-trigger" aria-label="Informações" data-info-category="'+escAttr(c.category||'chart')+'" data-info-title="'+escAttr(c.infoTitle)+'" data-info-copy="'+escAttr(c.infoCopy)+'" data-info-hint="'+escAttr(c.infoHint)+'"'+infoMeta+'><span class="material-symbols-rounded" aria-hidden="true">info</span></button>\
+        <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
+        <div class="ph">'+c.ph+'</div></section>';
+    }).join('');
   }
 
   async function initPanel(){
-    renderToolbar();
-    renderPersona();
-    renderKPIs();
-    renderIndicators();
+    initializePreferencesState();
+    renderAll();
+    setupInfoTriggers();
+    setupPreferenceButtons();
+    updateThemeButtons(currentThemePref);
+    updateLanguageButtons(currentLang);
+    refreshLocalStatus();
+    refreshIndexedStatus();
+    refreshDriveStatus(currentDriveState);
 
     if(window.indexed && window.indexed.open){
-      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } });
+      try{
+        await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } });
+        refreshIndexedStatus('ok');
+      }catch(_){ refreshIndexedStatus('err'); }
+    }else{
+      refreshIndexedStatus('err');
     }
+
+    const ready = canRequestGIS();
+    isDriveReady = !!ready.ok;
+    refreshDriveStatus(ready.ok ? currentDriveState : 'unavailable', ready.ok ? undefined : ready.msg, ready.ok ? undefined : ready.msgKey);
+
     try{ const flag = await (window.indexed?.get?.(window.indexed.stores?.config, 'sync_enabled')); updateSyncUI(!!(flag && flag.value)); }catch(_){ updateSyncUI(false); }
 
     const btn = document.getElementById('sync-toggle');
     const openTab = document.getElementById('sync-open-tab');
-    const ready = canRequestGIS();
     if(openTab){ openTab.style.display = ready.code==='sandboxed' ? 'inline-flex' : 'none'; openTab.addEventListener('click', function(e){ e.preventDefault(); openStandalone('#sync-consent'); }); }
-    if(btn){ btn.addEventListener('click', async function(){ const on = btn.getAttribute('aria-pressed')==='true'; if(on){ await setSyncEnabled(false); report('drive','off','sync desativada'); return;} const chk=canRequestGIS(); if(!chk.ok){ if(chk.code==='sandboxed'){ openStandalone('#sync-consent'); return;} showSyncTip(chk.msg,true); report('drive','warn',chk.code||'ambiente-invalido'); return;} try{ report('drive','info','solicitando consentimento'); const token=await requestGoogleDriveToken(); if(token){ await setSyncEnabled(true); report('drive','ok','consentimento concedido'); } else { showSyncTip('Não foi possível obter o token do Google.',true); report('drive','warn','sem-token'); } }catch(err){ showSyncTip('Falha ao solicitar permissão Google. Verifique se o popup não foi bloqueado.',true); report('drive','warn','falha-consentimento'); } }); }
+    if(btn){ btn.addEventListener('click', async function(){ const on = btn.getAttribute('aria-pressed')==='true'; if(on){ await setSyncEnabled(false); showSyncTip(null,false,'disabled', null); report('drive','off','sync desativada'); closeModalSection('sync'); return;} const chk=canRequestGIS(); if(!chk.ok){ var errState = chk.code === 'clientid-missing' ? 'unavailable' : 'pending'; showSyncTip(chk.msg, true, errState, chk.msgKey); report('drive','warn',chk.code||'ambiente-invalido'); if(chk.code==='sandboxed'){ openStandalone('#sync-consent'); } return;} try{ report('drive','info','solicitando consentimento'); const token=await requestGoogleDriveToken(); if(token){ await setSyncEnabled(true); showSyncTip(null,false,'enabled', null); report('drive','ok','consentimento concedido'); closeModalSection('sync'); } else { showSyncTip($t('sync.error.noToken'), true, 'pending', 'sync.error.noToken'); report('drive','warn','sem-token'); } }catch(err){ showSyncTip($t('sync.error.popupBlocked'), true, 'pending', 'sync.error.popupBlocked'); report('drive','warn','falha-consentimento'); } }); }
 
-    document.addEventListener('click', function(e){ document.querySelectorAll('details.info[open]').forEach(function(d){ if(!d.contains(e.target)) d.removeAttribute('open'); }); });
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
   }
 
-  function showSyncTip(message, warn){ var el=document.getElementById('sync-tip'); if(!el) return; el.textContent = message || ''; el.style.display = message? 'inline-flex':'none'; el.classList.remove('ok','warn','info'); el.classList.add(warn? 'warn':'ok'); var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (warn? 'err':'ok'); dot.title = message || (warn? 'Problema de sincronização' : 'Sincronização ok'); } }
-  function updateSyncUI(enabled){ var tbtn=document.getElementById('toolbar-sync'); if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; } var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (enabled? 'ok':'warn'); } var sbtn=document.getElementById('sync-toggle'); var lab=sbtn? sbtn.querySelector('.sync-label'):null; if(sbtn){ sbtn.setAttribute('aria-pressed', enabled? 'true':'false'); if(lab) lab.textContent = enabled? 'Ativado (clique para desligar)' : 'Permitir e ativar'; } var st=document.getElementById('sync-state'); if(st){ st.textContent = enabled? 'Sincronização ativada' : 'Sincronização desativada'; } }
+  function showSyncTip(message, warn, state, messageKey){
+    var el=document.getElementById('sync-tip');
+    if(!el) return;
+    var hasMessage = message != null && message !== '';
+    if(hasMessage){
+      el.textContent = message;
+      el.style.display = 'inline-flex';
+      el.classList.remove('ok','warn','info');
+      el.classList.add(warn? 'warn':'ok');
+    }else{
+      el.textContent = '';
+      el.style.display = 'none';
+      el.classList.remove('ok','warn','info');
+    }
+    var finalState = state || (warn? 'pending':'enabled');
+    var resolvedMessage = hasMessage ? message : (message === null ? null : undefined);
+    var resolvedKey = hasMessage ? messageKey : (messageKey === null ? null : undefined);
+    if(!isDriveReady && finalState !== 'unavailable'){
+      refreshDriveStatus('unavailable', resolvedMessage, resolvedKey);
+    }else{
+      refreshDriveStatus(finalState, resolvedMessage, resolvedKey);
+    }
+    var dot=document.getElementById('toolbar-sync-dot');
+    if(dot){
+      var dotState;
+      if(!isDriveReady && finalState !== 'unavailable'){
+        dotState = 'err';
+      }else if(finalState === 'enabled'){
+        dotState = 'ok';
+      }else if(finalState === 'unavailable'){
+        dotState = 'err';
+      }else if(finalState === 'disabled'){
+        dotState = 'warn';
+      }else if(finalState === 'pending'){
+        dotState = warn? 'err':'warn';
+      }else{
+        dotState = warn? 'err':'ok';
+      }
+      dot.className = 'status-dot ' + dotState;
+      if(hasMessage){
+        dot.title = message;
+      }else if(finalState === 'enabled'){
+        dot.title = $t('sync.state.on');
+      }else if(finalState === 'disabled'){
+        dot.title = $t('sync.state.off');
+      }else if(finalState === 'unavailable'){
+        dot.title = currentDriveMessageKey ? $t(currentDriveMessageKey) : (currentDriveMessage || $t('status.drive.unavailable'));
+      }else{
+        dot.title = $t('toolbar.multidevice');
+      }
+    }
+  }
+  function updateSyncUI(enabled, opts){
+    opts = opts || {};
+    var tbtn=document.getElementById('toolbar-sync');
+    if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; }
+    var dot=document.getElementById('toolbar-sync-dot');
+    if(dot){
+      var dotState;
+      var dotTitle;
+      if(!isDriveReady){
+        dotState = 'err';
+        dotTitle = currentDriveMessageKey ? $t(currentDriveMessageKey) : (currentDriveMessage || $t('status.drive.unavailable'));
+      }else if(enabled){
+        dotState = 'ok';
+        dotTitle = $t('sync.state.on');
+      }else{
+        dotState = 'warn';
+        dotTitle = $t('sync.state.off');
+      }
+      dot.className = 'status-dot ' + dotState;
+      dot.title = dotTitle;
+    }
+    var sbtn=document.getElementById('sync-toggle');
+    var lab=sbtn? sbtn.querySelector('.sync-label'):null;
+    var labelKey = enabled? 'sync.disable':'sync.enable';
+    if(sbtn){
+      sbtn.setAttribute('aria-pressed', enabled? 'true':'false');
+      sbtn.setAttribute('title', $t(labelKey));
+    }
+    if(lab){
+      lab.textContent = $t(labelKey);
+      lab.setAttribute('data-i18n', labelKey);
+    }
+    var st=document.getElementById('sync-state');
+    if(st){
+      var stateKey = enabled? 'sync.state.on':'sync.state.off';
+      st.textContent = $t(stateKey);
+      st.setAttribute('data-i18n', stateKey);
+    }
+    if(!opts.skipStatus){
+      if(!isDriveReady){
+        refreshDriveStatus('unavailable');
+      }else{
+        refreshDriveStatus(enabled? 'enabled':'disabled', undefined, null);
+      }
+    }
+  }
   async function setSyncEnabled(enabled){ if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){ updateSyncUI(enabled); return; } await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()}); updateSyncUI(enabled); }
   function getClientId(){ var m=document.querySelector('meta[name="google-oauth-client-id"]'); if(m && m.content) return m.content.trim(); if(window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID; return 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com'; }
-  function canRequestGIS(){ if(self !== top){ return {ok:false, code:'sandboxed', msg:'Abra em aba própria (fora de iframe) para autorizar o Google.'}; } var cid=getClientId(); if(!cid || /^YOUR_/.test(cid)){ return {ok:false, code:'clientid-missing', msg:'Client ID do Google não configurado. Adicione a meta tag google-oauth-client-id.'}; } if(!(window.google && google.accounts && google.accounts.oauth2)){ return {ok:false, code:'gis-missing', msg:'Biblioteca de identidade Google não carregou ainda. Tente novamente.'}; } return {ok:true}; }
+  function canRequestGIS(){
+    if(self !== top){
+      return {ok:false, code:'sandboxed', msgKey:'sync.error.sandboxed', msg:$t('sync.error.sandboxed')};
+    }
+    var cid=getClientId();
+    if(!cid || /^YOUR_/.test(cid)){
+      return {ok:false, code:'clientid-missing', msgKey:'sync.error.clientId', msg:$t('sync.error.clientId')};
+    }
+    if(!(window.google && google.accounts && google.accounts.oauth2)){
+      return {ok:false, code:'gis-missing', msgKey:'sync.error.gis', msg:$t('sync.error.gis')};
+    }
+    return {ok:true};
+  }
   function openStandalone(hash){ try{ var url = new URL(window.location.href); url.hash = hash || ''; window.open(url.toString(), '_blank', 'noopener,noreferrer'); }catch(e){} }
   function requestGoogleDriveToken(){ return new Promise(function(resolve, reject){ try{ var client = google.accounts.oauth2.initTokenClient({ client_id: getClientId(), scope: 'https://www.googleapis.com/auth/drive.file', prompt: 'consent', callback: function(resp){ if(resp && resp.access_token) return resolve(resp.access_token); reject(new Error('Sem token')); } }); client.requestAccessToken(); }catch(e){ reject(e); } }); }
 
