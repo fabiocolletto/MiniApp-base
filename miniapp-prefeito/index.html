@@ -1,137 +1,173 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="light">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel do Prefeito — v1.0.0</title>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/miniapp-base/styles.css?v=1.0.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.0.0" media="print" onload="this.media='all'">
-  <style>.modal{position:fixed;inset:0;display:none}.modal:target{display:block}.kpi{position:relative}.kpi .kinfo{position:absolute;top:6px;right:6px;border:none;background:transparent;width:28px;height:28px;display:grid;place-items:center;padding:0}.back-btn{position:fixed;left:12px;top:12px;z-index:50}.back-btn .btn{background:#fff;border:1px solid var(--card-border,#cbd5e1);}</style>
-  <script src="https://unpkg.com/i18next@23/dist/umd/i18next.min.js"></script>
-  <script src="https://unpkg.com/i18next-http-backend@2/dist/umd/i18nextHttpBackend.min.js"></script>
+  <!-- Estilos do miniapp -->
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="back-btn">
-    <a class="btn" href="../miniapp-base/index.html" title="Voltar ao Catálogo">
-      <span class="material-symbols-rounded">arrow_back</span>
-      Voltar
-    </a>
-  </div>
-  <header>
-    <div class="title">
-      <span class="material-symbols-rounded" aria-hidden="true">insights</span>
-      <div>
-        <h1 data-i18n="app.title">Município de Curitiba — Painel de Indicadores</h1>
-        <p class="subtitle" data-i18n="app.subtitle">Versão com i18n e templates remotos</p>
-      </div>
-      <span class="version" aria-label="versão do arquivo">v1.0.0</span>
-    </div>
-    <div class="toolbar" role="group" aria-label="Controles de exibição">
-      <div class="split" id="toolbar-split"></div>
-    </div>
+  <header class="appbar">
+    <nav class="appbar-left">
+      <button class="btn btn-ghost" id="btn-back">
+        <i data-lucide="arrow-left"></i>
+        <span>Voltar</span>
+      </button>
+      <span class="badge">v1.0.0</span>
+    </nav>
+    <nav class="appbar-right">
+      <button class="chip" id="toolbar.filters"><i data-lucide="filter"></i><span>toolbar.filters</span></button>
+      <button class="chip" id="toolbar.studies"><i data-lucide="book-open"></i><span>toolbar.studies</span></button>
+      <button class="chip" id="toolbar.theme"><i data-lucide="sun"></i><span>toolbar.theme</span></button>
+      <button class="chip" id="toolbar.language"><i data-lucide="languages"></i><span>toolbar.language</span></button>
+    </nav>
   </header>
 
-  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
-  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor"></section>
-  <main id="cards" class="grid" aria-live="polite"></main>
-  <section id="info-modal" class="modal" aria-label="Informações"></section>
-  <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
+  <main class="container">
+    <!-- TOP PERSONA SUMMARY -->
+    <section class="grid grid-3 persona">
+      <article class="card" id="persona.gender">
+        <header class="card-head">
+          <i data-lucide="users"></i>
+          <strong>persona.gender</strong>
+        </header>
+        <div class="card-body">
+          <div class="kpi">54% • ♂ 44% • ♀ 2%</div>
+          <small class="muted">persona.hint</small>
+        </div>
+      </article>
 
+      <article class="card" id="persona.age">
+        <header class="card-head">
+          <i data-lucide="calendar"></i>
+          <strong>persona.age</strong>
+        </header>
+        <div class="card-body">
+          <div class="kpi">25–34 (31%) • 35–44 (27%)</div>
+          <small class="muted">persona.hint</small>
+        </div>
+      </article>
+
+      <article class="card" id="persona.neighborhood">
+        <header class="card-head">
+          <i data-lucide="map-pin"></i>
+          <strong>persona.neighborhood</strong>
+        </header>
+        <div class="card-body">
+          <div class="kpi">Boqueirão, CIC, Bairro Novo</div>
+          <small class="muted">persona.hintTop</small>
+        </div>
+      </article>
+    </section>
+
+    <!-- SECTORS KPIs -->
+    <section class="grid grid-5 sectors">
+      <article class="card" id="sector.saude">
+        <header class="card-head">
+          <i data-lucide="heart-pulse"></i>
+          <strong>sector.saude</strong>
+        </header>
+        <div class="card-body kpi-pair">
+          <div class="kpi">4,2</div>
+          <div class="delta up">+0,3</div>
+        </div>
+      </article>
+
+      <article class="card" id="sector.educacao">
+        <header class="card-head">
+          <i data-lucide="graduation-cap"></i>
+          <strong>sector.educacao</strong>
+        </header>
+        <div class="card-body kpi-pair">
+          <div class="kpi">3,8</div>
+          <div class="delta stable">delta.stable</div>
+        </div>
+      </article>
+
+      <article class="card" id="sector.transporte">
+        <header class="card-head">
+          <i data-lucide="bus"></i>
+          <strong>sector.transporte</strong>
+        </header>
+        <div class="card-body kpi-pair">
+          <div class="kpi">3,2</div>
+          <div class="delta down">−0,2</div>
+        </div>
+      </article>
+
+      <article class="card" id="sector.seguranca">
+        <header class="card-head">
+          <i data-lucide="shield"></i>
+          <strong>sector.seguranca</strong>
+        </header>
+        <div class="card-body kpi-pair">
+          <div class="kpi">4,0</div>
+          <div class="delta stable">delta.stable</div>
+        </div>
+      </article>
+
+      <article class="card" id="sector.meioambiente">
+        <header class="card-head">
+          <i data-lucide="leaf"></i>
+          <strong>sector.meioambiente</strong>
+        </header>
+        <div class="card-body kpi-pair">
+          <div class="kpi">4,4</div>
+          <div class="delta up">+0,1</div>
+        </div>
+      </article>
+    </section>
+
+    <!-- CHARTS ROW -->
+    <section class="grid grid-2 charts">
+      <article class="panel" id="charts.avg_by_sector">
+        <header class="panel-head">
+          <i data-lucide="bar-chart-3"></i>
+          <strong>charts.avg_by_sector</strong>
+          <span class="hint"><i data-lucide="info"></i></span>
+        </header>
+        <div class="panel-body empty">Colunas (placeholder)</div>
+      </article>
+
+      <article class="panel" id="charts.distribution">
+        <header class="panel-head">
+          <i data-lucide="chart-bar"></i>
+          <strong>charts.distribution</strong>
+          <span class="hint"><i data-lucide="info"></i></span>
+        </header>
+        <div class="panel-body empty">Barras (placeholder)</div>
+      </article>
+    </section>
+  </main>
+
+  <!-- Scripts do app -->
+  <script src="./main.js"></script>
+  <!-- Lucide: correção de renderização de ícones -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
-    const I18N_NAMESPACES = ['system','miniapp_prefeito'];
-    const I18N_BACKEND_PATH = './i18n/locales/{{lng}}/{{ns}}.json';
-
-    window.__INDEXED_LIB_CANDIDATES__ = [
-      'modules/indexed/indexed.min.js','modules/indexed/indexed.js',
-      'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.min.js',
-      'https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/modules/indexed/indexed.js',
-      'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.min.js',
-      'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/modules/indexed/indexed.js'
-    ];
-
-    function applyI18n(root){
-      try{ (root||document).querySelectorAll('[data-i18n]').forEach(function(n){
-        var k=n.getAttribute('data-i18n'); if(k) n.textContent = i18next.t(k);
-      }); }catch(_){ }
-    }
-    function $t(k){ try{ return i18next.t(k) || k; }catch(_){ return k; } }
-
-    (function loadScripts(){
-      function loadOne(list, cb){ if(!list||!list.length) return cb&&cb(); var src=list.shift(); var s=document.createElement('script'); s.src=src; s.async=true; s.onload=function(){ cb&&cb(true,src); }; s.onerror=function(){ loadOne(list, cb); }; document.head.appendChild(s); }
-      loadOne(window.__INDEXED_LIB_CANDIDATES__.slice(), function(){ initI18n(); });
-    })();
-
-    function initI18n(){
-      try{
-        i18next.use(i18nextHttpBackend).init({
-          lng: (navigator.language || 'pt-BR'),
-          fallbackLng: 'pt-BR',
-          ns: I18N_NAMESPACES,
-          defaultNS: 'system',
-          backend: { loadPath: I18N_BACKEND_PATH },
-          interpolation: { escapeValue: false }
-        }).then(function(){ initPanel(); });
-      }catch(e){ initPanel(); }
+    // Garante renderização inicial e re-render após atualizações do DOM
+    function renderIconsSafely() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { /* no-op */ }
+      }
     }
 
-    function renderToolbar(){
-      var el=document.getElementById('toolbar-split');
-      if(!el) return;
-      el.innerHTML=''
-        + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
-        + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
-        + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
-        + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>';
-    }
+    document.addEventListener('DOMContentLoaded', renderIconsSafely);
 
-    function renderPersona(){
-      var wrap=document.getElementById('persona-bar');
-      var cards=[
-        {id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:$t('persona.hint')},
-        {id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:$t('persona.hint')},
-        {id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:$t('persona.hintTop')}
-      ];
-      wrap.innerHTML=cards.map(function(c){
-        return '<div class="kpi" role="group" aria-label="'+c.title+'">          <button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'kpi\', {title: \''+c.title+'\', avg: \''+c.value+'\', deltaText: \'\', deltaClass: \'neutral\', topMetrics: []})"><span class="material-symbols-rounded">info</span></button>          <div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>          <div class="value">'+c.value+'</div>          <div class="delta neutral">'+c.hint+'</div>        </div>';
-      }).join('');
-    }
+    // Caso o app dispare eventos após atualizar UI (ex.: quando dados chegam do IndexedDB)
+    window.addEventListener('ui:updated', renderIconsSafely);
 
-    function renderKPIs(){
-      var list=[
-        {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3', cls:'positive'},
-        {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral'},
-        {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative'},
-        {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral'},
-        {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive'}
-      ];
-      var wrap=document.getElementById('kpi-bar');
-      wrap.innerHTML=list.map(function(s){
-        return '<div class="kpi" role="group" aria-label="'+s.label+'">          <button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'kpi\', {title: \''+s.label+'\', avg: \''+s.val+'\', deltaText: \''+s.delta+'\', deltaClass: \'"+(s.cls)+"\', topMetrics: [{code:\'T1P1\',label:\'LIMPEZA E HIGIENE\',score:\'4,6\'}]})"><span class="material-symbols-rounded">info</span></button>          <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>          <div class="value">'+s.val+'</div>          <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>        </div>';
-      }).join('');
-    }
-
-    function renderIndicators(){
-      var cards=[
-        {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), desc:$t('charts.distributionDesc'), ph:'Colunas (placeholder)'},
-        {id:'distribution', icon:'stacked_bar_chart', title:$t('charts.distribution'), desc:$t('charts.distributionDesc'), ph:'Barras (placeholder)'}
-      ];
-      var grid=document.getElementById('cards');
-      grid.innerHTML=cards.map(function(c){
-        return '<section class="card" aria-labelledby="t-'+c.id+'">          <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>          <button class="kinfo" aria-label="Mais informações" onclick="TemplateLoader.openInfo(\'chart\', {title: \''+c.title+'\', description: \''+c.desc+'\'})"><span class="material-symbols-rounded">info</span></button>          <div class="ph">'+c.ph+'</div>        </section>';
-      }).join('');
-    }
-
-    async function initPanel(){
-      renderToolbar();
-      renderPersona();
-      renderKPIs();
-      renderIndicators();
-      applyI18n(document);
-    }
-
-    if(document.readyState!=='loading') initI18n(); else document.addEventListener('DOMContentLoaded', initI18n);
+    // Observa mudanças em nós principais para re-render (leve e seguro)
+    const mo = new MutationObserver((m) => {
+      for (const rec of m) {
+        if (rec.addedNodes && rec.addedNodes.length) { renderIconsSafely(); break; }
+      }
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
   </script>
-  <script src="./js/template_loader.js"></script>
 </body>
 </html>
