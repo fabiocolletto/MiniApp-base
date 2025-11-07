@@ -95,19 +95,19 @@
     </div>
   </section>
 
-  <section id="kpi-saude" class="modal" aria-labelledby="k1"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k1">Saúde — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão. Este painel replica o layout dos detalhes dos gráficos, com foco no setor.</p></div></div></section>
-  <section id="kpi-educacao" class="modal" aria-labelledby="k2"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k2">Educação — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-transporte" class="modal" aria-labelledby="k3"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k3">Transporte — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-seguranca" class="modal" aria-labelledby="k4"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k4">Segurança — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
-  <section id="kpi-meioambiente" class="modal" aria-labelledby="k5"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k5">Meio ambiente — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
+  <section id="kpi-saude" class="modal" aria-labelledby="k1"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k1">Saúde — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão. Este painel replica o layout dos detalhes dos gráficos, com foco no setor.</p></div></div></section>
+  <section id="kpi-educacao" class="modal" aria-labelledby="k2"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k2">Educação — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
+  <section id="kpi-transporte" class="modal" aria-labelledby="k3"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k3">Transporte — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
+  <section id="kpi-seguranca" class="modal" aria-labelledby="k4"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k4">Segurança — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
+  <section id="kpi-meioambiente" class="modal" aria-labelledby="k5"><a class="backdrop" href="#" aria-hidden="true"></a><div class="sheet compact" role="dialog" aria-modal="true"><header class="sheet-head"><h2 id="k5">Meio ambiente — resumo do setor</h2><a class="close" href="#" aria-label="Fechar">✕</a></header><div class="sheet-body"><p class="subtitle">15 indicadores conceituais padrão.</p></div></div></section>
 
   <section id="info-modal" class="modal" aria-label="Informações"></section>
 
   <footer data-i18n="app.footer">Base preparada para i18n (i18next) e templates externos versionados.</footer>
 
   <script>
-    // CORREÇÃO I18N
-    // Usando caminho relativo para os JSONs locais do miniapp-prefeito/i18n/locales/
+    // CORREÇÕES I18N
+    // Caminho relativo para os JSONs locais do miniapp-prefeito/i18n/locales/
     const I18N_BACKEND_PATH = 'i18n/locales/{{lng}}/{{ns}}.json';
     // Adicionando namespaces específicos do MiniApp
     const I18N_NAMESPACES = ['common','kpi','charts','reports', 'miniapp_prefeito', 'system'];
@@ -129,7 +129,6 @@
     'https://raw.githubusercontent.com/fabiocolletto/MiniApp-base/main/miniapp-base/relatorio_utils.js'
   ];
 
-    // FUNÇÕES I18N E TEMA
   function applyI18n(root){
     try{ (root||document).querySelectorAll('[data-i18n]').forEach(function(n){ var k=n.getAttribute('data-i18n'); if(k) n.textContent = i18next.t(k); }); }catch(_){ }
   }
@@ -184,22 +183,21 @@
 
     // --- LÓGICA DE IDIOMA ---
     function applyLanguage(lang) {
-        // Guarda o idioma no localStorage e fecha o modal
-        if (lang) {
-            localStorage.setItem(LANG_STORAGE_KEY, lang);
-        } else {
-            localStorage.removeItem(LANG_STORAGE_KEY);
-        }
+        const newLang = lang || 'pt-BR';
+        localStorage.setItem(LANG_STORAGE_KEY, newLang);
         window.location.hash = '';
 
         // Se o i18next já estiver rodando, muda e re-renderiza
         if (window.i18next && i18next.isInitialized) {
-            i18next.changeLanguage(lang || 'pt-BR').then(() => {
-                applyI18n(document); // Chama a função de renderização i18n
+            i18next.changeLanguage(newLang).then(() => {
+                renderToolbar(); // RE-RENDERIZA A TOOLBAR com novo idioma
+                renderPersona(); // RE-RENDERIZA PERSONA
+                renderKPIs();    // RE-RENDERIZA KPIs
+                renderIndicators(); // RE-RENDERIZA INDICATORS
+                applyI18n(document); // Aplica em todo o resto
             });
         }
-        // Atualiza o atributo lang para acessibilidade
-        document.documentElement.lang = lang || 'pt-BR';
+        document.documentElement.lang = newLang;
     }
 
     function loadInitialLanguage() {
@@ -244,21 +242,93 @@
     }catch(e){ initPanel(); }
   }
 
-  // ... (report, renderToolbar, renderPersona, renderKPIs, renderIndicators, showSyncTip, updateSyncUI, setSyncEnabled permanecem inalteradas, mas são encurtadas aqui por espaço) ...
+  function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
 
-  // A FUNÇÃO initPanel FOI CORRIGIDA PARA CHAMAR AMBOS OS BINDINGS
+  function renderToolbar(){
+    var el=document.getElementById('toolbar-split');
+    if(!el) return;
+    el.innerHTML=''
+      + '<a class="btn" href="#filters" title="Filtrar"><span class="material-symbols-rounded" aria-hidden="true">filter_list</span>'+$t('toolbar.filters')+'</a>'
+      + '<a class="btn" href="#manage-studies" title="Pesquisas"><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>'+$t('toolbar.studies')+'</a>'
+      + '<a class="btn" href="#theme" title="Tema"><span class="material-symbols-rounded" aria-hidden="true">light_mode</span>'+$t('toolbar.theme')+'</a>'
+      + '<a class="btn" href="#language" title="Idioma"><span class="material-symbols-rounded" aria-hidden="true">translate</span>'+$t('toolbar.language')+'</a>'
+      + '<a class="btn" href="#sync" id="toolbar-sync" title="Multi"><span class="material-symbols-rounded" aria-hidden="true">devices</span>'+$t('toolbar.multidevice')+'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span></a>';
+  }
+  // ... (renderPersona, renderKPIs, renderIndicators permanecem inalteradas, mas garantem a tradução via $t() na primeira renderização) ...
+
+  function renderPersona(){
+    var wrap=document.getElementById('persona-bar');
+    var cards=[
+      {id:'p-genero', icon:'diversity_3', title:$t('persona.gender'), value:'♀ 54% · ♂ 44% · ⁄ 2%', hint:$t('persona.hint')||'Após filtros'},
+      {id:'p-idade', icon:'cake', title:$t('persona.age'), value:'25–34 (31%) · 35–44 (27%)', hint:$t('persona.hint')||'Faixas dominantes'},
+      {id:'p-bairro', icon:'location_city', title:$t('persona.neighborhood'), value:'Boqueirão, CIC, Bairro Novo', hint:$t('persona.hintTop')||'Top 3'}
+    ];
+    wrap.innerHTML=cards.map(function(c){
+      return '<div class="kpi" role="group" aria-label="'+c.title+'">\
+        <div class="label"><span class="material-symbols-rounded">'+c.icon+'</span><span>'+c.title+'</span></div>\
+        <div class="value" style="font-size:18px">'+c.value+'</div>\
+        <div class="delta neutral" style="opacity:.8">'+c.hint+'</div>\
+      </div>';
+    }).join('');
+  }
+
+  function renderKPIs(){
+    var list=[
+      {id:'saude', icon:'vaccines', label:$t('sector.saude'), val:'4,2', delta:'+0,3', cls:'positive', summaryKey:'reports.kpi.saude.summary'},
+      {id:'educacao', icon:'school', label:$t('sector.educacao'), val:'3,8', delta:$t('delta.stable'), cls:'neutral', summaryKey:'reports.kpi.educacao.summary'},
+      {id:'transporte', icon:'directions_bus', label:$t('sector.transporte'), val:'3,2', delta:'-0,2', cls:'negative', summaryKey:'reports.kpi.transporte.summary'},
+      {id:'seguranca', icon:'shield_person', label:$t('sector.seguranca'), val:'4,0', delta:$t('delta.stable'), cls:'neutral', summaryKey:'reports.kpi.seguranca.summary'},
+      {id:'meioambiente', icon:'eco', label:$t('sector.meioambiente'), val:'4,4', delta:'+0,1', cls:'positive', summaryKey:'reports.kpi.meioambiente.summary'}
+    ];
+    var wrap=document.getElementById('kpi-bar');
+    wrap.innerHTML=list.map(function(s){
+      return '<div class="kpi" role="group" aria-label="'+s.label+'">\
+        <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
+          <div class="panel" role="dialog" aria-labelledby="kpi-'+s.id+'"><h4>'+s.label+'</h4><p data-i18n="'+s.summaryKey+'">'+i18next.t(s.summaryKey,{avg:s.val,delta:s.delta})+'</p><p class="hint" data-i18n="info.hint">Toque no ícone novamente para fechar.</p></div>\
+        </details>\
+        <div class="label"><span class="material-symbols-rounded">'+s.icon+'</span><span>'+s.label+'</span></div>\
+        <div class="value">'+s.val+'</div>\
+        <div class="delta '+s.cls+'"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">'+(s.cls==='positive'?'trending_up':s.cls==='negative'?'trending_down':'trending_flat')+'</span>'+s.delta+'</div>\
+      </div>';
+    }).join('');
+  }
+
+  function renderIndicators(){
+    var cards=[
+      {id:'sector-avg', icon:'bar_chart_4_bars', title:$t('charts.avg_by_sector'), infoTitle:$t('info.howto.title'), infoCopy:$t('info.howto.copy'), infoHint:$t('info.hint'), ph:'Colunas (placeholder)'},
+      {id:'distribution', icon:'stacked_bar_chart', title:$t('charts.distribution'), infoTitle:$t('info.howto.title'), infoCopy:$t('charts.distributionDesc')||'Proporção após filtros.', infoHint:$t('info.hint'), ph:'Barras empilhadas (placeholder)'},
+      {id:'trend-sector', icon:'show_chart', title:$t('charts.trendBySector')||'Tendência mensal por setor', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.trendBySectorDesc')||'Evolução das médias mensais.', infoHint:$t('info.hint'), ph:'Linhas (placeholder)'},
+      {id:'reviews-month', icon:'insert_chart', title:$t('charts.reviewsByMonth')||'Avaliações por mês', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.reviewsByMonthDesc')||'Volume de respostas coletadas.', infoHint:$t('info.hint'), ph:'Colunas agrupadas (placeholder)'},
+      {id:'map-bairros', icon:'map', title:$t('charts.mapByNeighborhood')||'Mapa do município — pontos por bairro', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.mapByNeighborhoodDesc')||'Distribuição espacial.', infoHint:$t('info.hint'), ph:'Mapa (placeholder)'},
+      {id:'share-sector', icon:'pie_chart', title:$t('charts.shareBySector')||'Participação por setor', infoTitle:$t('info.howto.title'), infoCopy:$t('charts.shareBySectorDesc')||'Percentual por setor.', infoHint:$t('info.hint'), ph:'Pizza (placeholder)'}
+    ];
+    var grid=document.getElementById('cards');
+    grid.innerHTML=cards.map(function(c){ return '<section class="card" aria-labelledby="t-'+c.id+'">\
+      <h3 id="t-'+c.id+'"><span class="material-symbols-rounded" aria-hidden="true">'+c.icon+'</span>'+c.title+'</h3>\
+      <details class="info"><summary aria-label="Informações"><span class="material-symbols-rounded" aria-hidden="true">info</span></summary>\
+      <div class="panel" role="dialog" aria-labelledby="t-'+c.id+'"><p>'+c.infoCopy+'</p><p class="hint">'+c.infoHint+'</p></div></details>\
+      <div class="ph">'+c.ph+'</div></section>'; }).join('');
+  }
+
   async function initPanel(){
-    // CONECTA OS EVENTOS DE TEMA E IDIOMA APÓS O DOM SER RENDERIZADO
-    bindThemeToggles();
-    bindLanguageToggles();
-    
+    // GARANTE QUE A ORDEM DE RENDERIZAÇÃO ESTÁ CORRETA
     renderToolbar();
     renderPersona();
     renderKPIs();
     renderIndicators();
+
+    // APLICAR I18N DEPOIS QUE OS ELEMENTOS FORAM CRIADOS POR renderXXX()
     applyI18n(document);
 
+    // CONECTA OS EVENTOS DE TEMA E IDIOMA APÓS O DOM SER RENDERIZADO
+    bindThemeToggles();
+    bindLanguageToggles();
+    
     // ... (Lógica de IndexedDB e Sync permanece inalterada) ...
+
+    if(window.indexed && window.indexed.open){
+      await window.indexed.open('PainelPrefeitoDB', 1, function(db, stores){ window.indexed.stores = stores||window.indexed.stores||{}; if(!window.indexed.stores.config){ window.indexed.defineStore('config', {keyPath:'key'}); } if(!window.indexed.stores.tpl){ window.indexed.defineStore('tpl', {keyPath:'key'});} });
+    }
 
     const btn = document.getElementById('sync-toggle');
     const openTab = document.getElementById('sync-open-tab');
@@ -272,16 +342,9 @@
     document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ document.querySelectorAll('details.info[open]').forEach(function(d){ d.removeAttribute('open'); }); } });
   }
 
-  // ... (restante das funções que não foram alteradas) ...
-
-  function report(kind, state, text){ try{ (window.relatorio||window.Relatorio)?.status?.(kind, state, text); }catch(_){} }
-  function renderToolbar(){ /* ... */ }
-  function renderPersona(){ /* ... */ }
-  function renderKPIs(){ /* ... */ }
-  function renderIndicators(){ /* ... */ }
-  function showSyncTip(message, warn){ /* ... */ }
-  function updateSyncUI(enabled){ /* ... */ }
-  async function setSyncEnabled(enabled){ /* ... */ }
+  function showSyncTip(message, warn){ var el=document.getElementById('sync-tip'); if(!el) return; el.textContent = message || ''; el.style.display = message? 'inline-flex':'none'; el.classList.remove('ok','warn','info'); el.classList.add(warn? 'warn':'ok'); var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (warn? 'err':'ok'); dot.title = message || (warn? 'Problema de sincronização' : 'Sincronização ok'); } }
+  function updateSyncUI(enabled){ var tbtn=document.getElementById('toolbar-sync'); if(tbtn){ tbtn.dataset.active = enabled? 'true':'false'; } var dot=document.getElementById('toolbar-sync-dot'); if(dot){ dot.className = 'status-dot ' + (enabled? 'ok':'warn'); } var sbtn=document.getElementById('sync-toggle'); var lab=sbtn? sbtn.querySelector('.sync-label'):null; if(sbtn){ sbtn.setAttribute('aria-pressed', enabled? 'true':'false'); if(lab) lab.textContent = enabled? 'Ativado (clique para desligar)' : 'Permitir e ativar'; } var st=document.getElementById('sync-state'); if(st){ st.textContent = enabled? 'Sincronização ativada' : 'Sincronização desativada'; } }
+  async function setSyncEnabled(enabled){ if(!(window.indexed && window.indexed.put && window.indexed.stores && window.indexed.stores.config)){ updateSyncUI(enabled); return; } await window.indexed.put(window.indexed.stores.config, {key:'sync_enabled', value:!!enabled, ts:Date.now()}); updateSyncUI(enabled); }
 
 
   // Garante que o tema seja carregado antes de qualquer outra inicialização, mas 
