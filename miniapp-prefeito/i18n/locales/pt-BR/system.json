@@ -11,6 +11,83 @@
     "language": "Idioma",
     "multidevice": "Multi-dispositivo"
   },
+  "filters": {
+    "title": "Filtros do painel",
+    "subtitle": "Refine os resultados do painel para públicos e períodos específicos.",
+    "gender": {
+      "label": "Gênero",
+      "all": "Todos",
+      "female": "Feminino",
+      "male": "Masculino",
+      "nonbinary": "Não binário",
+      "other": "Outro"
+    },
+    "age": {
+      "label": "Faixa etária",
+      "all": "Todas as faixas",
+      "16_24": "16–24 anos",
+      "25_34": "25–34 anos",
+      "35_44": "35–44 anos",
+      "45_59": "45–59 anos",
+      "60_plus": "60+ anos"
+    },
+    "period": {
+      "label": "Período",
+      "last30": "Últimos 30 dias",
+      "last90": "Últimos 90 dias",
+      "q1": "1º trimestre",
+      "q2": "2º trimestre",
+      "semester": "Último semestre"
+    },
+    "sector": {
+      "label": "Setor",
+      "all": "Todos os setores"
+    },
+    "channel": {
+      "label": "Canal de coleta",
+      "all": "Todos os canais",
+      "online": "Online",
+      "field": "Em campo",
+      "phone": "Telefone"
+    },
+    "toggle": {
+      "inactive": "Incluir pesquisas inativas",
+      "favorites": "Somente favoritas",
+      "compare": "Comparar período anterior"
+    },
+    "toggleGroup": "Atalhos de filtros",
+    "apply": "Aplicar filtros",
+    "reset": "Limpar filtros",
+    "hint": "As preferências ficam salvas localmente para acelerar análises futuras."
+  },
+  "studies": {
+    "title": "Gerenciar pesquisas",
+    "subtitle": "Ative ou pause as pesquisas disponíveis. Os indicadores respeitam apenas as pesquisas ativas.",
+    "loading": "Carregando catálogos…",
+    "empty": "Nenhuma pesquisa cadastrada.",
+    "emptyTooltip": "Cadastre ou sincronize pesquisas para habilitar este painel.",
+    "offlineHint": "Alterações visíveis apenas nesta sessão. Sincronize para persistir.",
+    "summary": "Pesquisas ativas: {{count}}",
+    "status": {
+      "active": "Ativa",
+      "inactive": "Inativa",
+      "primary": "Principal"
+    },
+    "actions": {
+      "activate": "Ativar",
+      "deactivate": "Desativar"
+    },
+    "meta": {
+      "sector": "Setor",
+      "period": "Período",
+      "channel": "Canal"
+    },
+    "channel": {
+      "online": "Online",
+      "field": "Em campo",
+      "phone": "Telefone"
+    }
+  },
   "theme": {
     "title": "Tema do painel",
     "light": "Claro",

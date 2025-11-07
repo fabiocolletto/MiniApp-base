@@ -11,6 +11,83 @@
     "language": "Idioma",
     "multidevice": "Multidispositivo"
   },
+  "filters": {
+    "title": "Filtros del panel",
+    "subtitle": "Refine los resultados del panel para públicos y períodos específicos.",
+    "gender": {
+      "label": "Género",
+      "all": "Todos",
+      "female": "Femenino",
+      "male": "Masculino",
+      "nonbinary": "No binario",
+      "other": "Otro"
+    },
+    "age": {
+      "label": "Rango de edad",
+      "all": "Todos los rangos",
+      "16_24": "16–24 años",
+      "25_34": "25–34 años",
+      "35_44": "35–44 años",
+      "45_59": "45–59 años",
+      "60_plus": "60+ años"
+    },
+    "period": {
+      "label": "Período",
+      "last30": "Últimos 30 días",
+      "last90": "Últimos 90 días",
+      "q1": "1.er trimestre",
+      "q2": "2.º trimestre",
+      "semester": "Último semestre"
+    },
+    "sector": {
+      "label": "Sector",
+      "all": "Todos los sectores"
+    },
+    "channel": {
+      "label": "Canal de recolección",
+      "all": "Todos los canales",
+      "online": "Online",
+      "field": "En campo",
+      "phone": "Teléfono"
+    },
+    "toggle": {
+      "inactive": "Incluir encuestas inactivas",
+      "favorites": "Solo favoritas",
+      "compare": "Comparar período anterior"
+    },
+    "toggleGroup": "Accesos directos de filtros",
+    "apply": "Aplicar filtros",
+    "reset": "Limpiar filtros",
+    "hint": "Las preferencias se guardan localmente para acelerar análisis futuros."
+  },
+  "studies": {
+    "title": "Gestionar encuestas",
+    "subtitle": "Activa o pausa las encuestas disponibles. Los indicadores solo consideran encuestas activas.",
+    "loading": "Cargando catálogos…",
+    "empty": "No hay encuestas registradas.",
+    "emptyTooltip": "Agrega o sincroniza encuestas para habilitar este panel.",
+    "offlineHint": "Cambios visibles solo en esta sesión. Sincroniza para persistir.",
+    "summary": "Encuestas activas: {{count}}",
+    "status": {
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "primary": "Principal"
+    },
+    "actions": {
+      "activate": "Activar",
+      "deactivate": "Desactivar"
+    },
+    "meta": {
+      "sector": "Sector",
+      "period": "Período",
+      "channel": "Canal"
+    },
+    "channel": {
+      "online": "Online",
+      "field": "En campo",
+      "phone": "Teléfono"
+    }
+  },
   "theme": {
     "title": "Tema del panel",
     "light": "Claro",
