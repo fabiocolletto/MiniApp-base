@@ -3,6 +3,52 @@
 Todas as mudanças relevantes deste projeto serão registradas aqui.
 Entradas passam a ser geradas automaticamente pelo Release Please após merges na branch main.
 
+## 1.0.0 (2025-11-07)
+
+
+### Features
+
+* activate legal terms link in footer ([1c57d55](https://github.com/fabiocolletto/MiniApp-base/commit/1c57d55af084e52e33c5ad8c70a06167e98cc683))
+* add admin design kit panel ([1b98d13](https://github.com/fabiocolletto/MiniApp-base/commit/1b98d13745d042da7f291a79b1f14b9ed9fc2dd2))
+* add admin-only access to temporary projects ([ca59a89](https://github.com/fabiocolletto/MiniApp-base/commit/ca59a89da07243810db779a2d0aba7b031f90472))
+* add cep auto-fill to user address section ([bac7b18](https://github.com/fabiocolletto/MiniApp-base/commit/bac7b18fe6b1750ee21fbbc8863dfc5ca3d4d3e1))
+* add deployments summary to project log ([d8fe287](https://github.com/fabiocolletto/MiniApp-base/commit/d8fe287ceef9724bb7e5299b7222f6130e3614a5))
+* add i18n shell updates and good morning miniapp ([eacb9ef](https://github.com/fabiocolletto/MiniApp-base/commit/eacb9ef2c3f482370bec6c29d65d8594d903fe8e))
+* add language picker to footer menu ([70aa8ae](https://github.com/fabiocolletto/MiniApp-base/commit/70aa8aef20a49feee3d60cafaabb2f04e7491dcc))
+* add manual save controls to user dashboard ([b163b80](https://github.com/fabiocolletto/MiniApp-base/commit/b163b8028da7029a57f5c746670e01ae4b98550b))
+* add miniapp preference storage ([3679567](https://github.com/fabiocolletto/MiniApp-base/commit/367956720e230f31f5bef62c4e146804522de6ef))
+* add theme manager with user preferences ([c3d5834](https://github.com/fabiocolletto/MiniApp-base/commit/c3d58349c0c1c213f3f3be73cb181ba700016b8d))
+* adicionar gestão de assinaturas no painel admin ([25c5a22](https://github.com/fabiocolletto/MiniApp-base/commit/25c5a22ea3b64d34f166f30890a1b98754d4320b))
+* **admin:** add highlights dashboard widget ([35c4074](https://github.com/fabiocolletto/MiniApp-base/commit/35c4074f49f4e6dd7d0848b20058d9ef9cad25e4))
+* align home guest view with auth layout ([c70da2b](https://github.com/fabiocolletto/MiniApp-base/commit/c70da2be0bf2f9b9d1ed382a3d41f1815ab842a7))
+* alinhar painel de login ao cadastro ([55ed226](https://github.com/fabiocolletto/MiniApp-base/commit/55ed2263acc15cbf2af610f80a852a50139994fc))
+* allow inline editing in admin table ([c525d64](https://github.com/fabiocolletto/MiniApp-base/commit/c525d645e1ed46aa32cb1c7134df0f8a76ef11a6))
+* auto-fill address from CEP lookup ([ec290f1](https://github.com/fabiocolletto/MiniApp-base/commit/ec290f102ae1f9dfc1edc3e8b4e7b2f79c9909df))
+* **base-ui:** painel de status do armazenamento (persist/cota/auditoria) ([909213d](https://github.com/fabiocolletto/MiniApp-base/commit/909213df7a81a5fff606c058ce8b26522c66a6f4))
+* centralize activity feedback in footer ([b28e35a](https://github.com/fabiocolletto/MiniApp-base/commit/b28e35a8a9bff5fa9cc5c28c44872c4cc82216ed))
+* centralize header title and brand controls ([9e6ab8d](https://github.com/fabiocolletto/MiniApp-base/commit/9e6ab8df343bc5296a21a3bc97429658b300d67c))
+* centralize white label identity and theme ([29648f5](https://github.com/fabiocolletto/MiniApp-base/commit/29648f5efd05dca08491076fd31e256b6b92b19e))
+* destacar informações de release no painel admin ([ab0546c](https://github.com/fabiocolletto/MiniApp-base/commit/ab0546ca2f43ac8b30922de70447d4701ecd039b))
+* enable auto-save in user dashboard ([3c51e8c](https://github.com/fabiocolletto/MiniApp-base/commit/3c51e8cc2de9da836086d0b19085dd2e08b7b1cc))
+* gate footer indicators with user preference ([7ad60fa](https://github.com/fabiocolletto/MiniApp-base/commit/7ad60fa877948de97c26a02ee5a6db4a7e2ea8d1))
+* highlight user data summary before table ([85aee83](https://github.com/fabiocolletto/MiniApp-base/commit/85aee835b0ed5e891ae4d1451649aeb9a58460da))
+* improve footer menu hierarchy ([ed5e016](https://github.com/fabiocolletto/MiniApp-base/commit/ed5e0168a32e76c2d7919f56d0c52bb3dab0b3b4))
+* open user panel when session persists ([8c20c4e](https://github.com/fabiocolletto/MiniApp-base/commit/8c20c4e46060e9af4eff3b96e71f127df6c5411a))
+* organize user dashboard form grid ([8ec50ce](https://github.com/fabiocolletto/MiniApp-base/commit/8ec50ced96403c9b1ac0601b8d7096bcb0b796dc))
+* **ripple:** MVP funcional do painel + dados piloto ([c720433](https://github.com/fabiocolletto/MiniApp-base/commit/c72043390bf559ad0a1d2c01744fa19b1efa0295))
+* **settings:** toggle Multidispositivos (web component) e gate do worker ([09e5196](https://github.com/fabiocolletto/MiniApp-base/commit/09e5196301756988f358d39b495f410eb0f79b85))
+* **tasks:** allow managing tasks with persistent store ([6ce493d](https://github.com/fabiocolletto/MiniApp-base/commit/6ce493dd15d050695a08ff56a233b97354fe22bb))
+* **ui:** inclusão de &lt;social-auth&gt; nas telas de cadastro e login ([acceff0](https://github.com/fabiocolletto/MiniApp-base/commit/acceff0c0c828867ad24e3610a6a13ece7a64f51))
+
+
+### Bug Fixes
+
+* align footer menu layout and palette ([c797c75](https://github.com/fabiocolletto/MiniApp-base/commit/c797c75d1f15cb44b8ad7295519489a4bc656d80))
+* anchor desktop menu overlay ([b3b5208](https://github.com/fabiocolletto/MiniApp-base/commit/b3b5208721807a41e217afaefda5d6cea3465d29))
+* expand menu overlay to full viewport ([e0be21d](https://github.com/fabiocolletto/MiniApp-base/commit/e0be21d1a284f9cab064256ab851ec8836b31dfd))
+* keep auth footer anchored to viewport ([878e3e1](https://github.com/fabiocolletto/MiniApp-base/commit/878e3e10aa6c0ea1ab7717375ba305b7a34343ca))
+* usar ícones no alternador de senha ([6ea416b](https://github.com/fabiocolletto/MiniApp-base/commit/6ea416b642d5fa68ac079f4cf9f751edba4c165e))
+
 ## [Unreleased]
 - Adicionada sincronização opcional com Google Drive, incluindo fluxo de consentimento, exclusão manual de backups e estados discretos no rodapé.
 - Consolidado SDK do MiniApp Base com módulos de preferências, autosave e sincronização reutilizáveis para todos os MiniApps.
