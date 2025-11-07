@@ -102,10 +102,13 @@ header{max-width:var(--container);margin:clamp(28px,6vw,48px) auto 0;padding:cla
 .kpi .label{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;font-size:12px}
 .kpi .label .app-icon{font-size:20px}
 .kpi .value{font-size:clamp(28px,4vw,36px);margin-top:2px;font-weight:700;color:var(--text)}
+.kpi .value--sm{font-size:clamp(18px,3vw,22px)}
 .kpi .delta{display:flex;gap:6px;align-items:center;margin-top:auto;color:var(--muted);font-size:13px}
 .kpi .delta .app-icon{font-size:16px}
 .kpi .delta.positive{color:var(--brand-accent)}
 .kpi .delta.negative{color:var(--brand-danger)}
+.kinfo{position:absolute;top:clamp(6px,1.6vw,10px);right:clamp(6px,1.6vw,10px);display:grid;place-items:center;width:clamp(28px,4vw,32px);height:clamp(28px,4vw,32px);border:none;background:transparent;color:var(--muted);border-radius:var(--radius-pill);transition:color .18s ease,background .18s ease,box-shadow .18s ease}
+.kinfo:hover,.kinfo:focus-visible{color:var(--brand-secondary);background:color-mix(in oklab,var(--brand-secondary) 12%,var(--surface));box-shadow:var(--shadow-sm)}
 
 /* Cards de indicadores */
 .grid{max-width:var(--container);margin:clamp(24px,6vw,40px) auto;padding:0 clamp(14px,5vw,18px);display:grid;gap:clamp(18px,4vw,26px);grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
@@ -149,6 +152,9 @@ details.info .panel .hint{margin:10px 0 0;font-size:12px;color:var(--muted)}
 .modal-body-flow{display:flex;flex-direction:column;gap:10px}
 .modal-body-flow .hint{color:var(--muted)}
 .modal-body-flow .meta{font-size:12px;color:var(--muted)}
+
+.subcard{display:flex;align-items:center;justify-content:space-between;gap:clamp(12px,3vw,18px);padding:clamp(12px,3vw,16px);border-radius:var(--radius);background:color-mix(in oklab,var(--surface) 92%,#ffffff);border:1px solid color-mix(in oklab,var(--border) 60%,transparent);box-shadow:var(--shadow-sm)}
+.subcard .stack{flex:1 1 auto}
 
 .filters-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .form-field label{display:block;margin-bottom:6px;font-weight:600;color:var(--muted-ink)}
@@ -237,6 +243,13 @@ body.modal-open{overflow:hidden}
 /* ===== Utilitários ===== */
 .u-hidden{display:none !important}
 .u-center{display:grid;place-items:center}
+.stack{display:flex;flex-direction:column;gap:clamp(6px,1.6vw,10px)}
+.stack-xs{gap:clamp(4px,1.2vw,6px)}
+.lead{margin-top:0;color:var(--muted);font-size:clamp(14px,2vw,16px)}
+.text-muted{color:var(--muted)}
+.text-sm{font-size:12px}
+.mt-sm{margin-top:clamp(8px,2vw,12px)}
+.actions-end{display:flex;justify-content:flex-end;align-items:center}
 
 /* ===== Estados e acessibilidade ===== */
 :focus-visible{outline:none;box-shadow:var(--ring)}
