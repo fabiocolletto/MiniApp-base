@@ -164,8 +164,14 @@
     "hint": "Tap the icon again to close.",
     "summary": "Information"
   },
+  "carousel": {
+    "prev": "Previous",
+    "next": "Next",
+    "status": "Showing {{from}}–{{to}} of {{total}}"
+  },
   "persona": {
     "title": "Sample profile",
+    "barLabel": "Sample profile summary",
     "gender": "Gender distribution",
     "age": "Age range distribution",
     "neighborhood": "Top neighborhoods",
@@ -179,7 +185,8 @@
       "delta": "Variation",
       "topMetrics": "Top metrics"
     },
-    "moreInfo": "More information"
+    "moreInfo": "More information",
+    "barLabel": "Key indicators by sector"
   },
   "sync": {
     "title": "Multi-device",

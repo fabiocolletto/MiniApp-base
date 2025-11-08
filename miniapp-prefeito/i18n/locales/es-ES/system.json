@@ -164,8 +164,14 @@
     "hint": "Toque el ícono nuevamente para cerrar.",
     "summary": "Información"
   },
+  "carousel": {
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "status": "Mostrando {{from}}–{{to}} de {{total}}"
+  },
   "persona": {
     "title": "Perfil de la muestra",
+    "barLabel": "Resumen del perfil de la muestra",
     "gender": "Distribución por género",
     "age": "Distribución por edad",
     "neighborhood": "Barrios más presentes",
@@ -179,7 +185,8 @@
       "delta": "Variación",
       "topMetrics": "Métricas destacadas"
     },
-    "moreInfo": "Más información"
+    "moreInfo": "Más información",
+    "barLabel": "Indicadores clave por sector"
   },
   "sync": {
     "title": "Multidispositivo",

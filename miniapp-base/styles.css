@@ -97,6 +97,7 @@ header{max-width:var(--container);margin:clamp(28px,6vw,48px) auto 0;padding:cla
 
 /* KPI bar */
 .kpi-bar{max-width:var(--container);margin:clamp(24px,6vw,36px) auto 0;padding:0 clamp(14px,5vw,18px);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(14px,3vw,20px)}
+.kpi-bar>[data-role="carousel"]{grid-column:1/-1;width:100%}
 .kpi{position:relative;background:color-mix(in oklab,var(--surface) 92%,#ffffff);border:1px solid color-mix(in oklab,var(--border) 65%,transparent);border-radius:clamp(18px,3vw,24px);padding:clamp(18px,3.2vw,22px);box-shadow:0 12px 28px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:clamp(8px,2vw,12px);overflow:hidden}
 .kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,color-mix(in oklab,var(--brand-secondary) 70%,transparent) 0%,color-mix(in oklab,var(--brand-primary) 50%,transparent) 100%)}
 .kpi .label{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;font-size:12px}
@@ -223,10 +224,10 @@ body.modal-open{overflow:hidden}
   .sheet,.sheet.compact{border-radius:var(--radius-sm)}
 }
 @media (max-width:1200px){
-  .kpi-bar{grid-template-columns:repeat(3,1fr)} /* tablet landscape ~ 3 colunas */
+  .kpi-bar{grid-template-columns:repeat(3,1fr)}
 }
 @media (max-width:900px){
-  .kpi-bar{grid-template-columns:repeat(2,1fr)} /* tablet portrait ~ 2 colunas */
+  .kpi-bar{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:560px){
   .kpi-bar{grid-template-columns:1fr}

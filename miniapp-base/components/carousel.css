@@ -1,0 +1,114 @@
+[data-role="carousel"]{
+  --carousel-gap: clamp(14px, 3vw, 20px);
+  --carousel-control-size: clamp(40px, 5vw, 48px);
+  --carousel-control-bg: color-mix(in oklab, var(--surface) 92%, #ffffff);
+  --carousel-control-border: color-mix(in oklab, var(--border) 70%, transparent);
+  --carousel-per-view: 1;
+  position: relative;
+  width: 100%;
+}
+
+[data-role="carousel"]:not([data-carousel-bound="true"]) {
+  display: grid;
+  gap: var(--carousel-gap);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+[data-role="carousel"][data-carousel-bound="true"]{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--carousel-gap);
+}
+
+[data-role="carousel"] .carousel-viewport{
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+  padding-block: 4px;
+  border-radius: clamp(16px, 3vw, 22px);
+}
+
+[data-role="carousel"] .carousel-track{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, calc((100% - (var(--carousel-per-view) - 1) * var(--carousel-gap)) / var(--carousel-per-view)));
+  gap: var(--carousel-gap);
+  padding: 0;
+  margin: 0;
+}
+
+[data-role="carousel"] .carousel-slide{
+  scroll-snap-align: start;
+  display: flex;
+  height: 100%;
+}
+
+[data-role="carousel"] .carousel-slide > *{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-role="carousel"] .carousel-control{
+  inline-size: var(--carousel-control-size);
+  block-size: var(--carousel-control-size);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--carousel-control-border);
+  background: var(--carousel-control-bg);
+  color: var(--muted-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+[data-role="carousel"] .carousel-control:hover:not(:disabled){
+  background: color-mix(in oklab, var(--surface-alt) 60%, var(--surface));
+  transform: translateY(-1px);
+}
+
+[data-role="carousel"] .carousel-control:focus-visible{
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+[data-role="carousel"] .carousel-control:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+[data-role="carousel"] .carousel-control-icon{
+  font-size: clamp(20px, 4vw, 24px);
+  font-weight: 600;
+}
+
+[data-role="carousel"] .carousel-status{
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-top: clamp(6px, 1.6vw, 10px);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+[data-role="carousel"] .carousel-status[aria-hidden="true"]{
+  display: none;
+}
+
+[data-role="carousel"] .carousel-viewport::-webkit-scrollbar{
+  height: 8px;
+}
+
+[data-role="carousel"] .carousel-viewport::-webkit-scrollbar-thumb{
+  background: color-mix(in oklab, var(--muted) 45%, transparent);
+  border-radius: var(--radius-pill);
+}
+
+[data-role="carousel"] .carousel-viewport::-webkit-scrollbar-track{
+  background: color-mix(in oklab, var(--surface-alt) 60%, transparent);
+  border-radius: var(--radius-pill);
+}

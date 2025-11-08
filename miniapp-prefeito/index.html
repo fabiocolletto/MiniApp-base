@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel de Indicadores — Versão Estática (6 indicadores)</title>
   <link rel="stylesheet" href="../miniapp-base/styles.css">
+  <link rel="stylesheet" href="../miniapp-base/components/carousel.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/components/carousel.css" media="print" onload="this.media='all'">
 </head>
 <body>
   <header>
@@ -22,8 +24,8 @@
     </div>
   </header>
 
-  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra"></section>
-  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor"></section>
+  <section id="persona-bar" class="kpi-bar" aria-label="Resumo de perfil da amostra" data-i18n-attr="aria-label:persona.barLabel"></section>
+  <section id="kpi-bar" class="kpi-bar" aria-label="Indicadores-chave por setor" data-i18n-attr="aria-label:kpi.barLabel"></section>
 
   <main id="cards" class="grid" aria-live="polite"></main>
 
@@ -306,7 +308,11 @@
     "charts.labels.share": "Participação",
     "info.hint": "Toque no ícone novamente para fechar.",
     "info.summary": "Informações",
+    "carousel.prev": "Anterior",
+    "carousel.next": "Próximo",
+    "carousel.status": "Exibindo {{from}}–{{to}} de {{total}}",
     "persona.title": "Perfil da amostra",
+    "persona.barLabel": "Resumo de perfil da amostra",
     "persona.gender": "Distribuição por gênero",
     "persona.age": "Distribuição por faixa etária",
     "persona.neighborhood": "Bairros mais presentes",
@@ -317,6 +323,7 @@
     "kpi.labels.delta": "Variação",
     "kpi.labels.topMetrics": "Top métricas",
     "kpi.moreInfo": "Mais informações",
+    "kpi.barLabel": "Indicadores-chave por setor",
     "sync.title": "Múltiplos dispositivos",
     "sync.lead": "Ative a sincronização via Google Drive para que suas pesquisas e preferências fiquem disponíveis em todos os seus dispositivos. Você verá um pedido de permissão do Google.",
     "sync.ctaTitle": "Sincronizar com Google Drive",
@@ -338,6 +345,7 @@
   <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="./js/i18n.js"></script>
   <script src="./js/theme.js"></script>
+  <script src="../miniapp-base/components/carousel.js"></script>
 
   <script>
   window.__INDEXED_LIB_CANDIDATES__ = [
@@ -637,6 +645,7 @@
   var GENDER_SYMBOLS = { female:'♀', male:'♂', nonbinary:'⁄', other:'∗' };
   var AGE_LABEL_FALLBACK = { '16_24':'16–24', '25_34':'25–34', '35_44':'35–44', '45_59':'45–59', '60_plus':'60+' };
   var KPI_DELTA_THRESHOLD = 0.05;
+  var CAROUSEL_DEFAULT_PER_VIEW = '1,2,3,4,5';
 
   function escapeHtml(value){
     return String(value ?? '').replace(/[&<>"']/g, function(ch){
@@ -1559,54 +1568,95 @@
     }
   }
 
+  function renderCarouselInto(wrap, content, options){
+    if(!wrap) return;
+    var opts = options || {};
+    var perView = opts.perView || CAROUSEL_DEFAULT_PER_VIEW;
+    var labelKey = opts.labelKey || '';
+    var fallbackLabel = (opts.label !== undefined ? opts.label : (wrap.getAttribute('aria-label') || ''));
+    var label;
+    if(labelKey){
+      label = $t(labelKey, { defaultValue: fallbackLabel || labelKey });
+      if(label === labelKey && fallbackLabel){
+        label = fallbackLabel;
+      }
+    }else{
+      label = fallbackLabel;
+    }
+    var attrs = 'class="carousel" data-role="carousel" data-carousel-per-view="'+escapeHtml(perView)+'"';
+    if(label){
+      attrs += ' data-carousel-label="'+escapeHtml(label)+'"';
+    }
+    if(labelKey){
+      attrs += ' data-carousel-label-key="'+escapeHtml(labelKey)+'"';
+    }
+    wrap.innerHTML = '<div '+attrs+'>'+content+'</div>';
+    var carouselEl = wrap.querySelector('[data-role="carousel"]');
+    if(carouselEl){
+      if(label){
+        carouselEl.setAttribute('data-carousel-label', label);
+      }
+      if(labelKey){
+        carouselEl.setAttribute('data-carousel-label-key', labelKey);
+      }
+      if(window.CarouselManager && typeof window.CarouselManager.mount === 'function'){
+        window.CarouselManager.mount(carouselEl);
+        if(typeof window.CarouselManager.refresh === 'function'){
+          window.CarouselManager.refresh(carouselEl);
+        }
+      }
+    }
+    window.I18nManager?.apply?.();
+  }
+
   function renderPersonaLoading(wrap){
     var message = getReportLoadingMessage();
-    wrap.innerHTML = PERSONA_CARD_META.map(function(meta){
+    var cards = PERSONA_CARD_META.map(function(meta){
       return buildPersonaCard(meta, message, { icon:'hourglass_empty', extraClass:'is-loading' });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'persona.barLabel' });
   }
 
   function renderPersonaError(wrap){
     var message = getReportErrorMessage();
-    wrap.innerHTML = PERSONA_CARD_META.map(function(meta, index){
+    var cards = PERSONA_CARD_META.map(function(meta, index){
       return buildPersonaCard(meta, index === 0 ? message : '—', { icon:index === 0 ? 'error' : meta.icon, extraClass:index === 0 ? 'has-error' : '' });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'persona.barLabel' });
   }
 
   function renderPersonaEmpty(wrap){
     var message = getReportEmptyMessage();
-    wrap.innerHTML = PERSONA_CARD_META.map(function(meta, index){
+    var cards = PERSONA_CARD_META.map(function(meta, index){
       return buildPersonaCard(meta, index === 0 ? message : '—', { icon:index === 0 ? 'info' : meta.icon, extraClass:index === 0 ? 'is-empty' : '' });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'persona.barLabel' });
   }
 
   function renderKpiLoading(wrap){
     var summaryLabel = $t('kpi.moreInfo');
-    wrap.innerHTML = KPI_CARD_META.map(function(meta){
+    var cards = KPI_CARD_META.map(function(meta){
       return buildKpiCard(meta, { value:'—', deltaText:'—', cls:'neutral', icon:'hourglass_empty', extraClass:'is-loading', summaryLabel:summaryLabel });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'kpi.barLabel' });
   }
 
   function renderKpiError(wrap){
     var summaryLabel = $t('kpi.moreInfo');
     var message = getReportErrorMessage();
-    wrap.innerHTML = KPI_CARD_META.map(function(meta, index){
+    var cards = KPI_CARD_META.map(function(meta, index){
       return buildKpiCard(meta, { value:index === 0 ? message : '—', deltaText:index === 0 ? message : '—', cls:index === 0 ? 'negative' : 'neutral', icon:index === 0 ? 'error' : meta.icon, extraClass:index === 0 ? 'has-error' : '', summaryLabel:summaryLabel });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'kpi.barLabel' });
   }
 
   function renderKpiEmpty(wrap){
     var summaryLabel = $t('kpi.moreInfo');
     var message = getReportEmptyMessage();
-    wrap.innerHTML = KPI_CARD_META.map(function(meta, index){
+    var cards = KPI_CARD_META.map(function(meta, index){
       return buildKpiCard(meta, { value:index === 0 ? message : '—', deltaText:'—', cls:'neutral', icon:index === 0 ? 'info' : meta.icon, extraClass:index === 0 ? 'is-empty' : '', summaryLabel:summaryLabel });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'kpi.barLabel' });
   }
 
   function renderIndicatorsLoading(grid){
@@ -1753,10 +1803,10 @@
       'p-bairro': neighborhoodParts.length ? neighborhoodParts.join(', ') : '—'
     };
 
-    wrap.innerHTML = PERSONA_CARD_META.map(function(meta){
+    var cards = PERSONA_CARD_META.map(function(meta){
       return buildPersonaCard(meta, cardValues[meta.id] || '—');
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'persona.barLabel' });
   }
 
   async function renderKPIs(options){
@@ -1779,7 +1829,7 @@
     }
     var locale = getCurrentLocale();
     var summaryLabel = $t('kpi.moreInfo');
-    wrap.innerHTML = KPI_CARD_META.map(function(meta){
+    var cards = KPI_CARD_META.map(function(meta){
       var stats = data.kpis.find(function(item){ return item.key === meta.id; }) || null;
       var average = stats && Number.isFinite(stats.average) ? stats.average : null;
       var deltaRaw = stats && Number.isFinite(stats.delta) ? stats.delta : null;
@@ -1802,7 +1852,7 @@
         summaryLabel: summaryLabel
       });
     }).join('');
-    window.I18nManager?.apply?.();
+    renderCarouselInto(wrap, cards, { labelKey:'kpi.barLabel' });
   }
 
   async function renderIndicators(options){
