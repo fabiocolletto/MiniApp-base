@@ -1069,6 +1069,15 @@
     if(hash === '#filters' && document.getElementById('filters-form')){
       setFilterDraftFromState();
     }
+    document.querySelectorAll('.modal').forEach(function(node){
+      if(node === modal){
+        node.classList.add('is-open');
+        node.style.display = 'flex';
+      } else {
+        node.classList.remove('is-open');
+        node.style.display = 'none';
+      }
+    });
     document.body.classList.toggle('modal-open', !!modal);
     if(hash && !modal){
       clearModalHash();
