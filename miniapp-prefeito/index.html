@@ -1308,8 +1308,12 @@
       + '<div class="toolbar-actions-list">'+itemsHtml+'</div>'
       + '</div>';
     var titleActions = document.getElementById('title-actions');
-    var toggleEl = document.getElementById('toolbar-menu-toggle');
+    var toggleEl = el.querySelector('#toolbar-menu-toggle');
     if(titleActions && toggleEl){
+      var existingToggle = titleActions.querySelector('#toolbar-menu-toggle');
+      if(existingToggle && existingToggle !== toggleEl){
+        existingToggle.remove();
+      }
       titleActions.appendChild(toggleEl);
     }
     window.I18nManager?.apply?.();
