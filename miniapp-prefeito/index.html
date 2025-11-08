@@ -1106,13 +1106,7 @@
   }
 
   function isToolbarOverlayMode(){
-    if(typeof window.matchMedia === 'function'){
-      try{
-        return window.matchMedia('(max-width: 960px)').matches;
-      }catch(_){ }
-    }
-    var width = window.innerWidth || document.documentElement.clientWidth || 0;
-    return width <= 960;
+    return true;
   }
 
   function setToolbarMenuOpen(isOpen, options){

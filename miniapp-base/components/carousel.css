@@ -3,10 +3,11 @@
   --carousel-control-size: clamp(40px, 5vw, 48px);
   --carousel-control-bg: color-mix(in oklab, var(--surface) 92%, #ffffff);
   --carousel-control-border: color-mix(in oklab, var(--border) 70%, transparent);
-  --carousel-control-inset: clamp(6px, 2.8vw, 12px);
+  --carousel-control-offset: clamp(18px, 4vw, 36px);
   --carousel-per-view: 1;
   position: relative;
   width: 100%;
+  overflow: visible;
 }
 
 [data-role="carousel"]:not([data-carousel-bound="true"]) {
@@ -26,7 +27,6 @@
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable both-edges;
   padding-block: 4px;
   padding-inline: 0;
   border-radius: clamp(16px, 3vw, 22px);
@@ -79,12 +79,12 @@
 
 [data-role="carousel"] .carousel-control--prev{
   left: 0;
-  --carousel-control-translate-x: -50%;
+  --carousel-control-translate-x: calc(-50% - var(--carousel-control-offset));
 }
 
 [data-role="carousel"] .carousel-control--next{
   right: 0;
-  --carousel-control-translate-x: 50%;
+  --carousel-control-translate-x: calc(50% + var(--carousel-control-offset));
 }
 
 [data-role="carousel"] .carousel-control:hover:not(:disabled){
