@@ -244,12 +244,18 @@
       applyTranslations();
       return state.language;
     }
-    if (!cache[target]) {
-      const data = await fetchBundle(target);
-      if (Object.keys(data).length) {
-        root.i18next.addResourceBundle(target, 'translation', data, true, true);
+
+    let bundle = cache[target];
+    if (!root.i18next.hasResourceBundle(target, 'translation')) {
+      if (!bundle || !Object.keys(bundle).length) {
+        bundle = await fetchBundle(target);
+      }
+      if (bundle && Object.keys(bundle).length) {
+        cache[target] = bundle;
+        root.i18next.addResourceBundle(target, 'translation', bundle, true, true);
       }
     }
+
     await root.i18next.changeLanguage(target);
     try { localStorage.setItem(STORAGE_KEY, target); } catch (_) { /* ignore */ }
     return target;
@@ -262,7 +268,24 @@
       btn.addEventListener('click', function (ev) {
         ev.preventDefault();
         const lang = btn.getAttribute('data-lang');
-        changeLanguage(lang);
+        changeLanguage(lang).then(function () {
+          if (window.closeActiveModal && typeof window.closeActiveModal === 'function') {
+            window.closeActiveModal();
+          } else if (window.location && window.location.hash === '#language') {
+            try {
+              if (window.history && typeof window.history.replaceState === 'function') {
+                const base = window.location.pathname + window.location.search;
+                window.history.replaceState(null, '', base);
+              } else {
+                window.location.hash = '';
+              }
+              const evt = new Event('hashchange');
+              window.dispatchEvent(evt);
+            } catch (_) {
+              /* ignore */
+            }
+          }
+        });
       });
     });
   }
