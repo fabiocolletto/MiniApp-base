@@ -73,22 +73,26 @@ a{color:inherit;text-decoration:none}
 .material-symbols-rounded{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:var(--icon-size);display:inline-flex;align-items:center;justify-content:center;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" var(--icon-fill),"wght" var(--icon-wght),"GRAD" var(--icon-grad),"opsz" var(--icon-opsz)}
 
 /* ===== Layout ===== */
-header{max-width:var(--container);margin:clamp(28px,6vw,48px) auto 0;padding:clamp(24px,4vw,36px);background:var(--surface);border:1px solid color-mix(in oklab,var(--border) 70%,transparent);border-radius:clamp(18px,4vw,28px);box-shadow:0 18px 40px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:clamp(16px,3vw,24px)}
-.title{display:flex;gap:clamp(16px,3.5vw,24px);align-items:center;flex-wrap:wrap}
+header{max-width:var(--container);margin:clamp(28px,6vw,48px) auto 0;padding:clamp(24px,4vw,36px);background:var(--surface);border:1px solid color-mix(in oklab,var(--border) 70%,transparent);border-radius:clamp(18px,4vw,28px);box-shadow:0 18px 40px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:clamp(16px,3vw,24px);position:relative;z-index:5}
+.title{display:flex;gap:clamp(16px,3.5vw,24px);align-items:flex-start;flex-wrap:wrap}
 .title>.app-icon{font-size:clamp(36px,5vw,46px);filter:drop-shadow(0 6px 14px rgba(11,87,208,.15))}
+.title-text{display:flex;flex-direction:column;gap:clamp(6px,1.6vw,10px);flex:1 1 auto;min-width:0}
 .title h1{margin:0;color:var(--brand-secondary);font-size:clamp(24px,3vw,32px);letter-spacing:.2px}
 .subtitle{margin:4px 0 0;color:var(--muted);font-size:clamp(14px,2vw,16px)}
-.title .subtitle{font-size:clamp(14px,2vw,16px)}
-.version{margin-left:auto;align-self:flex-start;color:var(--brand-secondary);font-size:12px;background:color-mix(in oklab,var(--brand-secondary) 12%,var(--surface-alt));border:1px solid color-mix(in oklab,var(--brand-secondary) 45%,var(--border));padding:4px 10px;border-radius:999px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.title .subtitle{display:flex;align-items:center;gap:8px;margin:clamp(6px,1.6vw,10px) 0 0;font-size:clamp(14px,2vw,16px)}
+.version{color:var(--brand-secondary);font-size:12px;background:color-mix(in oklab,var(--brand-secondary) 12%,var(--surface-alt));border:1px solid color-mix(in oklab,var(--brand-secondary) 45%,var(--border));padding:4px 10px;border-radius:999px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center}
+.title-actions{margin-left:auto;flex:0 0 auto;align-self:flex-start;display:flex;align-items:flex-start;justify-content:flex-end;gap:clamp(10px,3vw,14px)}
+.title-actions .toolbar-toggle-text{display:none}
+.title-actions:empty{display:none}
 
 .toolbar{margin:0;padding:clamp(12px,3vw,18px);background:color-mix(in oklab,var(--surface-alt) 65%,var(--surface));border:1px solid color-mix(in oklab,var(--border) 60%,transparent);border-radius:var(--radius);box-shadow:var(--shadow-sm);width:100%;display:flex;align-items:center;justify-content:space-between;gap:clamp(10px,3vw,16px);position:relative}
 .split{display:flex;flex-wrap:wrap;gap:clamp(10px,3vw,14px);width:100%;justify-content:flex-start;align-items:center}
-.toolbar .toolbar-toggle{display:none;align-items:center;gap:8px;padding-inline:clamp(12px,4vw,16px)}
-.toolbar .toolbar-toggle-text{font-weight:600;font-size:clamp(13px,3vw,15px)}
-.toolbar .toolbar-toggle .toolbar-toggle-icon{display:inline-flex}
-.toolbar .toolbar-toggle .toolbar-toggle-icon--close{display:none}
-.toolbar .toolbar-toggle[aria-expanded="true"] .toolbar-toggle-icon--menu{display:none}
-.toolbar .toolbar-toggle[aria-expanded="true"] .toolbar-toggle-icon--close{display:inline-flex}
+.toolbar-toggle{display:none;align-items:center;gap:8px;padding-inline:clamp(12px,4vw,16px)}
+.toolbar-toggle-text{font-weight:600;font-size:clamp(13px,3vw,15px)}
+.toolbar-toggle .toolbar-toggle-icon{display:inline-flex}
+.toolbar-toggle .toolbar-toggle-icon--close{display:none}
+.toolbar-toggle[aria-expanded="true"] .toolbar-toggle-icon--menu{display:none}
+.toolbar-toggle[aria-expanded="true"] .toolbar-toggle-icon--close{display:inline-flex}
 .toolbar .toolbar-menu-backdrop{display:none;flex:0 0 auto;width:0;height:0}
 .toolbar .toolbar-actions{display:flex;flex-direction:column;align-items:stretch;gap:clamp(12px,3vw,16px);margin-left:auto;position:relative;z-index:30}
 .toolbar .toolbar-actions-list{display:flex;flex-wrap:wrap;gap:clamp(10px,3vw,14px);justify-content:flex-end}
@@ -99,7 +103,7 @@ body.toolbar-menu-open{overflow:hidden}
 
 @media (max-width:960px){
   .toolbar{align-items:center}
-  .toolbar .toolbar-toggle{display:inline-flex}
+  .toolbar-toggle{display:inline-flex}
   .toolbar .toolbar-menu-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:20}
   body.toolbar-menu-open .toolbar .toolbar-menu-backdrop{opacity:1;pointer-events:auto}
   .toolbar .toolbar-actions{position:fixed;top:clamp(92px,22vw,148px);right:clamp(16px,7vw,28px);left:clamp(16px,7vw,28px);background:color-mix(in oklab,var(--surface) 94%,#ffffff);border:1px solid color-mix(in oklab,var(--border) 75%,transparent);border-radius:var(--radius);box-shadow:0 28px 68px rgba(15,23,42,.25);padding:clamp(18px,5vw,22px);gap:clamp(14px,4vw,18px);max-width:min(520px,90vw);width:auto;opacity:0;transform:translateY(-12px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
@@ -107,7 +111,7 @@ body.toolbar-menu-open{overflow:hidden}
   .toolbar .toolbar-actions-list{flex-direction:column;align-items:stretch;gap:clamp(12px,4vw,18px)}
   .toolbar .toolbar-actions-list .btn{width:100%;justify-content:flex-start}
   .toolbar .toolbar-menu-close{display:inline-flex}
-  .toolbar .toolbar-toggle-text{display:inline}
+  .toolbar-toggle-text{display:inline}
 }
 
 @media (min-width:961px){
@@ -116,7 +120,7 @@ body.toolbar-menu-open{overflow:hidden}
   .toolbar .toolbar-menu-backdrop{display:none!important}
   .toolbar .toolbar-menu-close{display:none!important}
   .toolbar .toolbar-actions-list .btn{width:auto;justify-content:center}
-  .toolbar .toolbar-toggle-text{display:none}
+  .toolbar-toggle-text{display:none}
 }
 
 /* Botões pill */
