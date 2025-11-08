@@ -17,7 +17,7 @@
 
 [data-role="carousel"][data-carousel-bound="true"]{
   display: block;
-  padding-inline: clamp(6px, 2vw, 10px);
+  padding-inline: 0;
 }
 
 [data-role="carousel"] .carousel-viewport{
@@ -28,7 +28,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable both-edges;
   padding-block: 4px;
-  padding-inline: calc(var(--carousel-control-size) + var(--carousel-control-inset) * 2);
+  padding-inline: 0;
   border-radius: clamp(16px, 3vw, 22px);
 }
 
@@ -66,7 +66,7 @@
   transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(var(--carousel-control-translate-x, 0), -50%);
   z-index: 2;
   box-shadow: 0 10px 24px rgba(15, 23, 42, .14);
 }
@@ -78,16 +78,18 @@
 }
 
 [data-role="carousel"] .carousel-control--prev{
-  left: var(--carousel-control-inset);
+  left: 0;
+  --carousel-control-translate-x: -50%;
 }
 
 [data-role="carousel"] .carousel-control--next{
-  right: var(--carousel-control-inset);
+  right: 0;
+  --carousel-control-translate-x: 50%;
 }
 
 [data-role="carousel"] .carousel-control:hover:not(:disabled){
   background: color-mix(in oklab, var(--surface-alt) 45%, var(--surface));
-  transform: translateY(-1px);
+  transform: translate(var(--carousel-control-translate-x, 0), calc(-50% - 1px));
 }
 
 [data-role="carousel"] .carousel-control:focus-visible{
@@ -98,7 +100,7 @@
 [data-role="carousel"] .carousel-control:disabled{
   opacity: .45;
   cursor: not-allowed;
-  transform: none;
+  transform: translate(var(--carousel-control-translate-x, 0), -50%);
 }
 
 [data-role="carousel"] .carousel-control-icon{

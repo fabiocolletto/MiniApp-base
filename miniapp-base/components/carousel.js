@@ -128,12 +128,28 @@
   function updateControls(instance){
     var total = instance.items.length;
     var step = instance.currentPerView || 1;
+    var viewport = instance.viewport;
     var start = getFirstVisibleIndex(instance);
+    var maxStart = Math.max(0, total - step);
+    var hasOverflow = !!viewport && (viewport.scrollWidth - viewport.clientWidth) > 1;
+    var shouldHide = !hasOverflow || total <= step;
     if(instance.prevButton){
-      instance.prevButton.disabled = start <= 0;
+      instance.prevButton.hidden = shouldHide;
+      instance.prevButton.disabled = shouldHide || start <= 0;
+      if(shouldHide){
+        instance.prevButton.setAttribute('aria-hidden', 'true');
+      }else{
+        instance.prevButton.removeAttribute('aria-hidden');
+      }
     }
     if(instance.nextButton){
-      instance.nextButton.disabled = start >= Math.max(0, total - step);
+      instance.nextButton.hidden = shouldHide;
+      instance.nextButton.disabled = shouldHide || start >= maxStart;
+      if(shouldHide){
+        instance.nextButton.setAttribute('aria-hidden', 'true');
+      }else{
+        instance.nextButton.removeAttribute('aria-hidden');
+      }
     }
   }
 
