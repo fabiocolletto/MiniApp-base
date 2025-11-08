@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel Prefeito — Design Modular</title>
+  <title>Painel Prefeito — Dashboard de Indicadores (v1.0)</title>
   
   <!-- Carrega a biblioteca Google Charts -->
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -22,28 +22,28 @@
         onerror="loadFallback('main')">
 
   <style>
-    /* Estilos Mínimos: Apenas utilitários e ajustes não-estruturais. */
+    /* Estilos Mínimos */
     body { 
       margin: 0; 
       padding: 0; 
       overflow-x: hidden; 
       background-color: var(--background-page); 
       color: var(--text-color-primary);
-      font-family: 'Inter', sans-serif; /* Fallback font */
+      font-family: 'Inter', sans-serif;
     }
     
-    /* Garante que o container do gráfico ocupe o espaço para o Google Charts */
     .chart-container { 
       height: 100%; 
     } 
 
-    /* Estilos para os cards de KPI */
+    /* Ajustes específicos de layout */
     .kpi-card p { margin: 0; }
     .kpi-card { 
       min-width: 260px; 
       display: flex; 
       flex-direction: column; 
       justify-content: space-between;
+      gap: 8px; /* Adiciona um pequeno gap entre os elementos */
     }
 
     /* Estilo para o indicador de versão (para que se pareça com uma tag/pill) */
@@ -53,6 +53,7 @@
         border-radius: 4px; /* var(--radius-s) */
         margin-left: 12px; /* var(--space-3) */
         font-weight: 500;
+        user-select: none;
     }
     .version-indicator.temp {
         background-color: #f59e0b; /* Amarelo/Warn */
@@ -61,6 +62,21 @@
     .version-indicator.main {
         background-color: #3b82f6; /* Azul/Info */
         color: white; 
+    }
+
+    /* Sidebar - Ícones para os painéis */
+    .icon-kpi {
+      font-size: 1.2rem;
+      margin-right: 4px;
+    }
+
+    /* Responsividade da Sidebar */
+    @media (max-width: 768px) {
+      .version-indicator {
+        margin-left: 8px;
+        padding: 2px 4px;
+        font-size: 0.65rem;
+      }
     }
   </style>
 </head>
@@ -76,14 +92,18 @@
       </button>
 
       <ul class="nav-list">
-        <li><a href="#" class="nav-item active"><span class="app-icon">🏠</span> <span>Início</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">📈</span> <span>Relatórios</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">🗺️</span> <span>Geolocalização</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">⚙️</span> <span>Configurações</span></a></li>
+        <li><a href="#" class="nav-item active"><span class="app-icon">🏠</span> <span>Dashboard Geral</span></a></li>
+        <li class="separator">Painéis de KPI</li>
+        <li><a href="#" class="nav-item"><span class="icon-kpi">🥇</span> <span>K01–K05 (Serviços Essenciais)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="icon-kpi">🥈</span> <span>K06–K10 (Gestão e Finanças)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="icon-kpi">🥉</span> <span>K11–K15 (Infraestrutura)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="icon-kpi">🏅</span> <span>K16–K20 (Social e Cultural)</span></a></li>
+        <li class="separator">Pessoa</li>
+        <li><a href="#" class="nav-item"><span class="app-icon">👤</span> <span>Variáveis Persona (P01–P20)</span></a></li>
       </ul>
       
       <div style="padding: 0 var(--space-4); font-size: var(--font-size-s); color: var(--text-color-muted);">
-        v1.0.0
+        MiniApp v1.0.0
       </div>
     </aside>
 
@@ -93,58 +113,72 @@
       <!-- HEADER FIXO -->
       <header>
         <div class="header-title-text">
-          <h1>Painel de Indicadores</h1>
+          <h1>Dashboard de Indicadores Transversais</h1>
           <p class="subtitle-with-version">
-            MiniApp Prefeito 
+            KPIs (K01–K20) / Escala 1-5 
             <!-- INDICADOR DE VERSÃO (Será preenchido pelo JS) -->
             <span id="version-status" class="version-indicator">Carregando...</span>
           </p>
         </div>
       </header>
 
-      <!-- SEÇÃO DE CONTEÚDO (DEMONSTRAÇÃO DE CLASSES) -->
+      <!-- SEÇÃO DE CONTEÚDO -->
       
-      <!-- CARROSSEL DE KPI'S - Usa classes 'carousel', 'card', 'kpi-value' e 'tag' -->
-      <section class="carousel" style="min-height: 120px; margin-top: 24px; /* Ajuste para o padding-top do main-content */">
-        <!-- Card 1: Primary Brand Color -->
+      <!-- CARROSSEL DE KPI'S (K01, K06, K11 - Exemplos dos 3 Painéis) -->
+      <section class="carousel" style="min-height: 140px; margin-top: 24px;">
+        
+        <!-- Card 1: K01 - Saúde (Alto) -->
         <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">Aprovação Média</p>
-            <p class="kpi-value">78%</p> 
-            <span class="tag success">Estável</span>
+            <p class="subtitle" style="color: var(--text-color-muted);">K01: Satisfação c/ Saúde (Setor 1)</p>
+            <p class="kpi-value success">4.2</p> 
+            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+            <span class="tag success">Excelente</span>
         </article>
-        <!-- Card 2: Warning Color -->
+        
+        <!-- Card 2: K06 - Planejamento/Finanças (Médio) -->
         <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">Tempo Resolução</p>
-            <p class="kpi-value warn">4.2 dias</p>
-            <span class="tag warn">Atraso</span>
+            <p class="subtitle" style="color: var(--text-color-muted);">K06: Desempenho Administrativo (Setor 6)</p>
+            <p class="kpi-value warn">3.1</p>
+            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+            <span class="tag warn">Atenção</span>
         </article>
-        <!-- Card 3: Danger Color -->
+        
+        <!-- Card 3: K11 - Obras Públicas e Infraestrutura (Baixo) -->
         <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">Reclamações</p>
-            <p class="kpi-value danger">1.250</p>
-            <span class="tag danger">Alto Volume</span>
+            <p class="subtitle" style="color: var(--text-color-muted);">K11: Qualidade da Infraestrutura (Setor 5)</p>
+            <p class="kpi-value danger">2.5</p>
+            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+            <span class="tag danger">Crítico</span>
+        </article>
+
+        <!-- Card 4: P01 - Variavel de Persona (Exemplo de Número) -->
+        <article class="card kpi-card">
+            <p class="subtitle" style="color: var(--text-color-muted);">P01: Idade Média do Participante</p>
+            <p class="kpi-value info">38 anos</p>
+            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Variável Persona (P01)</p>
+            <span class="tag info">Dados Demográficos</span>
         </article>
       </section>
       
-      <!-- GRID DE GRÁFICOS - Usa a classe 'grid' -->
+      <!-- GRID DE GRÁFICOS (Foco em K01-K05 e Comparativo Setorial) -->
       <main class="grid" aria-live="polite" style="margin-top: 24px;">
         
-        <!-- Gráfico de Linha -->
+        <!-- Gráfico de Linha: Evolução da Satisfação ao Longo do Tempo -->
         <article class="card chart-card">
-          <div class="chart-header"><h3>Qualidade do Serviço</h3></div>
+          <div class="chart-header"><h3>Evolução da Satisfação por Setor (1-5)</h3></div>
           <div id="chart_line" class="chart-container"></div>
         </article>
 
-        <!-- Gráfico de Barra -->
+        <!-- Gráfico de Barra: Comparativo de Satisfação Média (K06-K10) -->
         <article class="card chart-card">
-          <div class="chart-header"><h3>Tempo Médio de Resolução</h3></div>
+          <div class="chart-header"><h3>Comparativo de Satisfação Média (Painel K06-K10)</h3></div>
           <div id="chart_bar" class="chart-container"></div>
         </article>
         
         <!-- Ação em Destaque -->
         <article class="card full-width app-card" style="min-height: auto; flex-direction: row; align-items: center; justify-content: space-between;">
-          <h3>Relatório Detalhado de Resoluções</h3>
-          <a href="#" class="btn primary">Ver Planilha Completa</a>
+          <h3>Relatório Detalhado de Resoluções e Comentários (K01-K20)</h3>
+          <a href="#" class="btn primary">Exportar Dados Brutos</a>
         </article>
         
       </main>
@@ -162,7 +196,7 @@
         if (stylesLoaded) return; // Se já carregou, ignora outros eventos
 
         stylesLoaded = true;
-        VERSION_STATUS_ELEMENT.textContent = `CSS: ${version}`;
+        VERSION_STATUS_ELEMENT.textContent = `CSS: Branch ${version}`;
         VERSION_STATUS_ELEMENT.classList.remove('temp', 'main');
         
         if (success) {
@@ -173,10 +207,11 @@
                 console.warn('Design System carregado da branch MAIN (Fallback).');
             }
         } else {
-            VERSION_STATUS_ELEMENT.textContent = 'CSS: ERRO';
+            VERSION_STATUS_ELEMENT.textContent = 'CSS: ERRO FATAL';
             VERSION_STATUS_ELEMENT.style.backgroundColor = 'red';
             console.error('Falha ao carregar o Design System de ambas as fontes.');
         }
+        
         // Uma vez que o CSS está carregado, os gráficos podem ser desenhados.
         google.charts.setOnLoadCallback(drawAllCharts);
     }
@@ -186,11 +221,10 @@
     document.getElementById('styles-main').onload = () => updateLoadStatus('main');
 
 
-    // Função que é chamada em caso de erro no carregamento da branch temporária
-    // Se o 'temp' falhar, garantimos que o 'main' tente carregar (já está no HTML)
+    // Função que é chamada em caso de erro no carregamento
     function loadFallback(failedVersion) {
         if (failedVersion === 'temp') {
-            console.warn('Falha ao carregar branch TEMPORÁRIA. Aguardando fallback MAIN...');
+            console.warn('Falha ao carregar branch TEMPORÁRIA. O Fallback MAIN deve tentar carregar em seguida.');
         } else if (failedVersion === 'main') {
             // Se até o main falhar, exibe erro final
             updateLoadStatus('main', false);
@@ -215,52 +249,56 @@
 
     // === Lógica dos Gráficos (Google Charts) ===
     google.charts.load('current', {'packages':['corechart', 'bar']});
-    // O callback principal agora é chamado após o carregamento bem-sucedido do CSS.
 
-    // Helper para obter variáveis CSS, garantindo que as cores do tema sejam usadas nos gráficos
-    const getCssVar = (name) => {
+    // Helper para obter variáveis CSS, essencial para o tema dinâmico
+    const getCssVar = (name, fallback) => {
         try {
-            // Tenta obter do body, onde as variáveis do tema estão aplicadas
-            return getComputedStyle(document.body).getPropertyValue(name).trim();
+            const value = getComputedStyle(document.body).getPropertyValue(name).trim();
+            return value || fallback;
         } catch (e) {
-            // Fallback para cores fixas se a variável não estiver disponível (CSS não carregado)
-            if (name === '--color-brand-secondary') return '#0b57d0'; 
-            if (name === '--color-brand-primary') return '#ff7a00';
-            if (name === '--color-accent-green') return '#16a34a'; 
-            if (name === '--color-danger-red') return '#dc2626';
-            if (name === '--color-warning-yellow') return '#f59e0b';
-            if (name === '--text-color-muted') return '#64748b';
-            if (name === '--text-color-primary') return '#0f172a';
-            return '#000000'; 
+            return fallback || '#000000'; 
         }
     };
 
     function drawAllCharts() {
+        // Verifica se os elementos existem antes de tentar desenhar
         if (document.getElementById('chart_line')) drawLineChart();
         if (document.getElementById('chart_bar')) drawBarChart();
     }
 
+    // Gráfico de Linha: Evolução de Satisfação (1-5) - Setores 1, 2, 3
     function drawLineChart() {
         const data = google.visualization.arrayToDataTable([
-            ['Mês', 'Saúde', 'Educação', 'Transporte'],
-            ['Abr', 68, 80, 55], ['Mai', 72, 85, 60], ['Jun', 75, 82, 65], 
-            ['Jul', 79, 88, 70], ['Ago', 82, 90, 75], ['Set', 85, 92, 80]
+            ['Mês', 'Saúde (Setor 1)', 'Educação (Setor 2)', 'Mobilidade (Setor 3)'],
+            ['Abr', 4.0, 3.8, 3.0], 
+            ['Mai', 4.2, 3.9, 3.2], 
+            ['Jun', 4.3, 4.1, 3.5], 
+            ['Jul', 4.1, 4.0, 3.6], 
+            ['Ago', 4.2, 4.2, 3.8], 
+            ['Set', 4.4, 4.3, 3.9]
         ]);
         
         const options = {
-            hAxis: { title: 'Mês', textStyle: { color: getCssVar('--text-color-muted') } },
+            hAxis: { 
+                title: 'Mês', 
+                textStyle: { color: getCssVar('--text-color-muted', '#64748b') } 
+            },
             vAxis: { 
-                title: 'Aprovação (%)', 
-                viewWindow: { min: 50, max: 100 }, 
-                format: '#\'%\'', 
-                textStyle: { color: getCssVar('--text-color-muted') } 
+                title: 'Nível (1-5)', 
+                viewWindow: { min: 1, max: 5 }, 
+                format: 'decimal', // Exibe o valor de 1 a 5
+                textStyle: { color: getCssVar('--text-color-muted', '#64748b') } 
             },
             legend: { 
                 position: 'bottom', 
-                textStyle: { color: getCssVar('--text-color-primary')} 
+                textStyle: { color: getCssVar('--text-color-primary', '#0f172a')} 
             },
-            // Usando cores da marca e feedback do Design System
-            colors: [getCssVar('--color-brand-secondary'), getCssVar('--color-brand-primary'), getCssVar('--color-accent-green')],
+            // Cores: Padrão, Secundária, e uma cor de feedback
+            colors: [
+                getCssVar('--color-accent-green', '#16a34a'), 
+                getCssVar('--color-brand-secondary', '#0b57d0'), 
+                getCssVar('--color-brand-primary', '#ff7a00')
+            ],
             chartArea: { width: '90%', height: '70%' },
             backgroundColor: 'transparent',
             animation: { duration: 1000, easing: 'out', startup: true }
@@ -269,26 +307,28 @@
         chart.draw(data, options);
     }
 
+    // Gráfico de Barra: Comparativo de Satisfação Média (K06-K10)
     function drawBarChart() {
         const data = google.visualization.arrayToDataTable([
-            ['Secretaria', 'Dias', { role: 'style' }],
-            // Usando cores de feedback do Design System
-            ['Saúde', 3.5, getCssVar('--color-danger-red')],
-            ['Educação', 2.1, getCssVar('--color-accent-green')], 
-            ['Trânsito', 5.8, getCssVar('--color-warning-yellow')],
-            ['Urbanismo', 4.2, getCssVar('--color-brand-secondary')]
+            ['Setor', 'Satisfação Média (1-5)', { role: 'style' }],
+            // Simulação de cores baseada no resultado (verde=bom, amarelo=alerta, vermelho=crítico)
+            ['Planejamento', 3.1, getCssVar('--color-warning-yellow', '#f59e0b')],
+            ['Ass. Social', 3.7, getCssVar('--color-accent-green', '#16a34a')], 
+            ['Desenvolvimento', 3.5, getCssVar('--color-brand-secondary', '#0b57d0')],
+            ['Meio Ambiente', 2.9, getCssVar('--color-danger-red', '#dc2626')]
         ]);
 
         const options = {
-            title: 'Tempo de Resolução (Dias)',
+            title: 'Média dos KPIs K06-K10',
             chartArea: { width: '70%', height: '80%' },
             hAxis: { 
-                title: 'Dias para Conclusão', 
-                minValue: 0, 
-                textStyle: { color: getCssVar('--text-color-muted') } 
+                title: 'Nível (1-5)', 
+                minValue: 1, 
+                maxValue: 5,
+                textStyle: { color: getCssVar('--text-color-muted', '#64748b') } 
             },
             vAxis: { 
-                textStyle: { color: getCssVar('--text-color-muted') } 
+                textStyle: { color: getCssVar('--text-color-muted', '#64748b') } 
             },
             legend: { position: 'none' },
             backgroundColor: 'transparent',
@@ -301,22 +341,20 @@
     // Garante que os gráficos sejam redesenhados ao mudar o tamanho da janela
     window.addEventListener('resize', drawAllCharts, false);
 
-    // Tenta forçar o fallback caso os eventos onload/onerror não disparem imediatamente (iframe/cache issues)
+    // Tenta forçar o fallback caso os eventos onload/onerror não disparem imediatamente
     window.addEventListener('load', () => {
         setTimeout(() => {
             if (!stylesLoaded) {
                 const tempLink = document.getElementById('styles-temp');
                 const mainLink = document.getElementById('styles-main');
                 
-                // Se o temp não carregou, ele provavelmente falhou. Força a verificação do main.
-                // Não há uma maneira limpa de verificar se um stylesheet carregou via JS em todos os cenários sem um evento.
-                // A abordagem mais segura é confiar nos eventos onload/onerror, mas adicionamos um timeout para tentar o fallback visual.
-                if (mainLink.sheet) {
-                   updateLoadStatus('main');
-                } else if (tempLink.sheet) {
+                // Verifica o status de carregamento via `sheet` (pode não funcionar em todos os navegadores/ambientes)
+                if (tempLink.sheet) {
                    updateLoadStatus('temp');
+                } else if (mainLink.sheet) {
+                   updateLoadStatus('main');
                 } else {
-                   // Última chance: se nada carregou, força o status de erro
+                   // Se nada carregou, força o status de erro (fallback de último recurso)
                    updateLoadStatus('main', false);
                 }
             }
