@@ -1,11 +1,6 @@
 /* ========================================================== */
 /* ETAPA 1: ÁTOMOS (TOKENS PRIMITIVOS) */
 /* ========================================================== */
-/*
- * A "paleta" central. Valores brutos, sem propósito.
- * Esta é a única seção que você edita para "testar"
- * novas fontes, cores ou espaçamentos.
-*/
 :root {
   /* --- Átomos de Cor: Marca --- */
   --color-brand-primary: #ff7a00;
@@ -91,6 +86,11 @@
   --pill-font-size: var(--font-size-m);
   --pill-padding: var(--space-2) var(--space-3);
   --pill-radius: var(--radius-full);
+
+  /* --- TOKENS DE LAYOUT ESTRUTURAL (Movidos de components/sidebar.css) --- */
+  --sidebar-width-open: 240px;
+  --sidebar-width-closed: 64px; 
+  --header-height: 60px;
 }
 
 /* --- Dark Theme Tokens --- */
@@ -118,6 +118,18 @@ html[data-theme="dark"] {
   --tag-primary-border: 1px solid var(--color-brand-secondary);
   --tag-primary-text: var(--color-light-solid);
 }
+/* Tag Success */
+:root {
+  --tag-success-background: var(--color-accent-green);
+  --tag-success-border: 1px solid var(--color-accent-green);
+  --tag-success-text: var(--color-light-solid);
+}
+/* Tag Danger */
+:root {
+  --tag-danger-background: var(--color-danger-red);
+  --tag-danger-border: 1px solid var(--color-danger-red);
+  --tag-danger-text: var(--color-light-solid);
+}
 
 /* Pill Warn */
 :root {
@@ -143,7 +155,8 @@ body {
   font-family: 'Inter', sans-serif;
   color: var(--text-color-primary);
   margin: 0;
-  padding: var(--space-6);
+  /* Removido o padding: var(--space-6); para ser controlado pelo #main-content */
+  padding: 0;
   background: var(--background-page);
 }
 
@@ -153,7 +166,7 @@ hr {
   margin: var(--space-6) 0;
 }
 
-/* --- Organismo: Header/Toolbar --- */
+/* --- Organismo: Header/Toolbar (para telas pequenas/dentro do Main Content) --- */
 header {
   display: flex;
   flex-direction: column;
@@ -203,14 +216,16 @@ header .subtitle {
   flex-direction: column;
 }
 
-/* --- Organismo: CSS GRID (Para a área principal - <main>) --- */
+/* --- Organismo: CSS GRID (Para Gráficos e Cards) --- */
 .grid { 
   display: grid; 
   grid-template-columns: 1fr; /* Padrão Mobile (1 coluna) */
   gap: var(--space-4); 
 }
 @media (min-width: 768px) { 
-  .grid { grid-template-columns: repeat(3, minmax(250px, 1fr)); } /* Desktop (3 colunas) */
+  /* 2 colunas para gráficos e cards */
+  .grid { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); } 
+  .grid .full-width { grid-column: 1 / -1; } /* Item que ocupa toda a largura */
 }
 
 
@@ -221,34 +236,171 @@ header .subtitle {
   gap: var(--space-4); 
   scroll-snap-type: x mandatory; /* Força o "snap" */
   -webkit-overflow-scrolling: touch; /* Melhora a rolagem em iOS */
-  padding-bottom: var(--space-2); /* Espaço para sombra ou indicador */
+  padding-bottom: var(--space-2); 
 }
 /* Item do Carrossel (KPI Card) */
 .carousel > .card {
   flex-shrink: 0; 
-  width: 90%; /* Garante que 'grude' em um item visível no mobile */
-  scroll-snap-align: start; /* Alinha o item ao início do contêiner */
+  width: 90%; 
+  scroll-snap-align: start; 
   padding: var(--space-4); 
-  /* Estilo KPI: */
   text-align: center; 
-}
-.kpi-value { 
-  font-size: 2.2rem; 
-  font-weight: 700; 
-  color: var(--color-brand-primary); 
-  margin: var(--space-1) 0; 
 }
 
 /* Responsividade do Carrossel (Desktop) */
 @media (min-width: 768px) { 
-  /* Exibir ~3 cards no desktop */
-  .carousel > .card { width: calc(33.33% - var(--space-4)); } 
+  .carousel > .card { width: calc(25% - var(--space-4)); } /* Exibir ~4 cards no desktop */
 }
 
-/* Ocultar barra de rolagem (opcional para estética moderna) */
+/* Ocultar barra de rolagem (opcional) */
 .carousel::-webkit-scrollbar { display: none; }
 .carousel { -ms-overflow-style: none; scrollbar-width: none; }
 
+
+/* ========================================================== */
+/* ESTILOS DE LAYOUT PRINCIPAL (SIDEBAR E HEADER FIXO) - MOVIDOS DE sidebar.css */
+/* ========================================================== */
+
+/* CONTAINER GERAL (Gerencia o estado da Sidebar) */
+#app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR (Navegação lateral) */
+#sidebar {
+  width: var(--sidebar-width-open);
+  flex-shrink: 0; /* Evita que a sidebar encolha */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease-in-out;
+  padding: var(--space-4) 0;
+  background: var(--background-surface);
+  border-right: var(--border-default); 
+  box-shadow: var(--box-shadow-default);
+}
+
+/* CONTEÚDO PRINCIPAL */
+#main-content {
+  flex-grow: 1;
+  padding: var(--space-4);
+  padding-top: var(--header-height); /* Offset para o header fixo */
+  overflow-y: auto;
+}
+
+/* HEADER FIXO */
+#main-content > header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sidebar-width-open); /* Posição inicial: após a sidebar aberta */
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  background: var(--background-page);
+  border-bottom: var(--border-default);
+  padding: 0 var(--space-4);
+  z-index: 10;
+  transition: left 0.3s ease-in-out; 
+}
+/* Sobreescreve o padding vertical padrão do header para o fixed header */
+#main-content > header {
+  padding-top: 0;
+  padding-bottom: 0;
+  flex-direction: row;
+}
+
+
+/* ========================================================== */
+/* ESTADO FECHADO (MODIFICADORES .closed)                     */
+/* ========================================================== */
+
+/* Reduz a largura da sidebar e ajusta a posição do header */
+#app-wrapper.closed #sidebar { 
+  width: var(--sidebar-width-closed); 
+}
+
+#app-wrapper.closed #main-content > header { 
+  left: var(--sidebar-width-closed); 
+}
+
+/* Oculta o texto dos itens de navegação */
+#app-wrapper.closed .nav-item span:not(.app-icon) { 
+  display: none; 
+}
+
+/* Centraliza os ícones na sidebar fechada */
+#app-wrapper.closed .nav-item { 
+  justify-content: center; 
+}
+
+/* Lógica de Troca de Ícones (X fecha, ☰ abre) */
+#app-wrapper.closed #menu-close-icon { 
+  display: none; 
+}
+#menu-open-icon { 
+  display: none; 
+}
+#app-wrapper.closed #menu-open-icon { 
+  display: inline; 
+}
+
+/* ========================================================== */
+/* ESTILOS INTERNOS DA SIDEBAR E HEADER                       */
+/* ========================================================== */
+
+/* Lista de Navegação */
+.nav-list { 
+  list-style: none; 
+  padding: var(--space-4) 0; 
+  margin: 0; 
+  flex-grow: 1; 
+}
+
+.nav-item {
+  display: flex; 
+  align-items: center; 
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4); /* Usa tokens de espaçamento */
+  text-decoration: none;
+  color: var(--text-color-primary); /* Usa token de cor primária */
+  transition: background 0.2s;
+}
+
+.nav-item:hover { 
+  background: var(--background-surface-alternate); /* Usa token de fundo alternativo */
+}
+
+.nav-item.active {
+  background: var(--color-brand-secondary); /* Usa token de cor de marca */
+  color: var(--color-light-solid); /* Texto branco garantido */
+  font-weight: 600;
+}
+
+/* Botão de Toggle do Menu */
+.btn-toggle { 
+  background: none; 
+  border: none; 
+  cursor: pointer; 
+  padding: var(--space-4); 
+  color: var(--text-color-primary); 
+  align-self: flex-start;
+}
+/* Ícones já definidos em .app-icon no fim do arquivo */
+
+/* Estilos do Título do Header */
+.header-title-text h1 { 
+  margin: 0; 
+  font-size: 1.25rem; 
+}
+.header-title-text p { 
+  margin: 0; 
+  font-size: 0.875rem; 
+  color: var(--text-color-muted); 
+}
 
 /* ========================================================== */
 /* ETAPA 4: MOLÉCULAS (COMPONENTES) */
@@ -278,11 +430,11 @@ header .subtitle {
   color: var(--color-light-solid);
 }
 .btn.primary:hover {
-  background: #0849a9; /* Tom mais escuro */
+  background: #0849a9; 
   border-color: #0849a9;
 }
 
-/* --- Molécula: Card --- */
+/* --- Molécula: Card & Gráfico --- */
 .card {
   background: var(--background-surface);
   border: var(--border-default);
@@ -290,35 +442,48 @@ header .subtitle {
   box-shadow: var(--box-shadow-default);
   padding: var(--space-4);
   color: var(--text-color-primary);
-}
-.card h3 {
-  margin: 0 0 var(--space-1) 0;
-  font-size: var(--font-size-l);
-}
-.card p {
-  margin: 0;
-  color: var(--text-color-muted);
-  font-size: var(--font-size-m);
+  min-height: 100%; /* Garante altura uniforme no grid */
 }
 
-/* Card Específico para o Grid Principal */
+/* Card KPI (Valores de Indicadores) */
+.kpi-card p { margin: 0; }
+.kpi-value { 
+  font-size: 2.2rem; /* Alterado de 2rem para 2.2rem (token) */
+  font-weight: 700; 
+  color: var(--color-brand-primary); /* Default color (Primary Brand) */
+  margin: var(--space-1) 0; 
+}
+.kpi-value.good { color: var(--color-accent-green); }
+.kpi-value.warn { color: var(--color-warning-yellow); }
+.kpi-value.danger { color: var(--color-danger-red); }
+
+/* Card de Gráfico */
+.chart-card {
+  padding: var(--space-4) var(--space-4) var(--space-2) var(--space-4); /* Ajuste o padding inferior */
+  display: flex;
+  flex-direction: column;
+}
+.chart-header h3 {
+  margin-top: 0;
+  font-size: var(--font-size-l);
+}
+.chart-container {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  min-height: 250px; /* Altura mínima para o gráfico */
+}
+
+/* Card App (Fundo do Grid) */
 .app-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-.app-card .row {
-  align-items: flex-start;
+  height: auto;
 }
 .app-card .actions {
-  margin-top: auto; /* Empurra ações para o fundo do card */
+  margin-top: auto; 
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
-}
-.app-card .actions .btn {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-m);
 }
 
 /* --- Molécula: Pill (Aviso) --- */
@@ -331,15 +496,12 @@ header .subtitle {
   font-size: var(--pill-font-size);
 }
 .pill.warn {
-  background: var(--pill-warn-background);
-  border: var(--pill-warn-border);
-  color: var(--pill-warn-text);
+  background: var(--color-warning-yellow);
+  border: 1px solid var(--color-warning-yellow);
+  color: var(--color-light-text-primary);
 }
-.pill.info {
-  background: var(--pill-info-background);
-  border: var(--pill-info-border);
-  color: var(--pill-info-text);
-}
+/* ... Adicione outras variações de Pill conforme seu Design System ... */
+
 
 /* --- Molécula: Tag --- */
 .tag {
@@ -348,16 +510,32 @@ header .subtitle {
   gap: var(--space-1);
   padding: var(--tag-padding);
   font-size: var(--tag-font-size);
-  background: var(--tag-background, var(--background-surface-alternate));
-  border: var(--tag-border, var(--border-default));
-  color: var(--tag-text, var(--text-color-strong));
-  border-radius: var(--tag-radius);
+  background: var(--background-surface-alternate);
+  border: var(--border-default);
+  color: var(--text-color-strong);
+  border-radius: var(--radius-s);
 }
 .tag.primary {
   background: var(--tag-primary-background);
   border: var(--tag-primary-border);
   color: var(--tag-primary-text);
 }
+.tag.success {
+  background: var(--tag-success-background);
+  border: var(--tag-success-border);
+  color: var(--tag-success-text);
+}
+.tag.danger {
+  background: var(--tag-danger-background);
+  border: var(--tag-danger-border);
+  color: var(--tag-danger-text);
+}
+.tag.warn {
+  background: var(--color-warning-yellow);
+  border: 1px solid var(--color-warning-yellow);
+  color: var(--color-light-text-primary);
+}
+
 
 /* ========================================================== */
 /* ETAPA 5: ÁTOMOS (UTILIDADES) */
@@ -366,5 +544,5 @@ header .subtitle {
   font-size: var(--font-size-l);
 }
 .app-icon.large {
-  font-size: var(--font-size-xl);
+  font-size: 1.5rem; /* Um pouco maior para o Card Grande */
 }
