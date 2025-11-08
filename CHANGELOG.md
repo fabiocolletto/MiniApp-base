@@ -14,3 +14,4 @@
 - Modal de tema respeita a seleção do usuário e o modo do sistema, salvando a preferência e fechando automaticamente após a troca.
 - Controles laterais dos carrosseis de KPI e persona passam a sobrepor os cartões, eliminando grandes lacunas e ocultando barras de rolagem.
 - Toolbar do painel em telas pequenas vira menu sanduíche sobreposto com botão de fechar e traduções para todos os idiomas suportados.
+- Token `--container` do layout base agora utiliza `clamp` responsivo para liberar 100% da largura disponível em telas estreitas.
