@@ -3,116 +3,327 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Município de Curitiba — Painel de Serviços Públicos</title>
-  
-  <!-- Encaminhamento CSS Corrigido (Assumindo que está no mesmo nível, ou ../miniapp-base/styles.css se estiver em uma subpasta como no seu print) -->
-  <!-- Usando o caminho relativo, pois é o padrão de MiniApps -->
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css"> 
+  <title>Painel Prefeito — Design Modular</title>
   
   <!-- Carrega a biblioteca Google Charts -->
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  
+  <!-- 1. VINCULAÇÃO DO STYLESHEET BASE (Design System) -->
+  <!-- Tenta carregar a branch temporária primeiro: fabiocolletto-patch-1 -->
+  <link rel="stylesheet" 
+        href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@fabiocolletto-patch-1/miniapp-base/styles.css"
+        id="styles-temp"
+        onerror="loadFallback('temp')">
+
+  <!-- 2. Fallback para a branch principal (main) -->
+  <link rel="stylesheet" 
+        href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@main/miniapp-base/styles.css" 
+        id="styles-main"
+        onerror="loadFallback('main')">
+
+  <style>
+    /* Estilos Mínimos: Apenas utilitários e ajustes não-estruturais. */
+    body { 
+      margin: 0; 
+      padding: 0; 
+      overflow-x: hidden; 
+      background-color: var(--background-page); 
+      color: var(--text-color-primary);
+      font-family: 'Inter', sans-serif; /* Fallback font */
+    }
+    
+    /* Garante que o container do gráfico ocupe o espaço para o Google Charts */
+    .chart-container { 
+      height: 100%; 
+    } 
+
+    /* Estilos para os cards de KPI */
+    .kpi-card p { margin: 0; }
+    .kpi-card { 
+      min-width: 260px; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between;
+    }
+
+    /* Estilo para o indicador de versão (para que se pareça com uma tag/pill) */
+    .version-indicator {
+        font-size: 0.75rem; /* var(--font-size-s) */
+        padding: 4px 8px; /* var(--space-1) var(--space-2) */
+        border-radius: 4px; /* var(--radius-s) */
+        margin-left: 12px; /* var(--space-3) */
+        font-weight: 500;
+    }
+    .version-indicator.temp {
+        background-color: #f59e0b; /* Amarelo/Warn */
+        color: #1f2937; /* Cor do texto escuro */
+    }
+    .version-indicator.main {
+        background-color: #3b82f6; /* Azul/Info */
+        color: white; 
+    }
+  </style>
 </head>
 <body>
-  
-  <header>
-    <div class="title">
-      <span class="app-icon large" aria-hidden="true">📊</span>
-      <div class="title-text">
-        <h1 data-i18n="app.title">Município de Curitiba — Painel de Serviços Públicos</h1>
-        <p class="subtitle">Análise e Desempenho em Tempo Real</p>
-      </div>
-      <div class="title-actions">
-        <button class="btn btn-icon" aria-label="Ajustes de Filtro">
-          <span class="app-icon" aria-hidden="true">⚙️</span>
-        </button>
-      </div>
-    </div>
-    
-    <nav class="toolbar" role="group" aria-label="Controles de exibição">
-      <div class="split" id="toolbar-split" role="group">
-        <a href="#" class="btn primary">
-          <span class="app-icon" aria-hidden="true">⭐</span>
-          Meus Favoritos
-        </a>
-        <a href="#" class="btn">
-          <span class="app-icon" aria-hidden="true">🔍</span>
-          Pesquisar Serviço
-        </a>
-      </div>
-    </nav>
-  </header>
 
-  <hr>
-
-  <!-- SEÇÃO DE KPIS: Carrossel CSS Scroll Snap (Função nativa) -->
-  <section id="kpi-bar" class="carousel" aria-label="Indicadores Chave de Desempenho">
+  <div id="app-wrapper">
     
-    <div class="card kpi-card">
-        <p class="subtitle">Taxa de Aprovação Média</p>
-        <p class="kpi-value good">78%</p>
-        <span class="tag success">Estável Mês</span>
-    </div>
-    <div class="card kpi-card">
-        <p class="subtitle">Tempo Médio de Resolução</p>
-        <p class="kpi-value warn">4.2 dias</p>
-        <span class="tag warn">+0.5 dias na Semana</span>
-    </div>
-    <div class="card kpi-card">
-        <p class="subtitle">Reclamações Abertas</p>
-        <p class="kpi-value danger">1.250</p>
-        <span class="tag danger">+12% na Semana</span>
-    </div>
-    <div class="card kpi-card">
-        <p class="subtitle">Atendimentos Agendados</p>
-        <p class="kpi-value">5.800</p>
-        <span class="tag info">Saúde e Educação</span>
-    </div>
-    
-  </section>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" role="navigation">
+      <button id="menu-toggle" class="btn-toggle" aria-label="Abrir e Fechar Menu">
+        <span class="app-icon" id="menu-close-icon">✖️</span>
+        <span class="app-icon" id="menu-open-icon">☰</span>
+      </button>
 
-  <hr>
+      <ul class="nav-list">
+        <li><a href="#" class="nav-item active"><span class="app-icon">🏠</span> <span>Início</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">📈</span> <span>Relatórios</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">🗺️</span> <span>Geolocalização</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">⚙️</span> <span>Configurações</span></a></li>
+      </ul>
+      
+      <div style="padding: 0 var(--space-4); font-size: var(--font-size-s); color: var(--text-color-muted);">
+        v1.0.0
+      </div>
+    </aside>
 
-  <!-- SEÇÃO DE GRÁFICOS: CSS Grid (Função nativa) -->
-  <main id="dashboard-charts" class="grid" aria-live="polite">
-    
-    <!-- Gráfico 1: Desempenho da Aprovação por Serviço (Google Bar Chart) -->
-    <article class="card chart-card">
-      <div class="chart-header">
-        <h3>Desempenho da Aprovação (Últimos 6 meses)</h3>
-      </div>
-      <div id="chart_line" class="chart-container">
-        <!-- O gráfico de linha será desenhado aqui -->
-      </div>
-    </article>
-
-    <!-- Gráfico 2: Tempo de Resolução por Secretaria (Google Column Chart) -->
-    <article class="card chart-card">
-      <div class="chart-header">
-        <h3>Tempo Médio de Resolução (por Secretaria)</h3>
-      </div>
-      <div id="chart_bar" class="chart-container">
-        <!-- O gráfico de barras será desenhado aqui -->
-      </div>
-    </article>
-    
-    <!-- Gráfico 3: Resumo de Ocorrências Abertas (Card de Dados Simples) -->
-    <article class="card app-card full-width">
-      <div class="row">
-        <span class="app-icon large" aria-hidden="true">📢</span>
-        <div class="col">
-          <h3>Resumo de Ocorrências Abertas</h3>
-          <p>Detalhes sobre a distribuição de reclamações por categoria.</p>
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div id="main-content">
+      
+      <!-- HEADER FIXO -->
+      <header>
+        <div class="header-title-text">
+          <h1>Painel de Indicadores</h1>
+          <p class="subtitle-with-version">
+            MiniApp Prefeito 
+            <!-- INDICADOR DE VERSÃO (Será preenchido pelo JS) -->
+            <span id="version-status" class="version-indicator">Carregando...</span>
+          </p>
         </div>
-      </div>
-      <div class="actions">
-        <a href="#" class="btn">Ver Detalhes</a>
-      </div>
-    </article>
+      </header>
+
+      <!-- SEÇÃO DE CONTEÚDO (DEMONSTRAÇÃO DE CLASSES) -->
+      
+      <!-- CARROSSEL DE KPI'S - Usa classes 'carousel', 'card', 'kpi-value' e 'tag' -->
+      <section class="carousel" style="min-height: 120px; margin-top: 24px; /* Ajuste para o padding-top do main-content */">
+        <!-- Card 1: Primary Brand Color -->
+        <article class="card kpi-card">
+            <p class="subtitle" style="color: var(--text-color-muted);">Aprovação Média</p>
+            <p class="kpi-value">78%</p> 
+            <span class="tag success">Estável</span>
+        </article>
+        <!-- Card 2: Warning Color -->
+        <article class="card kpi-card">
+            <p class="subtitle" style="color: var(--text-color-muted);">Tempo Resolução</p>
+            <p class="kpi-value warn">4.2 dias</p>
+            <span class="tag warn">Atraso</span>
+        </article>
+        <!-- Card 3: Danger Color -->
+        <article class="card kpi-card">
+            <p class="subtitle" style="color: var(--text-color-muted);">Reclamações</p>
+            <p class="kpi-value danger">1.250</p>
+            <span class="tag danger">Alto Volume</span>
+        </article>
+      </section>
+      
+      <!-- GRID DE GRÁFICOS - Usa a classe 'grid' -->
+      <main class="grid" aria-live="polite" style="margin-top: 24px;">
+        
+        <!-- Gráfico de Linha -->
+        <article class="card chart-card">
+          <div class="chart-header"><h3>Qualidade do Serviço</h3></div>
+          <div id="chart_line" class="chart-container"></div>
+        </article>
+
+        <!-- Gráfico de Barra -->
+        <article class="card chart-card">
+          <div class="chart-header"><h3>Tempo Médio de Resolução</h3></div>
+          <div id="chart_bar" class="chart-container"></div>
+        </article>
+        
+        <!-- Ação em Destaque -->
+        <article class="card full-width app-card" style="min-height: auto; flex-direction: row; align-items: center; justify-content: space-between;">
+          <h3>Relatório Detalhado de Resoluções</h3>
+          <a href="#" class="btn primary">Ver Planilha Completa</a>
+        </article>
+        
+      </main>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: TOGGLE, GRÁFICOS E LOAD CSS -->
+  <script>
+    const VERSION_STATUS_ELEMENT = document.getElementById('version-status');
+    let stylesLoaded = false;
+
+    // Função para atualizar o status de carregamento e o indicador visual
+    function updateLoadStatus(version, success = true) {
+        if (stylesLoaded) return; // Se já carregou, ignora outros eventos
+
+        stylesLoaded = true;
+        VERSION_STATUS_ELEMENT.textContent = `CSS: ${version}`;
+        VERSION_STATUS_ELEMENT.classList.remove('temp', 'main');
+        
+        if (success) {
+            VERSION_STATUS_ELEMENT.classList.add(version);
+            if (version === 'temp') {
+                console.log('Design System carregado da branch TEMPORÁRIA.');
+            } else {
+                console.warn('Design System carregado da branch MAIN (Fallback).');
+            }
+        } else {
+            VERSION_STATUS_ELEMENT.textContent = 'CSS: ERRO';
+            VERSION_STATUS_ELEMENT.style.backgroundColor = 'red';
+            console.error('Falha ao carregar o Design System de ambas as fontes.');
+        }
+        // Uma vez que o CSS está carregado, os gráficos podem ser desenhados.
+        google.charts.setOnLoadCallback(drawAllCharts);
+    }
     
-  </main>
-  
-  <!-- Inclui o script que desenha os gráficos -->
-  <script src="charts.js"></script>
+    // Configura listeners para o carregamento bem-sucedido
+    document.getElementById('styles-temp').onload = () => updateLoadStatus('temp');
+    document.getElementById('styles-main').onload = () => updateLoadStatus('main');
+
+
+    // Função que é chamada em caso de erro no carregamento da branch temporária
+    // Se o 'temp' falhar, garantimos que o 'main' tente carregar (já está no HTML)
+    function loadFallback(failedVersion) {
+        if (failedVersion === 'temp') {
+            console.warn('Falha ao carregar branch TEMPORÁRIA. Aguardando fallback MAIN...');
+        } else if (failedVersion === 'main') {
+            // Se até o main falhar, exibe erro final
+            updateLoadStatus('main', false);
+        }
+    }
+
+
+    // === Lógica do Toggle do Menu ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const wrapper = document.getElementById('app-wrapper');
+      const toggleButton = document.getElementById('menu-toggle');
+      
+      // Assume-se que o CSS da sidebar está carregado para definir o estado inicial
+      wrapper.classList.remove('closed'); 
+      
+      toggleButton.addEventListener('click', () => {
+        wrapper.classList.toggle('closed');
+        // Redesenha os gráficos para corrigir o tamanho após o toggle
+        drawAllCharts(); 
+      });
+    });
+
+    // === Lógica dos Gráficos (Google Charts) ===
+    google.charts.load('current', {'packages':['corechart', 'bar']});
+    // O callback principal agora é chamado após o carregamento bem-sucedido do CSS.
+
+    // Helper para obter variáveis CSS, garantindo que as cores do tema sejam usadas nos gráficos
+    const getCssVar = (name) => {
+        try {
+            // Tenta obter do body, onde as variáveis do tema estão aplicadas
+            return getComputedStyle(document.body).getPropertyValue(name).trim();
+        } catch (e) {
+            // Fallback para cores fixas se a variável não estiver disponível (CSS não carregado)
+            if (name === '--color-brand-secondary') return '#0b57d0'; 
+            if (name === '--color-brand-primary') return '#ff7a00';
+            if (name === '--color-accent-green') return '#16a34a'; 
+            if (name === '--color-danger-red') return '#dc2626';
+            if (name === '--color-warning-yellow') return '#f59e0b';
+            if (name === '--text-color-muted') return '#64748b';
+            if (name === '--text-color-primary') return '#0f172a';
+            return '#000000'; 
+        }
+    };
+
+    function drawAllCharts() {
+        if (document.getElementById('chart_line')) drawLineChart();
+        if (document.getElementById('chart_bar')) drawBarChart();
+    }
+
+    function drawLineChart() {
+        const data = google.visualization.arrayToDataTable([
+            ['Mês', 'Saúde', 'Educação', 'Transporte'],
+            ['Abr', 68, 80, 55], ['Mai', 72, 85, 60], ['Jun', 75, 82, 65], 
+            ['Jul', 79, 88, 70], ['Ago', 82, 90, 75], ['Set', 85, 92, 80]
+        ]);
+        
+        const options = {
+            hAxis: { title: 'Mês', textStyle: { color: getCssVar('--text-color-muted') } },
+            vAxis: { 
+                title: 'Aprovação (%)', 
+                viewWindow: { min: 50, max: 100 }, 
+                format: '#\'%\'', 
+                textStyle: { color: getCssVar('--text-color-muted') } 
+            },
+            legend: { 
+                position: 'bottom', 
+                textStyle: { color: getCssVar('--text-color-primary')} 
+            },
+            // Usando cores da marca e feedback do Design System
+            colors: [getCssVar('--color-brand-secondary'), getCssVar('--color-brand-primary'), getCssVar('--color-accent-green')],
+            chartArea: { width: '90%', height: '70%' },
+            backgroundColor: 'transparent',
+            animation: { duration: 1000, easing: 'out', startup: true }
+        };
+        const chart = new google.visualization.LineChart(document.getElementById('chart_line'));
+        chart.draw(data, options);
+    }
+
+    function drawBarChart() {
+        const data = google.visualization.arrayToDataTable([
+            ['Secretaria', 'Dias', { role: 'style' }],
+            // Usando cores de feedback do Design System
+            ['Saúde', 3.5, getCssVar('--color-danger-red')],
+            ['Educação', 2.1, getCssVar('--color-accent-green')], 
+            ['Trânsito', 5.8, getCssVar('--color-warning-yellow')],
+            ['Urbanismo', 4.2, getCssVar('--color-brand-secondary')]
+        ]);
+
+        const options = {
+            title: 'Tempo de Resolução (Dias)',
+            chartArea: { width: '70%', height: '80%' },
+            hAxis: { 
+                title: 'Dias para Conclusão', 
+                minValue: 0, 
+                textStyle: { color: getCssVar('--text-color-muted') } 
+            },
+            vAxis: { 
+                textStyle: { color: getCssVar('--text-color-muted') } 
+            },
+            legend: { position: 'none' },
+            backgroundColor: 'transparent',
+            animation: { duration: 1000, easing: 'out', startup: true }
+        };
+        const chart = new google.visualization.BarChart(document.getElementById('chart_bar'));
+        chart.draw(data, options);
+    }
+    
+    // Garante que os gráficos sejam redesenhados ao mudar o tamanho da janela
+    window.addEventListener('resize', drawAllCharts, false);
+
+    // Tenta forçar o fallback caso os eventos onload/onerror não disparem imediatamente (iframe/cache issues)
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            if (!stylesLoaded) {
+                const tempLink = document.getElementById('styles-temp');
+                const mainLink = document.getElementById('styles-main');
+                
+                // Se o temp não carregou, ele provavelmente falhou. Força a verificação do main.
+                // Não há uma maneira limpa de verificar se um stylesheet carregou via JS em todos os cenários sem um evento.
+                // A abordagem mais segura é confiar nos eventos onload/onerror, mas adicionamos um timeout para tentar o fallback visual.
+                if (mainLink.sheet) {
+                   updateLoadStatus('main');
+                } else if (tempLink.sheet) {
+                   updateLoadStatus('temp');
+                } else {
+                   // Última chance: se nada carregou, força o status de erro
+                   updateLoadStatus('main', false);
+                }
+            }
+        }, 3000); // 3 segundos para o CSS carregar
+    });
+
+  </script>
 
 </body>
 </html>
