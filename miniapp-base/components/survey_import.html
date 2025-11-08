@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferramenta de Importação de Pesquisas</title>
+    <!-- Carrega Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        .table-row-selected {
+            background-color: #eff6ff; /* Blue 50 */
+        }
+        .status-box {
+            min-height: 2.5rem; /* Garante que o box não colapse */
+        }
+        .disabled-row {
+            opacity: 0.6;
+            background-color: #f9fafb;
+            cursor: not-allowed;
+        }
+        .disabled-row:hover {
+            background-color: #f9fafb !important;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+            Ferramenta de Importação de Pesquisas
+        </h1>
+        
+        <!-- Mensagem de Status Global (para inicialização do DB) -->
+        <div id="globalStatus" class="mb-4 p-3 rounded-lg text-sm bg-blue-100 text-blue-800 hidden">
+            <!-- Usado para mensagens de inicialização do DB -->
+        </div>
+
+        <!-- STATUS DA MEMÓRIA LOCAL (IndexedDB) -->
+        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl shadow-inner p-6 mb-8">
+            <h2 class="text-xl font-bold text-indigo-800 mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                </svg>
+                Status da Memória Local (IndexedDB)
+            </h2>
+            
+            <div id="memoryStatusDisplay" class="text-3xl font-extrabold text-indigo-600 mb-4">
+                <!-- Count will be injected here -->
+                Carregando...
+            </div>
+            
+            <!-- Nova Tabela de Detalhes das Pesquisas Salvas -->
+            <div id="savedResearchesDetails" class="mt-4 hidden">
+                <h3 class="text-lg font-semibold text-indigo-700 mb-2">Pesquisas Salvas:</h3>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-indigo-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/4">ID</th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/2">Nome</th>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/4">Setor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="savedResearchesTableBody" class="bg-white divide-y divide-gray-100">
+                            <!-- Linhas inseridas por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                <button onclick="showUploadSection()" 
+                        id="showUploadButton"
+                        class="w-full sm:w-auto self-start bg-indigo-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                    Adicionar Pesquisas (Mostrar Formulário)
+                </button>
+                <button onclick="clearDatabaseAndReload()" 
+                        id="clearDbButton" disabled
+                        class="w-full sm:w-auto self-start bg-red-500 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 opacity-50 cursor-not-allowed">
+                    Limpar Toda a Memória Local
+                </button>
+            </div>
+        </div>
+
+        <!-- ETAPA 1: UPLOAD DE ARQUIVO E BOTÃO DE TESTE (OCULTA POR PADRÃO) -->
+        <div id="uploadSection" class="bg-white rounded-xl shadow-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">1. Carregar Dados</h2>
+            <div class="flex flex-col gap-4">
+                
+                <!-- Opção 1: Upload Real -->
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <input type="file" id="jsonFileInput" accept=".json" 
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-indigo-50 file:text-indigo-700
+                                  hover:file:bg-indigo-100"
+                           onchange="handleFileUpload()">
+                    
+                    <div id="fileStatus" class="status-box text-sm text-gray-500 italic w-full sm:w-auto">
+                        Aguardando upload de arquivo JSON...
+                    </div>
+                </div>
+
+                <!-- Opção 2: Carregar Dados de Teste -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-2">
+                    <button onclick="loadTestData()" 
+                            class="w-full sm:w-auto self-start bg-green-500 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                        Carregar Dados de Teste
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 2: SELEÇÃO DE PESQUISAS (VISUALIZAÇÃO DE TABELA) -->
+        <div id="selectionArea" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">2. Selecione as Pesquisas para Importar</h2>
+            <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 w-1/12">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" 
+                                       class="rounded text-indigo-600 border-gray-300 shadow-sm focus:ring-indigo-500">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                                ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">
+                                Nome da Pesquisa
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                                Setor
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                                Participantes
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="researchTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ÁREA DE AÇÃO E STATUS (BOTÃO CONTINUAR) -->
+        <div class="mt-8 p-4 bg-gray-100 rounded-xl shadow-inner flex justify-between items-center flex-wrap gap-4 hidden" id="actionArea">
+            <div id="actionStatusMessage" class="status-box text-sm text-gray-700 font-semibold">
+                0 pesquisas selecionadas.
+            </div>
+            <button id="importButton" onclick="continueImport()" disabled
+                    class="bg-gray-400 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 transform focus:outline-none opacity-50 cursor-not-allowed">
+                Importar Pesquisas Selecionadas
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais para armazenar o estado da aplicação
+        let loadedResearchData = [];
+        let existingResearchIds = new Set(); // Conjunto para verificação rápida
+        let db; // Variável para o objeto de banco de dados IndexedDB
+
+        const selectionArea = document.getElementById('selectionArea');
+        const actionArea = document.getElementById('actionArea');
+        const importButton = document.getElementById('importButton');
+        const actionStatusMessage = document.getElementById('actionStatusMessage');
+        const fileStatus = document.getElementById('fileStatus');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        const globalStatus = document.getElementById('globalStatus');
+        const memoryStatusDisplay = document.getElementById('memoryStatusDisplay'); 
+        const uploadSection = document.getElementById('uploadSection');
+        const savedResearchesDetails = document.getElementById('savedResearchesDetails'); // Novo elemento
+        const savedResearchesTableBody = document.getElementById('savedResearchesTableBody'); // Novo elemento
+
+        // Configurações do IndexedDB
+        const DB_NAME = 'ResearchDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'researches';
+        const KEY_PATH = 'researchId'; 
+
+        /**
+         * Dados de teste para simular o upload de arquivo.
+         */
+        const MOCK_DATA = [
+            // researchId será usado para verificação de duplicidade
+            { "researchId": "RES-TCH-001", "researchName": "Inovação e IA", "sector": "Tecnologia", "participants": [{}, {}, {}, {}] },
+            { "researchId": "RES-FIN-002", "researchName": "Crescimento Bancário", "sector": "Finanças", "participants": [{}, {}, {}] },
+            { "researchId": "RES-MKT-003", "researchName": "Tendências Digitais", "sector": "Marketing", "participants": [{}, {}, {}, {}, {}, {}] },
+            { "researchId": "RES-IND-004", "researchName": "Eficiência Produtiva", "sector": "Indústria", "participants": [{}] },
+            { "researchId": "RES-EDU-005", "researchName": "Adoção EAD", "sector": "Educação", "participants": [{}, {}, {}, {}, {}] },
+            // Novo item de teste para garantir que sempre haja um item novo
+            { "researchId": "RES-MAR-007", "researchName": "Marketing de Conteúdo 2026", "sector": "Marketing", "participants": [{}, {}] }
+        ];
+
+        // =======================================================
+        // LÓGICA DE INTERFACE
+        // =======================================================
+
+        /**
+         * Exibe a seção de upload de arquivos (Etapa 1).
+         */
+        function showUploadSection() {
+            uploadSection.classList.remove('hidden');
+        }
+
+        /**
+         * Renderiza o número de pesquisas salvas e habilita/desabilita o botão de limpar,
+         * e renderiza a lista de detalhes das pesquisas salvas.
+         */
+        function renderMemoryStatus() {
+            const count = existingResearchIds.size;
+            const clearButton = document.getElementById('clearDbButton');
+
+            if (count === 0) {
+                memoryStatusDisplay.innerHTML = `<span class="text-red-500">Nenhuma pesquisa salva</span>`;
+                clearButton.disabled = true;
+                clearButton.classList.add('opacity-50', 'cursor-not-allowed');
+                savedResearchesDetails.classList.add('hidden');
+                
+                // *** AVISO DE PERSISTÊNCIA NO CONSOLE ***
+                console.warn("=================================================");
+                console.warn("ATENÇÃO: IndexedDB encontrado VAZIO.");
+                console.warn("Se você importou pesquisas, mas o status está em zero APÓS a recarga,");
+                console.warn("você pode estar usando uma JANELA PRIVADA/ANÔNIMA. O IndexedDB NÃO persiste nesse modo.");
+                console.warn("=================================================");
+                
+            } else {
+                memoryStatusDisplay.innerHTML = `${count} <span class="text-lg font-normal">pesquisa(s) salva(s)</span>`;
+                clearButton.disabled = false;
+                clearButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                savedResearchesDetails.classList.remove('hidden');
+            }
+            console.log(`[STATUS] Total de pesquisas no IndexedDB após renderização: ${count}`);
+        }
+        
+        /**
+         * Renderiza a lista detalhada de pesquisas salvas no IndexedDB.
+         */
+        function renderSavedResearchesTable(researches) {
+            savedResearchesTableBody.innerHTML = '';
+            
+            if (researches.length === 0) {
+                savedResearchesTableBody.innerHTML = `<tr><td colspan="3" class="px-4 py-3 text-sm text-gray-500 text-center italic">Nenhuma pesquisa salva.</td></tr>`;
+                return;
+            }
+
+            researches.forEach(research => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-4 py-2 whitespace-nowrap text-sm font-mono text-gray-900">${research.researchId}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700 truncate max-w-xs">${research.researchName}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-600">${research.sector || 'N/A'}</td>
+                `;
+                savedResearchesTableBody.appendChild(row);
+            });
+        }
+
+
+        // =======================================================
+        // FUNÇÕES DO INDEXEDDB
+        // =======================================================
+        
+        /**
+         * Abre a conexão com o IndexedDB.
+         */
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) {
+                    globalStatus.textContent = "Seu navegador não suporta IndexedDB. A persistência de dados não funcionará.";
+                    globalStatus.classList.remove('hidden', 'bg-blue-100');
+                    globalStatus.classList.add('bg-red-100', 'text-red-800');
+                    renderMemoryStatus(); 
+                    return reject(new Error("IndexedDB not supported"));
+                }
+                
+                globalStatus.textContent = "Iniciando conexão com o banco de dados local...";
+                globalStatus.classList.remove('hidden');
+
+                const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    globalStatus.textContent = "Erro ao abrir o IndexedDB.";
+                    globalStatus.classList.remove('bg-blue-100', 'text-blue-800');
+                    globalStatus.classList.add('bg-red-100', 'text-red-800');
+                    console.error("IndexedDB error:", event.target.error);
+                    renderMemoryStatus(); 
+                    reject(event.target.error);
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    globalStatus.textContent = "Banco de dados local pronto. Carregando dados existentes...";
+                    // Chama a função para carregar IDs e todos os dados
+                    loadAllResearches().then(() => {
+                        renderMemoryStatus(); 
+                        resolve();
+                    }).catch(reject);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        // Cria a store (tabela) e define researchId como a chave
+                        db.createObjectStore(STORE_NAME, { keyPath: KEY_PATH });
+                    }
+                    globalStatus.textContent = "Configuração inicial do banco de dados concluída.";
+                };
+            });
+        }
+
+        /**
+         * Carrega todos os dados de pesquisas salvas, popula o cache de IDs e renderiza a tabela de detalhes.
+         */
+        function loadAllResearches() {
+            return new Promise((resolve, reject) => {
+                existingResearchIds.clear(); 
+                const savedResearches = []; 
+
+                if (!db) {
+                     console.error("[IndexedDB] Tentativa de loadAllResearches falhou: DB não está inicializado.");
+                     return resolve();
+                }
+
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                const request = store.getAll(); 
+
+                request.onsuccess = (event) => {
+                    const results = event.target.result;
+                    
+                    // --- LOG DE DIAGNÓSTICO IMPORTANTE ---
+                    console.log(`[IndexedDB] DADOS LIDOS DO INDEXEDDB: Encontradas ${results.length} pesquisas.`);
+                    if(results.length > 0) {
+                        console.log("Primeira pesquisa lida:", results[0].researchId, results[0].researchName);
+                    }
+                    // -------------------------------------
+
+                    results.forEach(research => {
+                        existingResearchIds.add(research.researchId); 
+                        savedResearches.push(research); 
+                    });
+                    
+                    renderSavedResearchesTable(savedResearches);
+
+                    globalStatus.innerHTML = `<span class="text-green-800 font-semibold">IndexedDB OK. ${existingResearchIds.size} pesquisas existentes carregadas.</span>`;
+                    renderMemoryStatus(); 
+                    setTimeout(() => globalStatus.classList.add('hidden'), 3000);
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    console.error("Erro ao carregar dados existentes:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        /**
+         * Salva um array de pesquisas no IndexedDB.
+         */
+        function saveResearches(researches) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                researches.forEach(research => {
+                    store.put(research); 
+                });
+
+                transaction.oncomplete = () => {
+                    // Este ponto indica que a escrita foi concluída
+                    console.log(`[IndexedDB] Transação de salvamento concluída com sucesso. ${researches.length} itens salvos/atualizados.`);
+                    resolve();
+                };
+
+                transaction.onerror = (event) => {
+                    console.error("[IndexedDB] Erro durante a transação de salvamento:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        /**
+         * Limpa a store (tabela) de pesquisas.
+         */
+        function clearDatabase() {
+            return new Promise((resolve, reject) => {
+                if (!db) return resolve(); 
+
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.clear();
+
+                request.onsuccess = () => {
+                    existingResearchIds.clear(); 
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        /**
+         * Limpa o DB e recarrega o status da UI (sem usar window.location.reload()).
+         */
+        function clearDatabaseAndReload() {
+            if (!confirm(`Tem certeza que deseja limpar as ${existingResearchIds.size} pesquisas salvas? Esta ação é irreversível.`)) {
+                return;
+            }
+            clearDatabase()
+                .then(() => {
+                    alert('Banco de dados local limpo com sucesso! A interface será atualizada.');
+                    resetUI(); // Chama o resetUI que, por sua vez, chama loadAllResearches
+                })
+                .catch(error => {
+                    alert(`Erro ao limpar o banco de dados: ${error.message}`);
+                });
+        }
+
+        // =======================================================
+        // LÓGICA DA APLICAÇÃO
+        // =======================================================
+
+        /**
+         * Carrega dados de teste diretamente, ignorando o upload.
+         */
+        async function loadTestData() {
+            if (!db) await openDB(); 
+            
+            jsonFileInput.value = '';
+            
+            loadedResearchData = MOCK_DATA;
+            fileStatus.innerHTML = `<span class="text-green-600 font-semibold">Dados de Teste Carregados!</span> (${loadedResearchData.length} pesquisas encontradas)`;
+            
+            selectionArea.classList.remove('hidden');
+            actionArea.classList.remove('hidden'); 
+            renderTable();
+        }
+
+        /**
+         * Lida com o upload do arquivo JSON pelo usuário.
+         */
+        async function handleFileUpload() {
+            if (!db) await openDB(); 
+
+            const file = jsonFileInput.files[0];
+            
+            if (!file) {
+                fileStatus.textContent = 'Nenhum arquivo selecionado.';
+                selectionArea.classList.add('hidden');
+                actionArea.classList.add('hidden'); 
+                updateImportButton();
+                return;
+            }
+
+            fileStatus.textContent = `Carregando arquivo: ${file.name}...`;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(data)) {
+                        throw new Error("O arquivo JSON não contém um array de pesquisas no nível raiz.");
+                    }
+                    
+                    loadedResearchData = data;
+                    fileStatus.innerHTML = `<span class="text-green-600 font-semibold">Arquivo carregado com sucesso!</span> (${loadedResearchData.length} pesquisas encontradas)`;
+                    
+                    selectionArea.classList.remove('hidden');
+                    actionArea.classList.remove('hidden'); 
+                    renderTable();
+
+                } catch (error) {
+                    fileStatus.innerHTML = `<span class="text-red-600 font-semibold">Erro ao carregar JSON:</span> ${error.message}`;
+                    loadedResearchData = [];
+                    selectionArea.classList.add('hidden');
+                    actionArea.classList.add('hidden'); 
+                    updateImportButton();
+                }
+            };
+
+            reader.onerror = function() {
+                fileStatus.innerHTML = `<span class="text-red-600 font-semibold">Erro de leitura de arquivo.</span>`;
+                loadedResearchData = [];
+                selectionArea.classList.add('hidden');
+                actionArea.classList.add('hidden'); 
+                updateImportButton();
+            };
+
+            reader.readAsText(file);
+        }
+
+        /**
+         * Renderiza as linhas da tabela a partir do loadedResearchData, checando o status no IndexedDB.
+         */
+        function renderTable() {
+            const tbody = document.getElementById('researchTableBody');
+            tbody.innerHTML = ''; 
+            
+            document.getElementById('selectAllCheckbox').checked = false;
+
+            loadedResearchData.forEach((research) => {
+                const participantCount = Array.isArray(research.participants) ? research.participants.length : 0;
+                
+                // === VERIFICAÇÃO REAL DE EXISTÊNCIA NO CACHE DO DB ===
+                const isExisting = existingResearchIds.has(research.researchId);
+
+                let statusHtml;
+                let rowClasses = 'hover:bg-gray-50 transition duration-150 cursor-pointer';
+
+                if (isExisting) {
+                    statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Existente</span>`;
+                    rowClasses = 'disabled-row'; 
+                } else {
+                    statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Novo</span>`;
+                }
+
+                const row = document.createElement('tr');
+                row.className = rowClasses;
+                row.setAttribute('data-id', research.researchId);
+                
+                if (!isExisting) {
+                    row.onclick = (e) => {
+                        if (e.target.closest('input[type="checkbox"]') === null && e.target.closest('button') === null) {
+                            const checkbox = row.querySelector('input[type="checkbox"]');
+                            checkbox.checked = !checkbox.checked;
+                            toggleRowSelection(checkbox, row);
+                        }
+                    };
+                }
+
+
+                row.innerHTML = `
+                    <td class="px-3 py-4 text-center">
+                        <input type="checkbox" data-id="${research.researchId}" 
+                               class="research-checkbox rounded text-indigo-600 border-gray-300 shadow-sm focus:ring-indigo-500" 
+                               onchange="toggleRowSelection(this, this.closest('tr'))"
+                               ${isExisting ? 'disabled' : ''}
+                               >
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${research.researchId}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 truncate max-w-xs">
+                        ${research.researchName}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        ${research.sector || 'N/A'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-600">
+                        ${participantCount}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        ${statusHtml}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            updateImportButton();
+        }
+        
+        function toggleRowSelection(checkbox, row) {
+            if (checkbox.disabled) return; 
+
+            if (checkbox.checked) {
+                row.classList.add('table-row-selected');
+            } else {
+                row.classList.remove('table-row-selected');
+                document.getElementById('selectAllCheckbox').checked = false; 
+            }
+            updateImportButton();
+        }
+
+        function toggleSelectAll(checked) {
+            document.querySelectorAll('.research-checkbox').forEach(checkbox => {
+                if (!checkbox.disabled) {
+                    checkbox.checked = checked;
+                    const row = checkbox.closest('tr');
+                    if (checked) {
+                        row.classList.add('table-row-selected');
+                    } else {
+                        row.classList.remove('table-row-selected');
+                    }
+                }
+            });
+            updateImportButton();
+        }
+
+        function updateImportButton() {
+            const selectedCheckboxes = document.querySelectorAll('.research-checkbox:checked');
+            const count = selectedCheckboxes.length;
+
+            actionStatusMessage.textContent = `${count} pesquisa(s) selecionada(s).`;
+
+            if (count > 0) {
+                importButton.disabled = false;
+                importButton.classList.remove('bg-gray-400', 'opacity-50', 'cursor-not-allowed');
+                importButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                importButton.classList.add('transform', 'hover:scale-[1.01]');
+                importButton.textContent = `Importar ${count} Pesquisa(s) Selecionada(s)`;
+            } else {
+                importButton.disabled = true;
+                importButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'transform', 'hover:scale-[1.01]');
+                importButton.classList.add('bg-gray-400', 'opacity-50', 'cursor-not-allowed');
+                importButton.textContent = 'Importar Pesquisas Selecionadas';
+            }
+        }
+
+        function resetUI() {
+            console.log("[UI] Resetando a interface e recarregando o status...");
+            loadedResearchData = [];
+            jsonFileInput.value = '';
+            uploadSection.classList.add('hidden'); 
+            selectionArea.classList.add('hidden');
+            actionArea.classList.add('hidden'); 
+            document.getElementById('researchTableBody').innerHTML = '';
+            fileStatus.textContent = 'Aguardando upload de arquivo JSON...';
+            fileStatus.classList.remove('text-green-600', 'font-semibold');
+            updateImportButton();
+            actionStatusMessage.textContent = '0 pesquisas selecionadas.';
+            actionStatusMessage.classList.remove('text-red-600');
+            
+            // Re-executa o processo de carga do DB e renderização
+            loadAllResearches().then(() => renderMemoryStatus()); 
+        }
+
+        /**
+         * Simula a continuação do processo de importação e SALVA no IndexedDB.
+         */
+        async function continueImport() {
+            const selectedCheckboxes = document.querySelectorAll('.research-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-id'));
+            
+            if (selectedIds.length === 0) {
+                actionStatusMessage.textContent = 'ERRO: Por favor, selecione pelo menos uma pesquisa para continuar.';
+                actionStatusMessage.classList.add('text-red-600');
+                return;
+            }
+
+            const researchesToImport = loadedResearchData.filter(r => selectedIds.includes(r.researchId));
+            
+            importButton.textContent = 'Importando...';
+            importButton.disabled = true;
+            
+            try {
+                // === AÇÃO REAL: SALVAR NO INDEXEDDB ===
+                await saveResearches(researchesToImport);
+
+                // 2. Mensagem de confirmação visual temporária
+                actionStatusMessage.innerHTML = `<span class="text-green-600 font-bold">SUCESSO!</span> ${researchesToImport.length} pesquisa(s) importada(s) e salva(s) no IndexedDB.`;
+                actionStatusMessage.classList.remove('text-red-600'); 
+
+            } catch (error) {
+                actionStatusMessage.innerHTML = `<span class="text-red-600 font-bold">ERRO na Importação:</span> ${error.message}`;
+                console.error("Erro ao salvar no IndexedDB:", error);
+            } finally {
+                // 3. Volta ao estado normal e limpa a UI após 3 segundos
+                setTimeout(() => {
+                    resetUI(); 
+                }, 3000);
+            }
+        }
+
+        // 4. Inicializa o IndexedDB ao carregar a página
+        window.onload = async () => {
+            await openDB().catch(console.error);
+            updateImportButton();
+        };
+    </script>
+</body>
+  </html>
