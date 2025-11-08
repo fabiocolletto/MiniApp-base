@@ -9,7 +9,9 @@
     "studies": "Studies",
     "theme": "Theme",
     "language": "Language",
-    "multidevice": "Multi-device"
+    "multidevice": "Multi-device",
+    "menuToggle": "Menu",
+    "menuClose": "Close menu"
   },
   "filters": {
     "title": "Dashboard filters",
