@@ -202,6 +202,8 @@
     "toolbar.theme": "Tema",
     "toolbar.language": "Idioma",
     "toolbar.multidevice": "Multi-dispositivo",
+    "toolbar.menuToggle": "Menu",
+    "toolbar.menuClose": "Fechar menu",
     "filters.title": "Filtros do painel",
     "filters.subtitle": "Refine os resultados do painel para públicos e períodos específicos.",
     "filters.gender.label": "Gênero",
@@ -345,6 +347,7 @@
   <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="./js/i18n.js"></script>
   <script src="./js/theme.js"></script>
+  <script src="./js/sample_data.js"></script>
   <script src="../miniapp-base/components/carousel.js"></script>
 
   <script>
@@ -466,6 +469,8 @@
     error:'⚠️',
     database:'🗄️',
     save:'💾',
+    menu:'☰',
+    close:'✕',
     trending_up:'📈',
     trending_down:'📉',
     trending_flat:'➡️'
@@ -1076,6 +1081,7 @@
         modal = null;
       }
     }
+    toggleToolbarMenu(false);
     if(hash === '#filters' && document.getElementById('filters-form')){
       setFilterDraftFromState();
     }
@@ -1097,6 +1103,151 @@
   function closeActiveModal(){
     clearModalHash();
     handleModalHashChange();
+  }
+
+  function isToolbarOverlayMode(){
+    if(typeof window.matchMedia === 'function'){
+      try{
+        return window.matchMedia('(max-width: 960px)').matches;
+      }catch(_){ }
+    }
+    var width = window.innerWidth || document.documentElement.clientWidth || 0;
+    return width <= 960;
+  }
+
+  function setToolbarMenuOpen(isOpen, options){
+    options = options || {};
+    var silent = !!options.silent;
+    var overlay = isToolbarOverlayMode();
+    var menu = document.getElementById('toolbar-menu');
+    var toggle = document.getElementById('toolbar-menu-toggle');
+    var backdrop = document.getElementById('toolbar-menu-backdrop');
+    var closeBtn = document.getElementById('toolbar-menu-close');
+    if(!overlay){
+      document.body.classList.remove('toolbar-menu-open');
+      if(menu){
+        menu.removeAttribute('aria-hidden');
+        menu.removeAttribute('inert');
+        menu.setAttribute('data-open', 'true');
+      }
+      if(backdrop){
+        backdrop.hidden = true;
+      }
+      if(toggle){
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+      return;
+    }
+    document.body.classList.toggle('toolbar-menu-open', !!isOpen);
+    if(menu){
+      menu.setAttribute('data-open', isOpen ? 'true' : 'false');
+      if(isOpen){
+        menu.removeAttribute('aria-hidden');
+        menu.removeAttribute('inert');
+      } else {
+        menu.setAttribute('aria-hidden', 'true');
+        menu.setAttribute('inert', '');
+      }
+    }
+    if(backdrop){
+      backdrop.hidden = !isOpen;
+    }
+    if(toggle){
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    if(isOpen && !silent){
+      if(closeBtn && typeof closeBtn.focus === 'function'){
+        closeBtn.focus();
+      }else if(menu){
+        var focusTarget = menu.querySelector('a.btn:not([aria-disabled="true"])');
+        if(focusTarget && typeof focusTarget.focus === 'function'){
+          focusTarget.focus();
+        }
+      }
+    } else if(!isOpen && options.focusToggle && toggle && typeof toggle.focus === 'function'){
+      toggle.focus();
+    }
+  }
+
+  function toggleToolbarMenu(force){
+    if(!isToolbarOverlayMode()){
+      return;
+    }
+    var isOpen = document.body.classList.contains('toolbar-menu-open');
+    if(typeof force === 'boolean'){
+      if(force){
+        setToolbarMenuOpen(true);
+      }else if(isOpen){
+        setToolbarMenuOpen(false, { focusToggle:true });
+      }else{
+        setToolbarMenuOpen(false);
+      }
+      return;
+    }
+    setToolbarMenuOpen(!isOpen, { focusToggle:isOpen });
+  }
+
+  function syncToolbarMenuState(){
+    if(!isToolbarOverlayMode()){
+      setToolbarMenuOpen(true, { silent:true });
+    }else{
+      setToolbarMenuOpen(document.body.classList.contains('toolbar-menu-open'), { silent:true });
+    }
+  }
+
+  var toolbarMenuEventsBound = false;
+
+  function bindToolbarGlobalHandlers(){
+    if(toolbarMenuEventsBound){
+      return;
+    }
+    toolbarMenuEventsBound = true;
+    document.addEventListener('keydown', function(event){
+      if(event.defaultPrevented) return;
+      if(event.key === 'Escape' && document.body.classList.contains('toolbar-menu-open') && isToolbarOverlayMode()){
+        event.preventDefault();
+        toggleToolbarMenu(false);
+      }
+    });
+    window.addEventListener('resize', function(){
+      syncToolbarMenuState();
+    }, { passive:true });
+    window.addEventListener('orientationchange', function(){
+      syncToolbarMenuState();
+    }, { passive:true });
+  }
+
+  function setupToolbarMenuHandlers(){
+    var toggle = document.getElementById('toolbar-menu-toggle');
+    var closeBtn = document.getElementById('toolbar-menu-close');
+    var backdrop = document.getElementById('toolbar-menu-backdrop');
+    var menu = document.getElementById('toolbar-menu');
+    if(toggle){
+      toggle.addEventListener('click', function(){
+        toggleToolbarMenu();
+      });
+    }
+    if(closeBtn){
+      closeBtn.addEventListener('click', function(){
+        toggleToolbarMenu(false);
+      });
+    }
+    if(backdrop){
+      backdrop.addEventListener('click', function(){
+        toggleToolbarMenu(false);
+      });
+    }
+    if(menu){
+      menu.addEventListener('click', function(event){
+        var link = event.target.closest('a.btn');
+        if(!link) return;
+        if(link.getAttribute('aria-disabled') === 'true') return;
+        if(!isToolbarOverlayMode()) return;
+        toggleToolbarMenu(false);
+      });
+    }
+    syncToolbarMenuState();
+    bindToolbarGlobalHandlers();
   }
 
   function renderToolbar(){
@@ -1129,7 +1280,9 @@
       { href:'#language', icon:'translate', key:'toolbar.language' },
       { href:'#sync', icon:'devices', key:'toolbar.multidevice', id:'toolbar-sync', extra:'<span id="toolbar-sync-dot" class="status-dot" aria-hidden="true"></span>' }
     );
-    el.innerHTML = items.map(function(item){
+    var toggleLabel = $t('toolbar.menuToggle', { defaultValue:'Menu' });
+    var closeLabel = $t('toolbar.menuClose', { defaultValue:'Fechar menu' });
+    var itemsHtml = items.map(function(item){
       var idAttr = item.id ? ' id="'+item.id+'"' : '';
       var isDisabled = !!item.disabled;
       var titleKey = isDisabled && item.disabledTitle ? item.disabledTitle : item.key;
@@ -1145,6 +1298,23 @@
         + extra
         + '</a>';
     }).join('');
+    var toggleBtn = '<button type="button" class="btn toolbar-toggle" id="toolbar-menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="toolbar-menu" title="'+escapeHtml(toggleLabel)+'" data-i18n-attr="title:toolbar.menuToggle">'
+      + renderIcon('menu', { className:'toolbar-toggle-icon toolbar-toggle-icon--menu' })
+      + renderIcon('close', { className:'toolbar-toggle-icon toolbar-toggle-icon--close' })
+      + '<span class="toolbar-toggle-text" data-i18n="toolbar.menuToggle">'+escapeHtml(toggleLabel)+'</span>'
+      + '</button>';
+    var closeBtn = '<button type="button" class="btn ghost toolbar-menu-close" id="toolbar-menu-close" aria-label="'+escapeHtml(closeLabel)+'" data-i18n-attr="aria-label:toolbar.menuClose">'
+      + renderIcon('close')
+      + '<span class="toolbar-menu-close-text" data-i18n="toolbar.menuClose">'+escapeHtml(closeLabel)+'</span>'
+      + '</button>';
+    el.innerHTML = toggleBtn
+      + '<div class="toolbar-menu-backdrop" id="toolbar-menu-backdrop" hidden></div>'
+      + '<div class="toolbar-actions" id="toolbar-menu" data-open="false" aria-hidden="true">'
+      + closeBtn
+      + '<div class="toolbar-actions-list">'+itemsHtml+'</div>'
+      + '</div>';
+    window.I18nManager?.apply?.();
+    setupToolbarMenuHandlers();
   }
 
   function getReportLoadingMessage(){
@@ -1924,6 +2094,11 @@
     }
 
     renderToolbar();
+    try{
+      await window.PrefeitoSampleData?.ensureSampleReportData?.();
+    }catch(err){
+      console.warn('Prefeito sample data: erro ao garantir dados de demonstração', err);
+    }
     try{
       await hydrateReportData();
     }catch(err){

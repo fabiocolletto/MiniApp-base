@@ -235,7 +235,7 @@
     viewport.appendChild(track);
 
     var status = document.createElement('div');
-    status.className = 'carousel-status';
+    status.className = 'carousel-status u-sr-only';
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
     status.setAttribute('aria-hidden', 'true');

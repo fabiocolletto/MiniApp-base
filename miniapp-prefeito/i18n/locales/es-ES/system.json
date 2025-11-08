@@ -9,7 +9,9 @@
     "studies": "Encuestas",
     "theme": "Tema",
     "language": "Idioma",
-    "multidevice": "Multidispositivo"
+    "multidevice": "Multidispositivo",
+    "menuToggle": "Menú",
+    "menuClose": "Cerrar menú"
   },
   "filters": {
     "title": "Filtros del panel",
