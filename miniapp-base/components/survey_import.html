@@ -6,11 +6,15 @@
     <title>Ferramenta de Importação de Pesquisas</title>
     <!-- Carrega Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f4f7f9;
+            /* Adiciona padding no topo para compensar o header fixo */
+            padding-top: 5rem; 
+            /* Adiciona padding no fundo para compensar o footer fixo */
+            padding-bottom: 3.5rem; 
         }
         .table-row-selected {
             background-color: #eff6ff; /* Blue 50 */
@@ -26,44 +30,109 @@
         .disabled-row:hover {
             background-color: #f9fafb !important;
         }
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s;
+        }
+        .sortable-header:hover {
+            color: #4338ca; /* Indigo 700 */
+        }
+        .sort-icon {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            opacity: 0.5;
+        }
+        .sort-asc .sort-icon {
+            border-bottom: 4px solid currentColor;
+            opacity: 1;
+        }
+        .sort-desc .sort-icon {
+            border-top: 4px solid currentColor;
+            opacity: 1;
+        }
+
+        /* Ajuste para alinhar verticalmente os botões no mobile */
+        @media (max-width: 640px) {
+            .intro-buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body>
 
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
-            Ferramenta de Importação de Pesquisas
-        </h1>
-        
-        <!-- Mensagem de Status Global (para inicialização do DB) -->
-        <div id="globalStatus" class="mb-4 p-3 rounded-lg text-sm bg-blue-100 text-blue-800 hidden">
-            <!-- Usado para mensagens de inicialização do DB -->
+    <!-- HEADER FIXO E ESTILIZADO -->
+    <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-xl z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center h-20 px-4 sm:px-8">
+            <div class="flex items-center space-x-3">
+                <!-- Ícone de Pesquisa/Dados -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6" />
+                </svg>
+                <!-- Título Principal -->
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">
+                    Importação de Pesquisas
+                </h1>
+            </div>
+
+            <!-- Status do IndexedDB (Móvel para o Header) -->
+            <div id="headerDbStatus" class="flex items-center space-x-2 p-2 rounded-full transition-colors duration-300 border-2">
+                <!-- Ícone dinâmico será injetado aqui -->
+                <span id="headerDbStatusText" class="text-sm font-semibold hidden sm:block">
+                    Carregando DB...
+                </span>
+            </div>
         </div>
+    </header>
 
+    <div class="max-w-4xl mx-auto mb-16 px-4 sm:px-0"> 
+        
         <!-- STATUS DA MEMÓRIA LOCAL (IndexedDB) -->
         <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl shadow-inner p-6 mb-8">
             <h2 class="text-xl font-bold text-indigo-800 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                 </svg>
-                Status da Memória Local (IndexedDB)
+                Visão Geral do Armazenamento Local
             </h2>
             
             <div id="memoryStatusDisplay" class="text-3xl font-extrabold text-indigo-600 mb-4">
-                <!-- Count will be injected here -->
                 Carregando...
             </div>
             
-            <!-- Nova Tabela de Detalhes das Pesquisas Salvas -->
+            <!-- Tabela de Detalhes das Pesquisas Salvas -->
             <div id="savedResearchesDetails" class="mt-4 hidden">
-                <h3 class="text-lg font-semibold text-indigo-700 mb-2">Pesquisas Salvas:</h3>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <h3 class="text-lg font-semibold text-indigo-700 mb-2">Pesquisas Salvas Localmente:</h3>
+                <div class="bg-white rounded-lg shadow-md overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-indigo-100">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/4">ID</th>
-                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/2">Nome</th>
-                                <th class="px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-1/4">Setor</th>
+                                <!-- Coluna de NOME: Largura 4/12 -->
+                                <th id="header-researchName" onclick="sortResearches('researchName')" class="sortable-header px-4 py-2 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider w-4/12">
+                                    Nome da Pesquisa <span class="sort-icon"></span>
+                                </th>
+                                <!-- Coluna de SETOR: Largura 2/12 -->
+                                <th id="header-sector" onclick="sortResearches('sector')" class="sortable-header px-4 py-2 text-center text-xs font-bold text-indigo-800 uppercase tracking-wider w-2/12">
+                                    Setor <span class="sort-icon"></span>
+                                </th>
+                                <!-- Coluna de PARTICIPANTES: Largura 2/12 -->
+                                <th id="header-participantsCount" onclick="sortResearches('participantsCount')" class="sortable-header px-4 py-2 text-center text-xs font-bold text-indigo-800 uppercase tracking-wider w-2/12">
+                                    Partic. <span class="sort-icon"></span>
+                                </th>
+                                <!-- Coluna de DATA IMPORTAÇÃO: Largura 2/12 -->
+                                <th id="header-savedAt" onclick="sortResearches('savedAt')" class="sortable-header px-4 py-2 text-center text-xs font-bold text-indigo-800 uppercase tracking-wider w-2/12">
+                                    Data Import. <span class="sort-icon"></span>
+                                </th>
+                                <!-- Coluna de AÇÃO: Largura 2/12 -->
+                                <th class="px-4 py-2 text-center text-xs font-bold text-indigo-800 uppercase tracking-wider w-2/12">
+                                    Ação
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="savedResearchesTableBody" class="bg-white divide-y divide-gray-100">
@@ -73,16 +142,56 @@
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 mt-6">
+            <!-- BOTÕES MELHORADOS (Item 4: Adicionado botão de Sincronização) -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-6 intro-buttons">
+                <!-- Botão 1: Adicionar Pesquisas -->
                 <button onclick="showUploadSection()" 
                         id="showUploadButton"
-                        class="w-full sm:w-auto self-start bg-indigo-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
-                    Adicionar Pesquisas (Mostrar Formulário)
+                        class="w-full sm:w-auto self-start bg-indigo-600 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm">
+                    + Adicionar Pesquisas
                 </button>
+                <!-- Botão 2: Limpar Tudo Local -->
                 <button onclick="clearDatabaseAndReload()" 
                         id="clearDbButton" disabled
-                        class="w-full sm:w-auto self-start bg-red-500 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 opacity-50 cursor-not-allowed">
-                    Limpar Toda a Memória Local
+                        class="w-full sm:w-auto self-start bg-red-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition duration-300 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 opacity-50 cursor-not-allowed text-sm">
+                    Limpar Tudo Local
+                </button>
+                
+                <!-- NOVO BOTÃO 4: ATIVAR/DESATIVAR SINCRONIZAÇÃO -->
+                <button onclick="toggleOnlineSync()" 
+                        id="toggleSyncButton"
+                        class="w-full sm:w-auto self-start font-semibold py-2 px-4 rounded-xl shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm border border-gray-300">
+                    <!-- Texto e estilo dinâmico via JS -->
+                </button>
+            </div>
+        </div>
+
+        <!-- NOVO ITEM 5: GESTÃO ONLINE (Exibido se isOnlineSyncEnabled for TRUE) -->
+        <div id="onlineManagementSection" class="bg-gray-800 text-white rounded-xl shadow-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-bold mb-4 flex items-center text-yellow-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                5. Gestão de Pesquisas Online (Firestore Simulado)
+            </h2>
+            
+            <p class="text-gray-300 mb-4">
+                Atualmente, existem <span id="onlineCount" class="font-extrabold text-lg text-yellow-300">0</span> pesquisas salvas na nuvem.
+            </p>
+
+            <div id="onlineActions" class="flex flex-col sm:flex-row gap-4">
+                <!-- Sincronizar Tudo (Local para Online) -->
+                <button onclick="syncAllToOnline()" 
+                        id="syncAllButton"
+                        class="w-full sm:w-auto self-start bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    Sincronizar Todas as Pesquisas Locais (Upload)
+                </button>
+                
+                <!-- Excluir Tudo Online -->
+                <button onclick="confirmClearOnline()" 
+                        id="clearAllOnlineButton"
+                        class="w-full sm:w-auto self-start bg-red-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-300 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    Excluir Todas as Pesquisas Online
                 </button>
             </div>
         </div>
@@ -125,23 +234,29 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <!-- Coluna de Checkbox: Largura 1/12 -->
                             <th class="px-3 py-3 w-1/12">
                                 <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" 
                                        class="rounded text-indigo-600 border-gray-300 shadow-sm focus:ring-indigo-500">
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
-                                ID
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">
+                            <!-- Coluna de Nome: Largura 4/12 -->
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-4/12">
                                 Nome da Pesquisa
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                            <!-- Coluna de Setor: Largura 2/12 -->
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
                                 Setor
                             </th>
+                            <!-- Coluna de Data Original: Largura 2/12 -->
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                                Data da Pesquisa
+                            </th>
+                            <!-- Coluna de Participantes: Largura 2/12 -->
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
                                 Participantes
                             </th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
+                            <!-- Coluna de Status: Largura 1/12 -->
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                                 Status
                             </th>
                         </tr>
@@ -163,14 +278,58 @@
                 Importar Pesquisas Selecionadas
             </button>
         </div>
+        
+        <!-- Modal Customizado (Substitui alert/confirm) -->
+        <div id="customModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform transition-all duration-300 scale-100">
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-900 mb-3">Título</h3>
+                <p id="modalMessage" class="text-sm text-gray-600 mb-6">Mensagem</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="modalCancelButton" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-semibold hidden">Cancelar</button>
+                    <button id="modalConfirmButton" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold">OK</button>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <!-- RODAPÉ DISCRETO E ESTILIZADO -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+        <div class="max-w-4xl mx-auto flex justify-between items-center h-10 px-4 sm:px-0">
+            <!-- Alerta do Sistema (Mensagens do IndexedDB ou Erros) -->
+            <div id="globalStatus" class="flex items-center text-xs font-medium w-full text-gray-700 status-box hidden">
+                <!-- Conteúdo injetado pelo JS -->
+            </div>
+            
+            <!-- Informações -->
+            <span class="text-gray-500 text-xs hidden sm:block ml-4">
+                Ferramenta de Importação v1.1
+            </span>
+        </div>
+    </footer>
 
     <script>
-        // Variáveis globais para armazenar o estado da aplicação
+        // =======================================================
+        // VARIÁVEIS DE ESTADO E SIMULAÇÃO DE BACKEND
+        // =======================================================
+        
         let loadedResearchData = [];
-        let existingResearchIds = new Set(); // Conjunto para verificação rápida
-        let db; // Variável para o objeto de banco de dados IndexedDB
+        let existingResearchMap = new Map(); // Mapa de pesquisas salvas LOCALMENTE (IndexedDB)
+        let db; // Objeto para o IndexedDB
+        
+        // NOVO ESTADO: Controla se a sincronização online está ativa
+        let isOnlineSyncEnabled = false;
+        
+        // NOVO: SIMULAÇÃO DE BANCO DE DADOS ONLINE (Firestore/Backend)
+        // Usa um Map para persistir dados na memória do browser durante a sessão.
+        let onlineResearchesMap = new Map(); 
+        
+        // Estado de ordenação
+        let sortState = {
+            column: 'savedAt', 
+            direction: 'desc'  
+        };
 
+        // Referências DOM
         const selectionArea = document.getElementById('selectionArea');
         const actionArea = document.getElementById('actionArea');
         const importButton = document.getElementById('importButton');
@@ -178,10 +337,24 @@
         const fileStatus = document.getElementById('fileStatus');
         const jsonFileInput = document.getElementById('jsonFileInput');
         const globalStatus = document.getElementById('globalStatus');
+        const headerDbStatus = document.getElementById('headerDbStatus');
         const memoryStatusDisplay = document.getElementById('memoryStatusDisplay'); 
         const uploadSection = document.getElementById('uploadSection');
-        const savedResearchesDetails = document.getElementById('savedResearchesDetails'); // Novo elemento
-        const savedResearchesTableBody = document.getElementById('savedResearchesTableBody'); // Novo elemento
+        const savedResearchesDetails = document.getElementById('savedResearchesDetails'); 
+        const savedResearchesTableBody = document.getElementById('savedResearchesTableBody'); 
+        const onlineManagementSection = document.getElementById('onlineManagementSection'); // NOVO
+        const onlineCountDisplay = document.getElementById('onlineCount'); // NOVO
+        const toggleSyncButton = document.getElementById('toggleSyncButton'); // NOVO
+        const syncAllButton = document.getElementById('syncAllButton'); // NOVO
+        const clearAllOnlineButton = document.getElementById('clearAllOnlineButton'); // NOVO
+        
+        // Variáveis do Modal Customizado
+        const customModal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmButton = document.getElementById('modalConfirmButton');
+        const modalCancelButton = document.getElementById('modalCancelButton');
+
 
         // Configurações do IndexedDB
         const DB_NAME = 'ResearchDB';
@@ -189,37 +362,352 @@
         const STORE_NAME = 'researches';
         const KEY_PATH = 'researchId'; 
 
-        /**
-         * Dados de teste para simular o upload de arquivo.
-         */
+        // Dados de teste (adaptados para usar Date.parse para simular timestamp)
         const MOCK_DATA = [
-            // researchId será usado para verificação de duplicidade
-            { "researchId": "RES-TCH-001", "researchName": "Inovação e IA", "sector": "Tecnologia", "participants": [{}, {}, {}, {}] },
-            { "researchId": "RES-FIN-002", "researchName": "Crescimento Bancário", "sector": "Finanças", "participants": [{}, {}, {}] },
-            { "researchId": "RES-MKT-003", "researchName": "Tendências Digitais", "sector": "Marketing", "participants": [{}, {}, {}, {}, {}, {}] },
-            { "researchId": "RES-IND-004", "researchName": "Eficiência Produtiva", "sector": "Indústria", "participants": [{}] },
-            { "researchId": "RES-EDU-005", "researchName": "Adoção EAD", "sector": "Educação", "participants": [{}, {}, {}, {}, {}] },
-            // Novo item de teste para garantir que sempre haja um item novo
-            { "researchId": "RES-MAR-007", "researchName": "Marketing de Conteúdo 2026", "sector": "Marketing", "participants": [{}, {}] }
+            { "researchId": "RES-NEW-001", "researchName": "Nova Pesquisa de Mercado", "sector": "Varejo", "participants": [{}, {}, {}], "researchDate": Date.parse('2025-11-05T10:00:00Z') }, 
+            { "researchId": "RES-TCH-002", "researchName": "Versão Nova de Tecnologia", "sector": "Tecnologia", "participants": [{}, {}, {}, {}], "researchDate": Date.parse('2025-11-08T15:00:00Z') }, 
+            { "researchId": "RES-TCH-003", "researchName": "Versão Antiga de Inovação", "sector": "Tecnologia", "participants": [{}], "researchDate": Date.parse('2025-10-01T10:00:00Z') }, 
+            { "researchId": "RES-FIN-004", "researchName": "Análise Financeira Q4", "sector": "Finanças", "participants": [{}, {}], "researchDate": Date.parse('2025-11-06T12:00:00Z') }
         ];
 
+        // Dados simulados para o DB local (IndexedDB)
+        const SIMULATED_DB_DATA = [
+            { "researchId": "RES-TCH-002", "researchName": "Tecnologia V1", "sector": "Tecnologia", "participants": [{}, {}, {}], "researchDate": Date.parse('2025-10-25T10:00:00Z'), "savedAt": Date.parse('2025-10-25T10:30:00Z') }, 
+            { "researchId": "RES-TCH-003", "researchName": "Inovação V2", "sector": "Tecnologia", "participants": [{}, {}], "researchDate": Date.parse('2025-10-30T10:00:00Z'), "savedAt": Date.parse('2025-10-31T11:00:00Z') },
+            { "researchId": "RES-FIN-005", "researchName": "Financeiro Existente", "sector": "Finanças", "participants": [{}, {}, {}, {}, {}], "researchDate": Date.parse('2025-10-15T10:00:00Z'), "savedAt": Date.parse('2025-11-01T12:00:00Z') },
+        ];
+        
         // =======================================================
-        // LÓGICA DE INTERFACE
+        // FUNÇÕES DE SINCRONIZAÇÃO E ONLINE (NOVAS)
         // =======================================================
+
+        /**
+         * Simula o carregamento de todas as pesquisas do "Firestore".
+         * @returns {Promise<Array<Object>>} Array com todas as pesquisas online.
+         */
+        function loadOnlineResearches() {
+            return new Promise(resolve => {
+                // Simula latência de rede
+                setTimeout(() => {
+                    // Converte o Map em um Array de objetos
+                    resolve(Array.from(onlineResearchesMap.values()));
+                }, 500); 
+            });
+        }
+        
+        /**
+         * Simula o salvamento/atualização de pesquisas no "Firestore".
+         * @param {Array<Object>} researches - Pesquisas a serem salvas.
+         */
+        function saveOnlineResearches(researches) {
+            return new Promise(resolve => {
+                // Simula latência de rede
+                setTimeout(() => {
+                    researches.forEach(research => {
+                        // Salva no Map (simulando setDoc no Firestore)
+                        onlineResearchesMap.set(research.researchId, research);
+                    });
+                    resolve();
+                }, 1500); 
+            });
+        }
+        
+        /**
+         * Simula a exclusão de todas as pesquisas no "Firestore".
+         */
+        function clearOnlineDatabase() {
+            return new Promise(resolve => {
+                // Simula latência de rede
+                setTimeout(() => {
+                    onlineResearchesMap.clear();
+                    resolve();
+                }, 1500);
+            });
+        }
+
+        /**
+         * Atualiza o estado da sincronização online e a UI.
+         */
+        async function toggleOnlineSync() {
+            isOnlineSyncEnabled = !isOnlineSyncEnabled;
+            
+            // Atualiza o botão
+            if (isOnlineSyncEnabled) {
+                toggleSyncButton.textContent = 'Sincronização Online ATIVA';
+                toggleSyncButton.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                toggleSyncButton.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600', 'border-green-700');
+                await updateOnlineStatus();
+                onlineManagementSection.classList.remove('hidden');
+            } else {
+                toggleSyncButton.textContent = 'Ativar Sincronização Online';
+                toggleSyncButton.classList.remove('bg-green-500', 'text-white', 'hover:bg-green-600', 'border-green-700');
+                toggleSyncButton.classList.add('bg-gray-100', 'hover:bg-gray-200');
+                onlineManagementSection.classList.add('hidden');
+            }
+        }
+        
+        /**
+         * Atualiza o contador de pesquisas salvas online e habilita/desabilita botões de ação online.
+         */
+        async function updateOnlineStatus() {
+            // Desabilita botões enquanto carrega
+            syncAllButton.disabled = true;
+            clearAllOnlineButton.disabled = true;
+            onlineCountDisplay.textContent = 'Carregando...';
+
+            try {
+                const onlineResearches = await loadOnlineResearches();
+                const count = onlineResearches.length;
+                onlineCountDisplay.textContent = count;
+                
+                // Habilita botões se houver dados
+                if (existingResearchMap.size > 0) {
+                    syncAllButton.disabled = false;
+                }
+                if (count > 0) {
+                    clearAllOnlineButton.disabled = false;
+                }
+            } catch (error) {
+                console.error("Erro ao carregar status online simulado:", error);
+                onlineCountDisplay.textContent = 'ERRO';
+            }
+        }
+        
+        /**
+         * Sincroniza todas as pesquisas LOCAIS (IndexedDB) para o "Firestore".
+         */
+        async function syncAllToOnline() {
+            if (existingResearchMap.size === 0) {
+                await showCustomModal('Aviso', 'Não há pesquisas locais para sincronizar.', false);
+                return;
+            }
+
+            const confirmed = await showCustomModal(
+                'Sincronizar Tudo',
+                `Você irá sincronizar ${existingResearchMap.size} pesquisas locais para a nuvem. Pesquisas existentes serão ATUALIZADAS. Confirmar?`,
+                true
+            );
+
+            if (!confirmed) return;
+            
+            syncAllButton.disabled = true;
+            clearAllOnlineButton.disabled = true;
+            updateDbStatus('loading', 'Sincronizando todas as pesquisas (Local -> Online)...');
+            
+            try {
+                // Pega todos os dados do IndexedDB
+                const allLocalResearches = await getAllLocalResearches();
+                
+                // Salva todos os dados online
+                await saveOnlineResearches(allLocalResearches);
+
+                updateDbStatus('ok', `Sincronização concluída! ${allLocalResearches.length} pesquisas salvas online.`);
+                await updateOnlineStatus(); // Atualiza contador online
+            } catch (error) {
+                updateDbStatus('error', `Falha na sincronização online: ${error.message}`);
+                console.error("Erro na sincronização online:", error);
+            } finally {
+                // Reseta UI de carregamento após um pequeno atraso
+                setTimeout(() => {
+                    updateDbStatus('ok', `DB OK. ${existingResearchMap.size} pesquisas.`);
+                    syncAllButton.disabled = (existingResearchMap.size === 0);
+                    updateOnlineStatus(); // Garante que o estado online é re-checado
+                }, 2000);
+            }
+        }
+        
+        /**
+         * Confirma e executa a exclusão de todas as pesquisas ONLINE.
+         */
+        async function confirmClearOnline() {
+            const confirmed = await showCustomModal(
+                'EXCLUSÃO TOTAL ONLINE',
+                'Tem certeza que deseja EXCLUIR TODAS as pesquisas salvas ONLINE? Esta ação é irreversível.',
+                true
+            );
+
+            if (!confirmed) return;
+            
+            syncAllButton.disabled = true;
+            clearAllOnlineButton.disabled = true;
+            updateDbStatus('loading', 'Excluindo todas as pesquisas online...');
+
+            try {
+                await clearOnlineDatabase();
+                updateDbStatus('ok', 'Pesquisas online excluídas com sucesso!');
+                await updateOnlineStatus(); // Atualiza contador online (deve ser 0)
+            } catch (error) {
+                updateDbStatus('error', `Falha ao excluir online: ${error.message}`);
+                console.error("Erro na exclusão online:", error);
+            } finally {
+                // Reseta UI de carregamento após um pequeno atraso
+                setTimeout(() => {
+                    updateDbStatus('ok', `DB OK. ${existingResearchMap.size} pesquisas.`);
+                    syncAllButton.disabled = (existingResearchMap.size === 0);
+                    updateOnlineStatus(); // Garante que o estado online é re-checado
+                }, 2000);
+            }
+        }
+
+        // =======================================================
+        // LÓGICA DE STATUS
+        // =======================================================
+        
+        /**
+         * Atualiza o status do IndexedDB tanto no rodapé quanto no cabeçalho.
+         * @param {string} statusType - 'loading', 'ok', 'error', 'message'.
+         * @param {string} message - Mensagem detalhada.
+         */
+        function updateDbStatus(statusType, message) {
+            // Limpa classes e conteúdo antigos
+            headerDbStatus.className = 'flex items-center space-x-2 p-2 rounded-full transition-colors duration-300 border-2';
+            headerDbStatus.innerHTML = '';
+            
+            let iconHtml = '';
+            let tailwindClasses = '';
+            
+            switch (statusType) {
+                case 'loading':
+                    iconHtml = `
+                        <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>`;
+                    tailwindClasses = 'border-indigo-400 bg-indigo-50 text-indigo-700';
+                    break;
+                case 'ok':
+                    iconHtml = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>`;
+                    tailwindClasses = 'border-green-400 bg-green-50 text-green-700';
+                    break;
+                case 'error':
+                    iconHtml = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>`;
+                    tailwindClasses = 'border-red-400 bg-red-50 text-red-700';
+                    // Também injeta a mensagem no rodapé para visibilidade total
+                    globalStatus.classList.remove('hidden');
+                    globalStatus.innerHTML = `<span class="px-3 py-1 bg-red-600 text-white rounded-lg shadow-md flex items-center">
+                        ${iconHtml.replace('h-5 w-5', 'h-4 w-4').replace('text-red-600', 'text-white')}
+                        <span class="ml-1.5">${message}</span>
+                    </span>`;
+                    break;
+            }
+
+            // Aplica as classes e o ícone ao cabeçalho
+            headerDbStatus.classList.add(...tailwindClasses.split(' '));
+            headerDbStatus.innerHTML = `${iconHtml} <span class="text-sm font-semibold hidden sm:block">${message}</span>`;
+            
+            // Oculta a mensagem global (rodapé) se não for um erro
+            if (statusType !== 'error') {
+                 globalStatus.classList.add('hidden');
+            }
+        }
+        
+        // =======================================================
+        // LÓGICA DO MODAL CUSTOMIZADO (Substitui alert() e confirm())
+        // =======================================================
+
+        /**
+         * Exibe um modal customizado para ações de confirmação ou notificação.
+         */
+        function showCustomModal(title, message, isConfirm = false) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            customModal.classList.remove('hidden');
+
+            if (isConfirm) {
+                modalConfirmButton.textContent = "Confirmar";
+                modalCancelButton.classList.remove('hidden');
+            } else {
+                modalConfirmButton.textContent = "OK";
+                modalCancelButton.classList.add('hidden');
+            }
+
+            return new Promise(resolve => {
+                const confirmHandler = () => {
+                    customModal.classList.add('hidden');
+                    modalConfirmButton.removeEventListener('click', confirmHandler);
+                    modalCancelButton.removeEventListener('click', cancelHandler);
+                    resolve(true);
+                };
+
+                const cancelHandler = () => {
+                    customModal.classList.add('hidden');
+                    modalConfirmButton.removeEventListener('click', confirmHandler);
+                    modalCancelButton.removeEventListener('click', cancelHandler);
+                    resolve(false);
+                };
+
+                modalConfirmButton.addEventListener('click', confirmHandler);
+                modalCancelButton.addEventListener('click', cancelHandler);
+            });
+        }
+        
+        /**
+         * Função utilitária para formatar timestamp em data legível.
+         */
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('pt-BR', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+            });
+        }
+
+        // =======================================================
+        // LÓGICA DE INTERFACE E ORDENAÇÃO
+        // =======================================================
+        
+        /**
+         * Limpa os ícones de ordenação e aplica a classe de ordenação ao cabeçalho ativo.
+         */
+        function updateSortUI() {
+            document.querySelectorAll('.sortable-header').forEach(header => {
+                header.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            const activeHeader = document.getElementById(`header-${sortState.column}`);
+            if (activeHeader) {
+                activeHeader.classList.add(sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        }
+
+        /**
+         * Lida com o clique no cabeçalho para mudar o estado de ordenação e recarregar os dados.
+         */
+        function sortResearches(column) {
+            if (sortState.column === column) {
+                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.column = column;
+                sortState.direction = 'desc'; 
+                
+                if (column === 'researchName' || column === 'sector') {
+                    sortState.direction = 'asc';
+                }
+            }
+            
+            loadAllResearches(); 
+        }
 
         /**
          * Exibe a seção de upload de arquivos (Etapa 1).
          */
         function showUploadSection() {
-            uploadSection.classList.remove('hidden');
+            uploadSection.classList.toggle('hidden');
         }
 
         /**
-         * Renderiza o número de pesquisas salvas e habilita/desabilita o botão de limpar,
-         * e renderiza a lista de detalhes das pesquisas salvas.
+         * Renderiza o número de pesquisas salvas e habilita/desabilita o botão de limpar.
          */
         function renderMemoryStatus() {
-            const count = existingResearchIds.size;
+            const count = existingResearchMap.size;
             const clearButton = document.getElementById('clearDbButton');
 
             if (count === 0) {
@@ -227,41 +715,71 @@
                 clearButton.disabled = true;
                 clearButton.classList.add('opacity-50', 'cursor-not-allowed');
                 savedResearchesDetails.classList.add('hidden');
-                
-                // *** AVISO DE PERSISTÊNCIA NO CONSOLE ***
-                console.warn("=================================================");
-                console.warn("ATENÇÃO: IndexedDB encontrado VAZIO.");
-                console.warn("Se você importou pesquisas, mas o status está em zero APÓS a recarga,");
-                console.warn("você pode estar usando uma JANELA PRIVADA/ANÔNIMA. O IndexedDB NÃO persiste nesse modo.");
-                console.warn("=================================================");
-                
             } else {
                 memoryStatusDisplay.innerHTML = `${count} <span class="text-lg font-normal">pesquisa(s) salva(s)</span>`;
                 clearButton.disabled = false;
                 clearButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 savedResearchesDetails.classList.remove('hidden');
             }
-            console.log(`[STATUS] Total de pesquisas no IndexedDB após renderização: ${count}`);
+            updateSortUI(); 
+            // NOVO: Chama o update de status online (que também re-habilita o syncAllButton)
+            if (isOnlineSyncEnabled) {
+                updateOnlineStatus(); 
+            }
         }
         
         /**
-         * Renderiza a lista detalhada de pesquisas salvas no IndexedDB.
+         * Renderiza a lista detalhada de pesquisas salvas no IndexedDB, incluindo o botão de exclusão.
+         * @param {Array<Object>} researches - O array de pesquisas a serem renderizadas.
          */
         function renderSavedResearchesTable(researches) {
             savedResearchesTableBody.innerHTML = '';
             
             if (researches.length === 0) {
-                savedResearchesTableBody.innerHTML = `<tr><td colspan="3" class="px-4 py-3 text-sm text-gray-500 text-center italic">Nenhuma pesquisa salva.</td></tr>`;
+                savedResearchesTableBody.innerHTML = `<tr><td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center italic">Nenhuma pesquisa salva localmente.</td></tr>`;
                 return;
             }
 
+            // A ordenação real ocorre aqui
+            researches.sort((a, b) => {
+                const aValue = a[sortState.column] || '';
+                const bValue = b[sortState.column] || '';
+
+                let result = 0;
+                
+                if (sortState.column === 'participantsCount') {
+                    result = a.participantsCount - b.participantsCount;
+                } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    result = aValue - bValue;
+                } else {
+                    result = aValue.toString().localeCompare(bValue.toString(), 'pt', { sensitivity: 'base' });
+                }
+
+                return sortState.direction === 'asc' ? result : -result;
+            });
+            
+            // Renderização das linhas
             researches.forEach(research => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50';
+                
+                const formattedSavedAt = formatTimestamp(research.savedAt || research.researchDate);
+                const participantCount = Array.isArray(research.participants) ? research.participants.length : 0;
+                
                 row.innerHTML = `
-                    <td class="px-4 py-2 whitespace-nowrap text-sm font-mono text-gray-900">${research.researchId}</td>
-                    <td class="px-4 py-2 text-sm text-gray-700 truncate max-w-xs">${research.researchName}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-600">${research.sector || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700 font-semibold truncate max-w-xs">${research.researchName}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-center">${research.sector || 'N/A'}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-center font-mono">${participantCount}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-center">${formattedSavedAt}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-center">
+                        <button onclick="confirmDelete('${research.researchId}')" 
+                                class="text-red-600 hover:text-red-800 font-medium text-sm p-1 rounded hover:bg-red-50 transition duration-150"
+                                title="Excluir Pesquisa (ID: ${research.researchId})">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
                 `;
                 savedResearchesTableBody.appendChild(row);
             });
@@ -269,7 +787,7 @@
 
 
         // =======================================================
-        // FUNÇÕES DO INDEXEDDB
+        // FUNÇÕES DO INDEXEDDB (LOCAIS)
         // =======================================================
         
         /**
@@ -278,22 +796,17 @@
         function openDB() {
             return new Promise((resolve, reject) => {
                 if (!window.indexedDB) {
-                    globalStatus.textContent = "Seu navegador não suporta IndexedDB. A persistência de dados não funcionará.";
-                    globalStatus.classList.remove('hidden', 'bg-blue-100');
-                    globalStatus.classList.add('bg-red-100', 'text-red-800');
+                    updateDbStatus('error', 'IndexedDB não suportado.');
                     renderMemoryStatus(); 
                     return reject(new Error("IndexedDB not supported"));
                 }
                 
-                globalStatus.textContent = "Iniciando conexão com o banco de dados local...";
-                globalStatus.classList.remove('hidden');
+                updateDbStatus('loading', 'Iniciando DB local...');
 
                 const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
                 request.onerror = (event) => {
-                    globalStatus.textContent = "Erro ao abrir o IndexedDB.";
-                    globalStatus.classList.remove('bg-blue-100', 'text-blue-800');
-                    globalStatus.classList.add('bg-red-100', 'text-red-800');
+                    updateDbStatus('error', 'Falha ao abrir IndexedDB.');
                     console.error("IndexedDB error:", event.target.error);
                     renderMemoryStatus(); 
                     reject(event.target.error);
@@ -301,9 +814,9 @@
 
                 request.onsuccess = (event) => {
                     db = event.target.result;
-                    globalStatus.textContent = "Banco de dados local pronto. Carregando dados existentes...";
-                    // Chama a função para carregar IDs e todos os dados
                     loadAllResearches().then(() => {
+                        // Mensagem de sucesso no rodapé após carregar os dados
+                        updateDbStatus('ok', `DB OK. ${existingResearchMap.size} pesquisas.`);
                         renderMemoryStatus(); 
                         resolve();
                     }).catch(reject);
@@ -312,60 +825,71 @@
                 request.onupgradeneeded = (event) => {
                     db = event.target.result;
                     if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        // Cria a store (tabela) e define researchId como a chave
                         db.createObjectStore(STORE_NAME, { keyPath: KEY_PATH });
                     }
-                    globalStatus.textContent = "Configuração inicial do banco de dados concluída.";
+                };
+            });
+        }
+        
+        /**
+         * Obtém todas as pesquisas do IndexedDB.
+         */
+        function getAllLocalResearches() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    // Para fins de simulação inicial, retorna SIMULATED_DB_DATA
+                    if (SIMULATED_DB_DATA.length > 0) {
+                        return resolve(SIMULATED_DB_DATA);
+                    }
+                    return resolve([]);
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll(); 
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result);
+                };
+
+                request.onerror = (event) => {
+                    reject(event.target.error);
                 };
             });
         }
 
+
         /**
-         * Carrega todos os dados de pesquisas salvas, popula o cache de IDs e renderiza a tabela de detalhes.
+         * Carrega todos os dados de pesquisas salvas, popula o mapa de IDs/Datas e renderiza a tabela de detalhes.
          */
-        function loadAllResearches() {
-            return new Promise((resolve, reject) => {
-                existingResearchIds.clear(); 
-                const savedResearches = []; 
+        async function loadAllResearches() {
+            existingResearchMap.clear(); 
+            const savedResearches = []; 
 
-                if (!db) {
-                     console.error("[IndexedDB] Tentativa de loadAllResearches falhou: DB não está inicializado.");
-                     return resolve();
-                }
-
-                const transaction = db.transaction([STORE_NAME], 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
+            try {
+                const results = await getAllLocalResearches();
                 
-                const request = store.getAll(); 
+                results.forEach(research => {
+                    // Armazena ID e as datas para comparação de versão
+                    existingResearchMap.set(research.researchId, {
+                            researchDate: research.researchDate,
+                            savedAt: research.savedAt || research.researchDate 
+                    }); 
+                    // Adiciona ao array para renderização
+                    savedResearches.push({
+                        ...research,
+                        participantsCount: Array.isArray(research.participants) ? research.participants.length : 0
+                    }); 
+                });
+                
+                // Renderiza os dados após carregar e aplicar a ordenação
+                renderSavedResearchesTable(savedResearches);
+                renderMemoryStatus(); 
 
-                request.onsuccess = (event) => {
-                    const results = event.target.result;
-                    
-                    // --- LOG DE DIAGNÓSTICO IMPORTANTE ---
-                    console.log(`[IndexedDB] DADOS LIDOS DO INDEXEDDB: Encontradas ${results.length} pesquisas.`);
-                    if(results.length > 0) {
-                        console.log("Primeira pesquisa lida:", results[0].researchId, results[0].researchName);
-                    }
-                    // -------------------------------------
-
-                    results.forEach(research => {
-                        existingResearchIds.add(research.researchId); 
-                        savedResearches.push(research); 
-                    });
-                    
-                    renderSavedResearchesTable(savedResearches);
-
-                    globalStatus.innerHTML = `<span class="text-green-800 font-semibold">IndexedDB OK. ${existingResearchIds.size} pesquisas existentes carregadas.</span>`;
-                    renderMemoryStatus(); 
-                    setTimeout(() => globalStatus.classList.add('hidden'), 3000);
-                    resolve();
-                };
-
-                request.onerror = (event) => {
-                    console.error("Erro ao carregar dados existentes:", event.target.error);
-                    reject(event.target.error);
-                };
-            });
+            } catch (error) {
+                console.error("Erro ao carregar dados existentes:", error);
+                // Permite a execução mesmo com erro no DB
+            }
         }
 
         /**
@@ -375,14 +899,18 @@
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
+                const currentTimestamp = Date.now();
                 
                 researches.forEach(research => {
-                    store.put(research); 
+                    const researchToSave = {
+                        ...research,
+                        researchDate: research.researchDate || currentTimestamp, 
+                        savedAt: currentTimestamp 
+                    };
+                    store.put(researchToSave); 
                 });
 
                 transaction.oncomplete = () => {
-                    // Este ponto indica que a escrita foi concluída
-                    console.log(`[IndexedDB] Transação de salvamento concluída com sucesso. ${researches.length} itens salvos/atualizados.`);
                     resolve();
                 };
 
@@ -391,6 +919,62 @@
                     reject(event.target.error);
                 };
             });
+        }
+        
+        /**
+         * Lida com a confirmação de exclusão local.
+         */
+        async function confirmDelete(researchId) {
+            // Tenta obter o nome real da pesquisa do mapa
+            const research = SIMULATED_DB_DATA.find(r => r.researchId === researchId) || Array.from(existingResearchMap.keys()).find(id => id === researchId);
+            const researchName = research ? research.researchName || `ID: ${researchId}` : `ID: ${researchId}`;
+
+            const confirmed = await showCustomModal(
+                'Confirmação de Exclusão Local', 
+                `Tem certeza que deseja EXCLUIR permanentemente a pesquisa "${researchName}" (ID: ${researchId}) do armazenamento LOCAL?`, 
+                true 
+            );
+
+            if (confirmed) {
+                deleteResearch(researchId);
+            }
+        }
+
+        /**
+         * Exclui uma pesquisa específica pelo ID do IndexedDB.
+         */
+        async function deleteResearch(researchId) {
+            updateDbStatus('loading', 'Pesquisa excluída. Recarregando...');
+            
+            if (!db) {
+                updateDbStatus('error', 'Banco de dados não inicializado. Exclusão simulada falhou.');
+                setTimeout(() => resetUI(), 2000); 
+                return;
+            }
+
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(researchId);
+
+                await new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve();
+                    request.onerror = (event) => reject(event.target.error);
+                    transaction.onerror = (event) => reject(event.target.error);
+                });
+
+                showCustomModal('Sucesso', `Pesquisa excluída LOCALMENTE com sucesso!`, false);
+                resetUI(); 
+
+            } catch (error) {
+                updateDbStatus('error', `Erro ao excluir pesquisa local: ${error.message}`);
+                console.error("Erro ao excluir pesquisa local:", error);
+            } 
+            
+            // Garantir que o status de erro seja limpo após 4s
+            if (headerDbStatus.className.includes('border-red-400')) {
+                setTimeout(() => resetUI(), 4000);
+            }
         }
         
         /**
@@ -405,31 +989,44 @@
                 const request = store.clear();
 
                 request.onsuccess = () => {
-                    existingResearchIds.clear(); 
+                    existingResearchMap.clear(); 
                     resolve();
                 };
 
-                request.onerror = (event) => {
+                transaction.onerror = (event) => {
                     reject(event.target.error);
                 };
             });
         }
 
         /**
-         * Limpa o DB e recarrega o status da UI (sem usar window.location.reload()).
+         * Lida com a confirmação e execução da limpeza total do banco de dados local.
          */
-        function clearDatabaseAndReload() {
-            if (!confirm(`Tem certeza que deseja limpar as ${existingResearchIds.size} pesquisas salvas? Esta ação é irreversível.`)) {
+        async function clearDatabaseAndReload() {
+            const confirmed = await showCustomModal(
+                'Confirmação de Limpeza Total Local',
+                `Tem certeza que deseja limpar as ${existingResearchMap.size} pesquisas salvas LOCALMENTE? Esta ação é irreversível.`,
+                true
+            );
+
+            if (!confirmed) {
                 return;
             }
-            clearDatabase()
-                .then(() => {
-                    alert('Banco de dados local limpo com sucesso! A interface será atualizada.');
-                    resetUI(); // Chama o resetUI que, por sua vez, chama loadAllResearches
-                })
-                .catch(error => {
-                    alert(`Erro ao limpar o banco de dados: ${error.message}`);
-                });
+            
+            updateDbStatus('loading', 'Limpando banco de dados local...');
+
+            try {
+                if (existingResearchMap.size > 0) {
+                    await clearDatabase();
+                    showCustomModal('Sucesso', 'Banco de dados local limpo com sucesso! A interface será atualizada.', false);
+                } else {
+                     showCustomModal('Aviso', 'Nenhuma pesquisa para limpar.', false);
+                }
+                resetUI(); 
+            } catch (error) {
+                updateDbStatus('error', `Erro ao limpar o DB local: ${error.message}`);
+                showCustomModal('Erro', `Erro ao limpar o banco de dados local: ${error.message}`, false);
+            }
         }
 
         // =======================================================
@@ -480,7 +1077,11 @@
                         throw new Error("O arquivo JSON não contém um array de pesquisas no nível raiz.");
                     }
                     
-                    loadedResearchData = data;
+                    loadedResearchData = data.map(r => ({
+                        ...r,
+                        researchDate: r.researchDate || r.createdAt || Date.now() 
+                    }));
+                    
                     fileStatus.innerHTML = `<span class="text-green-600 font-semibold">Arquivo carregado com sucesso!</span> (${loadedResearchData.length} pesquisas encontradas)`;
                     
                     selectionArea.classList.remove('hidden');
@@ -518,25 +1119,33 @@
 
             loadedResearchData.forEach((research) => {
                 const participantCount = Array.isArray(research.participants) ? research.participants.length : 0;
+                const newResearchDate = research.researchDate;
+                const existingResearch = existingResearchMap.get(research.researchId);
+                const existingResearchDate = existingResearch ? existingResearch.researchDate : null;
                 
-                // === VERIFICAÇÃO REAL DE EXISTÊNCIA NO CACHE DO DB ===
-                const isExisting = existingResearchIds.has(research.researchId);
-
+                let isSelectable = true;
                 let statusHtml;
                 let rowClasses = 'hover:bg-gray-50 transition duration-150 cursor-pointer';
 
-                if (isExisting) {
-                    statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Existente</span>`;
-                    rowClasses = 'disabled-row'; 
+                if (existingResearchDate) {
+                    if (newResearchDate > existingResearchDate) {
+                        statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">ATUALIZAÇÃO</span>`;
+                    } else {
+                        isSelectable = false;
+                        statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Antiga</span>`;
+                        rowClasses = 'disabled-row';
+                    }
                 } else {
-                    statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Novo</span>`;
+                    statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">NOVA</span>`;
                 }
+
+                const formattedDate = formatTimestamp(newResearchDate);
 
                 const row = document.createElement('tr');
                 row.className = rowClasses;
-                row.setAttribute('data-id', research.researchId);
-                
-                if (!isExisting) {
+                row.setAttribute('data-id', research.researchId); 
+
+                if (isSelectable) {
                     row.onclick = (e) => {
                         if (e.target.closest('input[type="checkbox"]') === null && e.target.closest('button') === null) {
                             const checkbox = row.querySelector('input[type="checkbox"]');
@@ -552,17 +1161,17 @@
                         <input type="checkbox" data-id="${research.researchId}" 
                                class="research-checkbox rounded text-indigo-600 border-gray-300 shadow-sm focus:ring-indigo-500" 
                                onchange="toggleRowSelection(this, this.closest('tr'))"
-                               ${isExisting ? 'disabled' : ''}
+                               ${!isSelectable ? 'disabled' : ''}
                                >
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${research.researchId}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-700 truncate max-w-xs">
+                    <td class="px-6 py-4 text-sm text-gray-700 font-semibold truncate max-w-xs">
                         ${research.researchName}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-800">
                         ${research.sector || 'N/A'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-mono text-gray-600">
+                        ${formattedDate}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-600">
                         ${participantCount}
@@ -614,7 +1223,7 @@
                 importButton.classList.remove('bg-gray-400', 'opacity-50', 'cursor-not-allowed');
                 importButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
                 importButton.classList.add('transform', 'hover:scale-[1.01]');
-                importButton.textContent = `Importar ${count} Pesquisa(s) Selecionada(s)`;
+                importButton.textContent = `Importar ${count} Pesquisa(s)`;
             } else {
                 importButton.disabled = true;
                 importButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'transform', 'hover:scale-[1.01]');
@@ -624,7 +1233,6 @@
         }
 
         function resetUI() {
-            console.log("[UI] Resetando a interface e recarregando o status...");
             loadedResearchData = [];
             jsonFileInput.value = '';
             uploadSection.classList.add('hidden'); 
@@ -637,7 +1245,7 @@
             actionStatusMessage.textContent = '0 pesquisas selecionadas.';
             actionStatusMessage.classList.remove('text-red-600');
             
-            // Re-executa o processo de carga do DB e renderização
+            // Re-executa o processo de carga do DB e renderização (que chama updateDbStatus)
             loadAllResearches().then(() => renderMemoryStatus()); 
         }
 
@@ -656,22 +1264,27 @@
 
             const researchesToImport = loadedResearchData.filter(r => selectedIds.includes(r.researchId));
             
+            // LIGA O CARREGAMENTO
             importButton.textContent = 'Importando...';
             importButton.disabled = true;
+            updateDbStatus('loading', 'Importando dados...');
             
             try {
-                // === AÇÃO REAL: SALVAR NO INDEXEDDB ===
-                await saveResearches(researchesToImport);
-
-                // 2. Mensagem de confirmação visual temporária
-                actionStatusMessage.innerHTML = `<span class="text-green-600 font-bold">SUCESSO!</span> ${researchesToImport.length} pesquisa(s) importada(s) e salva(s) no IndexedDB.`;
-                actionStatusMessage.classList.remove('text-red-600'); 
+                // Se o DB não estiver inicializado, apenas simula.
+                if (!db) {
+                    await showCustomModal('Simulação de Sucesso', `Simulação: ${researchesToImport.length} pesquisa(s) seriam salvas/atualizadas no IndexedDB.`, false);
+                } else {
+                    // === AÇÃO REAL: SALVAR NO INDEXEDDB ===
+                    await saveResearches(researchesToImport);
+                    // Mensagem de sucesso no cabeçalho/rodapé
+                    updateDbStatus('ok', `SUCESSO! ${researchesToImport.length} importada(s) localmente.`);
+                }
 
             } catch (error) {
-                actionStatusMessage.innerHTML = `<span class="text-red-600 font-bold">ERRO na Importação:</span> ${error.message}`;
+                updateDbStatus('error', `Erro na Importação Local: ${error.message}`);
                 console.error("Erro ao salvar no IndexedDB:", error);
             } finally {
-                // 3. Volta ao estado normal e limpa a UI após 3 segundos
+                // DESLIGA O CARREGAMENTO E RESETA A UI após 3 segundos
                 setTimeout(() => {
                     resetUI(); 
                 }, 3000);
@@ -680,9 +1293,22 @@
 
         // 4. Inicializa o IndexedDB ao carregar a página
         window.onload = async () => {
+            // Inicializa o status no Header (mostrar "Carregando...")
+            updateDbStatus('loading', 'Iniciando DB local...');
+            
+            // Inicializa a ordenação para o padrão (Data de Importação, Desc)
+            updateSortUI(); 
+            
+            // Define o botão de sincronização no estado inicial (desativado)
+            toggleOnlineSync();
+            
+            // openDB é ajustado para popular existingResearchMap e atualizar o status para OK ou ERROR
             await openDB().catch(console.error);
             updateImportButton();
+            
+            // Simula o carregamento inicial de dados online (para que o contador não comece em 0)
+            await updateOnlineStatus();
         };
     </script>
 </body>
-  </html>
+</html>
