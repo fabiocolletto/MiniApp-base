@@ -28,484 +28,297 @@
   --color-light-solid: #ffffff;
 
   /* --- Átomos de Tom: Modo Escuro (Dark) --- */
-  --color-dark-bg: #0b1220;
-  --color-dark-surface: #0f172a;
-  --color-dark-surface-alt: #111a2d;
-  --color-dark-border: #1f2a44;
-  --color-dark-text-primary: #e5efff;
-  --color-dark-text-muted: #8aa0bd;
-  --color-dark-text-muted-strong: #b7c4d8;
+  --color-dark-bg: #1e293b;
+  --color-dark-surface: #334155;
+  --color-dark-surface-alt: #475569;
+  --color-dark-border: #334155;
+  --color-dark-text-primary: #f8fafc;
+  --color-dark-text-muted: #94a3b8;
+  --color-dark-text-muted-strong: #cbd5e1;
   --color-dark-solid: #ffffff;
 
-  /* --- Átomos de Raio (T-Shirt Sizing) --- */
-  --radius-s: 6px;
-  --radius-m: 10px;
-  --radius-l: 14px;
-  --radius-xl: 24px;
-  --radius-pill: 9999px;
-  --radius-circle: 50%;
-
-  /* --- Átomos de Espaçamento (Escala de Ritmo) --- */
-  /* (Numerais são a "melhor prática" para escalas) */
+  /* --- Átomos de Spacing (Multiplos de 4px) --- */
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 48px;
+  --space-7: 28px;
+  --space-8: 32px;
 
-  /* --- Átomos de Tipografia (Fontes) --- */
-  --font-family-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
-  --font-family-emoji: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  /* --- Átomos de Radius --- */
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
 
-  /* --- Átomos de Tipografia (Tamanhos) --- */
-  --font-size-xs: 11px;
-  --font-size-s: 12px;
-  --font-size-base: 14px;
-  --font-size-m: 15px;
-  --font-size-l: 16px;
-  --font-size-xl: 22px;
-  --font-size-2xl: 28px;
-  --font-size-3xl: 36px;
-  
-  /* --- Átomos de Tipografia (Peso) --- */
-  --font-weight-regular: 400;
-  --font-weight-medium: 600;
-  --font-weight-bold: 700;
+  /* --- Átomos de Typography --- */
+  --font-size-s: 0.75rem; /* 12px */
+  --font-size-m: 0.875rem; /* 14px */
+  --font-size-l: 1rem; /* 16px */
+  --font-size-xl: 1.25rem; /* 20px */
+}
 
-  /* --- Átomos de Efeitos (Sombras) --- */
-  --shadow-s: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.04);
-  --shadow-m: 0 6px 16px rgba(2, 6, 23, 0.06);
-  --shadow-l: 0 18px 40px rgba(15, 23, 42, 0.08);
-
-  /* --- Átomos de Efeitos (Foco) --- */
-  --ring-focus: 0 0 0 3px color-mix(in oklab, var(--color-brand-primary) 28%, transparent);
-
-  /* --- Átomos de Tamanho (Larguras de Contêiner) --- */
-  --size-container-max-width: 1280px;
-  --size-modal-width-default: 760px;
-  --size-modal-width-compact: 520px;
-  --size-grid-column-min: 300px;
-  
-  /* --- Átomos de Borda/Linha --- */
-  --border-width-1: 1px;
-  --border-style-solid: solid;
-  --border-style-dashed: dashed;
-
-  /* ========================================================== */
-  /* ETAPA 2: MOLÉCULAS (TOKENS SEMÂNTICOS) */
-  /* ========================================================== */
-  /*
-  * A "camada de decisão" (Modo Claro Padrão).
-  * Damos "nomes de propósito" (ex: --card-background)
-  * e atribuímos a eles um "Átomo".
-  */
-
-  /* --- Semântica de Superfície e Fundo --- */
+/* ========================================================== */
+/* ETAPA 2: TOKENS DE PROPOSITO (APLICANDO TEMA) */
+/* ========================================================== */
+:root {
+  /* --- Tokens de Background & Surface --- */
   --background-page: var(--color-light-bg);
-  --background-surface-default: var(--color-light-surface);
+  --background-surface: var(--color-light-surface);
   --background-surface-alternate: var(--color-light-surface-alt);
-  --border-color-default: var(--color-light-border);
-  --page-gradient-default: linear-gradient(180deg, color-mix(in oklab, var(--background-surface-alternate) 70%, #ffffff) 0%, var(--background-surface-default) 45%, color-mix(in oklab, var(--background-page) 92%, #ffffff) 100%);
-
-  /* --- Semântica de Borda --- */
-  --border-default: var(--border-width-1) var(--border-style-solid) var(--border-color-default);
-  --border-dashed: var(--border-width-1) var(--border-style-dashed) var(--border-color-default);
-
-  /* --- Semântica de Texto --- */
+  
+  /* --- Tokens de Texto --- */
   --text-color-primary: var(--color-light-text-primary);
   --text-color-muted: var(--color-light-text-muted);
-  --text-color-form-label: var(--color-light-text-muted-strong);
-  --text-color-on-primary: var(--color-light-solid);
-  --text-color-emphasis: var(--color-brand-secondary);
+  --text-color-strong: var(--color-light-text-muted-strong);
+  
+  /* --- Tokens de Border & Shadow --- */
+  --border-default: 1px solid var(--color-light-border);
+  --box-shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 
-  /* --- Semântica de Layout --- */
-  --layout-container-width: var(--size-container-max-width);
-  --layout-grid-columns: repeat(auto-fit, minmax(var(--size-grid-column-min), 1fr));
+  /* --- Tokens de Componentes (Default) --- */
+  --btn-padding: var(--space-3) var(--space-4);
+  --btn-radius: var(--radius-l);
 
-  /* --- Semântica de Componente: Header --- */
-  --header-background: var(--background-surface-default);
-  --header-radius: var(--radius-xl);
-  --header-shadow: var(--shadow-l);
-  --header-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--border-color-default) 70%, transparent);
-
-  /* --- Semântica de Componente: Card & KPI --- */
-  --card-background: var(--background-surface-default);
-  --card-padding: var(--space-5);
-  --card-radius: var(--radius-l);
-  --card-shadow: var(--shadow-m);
-  --card-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--border-color-default) 60%, transparent);
-
-  /* --- Semântica de Componente: Modal (.sheet) --- */
-  --modal-background: var(--background-surface-default);
-  --modal-shadow: var(--shadow-m);
-  --modal-radius: var(--radius-l);
-  --modal-border: var(--border-default);
-  --modal-backdrop-background: rgba(2, 6, 23, 0.45);
-  --modal-width-default: var(--size-modal-width-default);
-  --modal-width-compact: var(--size-modal-width-compact);
-
-  /* --- Semântica de Componente: Botão Padrão (.btn) --- */
-  --button-radius: var(--radius-pill);
-  --button-shadow: var(--shadow-s);
-  --button-padding-y: var(--space-3);
-  --button-padding-x: var(--space-5);
-  --button-font-weight: var(--font-weight-medium);
-  --button-border-default: var(--border-default);
-  --button-background-default: var(--background-surface-default);
-  --button-color-default: var(--text-color-primary);
-
-  /* --- Semântica de Componente: Botão Primário (.btn.primary) --- */
-  --button-primary-background: var(--color-brand-secondary);
-  --button-primary-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-brand-secondary) 40%, var(--border-color-default));
-  --button-primary-text: var(--text-color-on-primary);
-
-  /* --- Semântica de Componente: Botão Fantasma (.btn.ghost) --- */
-  --button-ghost-background: transparent;
-  --button-ghost-border: var(--border-dashed);
-  --button-ghost-text: var(--text-color-muted);
-
-  /* --- Semântica de Componente: Chip (.chipbtn) --- */
-  --chip-padding-y: var(--space-3);
-  --chip-padding-x: var(--space-4);
-  --chip-radius: var(--radius-pill);
-  --chip-border: var(--border-default);
-  --chip-background: var(--background-surface-default);
-  --chip-font-weight: var(--font-weight-medium);
-
-  /* --- Semântica de Componente: Tag (.tag) --- */
-  --tag-background: var(--background-surface-alternate);
-  --tag-border: var(--border-default);
-  --tag-text: var(--text-color-muted-strong);
-  --tag-radius: var(--radius-pill);
+  --tag-font-size: var(--font-size-m);
   --tag-padding: var(--space-1) var(--space-2);
-  --tag-font-size: var(--font-size-xs);
+  --tag-radius: var(--radius-s);
 
-  /* --- Semântica de Componente: Tag Primária (.tag.primary) --- */
-  --tag-primary-background: color-mix(in oklab, var(--color-brand-secondary) 12%, var(--background-surface-default));
-  --tag-primary-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-brand-secondary) 32%, var(--border-color-default));
-  --tag-primary-text: var(--color-brand-secondary);
-
-  /* --- Semântica de Componente: Pill (Feedback) --- */
-  --pill-radius: var(--radius-pill);
-  --pill-font-size: var(--font-size-s);
+  --pill-font-size: var(--font-size-m);
   --pill-padding: var(--space-2) var(--space-3);
-  /* .pill.warn (Amarelo) */
-  --pill-warn-background: color-mix(in oklab, var(--color-warning-yellow) 10%, var(--background-surface-default));
-  --pill-warn-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-warning-yellow) 50%, var(--border-color-default));
-  --pill-warn-text: var(--color-warning-yellow);
-  /* .pill.info (Azul) */
-  --pill-info-background: color-mix(in oklab, var(--color-info-cyan) 8%, var(--background-surface-default));
-  --pill-info-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-info-cyan) 40%, var(--border-color-default));
-  --pill-info-text: var(--color-info-cyan);
-
-  /* --- Semântica de Efeitos --- */
-  --focus-ring: var(--ring-focus);
+  --pill-radius: var(--radius-full);
 }
 
-/* ========================================================== */
-/* ETAPA 2.5: MOLÉCULAS (SUBSTITUIÇÕES MODO ESCURO) */
-/* ========================================================== */
-[data-theme="dark"] {
-  /* --- Semântica de Superfície (Overrides) --- */
+/* --- Dark Theme Tokens --- */
+html[data-theme="dark"] {
+  /* --- Tokens de Background & Surface (Dark) --- */
   --background-page: var(--color-dark-bg);
-  --background-surface-default: var(--color-dark-surface);
+  --background-surface: var(--color-dark-surface);
   --background-surface-alternate: var(--color-dark-surface-alt);
-  --border-color-default: var(--color-dark-border);
-  --page-gradient-default: var(--background-page);
-
-  /* --- Semântica de Borda (Overrides) --- */
-  --border-default: var(--border-width-1) var(--border-style-solid) var(--border-color-default);
-  --border-dashed: var(--border-width-1) var(--border-style-dashed) var(--border-color-default);
-
-  /* --- Semântica de Texto (Overrides) --- */
+  
+  /* --- Tokens de Texto (Dark) --- */
   --text-color-primary: var(--color-dark-text-primary);
   --text-color-muted: var(--color-dark-text-muted);
-  --text-color-form-label: var(--color-dark-muted-strong);
-  --text-color-on-primary: var(--color-dark-solid);
-
-  /* --- Semântica de Componente (Overrides) --- */
-  --header-shadow: none;
-  --card-shadow: none;
-  --modal-shadow: none;
-  --button-shadow: none;
-
-  /* --- Semântica de Tag Primária (Overrides) --- */
-  --tag-primary-background: color-mix(in oklab, var(--color-brand-secondary) 12%, var(--background-surface-default));
-  --tag-primary-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-brand-secondary) 32%, var(--border-color-default));
-
-  /* --- Semântica de Pill (Overrides) --- */
-  --pill-warn-background: color-mix(in oklab, var(--color-warning-yellow) 10%, var(--background-surface-default));
-  --pill-warn-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-warning-yellow) 50%, var(--border-color-default));
-  --pill-info-background: color-mix(in oklab, var(--color-info-cyan) 8%, var(--background-surface-default));
-  --pill-info-border: var(--border-width-1) var(--border-style-solid) color-mix(in oklab, var(--color-info-cyan) 40%, var(--border-color-default));
+  --text-color-strong: var(--color-dark-text-muted-strong);
+  
+  /* --- Tokens de Border & Shadow (Dark) --- */
+  --border-default: 1px solid var(--color-dark-border);
+  --box-shadow-default: none;
 }
+
+/* --- Tokens de Feedback (Independente do Tema) --- */
+
+/* Tag/Pill Primary */
+:root {
+  --tag-primary-background: var(--color-brand-secondary);
+  --tag-primary-border: 1px solid var(--color-brand-secondary);
+  --tag-primary-text: var(--color-light-solid);
+}
+
+/* Pill Warn */
+:root {
+  --pill-warn-background: var(--color-warning-yellow);
+  --pill-warn-border: 1px solid var(--color-warning-yellow);
+  --pill-warn-text: var(--color-light-text-primary);
+}
+
+/* Pill Info */
+:root {
+  --pill-info-background: var(--color-info-cyan);
+  --pill-info-border: 1px solid var(--color-info-cyan);
+  --pill-info-text: var(--color-light-solid);
+}
+
 
 /* ========================================================== */
-/* ETAPA 3: ORGANISMOS (COMPOSIÇÃO 100% "BURRA") */
+/* ETAPA 3: ORGANISMOS (ESTRUTURA DE LAYOUT) */
 /* ========================================================== */
-/*
- * Os componentes consomem APENAS as Moléculas (Tokens Semânticos).
- * Nenhum valor "mágico" (ex: 1px, 16px, #fff) é permitido aqui.
- * (A única exceção é o '0' para resets).
-*/
 
-/* --- Reset Mínimo e Base --- */
-* {
-  box-sizing: border-box;
-}
-html,
+/* --- Organismo: Reset/Base --- */
 body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  background: var(--page-gradient-default);
+  font-family: 'Inter', sans-serif;
   color: var(--text-color-primary);
-  font-family: var(--font-family-ui);
-  font-size: var(--font-size-base);
-  line-height: 1.45;
-  padding-bottom: var(--space-7);
-}
-img {
-  max-width: 100%;
-  display: block;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  margin: 0;
+  padding: var(--space-6);
+  background: var(--background-page);
 }
 
-/* --- Ícones (Símbolos do Google) --- */
-/* (Carregue a fonte no <head> do seu HTML) */
-.material-symbols-rounded {
-  font-family: "Material Symbols Rounded";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px; /* Padrão, pode ser sobrescrito */
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-  /* (Ajustes de variação de fonte podem ser Tokens!) */
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
+hr {
+  border: none;
+  border-top: var(--border-default);
+  margin: var(--space-6) 0;
 }
 
-/* --- Organismo: Header --- */
+/* --- Organismo: Header/Toolbar --- */
 header {
   display: flex;
   flex-direction: column;
-  max-width: var(--layout-container-width);
-  margin: var(--space-8) auto 0;
-  background: var(--header-background);
-  border-radius: var(--header-radius);
-  box-shadow: var(--header-shadow);
-  border: var(--header-border);
-  padding: var(--space-7);
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
-
-/* --- Organismo: Toolbar (dentro do Header) --- */
+header .title {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+header h1 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+}
+header .subtitle {
+  margin: 0;
+  font-size: var(--font-size-m);
+  color: var(--text-color-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.title-actions {
+  margin-left: auto;
+}
 .toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--background-surface-alternate);
-  border: var(--border-default);
-  border-radius: var(--radius-l);
-  padding: var(--space-4);
+  flex-wrap: wrap; /* Garante que os itens quebrem em telas menores */
   gap: var(--space-4);
 }
 
-/* --- Organismo de Layout: Grid de KPIs e Cards --- */
-.kpi-bar,
-.grid {
-  display: grid;
-  grid-template-columns: var(--layout-grid-columns);
-  max-width: var(--layout-container-width);
-  margin: var(--space-7) auto 0;
-  padding: 0 var(--space-5);
-  gap: var(--space-6);
+/* Classes de Utilidade de Layout (Usadas pelo HTML) */
+.split {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
 }
-
-/* --- Organismo: KPI (Card de Métrica) --- */
-.kpi {
+.row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+.col {
   display: flex;
   flex-direction: column;
-  position: relative;
-  background: var(--card-background);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  border: var(--card-border);
-  padding: var(--card-padding);
-  gap: var(--space-2);
 }
 
-/* Título (h3) dentro de um KPI ou Card */
-.kpi h3,
-.card h3 {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-color-emphasis);
-  font-size: var(--font-size-l);
+/* --- Organismo: CSS GRID (Para a área principal - <main>) --- */
+.grid { 
+  display: grid; 
+  grid-template-columns: 1fr; /* Padrão Mobile (1 coluna) */
+  gap: var(--space-4); 
+}
+@media (min-width: 768px) { 
+  .grid { grid-template-columns: repeat(3, minmax(250px, 1fr)); } /* Desktop (3 colunas) */
 }
 
-/* --- Organismo: Card (Card de Gráfico) --- */
-.card {
+
+/* --- Organismo: CARROSSEL (CSS Scroll Snap) --- */
+.carousel {
   display: flex;
-  flex-direction: column;
-  position: relative;
-  background: var(--card-background);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  border: var(--card-border);
-  padding: var(--card-padding);
-  gap: var(--space-4);
+  overflow-x: auto; /* Habilita a rolagem horizontal */
+  gap: var(--space-4); 
+  scroll-snap-type: x mandatory; /* Força o "snap" */
+  -webkit-overflow-scrolling: touch; /* Melhora a rolagem em iOS */
+  padding-bottom: var(--space-2); /* Espaço para sombra ou indicador */
+}
+/* Item do Carrossel (KPI Card) */
+.carousel > .card {
+  flex-shrink: 0; 
+  width: 90%; /* Garante que 'grude' em um item visível no mobile */
+  scroll-snap-align: start; /* Alinha o item ao início do contêiner */
+  padding: var(--space-4); 
+  /* Estilo KPI: */
+  text-align: center; 
+}
+.kpi-value { 
+  font-size: 2.2rem; 
+  font-weight: 700; 
+  color: var(--color-brand-primary); 
+  margin: var(--space-1) 0; 
 }
 
-/* --- Organismo: Modal (Janela) --- */
-.modal {
-  position: fixed;
-  inset: 0;
-  display: flex; /* (JS controla para 'none') */
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6);
-  z-index: 100;
-}
-.modal .backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--modal-backdrop-background);
-  z-index: 0;
-}
-.modal .sheet {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-  background: var(--modal-background);
-  border-radius: var(--modal-radius);
-  box-shadow: var(--modal-shadow);
-  border: var(--modal-border);
-  width: var(--modal-width-default);
-  max-height: 90vh;
-}
-.modal .sheet.compact {
-  width: var(--modal-width-compact);
-}
-.modal .sheet-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4);
-  border-bottom: var(--border-default);
-}
-.modal .sheet-head h2 {
-  margin: 0;
-  font-size: var(--font-size-l);
-}
-.modal .sheet-body {
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-.modal .close {
-  /* (Estilos do botão de fechar) */
+/* Responsividade do Carrossel (Desktop) */
+@media (min-width: 768px) { 
+  /* Exibir ~3 cards no desktop */
+  .carousel > .card { width: calc(33.33% - var(--space-4)); } 
 }
 
-/* --- Molécula: Botão Padrão (.btn) --- */
+/* Ocultar barra de rolagem (opcional para estética moderna) */
+.carousel::-webkit-scrollbar { display: none; }
+.carousel { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+/* ========================================================== */
+/* ETAPA 4: MOLÉCULAS (COMPONENTES) */
+/* ========================================================== */
+
+/* --- Molécula: Botão (Btn) --- */
 .btn {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   gap: var(--space-2);
+  align-items: center;
+  padding: var(--btn-padding);
+  border-radius: var(--btn-radius);
+  background: var(--background-surface);
+  border: var(--border-default);
+  color: var(--text-color-primary);
+  text-decoration: none;
   cursor: pointer;
-  font-weight: var(--button-font-weight);
-  padding: var(--button-padding-y) var(--button-padding-x);
-  border-radius: var(--button-radius);
-  box-shadow: var(--button-shadow);
-  border: var(--button-border-default);
-  background: var(--button-background-default);
-  color: var(--button-color-default);
-  transition: all 180ms ease;
+  transition: background 0.2s, border-color 0.2s;
+  font-size: var(--font-size-m);
 }
 .btn:hover {
   background: var(--background-surface-alternate);
-  box-shadow: var(--shadow-m);
-  transform: translateY(-1px);
 }
-
-/* COMPOSIÇÃO: Variante Primária */
 .btn.primary {
-  background: var(--button-primary-background);
-  border: var(--button-primary-border);
-  color: var(--button-primary-text);
+  background: var(--color-brand-secondary);
+  border-color: var(--color-brand-secondary);
+  color: var(--color-light-solid);
+}
+.btn.primary:hover {
+  background: #0849a9; /* Tom mais escuro */
+  border-color: #0849a9;
 }
 
-/* COMPOSIÇÃO: Variante Fantasma */
-.btn.ghost {
-  background: var(--button-ghost-background);
-  border: var(--button-ghost-border);
-  color: var(--button-ghost-text);
-  box-shadow: none;
+/* --- Molécula: Card --- */
+.card {
+  background: var(--background-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-l);
+  box-shadow: var(--box-shadow-default);
+  padding: var(--space-4);
+  color: var(--text-color-primary);
 }
-.btn.ghost:hover {
-  background: var(--background-surface-alternate);
-  transform: none;
+.card h3 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-l);
 }
-
-/* --- Molécula: Botão Chip (.chipbtn) --- */
-.chipbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-  font-weight: var(--chip-font-weight);
-  padding: var(--chip-padding-y) var(--chip-padding-x);
-  border-radius: var(--chip-radius);
-  border: var(--chip-border);
-  background: var(--chip-background);
-  transition: all 180ms ease;
-}
-.chipbtn:hover {
-  background: var(--background-surface-alternate);
-  box-shadow: var(--shadow-s);
+.card p {
+  margin: 0;
+  color: var(--text-color-muted);
+  font-size: var(--font-size-m);
 }
 
-/* --- Molécula: Campo de Formulário (.form-field) --- */
-.form-field {
+/* Card Específico para o Grid Principal */
+.app-card {
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
 }
-.form-field label {
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-color-form-label);
+.app-card .row {
+  align-items: flex-start;
 }
-.form-field select {
-  width: 100%;
-  padding: var(--space-3);
-  background: var(--background-surface-alternate);
-  border: var(--border-default);
-  border-radius: var(--radius-m);
-  color: var(--text-color-primary);
+.app-card .actions {
+  margin-top: auto; /* Empurra ações para o fundo do card */
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+.app-card .actions .btn {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-m);
 }
 
 /* --- Molécula: Pill (Aviso) --- */
@@ -535,9 +348,9 @@ header {
   gap: var(--space-1);
   padding: var(--tag-padding);
   font-size: var(--tag-font-size);
-  background: var(--tag-background);
-  border: var(--tag-border);
-  color: var(--tag-text);
+  background: var(--tag-background, var(--background-surface-alternate));
+  border: var(--tag-border, var(--border-default));
+  color: var(--tag-text, var(--text-color-strong));
   border-radius: var(--tag-radius);
 }
 .tag.primary {
@@ -546,21 +359,12 @@ header {
   color: var(--tag-primary-text);
 }
 
-/* --- Molécula: Item de Lista (ex: .study-item) --- */
-.study-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-m);
-  background: var(--background-surface-default);
-  border: var(--border-default);
-  box-shadow: var(--shadow-s);
+/* ========================================================== */
+/* ETAPA 5: ÁTOMOS (UTILIDADES) */
+/* ========================================================== */
+.app-icon {
+  font-size: var(--font-size-l);
 }
-
-/* --- Utilitários (ex: .hint, .meta) --- */
-.hint,
-.meta {
-  color: var(--text-color-muted);
-  font-size: var(--font-size-s);
+.app-icon.large {
+  font-size: var(--font-size-xl);
 }
