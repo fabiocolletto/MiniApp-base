@@ -17,9 +17,11 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 5. Sempre atualize o `CHANGELOG.md` descrevendo as mudanças relevantes antes de abrir um PR.
 
 ## Shell PWA e fluxo de navegação
-O arquivo `index.html` atua como shell da experiência. Ele incorpora o catálogo em `miniapp-catalogo/index.html` dentro do iframe `#miniapp-panel` e expõe os utilitários de navegação via `window.loadMiniApp`. Os botões com o atributo `data-miniapp-target` alternam o conteúdo do iframe e os próprios miniapps podem solicitar trocas usando `window.parent.postMessage('open-catalog')` ou enviando um objeto `{ action: 'load-miniapp', url: '<caminho>' }` para o shell.
+O arquivo `index.html` atua como shell da experiência. Ele incorpora o catálogo em `miniapp-catalogo/index.html` dentro do iframe `#miniapp-panel` e expõe os utilitários de navegação via `window.loadMiniApp`. Os links com o atributo `data-miniapp-target` — presentes no catálogo e opcionais em outros componentes do shell — alternam o conteúdo do iframe e os próprios miniapps podem solicitar trocas usando `window.parent.postMessage('open-catalog')` ou enviando um objeto `{ action: 'load-miniapp', url: '<caminho>' }` para o shell.
 
-Em navegadores modernos o shell assume o modo tela cheia automaticamente após a rolagem, preservando apenas o conteúdo do miniapp e o rodapé fixo com a versão atual. Em telas largas (largura ≥ 1024px) um botão posicionado no canto superior direito permite ativar ou sair manualmente desse modo imersivo.
+Em telas largas (largura ≥ 1024px) um botão posicionado no canto superior direito ativa ou encerra o modo imersivo utilizando a API nativa `requestFullscreen`. O estado do shell acompanha as transições disparadas pelo navegador (incluindo `Esc`), mantendo apenas o conteúdo do miniapp e o rodapé visíveis durante a experiência em tela cheia.
+
+O rodapé fixo destaca a identidade visual da 5 Horas por meio do ícone oficial e do texto “5 horas de pesquisa e análise limitada”, seguido das informações de produto e versão do shell.
 
 ### Registrando novos miniapps
 1. Publique os assets HTML/CSS do miniapp em um diretório dedicado na raiz do projeto (ex.: `miniapp-novo/index.html`).

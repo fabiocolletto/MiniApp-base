@@ -161,8 +161,18 @@ body {
   background: var(--background-page);
 }
 
+html {
+  min-height: 100%;
+}
+
 body.catalog-blank {
   background: var(--color-light-solid);
+  min-height: 100%;
+  display: flex;
+}
+
+body.catalog-blank .catalog-board {
+  flex: 1;
 }
 
 hr {
@@ -507,19 +517,14 @@ header .subtitle {
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
   border-color: rgba(22, 163, 74, 0.24);
 }
-.app-card .actions {
-  margin-top: auto;
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-}
-
 .catalog-board {
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  padding: clamp(3rem, 6vw, 6.5rem);
+  align-items: stretch;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 6vw, 3.5rem);
   background: var(--color-light-solid);
 }
 
@@ -539,24 +544,51 @@ header .subtitle {
 .catalog-board__cards {
   display: grid;
   gap: clamp(1.5rem, 4vw, 3rem);
-  grid-template-columns: repeat(auto-fit, minmax(clamp(15rem, 30vw, 22rem), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-content: center;
-  width: min(100%, clamp(32rem, 80vw, 60rem));
+  width: min(72rem, 100%);
+  margin-inline: auto;
+  align-content: center;
+  align-items: stretch;
+}
+
+@media (max-width: 48rem) {
+  .catalog-board__cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .catalog-card {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.catalog-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  height: 100%;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
   background: var(--color-light-solid);
   border: 2px solid rgba(226, 232, 240, 0.9);
   border-radius: clamp(var(--radius-l), 2vw, var(--radius-xl));
   box-shadow: none;
-  padding: clamp(1.75rem, 4vw, 2.75rem);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
-.catalog-card:hover,
-.catalog-card:focus-within {
+.catalog-card__link:hover,
+.catalog-card__link:focus-visible {
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgb(15 23 42 / 0.08);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.catalog-card__link:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 4px;
 }
 
 .catalog-card__header {
@@ -595,10 +627,6 @@ header .subtitle {
 .catalog-card .app-icon.icon-importador {
   color: var(--color-accent-green);
   border-color: rgba(22, 163, 74, 0.35);
-}
-
-.catalog-card .actions {
-  justify-content: flex-start;
 }
 
 /* --- Molécula: Pill (Aviso) --- */
@@ -754,12 +782,27 @@ header .subtitle {
   gap: var(--space-4);
 }
 
+.panel-wrapper--catalog {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  display: block;
+  height: 100%;
+  gap: 0;
+}
+
 .panel-wrapper header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+.panel-wrapper--catalog > header {
+  display: none;
 }
 
 .panel-wrapper header h2 {
@@ -773,6 +816,30 @@ header .subtitle {
   min-height: clamp(28rem, 65vh, 48rem);
   border-radius: calc(var(--radius-l) - var(--space-1));
   background: var(--background-surface);
+}
+
+.panel-wrapper--catalog iframe {
+  min-height: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+
+.shell-container--catalog {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app-shell.is-catalog-open .shell-main {
+  background: var(--background-surface);
+}
+
+.app-shell.is-catalog-open .shell-main .shell-container {
+  padding-block: 0;
 }
 
 .panel-actions {
@@ -801,13 +868,31 @@ header .subtitle {
   gap: var(--space-2);
 }
 
-.app-footer p {
+.app-footer__info {
   margin: 0;
   font-size: var(--font-size-s);
   color: var(--text-color-muted);
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.app-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-color-primary);
+}
+
+.app-footer__logo {
+  inline-size: clamp(1.5rem, 1.2rem + 0.8vw, 2.25rem);
+  block-size: clamp(1.5rem, 1.2rem + 0.8vw, 2.25rem);
+  object-fit: contain;
+  border-radius: var(--radius-s);
+}
+
+.app-footer__research {
+  font-weight: 500;
 }
 
 .app-footer__product {
