@@ -22,11 +22,6 @@
               <p>Escolha um mini‑app no catálogo para iniciar.</p>
             </div>
           </div>
-          <div class="shell-actions">
-            <button type="button" class="btn primary" data-miniapp-target="./miniapp-catalogo/index.html">
-              Abrir catálogo
-            </button>
-          </div>
         </div>
       </div>
     </header>
@@ -36,11 +31,6 @@
         <section class="panel-wrapper" aria-label="Painel de miniapp incorporado">
           <header>
             <h2>MiniApp em execução</h2>
-            <div class="panel-actions">
-              <button type="button" class="btn" data-miniapp-target="./miniapp-catalogo/index.html">
-                Abrir catálogo
-              </button>
-            </div>
           </header>
           <iframe id="miniapp-panel" name="miniapp-panel" src="./miniapp-catalogo/index.html" title="MiniApp embarcado"></iframe>
           <noscript>Ative o JavaScript para alternar entre os mini‑apps.</noscript>
@@ -50,7 +40,19 @@
 
     <footer class="app-footer">
       <div class="shell-container">
-        <p>
+        <p class="app-footer__info">
+          <span class="app-footer__brand">
+            <img
+              src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
+              alt="5 Horas"
+              class="app-footer__logo"
+              loading="lazy"
+              width="48"
+              height="48"
+            >
+            <span class="app-footer__research">5 horas de pesquisa e análise limitada</span>
+          </span>
+          <span aria-hidden="true">•</span>
           <span class="app-footer__product">MiniApps Shell</span>
           <span aria-hidden="true">•</span>
           <span class="app-footer__meta">Versão 0.2.0 (experimental)</span>
@@ -63,72 +65,117 @@
     (function () {
       const defaultMiniApp = './miniapp-catalogo/index.html';
       const panel = document.getElementById('miniapp-panel');
+      const panelWrapper = document.querySelector('.panel-wrapper');
+      const shellMainContainer = document.querySelector('.shell-main .shell-container');
       const appShell = document.querySelector('.app-shell');
-      const shellHeader = document.querySelector('.shell-header');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
       const fullscreenLabel = fullscreenToggle ? fullscreenToggle.querySelector('[data-label]') : null;
-      const scrollThreshold = shellHeader ? shellHeader.offsetHeight : 80;
-      let fullscreenControlMode = 'auto';
+      const catalogUrl = new URL(defaultMiniApp, window.location.href);
+      const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
 
-      function applyFullscreenState(state, options = {}) {
-        if (!appShell) {
-          return;
+      function isCatalogUrl(url) {
+        try {
+          const parsed = new URL(url, window.location.href);
+          return parsed.pathname.replace(/\/+$/, '') === catalogPath;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function updateCatalogState(sourceUrl) {
+        const isCatalog = isCatalogUrl(sourceUrl);
+
+        if (panelWrapper) {
+          panelWrapper.classList.toggle('panel-wrapper--catalog', isCatalog);
         }
 
-        if (options.mode) {
-          fullscreenControlMode = options.mode;
+        if (shellMainContainer) {
+          shellMainContainer.classList.toggle('shell-container--catalog', isCatalog);
         }
 
-        if (state) {
-          appShell.classList.add('is-fullscreen');
-        } else {
-          appShell.classList.remove('is-fullscreen');
+        if (appShell) {
+          appShell.classList.toggle('is-catalog-open', isCatalog);
+        }
+      }
+
+      function isFullscreenActive() {
+        return document.fullscreenElement === appShell || document.fullscreenElement === document.documentElement;
+      }
+
+      function syncFullscreenState() {
+        const fullscreen = isFullscreenActive();
+
+        if (appShell) {
+          appShell.classList.toggle('is-fullscreen', fullscreen);
         }
 
         if (fullscreenToggle) {
-          fullscreenToggle.setAttribute('aria-pressed', state ? 'true' : 'false');
+          fullscreenToggle.setAttribute('aria-pressed', fullscreen ? 'true' : 'false');
           if (fullscreenLabel) {
-            fullscreenLabel.textContent = state ? 'Sair do modo tela cheia' : 'Tela cheia';
+            fullscreenLabel.textContent = fullscreen ? 'Sair do modo tela cheia' : 'Tela cheia';
           }
         }
       }
 
-      function handleScroll() {
+      async function enterFullscreen() {
         if (!appShell) {
           return;
         }
 
-        if (fullscreenControlMode === 'locked-on') {
+        try {
+          if (document.fullscreenElement === appShell) {
+            return;
+          }
+
+          if (appShell.requestFullscreen) {
+            try {
+              await appShell.requestFullscreen({ navigationUI: 'hide' });
+            } catch (requestError) {
+              if (requestError && requestError.name === 'TypeError') {
+                await appShell.requestFullscreen();
+              } else {
+                throw requestError;
+              }
+            }
+          } else if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+        } catch (error) {
+          console.error('Não foi possível ativar a tela cheia nativa.', error);
+        } finally {
+          syncFullscreenState();
+        }
+      }
+
+      async function exitFullscreen() {
+        if (!document.fullscreenElement || !document.exitFullscreen) {
+          syncFullscreenState();
           return;
         }
 
-        if (fullscreenControlMode === 'locked-off') {
-          if (window.scrollY <= scrollThreshold) {
-            fullscreenControlMode = 'auto';
-          } else {
-            applyFullscreenState(false);
-            return;
-          }
+        try {
+          await document.exitFullscreen();
+        } catch (error) {
+          console.error('Não foi possível sair da tela cheia nativa.', error);
+        } finally {
+          syncFullscreenState();
         }
-
-        const shouldFullscreen = window.scrollY > scrollThreshold;
-        applyFullscreenState(shouldFullscreen);
       }
 
-      window.addEventListener('scroll', handleScroll, { passive: true });
-
-      if (fullscreenToggle && appShell) {
+      if (fullscreenToggle) {
         fullscreenToggle.addEventListener('click', () => {
-          const isFullscreen = appShell.classList.contains('is-fullscreen');
-          if (fullscreenControlMode === 'locked-on' || isFullscreen) {
-            applyFullscreenState(false, { mode: 'locked-off' });
+          if (isFullscreenActive()) {
+            exitFullscreen();
           } else {
-            applyFullscreenState(true, { mode: 'locked-on' });
+            enterFullscreen();
           }
         });
       }
 
-      applyFullscreenState(window.scrollY > scrollThreshold);
+      document.addEventListener('fullscreenchange', syncFullscreenState);
+      document.addEventListener('fullscreenerror', syncFullscreenState);
+
+      syncFullscreenState();
 
       function loadMiniApp(url, options = {}) {
         if (!panel) {
@@ -140,6 +187,8 @@
         if (panel.src !== new URL(targetUrl, window.location.href).href) {
           panel.src = targetUrl;
         }
+
+        updateCatalogState(targetUrl);
 
         if (options.focus !== false && typeof panel.focus === 'function') {
           requestAnimationFrame(() => {
@@ -161,6 +210,12 @@
           loadMiniApp(targetUrl);
         });
       });
+
+      if (panel) {
+        panel.addEventListener('load', () => {
+          updateCatalogState(panel.src);
+        });
+      }
 
       window.addEventListener('message', (event) => {
         if (event.origin !== window.location.origin) {
