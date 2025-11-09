@@ -885,8 +885,9 @@ header .subtitle {
   width: min(100%, clamp(20rem, 90vw, 70rem));
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--space-2);
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .app-footer__info {
@@ -895,6 +896,9 @@ header .subtitle {
   color: var(--text-color-muted);
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -926,14 +930,54 @@ header .subtitle {
 }
 
 
-.shell-actions {
-  position: fixed;
-  top: clamp(var(--space-4), 3vh, var(--space-7));
-  right: clamp(var(--space-4), 4vw, var(--space-7));
-  z-index: 10;
-  display: none;
+.footer-shortcuts {
+  display: flex;
   align-items: center;
-  gap: clamp(var(--space-2), 1vw, var(--space-4));
+  gap: var(--space-2);
+  position: relative;
+}
+
+.footer-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: clamp(3rem, 2vw + 2.5rem, 3.5rem);
+  block-size: clamp(3rem, 2vw + 2.5rem, 3.5rem);
+  padding: 0;
+  border-radius: var(--radius-full);
+}
+
+.footer-menu-toggle .material-symbols-rounded {
+  font-size: clamp(1.75rem, 1.25rem + 1vw, 2.25rem);
+  line-height: 1;
+}
+
+.footer-actions {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  display: none;
+  padding: var(--space-2);
+  border-radius: var(--radius-l);
+  border: var(--border-default);
+  background: var(--background-surface);
+  box-shadow: var(--box-shadow-default);
+  gap: var(--space-2);
+  z-index: 10;
+}
+
+.footer-actions[hidden] {
+  display: none !important;
+}
+
+.footer-actions.footer-actions--open {
+  display: flex;
+}
+
+.shell-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .shell-action {
@@ -955,9 +999,43 @@ header .subtitle {
   display: none;
 }
 
+@media (min-width: 40rem) {
+  .app-footer .shell-container {
+    flex-wrap: nowrap;
+    gap: var(--space-4);
+  }
+
+  .app-footer__info {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+}
+
 @media (min-width: 64rem) {
+  .footer-shortcuts {
+    display: block;
+  }
+
+  .footer-menu-toggle {
+    display: none;
+  }
+
+  .footer-actions {
+    position: static;
+    display: block;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
   .shell-actions {
+    position: fixed;
+    top: clamp(var(--space-4), 3vh, var(--space-7));
+    right: clamp(var(--space-4), 4vw, var(--space-7));
+    z-index: 10;
     display: inline-flex;
+    gap: clamp(var(--space-2), 1vw, var(--space-4));
   }
 }
 

@@ -9,28 +9,6 @@
 </head>
 <body>
   <div class="app-shell">
-    <div class="shell-actions" role="group" aria-label="Atalhos do shell">
-      <button
-        type="button"
-        class="btn ghost shell-action catalog-toggle"
-        data-action="open-catalog"
-        aria-label="Abrir catálogo"
-        title="Abrir catálogo"
-      >
-        <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-      </button>
-      <button
-        type="button"
-        class="btn ghost shell-action fullscreen-toggle"
-        data-action="toggle-fullscreen"
-        aria-pressed="false"
-        aria-label="Tela cheia"
-        title="Tela cheia"
-      >
-        <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
-        <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
-      </button>
-    </div>
     <header class="shell-header">
       <div class="shell-container">
         <div class="header-content">
@@ -59,6 +37,44 @@
 
     <footer class="app-footer">
       <div class="shell-container">
+        <div class="footer-shortcuts">
+          <button
+            type="button"
+            class="btn ghost footer-menu-toggle"
+            data-action="toggle-footer-actions"
+            aria-controls="footer-quick-actions"
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-label="Abrir atalhos do rodapé"
+            title="Abrir atalhos"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+          </button>
+          <div class="footer-actions" id="footer-quick-actions" data-footer-actions hidden>
+            <div class="shell-actions" role="group" aria-label="Atalhos do shell">
+              <button
+                type="button"
+                class="btn ghost shell-action catalog-toggle"
+                data-action="open-catalog"
+                aria-label="Abrir catálogo"
+                title="Abrir catálogo"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+              </button>
+              <button
+                type="button"
+                class="btn ghost shell-action fullscreen-toggle"
+                data-action="toggle-fullscreen"
+                aria-pressed="false"
+                aria-label="Tela cheia"
+                title="Tela cheia"
+              >
+                <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
+                <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <p class="app-footer__info">
           <span class="app-footer__brand">
             <img
@@ -91,6 +107,9 @@
       const headerSubtitle = document.querySelector('[data-shell-app-subtitle]');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
       const catalogToggle = document.querySelector('[data-action="open-catalog"]');
+      const footerMenuToggle = document.querySelector('[data-action="toggle-footer-actions"]');
+      const footerActions = document.querySelector('[data-footer-actions]');
+      const desktopMediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 64rem)') : null;
       const catalogUrl = new URL(defaultMiniApp, window.location.href);
       const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
       const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
@@ -139,8 +158,153 @@
         },
       };
 
+      const FOOTER_SHORTCUT_TOGGLE_COPY = {
+        expanded: {
+          label: 'Fechar atalhos do rodapé',
+          title: 'Fechar atalhos',
+        },
+        collapsed: {
+          label: 'Abrir atalhos do rodapé',
+          title: 'Abrir atalhos',
+        },
+      };
+
       const miniAppMetadata = new Map();
       let activeMiniAppUrl = null;
+
+      function isDesktopLayout() {
+        return Boolean(desktopMediaQuery && desktopMediaQuery.matches);
+      }
+
+      function setFooterToggleState(isExpanded) {
+        if (!footerMenuToggle) {
+          return;
+        }
+
+        const stateKey = isExpanded ? 'expanded' : 'collapsed';
+        const copy = FOOTER_SHORTCUT_TOGGLE_COPY[stateKey];
+
+        footerMenuToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+
+        if (copy && copy.label) {
+          footerMenuToggle.setAttribute('aria-label', copy.label);
+        }
+
+        if (copy && copy.title) {
+          footerMenuToggle.setAttribute('title', copy.title);
+        }
+      }
+
+      function openFooterActions() {
+        if (!footerActions || !footerMenuToggle || isDesktopLayout()) {
+          return;
+        }
+
+        footerActions.hidden = false;
+        footerActions.classList.add('footer-actions--open');
+        setFooterToggleState(true);
+      }
+
+      function closeFooterActions(options = {}) {
+        if (!footerActions || !footerMenuToggle) {
+          return;
+        }
+
+        const { restoreFocus = false, force = false } = options;
+
+        if (isDesktopLayout() && !force) {
+          return;
+        }
+
+        footerActions.classList.remove('footer-actions--open');
+        footerActions.hidden = true;
+        setFooterToggleState(false);
+
+        if (restoreFocus && typeof footerMenuToggle.focus === 'function') {
+          footerMenuToggle.focus();
+        }
+      }
+
+      function syncFooterActionsForViewport(isDesktop) {
+        if (!footerActions) {
+          return;
+        }
+
+        if (isDesktop) {
+          footerActions.hidden = false;
+          footerActions.classList.remove('footer-actions--open');
+          setFooterToggleState(false);
+        } else {
+          closeFooterActions({ force: true });
+        }
+      }
+
+      if (footerActions || footerMenuToggle) {
+        const initialIsDesktop = isDesktopLayout();
+
+        if (footerActions) {
+          syncFooterActionsForViewport(initialIsDesktop);
+        } else {
+          setFooterToggleState(false);
+        }
+
+        if (desktopMediaQuery) {
+          const handleFooterViewportChange = (event) => {
+            syncFooterActionsForViewport(Boolean(event && event.matches));
+          };
+
+          if (typeof desktopMediaQuery.addEventListener === 'function') {
+            desktopMediaQuery.addEventListener('change', handleFooterViewportChange);
+          } else if (typeof desktopMediaQuery.addListener === 'function') {
+            desktopMediaQuery.addListener(handleFooterViewportChange);
+          }
+        }
+      }
+
+      if (footerMenuToggle && footerActions) {
+        footerMenuToggle.addEventListener('click', () => {
+          if (isDesktopLayout()) {
+            return;
+          }
+
+          if (footerActions.classList.contains('footer-actions--open')) {
+            closeFooterActions();
+          } else {
+            openFooterActions();
+          }
+        });
+
+        document.addEventListener('click', (event) => {
+          if (
+            isDesktopLayout() ||
+            !footerActions.classList.contains('footer-actions--open')
+          ) {
+            return;
+          }
+
+          if (
+            footerActions.contains(event.target) ||
+            footerMenuToggle.contains(event.target)
+          ) {
+            return;
+          }
+
+          closeFooterActions();
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (
+            event.key !== 'Escape' ||
+            isDesktopLayout() ||
+            !footerActions.classList.contains('footer-actions--open')
+          ) {
+            return;
+          }
+
+          event.preventDefault();
+          closeFooterActions({ restoreFocus: true });
+        });
+      }
 
       function getActiveLocale() {
         const docLang = (document.documentElement && document.documentElement.lang) || '';
@@ -372,6 +536,10 @@
           } else {
             enterFullscreen();
           }
+
+          if (!isDesktopLayout()) {
+            closeFooterActions();
+          }
         });
       }
 
@@ -380,6 +548,10 @@
           loadMiniApp(defaultMiniApp, {
             metadata: getCatalogHeaderCopy(),
           });
+
+          if (!isDesktopLayout()) {
+            closeFooterActions();
+          }
         });
       }
 
