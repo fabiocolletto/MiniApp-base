@@ -5,7 +5,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 ## Estrutura
 - `index.html`: página de entrada que referencia os estilos compartilhados.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
-- `miniapp-base/components/survey_import.html`: protótipo do importador de pesquisas.
+- `miniapp-importador/`: miniapp dedicado ao fluxo de importação de pesquisas.
 - `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
 - `miniapp-catalogo/index.html`: variante do catálogo publicada em ambientes de homologação.
 
@@ -18,7 +18,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 
 ## Miniapps disponíveis
 - **Painel do Prefeito** – painel com KPIs, filtros e relatórios setoriais acessível em `miniapp-prefeito/index.html`.
-- **Importador de Pesquisas** – fluxo para importar arquivos CSV e revisar resultados em `miniapp-base/components/survey_import.html`.
+- **Importador de Pesquisas** – fluxo para importar arquivos CSV e revisar resultados em `miniapp-importador/index.html`.
 
 ## Licença
 Uso interno apenas; consulte os responsáveis pelo projeto antes de compartilhar externamente.
