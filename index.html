@@ -176,6 +176,34 @@
         return Boolean(desktopMediaQuery && desktopMediaQuery.matches);
       }
 
+      function isFooterToggleVisible() {
+        if (!footerMenuToggle) {
+          return false;
+        }
+
+        if (footerMenuToggle.offsetParent !== null) {
+          return true;
+        }
+
+        if (typeof window.getComputedStyle === 'function') {
+          const styles = window.getComputedStyle(footerMenuToggle);
+
+          if (styles) {
+            const hiddenByDisplay = styles.display === 'none';
+            const hiddenByVisibility = styles.visibility === 'hidden' || styles.visibility === 'collapse';
+            const hiddenByOpacity = Number.parseFloat(styles.opacity || '1') === 0;
+
+            return !(hiddenByDisplay || hiddenByVisibility || hiddenByOpacity);
+          }
+        }
+
+        return true;
+      }
+
+      function shouldUseDesktopFooterBehavior() {
+        return isDesktopLayout() && !isFooterToggleVisible();
+      }
+
       function setFooterToggleState(isExpanded) {
         if (!footerMenuToggle) {
           return;
@@ -196,7 +224,7 @@
       }
 
       function openFooterActions() {
-        if (!footerActions || !footerMenuToggle || isDesktopLayout()) {
+        if (!footerActions || !footerMenuToggle || shouldUseDesktopFooterBehavior()) {
           return;
         }
 
@@ -212,7 +240,7 @@
 
         const { restoreFocus = false, force = false } = options;
 
-        if (isDesktopLayout() && !force) {
+        if (shouldUseDesktopFooterBehavior() && !force) {
           return;
         }
 
@@ -225,10 +253,12 @@
         }
       }
 
-      function syncFooterActionsForViewport(isDesktop) {
+      function syncFooterActionsForViewport() {
         if (!footerActions) {
           return;
         }
+
+        const isDesktop = shouldUseDesktopFooterBehavior();
 
         if (isDesktop) {
           footerActions.hidden = false;
@@ -240,17 +270,15 @@
       }
 
       if (footerActions || footerMenuToggle) {
-        const initialIsDesktop = isDesktopLayout();
-
         if (footerActions) {
-          syncFooterActionsForViewport(initialIsDesktop);
+          syncFooterActionsForViewport();
         } else {
           setFooterToggleState(false);
         }
 
         if (desktopMediaQuery) {
-          const handleFooterViewportChange = (event) => {
-            syncFooterActionsForViewport(Boolean(event && event.matches));
+          const handleFooterViewportChange = () => {
+            syncFooterActionsForViewport();
           };
 
           if (typeof desktopMediaQuery.addEventListener === 'function') {
@@ -263,7 +291,7 @@
 
       if (footerMenuToggle && footerActions) {
         footerMenuToggle.addEventListener('click', () => {
-          if (isDesktopLayout()) {
+          if (shouldUseDesktopFooterBehavior()) {
             return;
           }
 
@@ -276,7 +304,7 @@
 
         document.addEventListener('click', (event) => {
           if (
-            isDesktopLayout() ||
+            shouldUseDesktopFooterBehavior() ||
             !footerActions.classList.contains('footer-actions--open')
           ) {
             return;
@@ -295,7 +323,7 @@
         document.addEventListener('keydown', (event) => {
           if (
             event.key !== 'Escape' ||
-            isDesktopLayout() ||
+            shouldUseDesktopFooterBehavior() ||
             !footerActions.classList.contains('footer-actions--open')
           ) {
             return;
