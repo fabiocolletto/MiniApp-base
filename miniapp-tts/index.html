@@ -198,6 +198,73 @@
       gap: var(--space-2);
     }
 
+    .tts-history-header {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .tts-history-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .tts-history-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: clamp(12px, 3vw, 20px);
+    }
+
+    .tts-history-item {
+      border: var(--border-default);
+      border-radius: var(--radius-l);
+      padding: clamp(12px, 2vw, 20px);
+      background: var(--background-surface-alternate);
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .tts-history-item__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      color: var(--text-color-muted);
+      font-size: var(--font-size-m);
+    }
+
+    .tts-history-item__meta span {
+      display: inline-flex;
+      gap: var(--space-1);
+      align-items: baseline;
+    }
+
+    .tts-history-item__meta span strong {
+      font-weight: 600;
+      color: var(--text-color-primary);
+    }
+
+    .tts-history-item__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .tts-history-item__actions .btn {
+      min-width: auto;
+    }
+
+    .tts-history-item__audio {
+      width: 100%;
+    }
+
+    .tts-history-empty {
+      margin: 0;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-m);
+    }
+
     .tts-audio-player {
       width: 100%;
       border-radius: var(--radius-m);
@@ -322,6 +389,18 @@
             <audio id="audioPlayer" class="tts-audio-player" controls preload="none"></audio>
           </div>
         </section>
+
+        <section class="tts-card">
+          <div class="tts-history-header">
+            <h2 id="historyTitle" data-i18n="history.title">Histórico</h2>
+            <p id="historyDescription" class="tts-output-status" data-i18n="history.description">Consulte os áudios já gerados para ouvir novamente ou baixar.</p>
+          </div>
+          <div class="tts-history-actions">
+            <button type="button" id="historyClearButton" class="btn ghost" data-i18n="history.actions.clear" disabled>Limpar histórico</button>
+          </div>
+          <ul id="historyList" class="tts-history-list" aria-live="polite"></ul>
+          <p id="historyEmptyState" class="tts-history-empty" data-i18n="history.empty">Nenhum áudio gerado ainda.</p>
+        </section>
       </main>
     </div>
   </div>
@@ -398,6 +477,22 @@
             needsRegeneration: 'As configurações mudaram. Gere novamente para atualizar o áudio.',
             error: 'Não foi possível gerar o áudio. Tente novamente.'
           }
+        },
+        history: {
+          title: 'Histórico',
+          description: 'Consulte os áudios já gerados para ouvir novamente ou baixar.',
+          empty: 'Nenhum áudio gerado ainda.',
+          labels: {
+            createdAt: 'Gerado em',
+            language: 'Idioma',
+            duration: 'Duração'
+          },
+          actions: {
+            play: 'Ouvir',
+            download: 'Baixar (WAV)',
+            remove: 'Remover',
+            clear: 'Limpar histórico'
+          }
         }
       },
       'en-US': {
@@ -469,6 +564,22 @@
             ready: 'Audio generated. Preview and download use the current settings.',
             needsRegeneration: 'Settings have changed. Generate again to refresh the audio.',
             error: 'Unable to generate audio. Please try again.'
+          }
+        },
+        history: {
+          title: 'History',
+          description: 'Review previously generated audio files to listen again or download.',
+          empty: 'No audio has been generated yet.',
+          labels: {
+            createdAt: 'Created on',
+            language: 'Language',
+            duration: 'Duration'
+          },
+          actions: {
+            play: 'Listen',
+            download: 'Download (WAV)',
+            remove: 'Remove',
+            clear: 'Clear history'
           }
         }
       },
@@ -542,6 +653,22 @@
             needsRegeneration: 'La configuración cambió. Genera nuevamente para actualizar el audio.',
             error: 'No fue posible generar el audio. Inténtalo otra vez.'
           }
+        },
+        history: {
+          title: 'Historial',
+          description: 'Consulta los audios generados para escucharlos nuevamente o descargarlos.',
+          empty: 'Todavía no se ha generado ningún audio.',
+          labels: {
+            createdAt: 'Generado el',
+            language: 'Idioma',
+            duration: 'Duración'
+          },
+          actions: {
+            play: 'Escuchar',
+            download: 'Descargar (WAV)',
+            remove: 'Eliminar',
+            clear: 'Limpiar historial'
+          }
         }
       }
     };
@@ -562,6 +689,9 @@
         isProcessing: false,
         needsRegeneration: false,
         hasScript: false
+      },
+      history: {
+        entries: []
       }
     };
 
@@ -608,6 +738,12 @@
       volume: document.querySelector('[data-audio-helper="volume"]'),
       pause: document.querySelector('[data-audio-helper="pause"]')
     };
+    const historyTitle = document.getElementById('historyTitle');
+    const historyDescription = document.getElementById('historyDescription');
+    const historyList = document.getElementById('historyList');
+    const historyEmptyState = document.getElementById('historyEmptyState');
+    const historyClearButton = document.getElementById('historyClearButton');
+    const HISTORY_STORAGE_KEY = 'ttsAudioHistory';
 
     function replacePlaceholders(template, values) {
       return template
@@ -628,6 +764,268 @@
 
     function getFieldTranslations(language) {
       return translations[language].fields;
+    }
+
+    function buildAudioFileName(settings) {
+      const speedValue = Math.round((settings?.speed ?? 1) * 100);
+      const volumeValue = Math.round((settings?.volume ?? 1) * 100);
+      const pauseValue = Math.round((settings?.pause ?? 0) * 1000);
+      return `roteiro-tts-spd${speedValue}-vol${volumeValue}-pause${pauseValue}.wav`;
+    }
+
+    function formatDuration(seconds, language) {
+      if (!Number.isFinite(seconds) || seconds <= 0) {
+        return new Intl.NumberFormat(language).format(0) + ':00';
+      }
+      const totalSeconds = Math.max(0, Math.round(seconds));
+      const minutes = Math.floor(totalSeconds / 60);
+      const remainingSeconds = totalSeconds % 60;
+      const formattedSeconds = remainingSeconds.toString().padStart(2, '0');
+      return `${minutes}:${formattedSeconds}`;
+    }
+
+    function formatDate(isoString, language) {
+      try {
+        const date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error('Invalid date value');
+        }
+        return new Intl.DateTimeFormat(language, {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(date);
+      } catch (error) {
+        console.error('Falha ao formatar data do histórico:', error);
+        return isoString;
+      }
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            resolve(reader.result);
+          } else {
+            reject(new Error('Invalid data URL result.'));
+          }
+        };
+        reader.onerror = () => {
+          reject(reader.error || new Error('Failed to convert blob to data URL.'));
+        };
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function loadHistoryFromStorage() {
+      if (typeof localStorage === 'undefined') {
+        return [];
+      }
+
+      try {
+        const storedValue = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (!storedValue) {
+          return [];
+        }
+        const parsed = JSON.parse(storedValue);
+        if (!Array.isArray(parsed)) {
+          return [];
+        }
+
+        return parsed
+          .filter((entry) => entry && typeof entry === 'object' && typeof entry.audioUrl === 'string')
+          .map((entry) => ({
+            id: String(entry.id || Date.now()),
+            createdAt: entry.createdAt || new Date().toISOString(),
+            language: entry.language || 'pt-BR',
+            duration: typeof entry.duration === 'number' ? entry.duration : 0,
+            settings: {
+              speed: typeof entry?.settings?.speed === 'number' ? entry.settings.speed : 1,
+              volume: typeof entry?.settings?.volume === 'number' ? entry.settings.volume : 1,
+              pause: typeof entry?.settings?.pause === 'number' ? entry.settings.pause : 0.6
+            },
+            audioUrl: entry.audioUrl,
+            fileName: entry.fileName || buildAudioFileName(entry.settings || {}),
+            script: typeof entry.script === 'string' ? entry.script : ''
+          }));
+      } catch (error) {
+        console.error('Falha ao carregar histórico de áudio:', error);
+        return [];
+      }
+    }
+
+    function saveHistoryToStorage(entries) {
+      if (typeof localStorage === 'undefined') {
+        return;
+      }
+
+      try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(entries));
+      } catch (error) {
+        console.error('Falha ao salvar histórico de áudio:', error);
+      }
+    }
+
+    function getHistoryLanguageLabel(language) {
+      const localeTexts = translations[state.currentLanguage];
+      const key = `language.${language}`;
+      return localeTexts.languageNames[key] || language;
+    }
+
+    function renderHistory() {
+      const localeTexts = translations[state.currentLanguage];
+      const historyTexts = localeTexts.history;
+      const entries = state.history.entries;
+
+      if (historyEmptyState) {
+        historyEmptyState.textContent = historyTexts.empty;
+        historyEmptyState.hidden = entries.length > 0;
+      }
+
+      if (!historyList) {
+        return;
+      }
+
+      historyList.querySelectorAll('audio[data-history-audio]').forEach((audioElement) => {
+        audioElement.pause();
+      });
+
+      historyList.innerHTML = '';
+      historyList.hidden = entries.length === 0;
+
+      if (entries.length === 0) {
+        if (historyClearButton) {
+          historyClearButton.disabled = true;
+        }
+        return;
+      }
+
+      entries.forEach((entry) => {
+        const item = document.createElement('li');
+        item.className = 'tts-history-item';
+        item.setAttribute('data-history-id', entry.id);
+
+        const meta = document.createElement('div');
+        meta.className = 'tts-history-item__meta';
+
+        const dateSpan = document.createElement('span');
+        const dateLabel = document.createElement('strong');
+        dateLabel.textContent = `${historyTexts.labels.createdAt}:`;
+        dateSpan.append(dateLabel, document.createTextNode(` ${formatDate(entry.createdAt, state.currentLanguage)}`));
+
+        const languageSpan = document.createElement('span');
+        const languageLabel = document.createElement('strong');
+        languageLabel.textContent = `${historyTexts.labels.language}:`;
+        languageSpan.append(languageLabel, document.createTextNode(` ${getHistoryLanguageLabel(entry.language)}`));
+
+        const durationSpan = document.createElement('span');
+        const durationLabel = document.createElement('strong');
+        durationLabel.textContent = `${historyTexts.labels.duration}:`;
+        durationSpan.append(durationLabel, document.createTextNode(` ${formatDuration(entry.duration, state.currentLanguage)}`));
+
+        meta.append(dateSpan, languageSpan, durationSpan);
+        item.append(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'tts-history-item__actions';
+
+        const playButton = document.createElement('button');
+        playButton.type = 'button';
+        playButton.className = 'btn primary';
+        playButton.textContent = historyTexts.actions.play;
+        playButton.setAttribute('data-history-action', 'play');
+        playButton.setAttribute('data-history-id', entry.id);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.type = 'button';
+        downloadButton.className = 'btn ghost';
+        downloadButton.textContent = historyTexts.actions.download;
+        downloadButton.setAttribute('data-history-action', 'download');
+        downloadButton.setAttribute('data-history-id', entry.id);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'btn ghost';
+        removeButton.textContent = historyTexts.actions.remove;
+        removeButton.setAttribute('data-history-action', 'remove');
+        removeButton.setAttribute('data-history-id', entry.id);
+
+        actions.append(playButton, downloadButton, removeButton);
+        item.append(actions);
+
+        const audioElement = document.createElement('audio');
+        audioElement.className = 'tts-history-item__audio';
+        audioElement.setAttribute('data-history-audio', entry.id);
+        audioElement.preload = 'none';
+        audioElement.controls = true;
+        audioElement.hidden = true;
+        item.append(audioElement);
+
+        historyList.append(item);
+      });
+
+      if (historyClearButton) {
+        historyClearButton.disabled = entries.length === 0;
+      }
+    }
+
+    function setHistoryEntries(entries) {
+      state.history.entries = entries;
+      saveHistoryToStorage(entries);
+    }
+
+    function addHistoryEntry(entry) {
+      const updatedEntries = [entry, ...state.history.entries];
+      setHistoryEntries(updatedEntries);
+      renderHistory();
+    }
+
+    function removeHistoryEntryById(entryId) {
+      const updatedEntries = state.history.entries.filter((entry) => entry.id !== entryId);
+      setHistoryEntries(updatedEntries);
+      renderHistory();
+    }
+
+    function clearHistoryEntries() {
+      setHistoryEntries([]);
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.removeItem(HISTORY_STORAGE_KEY);
+        } catch (error) {
+          console.error('Falha ao limpar histórico armazenado:', error);
+        }
+      }
+      renderHistory();
+    }
+
+    function getHistoryEntryById(entryId) {
+      return state.history.entries.find((entry) => entry.id === entryId) || null;
+    }
+
+    async function persistHistoryEntry(blob, durationInSeconds, script) {
+      try {
+        const audioUrl = await blobToDataUrl(blob);
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const newEntry = {
+          id: uniqueId,
+          createdAt: new Date().toISOString(),
+          language: state.currentLanguage,
+          duration: durationInSeconds,
+          settings: { ...state.audio.settings },
+          audioUrl,
+          fileName: buildAudioFileName(state.audio.settings),
+          script
+        };
+        addHistoryEntry(newEntry);
+      } catch (error) {
+        console.error('Falha ao registrar entrada do histórico de áudio:', error);
+      }
+    }
+
+    function initializeHistory() {
+      const storedEntries = loadHistoryFromStorage();
+      state.history.entries = storedEntries;
+      renderHistory();
     }
 
     function updateOutputStatus() {
@@ -765,9 +1163,22 @@
         }
       });
 
+      const historyTexts = localeTexts.history;
+      if (historyTitle) {
+        historyTitle.textContent = historyTexts.title;
+      }
+      if (historyDescription) {
+        historyDescription.textContent = historyTexts.description;
+      }
+      if (historyClearButton) {
+        historyClearButton.textContent = historyTexts.actions.clear;
+        historyClearButton.title = historyTexts.actions.clear;
+      }
+
       updateOutputStatus();
       updateAudioValueOutputs();
       updateAudioStatusMessage();
+      renderHistory();
     }
 
     function handleFormSubmit(event) {
@@ -886,10 +1297,12 @@
         const previewBlob = audioBufferToWave(outputBuffer, sampleRate, { volume: 1 });
         const downloadBuffer = settings.speed === 1 ? outputBuffer : resampleBuffer(audioContext, outputBuffer, settings.speed);
         const downloadBlob = audioBufferToWave(downloadBuffer, sampleRate, settings);
+        const durationSeconds = downloadBuffer.length / sampleRate;
 
         return {
           previewBlob,
-          downloadBlob
+          downloadBlob,
+          duration: durationSeconds
         };
       } finally {
         await audioContext.close();
@@ -974,7 +1387,7 @@
       updateAudioActionsState();
 
       try {
-        const { previewBlob, downloadBlob } = await generateAudio(script, state.audio.settings);
+        const { previewBlob, downloadBlob, duration } = await generateAudio(script, state.audio.settings);
         resetAudioObjectUrl();
         state.audio.blob = downloadBlob;
         state.audio.objectUrl = URL.createObjectURL(previewBlob);
@@ -985,6 +1398,7 @@
         audioPlayer.currentTime = 0;
         state.audio.needsRegeneration = false;
         setAudioStatus('ready');
+        await persistHistoryEntry(downloadBlob, duration, script);
       } catch (error) {
         console.error('Erro ao gerar áudio:', error);
         if (state.audio.blob) {
@@ -1005,15 +1419,10 @@
       }
 
       const url = URL.createObjectURL(state.audio.blob);
-
-      const { speed, volume, pause } = state.audio.settings;
-      const speedLabel = `spd${Math.round(speed * 100)}`;
-      const volumeLabel = `vol${Math.round(volume * 100)}`;
-      const pauseLabel = `pause${Math.round(pause * 1000)}`;
-
+      const fileName = buildAudioFileName(state.audio.settings);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `roteiro-tts-${speedLabel}-${volumeLabel}-${pauseLabel}.wav`;
+      anchor.download = fileName;
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
@@ -1050,6 +1459,75 @@
       updateAudioActionsState();
     }
 
+    function handleHistoryListClick(event) {
+      if (!historyList) {
+        return;
+      }
+
+      const button = event.target.closest('button[data-history-action]');
+      if (!button) {
+        return;
+      }
+
+      const action = button.getAttribute('data-history-action');
+      const entryId = button.getAttribute('data-history-id');
+      if (!action || !entryId) {
+        return;
+      }
+
+      const entry = getHistoryEntryById(entryId);
+      if (!entry) {
+        return;
+      }
+
+      if (action === 'play') {
+        const audioElement = historyList.querySelector(`[data-history-audio="${entryId}"]`);
+        if (!audioElement) {
+          return;
+        }
+        if (audioElement.src !== entry.audioUrl) {
+          audioElement.src = entry.audioUrl;
+        }
+        audioElement.hidden = false;
+        audioElement.playbackRate = entry?.settings?.speed ?? 1;
+        audioElement.volume = entry?.settings?.volume ?? 1;
+        audioElement.currentTime = 0;
+        const playPromise = audioElement.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => {});
+        }
+      } else if (action === 'download') {
+        const anchor = document.createElement('a');
+        anchor.href = entry.audioUrl;
+        anchor.download = entry.fileName || buildAudioFileName(entry.settings || {});
+        document.body.append(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+      } else if (action === 'remove') {
+        const audioElement = historyList.querySelector(`[data-history-audio="${entryId}"]`);
+        if (audioElement) {
+          audioElement.pause();
+        }
+        removeHistoryEntryById(entryId);
+      }
+    }
+
+    function handleHistoryClear() {
+      if (!state.history.entries.length) {
+        return;
+      }
+
+      if (!historyList) {
+        return;
+      }
+
+      historyList.querySelectorAll('audio[data-history-audio]').forEach((audioElement) => {
+        audioElement.pause();
+      });
+
+      clearHistoryEntries();
+    }
+
     form.addEventListener('submit', handleFormSubmit);
     languageSelect.addEventListener('change', handleLanguageChange);
     editButton.addEventListener('click', enableManualEditing);
@@ -1059,7 +1537,14 @@
     });
     audioGenerateButton.addEventListener('click', handleAudioGeneration);
     audioDownloadButton.addEventListener('click', handleAudioDownload);
+    if (historyList) {
+      historyList.addEventListener('click', handleHistoryListClick);
+    }
+    if (historyClearButton) {
+      historyClearButton.addEventListener('click', handleHistoryClear);
+    }
 
+    initializeHistory();
     applyTranslations(state.currentLanguage);
     updateAudioActionsState();
   </script>
