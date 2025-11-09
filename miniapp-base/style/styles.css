@@ -500,7 +500,7 @@ header .subtitle {
   justify-content: center;
   width: clamp(3rem, 2vw + 2.5rem, 3.75rem);
   height: clamp(3rem, 2vw + 2.5rem, 3.75rem);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-full);
   font-size: clamp(2rem, 1.2vw + 1.6rem, 2.75rem);
   font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
   background: var(--background-surface-alternate);
@@ -606,27 +606,27 @@ header .subtitle {
   font-size: clamp(0.9rem, 0.3vw + 0.85rem, 1rem);
 }
 
+
 .catalog-card .app-icon {
-  width: clamp(2.75rem, 1vw + 2.5rem, 3.25rem);
-  height: clamp(2.75rem, 1vw + 2.5rem, 3.25rem);
+  width: clamp(3rem, 2vw + 2.5rem, 3.75rem);
+  height: clamp(3rem, 2vw + 2.5rem, 3.75rem);
   border-radius: var(--radius-full);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 2px solid rgba(226, 232, 240, 0.9);
-  box-shadow: none;
-  color: var(--text-color-strong);
+  background: var(--background-surface-alternate);
+  border: 1px solid transparent;
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+  color: inherit;
 }
 
 .catalog-card .app-icon.icon-prefeito {
   color: var(--color-brand-secondary);
-  border-color: rgba(11, 87, 208, 0.35);
+  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(11, 87, 208, 0.28));
+  border-color: rgba(11, 87, 208, 0.32);
 }
 
 .catalog-card .app-icon.icon-importador {
   color: var(--color-accent-green);
-  border-color: rgba(22, 163, 74, 0.35);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
+  border-color: rgba(22, 163, 74, 0.24);
 }
 
 /* --- Molécula: Pill (Aviso) --- */
@@ -738,13 +738,22 @@ header .subtitle {
 }
 
 .branding .app-icon {
-  width: clamp(2.25rem, 2vw + 2rem, 2.75rem);
-  height: clamp(2.25rem, 2vw + 2rem, 2.75rem);
-  display: grid;
-  place-items: center;
-  font-size: clamp(1.5rem, 1vw + 1.25rem, 2rem);
-  border-radius: var(--radius-xl);
+  width: clamp(2.5rem, 2vw + 2.1rem, 3rem);
+  height: clamp(2.5rem, 2vw + 2.1rem, 3rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem);
+  border-radius: var(--radius-full);
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
   background: var(--background-surface-alternate);
+}
+
+.app-icon--shell {
+  color: var(--color-brand-secondary);
+  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(11, 87, 208, 0.28));
+  border: 1px solid rgba(11, 87, 208, 0.24);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.12);
 }
 
 .branding h1 {
@@ -911,11 +920,17 @@ header .subtitle {
   z-index: 10;
   display: none;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: center;
+  inline-size: clamp(3rem, 2vw + 2.5rem, 3.5rem);
+  block-size: clamp(3rem, 2vw + 2.5rem, 3.5rem);
+  padding: 0;
+  border-radius: var(--radius-full);
 }
 
 .fullscreen-toggle__icon {
-  font-size: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+  display: none;
+  font-size: clamp(1.5rem, 1rem + 1vw, 2rem);
+  line-height: 1;
 }
 
 @media (min-width: 64rem) {
@@ -924,44 +939,62 @@ header .subtitle {
   }
 }
 
+.fullscreen-toggle[aria-pressed="false"] .fullscreen-toggle__icon[data-icon="enter"],
+.fullscreen-toggle[aria-pressed="true"] .fullscreen-toggle__icon[data-icon="exit"] {
+  display: inline-flex;
+}
+
 .app-shell.is-fullscreen {
-  grid-template-rows: 0 1fr auto;
-  padding-bottom: 0;
+  height: 100vh;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-bottom: var(--layout-footer-height);
 }
 
 .app-shell.is-fullscreen .shell-header {
-  display: none;
+  display: block;
 }
 
 .app-shell.is-fullscreen .shell-main {
   background: var(--background-surface);
+  min-height: 0;
 }
+
 
 .app-shell.is-fullscreen .shell-main .shell-container {
   width: 100%;
-  padding-inline: clamp(var(--space-2), 2vw, var(--space-5));
-  padding-block: 0;
-  height: calc(100vh - var(--layout-footer-height));
+  padding-inline: clamp(var(--space-3), 3vw, var(--space-6));
+  padding-block: clamp(var(--space-3), 3vh, var(--space-6));
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-4), 3vh, var(--space-6));
 }
+
 
 .app-shell.is-fullscreen .panel-wrapper {
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-rows: 0 minmax(0, 1fr);
-}
-
-.app-shell.is-fullscreen .panel-wrapper header {
-  display: none;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .app-shell.is-fullscreen .panel-wrapper iframe {
-  min-height: 100%;
+  min-height: 0;
   height: 100%;
+  border-radius: calc(var(--radius-l) - var(--space-1));
+}
+
+.app-shell.is-fullscreen .panel-wrapper--catalog {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app-shell.is-fullscreen .panel-wrapper--catalog iframe {
   border-radius: 0;
+}
+
+.app-shell.is-fullscreen .shell-container--catalog {
+  grid-template-rows: minmax(0, 1fr);
 }
 
 @media (min-width: 56rem) {

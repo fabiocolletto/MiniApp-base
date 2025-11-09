@@ -4,19 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MiniApps — Shell</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="stylesheet" href="miniapp-base/style/styles.css">
 </head>
 <body>
   <div class="app-shell">
-    <button type="button" class="btn ghost fullscreen-toggle" data-action="toggle-fullscreen" aria-pressed="false">
-      <span class="fullscreen-toggle__icon" aria-hidden="true">⤢</span>
-      <span data-label>Tela cheia</span>
+    <button
+      type="button"
+      class="btn ghost fullscreen-toggle"
+      data-action="toggle-fullscreen"
+      aria-pressed="false"
+      aria-label="Tela cheia"
+      title="Tela cheia"
+    >
+      <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
+      <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
     </button>
     <header class="shell-header">
       <div class="shell-container">
         <div class="header-content">
           <div class="branding">
-            <span class="app-icon" aria-hidden="true">🧩</span>
+            <span class="material-symbols-rounded app-icon app-icon--shell" aria-hidden="true">apps</span>
             <div>
               <h1>MiniApps Shell</h1>
               <p>Escolha um mini‑app no catálogo para iniciar.</p>
@@ -69,7 +77,6 @@
       const shellMainContainer = document.querySelector('.shell-main .shell-container');
       const appShell = document.querySelector('.app-shell');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
-      const fullscreenLabel = fullscreenToggle ? fullscreenToggle.querySelector('[data-label]') : null;
       const catalogUrl = new URL(defaultMiniApp, window.location.href);
       const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
 
@@ -110,10 +117,10 @@
         }
 
         if (fullscreenToggle) {
+          const label = fullscreen ? 'Sair do modo tela cheia' : 'Tela cheia';
           fullscreenToggle.setAttribute('aria-pressed', fullscreen ? 'true' : 'false');
-          if (fullscreenLabel) {
-            fullscreenLabel.textContent = fullscreen ? 'Sair do modo tela cheia' : 'Tela cheia';
-          }
+          fullscreenToggle.setAttribute('aria-label', label);
+          fullscreenToggle.setAttribute('title', label);
         }
       }
 
