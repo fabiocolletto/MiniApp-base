@@ -546,3 +546,140 @@ header .subtitle {
 .app-icon.large {
   font-size: 1.5rem; /* Um pouco maior para o Card Grande */
 }
+
+/* ========================================================== */
+/* MINIAPP SHELL LAYOUT                                       */
+/* ========================================================== */
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--background-page);
+  color: var(--text-color-primary);
+}
+
+.shell-container {
+  width: min(100%, clamp(20rem, 90vw, 70rem));
+  margin: 0 auto;
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-7));
+  padding-block: clamp(var(--space-4), 4vw, var(--space-7));
+  display: grid;
+  gap: clamp(var(--space-4), 4vw, var(--space-6));
+}
+
+.shell-header {
+  border-bottom: var(--border-default);
+  background: var(--background-surface);
+  display: block;
+}
+
+.shell-header .shell-container {
+  align-items: center;
+  justify-items: stretch;
+}
+
+.header-content {
+  display: grid;
+  gap: clamp(var(--space-4), 3vw, var(--space-6));
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.branding {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.branding .app-icon {
+  width: clamp(2.25rem, 2vw + 2rem, 2.75rem);
+  height: clamp(2.25rem, 2vw + 2rem, 2.75rem);
+  display: grid;
+  place-items: center;
+  font-size: clamp(1.5rem, 1vw + 1.25rem, 2rem);
+  border-radius: var(--radius-xl);
+  background: var(--background-surface-alternate);
+}
+
+.branding h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 1vw + 1.1rem, 1.75rem);
+}
+
+.branding p {
+  margin: 0;
+  font-size: var(--font-size-m);
+  color: var(--text-color-muted);
+}
+
+.shell-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.shell-main {
+  background: transparent;
+}
+
+.shell-main .shell-container {
+  padding-block: clamp(var(--space-6), 5vw, var(--space-8));
+}
+
+.panel-wrapper {
+  background: var(--background-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-l);
+  box-shadow: var(--box-shadow-default);
+  padding: clamp(var(--space-4), 4vw, var(--space-7));
+  display: grid;
+  gap: var(--space-4);
+}
+
+.panel-wrapper header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.panel-wrapper header h2 {
+  margin: 0;
+  font-size: clamp(1.125rem, 1vw + 0.9rem, 1.5rem);
+}
+
+.panel-wrapper iframe {
+  border: 0;
+  width: 100%;
+  min-height: clamp(28rem, 65vh, 48rem);
+  border-radius: calc(var(--radius-l) - var(--space-1));
+  background: var(--background-surface);
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.app-footer {
+  border-top: var(--border-default);
+  background: var(--background-surface);
+  display: block;
+}
+
+.app-footer p {
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--text-color-muted);
+  text-align: center;
+}
+
+@media (min-width: 56rem) {
+  .header-content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
