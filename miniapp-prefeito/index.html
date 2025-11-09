@@ -363,5 +363,33 @@
 
   </script>
 
+  <script>
+    (function () {
+      function notifyShell() {
+        if (!window.parent || window.parent === window) {
+          return;
+        }
+
+        try {
+          window.parent.postMessage(
+            {
+              action: 'miniapp-header',
+              title: 'Painel do Prefeito',
+              subtitle: 'Indicadores estratégicos, tendências e alertas prioritários.',
+            },
+            window.location.origin,
+          );
+        } catch (error) {
+          console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
+        }
+      }
+
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        notifyShell();
+      } else {
+        document.addEventListener('DOMContentLoaded', notifyShell);
+      }
+    })();
+  </script>
 </body>
 </html>

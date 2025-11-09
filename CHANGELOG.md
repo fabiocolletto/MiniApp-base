@@ -5,6 +5,7 @@
 - Rodapé do shell fixo com indicação de versão e controle de tela cheia disponível em telas amplas.
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.
+- Atalho fixo no shell para reabrir o catálogo em um clique com suporte a `pt-BR`, `en-US` e `es-ES`.
 - Documento `AGENTE.md` com diretrizes para manutenção do projeto.
 - `README.md` descrevendo a estrutura do repositório e o fluxo de trabalho recomendado.
 - Motor do painel Prefeito agora lê agregados do IndexedDB (persona, KPIs e indicadores) com atualização assíncrona.
@@ -14,6 +15,7 @@
 - Importador de Pesquisas reposicionado para o miniapp dedicado `miniapp-importador/`, preservando o CSS central e movendo estilos complementares para `style/importador-pesquisas.css`.
 - Miniapp TTS com formulário guiado, geração automática de roteiro e traduções completas para `pt-BR`, `en-US` e `es-ES`.
 - Miniapp TTS inclui prévia de áudio com controles de velocidade, volume e pausa, aplicando as configurações ao download.
+- Shell passa a registrar metadados de título e subtítulo enviados pelos miniapps via `postMessage` (`action: "miniapp-header"`) para atualizar o cabeçalho principal.
 
 ### Alterado
 - Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
@@ -22,6 +24,7 @@
 - Shell remove os botões redundantes de “Abrir catálogo” e delega a navegação principal aos próprios cartões e integrações via `postMessage`.
 - Controle de tela cheia passa a utilizar a API nativa do navegador (`requestFullscreen`), sincronizando o estado do layout com entradas de teclado como `Esc`.
 - Rodapé passa a exibir o ícone oficial da 5 Horas ao lado do selo “5 horas de pesquisa e análise limitada”, mantendo a versão do shell.
+- Rodapé do shell passa a alinhar o conteúdo à esquerda para harmonizar com o cabeçalho dinâmico.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
