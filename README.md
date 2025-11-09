@@ -19,6 +19,8 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 ## Shell PWA e fluxo de navegação
 O arquivo `index.html` atua como shell da experiência. Ele incorpora o catálogo em `miniapp-catalogo/index.html` dentro do iframe `#miniapp-panel` e expõe os utilitários de navegação via `window.loadMiniApp`. Os botões com o atributo `data-miniapp-target` alternam o conteúdo do iframe e os próprios miniapps podem solicitar trocas usando `window.parent.postMessage('open-catalog')` ou enviando um objeto `{ action: 'load-miniapp', url: '<caminho>' }` para o shell.
 
+Em navegadores modernos o shell assume o modo tela cheia automaticamente após a rolagem, preservando apenas o conteúdo do miniapp e o rodapé fixo com a versão atual. Em telas largas (largura ≥ 1024px) um botão posicionado no canto superior direito permite ativar ou sair manualmente desse modo imersivo.
+
 ### Registrando novos miniapps
 1. Publique os assets HTML/CSS do miniapp em um diretório dedicado na raiz do projeto (ex.: `miniapp-novo/index.html`).
 2. Adicione um novo cartão ao catálogo (`miniapp-catalogo/index.html`) apontando o link (`href`) para o arquivo de entrada do miniapp, mantendo `target="miniapp-panel"` para reutilizar o iframe do shell.

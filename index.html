@@ -8,6 +8,10 @@
 </head>
 <body>
   <div class="app-shell">
+    <button type="button" class="btn ghost fullscreen-toggle" data-action="toggle-fullscreen" aria-pressed="false">
+      <span class="fullscreen-toggle__icon" aria-hidden="true">⤢</span>
+      <span data-label>Tela cheia</span>
+    </button>
     <header class="shell-header">
       <div class="shell-container">
         <div class="header-content">
@@ -46,7 +50,11 @@
 
     <footer class="app-footer">
       <div class="shell-container">
-        <p>MiniApps — Experiência modular de governo digital.</p>
+        <p>
+          <span class="app-footer__product">MiniApps Shell</span>
+          <span aria-hidden="true">•</span>
+          <span class="app-footer__meta">Versão 0.2.0 (experimental)</span>
+        </p>
       </div>
     </footer>
   </div>
@@ -55,6 +63,72 @@
     (function () {
       const defaultMiniApp = './miniapp-catalogo/index.html';
       const panel = document.getElementById('miniapp-panel');
+      const appShell = document.querySelector('.app-shell');
+      const shellHeader = document.querySelector('.shell-header');
+      const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
+      const fullscreenLabel = fullscreenToggle ? fullscreenToggle.querySelector('[data-label]') : null;
+      const scrollThreshold = shellHeader ? shellHeader.offsetHeight : 80;
+      let fullscreenControlMode = 'auto';
+
+      function applyFullscreenState(state, options = {}) {
+        if (!appShell) {
+          return;
+        }
+
+        if (options.mode) {
+          fullscreenControlMode = options.mode;
+        }
+
+        if (state) {
+          appShell.classList.add('is-fullscreen');
+        } else {
+          appShell.classList.remove('is-fullscreen');
+        }
+
+        if (fullscreenToggle) {
+          fullscreenToggle.setAttribute('aria-pressed', state ? 'true' : 'false');
+          if (fullscreenLabel) {
+            fullscreenLabel.textContent = state ? 'Sair do modo tela cheia' : 'Tela cheia';
+          }
+        }
+      }
+
+      function handleScroll() {
+        if (!appShell) {
+          return;
+        }
+
+        if (fullscreenControlMode === 'locked-on') {
+          return;
+        }
+
+        if (fullscreenControlMode === 'locked-off') {
+          if (window.scrollY <= scrollThreshold) {
+            fullscreenControlMode = 'auto';
+          } else {
+            applyFullscreenState(false);
+            return;
+          }
+        }
+
+        const shouldFullscreen = window.scrollY > scrollThreshold;
+        applyFullscreenState(shouldFullscreen);
+      }
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+
+      if (fullscreenToggle && appShell) {
+        fullscreenToggle.addEventListener('click', () => {
+          const isFullscreen = appShell.classList.contains('is-fullscreen');
+          if (fullscreenControlMode === 'locked-on' || isFullscreen) {
+            applyFullscreenState(false, { mode: 'locked-off' });
+          } else {
+            applyFullscreenState(true, { mode: 'locked-on' });
+          }
+        });
+      }
+
+      applyFullscreenState(window.scrollY > scrollThreshold);
 
       function loadMiniApp(url, options = {}) {
         if (!panel) {

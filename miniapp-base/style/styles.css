@@ -89,8 +89,9 @@
 
   /* --- TOKENS DE LAYOUT ESTRUTURAL (Movidos de components/sidebar.css) --- */
   --sidebar-width-open: 240px;
-  --sidebar-width-closed: 64px; 
+  --sidebar-width-closed: 64px;
   --header-height: 60px;
+  --layout-footer-height: clamp(2rem, 1.25rem + 1vh, 2.75rem);
 }
 
 /* --- Dark Theme Tokens --- */
@@ -580,6 +581,8 @@ header .subtitle {
   grid-template-rows: auto 1fr auto;
   background: var(--background-page);
   color: var(--text-color-primary);
+  padding-bottom: var(--layout-footer-height);
+  position: relative;
 }
 
 .shell-container {
@@ -690,14 +693,99 @@ header .subtitle {
 .app-footer {
   border-top: var(--border-default);
   background: var(--background-surface);
-  display: block;
+  position: fixed;
+  inset: auto 0 0 0;
+  height: var(--layout-footer-height);
+  display: flex;
+  align-items: center;
+  z-index: 5;
+}
+
+.app-footer .shell-container {
+  padding-block: 0;
+  width: min(100%, clamp(20rem, 90vw, 70rem));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .app-footer p {
   margin: 0;
   font-size: var(--font-size-s);
   color: var(--text-color-muted);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app-footer__product {
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.app-footer__meta {
+  white-space: nowrap;
+}
+
+.fullscreen-toggle {
+  position: fixed;
+  top: clamp(var(--space-4), 3vh, var(--space-7));
+  right: clamp(var(--space-4), 4vw, var(--space-7));
+  z-index: 10;
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fullscreen-toggle__icon {
+  font-size: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+}
+
+@media (min-width: 64rem) {
+  .fullscreen-toggle {
+    display: inline-flex;
+  }
+}
+
+.app-shell.is-fullscreen {
+  grid-template-rows: 0 1fr auto;
+  padding-bottom: 0;
+}
+
+.app-shell.is-fullscreen .shell-header {
+  display: none;
+}
+
+.app-shell.is-fullscreen .shell-main {
+  background: var(--background-surface);
+}
+
+.app-shell.is-fullscreen .shell-main .shell-container {
+  width: 100%;
+  padding-inline: clamp(var(--space-2), 2vw, var(--space-5));
+  padding-block: 0;
+  height: calc(100vh - var(--layout-footer-height));
+}
+
+.app-shell.is-fullscreen .panel-wrapper {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 0 minmax(0, 1fr);
+}
+
+.app-shell.is-fullscreen .panel-wrapper header {
+  display: none;
+}
+
+.app-shell.is-fullscreen .panel-wrapper iframe {
+  min-height: 100%;
+  height: 100%;
+  border-radius: 0;
 }
 
 @media (min-width: 56rem) {
