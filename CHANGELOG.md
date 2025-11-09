@@ -7,7 +7,8 @@
 - Motor do painel Prefeito agora lê agregados do IndexedDB (persona, KPIs e indicadores) com atualização assíncrona.
 - Miniapp Prefeito inclui conjunto de dados de demonstração carregado no IndexedDB para exibir indicadores imediatamente.
 - Indicadores exibem resumos dinâmicos e estados de carregamento/erro integrados à sincronização multi-dispositivo.
-- Cartões do catálogo para o Importador de Pesquisas, incluindo novo ícone dedicado e link para o protótipo em `miniapp-base/components/survey_import.html`.
+- Cartões do catálogo para o Importador de Pesquisas, incluindo novo ícone dedicado e link para o protótipo.
+- Importador de Pesquisas reposicionado para o miniapp dedicado `miniapp-importador/`, preservando o CSS central e movendo estilos complementares para `style/importador-pesquisas.css`.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
