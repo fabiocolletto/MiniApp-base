@@ -27,6 +27,15 @@
         </div>
     </header>
 
+    <div class="miniapp-toolbar">
+        <button
+            type="button"
+            class="btn ghost miniapp-toolbar__button"
+            data-js="open-catalog"
+            data-i18n="actions.openCatalog"
+        >Voltar ao catálogo</button>
+    </div>
+
     <main class="survey-shell" id="surveyRoot">
         <section class="survey-card survey-card--highlight" aria-labelledby="storageTitle">
             <h2 id="storageTitle" data-i18n="storage.title">Visão Geral do Armazenamento Local</h2>
@@ -138,6 +147,8 @@
         <script src="./js/importador.js"></script>
         <script>
           (function () {
+            const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
+
             function notifyShell() {
               if (!window.parent || window.parent === window) {
                 return;
@@ -157,10 +168,55 @@
               }
             }
 
-            if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            function requestCatalog() {
+              if (window.parent && window.parent !== window) {
+                try {
+                  window.parent.postMessage(
+                    { action: 'open-catalog' },
+                    window.location.origin,
+                  );
+                  return;
+                } catch (error) {
+                  console.error('Não foi possível solicitar a abertura do catálogo ao shell.', error);
+                }
+              }
+
+              try {
+                window.location.href = CATALOG_FALLBACK;
+              } catch (navigationError) {
+                console.error('Não foi possível carregar o catálogo diretamente.', navigationError);
+              }
+            }
+
+            function setupCatalogButton() {
+              const trigger = document.querySelector('[data-js="open-catalog"]');
+
+              if (!trigger) {
+                return;
+              }
+
+              const label = trigger.textContent.trim();
+
+              if (label) {
+                trigger.setAttribute('aria-label', label);
+                trigger.setAttribute('title', label);
+              }
+
+              trigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                requestCatalog();
+              });
+            }
+
+            function initialize() {
               notifyShell();
+              setupCatalogButton();
+            }
+
+            if (document.readyState === 'interactive' || document.readyState === 'complete') {
+              initialize();
             } else {
-              document.addEventListener('DOMContentLoaded', notifyShell);
+              document.addEventListener('DOMContentLoaded', initialize);
             }
           })();
         </script>

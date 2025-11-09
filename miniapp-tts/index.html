@@ -291,6 +291,14 @@
 <body>
   <div class="tts-shell">
     <div class="tts-container">
+      <div class="miniapp-toolbar">
+        <button
+          type="button"
+          class="btn ghost miniapp-toolbar__button"
+          data-js="open-catalog"
+          data-i18n="actions.openCatalog"
+        >Voltar ao catálogo</button>
+      </div>
       <header class="tts-header">
         <div class="tts-header__title">
           <h1 data-i18n="app.title">Gerador de Roteiros para TTS</h1>
@@ -428,7 +436,8 @@
         },
         actions: {
           generate: 'Gerar roteiro',
-          edit: 'Editar manualmente'
+          edit: 'Editar manualmente',
+          openCatalog: 'Voltar ao catálogo'
         },
         outputLabel: 'Roteiro gerado',
         outputPlaceholder: 'O roteiro aparecerá aqui após a geração.',
@@ -516,7 +525,8 @@
         },
         actions: {
           generate: 'Generate script',
-          edit: 'Edit manually'
+          edit: 'Edit manually',
+          openCatalog: 'Return to catalog'
         },
         outputLabel: 'Generated script',
         outputPlaceholder: 'The narration script will appear here after generation.',
@@ -604,7 +614,8 @@
         },
         actions: {
           generate: 'Generar guion',
-          edit: 'Editar manualmente'
+          edit: 'Editar manualmente',
+          openCatalog: 'Volver al catálogo'
         },
         outputLabel: 'Guion generado',
         outputPlaceholder: 'El guion aparecerá aquí después de generarse.',
@@ -703,6 +714,7 @@
     const ctaInput = document.getElementById('ctaInput');
     const generateButton = document.getElementById('generateButton');
     const editButton = document.getElementById('editButton');
+    const catalogButton = document.querySelector('[data-js="open-catalog"]');
     const scriptOutput = document.getElementById('scriptOutput');
     const outputStatus = document.getElementById('outputStatus');
     const titleElement = document.querySelector('[data-i18n="app.title"]');
@@ -744,6 +756,7 @@
     const historyEmptyState = document.getElementById('historyEmptyState');
     const historyClearButton = document.getElementById('historyClearButton');
     const HISTORY_STORAGE_KEY = 'ttsAudioHistory';
+    const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
 
     function replacePlaceholders(template, values) {
       return template
@@ -751,6 +764,26 @@
         .replace('{audience}', values.audience)
         .replace('{highlight}', values.highlight)
         .replace('{cta}', values.cta);
+    }
+
+    function requestCatalog() {
+      if (window.parent && window.parent !== window) {
+        try {
+          window.parent.postMessage(
+            { action: 'open-catalog' },
+            window.location.origin,
+          );
+          return;
+        } catch (error) {
+          console.error('Não foi possível solicitar o catálogo ao shell.', error);
+        }
+      }
+
+      try {
+        window.location.href = CATALOG_FALLBACK;
+      } catch (navigationError) {
+        console.error('Não foi possível carregar o catálogo diretamente.', navigationError);
+      }
     }
 
     function composeScript(values, language) {
@@ -1123,6 +1156,12 @@
       scriptOutput.placeholder = localeTexts.outputPlaceholder;
       generateButton.textContent = localeTexts.actions.generate;
       editButton.textContent = localeTexts.actions.edit;
+      if (catalogButton) {
+        const label = localeTexts.actions.openCatalog;
+        catalogButton.textContent = label;
+        catalogButton.setAttribute('aria-label', label);
+        catalogButton.setAttribute('title', label);
+      }
 
       const fieldTranslations = getFieldTranslations(language);
       cityInput.labels[0].textContent = fieldTranslations.city.label;
@@ -1532,6 +1571,12 @@
     languageSelect.addEventListener('change', handleLanguageChange);
     editButton.addEventListener('click', enableManualEditing);
     scriptOutput.addEventListener('input', handleScriptContentChange);
+    if (catalogButton) {
+      catalogButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        requestCatalog();
+      });
+    }
     Object.values(audioInputs).forEach((input) => {
       input.addEventListener('input', handleAudioInputChange);
     });

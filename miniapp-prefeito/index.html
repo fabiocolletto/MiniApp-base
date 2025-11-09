@@ -109,7 +109,15 @@
 
     <!-- CONTEÚDO PRINCIPAL -->
     <div id="main-content">
-      
+
+      <div class="miniapp-toolbar">
+        <button
+          type="button"
+          class="btn ghost miniapp-toolbar__button"
+          data-js="open-catalog"
+        >Voltar ao catálogo</button>
+      </div>
+
       <!-- HEADER FIXO -->
       <header>
         <div class="header-title-text">
@@ -365,6 +373,26 @@
 
   <script>
     (function () {
+      const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
+      const CATALOG_LABELS = {
+        'pt-BR': 'Voltar ao catálogo',
+        'en-US': 'Return to catalog',
+        'es-ES': 'Volver al catálogo',
+      };
+      const SUPPORTED_LOCALES = Object.keys(CATALOG_LABELS);
+
+      function getActiveLocale() {
+        const docLang = (document.documentElement && document.documentElement.lang) || '';
+        const normalized = SUPPORTED_LOCALES.find((locale) => locale.toLowerCase() === docLang.toLowerCase());
+
+        if (normalized) {
+          return normalized;
+        }
+
+        const base = docLang.split('-')[0];
+        return SUPPORTED_LOCALES.find((locale) => locale.startsWith(base)) || 'pt-BR';
+      }
+
       function notifyShell() {
         if (!window.parent || window.parent === window) {
           return;
@@ -384,10 +412,54 @@
         }
       }
 
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      function requestCatalog() {
+        if (window.parent && window.parent !== window) {
+          try {
+            window.parent.postMessage(
+              { action: 'open-catalog' },
+              window.location.origin,
+            );
+            return;
+          } catch (error) {
+            console.error('Não foi possível solicitar a abertura do catálogo ao shell.', error);
+          }
+        }
+
+        try {
+          window.location.href = CATALOG_FALLBACK;
+        } catch (navigationError) {
+          console.error('Não foi possível carregar o catálogo diretamente.', navigationError);
+        }
+      }
+
+      function setupCatalogButton() {
+        const trigger = document.querySelector('[data-js="open-catalog"]');
+
+        if (!trigger) {
+          return;
+        }
+
+        const locale = getActiveLocale();
+        const label = CATALOG_LABELS[locale] || CATALOG_LABELS['pt-BR'];
+        trigger.textContent = label;
+        trigger.setAttribute('aria-label', label);
+        trigger.setAttribute('title', label);
+
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          requestCatalog();
+        });
+      }
+
+      function initialize() {
         notifyShell();
+        setupCatalogButton();
+      }
+
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        initialize();
       } else {
-        document.addEventListener('DOMContentLoaded', notifyShell);
+        document.addEventListener('DOMContentLoaded', initialize);
       }
     })();
   </script>
