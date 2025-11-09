@@ -16,6 +16,8 @@
 - Miniapp TTS inclui prévia de áudio com controles de velocidade, volume e pausa, aplicando as configurações ao download.
 
 ### Alterado
+- Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
+- Botão de tela cheia e identidade do Shell passam a utilizar os ícones circulares do catálogo baseados na biblioteca Material.
 - Cartões do catálogo ocupam toda a largura útil do painel com espaçamento interno próprio, deixam de exibir botão secundário e tornam-se completamente clicáveis.
 - Shell remove os botões redundantes de “Abrir catálogo” e delega a navegação principal aos próprios cartões e integrações via `postMessage`.
 - Controle de tela cheia passa a utilizar a API nativa do navegador (`requestFullscreen`), sincronizando o estado do layout com entradas de teclado como `Esc`.
