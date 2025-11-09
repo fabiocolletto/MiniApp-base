@@ -1073,49 +1073,12 @@ header .subtitle {
 }
 
 @media (min-width: 64rem) {
-  .footer-shortcuts {
-    display: block;
-  }
-
-  .footer-menu-toggle {
-    display: none;
-  }
-
   .footer-actions {
-    position: static;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    inline-size: auto;
-    padding: 0;
-    border: 0;
-    box-shadow: none;
-    background: transparent;
+    inline-size: clamp(14rem, 24vw, 22rem);
   }
 
   .footer-about {
-    margin-block-start: 0;
-    padding-block-start: 0;
-    border-top: 0;
-    text-align: right;
-  }
-
-  .footer-about__title {
-    font-size: var(--font-size-s);
-  }
-
-  .footer-about__item {
-    font-size: var(--font-size-s);
-  }
-
-  .shell-actions {
-    position: fixed;
-    top: clamp(var(--space-4), 3vh, var(--space-7));
-    right: clamp(var(--space-4), 4vw, var(--space-7));
-    z-index: 10;
-    display: inline-flex;
-    gap: clamp(var(--space-2), 1vw, var(--space-4));
-    justify-content: flex-end;
+    text-align: left;
   }
 }
 

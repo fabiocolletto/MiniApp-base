@@ -129,7 +129,6 @@
       const footerAboutTitle = document.querySelector('[data-footer-about-title]');
       const footerAboutProduct = document.querySelector('[data-footer-about-product]');
       const footerAboutVersion = document.querySelector('[data-footer-about-version]');
-      const desktopMediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 64rem)') : null;
       const catalogUrl = new URL(defaultMiniApp, window.location.href);
       const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
       const SHELL_PRODUCT_NAME = 'MiniApps Shell';
@@ -212,38 +211,6 @@
       const miniAppMetadata = new Map();
       let activeMiniAppUrl = null;
 
-      function isDesktopLayout() {
-        return Boolean(desktopMediaQuery && desktopMediaQuery.matches);
-      }
-
-      function isFooterToggleVisible() {
-        if (!footerMenuToggle) {
-          return false;
-        }
-
-        if (footerMenuToggle.offsetParent !== null) {
-          return true;
-        }
-
-        if (typeof window.getComputedStyle === 'function') {
-          const styles = window.getComputedStyle(footerMenuToggle);
-
-          if (styles) {
-            const hiddenByDisplay = styles.display === 'none';
-            const hiddenByVisibility = styles.visibility === 'hidden' || styles.visibility === 'collapse';
-            const hiddenByOpacity = Number.parseFloat(styles.opacity || '1') === 0;
-
-            return !(hiddenByDisplay || hiddenByVisibility || hiddenByOpacity);
-          }
-        }
-
-        return true;
-      }
-
-      function shouldUseDesktopFooterBehavior() {
-        return isDesktopLayout() && !isFooterToggleVisible();
-      }
-
       function setFooterToggleState(isExpanded) {
         if (!footerMenuToggle) {
           return;
@@ -264,7 +231,7 @@
       }
 
       function openFooterActions() {
-        if (!footerActions || !footerMenuToggle || shouldUseDesktopFooterBehavior()) {
+        if (!footerActions || !footerMenuToggle) {
           return;
         }
 
@@ -279,11 +246,7 @@
           return;
         }
 
-        const { restoreFocus = false, force = false } = options;
-
-        if (shouldUseDesktopFooterBehavior() && !force) {
-          return;
-        }
+        const { restoreFocus = false } = options;
 
         footerActions.classList.remove('footer-actions--open');
         footerActions.hidden = true;
@@ -295,52 +258,16 @@
         }
       }
 
-      function syncFooterActionsForViewport() {
-        if (!footerActions) {
-          return;
-        }
-
-        const isDesktop = shouldUseDesktopFooterBehavior();
-
-        if (isDesktop) {
-          footerActions.hidden = false;
-          footerActions.removeAttribute('hidden');
-          footerActions.classList.remove('footer-actions--open');
-          setFooterToggleState(false);
-        } else {
-          closeFooterActions({ force: true });
-        }
+      if (footerActions && footerMenuToggle) {
+        closeFooterActions();
+      } else if (footerMenuToggle) {
+        setFooterToggleState(false);
       }
 
-      if (footerActions || footerMenuToggle) {
-        if (footerActions) {
-          syncFooterActionsForViewport();
-        } else {
-          setFooterToggleState(false);
-        }
-
-        syncFooterAboutSection();
-
-        if (desktopMediaQuery) {
-          const handleFooterViewportChange = () => {
-            syncFooterActionsForViewport();
-            syncFooterAboutSection();
-          };
-
-          if (typeof desktopMediaQuery.addEventListener === 'function') {
-            desktopMediaQuery.addEventListener('change', handleFooterViewportChange);
-          } else if (typeof desktopMediaQuery.addListener === 'function') {
-            desktopMediaQuery.addListener(handleFooterViewportChange);
-          }
-        }
-      }
+      syncFooterAboutSection();
 
       if (footerMenuToggle && footerActions) {
         footerMenuToggle.addEventListener('click', () => {
-          if (shouldUseDesktopFooterBehavior()) {
-            return;
-          }
-
           if (footerActions.classList.contains('footer-actions--open')) {
             closeFooterActions();
           } else {
@@ -349,10 +276,7 @@
         });
 
         document.addEventListener('click', (event) => {
-          if (
-            shouldUseDesktopFooterBehavior() ||
-            !footerActions.classList.contains('footer-actions--open')
-          ) {
+          if (!footerActions.classList.contains('footer-actions--open')) {
             return;
           }
 
@@ -367,11 +291,7 @@
         });
 
         document.addEventListener('keydown', (event) => {
-          if (
-            event.key !== 'Escape' ||
-            shouldUseDesktopFooterBehavior() ||
-            !footerActions.classList.contains('footer-actions--open')
-          ) {
+          if (event.key !== 'Escape' || !footerActions.classList.contains('footer-actions--open')) {
             return;
           }
 
