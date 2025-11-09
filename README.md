@@ -19,6 +19,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 ## Miniapps disponíveis
 - **Painel do Prefeito** – painel com KPIs, filtros e relatórios setoriais acessível em `miniapp-prefeito/index.html`.
 - **Importador de Pesquisas** – fluxo para importar arquivos CSV e revisar resultados em `miniapp-importador/index.html`.
+- **Gerador de Roteiros TTS** – formulário com campos guiados e tradução automática em `miniapp-tts/index.html`.
 
 ## Licença
 Uso interno apenas; consulte os responsáveis pelo projeto antes de compartilhar externamente.
