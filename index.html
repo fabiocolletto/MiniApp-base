@@ -9,25 +9,36 @@
 </head>
 <body>
   <div class="app-shell">
-    <button
-      type="button"
-      class="btn ghost fullscreen-toggle"
-      data-action="toggle-fullscreen"
-      aria-pressed="false"
-      aria-label="Tela cheia"
-      title="Tela cheia"
-    >
-      <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
-      <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
-    </button>
+    <div class="shell-actions" role="group" aria-label="Atalhos do shell">
+      <button
+        type="button"
+        class="btn ghost shell-action catalog-toggle"
+        data-action="open-catalog"
+        aria-label="Abrir catálogo"
+        title="Abrir catálogo"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+      </button>
+      <button
+        type="button"
+        class="btn ghost shell-action fullscreen-toggle"
+        data-action="toggle-fullscreen"
+        aria-pressed="false"
+        aria-label="Tela cheia"
+        title="Tela cheia"
+      >
+        <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
+        <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
+      </button>
+    </div>
     <header class="shell-header">
       <div class="shell-container">
         <div class="header-content">
           <div class="branding">
             <span class="material-symbols-rounded app-icon app-icon--shell" aria-hidden="true">apps</span>
-            <div>
-              <h1>MiniApps Shell</h1>
-              <p>Escolha um mini‑app no catálogo para iniciar.</p>
+            <div class="branding__text">
+              <h1 data-shell-app-title>MiniApps Shell</h1>
+              <p data-shell-app-subtitle>Escolha um mini‑app no catálogo para iniciar.</p>
             </div>
           </div>
         </div>
@@ -76,9 +87,192 @@
       const panelWrapper = document.querySelector('.panel-wrapper');
       const shellMainContainer = document.querySelector('.shell-main .shell-container');
       const appShell = document.querySelector('.app-shell');
+      const headerTitle = document.querySelector('[data-shell-app-title]');
+      const headerSubtitle = document.querySelector('[data-shell-app-subtitle]');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
+      const catalogToggle = document.querySelector('[data-action="open-catalog"]');
       const catalogUrl = new URL(defaultMiniApp, window.location.href);
       const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
+      const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
+      const CATALOG_LABELS = {
+        'pt-BR': {
+          open: 'Abrir catálogo',
+          active: 'Catálogo em exibição',
+        },
+        'en-US': {
+          open: 'Open catalog',
+          active: 'Catalog in view',
+        },
+        'es-ES': {
+          open: 'Abrir catálogo',
+          active: 'Catálogo en pantalla',
+        },
+      };
+
+      const SHELL_HEADER_COPY = {
+        'pt-BR': {
+          title: 'MiniApps Shell',
+          subtitle: 'Escolha um mini‑app no catálogo para iniciar.',
+        },
+        'en-US': {
+          title: 'MiniApps Shell',
+          subtitle: 'Pick a miniapp from the catalog to get started.',
+        },
+        'es-ES': {
+          title: 'MiniApps Shell',
+          subtitle: 'Elige un miniapp del catálogo para comenzar.',
+        },
+      };
+
+      const CATALOG_HEADER_COPY = {
+        'pt-BR': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Navegue pelas experiências disponíveis e escolha uma para abrir.',
+        },
+        'en-US': {
+          title: 'MiniApps Catalog',
+          subtitle: 'Browse the available experiences and choose one to open.',
+        },
+        'es-ES': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Explora las experiencias disponibles y elige una para abrir.',
+        },
+      };
+
+      const miniAppMetadata = new Map();
+      let activeMiniAppUrl = null;
+
+      function getActiveLocale() {
+        const docLang = (document.documentElement && document.documentElement.lang) || '';
+        const normalized = SUPPORTED_LOCALES.find((locale) => docLang.toLowerCase() === locale.toLowerCase());
+
+        if (normalized) {
+          return normalized;
+        }
+
+        const baseLang = docLang.split('-')[0];
+        const fallback = SUPPORTED_LOCALES.find((locale) => locale.startsWith(baseLang));
+
+        return fallback || 'pt-BR';
+      }
+
+      function getDefaultHeaderCopy() {
+        const locale = getActiveLocale();
+        return SHELL_HEADER_COPY[locale] || SHELL_HEADER_COPY['pt-BR'];
+      }
+
+      function getCatalogHeaderCopy() {
+        const locale = getActiveLocale();
+        return CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+      }
+
+      function normalizeMiniAppUrl(url) {
+        try {
+          const absolute = new URL(url, window.location.href);
+          absolute.hash = '';
+          absolute.search = '';
+          return absolute.href.replace(/\/+$/, '');
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function sanitizeMetadata(metadata = {}) {
+        if (!metadata || typeof metadata !== 'object') {
+          return {};
+        }
+
+        const sanitized = {};
+
+        if (typeof metadata.title === 'string') {
+          const trimmedTitle = metadata.title.trim();
+          if (trimmedTitle) {
+            sanitized.title = trimmedTitle;
+          }
+        }
+
+        if (typeof metadata.subtitle === 'string') {
+          const trimmedSubtitle = metadata.subtitle.trim();
+          if (trimmedSubtitle) {
+            sanitized.subtitle = trimmedSubtitle;
+          }
+        }
+
+        return sanitized;
+      }
+
+      function setHeaderContent(metadata) {
+        const fallback = getDefaultHeaderCopy();
+        const title = metadata && metadata.title ? metadata.title : fallback.title;
+        const subtitle = metadata && metadata.subtitle ? metadata.subtitle : fallback.subtitle;
+
+        if (headerTitle) {
+          headerTitle.textContent = title;
+        }
+
+        if (headerSubtitle) {
+          if (subtitle) {
+            headerSubtitle.textContent = subtitle;
+            headerSubtitle.hidden = false;
+          } else {
+            headerSubtitle.textContent = '';
+            headerSubtitle.hidden = true;
+          }
+        }
+      }
+
+      function storeMetadataForUrl(normalizedUrl, metadata) {
+        if (!normalizedUrl) {
+          return null;
+        }
+
+        const sanitized = sanitizeMetadata(metadata);
+
+        if (!sanitized.title && !sanitized.subtitle) {
+          return miniAppMetadata.get(normalizedUrl) || null;
+        }
+
+        const existing = miniAppMetadata.get(normalizedUrl) || {};
+        const next = {
+          title: sanitized.title || existing.title,
+          subtitle: sanitized.subtitle || existing.subtitle,
+        };
+
+        miniAppMetadata.set(normalizedUrl, next);
+        return next;
+      }
+
+      function applyMiniAppMetadata(normalizedUrl) {
+        const metadata = normalizedUrl ? miniAppMetadata.get(normalizedUrl) : null;
+        setHeaderContent(metadata || null);
+      }
+
+      const normalizedCatalogUrl = normalizeMiniAppUrl(defaultMiniApp);
+
+      if (normalizedCatalogUrl) {
+        activeMiniAppUrl = normalizedCatalogUrl;
+        storeMetadataForUrl(normalizedCatalogUrl, getCatalogHeaderCopy());
+        applyMiniAppMetadata(activeMiniAppUrl);
+      }
+
+      function applyCatalogToggleState(isCatalog) {
+        if (!catalogToggle) {
+          return;
+        }
+
+        const locale = getActiveLocale();
+        const labels = CATALOG_LABELS[locale] || CATALOG_LABELS['pt-BR'];
+        const label = isCatalog ? labels.active : labels.open;
+
+        if (isCatalog) {
+          catalogToggle.setAttribute('disabled', '');
+        } else {
+          catalogToggle.removeAttribute('disabled');
+        }
+        catalogToggle.setAttribute('aria-disabled', isCatalog ? 'true' : 'false');
+        catalogToggle.setAttribute('aria-label', label);
+        catalogToggle.setAttribute('title', label);
+      }
 
       function isCatalogUrl(url) {
         try {
@@ -103,6 +297,8 @@
         if (appShell) {
           appShell.classList.toggle('is-catalog-open', isCatalog);
         }
+
+        applyCatalogToggleState(isCatalog);
       }
 
       function isFullscreenActive() {
@@ -179,6 +375,14 @@
         });
       }
 
+      if (catalogToggle) {
+        catalogToggle.addEventListener('click', () => {
+          loadMiniApp(defaultMiniApp, {
+            metadata: getCatalogHeaderCopy(),
+          });
+        });
+      }
+
       document.addEventListener('fullscreenchange', syncFullscreenState);
       document.addEventListener('fullscreenerror', syncFullscreenState);
 
@@ -190,8 +394,17 @@
         }
 
         const targetUrl = typeof url === 'string' && url.trim() ? url : defaultMiniApp;
+        const normalizedTarget = normalizeMiniAppUrl(targetUrl);
+        const absoluteTarget = new URL(targetUrl, window.location.href).href;
 
-        if (panel.src !== new URL(targetUrl, window.location.href).href) {
+        if (options && typeof options.metadata === 'object' && normalizedTarget) {
+          storeMetadataForUrl(normalizedTarget, options.metadata);
+        }
+
+        activeMiniAppUrl = normalizedTarget;
+        applyMiniAppMetadata(activeMiniAppUrl);
+
+        if (panel.src !== absoluteTarget) {
           panel.src = targetUrl;
         }
 
@@ -214,13 +427,19 @@
         trigger.addEventListener('click', (event) => {
           event.preventDefault();
           const targetUrl = trigger.getAttribute('data-miniapp-target');
-          loadMiniApp(targetUrl);
+          const metadata = {
+            title: trigger.getAttribute('data-miniapp-name'),
+            subtitle: trigger.getAttribute('data-miniapp-description'),
+          };
+
+          loadMiniApp(targetUrl, { metadata });
         });
       });
 
       if (panel) {
         panel.addEventListener('load', () => {
           updateCatalogState(panel.src);
+          applyMiniAppMetadata(activeMiniAppUrl);
         });
       }
 
@@ -233,7 +452,9 @@
 
         if (typeof data === 'string') {
           if (data === 'open-catalog') {
-            loadMiniApp(defaultMiniApp);
+            loadMiniApp(defaultMiniApp, {
+              metadata: getCatalogHeaderCopy(),
+            });
           } else {
             loadMiniApp(data);
           }
@@ -251,13 +472,33 @@
             return;
           }
 
+          if (data.action === 'miniapp-header') {
+            if (!panel || event.source !== panel.contentWindow) {
+              return;
+            }
+
+            const normalizedSource = activeMiniAppUrl || normalizeMiniAppUrl(panel.src);
+            const stored = storeMetadataForUrl(normalizedSource, data);
+
+            if (stored && normalizedSource === activeMiniAppUrl) {
+              setHeaderContent(stored);
+            }
+
+            return;
+          }
+
           if (data.action === 'open-catalog') {
-            loadMiniApp(defaultMiniApp);
+            loadMiniApp(defaultMiniApp, {
+              metadata: getCatalogHeaderCopy(),
+            });
           }
         }
       });
 
-      loadMiniApp(panel ? panel.getAttribute('src') : defaultMiniApp, { focus: false });
+      loadMiniApp(panel ? panel.getAttribute('src') : defaultMiniApp, {
+        focus: false,
+        metadata: getCatalogHeaderCopy(),
+      });
     })();
   </script>
 </body>

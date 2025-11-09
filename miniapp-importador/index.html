@@ -136,5 +136,33 @@
     </div>
 
         <script src="./js/importador.js"></script>
+        <script>
+          (function () {
+            function notifyShell() {
+              if (!window.parent || window.parent === window) {
+                return;
+              }
+
+              try {
+                window.parent.postMessage(
+                  {
+                    action: 'miniapp-header',
+                    title: 'Importador de Pesquisas',
+                    subtitle: 'Importar arquivos, revisar resultados e sincronizar dados.',
+                  },
+                  window.location.origin,
+                );
+              } catch (error) {
+                console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
+              }
+            }
+
+            if (document.readyState === 'interactive' || document.readyState === 'complete') {
+              notifyShell();
+            } else {
+              document.addEventListener('DOMContentLoaded', notifyShell);
+            }
+          })();
+        </script>
 </body>
 </html>
