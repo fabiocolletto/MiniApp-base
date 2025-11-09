@@ -3,7 +3,7 @@
 Este repositório reúne protótipos HTML/CSS simples utilizados para validar fluxos de interface de miniaplicativos. Os artefatos principais ficam na pasta `miniapp-base`, mas há variações experimentais em `miniapp-prefeito`.
 
 ## Estrutura
-- `index.html`: página de entrada que referencia os estilos compartilhados.
+- `index.html`: shell PWA responsável por carregar o catálogo padrão e hospedar os miniapps ativos em um iframe central.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
 - `miniapp-importador/`: miniapp dedicado ao fluxo de importação de pesquisas.
 - `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
@@ -15,6 +15,15 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 3. Ao alterar estilos, mantenha a responsividade e valide o layout em breakpoints menores (altura e largura).
 4. Utilize o componente `miniapp-base/components/carousel.js` sempre que precisar criar containers roláveis de miniapps, mantendo consistência com os demais fluxos.
 5. Sempre atualize o `CHANGELOG.md` descrevendo as mudanças relevantes antes de abrir um PR.
+
+## Shell PWA e fluxo de navegação
+O arquivo `index.html` atua como shell da experiência. Ele incorpora o catálogo em `miniapp-catalogo/index.html` dentro do iframe `#miniapp-panel` e expõe os utilitários de navegação via `window.loadMiniApp`. Os botões com o atributo `data-miniapp-target` alternam o conteúdo do iframe e os próprios miniapps podem solicitar trocas usando `window.parent.postMessage('open-catalog')` ou enviando um objeto `{ action: 'load-miniapp', url: '<caminho>' }` para o shell.
+
+### Registrando novos miniapps
+1. Publique os assets HTML/CSS do miniapp em um diretório dedicado na raiz do projeto (ex.: `miniapp-novo/index.html`).
+2. Adicione um novo cartão ao catálogo (`miniapp-catalogo/index.html`) apontando o link (`href`) para o arquivo de entrada do miniapp, mantendo `target="miniapp-panel"` para reutilizar o iframe do shell.
+3. Opcionalmente defina `data-miniapp-name` e `data-miniapp-description` no link para facilitar a exibição contextual dentro do catálogo ou no futuro registro analítico.
+4. Caso o miniapp precise voltar ao catálogo ou abrir outra experiência dinamicamente, utilize `window.parent.postMessage('open-catalog')` ou envie `{ action: 'load-miniapp', url: '<caminho>' }` conforme necessário.
 
 ## Miniapps disponíveis
 - **Painel do Prefeito** – painel com KPIs, filtros e relatórios setoriais acessível em `miniapp-prefeito/index.html`.
