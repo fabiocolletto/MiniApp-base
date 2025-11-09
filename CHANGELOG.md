@@ -25,6 +25,7 @@
 - Controle de tela cheia passa a utilizar a API nativa do navegador (`requestFullscreen`), sincronizando o estado do layout com entradas de teclado como `Esc`.
 - Rodapé passa a exibir o ícone oficial da 5 Horas ao lado do selo “5 horas de pesquisa e análise limitada”, mantendo a versão do shell.
 - Rodapé do shell passa a alinhar o conteúdo à esquerda para harmonizar com o cabeçalho dinâmico.
+- Menu do rodapé concentra os atalhos de catálogo e tela cheia e inclui uma seção “Sobre o app” com o nome e a versão do shell, removendo o texto permanente dessas informações.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
@@ -34,3 +35,4 @@
 - Toolbar do painel em telas pequenas vira menu sanduíche sobreposto com botão de fechar e traduções para todos os idiomas suportados.
 - Token `--container` do layout base agora utiliza `clamp` responsivo para liberar 100% da largura disponível em telas estreitas.
 - Miniapp Prefeito em telas pequenas reposiciona o botão de menu no cabeçalho, move o selo de versão para o subtítulo e garante carrosséis em largura total com controles ocultos quando não há rolagem.
+- Botão de menu do rodapé em telas estreitas volta a abrir os atalhos móveis, removendo o bloqueio causado pelo atributo `hidden` persistente.

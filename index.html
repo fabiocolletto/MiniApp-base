@@ -50,7 +50,13 @@
           >
             <span class="material-symbols-rounded" aria-hidden="true">menu</span>
           </button>
-          <div class="footer-actions" id="footer-quick-actions" data-footer-actions hidden>
+          <div
+            class="footer-actions"
+            id="footer-quick-actions"
+            data-footer-actions
+            hidden
+            aria-labelledby="footer-actions-heading"
+          >
             <div class="shell-actions" role="group" aria-label="Atalhos do shell">
               <button
                 type="button"
@@ -73,6 +79,21 @@
                 <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
               </button>
             </div>
+            <section class="footer-about">
+              <h3
+                class="footer-about__title"
+                id="footer-actions-heading"
+                data-footer-about-title
+              >
+                Sobre o app
+              </h3>
+              <p class="footer-about__item footer-about__product" data-footer-about-product>
+                MiniApps Shell
+              </p>
+              <p class="footer-about__item footer-about__version" data-footer-about-version>
+                Versão 0.2.0 (experimental)
+              </p>
+            </section>
           </div>
         </div>
         <p class="app-footer__info">
@@ -87,10 +108,6 @@
             >
             <span class="app-footer__research">5 horas de pesquisa e análise limitada</span>
           </span>
-          <span aria-hidden="true">•</span>
-          <span class="app-footer__product">MiniApps Shell</span>
-          <span aria-hidden="true">•</span>
-          <span class="app-footer__meta">Versão 0.2.0 (experimental)</span>
         </p>
       </div>
     </footer>
@@ -109,9 +126,14 @@
       const catalogToggle = document.querySelector('[data-action="open-catalog"]');
       const footerMenuToggle = document.querySelector('[data-action="toggle-footer-actions"]');
       const footerActions = document.querySelector('[data-footer-actions]');
+      const footerAboutTitle = document.querySelector('[data-footer-about-title]');
+      const footerAboutProduct = document.querySelector('[data-footer-about-product]');
+      const footerAboutVersion = document.querySelector('[data-footer-about-version]');
       const desktopMediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 64rem)') : null;
       const catalogUrl = new URL(defaultMiniApp, window.location.href);
       const catalogPath = catalogUrl.pathname.replace(/\/+$/, '');
+      const SHELL_PRODUCT_NAME = 'MiniApps Shell';
+      const SHELL_VERSION = '0.2.0 (experimental)';
       const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
       const CATALOG_LABELS = {
         'pt-BR': {
@@ -130,15 +152,15 @@
 
       const SHELL_HEADER_COPY = {
         'pt-BR': {
-          title: 'MiniApps Shell',
+          title: SHELL_PRODUCT_NAME,
           subtitle: 'Escolha um mini‑app no catálogo para iniciar.',
         },
         'en-US': {
-          title: 'MiniApps Shell',
+          title: SHELL_PRODUCT_NAME,
           subtitle: 'Pick a miniapp from the catalog to get started.',
         },
         'es-ES': {
-          title: 'MiniApps Shell',
+          title: SHELL_PRODUCT_NAME,
           subtitle: 'Elige un miniapp del catálogo para comenzar.',
         },
       };
@@ -166,6 +188,24 @@
         collapsed: {
           label: 'Abrir atalhos do rodapé',
           title: 'Abrir atalhos',
+        },
+      };
+
+      const FOOTER_ABOUT_COPY = {
+        'pt-BR': {
+          heading: 'Sobre o app',
+          product: SHELL_PRODUCT_NAME,
+          version: 'Versão ' + SHELL_VERSION,
+        },
+        'en-US': {
+          heading: 'About the app',
+          product: SHELL_PRODUCT_NAME,
+          version: 'Version ' + SHELL_VERSION,
+        },
+        'es-ES': {
+          heading: 'Acerca de la app',
+          product: SHELL_PRODUCT_NAME,
+          version: 'Versión ' + SHELL_VERSION,
         },
       };
 
@@ -229,6 +269,7 @@
         }
 
         footerActions.hidden = false;
+        footerActions.removeAttribute('hidden');
         footerActions.classList.add('footer-actions--open');
         setFooterToggleState(true);
       }
@@ -246,6 +287,7 @@
 
         footerActions.classList.remove('footer-actions--open');
         footerActions.hidden = true;
+        footerActions.setAttribute('hidden', '');
         setFooterToggleState(false);
 
         if (restoreFocus && typeof footerMenuToggle.focus === 'function') {
@@ -262,6 +304,7 @@
 
         if (isDesktop) {
           footerActions.hidden = false;
+          footerActions.removeAttribute('hidden');
           footerActions.classList.remove('footer-actions--open');
           setFooterToggleState(false);
         } else {
@@ -276,9 +319,12 @@
           setFooterToggleState(false);
         }
 
+        syncFooterAboutSection();
+
         if (desktopMediaQuery) {
           const handleFooterViewportChange = () => {
             syncFooterActionsForViewport();
+            syncFooterAboutSection();
           };
 
           if (typeof desktopMediaQuery.addEventListener === 'function') {
@@ -356,6 +402,32 @@
       function getCatalogHeaderCopy() {
         const locale = getActiveLocale();
         return CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+      }
+
+      function getFooterAboutCopy() {
+        const locale = getActiveLocale();
+        return FOOTER_ABOUT_COPY[locale] || FOOTER_ABOUT_COPY['pt-BR'];
+      }
+
+      function syncFooterAboutSection() {
+        const copy = getFooterAboutCopy();
+
+        if (!copy) {
+          return;
+        }
+
+        if (footerAboutTitle) {
+          footerAboutTitle.textContent = copy.heading;
+        }
+
+        if (footerAboutProduct) {
+          footerAboutProduct.textContent = copy.product;
+        }
+
+        if (footerAboutVersion) {
+          footerAboutVersion.textContent = copy.version;
+        }
+
       }
 
       function normalizeMiniAppUrl(url) {

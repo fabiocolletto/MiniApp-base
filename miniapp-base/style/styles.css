@@ -920,16 +920,6 @@ header .subtitle {
   font-weight: 500;
 }
 
-.app-footer__product {
-  font-weight: 600;
-  color: var(--text-color-primary);
-}
-
-.app-footer__meta {
-  white-space: nowrap;
-}
-
-
 .footer-shortcuts {
   display: flex;
   align-items: center;
@@ -957,6 +947,9 @@ header .subtitle {
   bottom: calc(100% + var(--space-2));
   left: 0;
   display: none;
+  flex-direction: column;
+  align-items: stretch;
+  inline-size: clamp(12rem, 60vw, 20rem);
   padding: var(--space-2);
   border-radius: var(--radius-l);
   border: var(--border-default);
@@ -977,6 +970,8 @@ header .subtitle {
 .shell-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -997,6 +992,34 @@ header .subtitle {
 
 .fullscreen-toggle__icon {
   display: none;
+}
+
+.footer-about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-block-start: var(--space-2);
+  margin-block-start: var(--space-1);
+  border-top: var(--border-default);
+  color: var(--text-color-muted);
+}
+
+.footer-about__title {
+  margin: 0;
+  font-size: var(--font-size-m);
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.footer-about__item {
+  margin: 0;
+  font-size: var(--font-size-s);
+  line-height: 1.4;
+}
+
+.footer-about__product {
+  font-weight: 600;
+  color: var(--text-color-primary);
 }
 
 @media (min-width: 40rem) {
@@ -1022,11 +1045,29 @@ header .subtitle {
 
   .footer-actions {
     position: static;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    inline-size: auto;
     padding: 0;
     border: 0;
     box-shadow: none;
     background: transparent;
+  }
+
+  .footer-about {
+    margin-block-start: 0;
+    padding-block-start: 0;
+    border-top: 0;
+    text-align: right;
+  }
+
+  .footer-about__title {
+    font-size: var(--font-size-s);
+  }
+
+  .footer-about__item {
+    font-size: var(--font-size-s);
   }
 
   .shell-actions {
@@ -1036,6 +1077,7 @@ header .subtitle {
     z-index: 10;
     display: inline-flex;
     gap: clamp(var(--space-2), 1vw, var(--space-4));
+    justify-content: flex-end;
   }
 }
 
