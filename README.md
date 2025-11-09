@@ -23,7 +23,7 @@ Em telas largas (largura ≥ 1024px) um grupo de atalhos posicionado no canto su
 
 O cabeçalho do shell acompanha o miniapp ativo. Assim que o iframe é carregado, o miniapp deve disparar `window.parent.postMessage({ action: 'miniapp-header', title: '<título>', subtitle: '<subtítulo>' }, window.location.origin)` para informar os textos exibidos na marcação principal. Enquanto a mensagem não chega, o shell utiliza os metadados do catálogo (`data-miniapp-name` e `data-miniapp-description`) e um fallback localizado para manter o cabeçalho consistente.
 
-O rodapé fixo destaca a identidade visual da 5 Horas por meio do ícone oficial e do texto “5 horas de pesquisa e análise limitada”, seguido das informações de produto e versão do shell.
+O rodapé fixo destaca a identidade visual da 5 Horas por meio do ícone oficial e do texto “5 horas de pesquisa e análise limitada”, enquanto concentra os atalhos em um menu móvel que reúne catálogo, tela cheia e a seção “Sobre o app” com nome e versão do shell.
 
 ### Registrando novos miniapps
 1. Publique os assets HTML/CSS do miniapp em um diretório dedicado na raiz do projeto (ex.: `miniapp-novo/index.html`).
