@@ -479,8 +479,31 @@ header .subtitle {
   gap: var(--space-3);
   height: auto;
 }
+.app-card .app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(3rem, 2vw + 2.5rem, 3.75rem);
+  height: clamp(3rem, 2vw + 2.5rem, 3.75rem);
+  border-radius: var(--radius-xl);
+  font-size: clamp(2rem, 1.2vw + 1.6rem, 2.75rem);
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+  background: var(--background-surface-alternate);
+  border: 1px solid transparent;
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+}
+.app-card .app-icon.icon-prefeito {
+  color: var(--color-brand-secondary);
+  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(11, 87, 208, 0.28));
+  border-color: rgba(11, 87, 208, 0.32);
+}
+.app-card .app-icon.icon-importador {
+  color: var(--color-accent-green);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
+  border-color: rgba(22, 163, 74, 0.24);
+}
 .app-card .actions {
-  margin-top: auto; 
+  margin-top: auto;
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
