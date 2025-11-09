@@ -10,6 +10,7 @@
 - Cartões do catálogo para o Importador de Pesquisas, incluindo novo ícone dedicado e link para o protótipo.
 - Importador de Pesquisas reposicionado para o miniapp dedicado `miniapp-importador/`, preservando o CSS central e movendo estilos complementares para `style/importador-pesquisas.css`.
 - Miniapp TTS com formulário guiado, geração automática de roteiro e traduções completas para `pt-BR`, `en-US` e `es-ES`.
+- Miniapp TTS inclui prévia de áudio com controles de velocidade, volume e pausa, aplicando as configurações ao download.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
