@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Roteiros para TTS</title>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+    }
+
+    .tts-shell {
+      padding: clamp(24px, 5vw, 64px);
+      background: var(--background-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tts-container {
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(24px, 4vw, 40px);
+    }
+
+    .tts-header {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .tts-header__title h1 {
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      margin: 0;
+    }
+
+    .tts-header__title p {
+      margin: 0;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-l);
+    }
+
+    .tts-language-picker {
+      display: grid;
+      gap: var(--space-2);
+      align-self: flex-start;
+    }
+
+    .tts-language-picker label {
+      font-size: var(--font-size-m);
+      font-weight: 600;
+      color: var(--text-color-muted);
+    }
+
+    .tts-language-picker select {
+      min-width: 200px;
+      padding: var(--space-3);
+      border-radius: var(--radius-m);
+      border: var(--border-default);
+      background: var(--background-surface);
+      color: var(--text-color-primary);
+      font-size: var(--font-size-l);
+    }
+
+    .tts-card {
+      background: var(--background-surface);
+      border: var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: clamp(24px, 4vw, 40px);
+      box-shadow: var(--box-shadow-default);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .tts-form fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .tts-form legend {
+      font-size: clamp(1.125rem, 3vw, 1.5rem);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+
+    .tts-form__description {
+      margin: 0;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-l);
+    }
+
+    .tts-form__grid {
+      display: grid;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .tts-field {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .tts-field label {
+      font-weight: 600;
+      font-size: var(--font-size-l);
+    }
+
+    .tts-input,
+    .tts-textarea,
+    #scriptOutput {
+      width: 100%;
+      border-radius: var(--radius-m);
+      border: var(--border-default);
+      background: var(--background-surface-alternate);
+      color: var(--text-color-primary);
+      font-size: var(--font-size-l);
+      padding: var(--space-3);
+      resize: vertical;
+      min-height: 48px;
+    }
+
+    .tts-textarea {
+      min-height: 96px;
+    }
+
+    #scriptOutput {
+      min-height: clamp(200px, 40vh, 360px);
+      resize: vertical;
+    }
+
+    .tts-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .tts-actions .btn {
+      min-width: clamp(160px, 30vw, 220px);
+    }
+
+    .tts-output-status {
+      margin: 0;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-m);
+    }
+
+    @media (min-width: 720px) {
+      .tts-header {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .tts-form__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tts-field--full {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="tts-shell">
+    <div class="tts-container">
+      <header class="tts-header">
+        <div class="tts-header__title">
+          <h1 data-i18n="app.title">Gerador de Roteiros para TTS</h1>
+          <p data-i18n="app.subtitle">Combine dados essenciais para gerar um roteiro consistente de locução.</p>
+        </div>
+        <div class="tts-language-picker">
+          <label for="languageSelect" data-i18n="language.label">Idioma</label>
+          <select id="languageSelect" aria-describedby="languageHelper">
+            <option value="pt-BR" data-i18n-option="language.pt-BR">Português (Brasil)</option>
+            <option value="en-US" data-i18n-option="language.en-US">English (US)</option>
+            <option value="es-ES" data-i18n-option="language.es-ES">Español (ES)</option>
+          </select>
+          <span id="languageHelper" class="tts-output-status" data-i18n="language.helper">Escolha o idioma da interface.</span>
+        </div>
+      </header>
+
+      <main class="tts-main">
+        <section class="tts-card">
+          <form id="scriptForm" class="tts-form">
+            <fieldset>
+              <legend data-i18n="form.legend">Informações essenciais</legend>
+              <p class="tts-form__description" data-i18n="form.description">Preencha os campos abaixo para montar um roteiro automaticamente.</p>
+              <div class="tts-form__grid">
+                <div class="tts-field">
+                  <label for="cityInput" data-i18n="form.city.label">Cidade</label>
+                  <input type="text" id="cityInput" class="tts-input" name="city" required data-i18n-placeholder="form.city.placeholder" placeholder="Ex.: Recife">
+                </div>
+                <div class="tts-field">
+                  <label for="audienceInput" data-i18n="form.audience.label">Público</label>
+                  <input type="text" id="audienceInput" class="tts-input" name="audience" required data-i18n-placeholder="form.audience.placeholder" placeholder="Ex.: moradores, empreendedores locais">
+                </div>
+                <div class="tts-field tts-field--full">
+                  <label for="highlightInput" data-i18n="form.highlight.label">Destaque</label>
+                  <textarea id="highlightInput" class="tts-textarea" name="highlight" rows="3" required data-i18n-placeholder="form.highlight.placeholder" placeholder="Ex.: novo centro de apoio ao empreendedor"></textarea>
+                </div>
+                <div class="tts-field tts-field--full">
+                  <label for="ctaInput" data-i18n="form.cta.label">Chamada à ação</label>
+                  <textarea id="ctaInput" class="tts-textarea" name="cta" rows="3" required data-i18n-placeholder="form.cta.placeholder" placeholder="Ex.: inscreva-se no site da prefeitura"></textarea>
+                </div>
+              </div>
+              <div class="tts-actions">
+                <button type="submit" id="generateButton" class="btn primary" data-i18n="actions.generate">Gerar roteiro</button>
+              </div>
+            </fieldset>
+          </form>
+        </section>
+
+        <section class="tts-card">
+          <div class="tts-output-header">
+            <h2 data-i18n="output.label">Roteiro gerado</h2>
+            <p id="outputStatus" class="tts-output-status" aria-live="polite" data-i18n="output.helper">Preencha o formulário para gerar um roteiro automático.</p>
+          </div>
+          <textarea id="scriptOutput" name="script" rows="10" readonly data-i18n-placeholder="output.placeholder" placeholder="O roteiro aparecerá aqui após a geração."></textarea>
+          <div class="tts-actions">
+            <button type="button" id="editButton" class="btn ghost" data-i18n="actions.edit" disabled>Editar manualmente</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      'pt-BR': {
+        pageTitle: 'Gerador de Roteiros para TTS',
+        appTitle: 'Gerador de Roteiros para TTS',
+        appSubtitle: 'Combine dados essenciais para gerar um roteiro consistente de locução.',
+        languageLabel: 'Idioma',
+        languageHelper: 'Escolha o idioma da interface.',
+        languageNames: {
+          'language.pt-BR': 'Português (Brasil)',
+          'language.en-US': 'English (US)',
+          'language.es-ES': 'Español (ES)'
+        },
+        formLegend: 'Informações essenciais',
+        formDescription: 'Preencha os campos abaixo para montar um roteiro automaticamente.',
+        fields: {
+          city: { label: 'Cidade', placeholder: 'Ex.: Recife' },
+          audience: { label: 'Público', placeholder: 'Ex.: moradores, empreendedores locais' },
+          highlight: { label: 'Destaque', placeholder: 'Ex.: novo centro de apoio ao empreendedor' },
+          cta: { label: 'Chamada à ação', placeholder: 'Ex.: inscreva-se no site da prefeitura' }
+        },
+        actions: {
+          generate: 'Gerar roteiro',
+          edit: 'Editar manualmente'
+        },
+        outputLabel: 'Roteiro gerado',
+        outputPlaceholder: 'O roteiro aparecerá aqui após a geração.',
+        outputHelper: 'Preencha o formulário para gerar um roteiro automático.',
+        outputGenerated: 'Roteiro gerado automaticamente com base nas informações fornecidas.',
+        outputManual: 'Edição manual ativada. Revise o texto antes de publicar.',
+        basePhrases: {
+          greeting: 'Olá, {audience} de {city}!',
+          highlight: 'Hoje queremos destacar {highlight}.',
+          cta: 'Para finalizar, {cta}.'
+        }
+      },
+      'en-US': {
+        pageTitle: 'TTS Script Generator',
+        appTitle: 'TTS Script Generator',
+        appSubtitle: 'Combine key inputs to craft a consistent narration draft.',
+        languageLabel: 'Language',
+        languageHelper: 'Choose the interface language.',
+        languageNames: {
+          'language.pt-BR': 'Portuguese (Brazil)',
+          'language.en-US': 'English (US)',
+          'language.es-ES': 'Spanish (ES)'
+        },
+        formLegend: 'Key information',
+        formDescription: 'Fill in the fields below to automatically compose a narration script.',
+        fields: {
+          city: { label: 'City', placeholder: 'e.g., Recife' },
+          audience: { label: 'Audience', placeholder: 'e.g., residents, local entrepreneurs' },
+          highlight: { label: 'Highlight', placeholder: 'e.g., new entrepreneurship support center' },
+          cta: { label: 'Call to action', placeholder: 'e.g., register on the city hall website' }
+        },
+        actions: {
+          generate: 'Generate script',
+          edit: 'Edit manually'
+        },
+        outputLabel: 'Generated script',
+        outputPlaceholder: 'The narration script will appear here after generation.',
+        outputHelper: 'Fill in the form to generate a narration script automatically.',
+        outputGenerated: 'Script generated automatically from the provided information.',
+        outputManual: 'Manual editing enabled. Review the final copy before sharing.',
+        basePhrases: {
+          greeting: 'Hello, {audience} from {city}!',
+          highlight: 'Today we want to highlight {highlight}.',
+          cta: 'To wrap up, {cta}.'
+        }
+      },
+      'es-ES': {
+        pageTitle: 'Generador de guiones para TTS',
+        appTitle: 'Generador de guiones para TTS',
+        appSubtitle: 'Combina datos clave para crear un guion de locución coherente.',
+        languageLabel: 'Idioma',
+        languageHelper: 'Elige el idioma de la interfaz.',
+        languageNames: {
+          'language.pt-BR': 'Portugués (Brasil)',
+          'language.en-US': 'Inglés (EE. UU.)',
+          'language.es-ES': 'Español (ES)'
+        },
+        formLegend: 'Información esencial',
+        formDescription: 'Completa los campos para generar automáticamente el guion de la locución.',
+        fields: {
+          city: { label: 'Ciudad', placeholder: 'Ej.: Recife' },
+          audience: { label: 'Público', placeholder: 'Ej.: residentes, emprendedores locales' },
+          highlight: { label: 'Destacado', placeholder: 'Ej.: nuevo centro de apoyo al emprendedor' },
+          cta: { label: 'Llamado a la acción', placeholder: 'Ej.: inscríbete en el sitio del ayuntamiento' }
+        },
+        actions: {
+          generate: 'Generar guion',
+          edit: 'Editar manualmente'
+        },
+        outputLabel: 'Guion generado',
+        outputPlaceholder: 'El guion aparecerá aquí después de generarse.',
+        outputHelper: 'Completa el formulario para generar un guion automático.',
+        outputGenerated: 'Guion generado automáticamente con la información proporcionada.',
+        outputManual: 'Edición manual activada. Revisa el texto antes de publicar.',
+        basePhrases: {
+          greeting: '¡Hola, {audience} de {city}!',
+          highlight: 'Hoy queremos destacar {highlight}.',
+          cta: 'Para finalizar, {cta}.'
+        }
+      }
+    };
+
+    const state = {
+      currentLanguage: 'pt-BR',
+      lastGeneratedValues: null,
+      manualOverride: false
+    };
+
+    const languageSelect = document.getElementById('languageSelect');
+    const form = document.getElementById('scriptForm');
+    const cityInput = document.getElementById('cityInput');
+    const audienceInput = document.getElementById('audienceInput');
+    const highlightInput = document.getElementById('highlightInput');
+    const ctaInput = document.getElementById('ctaInput');
+    const generateButton = document.getElementById('generateButton');
+    const editButton = document.getElementById('editButton');
+    const scriptOutput = document.getElementById('scriptOutput');
+    const outputStatus = document.getElementById('outputStatus');
+    const titleElement = document.querySelector('[data-i18n="app.title"]');
+    const subtitleElement = document.querySelector('[data-i18n="app.subtitle"]');
+    const languageLabel = document.querySelector('[data-i18n="language.label"]');
+    const languageHelper = document.querySelector('[data-i18n="language.helper"]');
+    const formLegend = document.querySelector('[data-i18n="form.legend"]');
+    const formDescription = document.querySelector('[data-i18n="form.description"]');
+    const outputLabel = document.querySelector('[data-i18n="output.label"]');
+
+    function replacePlaceholders(template, values) {
+      return template
+        .replace('{city}', values.city)
+        .replace('{audience}', values.audience)
+        .replace('{highlight}', values.highlight)
+        .replace('{cta}', values.cta);
+    }
+
+    function composeScript(values, language) {
+      const phrases = translations[language].basePhrases;
+      return [
+        replacePlaceholders(phrases.greeting, values),
+        replacePlaceholders(phrases.highlight, values),
+        replacePlaceholders(phrases.cta, values)
+      ].join('\n\n');
+    }
+
+    function getFieldTranslations(language) {
+      return translations[language].fields;
+    }
+
+    function updateOutputStatus() {
+      const localeTexts = translations[state.currentLanguage];
+      if (state.manualOverride) {
+        outputStatus.textContent = localeTexts.outputManual;
+      } else if (state.lastGeneratedValues) {
+        outputStatus.textContent = localeTexts.outputGenerated;
+      } else {
+        outputStatus.textContent = localeTexts.outputHelper;
+      }
+    }
+
+    function applyTranslations(language) {
+      const localeTexts = translations[language];
+      document.documentElement.lang = language;
+      document.title = localeTexts.pageTitle;
+      languageSelect.value = language;
+
+      titleElement.textContent = localeTexts.appTitle;
+      subtitleElement.textContent = localeTexts.appSubtitle;
+      languageLabel.textContent = localeTexts.languageLabel;
+      languageHelper.textContent = localeTexts.languageHelper;
+      formLegend.textContent = localeTexts.formLegend;
+      formDescription.textContent = localeTexts.formDescription;
+      outputLabel.textContent = localeTexts.outputLabel;
+      scriptOutput.placeholder = localeTexts.outputPlaceholder;
+      generateButton.textContent = localeTexts.actions.generate;
+      editButton.textContent = localeTexts.actions.edit;
+
+      const fieldTranslations = getFieldTranslations(language);
+      cityInput.labels[0].textContent = fieldTranslations.city.label;
+      cityInput.placeholder = fieldTranslations.city.placeholder;
+      audienceInput.labels[0].textContent = fieldTranslations.audience.label;
+      audienceInput.placeholder = fieldTranslations.audience.placeholder;
+      highlightInput.labels[0].textContent = fieldTranslations.highlight.label;
+      highlightInput.placeholder = fieldTranslations.highlight.placeholder;
+      ctaInput.labels[0].textContent = fieldTranslations.cta.label;
+      ctaInput.placeholder = fieldTranslations.cta.placeholder;
+
+      languageSelect.querySelectorAll('[data-i18n-option]').forEach((option) => {
+        const key = option.getAttribute('data-i18n-option');
+        const label = localeTexts.languageNames[key];
+        if (label) {
+          option.textContent = label;
+        }
+      });
+
+      updateOutputStatus();
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const values = {
+        city: cityInput.value.trim(),
+        audience: audienceInput.value.trim(),
+        highlight: highlightInput.value.trim(),
+        cta: ctaInput.value.trim()
+      };
+
+      if (!values.city || !values.audience || !values.highlight || !values.cta) {
+        return;
+      }
+
+      const script = composeScript(values, state.currentLanguage);
+      scriptOutput.value = script;
+      scriptOutput.readOnly = true;
+      state.lastGeneratedValues = values;
+      state.manualOverride = false;
+      editButton.disabled = false;
+      updateOutputStatus();
+      scriptOutput.focus();
+      scriptOutput.setSelectionRange(scriptOutput.value.length, scriptOutput.value.length);
+    }
+
+    function handleLanguageChange(event) {
+      const newLanguage = event.target.value;
+      if (!translations[newLanguage]) {
+        return;
+      }
+      state.currentLanguage = newLanguage;
+      applyTranslations(newLanguage);
+
+      if (state.lastGeneratedValues && !state.manualOverride) {
+        const regeneratedScript = composeScript(state.lastGeneratedValues, newLanguage);
+        scriptOutput.value = regeneratedScript;
+        scriptOutput.readOnly = true;
+      }
+    }
+
+    function enableManualEditing() {
+      scriptOutput.readOnly = false;
+      scriptOutput.focus();
+      editButton.disabled = true;
+      state.manualOverride = true;
+      updateOutputStatus();
+    }
+
+    form.addEventListener('submit', handleFormSubmit);
+    languageSelect.addEventListener('change', handleLanguageChange);
+    editButton.addEventListener('click', enableManualEditing);
+
+    applyTranslations(state.currentLanguage);
+  </script>
+</body>
+</html>
