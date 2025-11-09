@@ -6,7 +6,7 @@
   <title>MiniApps — Catálogo</title>
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  <link rel="stylesheet" href="miniapp-base/style/styles.css">
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
 <body>
   
@@ -27,14 +27,24 @@
     
     <article class="app-card">
       <div class="row">
-        <img src="./miniapp-base/assets/icons/prefeito.png" alt="Ícone do Mini‑App Prefeito">
+        <span
+          class="material-symbols-rounded app-icon icon-prefeito"
+          aria-hidden="true"
+        >monitoring</span>
         <div>
           <h3>Painel do Prefeito</h3>
           <p>Painel com KPIs, filtros e relatórios setoriais.</p>
         </div>
       </div>
       <div class="actions">
-        <a class="btn" href="./miniapp-prefeito/index.html" title="Abrir">
+        <a
+          class="btn"
+          href="../miniapp-prefeito/index.html"
+          title="Abrir"
+          target="miniapp-panel"
+          data-miniapp-name="Painel do Prefeito"
+          data-miniapp-description="Painel com KPIs, filtros e relatórios setoriais."
+        >
           <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
           Abrir
         </a>
@@ -43,20 +53,30 @@
 
     <article class="app-card">
       <div class="row">
-        <img src="./miniapp-base/assets/icons/survey.svg" alt="Ícone do Importador de Pesquisas">
+        <span
+          class="material-symbols-rounded app-icon icon-importador"
+          aria-hidden="true"
+        >cloud_upload</span>
         <div>
           <h3>Importador de Pesquisas</h3>
           <p>Fluxo para importar arquivos CSV de pesquisas e revisar resultados.</p>
         </div>
       </div>
       <div class="actions">
-        <a class="btn" href="./miniapp-importador/index.html" title="Abrir">
+        <a
+          class="btn"
+          href="../miniapp-importador/index.html"
+          title="Abrir"
+          target="miniapp-panel"
+          data-miniapp-name="Importador de Pesquisas"
+          data-miniapp-description="Fluxo para importar arquivos CSV de pesquisas e revisar resultados."
+        >
           <span class="material-symbols-rounded" aria-hidden="true">dataset</span>
           Abrir
         </a>
       </div>
     </article>
 
-    </main>
+  </main>
 </body>
 </html>
