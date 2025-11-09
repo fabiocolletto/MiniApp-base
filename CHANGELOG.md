@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Adicionado
+- Rodapé do shell fixo com indicação de versão e modo tela cheia automático, incluindo atalho dedicado em telas amplas.
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.
 - Documento `AGENTE.md` com diretrizes para manutenção do projeto.
