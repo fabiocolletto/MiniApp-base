@@ -3,7 +3,7 @@
 Este protótipo concentra as telas e interações do gerador de roteiros para locução.
 
 ## Conteúdo
-- `index.html`: interface principal do gerador com suporte a múltiplos idiomas.
+- `index.html`: interface principal do gerador com suporte a múltiplos idiomas e prévia de áudio com ajustes de velocidade, volume e pausa entre blocos.
 
 ## Manutenção
 - Sempre revise `AGENTE.md` na raiz para aplicar as convenções gerais.

@@ -154,6 +154,56 @@
       font-size: var(--font-size-m);
     }
 
+    .tts-card .controls {
+      display: grid;
+      gap: clamp(12px, 3vw, 20px);
+    }
+
+    .tts-control {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .tts-control__header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .tts-control__value {
+      font-weight: 600;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-m);
+    }
+
+    .tts-control__helper {
+      margin: 0;
+      color: var(--text-color-muted);
+      font-size: var(--font-size-m);
+    }
+
+    .tts-slider {
+      width: 100%;
+      accent-color: var(--color-primary, #0053ff);
+    }
+
+    .tts-audio-header {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .tts-audio-footer {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .tts-audio-player {
+      width: 100%;
+      border-radius: var(--radius-m);
+      background: var(--background-surface-alternate);
+    }
+
     @media (min-width: 720px) {
       .tts-header {
         flex-direction: row;
@@ -231,6 +281,47 @@
             <button type="button" id="editButton" class="btn ghost" data-i18n="actions.edit" disabled>Editar manualmente</button>
           </div>
         </section>
+
+        <section class="tts-card">
+          <div class="tts-audio-header">
+            <h2 id="audioTitle" data-i18n="audio.title">Prévia de áudio</h2>
+            <p id="audioDescription" class="tts-output-status" data-i18n="audio.description">Ajuste as opções e gere um arquivo de áudio simplificado para revisão.</p>
+          </div>
+          <div class="controls">
+            <div class="tts-control">
+              <div class="tts-control__header">
+                <label for="audioSpeed" data-audio-label="speed" data-i18n="audio.controls.speed.label">Velocidade</label>
+                <span class="tts-control__value" data-audio-value="speed">1,00×</span>
+              </div>
+              <input type="range" id="audioSpeed" class="tts-slider" min="0.5" max="1.5" step="0.05" value="1" aria-describedby="audioSpeedHelper" data-audio-input="speed" data-i18n-title="audio.controls.speed.tooltip" title="Defina a rapidez da narração.">
+              <p id="audioSpeedHelper" class="tts-control__helper" data-audio-helper="speed" data-i18n="audio.controls.speed.helper">Controla a rapidez da locução na prévia.</p>
+            </div>
+            <div class="tts-control">
+              <div class="tts-control__header">
+                <label for="audioVolume" data-audio-label="volume" data-i18n="audio.controls.volume.label">Volume</label>
+                <span class="tts-control__value" data-audio-value="volume">100%</span>
+              </div>
+              <input type="range" id="audioVolume" class="tts-slider" min="0" max="1" step="0.05" value="1" aria-describedby="audioVolumeHelper" data-audio-input="volume" data-i18n-title="audio.controls.volume.tooltip" title="Ajuste o volume da narração.">
+              <p id="audioVolumeHelper" class="tts-control__helper" data-audio-helper="volume" data-i18n="audio.controls.volume.helper">Equilibra o volume aplicado à prévia e ao download.</p>
+            </div>
+            <div class="tts-control">
+              <div class="tts-control__header">
+                <label for="audioPause" data-audio-label="pause" data-i18n="audio.controls.pause.label">Pausa entre trechos</label>
+                <span class="tts-control__value" data-audio-value="pause">0,6 s</span>
+              </div>
+              <input type="range" id="audioPause" class="tts-slider" min="0" max="3" step="0.1" value="0.6" aria-describedby="audioPauseHelper" data-audio-input="pause" data-i18n-title="audio.controls.pause.tooltip" title="Defina a pausa entre cada bloco do texto.">
+              <p id="audioPauseHelper" class="tts-control__helper" data-audio-helper="pause" data-i18n="audio.controls.pause.helper">Controla o silêncio entre os blocos do roteiro.</p>
+            </div>
+          </div>
+          <div class="tts-actions">
+            <button type="button" id="audioGenerateButton" class="btn primary" data-i18n="audio.actions.preview" disabled>Gerar prévia de áudio</button>
+            <button type="button" id="audioDownloadButton" class="btn ghost" data-i18n="audio.actions.download" disabled>Baixar áudio (WAV)</button>
+          </div>
+          <div class="tts-audio-footer">
+            <p id="audioStatus" class="tts-output-status">Gere um roteiro para habilitar a prévia de áudio.</p>
+            <audio id="audioPlayer" class="tts-audio-player" controls preload="none"></audio>
+          </div>
+        </section>
       </main>
     </div>
   </div>
@@ -269,6 +360,44 @@
           greeting: 'Olá, {audience} de {city}!',
           highlight: 'Hoje queremos destacar {highlight}.',
           cta: 'Para finalizar, {cta}.'
+        },
+        audio: {
+          title: 'Prévia de áudio',
+          description: 'Personalize os ajustes antes de gerar a prévia simplificada e o download.',
+          controls: {
+            speed: {
+              label: 'Velocidade',
+              helper: 'Controla a rapidez da locução gerada.',
+              tooltip: 'Defina a velocidade da prévia e do download.',
+              unit: '×'
+            },
+            volume: {
+              label: 'Volume',
+              helper: 'Equilibra o volume aplicado à prévia e ao arquivo baixado.',
+              tooltip: 'Ajuste o volume da locução final.',
+              unit: '%'
+            },
+            pause: {
+              label: 'Pausa entre blocos',
+              helper: 'Controla o silêncio entre os parágrafos do roteiro.',
+              tooltip: 'Defina o tempo de silêncio entre cada parte do texto.',
+              unit: 's'
+            }
+          },
+          actions: {
+            preview: 'Gerar prévia de áudio',
+            previewTooltip: 'Reprocessa o áudio com as configurações atuais.',
+            download: 'Baixar áudio (WAV)',
+            downloadTooltip: 'Baixe o arquivo de áudio com as configurações aplicadas.'
+          },
+          status: {
+            empty: 'Gere um roteiro para habilitar a prévia de áudio.',
+            idle: 'Ajuste as opções e gere o áudio para ouvir a prévia.',
+            generating: 'Gerando áudio com as configurações selecionadas…',
+            ready: 'Áudio gerado. Prévia e download usam as configurações atuais.',
+            needsRegeneration: 'As configurações mudaram. Gere novamente para atualizar o áudio.',
+            error: 'Não foi possível gerar o áudio. Tente novamente.'
+          }
         }
       },
       'en-US': {
@@ -303,6 +432,44 @@
           greeting: 'Hello, {audience} from {city}!',
           highlight: 'Today we want to highlight {highlight}.',
           cta: 'To wrap up, {cta}.'
+        },
+        audio: {
+          title: 'Audio preview',
+          description: 'Fine-tune the options before generating the simplified preview and download.',
+          controls: {
+            speed: {
+              label: 'Speed',
+              helper: 'Controls how fast the narration will sound.',
+              tooltip: 'Set the playback speed for preview and download.',
+              unit: '×'
+            },
+            volume: {
+              label: 'Volume',
+              helper: 'Balances the loudness applied to the preview and exported file.',
+              tooltip: 'Adjust the narration volume for the final audio.',
+              unit: '%'
+            },
+            pause: {
+              label: 'Pause between blocks',
+              helper: 'Controls the silence inserted between each paragraph.',
+              tooltip: 'Set the amount of silence between sections of the script.',
+              unit: 's'
+            }
+          },
+          actions: {
+            preview: 'Generate audio preview',
+            previewTooltip: 'Reprocess the audio with the current settings.',
+            download: 'Download audio (WAV)',
+            downloadTooltip: 'Download the audio file with the selected settings.'
+          },
+          status: {
+            empty: 'Generate a script to enable the audio preview.',
+            idle: 'Adjust the options and generate the audio to listen to the preview.',
+            generating: 'Generating audio with the selected settings…',
+            ready: 'Audio generated. Preview and download use the current settings.',
+            needsRegeneration: 'Settings have changed. Generate again to refresh the audio.',
+            error: 'Unable to generate audio. Please try again.'
+          }
         }
       },
       'es-ES': {
@@ -337,6 +504,44 @@
           greeting: '¡Hola, {audience} de {city}!',
           highlight: 'Hoy queremos destacar {highlight}.',
           cta: 'Para finalizar, {cta}.'
+        },
+        audio: {
+          title: 'Previsualización de audio',
+          description: 'Ajusta las opciones antes de generar la previsualización simplificada y la descarga.',
+          controls: {
+            speed: {
+              label: 'Velocidad',
+              helper: 'Controla qué tan rápido sonará la locución.',
+              tooltip: 'Define la velocidad de reproducción para la previsualización y la descarga.',
+              unit: '×'
+            },
+            volume: {
+              label: 'Volumen',
+              helper: 'Equilibra el volumen aplicado a la previsualización y al archivo exportado.',
+              tooltip: 'Ajusta el volumen final de la locución.',
+              unit: '%'
+            },
+            pause: {
+              label: 'Pausa entre bloques',
+              helper: 'Controla el silencio insertado entre cada párrafo.',
+              tooltip: 'Define el tiempo de silencio entre las secciones del guion.',
+              unit: 's'
+            }
+          },
+          actions: {
+            preview: 'Generar previsualización de audio',
+            previewTooltip: 'Reprocesa el audio con la configuración actual.',
+            download: 'Descargar audio (WAV)',
+            downloadTooltip: 'Descarga el archivo de audio con los ajustes seleccionados.'
+          },
+          status: {
+            empty: 'Genera un guion para habilitar la previsualización de audio.',
+            idle: 'Ajusta las opciones y genera el audio para escuchar la previsualización.',
+            generating: 'Generando audio con la configuración seleccionada…',
+            ready: 'Audio generado. La previsualización y la descarga usan la configuración actual.',
+            needsRegeneration: 'La configuración cambió. Genera nuevamente para actualizar el audio.',
+            error: 'No fue posible generar el audio. Inténtalo otra vez.'
+          }
         }
       }
     };
@@ -344,7 +549,20 @@
     const state = {
       currentLanguage: 'pt-BR',
       lastGeneratedValues: null,
-      manualOverride: false
+      manualOverride: false,
+      audio: {
+        settings: {
+          speed: 1,
+          volume: 1,
+          pause: 0.6
+        },
+        status: 'empty',
+        blob: null,
+        objectUrl: null,
+        isProcessing: false,
+        needsRegeneration: false,
+        hasScript: false
+      }
     };
 
     const languageSelect = document.getElementById('languageSelect');
@@ -364,6 +582,32 @@
     const formLegend = document.querySelector('[data-i18n="form.legend"]');
     const formDescription = document.querySelector('[data-i18n="form.description"]');
     const outputLabel = document.querySelector('[data-i18n="output.label"]');
+    const audioTitle = document.getElementById('audioTitle');
+    const audioDescription = document.getElementById('audioDescription');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioStatus = document.getElementById('audioStatus');
+    const audioGenerateButton = document.getElementById('audioGenerateButton');
+    const audioDownloadButton = document.getElementById('audioDownloadButton');
+    const audioValueElements = {
+      speed: document.querySelector('[data-audio-value="speed"]'),
+      volume: document.querySelector('[data-audio-value="volume"]'),
+      pause: document.querySelector('[data-audio-value="pause"]')
+    };
+    const audioInputs = {
+      speed: document.getElementById('audioSpeed'),
+      volume: document.getElementById('audioVolume'),
+      pause: document.getElementById('audioPause')
+    };
+    const audioLabels = {
+      speed: document.querySelector('[data-audio-label="speed"]'),
+      volume: document.querySelector('[data-audio-label="volume"]'),
+      pause: document.querySelector('[data-audio-label="pause"]')
+    };
+    const audioHelpers = {
+      speed: document.querySelector('[data-audio-helper="speed"]'),
+      volume: document.querySelector('[data-audio-helper="volume"]'),
+      pause: document.querySelector('[data-audio-helper="pause"]')
+    };
 
     function replacePlaceholders(template, values) {
       return template
@@ -395,6 +639,74 @@
       } else {
         outputStatus.textContent = localeTexts.outputHelper;
       }
+    }
+
+    function updateAudioStatusMessage() {
+      const localeTexts = translations[state.currentLanguage];
+      const audioTexts = localeTexts.audio;
+      const statusKey = state.audio.status;
+      audioStatus.textContent = audioTexts.status[statusKey] || '';
+    }
+
+    function updateAudioValueOutput(key) {
+      const target = audioValueElements[key];
+      if (!target) {
+        return;
+      }
+
+      const locale = state.currentLanguage;
+      const controlTexts = translations[locale].audio.controls;
+      let formattedValue = '';
+
+      if (key === 'speed') {
+        formattedValue = `${new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(state.audio.settings.speed)}${controlTexts.speed.unit}`;
+      } else if (key === 'volume') {
+        formattedValue = new Intl.NumberFormat(locale, { style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(state.audio.settings.volume);
+      } else if (key === 'pause') {
+        formattedValue = `${new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(state.audio.settings.pause)} ${controlTexts.pause.unit}`;
+      }
+
+      target.textContent = formattedValue;
+
+      const input = audioInputs[key];
+      if (input) {
+        input.setAttribute('aria-valuetext', formattedValue);
+      }
+    }
+
+    function updateAudioValueOutputs() {
+      Object.keys(audioValueElements).forEach(updateAudioValueOutput);
+    }
+
+    function resetAudioObjectUrl() {
+      if (state.audio.objectUrl) {
+        URL.revokeObjectURL(state.audio.objectUrl);
+        state.audio.objectUrl = null;
+      }
+    }
+
+    function resetAudioPreview() {
+      resetAudioObjectUrl();
+      state.audio.blob = null;
+      state.audio.needsRegeneration = false;
+      audioPlayer.pause();
+      audioPlayer.removeAttribute('src');
+      audioPlayer.load();
+      audioDownloadButton.disabled = true;
+    }
+
+    function updateAudioActionsState() {
+      audioGenerateButton.disabled = state.audio.isProcessing || !state.audio.hasScript;
+      const disableDownload =
+        state.audio.isProcessing ||
+        !state.audio.blob ||
+        state.audio.needsRegeneration;
+      audioDownloadButton.disabled = disableDownload;
+    }
+
+    function setAudioStatus(statusKey) {
+      state.audio.status = statusKey;
+      updateAudioStatusMessage();
     }
 
     function applyTranslations(language) {
@@ -432,7 +744,30 @@
         }
       });
 
+      const audioTexts = localeTexts.audio;
+      audioTitle.textContent = audioTexts.title;
+      audioDescription.textContent = audioTexts.description;
+      audioGenerateButton.textContent = audioTexts.actions.preview;
+      audioGenerateButton.title = audioTexts.actions.previewTooltip;
+      audioDownloadButton.textContent = audioTexts.actions.download;
+      audioDownloadButton.title = audioTexts.actions.downloadTooltip;
+
+      ['speed', 'volume', 'pause'].forEach((key) => {
+        if (audioLabels[key]) {
+          audioLabels[key].textContent = audioTexts.controls[key].label;
+        }
+        if (audioHelpers[key]) {
+          audioHelpers[key].textContent = audioTexts.controls[key].helper;
+        }
+        if (audioInputs[key]) {
+          audioInputs[key].title = audioTexts.controls[key].tooltip;
+          audioInputs[key].setAttribute('aria-label', audioTexts.controls[key].label);
+        }
+      });
+
       updateOutputStatus();
+      updateAudioValueOutputs();
+      updateAudioStatusMessage();
     }
 
     function handleFormSubmit(event) {
@@ -458,6 +793,7 @@
       updateOutputStatus();
       scriptOutput.focus();
       scriptOutput.setSelectionRange(scriptOutput.value.length, scriptOutput.value.length);
+      handleScriptContentChange();
     }
 
     function handleLanguageChange(event) {
@@ -472,6 +808,7 @@
         const regeneratedScript = composeScript(state.lastGeneratedValues, newLanguage);
         scriptOutput.value = regeneratedScript;
         scriptOutput.readOnly = true;
+        handleScriptContentChange();
       }
     }
 
@@ -483,11 +820,248 @@
       updateOutputStatus();
     }
 
+    function handleScriptContentChange() {
+      resetAudioPreview();
+      const hasContent = scriptOutput.value.trim().length > 0;
+      state.audio.hasScript = hasContent;
+      setAudioStatus(hasContent ? 'idle' : 'empty');
+      updateAudioActionsState();
+    }
+
+    async function generateAudio(script, settings) {
+      const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextConstructor) {
+        throw new Error('AudioContext is not supported in this browser.');
+      }
+
+      const audioContext = new AudioContextConstructor();
+      try {
+        const sampleRate = audioContext.sampleRate;
+        const chunks = script
+          .split(/\n\s*\n/)
+          .map((chunk) => chunk.trim())
+          .filter(Boolean);
+
+        if (!chunks.length) {
+          throw new Error('No script content available to generate audio.');
+        }
+
+        const chunkBuffers = chunks.map((text, index) => {
+          const words = text.split(/\s+/).filter(Boolean);
+          const duration = Math.max(0.8, words.length * 0.18);
+          const frameCount = Math.round(duration * sampleRate);
+          const buffer = audioContext.createBuffer(1, frameCount, sampleRate);
+          const data = buffer.getChannelData(0);
+          const baseFrequency = 180 + index * 40 + Math.min(320, text.length * 2);
+          const fadeSamples = Math.min(Math.round(sampleRate * 0.02), Math.floor(frameCount / 2));
+          const amplitude = 0.18;
+
+          for (let i = 0; i < frameCount; i += 1) {
+            let sample = Math.sin((2 * Math.PI * baseFrequency * i) / sampleRate);
+            if (i < fadeSamples) {
+              sample *= i / fadeSamples;
+            } else if (i >= frameCount - fadeSamples) {
+              sample *= (frameCount - i) / fadeSamples;
+            }
+            data[i] = sample * amplitude;
+          }
+
+          return buffer;
+        });
+
+        const pauseFrameCount = Math.max(0, Math.round(settings.pause * sampleRate));
+        const totalFrames = chunkBuffers.reduce((sum, buffer) => sum + buffer.length, 0) + Math.max(0, pauseFrameCount * (chunkBuffers.length - 1));
+        const outputBuffer = audioContext.createBuffer(1, totalFrames, sampleRate);
+        const outputData = outputBuffer.getChannelData(0);
+        let offset = 0;
+
+        chunkBuffers.forEach((buffer, index) => {
+          outputData.set(buffer.getChannelData(0), offset);
+          offset += buffer.length;
+          if (index < chunkBuffers.length - 1) {
+            offset += pauseFrameCount;
+          }
+        });
+
+        const previewBlob = audioBufferToWave(outputBuffer, sampleRate, { volume: 1 });
+        const downloadBuffer = settings.speed === 1 ? outputBuffer : resampleBuffer(audioContext, outputBuffer, settings.speed);
+        const downloadBlob = audioBufferToWave(downloadBuffer, sampleRate, settings);
+
+        return {
+          previewBlob,
+          downloadBlob
+        };
+      } finally {
+        await audioContext.close();
+      }
+    }
+
+    function audioBufferToWave(buffer, sampleRate, settings) {
+      const channelData = buffer.getChannelData(0);
+      const frameCount = buffer.length;
+      const bytesPerSample = 2;
+      const blockAlign = bytesPerSample;
+      const dataLength = frameCount * bytesPerSample;
+      const bufferLength = 44 + dataLength;
+      const arrayBuffer = new ArrayBuffer(bufferLength);
+      const view = new DataView(arrayBuffer);
+
+      function writeString(offset, string) {
+        for (let i = 0; i < string.length; i += 1) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      }
+
+      function floatTo16BitPCM(offset, input) {
+        for (let i = 0; i < input.length; i += 1, offset += 2) {
+          let sample = Math.max(-1, Math.min(1, input[i] * settings.volume));
+          sample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+          view.setInt16(offset, sample, true);
+        }
+      }
+
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + dataLength, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * blockAlign, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bytesPerSample * 8, true);
+      writeString(36, 'data');
+      view.setUint32(40, dataLength, true);
+      floatTo16BitPCM(44, channelData);
+
+      return new Blob([arrayBuffer], { type: 'audio/wav' });
+    }
+
+    function resampleBuffer(audioContext, buffer, speed) {
+      const sourceData = buffer.getChannelData(0);
+      const targetLength = Math.max(1, Math.round(sourceData.length / speed));
+      const resampledBuffer = audioContext.createBuffer(1, targetLength, buffer.sampleRate);
+      const targetData = resampledBuffer.getChannelData(0);
+
+      for (let i = 0; i < targetLength; i += 1) {
+        const sourceIndex = i * speed;
+        const indexLower = Math.floor(sourceIndex);
+        const indexUpper = Math.min(sourceData.length - 1, Math.ceil(sourceIndex));
+        const weight = sourceIndex - indexLower;
+        const lowerSample = sourceData[indexLower];
+        const upperSample = sourceData[indexUpper];
+        targetData[i] = lowerSample + (upperSample - lowerSample) * weight;
+      }
+
+      return resampledBuffer;
+    }
+
+    async function handleAudioGeneration() {
+      if (state.audio.isProcessing || !state.audio.hasScript) {
+        return;
+      }
+
+      const script = scriptOutput.value.trim();
+      if (!script) {
+        setAudioStatus('empty');
+        return;
+      }
+
+      state.audio.isProcessing = true;
+      state.audio.needsRegeneration = false;
+      setAudioStatus('generating');
+      updateAudioActionsState();
+
+      try {
+        const { previewBlob, downloadBlob } = await generateAudio(script, state.audio.settings);
+        resetAudioObjectUrl();
+        state.audio.blob = downloadBlob;
+        state.audio.objectUrl = URL.createObjectURL(previewBlob);
+        audioPlayer.src = state.audio.objectUrl;
+        audioPlayer.playbackRate = state.audio.settings.speed;
+        audioPlayer.volume = state.audio.settings.volume;
+        audioPlayer.load();
+        audioPlayer.currentTime = 0;
+        state.audio.needsRegeneration = false;
+        setAudioStatus('ready');
+      } catch (error) {
+        console.error('Erro ao gerar áudio:', error);
+        if (state.audio.blob) {
+          state.audio.needsRegeneration = true;
+          setAudioStatus('needsRegeneration');
+        } else {
+          setAudioStatus('error');
+        }
+      } finally {
+        state.audio.isProcessing = false;
+        updateAudioActionsState();
+      }
+    }
+
+    function handleAudioDownload() {
+      if (state.audio.isProcessing || !state.audio.blob || state.audio.needsRegeneration) {
+        return;
+      }
+
+      const url = URL.createObjectURL(state.audio.blob);
+
+      const { speed, volume, pause } = state.audio.settings;
+      const speedLabel = `spd${Math.round(speed * 100)}`;
+      const volumeLabel = `vol${Math.round(volume * 100)}`;
+      const pauseLabel = `pause${Math.round(pause * 1000)}`;
+
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `roteiro-tts-${speedLabel}-${volumeLabel}-${pauseLabel}.wav`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    }
+
+    function handleAudioInputChange(event) {
+      const key = event.target.getAttribute('data-audio-input');
+      if (!key || !(key in state.audio.settings)) {
+        return;
+      }
+
+      const newValue = parseFloat(event.target.value);
+      if (!Number.isNaN(newValue)) {
+        state.audio.settings[key] = newValue;
+      }
+
+      updateAudioValueOutput(key);
+
+      if (key === 'speed' && state.audio.blob) {
+        audioPlayer.playbackRate = state.audio.settings.speed;
+      }
+      if (key === 'volume' && state.audio.blob) {
+        audioPlayer.volume = state.audio.settings.volume;
+      }
+
+      if (state.audio.blob) {
+        state.audio.needsRegeneration = true;
+        setAudioStatus('needsRegeneration');
+      } else if (state.audio.hasScript) {
+        setAudioStatus('idle');
+      }
+
+      updateAudioActionsState();
+    }
+
     form.addEventListener('submit', handleFormSubmit);
     languageSelect.addEventListener('change', handleLanguageChange);
     editButton.addEventListener('click', enableManualEditing);
+    scriptOutput.addEventListener('input', handleScriptContentChange);
+    Object.values(audioInputs).forEach((input) => {
+      input.addEventListener('input', handleAudioInputChange);
+    });
+    audioGenerateButton.addEventListener('click', handleAudioGeneration);
+    audioDownloadButton.addEventListener('click', handleAudioDownload);
 
     applyTranslations(state.currentLanguage);
+    updateAudioActionsState();
   </script>
 </body>
 </html>
