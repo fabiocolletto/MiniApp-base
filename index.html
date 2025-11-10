@@ -10,23 +10,64 @@
 <body>
   <div class="app-shell">
     <header class="shell-header">
-      <div class="shell-container">
-        <div class="header-content">
-          <div class="branding">
-            <span
-              class="material-symbols-rounded app-icon app-icon--theme-shell"
-              aria-hidden="true"
-              data-shell-app-icon
-              data-icon-theme="shell"
-            >apps</span>
-            <div class="branding__text">
-              <h1 data-shell-app-title>MiniApps Shell</h1>
-              <p data-shell-app-subtitle>Escolha um mini‑app no catálogo para iniciar.</p>
-            </div>
+      <div class="shell-brand">
+        <span
+          class="shell-logo"
+          aria-hidden="true"
+          data-shell-app-icon
+          data-icon-theme="shell"
+        >apps</span>
+        <div class="shell-title-wrap">
+          <div class="shell-title" data-shell-app-title>MiniApp Base</div>
+          <div class="shell-subtitle" id="shell-subtitle" data-shell-app-subtitle>
+            Catálogo de MiniApps · Projeto Marco
           </div>
         </div>
       </div>
+
+      <div class="shell-actions">
+        <div class="shell-locale" id="shell-locale">
+          <button type="button" data-locale="pt-BR" class="is-active">PT</button>
+          <button type="button" data-locale="en-US">EN</button>
+          <button type="button" data-locale="es-ES">ES</button>
+        </div>
+        <button class="shell-menu-toggle" id="shell-menu-toggle" aria-label="Abrir menu">
+          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+        </button>
+      </div>
     </header>
+
+    <div class="shell-menu-sheet" id="shell-menu-sheet">
+      <div class="shell-menu">
+        <div class="shell-menu-row">
+          <!-- itens do menu principal -->
+          <button class="shell-menu-item" data-target="catalog">
+            <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+            <span data-menu-item-label="catalog">Catálogo de MiniApps</span>
+          </button>
+          <button class="shell-menu-item" data-target="about">
+            <span class="material-symbols-rounded" aria-hidden="true">info</span>
+            <span data-menu-item-label="about">Sobre o Projeto Marco</span>
+          </button>
+          <button class="shell-menu-item" data-target="fullscreen">
+            <span class="material-symbols-rounded" aria-hidden="true">open_in_full</span>
+            <span data-menu-item-label="fullscreen">Modo tela cheia</span>
+          </button>
+        </div>
+
+        <!-- seletor de idioma reutilizado dentro do menu -->
+        <div class="shell-locale shell-locale-inline" id="shell-locale-menu">
+          <button type="button" data-locale="pt-BR" class="is-active">PT</button>
+          <button type="button" data-locale="en-US">EN</button>
+          <button type="button" data-locale="es-ES">ES</button>
+        </div>
+
+        <button class="shell-menu-close" id="shell-menu-close">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          <span data-menu-close-label>Fechar</span>
+        </button>
+      </div>
+    </div>
 
     <main class="shell-main">
       <div class="shell-container">
@@ -39,163 +80,18 @@
         </section>
       </div>
     </main>
+    <section class="shell-about" id="shell-about">
+      <div class="shell-container">
+        <h2 class="shell-about__title" data-shell-about-title>Sobre o Projeto Marco</h2>
+        <p class="shell-about__description" data-shell-about-description>
+          O MiniApp Base reúne os miniapps do Projeto Marco para demonstrações e testes rápidos.
+        </p>
+        <p class="shell-about__version" data-shell-about-version>Versão 0.2.0 (experimental)</p>
+      </div>
+    </section>
 
     <footer class="app-footer">
       <div class="shell-container">
-        <div class="footer-command">
-          <button
-            type="button"
-            class="btn ghost footer-command__toggle"
-            data-action="toggle-footer-command"
-            aria-controls="footer-command-panel"
-            aria-expanded="false"
-            aria-haspopup="dialog"
-            aria-label="Abrir menu do shell"
-            title="Abrir menu do shell"
-          >
-            <span class="material-symbols-rounded" aria-hidden="true">menu</span>
-            <span data-footer-command-toggle-label>Menu</span>
-          </button>
-          <div
-            class="footer-command__panel"
-            id="footer-command-panel"
-            role="dialog"
-            data-footer-command
-            hidden
-            aria-modal="false"
-            aria-labelledby="footer-command-title"
-          >
-            <h3
-              class="footer-command__title"
-              id="footer-command-title"
-              data-footer-command-title
-            >
-              Menu do shell
-            </h3>
-            <div
-              class="footer-command__actions"
-              role="group"
-              data-footer-command-actions
-              aria-label="Ações rápidas do shell"
-            >
-              <button
-                type="button"
-                class="btn ghost footer-command__action catalog-toggle"
-                data-action="open-catalog"
-              >
-                <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-                <span data-catalog-button-label>Catálogo</span>
-              </button>
-              <div class="footer-command__action footer-locale language-selector menu-shell" data-locale-command>
-                <button
-                  type="button"
-                  class="btn ghost footer-locale__toggle"
-                  data-action="toggle-locale"
-                  aria-haspopup="menu"
-                  aria-expanded="false"
-                  aria-controls="footer-locale-panel"
-                >
-                  <span class="material-symbols-rounded" aria-hidden="true">language</span>
-                  <span data-locale-toggle-label>Idioma</span>
-                </button>
-                <div
-                  class="footer-command__panel footer-locale__panel menu-popover"
-                  id="footer-locale-panel"
-                  role="menu"
-                  data-locale-menu
-                  hidden
-                  aria-label="Selecionar idioma do shell"
-                >
-                  <p
-                    class="footer-locale__description"
-                    id="footer-locale-description"
-                    data-locale-menu-description
-                  >
-                    Selecione o idioma do shell
-                  </p>
-                  <div class="footer-locale__actions locale-list" role="none">
-                    <button
-                      type="button"
-                      class="footer-locale__action"
-                      data-locale-action
-                      data-locale-option="pt-BR"
-                      role="menuitemradio"
-                      aria-checked="false"
-                      aria-describedby="footer-locale-description"
-                    >
-                      <span class="material-symbols-rounded" aria-hidden="true">flag</span>
-                      <span data-locale-option-label>Português (Brasil)</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="footer-locale__action"
-                      data-locale-action
-                      data-locale-option="en-US"
-                      role="menuitemradio"
-                      aria-checked="false"
-                      aria-describedby="footer-locale-description"
-                    >
-                      <span class="material-symbols-rounded" aria-hidden="true">public</span>
-                      <span data-locale-option-label>English (US)</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="footer-locale__action"
-                      data-locale-action
-                      data-locale-option="es-ES"
-                      role="menuitemradio"
-                      aria-checked="false"
-                      aria-describedby="footer-locale-description"
-                    >
-                      <span class="material-symbols-rounded" aria-hidden="true">translate</span>
-                      <span data-locale-option-label>Español (ES)</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                class="btn ghost footer-command__action"
-                data-miniapp-target="./miniapp-cadastro/index.html"
-                data-miniapp-name="Cadastro de Usuários"
-                data-miniapp-description="Fluxo guiado para cadastrar novos usuários e registrar aceite de termos."
-                data-miniapp-icon-symbol="person_add"
-                data-miniapp-icon-theme="cadastro"
-                aria-label="Cadastro de Usuários"
-                title="Cadastro de Usuários"
-              >
-                <span class="material-symbols-rounded" aria-hidden="true">person_add</span>
-                <span class="footer-command__action-label">Cadastro</span>
-              </button>
-              <button
-                type="button"
-                class="btn ghost footer-command__action fullscreen-toggle"
-                data-action="toggle-fullscreen"
-                aria-pressed="false"
-                aria-label="Tela cheia"
-                title="Tela cheia"
-              >
-                <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="enter" aria-hidden="true">fullscreen</span>
-                <span class="material-symbols-rounded fullscreen-toggle__icon" data-icon="exit" aria-hidden="true">fullscreen_exit</span>
-                <span class="footer-command__action-label" data-fullscreen-command-label>Tela cheia</span>
-              </button>
-            </div>
-            <section class="footer-about">
-              <h3
-                class="footer-about__title"
-                data-footer-about-title
-              >
-                Sobre o app
-              </h3>
-              <p class="footer-about__item footer-about__product" data-footer-about-product>
-                MiniApps Shell
-              </p>
-              <p class="footer-about__item footer-about__version" data-footer-about-version>
-                Versão 0.2.0 (experimental)
-              </p>
-            </section>
-          </div>
-        </div>
         <p class="app-footer__info">
           <span class="app-footer__brand">
             <img
