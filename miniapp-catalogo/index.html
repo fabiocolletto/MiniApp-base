@@ -4,540 +4,190 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MiniApps — Catálogo</title>
-  
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
 <body class="catalog-blank">
-  <main class="catalog-board" aria-labelledby="catalog-title" aria-live="polite">
-    <h1 id="catalog-title" class="catalog-board__title" data-i18n="catalog.title">Catálogo de MiniApps</h1>
-
-    <section
-      class="catalog-favorites"
-      data-js="favorites-section"
-      data-i18n-attr="aria-label:favorites.sectionLabel"
-      aria-label="MiniApps favoritados"
-      hidden
-    >
+  <main class="catalog-board" aria-label="Catálogo de MiniApps" aria-live="polite">
+    <section class="catalog-favorites">
       <header class="catalog-favorites__header">
-        <h2 data-i18n="favorites.title">Favoritos</h2>
-        <p data-i18n="favorites.description">MiniApps marcados com estrela aparecem aqui.</p>
+        <h2>Favoritos</h2>
+        <p>MiniApps fixos para acesso rápido.</p>
       </header>
       <div
-        class="catalog-favorites__list"
-        role="list"
-        data-js="favorites-list"
-        data-i18n-attr="aria-label:favorites.listLabel"
-        aria-label="MiniApps favoritados"
+        class="carousel"
+        data-carousel="favorites"
+        data-carousel-per-view="1 2 3 4 4"
+        data-carousel-label="MiniApps favoritos"
       ></div>
     </section>
 
-    <div
-      class="catalog-board__cards"
-      role="list"
-      data-i18n-attr="aria-label:catalog.listLabel"
-      aria-label="MiniApps disponíveis"
-    >
-      <article class="app-card catalog-card" role="listitem" data-miniapp-id="miniapp-prefeito">
-        <button
-          type="button"
-          class="catalog-card__favorite"
-          data-js="favorite-button"
-          data-miniapp-id="miniapp-prefeito"
-          aria-pressed="false"
-          data-i18n-attr="aria-label:favorites.actions.add;title:favorites.actions.add"
-          aria-label="Adicionar aos favoritos"
-          title="Adicionar aos favoritos"
-        >
-          <span class="material-symbols-rounded catalog-card__favorite-icon" aria-hidden="true">star</span>
-        </button>
-        <a
-          class="catalog-card__link"
-          href="../miniapp-prefeito/index.html"
-          target="miniapp-panel"
-          data-miniapp-target="../miniapp-prefeito/index.html"
-          data-miniapp-name="Painel do Prefeito"
-          data-miniapp-description="Painel com KPIs, filtros e relatórios setoriais."
-          data-miniapp-icon-symbol="monitoring"
-          data-miniapp-icon-theme="prefeito"
-        >
-          <div class="row catalog-card__header">
-            <span
-              class="material-symbols-rounded app-icon app-icon--theme-prefeito"
-              aria-hidden="true"
-            >monitoring</span>
-            <div class="catalog-card__content">
-              <h2 data-i18n="cards.prefeito.title">Painel do Prefeito</h2>
-              <p data-i18n="cards.prefeito.description">Painel com KPIs, filtros e relatórios setoriais.</p>
-            </div>
-          </div>
-        </a>
-      </article>
-
-      <article class="app-card catalog-card" role="listitem" data-miniapp-id="miniapp-cadastro">
-        <button
-          type="button"
-          class="catalog-card__favorite"
-          data-js="favorite-button"
-          data-miniapp-id="miniapp-cadastro"
-          aria-pressed="false"
-          data-i18n-attr="aria-label:favorites.actions.add;title:favorites.actions.add"
-          aria-label="Adicionar aos favoritos"
-          title="Adicionar aos favoritos"
-        >
-          <span class="material-symbols-rounded catalog-card__favorite-icon" aria-hidden="true">star</span>
-        </button>
-        <a
-          class="catalog-card__link"
-          href="../miniapp-cadastro/index.html"
-          target="miniapp-panel"
-          data-miniapp-target="../miniapp-cadastro/index.html"
-          data-miniapp-name="Cadastro de Usuários"
-          data-miniapp-description="Fluxo guiado para cadastrar novos usuários e registrar aceite de termos."
-          data-miniapp-icon-symbol="person_add"
-          data-miniapp-icon-theme="cadastro"
-        >
-          <div class="row catalog-card__header">
-            <span
-              class="material-symbols-rounded app-icon app-icon--theme-cadastro"
-              aria-hidden="true"
-            >person_add</span>
-            <div class="catalog-card__content">
-              <h2 data-i18n="cards.cadastro.title">Cadastro de Usuários</h2>
-              <p data-i18n="cards.cadastro.description">Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.</p>
-            </div>
-          </div>
-        </a>
-      </article>
-
-      <article class="app-card catalog-card" role="listitem" data-miniapp-id="miniapp-importador">
-        <button
-          type="button"
-          class="catalog-card__favorite"
-          data-js="favorite-button"
-          data-miniapp-id="miniapp-importador"
-          aria-pressed="false"
-          data-i18n-attr="aria-label:favorites.actions.add;title:favorites.actions.add"
-          aria-label="Adicionar aos favoritos"
-          title="Adicionar aos favoritos"
-        >
-          <span class="material-symbols-rounded catalog-card__favorite-icon" aria-hidden="true">star</span>
-        </button>
-        <a
-          class="catalog-card__link"
-          href="../miniapp-importador/index.html"
-          target="miniapp-panel"
-          data-miniapp-target="../miniapp-importador/index.html"
-          data-miniapp-name="Importador de Pesquisas"
-          data-miniapp-description="Fluxo para importar arquivos CSV de pesquisas e revisar resultados."
-          data-miniapp-icon-symbol="cloud_upload"
-          data-miniapp-icon-theme="importador"
-        >
-          <div class="row catalog-card__header">
-            <span
-              class="material-symbols-rounded app-icon app-icon--theme-importador"
-              aria-hidden="true"
-            >cloud_upload</span>
-            <div class="catalog-card__content">
-              <h2 data-i18n="cards.importador.title">Importador de Pesquisas</h2>
-              <p data-i18n="cards.importador.description">Fluxo para importar arquivos CSV de pesquisas e revisar resultados.</p>
-            </div>
-          </div>
-        </a>
-      </article>
-
-      <article class="app-card catalog-card" role="listitem" data-miniapp-id="miniapp-tts">
-        <button
-          type="button"
-          class="catalog-card__favorite"
-          data-js="favorite-button"
-          data-miniapp-id="miniapp-tts"
-          aria-pressed="false"
-          data-i18n-attr="aria-label:favorites.actions.add;title:favorites.actions.add"
-          aria-label="Adicionar aos favoritos"
-          title="Adicionar aos favoritos"
-        >
-          <span class="material-symbols-rounded catalog-card__favorite-icon" aria-hidden="true">star</span>
-        </button>
-        <a
-          class="catalog-card__link"
-          href="../miniapp-tts/index.html"
-          target="miniapp-panel"
-          data-miniapp-target="../miniapp-tts/index.html"
-          data-miniapp-name="Gerador de Roteiros TTS"
-          data-miniapp-description="Formulário guiado com prévias de áudio e exportação otimizada para locução."
-          data-miniapp-icon-symbol="text_to_speech"
-          data-miniapp-icon-theme="tts"
-        >
-          <div class="row catalog-card__header">
-            <span
-              class="material-symbols-rounded app-icon app-icon--theme-tts"
-              aria-hidden="true"
-            >text_to_speech</span>
-            <div class="catalog-card__content">
-              <h2 data-i18n="cards.tts.title">Gerador de Roteiros TTS</h2>
-              <p data-i18n="cards.tts.description">Formulário guiado com prévias de áudio e exportação otimizada para locução.</p>
-            </div>
-          </div>
-        </a>
-      </article>
-    </div>
+    <section class="catalog-favorites">
+      <header class="catalog-favorites__header">
+        <h2>Todos os MiniApps</h2>
+        <p>Lista completa de MiniApps disponíveis.</p>
+      </header>
+      <div
+        class="carousel"
+        data-carousel="all"
+        data-carousel-per-view="1 2 3 4 4"
+        data-carousel-label="MiniApps disponíveis"
+      ></div>
+    </section>
   </main>
-  <script>
-    (function () {
-      const FAVORITES_KEY = 'miniappCatalogFavorites';
-      const FALLBACK_LANGUAGE = 'pt-BR';
-      const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
-      const translations = {
-        'pt-BR': {
-          'catalog.title': 'Catálogo de MiniApps',
-          'catalog.listLabel': 'MiniApps disponíveis',
-          'catalog.header.title': 'Catálogo de MiniApps',
-          'catalog.header.subtitle': 'Navegue pelas experiências disponíveis e escolha uma para abrir.',
-          'favorites.sectionLabel': 'MiniApps favoritados',
-          'favorites.listLabel': 'Carrossel com MiniApps favoritados',
-          'favorites.title': 'Favoritos',
-          'favorites.description': 'MiniApps marcados com estrela aparecem aqui.',
-          'favorites.actions.add': 'Adicionar aos favoritos',
-          'favorites.actions.remove': 'Remover dos favoritos',
-          'cards.prefeito.title': 'Painel do Prefeito',
-          'cards.prefeito.description': 'Painel com KPIs, filtros e relatórios setoriais.',
-          'cards.cadastro.title': 'Cadastro de Usuários',
-          'cards.cadastro.description': 'Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.',
-          'cards.importador.title': 'Importador de Pesquisas',
-          'cards.importador.description': 'Fluxo para importar arquivos CSV de pesquisas e revisar resultados.',
-          'cards.tts.title': 'Gerador de Roteiros TTS',
-          'cards.tts.description': 'Formulário guiado com prévias de áudio e exportação otimizada para locução.',
+
+  <script src="../miniapp-base/components/carousel.js" defer></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', function () {
+      var miniapps = [
+        {
+          id: 'miniapp-prefeito',
+          name: 'Painel do Prefeito',
+          description: 'Painel com KPIs, filtros e relatórios setoriais.',
+          icon: 'monitoring',
+          theme: 'prefeito',
+          href: '../miniapp-prefeito/index.html',
+          favorite: true
         },
-        'en-US': {
-          'catalog.title': 'MiniApps Catalog',
-          'catalog.listLabel': 'Available MiniApps',
-          'catalog.header.title': 'MiniApps Catalog',
-          'catalog.header.subtitle': 'Browse the available experiences and choose one to open.',
-          'favorites.sectionLabel': 'Favorite MiniApps',
-          'favorites.listLabel': 'Carousel with favorite MiniApps',
-          'favorites.title': 'Favorites',
-          'favorites.description': 'MiniApps marked with a star appear here.',
-          'favorites.actions.add': 'Add to favorites',
-          'favorites.actions.remove': 'Remove from favorites',
-          'cards.prefeito.title': "Mayor's Dashboard",
-          'cards.prefeito.description': 'Dashboard with KPIs, filters, and sector reports.',
-          'cards.cadastro.title': 'User Enrollment',
-          'cards.cadastro.description': 'Guided flow to register new users and record terms acceptance.',
-          'cards.importador.title': 'Survey Importer',
-          'cards.importador.description': 'Flow to import survey CSV files and review results.',
-          'cards.tts.title': 'TTS Script Generator',
-          'cards.tts.description': 'Guided form with audio previews and narration-friendly exports.',
+        {
+          id: 'miniapp-cadastro',
+          name: 'Cadastro de Usuários',
+          description: 'Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.',
+          icon: 'person_add',
+          theme: 'cadastro',
+          href: '../miniapp-cadastro/index.html',
+          favorite: true
         },
-        'es-ES': {
-          'catalog.title': 'Catálogo de MiniApps',
-          'catalog.listLabel': 'MiniApps disponibles',
-          'catalog.header.title': 'Catálogo de MiniApps',
-          'catalog.header.subtitle': 'Explora las experiencias disponibles y elige una para abrir.',
-          'favorites.sectionLabel': 'MiniApps favoritos',
-          'favorites.listLabel': 'Carrusel con MiniApps favoritos',
-          'favorites.title': 'Favoritos',
-          'favorites.description': 'Los MiniApps marcados con una estrella aparecen aquí.',
-          'favorites.actions.add': 'Agregar a favoritos',
-          'favorites.actions.remove': 'Quitar de favoritos',
-          'cards.prefeito.title': 'Panel del Alcalde',
-          'cards.prefeito.description': 'Panel con KPI, filtros e informes por sector.',
-          'cards.cadastro.title': 'Registro de Usuarios',
-          'cards.cadastro.description': 'Flujo guiado para registrar nuevos usuarios y guardar la aceptación de términos.',
-          'cards.importador.title': 'Importador de Encuestas',
-          'cards.importador.description': 'Flujo para importar archivos CSV de encuestas y revisar resultados.',
-          'cards.tts.title': 'Generador de Guiones TTS',
-          'cards.tts.description': 'Formulario guiado con vistas previas de audio y exportaciones optimizadas para locución.',
+        {
+          id: 'miniapp-importador',
+          name: 'Importador de Pesquisas',
+          description: 'Fluxo para importar arquivos CSV de pesquisas e revisar resultados.',
+          icon: 'cloud_upload',
+          theme: 'importador',
+          href: '../miniapp-importador/index.html',
+          favorite: false
         },
-      };
-
-      function detectLanguage() {
-        const documentLanguage = (document.documentElement && document.documentElement.lang) || '';
-        const normalizedDocumentLang = SUPPORTED_LANGUAGES.find((lang) => lang === documentLanguage);
-        if (normalizedDocumentLang) {
-          return normalizedDocumentLang;
+        {
+          id: 'miniapp-tts',
+          name: 'Gerador de Roteiros TTS',
+          description: 'Formulário guiado com prévias de áudio e exportação otimizada para locução.',
+          icon: 'text_to_speech',
+          theme: 'tts',
+          href: '../miniapp-tts/index.html',
+          favorite: false
         }
+      ];
 
-        const documentBaseMatch = SUPPORTED_LANGUAGES.find((lang) => lang.startsWith(documentLanguage));
-        if (documentBaseMatch) {
-          return documentBaseMatch;
-        }
+      function createCard(app) {
+        var article = document.createElement('article');
+        article.className = 'app-card catalog-card';
+        article.setAttribute('data-miniapp-id', app.id);
 
-        const navigatorLanguages = Array.isArray(navigator.languages) && navigator.languages.length
-          ? navigator.languages
-          : [navigator.language];
+        var link = document.createElement('a');
+        link.className = 'catalog-card__link';
+        link.href = app.href;
+        link.target = 'miniapp-panel';
+        link.setAttribute('data-miniapp-target', app.href);
+        link.setAttribute('data-miniapp-name', app.name);
+        link.setAttribute('data-miniapp-description', app.description);
+        link.setAttribute('data-miniapp-icon-symbol', app.icon);
+        link.setAttribute('data-miniapp-icon-theme', app.theme);
 
-        for (const languageCandidate of navigatorLanguages) {
-          if (!languageCandidate) continue;
-          const exactMatch = SUPPORTED_LANGUAGES.find((lang) => lang === languageCandidate);
-          if (exactMatch) {
-            return exactMatch;
-          }
+        var header = document.createElement('div');
+        header.className = 'catalog-card__header';
 
-          const partialMatch = SUPPORTED_LANGUAGES.find((lang) => lang.startsWith(languageCandidate));
-          if (partialMatch) {
-            return partialMatch;
-          }
-        }
+        var icon = document.createElement('span');
+        icon.className = 'material-symbols-rounded app-icon app-icon--theme-' + app.theme;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = app.icon;
 
-        return FALLBACK_LANGUAGE;
+        var content = document.createElement('div');
+        content.className = 'catalog-card__content';
+
+        var title = document.createElement('h3');
+        title.textContent = app.name;
+
+        var description = document.createElement('p');
+        description.textContent = app.description;
+
+        content.appendChild(title);
+        content.appendChild(description);
+        header.appendChild(icon);
+        header.appendChild(content);
+        link.appendChild(header);
+        article.appendChild(link);
+
+        return article;
       }
 
-      function createTranslator(language) {
-        function translate(key) {
-          const langData = translations[language] || translations[FALLBACK_LANGUAGE];
-          if (langData && Object.prototype.hasOwnProperty.call(langData, key)) {
-            return langData[key];
-          }
-
-          const fallbackData = translations[FALLBACK_LANGUAGE] || {};
-          return Object.prototype.hasOwnProperty.call(fallbackData, key) ? fallbackData[key] : key;
+      function mountCarousel(container, items) {
+        if (!container) {
+          return;
         }
 
-        function applyTranslations(root = document) {
-          const isFragment = typeof DocumentFragment !== 'undefined' && root instanceof DocumentFragment;
-          const scope = root instanceof Element || isFragment ? root : document;
-
-          const elementsWithText = [];
-          const elementsWithAttr = [];
-
-          if (scope instanceof Element && scope.hasAttribute('data-i18n')) {
-            elementsWithText.push(scope);
+        var section = container.closest('section');
+        if (!Array.isArray(items) || !items.length) {
+          if (section) {
+            section.hidden = true;
           }
-
-          if (scope instanceof Element && scope.hasAttribute('data-i18n-attr')) {
-            elementsWithAttr.push(scope);
-          }
-
-          scope.querySelectorAll('[data-i18n]').forEach((element) => {
-            elementsWithText.push(element);
-          });
-
-          scope.querySelectorAll('[data-i18n-attr]').forEach((element) => {
-            elementsWithAttr.push(element);
-          });
-
-          elementsWithText.forEach((element) => {
-            const key = element.getAttribute('data-i18n');
-            if (!key) return;
-            const translation = translate(key);
-            element.textContent = translation;
-          });
-
-          elementsWithAttr.forEach((element) => {
-            const map = element.getAttribute('data-i18n-attr');
-            if (!map) return;
-
-            map.split(';').forEach((entry) => {
-              const [attribute, key] = entry.split(':').map((part) => part && part.trim());
-              if (!attribute || !key) return;
-              const translation = translate(key);
-              element.setAttribute(attribute, translation);
-            });
-          });
+          return;
         }
 
-        return { translate, applyTranslations, language };
+        if (section) {
+          section.hidden = false;
+        }
+
+        var fragment = document.createDocumentFragment();
+        items.forEach(function (app) {
+          fragment.appendChild(createCard(app));
+        });
+
+        container.innerHTML = '';
+        container.appendChild(fragment);
+
+        if (window.CarouselManager && typeof window.CarouselManager.mount === 'function') {
+          window.CarouselManager.mount(container);
+        }
       }
 
-      function notifyShell(translate) {
+      var favoritesContainer = document.querySelector('[data-carousel="favorites"]');
+      var allContainer = document.querySelector('[data-carousel="all"]');
+
+      var favorites = miniapps.filter(function (app) {
+        return app.favorite;
+      });
+
+      mountCarousel(favoritesContainer, favorites);
+      mountCarousel(allContainer, miniapps);
+
+      function notifyShell() {
         if (!window.parent || window.parent === window) {
           return;
         }
 
+        var message = {
+          action: 'miniapp-header',
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Escolha um MiniApp para abrir.',
+          icon: 'apps',
+          iconTheme: 'catalog'
+        };
+
+        var targetOrigin = window.location.origin;
+        if (!targetOrigin || targetOrigin === 'null') {
+          targetOrigin = '*';
+        }
+
         try {
-          window.parent.postMessage(
-            {
-              action: 'miniapp-header',
-              title: translate('catalog.header.title'),
-              subtitle: translate('catalog.header.subtitle'),
-              icon: 'apps',
-              iconTheme: 'catalog',
-            },
-            window.location.origin,
-          );
+          window.parent.postMessage(message, targetOrigin);
         } catch (error) {
           console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
         }
       }
 
-      function initFavorites(translate, applyTranslations) {
-        const favoritesSection = document.querySelector('[data-js="favorites-section"]');
-        const favoritesList = document.querySelector('[data-js="favorites-list"]');
-        const cardsContainer = document.querySelector('.catalog-board__cards');
-
-        if (!favoritesSection || !favoritesList || !cardsContainer) {
-          return;
-        }
-
-        const cards = Array.from(cardsContainer.querySelectorAll('.catalog-card'));
-        const cardsById = new Map();
-        cards.forEach((card) => {
-          const id = card.getAttribute('data-miniapp-id');
-          if (id) {
-            cardsById.set(id, card);
-          }
-        });
-
-        let storageAvailable = true;
-
-        function readFavoritesFromStorage() {
-          if (!storageAvailable) {
-            return [];
-          }
-
-          try {
-            const storedValue = window.localStorage.getItem(FAVORITES_KEY);
-            if (!storedValue) {
-              return [];
-            }
-
-            const parsed = JSON.parse(storedValue);
-            if (!Array.isArray(parsed)) {
-              return [];
-            }
-
-            return parsed.filter((item) => typeof item === 'string' && cardsById.has(item));
-          } catch (error) {
-            storageAvailable = false;
-            console.warn('Não foi possível ler os favoritos armazenados.', error);
-            return [];
-          }
-        }
-
-        function persistFavorites(favorites) {
-          if (!storageAvailable) {
-            return;
-          }
-
-          try {
-            window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-          } catch (error) {
-            storageAvailable = false;
-            console.warn('Não foi possível salvar os favoritos.', error);
-          }
-        }
-
-        const favoritesSet = new Set(readFavoritesFromStorage());
-
-        function getOrderedFavorites() {
-          return cards
-            .map((card) => card.getAttribute('data-miniapp-id'))
-            .filter((id) => id && favoritesSet.has(id));
-        }
-
-        function updateFavoriteButton(button, isFavorite) {
-          button.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
-          button.classList.toggle('is-active', isFavorite);
-
-          const icon = button.querySelector('.catalog-card__favorite-icon');
-          if (icon) {
-            icon.style.fontVariationSettings = `'FILL' ${isFavorite ? 1 : 0}`;
-          }
-
-          const labelKey = isFavorite ? 'favorites.actions.remove' : 'favorites.actions.add';
-          const label = translate(labelKey);
-          button.setAttribute('aria-label', label);
-          button.setAttribute('title', label);
-        }
-
-        function updateCardState(card) {
-          const id = card.getAttribute('data-miniapp-id');
-          if (!id) {
-            return;
-          }
-
-          const isFavorite = favoritesSet.has(id);
-          card.classList.toggle('is-favorited', isFavorite);
-          const button = card.querySelector('[data-js="favorite-button"]');
-          if (button) {
-            updateFavoriteButton(button, isFavorite);
-          }
-        }
-
-        function renderFavorites() {
-          favoritesList.innerHTML = '';
-
-          const ordered = getOrderedFavorites();
-          if (!ordered.length) {
-            favoritesSection.hidden = true;
-            return;
-          }
-
-          favoritesSection.hidden = false;
-
-          const fragment = document.createDocumentFragment();
-          ordered.forEach((id) => {
-            const original = cardsById.get(id);
-            if (!original) {
-              return;
-            }
-
-            const clone = original.cloneNode(true);
-            clone.classList.add('catalog-favorites__card');
-            fragment.appendChild(clone);
-          });
-
-          favoritesList.appendChild(fragment);
-          applyTranslations(favoritesList);
-
-          favoritesList.querySelectorAll('[data-js="favorite-button"]').forEach((button) => {
-            updateFavoriteButton(button, true);
-          });
-        }
-
-        cards.forEach(updateCardState);
-        renderFavorites();
-
-        document.addEventListener('click', (event) => {
-          const target = event.target instanceof Element ? event.target : null;
-          if (!target) {
-            return;
-          }
-
-          const button = target.closest('[data-js="favorite-button"]');
-          if (!button) {
-            return;
-          }
-
-          const id = button.getAttribute('data-miniapp-id');
-          if (!id || !cardsById.has(id)) {
-            return;
-          }
-
-          event.preventDefault();
-          event.stopPropagation();
-
-          if (favoritesSet.has(id)) {
-            favoritesSet.delete(id);
-          } else {
-            favoritesSet.add(id);
-          }
-
-          const orderedFavorites = getOrderedFavorites();
-          persistFavorites(orderedFavorites);
-
-          cards.forEach(updateCardState);
-          renderFavorites();
-        });
-      }
-
-      function onReady() {
-        const language = detectLanguage();
-        document.documentElement.lang = language;
-        const { translate, applyTranslations } = createTranslator(language);
-
-        applyTranslations(document);
-        notifyShell(translate);
-        initFavorites(translate, applyTranslations);
-      }
-
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        onReady();
-      } else {
-        document.addEventListener('DOMContentLoaded', onReady);
-      }
-    })();
+      notifyShell();
+    });
   </script>
 </body>
 </html>
