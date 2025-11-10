@@ -1,7 +1,12 @@
-(function () {
-            const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
-            const DEFAULT_HEADER = {
-              title: 'Importador de Pesquisas',
+(function (window) {
+          const root = window.miniappBase || (window.miniappBase = {});
+          const atoms = root.atoms || (root.atoms = {});
+          const molecules = root.molecules || (root.molecules = {});
+          const shellSync = molecules.shellSync || null;
+
+          const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
+          const DEFAULT_HEADER = {
+            title: 'Importador de Pesquisas',
               subtitle: 'Importar arquivos, revisar resultados e sincronizar dados.',
             };
 
@@ -22,6 +27,23 @@
             }
 
             function notifyShell(detail) {
+              const payload = {
+                title: resolveHeaderTitle(detail),
+                subtitle: resolveHeaderSubtitle(detail),
+                icon: 'cloud_upload',
+                iconTheme: 'importador',
+              };
+
+              if (shellSync && typeof shellSync.sendMiniAppHeader === 'function') {
+                if (shellSync.sendMiniAppHeader(payload)) {
+                  return;
+                }
+              }
+
+              if (atoms.postToParent && atoms.postToParent({ action: 'miniapp-header', ...payload })) {
+                return;
+              }
+
               if (!window.parent || window.parent === window) {
                 return;
               }
@@ -30,10 +52,10 @@
                 window.parent.postMessage(
                   {
                     action: 'miniapp-header',
-                    title: resolveHeaderTitle(detail),
-                    subtitle: resolveHeaderSubtitle(detail),
-                    icon: 'cloud_upload',
-                    iconTheme: 'importador',
+                    title: payload.title,
+                    subtitle: payload.subtitle,
+                    icon: payload.icon,
+                    iconTheme: payload.iconTheme,
                   },
                   window.location.origin,
                 );
@@ -43,6 +65,16 @@
             }
 
             function requestCatalog() {
+              if (shellSync && typeof shellSync.requestCatalog === 'function') {
+                if (shellSync.requestCatalog()) {
+                  return;
+                }
+              }
+
+              if (atoms.postToParent && atoms.postToParent({ action: 'open-catalog' })) {
+                return;
+              }
+
               if (window.parent && window.parent !== window) {
                 try {
                   window.parent.postMessage(
@@ -117,4 +149,4 @@
             } else {
               document.addEventListener('DOMContentLoaded', initialize);
             }
-          })();
+          })(window);

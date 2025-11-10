@@ -1,3 +1,8 @@
+const root = window.miniappBase || (window.miniappBase = {});
+const atoms = root.atoms || (root.atoms = {});
+const molecules = root.molecules || (root.molecules = {});
+const shellSync = molecules.shellSync || null;
+
 const translations = {
       'pt-BR': {
         pageTitle: 'Gerador de Roteiros para TTS',
@@ -358,6 +363,16 @@ const translations = {
     }
 
     function requestCatalog() {
+      if (shellSync && typeof shellSync.requestCatalog === 'function') {
+        if (shellSync.requestCatalog()) {
+          return;
+        }
+      }
+
+      if (atoms.postToParent && atoms.postToParent({ action: 'open-catalog' })) {
+        return;
+      }
+
       if (window.parent && window.parent !== window) {
         try {
           window.parent.postMessage(
@@ -378,6 +393,23 @@ const translations = {
     }
 
     function notifyShell() {
+      const payload = {
+        title: 'Gerador de Roteiros para TTS',
+        subtitle: 'Crie roteiros, ajuste vozes e exporte conteúdos prontos para locução.',
+        icon: 'text_to_speech',
+        iconTheme: 'tts',
+      };
+
+      if (shellSync && typeof shellSync.sendMiniAppHeader === 'function') {
+        if (shellSync.sendMiniAppHeader(payload)) {
+          return;
+        }
+      }
+
+      if (atoms.postToParent && atoms.postToParent({ action: 'miniapp-header', ...payload })) {
+        return;
+      }
+
       if (!window.parent || window.parent === window) {
         return;
       }
@@ -386,10 +418,10 @@ const translations = {
         window.parent.postMessage(
           {
             action: 'miniapp-header',
-            title: 'Gerador de Roteiros para TTS',
-            subtitle: 'Crie roteiros, ajuste vozes e exporte conteúdos prontos para locução.',
-            icon: 'text_to_speech',
-            iconTheme: 'tts',
+            title: payload.title,
+            subtitle: payload.subtitle,
+            icon: payload.icon,
+            iconTheme: payload.iconTheme,
           },
           window.location.origin,
         );
@@ -399,6 +431,10 @@ const translations = {
     }
 
     function requestLocaleSync() {
+      if (atoms.postToParent && atoms.postToParent({ action: 'request-locale' })) {
+        return;
+      }
+
       if (!window.parent || window.parent === window) {
         return;
       }

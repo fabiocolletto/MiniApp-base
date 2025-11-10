@@ -26,6 +26,7 @@
 - `miniapp-catalogo/README.md` descrevendo as regras para manter cartões e atributos sincronizados com o shell.
 
 ### Alterado
+- Estrutura de scripts reorganizada em `miniapp-base/js/atoms`, `molecules` e `organisms`, com miniapps atualizados para reutilizar utilitários compartilhados e sincronizar cabeçalhos via `shellSync`.
 - Scripts do shell e dos miniapps passaram a residir em `miniapp-base/js/`, substituindo inline scripts e pastas isoladas para centralizar manutenção.
 - Miniapp do Prefeito passa a consumir o idioma enviado pelo shell via `postMessage({ action: 'set-locale' })`, utiliza `I18nManager.setLocale(locale, { persist: false })` para sincronizar traduções sem gravar preferências locais e reenviar o cabeçalho atualizado após cada troca.
 - Miniapp de Importação passa a solicitar o idioma ao shell quando necessário, aplicar a seleção recebida via `postMessage({ action: 'set-locale' })` e reenviar o cabeçalho localizado sempre que o idioma mudar.

@@ -1,206 +1,210 @@
-(function(window, document){
+(function (window, document) {
   'use strict';
 
+  var root = window.miniappBase || (window.miniappBase = {});
+  var atoms = root.atoms || (root.atoms = {});
+  var molecules = root.molecules || (root.molecules = {});
+
+  var translate = atoms.translate || function (key, fallback) { return fallback || key; };
   var instances = new Set();
   var registry = new WeakMap();
 
-  function t(key, fallback, params){
-    if(typeof window.$t === 'function'){
-      try{
-        var translated = window.$t(key, params);
-        if(typeof translated === 'string' && translated && translated !== key){
-          return translated;
-        }
-      }catch(_){ }
-    }
-    if(typeof fallback === 'string' && params && fallback.indexOf('{{') !== -1){
-      return fallback.replace(/{{(\w+)}}/g, function(_, token){
-        return Object.prototype.hasOwnProperty.call(params, token) ? params[token] : '';
-      });
-    }
-    return typeof fallback === 'string' ? fallback : key;
+  function t(key, fallback, params) {
+    return translate(key, fallback, params);
   }
 
-  function parsePerView(value){
+  function parsePerView(value) {
     var defaults = [1, 2, 3, 4, 5];
-    if(!value){
+    if (!value) {
       return defaults;
     }
-    var parts = String(value).split(/[\s,]+/).filter(Boolean);
+
+    var parts = String(value)
+      .split(/[\s,]+/)
+      .filter(Boolean);
     var result = defaults.slice();
-    for(var i = 0; i < parts.length && i < result.length; i++){
-      var num = parseInt(parts[i], 10);
-      if(Number.isFinite(num) && num > 0){
-        result[i] = num;
+
+    for (var i = 0; i < parts.length && i < result.length; i++) {
+      var parsed = parseInt(parts[i], 10);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        result[i] = parsed;
       }
     }
-    for(var j = 1; j < result.length; j++){
-      if(result[j] < result[j - 1]){
-        result[j] = result[j - 1];
+
+    for (var index = 1; index < result.length; index++) {
+      if (result[index] < result[index - 1]) {
+        result[index] = result[index - 1];
       }
     }
+
     return result;
   }
 
-  function resolvePerView(instance){
-    var values = instance.perView;
+  function resolvePerView(instance) {
     var width = window.innerWidth || document.documentElement.clientWidth || 0;
-    if(width >= 1280) return values[4];
-    if(width >= 1024) return values[3];
-    if(width >= 768) return values[2];
-    if(width >= 480) return values[1];
+    var values = instance.perView;
+
+    if (width >= 1280) return values[4];
+    if (width >= 1024) return values[3];
+    if (width >= 768) return values[2];
+    if (width >= 480) return values[1];
     return values[0];
   }
 
-  function getFirstVisibleIndex(instance){
-    var viewport = instance.viewport;
+  function updateStatus(instance) {
     var total = instance.items.length;
-    if(total === 0){
-      return 0;
-    }
-    var scrollLeft = viewport.scrollLeft;
-    for(var i = 0; i < total; i++){
-      var slide = instance.items[i];
-      if(!slide) continue;
-      if((slide.offsetLeft + slide.offsetWidth) > scrollLeft + 1){
-        var maxStart = Math.max(0, total - (instance.currentPerView || 1));
-        return Math.min(i, maxStart);
-      }
-    }
-    return Math.max(0, total - (instance.currentPerView || 1));
-  }
-
-  function scrollToIndex(instance, index){
-    if(!instance.items.length){
-      return;
-    }
-    var maxIndex = instance.items.length - 1;
-    var targetIndex = Math.max(0, Math.min(index, maxIndex));
-    var slide = instance.items[targetIndex];
-    if(!slide){
-      return;
-    }
-    var left = slide.offsetLeft;
-    try{
-      instance.viewport.scrollTo({ left: left, behavior: 'smooth' });
-    }catch(_){
-      instance.viewport.scrollLeft = left;
-    }
-  }
-
-  function scrollByStep(instance, direction){
-    if(!instance.items.length){
-      return;
-    }
-    var step = instance.currentPerView || 1;
-    var total = instance.items.length;
-    var start = getFirstVisibleIndex(instance);
-    if(direction > 0){
-      var maxStart = Math.max(0, total - step);
-      scrollToIndex(instance, Math.min(maxStart, start + step));
-    }else{
-      scrollToIndex(instance, Math.max(0, start - step));
-    }
-  }
-
-  function updateStatus(instance){
-    if(!instance.status){
-      return;
-    }
-    var total = instance.items.length;
-    if(!total){
+    if (!total) {
       instance.status.textContent = '';
       instance.status.setAttribute('aria-hidden', 'true');
       return;
     }
+
     var step = instance.currentPerView || 1;
-    var start = getFirstVisibleIndex(instance);
-    var from = Math.min(total, start + 1);
-    var to = Math.min(total, start + step);
+    var start = Math.max(0, Math.min(instance.viewport.scrollLeft / instance.slideWidth, total - step));
+    var from = Math.min(total, Math.floor(start) + 1);
+    var to = Math.min(total, Math.floor(start) + step);
+
     instance.status.textContent = t('carousel.status', '{{from}}–{{to}} de {{total}}', {
       from: from,
       to: to,
-      total: total
+      total: total,
     });
+
     instance.status.removeAttribute('aria-hidden');
   }
 
-  function updateControls(instance){
+  function updateControls(instance) {
     var total = instance.items.length;
     var step = instance.currentPerView || 1;
-    var viewport = instance.viewport;
-    var start = getFirstVisibleIndex(instance);
     var maxStart = Math.max(0, total - step);
-    var hasOverflow = !!viewport && (viewport.scrollWidth - viewport.clientWidth) > 1;
+    var currentIndex = getFirstVisibleIndex(instance);
+    var hasOverflow = instance.track.scrollWidth - instance.viewport.clientWidth > 1;
     var shouldHide = !hasOverflow || total <= step;
-    if(instance.prevButton){
+
+    if (instance.prevButton) {
       instance.prevButton.hidden = shouldHide;
-      instance.prevButton.disabled = shouldHide || start <= 0;
-      if(shouldHide){
-        instance.prevButton.setAttribute('aria-hidden', 'true');
-      }else{
-        instance.prevButton.removeAttribute('aria-hidden');
-      }
+      instance.prevButton.disabled = shouldHide || currentIndex <= 0;
+      instance.prevButton.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
     }
-    if(instance.nextButton){
+
+    if (instance.nextButton) {
       instance.nextButton.hidden = shouldHide;
-      instance.nextButton.disabled = shouldHide || start >= maxStart;
-      if(shouldHide){
-        instance.nextButton.setAttribute('aria-hidden', 'true');
-      }else{
-        instance.nextButton.removeAttribute('aria-hidden');
-      }
+      instance.nextButton.disabled = shouldHide || currentIndex >= maxStart;
+      instance.nextButton.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
     }
   }
 
-  function onScroll(instance){
-    if(instance._scrollFrame){
+  function getFirstVisibleIndex(instance) {
+    var total = instance.items.length;
+    if (!total) {
+      return 0;
+    }
+
+    var scrollLeft = instance.viewport.scrollLeft;
+    for (var index = 0; index < total; index++) {
+      var slide = instance.items[index];
+      if (!slide) continue;
+
+      if (slide.offsetLeft + slide.offsetWidth > scrollLeft + 1) {
+        var maxStart = Math.max(0, total - (instance.currentPerView || 1));
+        return Math.min(index, maxStart);
+      }
+    }
+
+    return Math.max(0, total - (instance.currentPerView || 1));
+  }
+
+  function scrollToIndex(instance, index) {
+    if (!instance.items.length) {
+      return;
+    }
+
+    var maxIndex = instance.items.length - 1;
+    var targetIndex = Math.max(0, Math.min(index, maxIndex));
+    var slide = instance.items[targetIndex];
+    if (!slide) {
+      return;
+    }
+
+    var left = slide.offsetLeft;
+    try {
+      instance.viewport.scrollTo({ left: left, behavior: 'smooth' });
+    } catch (_error) {
+      instance.viewport.scrollLeft = left;
+    }
+  }
+
+  function scrollByStep(instance, direction) {
+    if (!instance.items.length) {
+      return;
+    }
+
+    var step = instance.currentPerView || 1;
+    var start = getFirstVisibleIndex(instance);
+    var total = instance.items.length;
+
+    if (direction > 0) {
+      var maxStart = Math.max(0, total - step);
+      scrollToIndex(instance, Math.min(maxStart, start + step));
+    } else {
+      scrollToIndex(instance, Math.max(0, start - step));
+    }
+  }
+
+  function onScroll(instance) {
+    if (instance._scrollFrame) {
       cancelAnimationFrame(instance._scrollFrame);
     }
-    instance._scrollFrame = requestAnimationFrame(function(){
+
+    instance._scrollFrame = requestAnimationFrame(function () {
       instance._scrollFrame = null;
       updateStatus(instance);
       updateControls(instance);
     });
   }
 
-  function attachEvents(instance){
-    instance.viewport.addEventListener('scroll', function(){
-      onScroll(instance);
-    }, { passive: true });
+  function attachEvents(instance) {
+    instance.viewport.addEventListener(
+      'scroll',
+      function () {
+        onScroll(instance);
+      },
+      { passive: true },
+    );
 
-    instance.viewport.addEventListener('keydown', function(event){
-      if(event.defaultPrevented) return;
+    instance.viewport.addEventListener('keydown', function (event) {
+      if (event.defaultPrevented) return;
       var key = event.key;
-      if(key === 'ArrowLeft'){
+      if (key === 'ArrowLeft') {
         event.preventDefault();
         scrollByStep(instance, -1);
-      }else if(key === 'ArrowRight'){
+      } else if (key === 'ArrowRight') {
         event.preventDefault();
         scrollByStep(instance, 1);
-      }else if(key === 'Home'){
+      } else if (key === 'Home') {
         event.preventDefault();
         scrollToIndex(instance, 0);
-      }else if(key === 'End'){
+      } else if (key === 'End') {
         event.preventDefault();
         var last = Math.max(0, instance.items.length - (instance.currentPerView || 1));
         scrollToIndex(instance, last);
       }
     });
 
-    if(instance.prevButton){
-      instance.prevButton.addEventListener('click', function(){
+    if (instance.prevButton) {
+      instance.prevButton.addEventListener('click', function () {
         scrollByStep(instance, -1);
       });
     }
-    if(instance.nextButton){
-      instance.nextButton.addEventListener('click', function(){
+
+    if (instance.nextButton) {
+      instance.nextButton.addEventListener('click', function () {
         scrollByStep(instance, 1);
       });
     }
   }
 
-  function createControl(direction){
+  function createControl(direction) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'carousel-control carousel-control--' + direction;
@@ -216,11 +220,11 @@
     return btn;
   }
 
-  function buildStructure(container){
+  function buildStructure(container) {
     var perView = parsePerView(container.getAttribute('data-carousel-per-view'));
     var labelKey = container.getAttribute('data-carousel-label-key') || '';
     var label = container.getAttribute('data-carousel-label') || container.getAttribute('aria-label') || '';
-    var children = Array.from(container.children).filter(function(node){
+    var children = Array.from(container.children).filter(function (node) {
       return node && node.nodeType === 1;
     });
 
@@ -229,10 +233,10 @@
     viewport.setAttribute('tabindex', '0');
     viewport.setAttribute('role', 'group');
     viewport.setAttribute('aria-roledescription', 'carousel');
-    if(label){
+    if (label) {
       viewport.setAttribute('aria-label', label);
     }
-    if(labelKey){
+    if (labelKey) {
       viewport.setAttribute('data-i18n-attr', 'aria-label:' + labelKey);
     }
 
@@ -240,7 +244,7 @@
     track.className = 'carousel-track';
     track.setAttribute('role', 'list');
 
-    children.forEach(function(child){
+    children.forEach(function (child) {
       var slide = document.createElement('div');
       slide.className = 'carousel-slide';
       slide.setAttribute('role', 'listitem');
@@ -265,7 +269,8 @@
       currentPerView: perView[0],
       prevButton: null,
       nextButton: null,
-      items: []
+      items: [],
+      slideWidth: 0,
     };
 
     instance.prevButton = createControl('prev');
@@ -279,6 +284,7 @@
     container.appendChild(status);
 
     instance.items = Array.from(track.children);
+    instance.slideWidth = instance.items.length ? instance.items[0].offsetWidth || 0 : 0;
 
     attachEvents(instance);
     registry.set(container, instance);
@@ -286,26 +292,27 @@
 
     updateLayout(instance);
 
-    if(window.I18nManager && typeof window.I18nManager.apply === 'function'){
+    if (window.I18nManager && typeof window.I18nManager.apply === 'function') {
       window.I18nManager.apply();
     }
 
     return instance;
   }
 
-  function updateLayout(instance){
+  function updateLayout(instance) {
     instance.items = Array.from(instance.track.children);
     instance.currentPerView = resolvePerView(instance);
     instance.container.style.setProperty('--carousel-per-view', String(instance.currentPerView));
+    instance.slideWidth = instance.items.length ? instance.items[0].offsetWidth || 0 : instance.slideWidth;
     updateStatus(instance);
     updateControls(instance);
   }
 
-  function mount(container){
-    if(!container){
+  function mount(container) {
+    if (!container) {
       return null;
     }
-    if(registry.has(container)){
+    if (registry.has(container)) {
       var existing = registry.get(container);
       updateLayout(existing);
       return existing;
@@ -313,21 +320,21 @@
     return buildStructure(container);
   }
 
-  function refresh(container){
-    if(!container){
+  function refresh(container) {
+    if (!container) {
       return;
     }
     var instance = registry.get(container);
-    if(!instance){
+    if (!instance) {
       instance = buildStructure(container);
-    }else{
+    } else {
       updateLayout(instance);
     }
   }
 
-  function refreshAll(){
-    instances.forEach(function(instance){
-      if(!document.body.contains(instance.container)){
+  function refreshAll() {
+    instances.forEach(function (instance) {
+      if (!document.body.contains(instance.container)) {
         instances.delete(instance);
         registry.delete(instance.container);
         return;
@@ -336,11 +343,11 @@
     });
   }
 
-  function scheduleResize(){
-    if(scheduleResize._frame){
+  function scheduleResize() {
+    if (scheduleResize._frame) {
       cancelAnimationFrame(scheduleResize._frame);
     }
-    scheduleResize._frame = requestAnimationFrame(function(){
+    scheduleResize._frame = requestAnimationFrame(function () {
       scheduleResize._frame = null;
       refreshAll();
     });
@@ -349,9 +356,13 @@
   window.addEventListener('resize', scheduleResize, { passive: true });
   window.addEventListener('orientationchange', scheduleResize, { passive: true });
 
-  window.CarouselManager = {
+  molecules.carousel = {
     mount: mount,
     refresh: refresh,
-    refreshAll: refreshAll
+    refreshAll: refreshAll,
+    instances: instances,
   };
+
+  // Mantém compatibilidade com scripts legados.
+  window.CarouselManager = molecules.carousel;
 })(window, document);
