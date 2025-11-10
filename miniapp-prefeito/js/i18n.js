@@ -18,6 +18,12 @@
   let readyPromise = null;
   let languageChangedHooked = false;
 
+  function emitChange(lng) {
+    listeners.forEach(function (fn) {
+      try { fn(lng); } catch (_) { /* noop */ }
+    });
+  }
+
   function clone(obj) {
     return obj ? JSON.parse(JSON.stringify(obj)) : {};
   }
@@ -143,6 +149,8 @@
       const isActive = lang === current;
       btn.classList.toggle('is-active', isActive);
       btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      btn.setAttribute('aria-disabled', 'true');
+      btn.setAttribute('tabindex', '-1');
     });
   }
 
@@ -179,9 +187,7 @@
     if (typeof root.i18next.on === 'function') {
       root.i18next.on('languageChanged', function (lng) {
         applyTranslations();
-        listeners.forEach(function (fn) {
-          try { fn(lng); } catch (_) { /* noop */ }
-        });
+        emitChange(lng);
       });
       languageChangedHooked = true;
     }
@@ -190,10 +196,17 @@
   async function ensureInit() {
     if (readyPromise) return readyPromise;
     readyPromise = (async function () {
-      const stored = (() => {
-        try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; }
-      })();
-      const preferred = matchLanguage(stored || navigator.language || DEFAULT_LANG);
+      const docLang = (document.documentElement && document.documentElement.lang) || '';
+      let stored = null;
+      if (!docLang) {
+        stored = (() => {
+          try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; }
+        })();
+      }
+      const navigatorLang = (!docLang && !stored && typeof navigator !== 'undefined' && navigator && navigator.language)
+        ? navigator.language
+        : '';
+      const preferred = matchLanguage(docLang || stored || navigatorLang || DEFAULT_LANG);
       const fallbackData = await fetchBundle(DEFAULT_LANG);
 
       if (!root.i18next || typeof root.i18next.init !== 'function') {
@@ -236,13 +249,15 @@
     return readyPromise;
   }
 
-  async function changeLanguage(lang) {
+  async function changeLanguage(lang, options) {
+    const persist = !options || options.persist !== false;
     const target = matchLanguage(lang);
-    const state = await ensureInit();
+    await ensureInit();
     if (!root.i18next || typeof root.i18next.changeLanguage !== 'function') {
       cache[DEFAULT_LANG] = cache[DEFAULT_LANG] || {};
       applyTranslations();
-      return state.language;
+      emitChange(target);
+      return target;
     }
 
     let bundle = cache[target];
@@ -257,7 +272,9 @@
     }
 
     await root.i18next.changeLanguage(target);
-    try { localStorage.setItem(STORAGE_KEY, target); } catch (_) { /* ignore */ }
+    if (persist) {
+      try { localStorage.setItem(STORAGE_KEY, target); } catch (_) { /* ignore */ }
+    }
     return target;
   }
 
@@ -265,28 +282,9 @@
     if (bindLanguageSwitcher.bound) return;
     bindLanguageSwitcher.bound = true;
     document.querySelectorAll('[data-lang]').forEach(function (btn) {
-      btn.addEventListener('click', function (ev) {
-        ev.preventDefault();
-        const lang = btn.getAttribute('data-lang');
-        changeLanguage(lang).then(function () {
-          if (window.closeActiveModal && typeof window.closeActiveModal === 'function') {
-            window.closeActiveModal();
-          } else if (window.location && window.location.hash === '#language') {
-            try {
-              if (window.history && typeof window.history.replaceState === 'function') {
-                const base = window.location.pathname + window.location.search;
-                window.history.replaceState(null, '', base);
-              } else {
-                window.location.hash = '';
-              }
-              const evt = new Event('hashchange');
-              window.dispatchEvent(evt);
-            } catch (_) {
-              /* ignore */
-            }
-          }
-        });
-      });
+      btn.setAttribute('aria-disabled', 'true');
+      btn.setAttribute('tabindex', '-1');
+      btn.setAttribute('role', 'presentation');
     });
   }
 
@@ -296,9 +294,16 @@
     }
   }
 
+  async function setLocale(locale, options) {
+    const persist = !options || options.persist !== false;
+    await ensureInit();
+    return changeLanguage(locale, { persist });
+  }
+
   root.I18nManager = {
     ready: ensureInit,
     changeLanguage,
+    setLocale,
     onChange,
     apply: applyTranslations,
     t: translate
