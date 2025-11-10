@@ -10,19 +10,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
-<body>
-  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: clamp(var(--space-6), 6vw, var(--space-8)); background: var(--background-page); color: var(--text-color-primary);">
-    <form
-      id="registrationForm"
-      novalidate
-      class="card"
-      style="width: min(720px, 100%); display: grid; gap: clamp(var(--space-5), 4vw, var(--space-6));"
-    >
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: clamp(var(--space-3), 3vw, var(--space-5));">
-        <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.description">Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.</p>
+<body class="app-blank">
+  <main class="app-board" aria-labelledby="registrationTitle">
+    <header class="app-board__header">
+      <div class="app-board__intro">
+        <span class="badge" data-i18n="header.badge">Fluxo guiado</span>
+        <h1 id="registrationTitle" data-i18n="header.title">Cadastro de novos usuários</h1>
+        <p class="app-board__subtitle" data-i18n="header.subtitle">
+          Centralize o onboarding e valide os dados essenciais antes de liberar o acesso.
+        </p>
       </div>
-
-      <div class="miniapp-toolbar" style="margin: 0; justify-content: flex-end;">
+      <div class="miniapp-toolbar">
         <button
           type="button"
           class="btn ghost miniapp-toolbar__button"
@@ -32,147 +30,153 @@
           <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
         </button>
       </div>
+    </header>
 
-      <section aria-labelledby="personalDataTitle" style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
-        <div style="display: grid; gap: var(--space-1);">
-          <h2 id="personalDataTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.4vw, 1.5rem);" data-i18n="form.sections.personal.title">Dados pessoais</h2>
-          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.sections.personal.description">Comece identificando quem receberá o acesso.</p>
+    <form id="registrationForm" class="card form-card" novalidate>
+      <p class="form-card__description" data-i18n="form.description">
+        Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.
+      </p>
+
+      <section class="form-section" aria-labelledby="personalDataTitle">
+        <div class="form-section__header">
+          <h2 id="personalDataTitle" data-i18n="form.sections.personal.title">Dados pessoais</h2>
+          <p class="form-section__description" data-i18n="form.sections.personal.description">
+            Comece identificando quem receberá o acesso.
+          </p>
         </div>
-        <div style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
-          <div style="display: grid; gap: var(--space-2);">
-            <label for="fullName" data-i18n="form.fields.fullName.label">Nome completo *</label>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-field__label" for="fullName" data-i18n="form.fields.fullName.label">Nome completo *</label>
             <input
               id="fullName"
               name="fullName"
               type="text"
+              class="form-field__control"
               required
               data-i18n-placeholder="form.fields.fullName.placeholder"
-              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
             >
-            <p data-field-error="fullName" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            <p class="form-field__error" data-field-error="fullName" role="alert"></p>
           </div>
 
-          <div style="display: grid; gap: var(--space-2);">
-            <label for="email" data-i18n="form.fields.email.label">Email corporativo *</label>
+          <div class="form-field">
+            <label class="form-field__label" for="email" data-i18n="form.fields.email.label">Email corporativo *</label>
             <input
               id="email"
               name="email"
               type="email"
+              class="form-field__control"
               required
               data-i18n-placeholder="form.fields.email.placeholder"
-              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
             >
-            <p data-field-error="email" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            <p class="form-field__error" data-field-error="email" role="alert"></p>
           </div>
 
-          <div style="display: grid; gap: var(--space-2);">
-            <label for="phone" data-i18n="form.fields.phone.label">Telefone de contato *</label>
+          <div class="form-field">
+            <label class="form-field__label" for="phone" data-i18n="form.fields.phone.label">Telefone de contato *</label>
             <input
               id="phone"
               name="phone"
               type="tel"
+              class="form-field__control"
               required
               data-i18n-placeholder="form.fields.phone.placeholder"
-              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
             >
-            <p data-field-error="phone" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            <p class="form-field__error" data-field-error="phone" role="alert"></p>
           </div>
         </div>
       </section>
 
-      <section aria-labelledby="professionalDataTitle" style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
-        <div style="display: grid; gap: var(--space-1);">
-          <h2 id="professionalDataTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.4vw, 1.5rem);" data-i18n="form.sections.professional.title">Dados profissionais</h2>
-          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.sections.professional.description">Defina como a pessoa atuará na plataforma.</p>
+      <section class="form-section" aria-labelledby="professionalDataTitle">
+        <div class="form-section__header">
+          <h2 id="professionalDataTitle" data-i18n="form.sections.professional.title">Dados profissionais</h2>
+          <p class="form-section__description" data-i18n="form.sections.professional.description">
+            Defina como a pessoa atuará na plataforma.
+          </p>
         </div>
-        <div style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
-          <div style="display: grid; gap: clamp(var(--space-3), 2vw, var(--space-4)); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-            <div style="display: grid; gap: var(--space-2);">
-              <label for="role" data-i18n="form.fields.role.label">Papel na plataforma *</label>
-              <select
-                id="role"
-                name="role"
-                required
-                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
-              >
-                <option value="" data-i18n="form.fields.role.placeholder">Selecione uma opção</option>
-                <option value="administrator" data-i18n="form.fields.role.options.administrator">Administrador</option>
-                <option value="manager" data-i18n="form.fields.role.options.manager">Gestor de área</option>
-                <option value="analyst" data-i18n="form.fields.role.options.analyst">Analista</option>
-                <option value="viewer" data-i18n="form.fields.role.options.viewer">Acesso somente leitura</option>
-              </select>
-              <p data-field-error="role" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
-            </div>
-            <div style="display: grid; gap: var(--space-2);">
-              <label for="department" data-i18n="form.fields.department.label">Departamento *</label>
-              <input
-                id="department"
-                name="department"
-                type="text"
-                required
-                data-i18n-placeholder="form.fields.department.placeholder"
-                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
-              >
-              <p data-field-error="department" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
-            </div>
+
+        <div class="form-grid form-grid--split">
+          <div class="form-field">
+            <label class="form-field__label" for="role" data-i18n="form.fields.role.label">Papel na plataforma *</label>
+            <select
+              id="role"
+              name="role"
+              class="form-field__control"
+              required
+            >
+              <option value="" data-i18n="form.fields.role.placeholder">Selecione uma opção</option>
+              <option value="administrator" data-i18n="form.fields.role.options.administrator">Administrador</option>
+              <option value="manager" data-i18n="form.fields.role.options.manager">Gestor de área</option>
+              <option value="analyst" data-i18n="form.fields.role.options.analyst">Analista</option>
+              <option value="viewer" data-i18n="form.fields.role.options.viewer">Acesso somente leitura</option>
+            </select>
+            <p class="form-field__error" data-field-error="role" role="alert"></p>
           </div>
 
-          <div style="display: grid; gap: clamp(var(--space-3), 2vw, var(--space-4)); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-            <div style="display: grid; gap: var(--space-2);">
-              <label for="password" data-i18n="form.fields.password.label">Senha temporária *</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minlength="8"
-                data-i18n-placeholder="form.fields.password.placeholder"
-                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
-              >
-              <p data-field-error="password" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
-            </div>
-            <div style="display: grid; gap: var(--space-2);">
-              <label for="confirmPassword" data-i18n="form.fields.confirmPassword.label">Confirmação *</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                minlength="8"
-                data-i18n-placeholder="form.fields.confirmPassword.placeholder"
-                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
-              >
-              <p data-field-error="confirmPassword" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
-            </div>
+          <div class="form-field">
+            <label class="form-field__label" for="department" data-i18n="form.fields.department.label">Departamento *</label>
+            <input
+              id="department"
+              name="department"
+              type="text"
+              class="form-field__control"
+              required
+              data-i18n-placeholder="form.fields.department.placeholder"
+            >
+            <p class="form-field__error" data-field-error="department" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--split">
+          <div class="form-field">
+            <label class="form-field__label" for="password" data-i18n="form.fields.password.label">Senha temporária *</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              class="form-field__control"
+              required
+              minlength="8"
+              data-i18n-placeholder="form.fields.password.placeholder"
+            >
+            <p class="form-field__error" data-field-error="password" role="alert"></p>
           </div>
 
-          <div style="display: grid; gap: var(--space-2); background: var(--background-surface-alternate); border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3);">
-            <label style="display: flex; gap: var(--space-2); align-items: flex-start; font-size: var(--font-size-m);">
-              <input id="terms" name="terms" type="checkbox" required style="margin-top: var(--space-1);">
-              <span data-i18n="form.fields.terms.label">Declaro que li e aceito os termos de uso e a política de privacidade.</span>
-            </label>
-            <p data-field-error="terms" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+          <div class="form-field">
+            <label class="form-field__label" for="confirmPassword" data-i18n="form.fields.confirmPassword.label">Confirmação *</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              class="form-field__control"
+              required
+              minlength="8"
+              data-i18n-placeholder="form.fields.confirmPassword.placeholder"
+            >
+            <p class="form-field__error" data-field-error="confirmPassword" role="alert"></p>
           </div>
+        </div>
+
+        <div class="form-field form-field--inline">
+          <label class="form-field__checkbox">
+            <input id="terms" name="terms" type="checkbox" required>
+            <span data-i18n="form.fields.terms.label">Declaro que li e aceito os termos de uso e a política de privacidade.</span>
+          </label>
+          <p class="form-field__error" data-field-error="terms" role="alert"></p>
         </div>
       </section>
 
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;">
+      <div class="form-actions">
         <button type="reset" class="btn ghost" data-i18n="form.actions.reset">Limpar</button>
         <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
       </div>
 
-      <div
-        id="formFeedback"
-        class="pill"
-        style="display: none; align-items: center; gap: var(--space-2); background: rgba(22, 163, 74, 0.12); border: 1px solid rgba(22, 163, 74, 0.28); color: var(--color-accent-green);"
-        role="status"
-        aria-live="polite"
-      >
+      <div id="formFeedback" class="pill form-feedback" role="status" aria-live="polite">
         <span class="material-symbols-rounded" aria-hidden="true" data-js="feedback-icon">check_circle</span>
         <span data-js="feedback-message"></span>
       </div>
     </form>
-  </div>
+  </main>
 
   <noscript>Habilite o JavaScript para enviar o formulário de cadastro.</noscript>
   <script src="../miniapp-base/js/atoms/messaging.js"></script>
