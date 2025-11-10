@@ -331,7 +331,6 @@
 
   const root = document.documentElement;
   const form = document.getElementById('registrationForm');
-  const languageSelect = document.getElementById('languageSelect');
   const feedbackContainer = document.getElementById('formFeedback');
   const feedbackMessage = feedbackContainer
     ? feedbackContainer.querySelector('[data-js="feedback-message"]')
@@ -346,26 +345,15 @@
   const storageAvailable = isLocalStorageAvailable();
 
   function detectLocale() {
-    const languageCandidates = Array.isArray(window.navigator.languages)
-      ? window.navigator.languages
-      : [window.navigator.language, DEFAULT_LOCALE].filter(Boolean);
+    const documentLocale = (document.documentElement && document.documentElement.lang) || '';
+    const normalized = documentLocale.trim();
 
-    for (const candidate of languageCandidates) {
-      if (typeof candidate !== 'string') {
-        continue;
-      }
+    if (SUPPORTED_LOCALES.includes(normalized)) {
+      return normalized;
+    }
 
-      const normalized = candidate.trim();
-      if (!normalized) {
-        continue;
-      }
-
-      if (SUPPORTED_LOCALES.includes(normalized)) {
-        return normalized;
-      }
-
-      const short = normalized.slice(0, 2);
-      const match = SUPPORTED_LOCALES.find((locale) => locale.startsWith(short));
+    if (normalized) {
+      const match = SUPPORTED_LOCALES.find((locale) => locale.startsWith(normalized.slice(0, 2)));
       if (match) {
         return match;
       }
@@ -480,10 +468,6 @@
       }
     });
 
-    if (languageSelect && SUPPORTED_LOCALES.includes(currentLocale)) {
-      languageSelect.value = currentLocale;
-    }
-
     if (
       feedbackContainer &&
       feedbackContainer.style.display !== 'none' &&
@@ -495,6 +479,38 @@
         feedbackMessage.textContent = feedbackText;
       }
     }
+  }
+
+  function handleMessage(event) {
+    if (!event || typeof event !== 'object') {
+      return;
+    }
+
+    if (event.origin && event.origin !== 'null' && event.origin !== window.location.origin) {
+      return;
+    }
+
+    const { data } = event;
+    if (!data || typeof data !== 'object' || data.action !== 'set-locale') {
+      return;
+    }
+
+    const { locale } = data;
+    if (typeof locale !== 'string') {
+      return;
+    }
+
+    if (!SUPPORTED_LOCALES.includes(locale)) {
+      return;
+    }
+
+    if (locale === currentLocale) {
+      return;
+    }
+
+    currentLocale = locale;
+    translateElements();
+    notifyShell();
   }
 
   function notifyShell() {
@@ -844,31 +860,29 @@
     });
   }
 
-  function setupLanguageSwitcher() {
-    if (!languageSelect) {
-      return;
-    }
-
-    languageSelect.addEventListener('change', (event) => {
-      const { value } = event.target;
-      if (!SUPPORTED_LOCALES.includes(value)) {
-        return;
-      }
-
-      currentLocale = value;
-      translateElements();
-      notifyShell();
-    });
-  }
-
   function initialize() {
     translateElements();
     notifyShell();
+    if (
+      currentLocale === DEFAULT_LOCALE &&
+      window.parent &&
+      window.parent !== window
+    ) {
+      try {
+        window.parent.postMessage(
+          { action: 'request-locale' },
+          window.location.origin,
+        );
+      } catch (error) {
+        console.error('Não foi possível solicitar o idioma atual ao shell.', error);
+      }
+    }
     setupCatalogButton();
     setupForm();
-    setupLanguageSwitcher();
     restoreStoredData();
   }
+
+  window.addEventListener('message', handleMessage);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
