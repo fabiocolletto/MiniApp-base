@@ -116,22 +116,41 @@
         miniappsById.set(app.id, app);
       });
 
-      function getActiveLocale() {
-        var docLang = (document.documentElement && document.documentElement.lang) || '';
-        var normalized = SUPPORTED_LOCALES.find(function (locale) {
-          return docLang.toLowerCase() === locale.toLowerCase();
+      function normalizeLocale(locale) {
+        if (typeof locale !== 'string') {
+          return 'pt-BR';
+        }
+
+        var trimmed = locale.trim();
+
+        if (!trimmed) {
+          return 'pt-BR';
+        }
+
+        var normalized = SUPPORTED_LOCALES.find(function (supported) {
+          return supported.toLowerCase() === trimmed.toLowerCase();
         });
 
         if (normalized) {
           return normalized;
         }
 
-        var baseLang = docLang.split('-')[0];
-        var fallback = SUPPORTED_LOCALES.find(function (locale) {
-          return locale.toLowerCase().indexOf(baseLang.toLowerCase()) === 0;
+        var baseLang = trimmed.split('-')[0];
+        var fallback = SUPPORTED_LOCALES.find(function (supported) {
+          return supported.toLowerCase().indexOf(baseLang.toLowerCase()) === 0;
         });
 
         return fallback || 'pt-BR';
+      }
+
+      function getActiveLocale() {
+        var docLang = (document.documentElement && document.documentElement.lang) || '';
+
+        if (!docLang) {
+          return 'pt-BR';
+        }
+
+        return normalizeLocale(docLang);
       }
 
       function getFavoriteActionCopy(isActive) {
@@ -432,8 +451,6 @@
         renderCatalog({ focusMiniAppId: appId });
       }
 
-      renderCatalog();
-
       function notifyShell() {
         if (!window.parent || window.parent === window) {
           return;
@@ -462,7 +479,59 @@
         }
       }
 
-      notifyShell();
+      function setLocale(locale) {
+        var nextLocale = normalizeLocale(locale);
+
+        if (document.documentElement) {
+          document.documentElement.lang = nextLocale;
+        }
+
+        renderCatalog();
+        notifyShell();
+      }
+
+      window.addEventListener('message', function (event) {
+        if (!event) {
+          return;
+        }
+
+        if (
+          window.parent &&
+          event.source &&
+          event.source !== window.parent
+        ) {
+          return;
+        }
+
+        var data = event.data;
+
+        if (!data || typeof data !== 'object') {
+          return;
+        }
+
+        if (data.action === 'set-locale' && 'locale' in data) {
+          setLocale(data.locale);
+        }
+      });
+
+      setLocale((document.documentElement && document.documentElement.lang) || 'pt-BR');
+
+      if (window.parent && window.parent !== window) {
+        var requestLocaleTarget = window.location.origin;
+
+        if (!requestLocaleTarget || requestLocaleTarget === 'null') {
+          requestLocaleTarget = '*';
+        }
+
+        try {
+          window.parent.postMessage(
+            { action: 'request-locale' },
+            requestLocaleTarget
+          );
+        } catch (error) {
+          console.error('Não foi possível solicitar o idioma ao shell.', error);
+        }
+      }
     });
   </script>
 </body>
