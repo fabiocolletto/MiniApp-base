@@ -17,6 +17,8 @@
 - Miniapp TTS com formulário guiado, geração automática de roteiro e traduções completas para `pt-BR`, `en-US` e `es-ES`.
 - Miniapp TTS inclui prévia de áudio com controles de velocidade, volume e pausa, aplicando as configurações ao download.
 - Shell passa a registrar metadados de título e subtítulo enviados pelos miniapps via `postMessage` (`action: "miniapp-header"`) para atualizar o cabeçalho principal.
+- Guia `docs/README.md` documentando os requisitos de implantação de novos miniapps e os metadados obrigatórios de ícone.
+- `miniapp-catalogo/README.md` descrevendo as regras para manter cartões e atributos sincronizados com o shell.
 
 ### Alterado
 - Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
@@ -28,6 +30,9 @@
 - Rodapé passa a exibir o ícone oficial da 5 Horas ao lado do selo “5 horas de pesquisa e análise limitada”, mantendo a versão do shell.
 - Rodapé do shell passa a alinhar o conteúdo à esquerda para harmonizar com o cabeçalho dinâmico.
 - Menu do rodapé passa a abrir uma janela sobreposta única que reúne catálogo, tela cheia e a seção “Sobre o app”, mantendo o botão de acesso idêntico em todas as larguras.
+- Cabeçalho do shell passa a exibir o ícone do miniapp ativo com suporte aos campos `icon` e `iconTheme`, enquanto o catálogo fornece os novos metadados e classes de tema compartilhadas.
+- Botões de retorno ao catálogo nos miniapps passam a mostrar apenas o ícone `apps` e o rótulo localizado “Catálogo”, garantindo consistência visual e acessibilidade entre experiências.
+- Guia de implantação em `docs/README.md` deixa de exigir um botão próprio nos miniapps, pois o retorno ao catálogo é fornecido pelo shell fixo no rodapé.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.

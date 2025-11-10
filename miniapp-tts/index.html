@@ -296,8 +296,10 @@
           type="button"
           class="btn ghost miniapp-toolbar__button"
           data-js="open-catalog"
-          data-i18n="actions.openCatalog"
-        >Voltar ao catálogo</button>
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+          <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
+        </button>
       </div>
       <header class="tts-header">
         <div class="tts-header__title">
@@ -437,7 +439,7 @@
         actions: {
           generate: 'Gerar roteiro',
           edit: 'Editar manualmente',
-          openCatalog: 'Voltar ao catálogo'
+          openCatalog: 'Catálogo'
         },
         outputLabel: 'Roteiro gerado',
         outputPlaceholder: 'O roteiro aparecerá aqui após a geração.',
@@ -526,7 +528,7 @@
         actions: {
           generate: 'Generate script',
           edit: 'Edit manually',
-          openCatalog: 'Return to catalog'
+          openCatalog: 'Catalog'
         },
         outputLabel: 'Generated script',
         outputPlaceholder: 'The narration script will appear here after generation.',
@@ -615,7 +617,7 @@
         actions: {
           generate: 'Generar guion',
           edit: 'Editar manualmente',
-          openCatalog: 'Volver al catálogo'
+          openCatalog: 'Catálogo'
         },
         outputLabel: 'Guion generado',
         outputPlaceholder: 'El guion aparecerá aquí después de generarse.',
@@ -715,6 +717,9 @@
     const generateButton = document.getElementById('generateButton');
     const editButton = document.getElementById('editButton');
     const catalogButton = document.querySelector('[data-js="open-catalog"]');
+    const catalogLabel = catalogButton
+      ? catalogButton.querySelector('[data-js="catalog-label"]')
+      : null;
     const scriptOutput = document.getElementById('scriptOutput');
     const outputStatus = document.getElementById('outputStatus');
     const titleElement = document.querySelector('[data-i18n="app.title"]');
@@ -1158,7 +1163,11 @@
       editButton.textContent = localeTexts.actions.edit;
       if (catalogButton) {
         const label = localeTexts.actions.openCatalog;
-        catalogButton.textContent = label;
+        if (catalogLabel) {
+          catalogLabel.textContent = label;
+        } else {
+          catalogButton.textContent = label;
+        }
         catalogButton.setAttribute('aria-label', label);
         catalogButton.setAttribute('title', label);
       }
@@ -1606,6 +1615,8 @@
               action: 'miniapp-header',
               title: 'Gerador de Roteiros para TTS',
               subtitle: 'Crie roteiros, ajuste vozes e exporte conteúdos prontos para locução.',
+              icon: 'text_to_speech',
+              iconTheme: 'tts',
             },
             window.location.origin,
           );

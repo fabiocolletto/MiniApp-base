@@ -21,16 +21,18 @@ O arquivo `index.html` atua como shell da experiência. Ele incorpora o catálog
 
 O painel passa a concentrar apenas o conteúdo ativo; qualquer ação de navegação é acessada pelo botão único fixado no canto esquerdo do rodapé. O atalho abre uma janela consistente em todas as larguras com as opções de reabrir o catálogo padrão e alternar o modo tela cheia, respeitando a localização e desabilitando o catálogo quando ele já está em exibição.
 
-O cabeçalho do shell acompanha o miniapp ativo. Assim que o iframe é carregado, o miniapp deve disparar `window.parent.postMessage({ action: 'miniapp-header', title: '<título>', subtitle: '<subtítulo>' }, window.location.origin)` para informar os textos exibidos na marcação principal. Enquanto a mensagem não chega, o shell utiliza os metadados do catálogo (`data-miniapp-name` e `data-miniapp-description`) e um fallback localizado para manter o cabeçalho consistente.
+O cabeçalho do shell acompanha o miniapp ativo. Assim que o iframe é carregado, o miniapp deve disparar `window.parent.postMessage({ action: 'miniapp-header', title: '<título>', subtitle: '<subtítulo>', icon: '<material-symbol>', iconTheme: '<tema>' }, window.location.origin)` para informar os textos e o ícone exibidos na marcação principal. Enquanto a mensagem não chega, o shell utiliza os metadados do catálogo (`data-miniapp-name`, `data-miniapp-description`, `data-miniapp-icon-symbol` e `data-miniapp-icon-theme`) e um fallback localizado para manter o cabeçalho consistente.
 
 O rodapé fixo destaca a identidade visual da 5 Horas por meio do ícone oficial e do texto “5 horas de pesquisa e análise limitada”, enquanto o menu do shell reutiliza o mesmo botão em todas as telas para abrir a janela com os atalhos de catálogo, tela cheia e a seção “Sobre o app” com nome e versão do shell. Quando a API nativa não está disponível, o shell habilita automaticamente um modo de tela cheia baseado em CSS para manter a experiência visual e o posicionamento do botão idênticos em qualquer dispositivo.
 
 ### Registrando novos miniapps
 1. Publique os assets HTML/CSS do miniapp em um diretório dedicado na raiz do projeto (ex.: `miniapp-novo/index.html`).
 2. Adicione um novo cartão ao catálogo (`miniapp-catalogo/index.html`) apontando o link (`href`) para o arquivo de entrada do miniapp, mantendo `target="miniapp-panel"` para reutilizar o iframe do shell.
-3. Defina `data-miniapp-name` e `data-miniapp-description` no link para alimentar o cabeçalho do shell enquanto o miniapp é carregado.
-4. Ao inicializar, envie `window.parent.postMessage({ action: 'miniapp-header', title: '<título>', subtitle: '<subtítulo>' }, window.location.origin)` para confirmar o conteúdo definitivo do cabeçalho do shell.
+3. Defina `data-miniapp-name`, `data-miniapp-description`, `data-miniapp-icon-symbol` (nome do ícone na biblioteca Material Symbols) e `data-miniapp-icon-theme` (sufixo utilizado em `.app-icon--theme-*`) no link para alimentar o cabeçalho do shell enquanto o miniapp é carregado.
+4. Ao inicializar, envie `window.parent.postMessage({ action: 'miniapp-header', title: '<título>', subtitle: '<subtítulo>', icon: '<material-symbol>', iconTheme: '<tema>' }, window.location.origin)` para confirmar o conteúdo definitivo do cabeçalho do shell.
 5. Caso o miniapp precise voltar ao catálogo ou abrir outra experiência dinamicamente, utilize `window.parent.postMessage('open-catalog')` ou envie `{ action: 'load-miniapp', url: '<caminho>' }` conforme necessário.
+
+Para uma lista completa de requisitos visuais e de integração, consulte `docs/README.md`.
 
 ## Miniapps disponíveis
 - **Painel do Prefeito** – painel com KPIs, filtros e relatórios setoriais acessível em `miniapp-prefeito/index.html`.

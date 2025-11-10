@@ -13,7 +13,12 @@
       <div class="shell-container">
         <div class="header-content">
           <div class="branding">
-            <span class="material-symbols-rounded app-icon app-icon--shell" aria-hidden="true">apps</span>
+            <span
+              class="material-symbols-rounded app-icon app-icon--theme-shell"
+              aria-hidden="true"
+              data-shell-app-icon
+              data-icon-theme="shell"
+            >apps</span>
             <div class="branding__text">
               <h1 data-shell-app-title>MiniApps Shell</h1>
               <p data-shell-app-subtitle>Escolha um mini‑app no catálogo para iniciar.</p>
@@ -79,7 +84,7 @@
                 data-action="open-catalog"
               >
                 <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-                <span data-catalog-button-label>Abrir catálogo</span>
+                <span data-catalog-button-label>Catálogo</span>
               </button>
               <button
                 type="button"
@@ -137,6 +142,7 @@
       const bodyElement = document.body;
       const headerTitle = document.querySelector('[data-shell-app-title]');
       const headerSubtitle = document.querySelector('[data-shell-app-subtitle]');
+      const headerIcon = document.querySelector('[data-shell-app-icon]');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
       const catalogToggles = Array.from(document.querySelectorAll('[data-action="open-catalog"]'));
       const footerCommandToggle = document.querySelector('[data-action="toggle-footer-command"]');
@@ -153,18 +159,18 @@
       const SHELL_PRODUCT_NAME = 'MiniApps Shell';
       const SHELL_VERSION = '0.2.0 (experimental)';
       const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
-      const CATALOG_LABELS = {
+      const DEFAULT_ICON_SYMBOL = 'apps';
+      const DEFAULT_ICON_THEME = 'shell';
+      const ICON_THEME_CLASS_PREFIX = 'app-icon--theme-';
+      const CATALOG_BUTTON_COPY = {
         'pt-BR': {
-          open: 'Abrir catálogo',
-          active: 'Catálogo em exibição',
+          label: 'Catálogo',
         },
         'en-US': {
-          open: 'Open catalog',
-          active: 'Catalog in view',
+          label: 'Catalog',
         },
         'es-ES': {
-          open: 'Abrir catálogo',
-          active: 'Catálogo en pantalla',
+          label: 'Catálogo',
         },
       };
 
@@ -172,14 +178,20 @@
         'pt-BR': {
           title: SHELL_PRODUCT_NAME,
           subtitle: 'Escolha um mini‑app no catálogo para iniciar.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: DEFAULT_ICON_THEME,
         },
         'en-US': {
           title: SHELL_PRODUCT_NAME,
           subtitle: 'Pick a miniapp from the catalog to get started.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: DEFAULT_ICON_THEME,
         },
         'es-ES': {
           title: SHELL_PRODUCT_NAME,
           subtitle: 'Elige un miniapp del catálogo para comenzar.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: DEFAULT_ICON_THEME,
         },
       };
 
@@ -187,14 +199,20 @@
         'pt-BR': {
           title: 'Catálogo de MiniApps',
           subtitle: 'Navegue pelas experiências disponíveis e escolha uma para abrir.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: 'catalog',
         },
         'en-US': {
           title: 'MiniApps Catalog',
           subtitle: 'Browse the available experiences and choose one to open.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: 'catalog',
         },
         'es-ES': {
           title: 'Catálogo de MiniApps',
           subtitle: 'Explora las experiencias disponibles y elige una para abrir.',
+          icon: DEFAULT_ICON_SYMBOL,
+          iconTheme: 'catalog',
         },
       };
 
@@ -417,12 +435,14 @@
 
       function getDefaultHeaderCopy() {
         const locale = getActiveLocale();
-        return SHELL_HEADER_COPY[locale] || SHELL_HEADER_COPY['pt-BR'];
+        const copy = SHELL_HEADER_COPY[locale] || SHELL_HEADER_COPY['pt-BR'];
+        return { ...copy };
       }
 
       function getCatalogHeaderCopy() {
         const locale = getActiveLocale();
-        return CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+        const copy = CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+        return { ...copy };
       }
 
       function getFooterAboutCopy() {
@@ -501,13 +521,60 @@
           }
         }
 
+        if (typeof metadata.icon === 'string') {
+          const trimmedIcon = metadata.icon.trim();
+          if (trimmedIcon) {
+            sanitized.icon = trimmedIcon;
+          }
+        }
+
+        if (typeof metadata.iconTheme === 'string') {
+          const trimmedTheme = metadata.iconTheme.trim();
+          if (trimmedTheme) {
+            sanitized.iconTheme = trimmedTheme;
+          }
+        }
+
         return sanitized;
+      }
+
+      function updateHeaderIcon(iconSymbol, themeKey) {
+        if (!headerIcon) {
+          return;
+        }
+
+        const symbol =
+          typeof iconSymbol === 'string' && iconSymbol.trim()
+            ? iconSymbol.trim()
+            : DEFAULT_ICON_SYMBOL;
+        const normalizedTheme =
+          typeof themeKey === 'string' && themeKey.trim()
+            ? themeKey.trim()
+            : DEFAULT_ICON_THEME;
+        const previousTheme = headerIcon.dataset.iconTheme;
+
+        headerIcon.textContent = symbol;
+
+        if (previousTheme && previousTheme !== normalizedTheme) {
+          headerIcon.classList.remove(`${ICON_THEME_CLASS_PREFIX}${previousTheme}`);
+        }
+
+        if (!headerIcon.classList.contains(`${ICON_THEME_CLASS_PREFIX}${normalizedTheme}`)) {
+          headerIcon.classList.add(`${ICON_THEME_CLASS_PREFIX}${normalizedTheme}`);
+        }
+
+        headerIcon.dataset.iconTheme = normalizedTheme;
       }
 
       function setHeaderContent(metadata) {
         const fallback = getDefaultHeaderCopy();
         const title = metadata && metadata.title ? metadata.title : fallback.title;
         const subtitle = metadata && metadata.subtitle ? metadata.subtitle : fallback.subtitle;
+        const fallbackIcon = fallback && fallback.icon ? fallback.icon : DEFAULT_ICON_SYMBOL;
+        const fallbackTheme =
+          fallback && fallback.iconTheme ? fallback.iconTheme : DEFAULT_ICON_THEME;
+        const icon = metadata && metadata.icon ? metadata.icon : fallbackIcon;
+        const iconTheme = metadata && metadata.iconTheme ? metadata.iconTheme : fallbackTheme;
 
         if (headerTitle) {
           headerTitle.textContent = title;
@@ -522,6 +589,8 @@
             headerSubtitle.hidden = true;
           }
         }
+
+        updateHeaderIcon(icon, iconTheme);
       }
 
       function storeMetadataForUrl(normalizedUrl, metadata) {
@@ -530,15 +599,26 @@
         }
 
         const sanitized = sanitizeMetadata(metadata);
+        const sanitizedKeys = Object.keys(sanitized);
 
-        if (!sanitized.title && !sanitized.subtitle) {
+        if (!sanitizedKeys.length) {
           return miniAppMetadata.get(normalizedUrl) || null;
         }
 
         const existing = miniAppMetadata.get(normalizedUrl) || {};
         const next = {
-          title: sanitized.title || existing.title,
-          subtitle: sanitized.subtitle || existing.subtitle,
+          title: Object.prototype.hasOwnProperty.call(sanitized, 'title')
+            ? sanitized.title
+            : existing.title,
+          subtitle: Object.prototype.hasOwnProperty.call(sanitized, 'subtitle')
+            ? sanitized.subtitle
+            : existing.subtitle,
+          icon: Object.prototype.hasOwnProperty.call(sanitized, 'icon')
+            ? sanitized.icon
+            : existing.icon,
+          iconTheme: Object.prototype.hasOwnProperty.call(sanitized, 'iconTheme')
+            ? sanitized.iconTheme
+            : existing.iconTheme,
         };
 
         miniAppMetadata.set(normalizedUrl, next);
@@ -564,8 +644,8 @@
         }
 
         const locale = getActiveLocale();
-        const labels = CATALOG_LABELS[locale] || CATALOG_LABELS['pt-BR'];
-        const label = isCatalog ? labels.active : labels.open;
+        const copy = CATALOG_BUTTON_COPY[locale] || CATALOG_BUTTON_COPY['pt-BR'];
+        const label = (copy && copy.label) || CATALOG_BUTTON_COPY['pt-BR'].label;
 
         catalogToggles.forEach((toggle) => {
           toggle.disabled = Boolean(isCatalog);
@@ -827,6 +907,8 @@
           const metadata = {
             title: trigger.getAttribute('data-miniapp-name'),
             subtitle: trigger.getAttribute('data-miniapp-description'),
+            icon: trigger.getAttribute('data-miniapp-icon-symbol'),
+            iconTheme: trigger.getAttribute('data-miniapp-icon-theme'),
           };
 
           loadMiniApp(targetUrl, { metadata });

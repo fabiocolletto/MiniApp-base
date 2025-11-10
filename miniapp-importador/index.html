@@ -32,8 +32,10 @@
             type="button"
             class="btn ghost miniapp-toolbar__button"
             data-js="open-catalog"
-            data-i18n="actions.openCatalog"
-        >Voltar ao catálogo</button>
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+          <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
+        </button>
     </div>
 
     <main class="survey-shell" id="surveyRoot">
@@ -160,6 +162,8 @@
                     action: 'miniapp-header',
                     title: 'Importador de Pesquisas',
                     subtitle: 'Importar arquivos, revisar resultados e sincronizar dados.',
+                    icon: 'cloud_upload',
+                    iconTheme: 'importador',
                   },
                   window.location.origin,
                 );
@@ -195,12 +199,20 @@
                 return;
               }
 
-              const label = trigger.textContent.trim();
+              const labelElement = trigger.querySelector('[data-js="catalog-label"]');
+              const fallbackLabel = 'Catálogo';
+              const labelText =
+                labelElement && labelElement.textContent
+                  ? labelElement.textContent.trim()
+                  : '';
+              const label = labelText || fallbackLabel;
 
-              if (label) {
-                trigger.setAttribute('aria-label', label);
-                trigger.setAttribute('title', label);
+              if (labelElement && !labelText) {
+                labelElement.textContent = fallbackLabel;
               }
+
+              trigger.setAttribute('aria-label', label);
+              trigger.setAttribute('title', label);
 
               trigger.addEventListener('click', (event) => {
                 event.preventDefault();
