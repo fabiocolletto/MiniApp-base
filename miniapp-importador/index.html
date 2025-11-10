@@ -1,154 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferramenta de Importação de Pesquisas</title>
-    <link rel="stylesheet" href="../miniapp-base/style/styles.css">
-    <link rel="stylesheet" href="./style/importador-pesquisas.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="meta.title">Ferramenta de Importação de Pesquisas</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
-<body class="survey-import-body">
-    <header class="survey-app-header" role="banner">
-        <div class="survey-app-header__content">
-            <div class="survey-app-header__title">
-                <span class="survey-app-header__icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6" />
-                    </svg>
-                </span>
-                <h1 data-i18n="app.title">Importação de Pesquisas</h1>
-            </div>
-            <div id="headerDbStatus" class="status-chip" data-state="loading" aria-live="polite">
-                <span id="headerDbStatusText" data-i18n="app.db.loading">Carregando DB...</span>
-            </div>
+<body class="app-blank">
+  <main id="surveyRoot" class="app-board" aria-live="polite">
+    <header class="app-board__header">
+      <div class="app-board__intro">
+        <div class="app-board__title-row">
+          <span class="app-icon app-icon--theme-importador" aria-hidden="true">
+            <span class="material-symbols-rounded">file_upload</span>
+          </span>
+          <div>
+            <h1 data-i18n="app.title">Importação de Pesquisas</h1>
+            <p class="app-board__subtitle" data-i18n="app.subtitle">
+              Importar arquivos, revisar resultados e sincronizar dados.
+            </p>
+          </div>
         </div>
-    </header>
-
-    <div class="miniapp-toolbar">
+        <div id="headerDbStatus" class="status-chip" data-state="loading" aria-live="polite">
+          <span id="headerDbStatusText" data-i18n="app.db.loading">Carregando DB...</span>
+        </div>
+      </div>
+      <div class="miniapp-toolbar">
         <button
-            type="button"
-            class="btn ghost miniapp-toolbar__button"
-            data-js="open-catalog"
+          type="button"
+          class="btn ghost miniapp-toolbar__button"
+          data-js="open-catalog"
         >
           <span class="material-symbols-rounded" aria-hidden="true">apps</span>
           <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
         </button>
-    </div>
+      </div>
+    </header>
 
-    <main class="survey-shell" id="surveyRoot">
-        <section class="survey-card survey-card--highlight" aria-labelledby="storageTitle">
-            <h2 id="storageTitle" data-i18n="storage.title">Visão Geral do Armazenamento Local</h2>
-            <p id="memoryStatusDisplay" class="storage-counter" data-i18n="storage.loading">Carregando...</p>
+    <section class="card stack" aria-labelledby="storageTitle">
+      <div class="stack stack--gap-sm">
+        <h2 id="storageTitle" data-i18n="storage.title">Visão Geral do Armazenamento Local</h2>
+        <p id="memoryStatusDisplay" class="status-message" data-i18n="storage.loading">Carregando...</p>
+      </div>
 
-            <div id="savedResearchesDetails" class="survey-table-wrapper is-hidden" aria-live="polite">
-                <h3 data-i18n="storage.subtitle">Pesquisas Salvas Localmente:</h3>
-                <div class="survey-table-container">
-                    <table class="survey-table">
-                        <thead>
-                            <tr>
-                                <th scope="col" data-align="center">
-                                    <span class="sr-only" data-i18n="table.header.checkbox">Selecionar todas</span>
-                                </th>
-                                <th scope="col" data-i18n="table.header.name">Nome da Pesquisa</th>
-                                <th scope="col" data-align="center" data-i18n="table.header.sector">Setor</th>
-                                <th scope="col" data-align="center" data-i18n="table.header.date">Data da Pesquisa</th>
-                                <th scope="col" data-align="right" data-i18n="table.header.participants">Participantes</th>
-                                <th scope="col" data-align="center" data-i18n="table.header.status">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="savedResearchesTableBody">
-                            <tr>
-                                <td colspan="6" data-i18n="status.table.empty">Nenhuma pesquisa salva localmente.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="survey-card__actions">
-                <button id="showUploadButton" class="btn primary" type="button" data-i18n="actions.add">+ Adicionar Pesquisas</button>
-                <button id="clearDbButton" class="btn danger" type="button" disabled data-i18n="actions.clearLocal">Limpar Tudo Local</button>
-                <button id="toggleSyncButton" class="btn ghost" type="button" data-i18n="actions.syncToggle.off">Ativar Sincronização Online</button>
-            </div>
-        </section>
-
-        <section id="onlineManagementSection" class="survey-card is-hidden" aria-labelledby="onlineTitle">
-            <h2 id="onlineTitle" data-i18n="online.title">Gestão de Pesquisas Online (Firestore Simulado)</h2>
-            <p id="onlineCountWrapper">
-                <span data-i18n="online.counter">Atualmente, existem <strong>0</strong> pesquisas salvas na nuvem.</span>
-            </p>
-            <div class="survey-card__actions">
-                <button id="syncAllButton" class="btn success" type="button" data-i18n="online.syncAll" disabled>Sincronizar Todas as Pesquisas Locais (Upload)</button>
-                <button id="clearAllOnlineButton" class="btn danger" type="button" data-i18n="online.clearAll" disabled>Excluir Todas as Pesquisas Online</button>
-            </div>
-        </section>
-
-        <section id="uploadSection" class="survey-card is-hidden" aria-labelledby="uploadTitle">
-            <h2 id="uploadTitle" data-i18n="upload.title">1. Carregar Dados</h2>
-            <div class="survey-inline">
-                <div class="form-file">
-                    <input type="file" id="jsonFileInput" accept=".json" aria-describedby="fileStatus">
-                </div>
-                <p id="fileStatus" class="form-hint" data-i18n="upload.file.hint">Aguardando upload de arquivo JSON...</p>
-            </div>
-            <button id="loadTestDataButton" class="btn" type="button" data-i18n="upload.test">Carregar Dados de Teste</button>
-        </section>
-
-        <section id="selectionArea" class="survey-card is-hidden" aria-labelledby="selectionTitle">
-            <h2 id="selectionTitle" data-i18n="selection.title">2. Selecione as Pesquisas para Importar</h2>
-            <div class="survey-table-wrapper">
-                <table class="survey-table">
-                    <thead>
-                        <tr>
-                            <th scope="col" data-align="center">
-                                <input type="checkbox" id="selectAllCheckbox" aria-label="Selecionar todas">
-                            </th>
-                            <th scope="col" data-i18n="table.header.name">Nome da Pesquisa</th>
-                            <th scope="col" data-align="center" data-i18n="table.header.sector">Setor</th>
-                            <th scope="col" data-align="center" data-i18n="table.header.date">Data da Pesquisa</th>
-                            <th scope="col" data-align="right" data-i18n="table.header.participants">Participantes</th>
-                            <th scope="col" data-align="center" data-i18n="table.header.status">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="researchTableBody">
-                        <tr>
-                            <td colspan="6" data-i18n="status.table.empty">Nenhuma pesquisa salva localmente.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section id="actionArea" class="survey-action-bar is-hidden" aria-live="polite">
-            <p id="actionStatusMessage" class="status-message" data-i18n="action.status.none">0 pesquisas selecionadas.</p>
-            <button id="importButton" class="btn primary" type="button" disabled data-i18n="action.import.default">Importar Pesquisas Selecionadas</button>
-        </section>
-    </main>
-
-    <footer class="survey-footer" role="contentinfo">
-        <div class="survey-footer__content">
-            <div id="globalStatus" class="status-message is-hidden" aria-live="polite"></div>
-            <span class="footer-meta" data-i18n="footer.meta">Ferramenta de Importação v1.1</span>
+      <div id="savedResearchesDetails" class="stack is-hidden" aria-live="polite">
+        <h3 data-i18n="storage.subtitle">Pesquisas Salvas Localmente:</h3>
+        <div class="table-wrapper">
+          <table class="data-table" id="savedResearchesTable">
+            <thead>
+              <tr>
+                <th scope="col" data-align="center">
+                  <span class="u-sr-only" data-i18n="table.header.checkbox">Selecionar todas</span>
+                </th>
+                <th scope="col" data-i18n="table.header.name">Nome da Pesquisa</th>
+                <th scope="col" data-align="center" data-i18n="table.header.sector">Setor</th>
+                <th scope="col" data-align="center" data-i18n="table.header.date">Data da Pesquisa</th>
+                <th scope="col" data-align="right" data-i18n="table.header.participants">Participantes</th>
+                <th scope="col" data-align="center" data-i18n="table.header.status">Status</th>
+              </tr>
+            </thead>
+            <tbody id="savedResearchesTableBody">
+              <tr>
+                <td colspan="6" data-i18n="storage.table.empty">Nenhuma pesquisa salva localmente.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
+
+      <div class="action-bar">
+        <button id="showUploadButton" class="btn primary" type="button" data-i18n="actions.add">+ Adicionar Pesquisas</button>
+        <button id="clearDbButton" class="btn danger" type="button" disabled data-i18n="actions.clearLocal">Limpar Tudo Local</button>
+        <button id="toggleSyncButton" class="btn ghost" type="button" data-i18n="actions.syncToggle.off">Ativar Sincronização Online</button>
+      </div>
+    </section>
+
+    <section id="onlineManagementSection" class="card stack is-hidden" aria-labelledby="onlineTitle">
+      <div class="stack stack--gap-xs">
+        <h2 id="onlineTitle" data-i18n="online.title">Gestão de Pesquisas Online (Firestore Simulado)</h2>
+        <p id="onlineCountWrapper">
+          <span data-i18n="online.counter">Atualmente, existem <strong>0</strong> pesquisas salvas na nuvem.</span>
+        </p>
+      </div>
+      <div class="action-bar">
+        <button id="syncAllButton" class="btn success" type="button" data-i18n="online.syncAll" disabled>Sincronizar Todas as Pesquisas Locais (Upload)</button>
+        <button id="clearAllOnlineButton" class="btn danger" type="button" data-i18n="online.clearAll" disabled>Excluir Todas as Pesquisas Online</button>
+      </div>
+    </section>
+
+    <section id="uploadSection" class="card stack is-hidden" aria-labelledby="uploadTitle">
+      <div class="stack stack--gap-xs">
+        <h2 id="uploadTitle" data-i18n="upload.title">1. Carregar Dados</h2>
+        <div class="file-input">
+          <input type="file" id="jsonFileInput" accept=".json" aria-describedby="fileStatus">
+          <button id="loadTestDataButton" class="btn" type="button" data-i18n="upload.test">Carregar Dados de Teste</button>
+        </div>
+        <p id="fileStatus" class="form-hint" data-i18n="upload.file.hint">Aguardando upload de arquivo JSON...</p>
+      </div>
+    </section>
+
+    <section id="selectionArea" class="card stack is-hidden" aria-labelledby="selectionTitle">
+      <h2 id="selectionTitle" data-i18n="selection.title">2. Selecione as Pesquisas para Importar</h2>
+      <div class="table-wrapper">
+        <table class="data-table" id="researchTable">
+          <thead>
+            <tr>
+              <th scope="col" data-align="center">
+                <input type="checkbox" id="selectAllCheckbox" aria-label="Selecionar todas">
+              </th>
+              <th scope="col" data-i18n="table.header.name">Nome da Pesquisa</th>
+              <th scope="col" data-align="center" data-i18n="table.header.sector">Setor</th>
+              <th scope="col" data-align="center" data-i18n="table.header.date">Data da Pesquisa</th>
+              <th scope="col" data-align="right" data-i18n="table.header.participants">Participantes</th>
+              <th scope="col" data-align="center" data-i18n="table.header.status">Status</th>
+            </tr>
+          </thead>
+          <tbody id="researchTableBody">
+            <tr>
+              <td colspan="6" data-i18n="status.table.empty">Nenhuma pesquisa salva localmente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="actionArea" class="action-panel is-hidden" aria-live="polite">
+      <p id="actionStatusMessage" class="status-message" data-i18n="action.status.none">0 pesquisas selecionadas.</p>
+      <button id="importButton" class="btn primary" type="button" disabled data-i18n="action.import.default">Importar Pesquisas Selecionadas</button>
+    </section>
+
+    <footer class="app-footer-lite" role="contentinfo">
+      <div class="app-footer-lite__content">
+        <div id="globalStatus" class="status-message is-hidden" aria-live="polite"></div>
+        <span class="footer-meta" data-i18n="footer.meta">Ferramenta de Importação v1.1</span>
+      </div>
     </footer>
+  </main>
 
-    <div id="customModal" class="survey-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
-        <div class="survey-modal__dialog">
-            <h3 id="modalTitle" data-i18n="modal.title.default">Aviso</h3>
-            <p id="modalMessage" data-i18n="modal.message.default">Mensagem</p>
-            <div class="survey-modal__actions">
-                <button id="modalCancelButton" class="btn ghost" type="button" data-i18n="modal.cancel">Cancelar</button>
-                <button id="modalConfirmButton" class="btn primary" type="button" data-i18n="modal.ok">OK</button>
-            </div>
-        </div>
+  <div id="customModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+    <div class="modal__dialog">
+      <h3 id="modalTitle" data-i18n="modal.title.default">Aviso</h3>
+      <p id="modalMessage" data-i18n="modal.message.default">Mensagem</p>
+      <div class="modal__actions">
+        <button id="modalCancelButton" class="btn ghost" type="button" data-i18n="modal.cancel">Cancelar</button>
+        <button id="modalConfirmButton" class="btn primary" type="button" data-i18n="modal.ok">OK</button>
+      </div>
     </div>
+  </div>
 
-        <script src="../miniapp-base/js/atoms/messaging.js"></script>
-        <script src="../miniapp-base/js/molecules/shell-sync.js"></script>
-        <script src="../miniapp-base/js/organisms/miniapp-importador.js"></script>
-        <script src="../miniapp-base/js/organisms/miniapp-importador-shell.js"></script>
+  <script src="../miniapp-base/js/atoms/messaging.js"></script>
+  <script src="../miniapp-base/js/molecules/shell-sync.js"></script>
+  <script src="../miniapp-base/js/organisms/miniapp-importador.js"></script>
+  <script src="../miniapp-base/js/organisms/miniapp-importador-shell.js"></script>
 </body>
 </html>

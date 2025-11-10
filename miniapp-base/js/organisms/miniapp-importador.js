@@ -1090,7 +1090,7 @@
                 const statusCell = document.createElement('td');
                 statusCell.dataset.align = 'center';
                 const statusTag = document.createElement('span');
-                statusTag.className = 'survey-table__status';
+                statusTag.className = 'data-table__status';
                 statusTag.dataset.variant = statusVariant;
                 statusTag.textContent = statusLabel;
                 statusCell.appendChild(statusTag);

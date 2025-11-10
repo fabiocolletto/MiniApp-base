@@ -3,90 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel Prefeito — Dashboard de Indicadores (v1.0)</title>
-  
-  <!-- Carrega a biblioteca Google Charts -->
+  <title>Painel Prefeito — Dashboard de Indicadores</title>
+
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  
-  <!-- 1. VINCULAÇÃO DO STYLESHEET BASE (Design System) -->
-  <!-- Tenta carregar a branch temporária primeiro: fabiocolletto-patch-1 -->
-  <link rel="stylesheet" 
-        href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@fabiocolletto-patch-1/miniapp-base/styles.css"
-        id="styles-temp"
-        onerror="loadFallback('temp')">
 
-  <!-- 2. Fallback para a branch principal (main) -->
-  <link rel="stylesheet" 
-        href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base@main/miniapp-base/styles.css" 
-        id="styles-main"
-        onerror="loadFallback('main')">
-
-  <style>
-    /* Estilos Mínimos */
-    body { 
-      margin: 0; 
-      padding: 0; 
-      overflow-x: hidden; 
-      background-color: var(--background-page); 
-      color: var(--text-color-primary);
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .chart-container { 
-      height: 100%; 
-    } 
-
-    /* Ajustes específicos de layout */
-    .kpi-card p { margin: 0; }
-    .kpi-card { 
-      min-width: 260px; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: space-between;
-      gap: 8px; /* Adiciona um pequeno gap entre os elementos */
-    }
-
-    /* Estilo para o indicador de versão (para que se pareça com uma tag/pill) */
-    .version-indicator {
-        font-size: 0.75rem; /* var(--font-size-s) */
-        padding: 4px 8px; /* var(--space-1) var(--space-2) */
-        border-radius: 4px; /* var(--radius-s) */
-        margin-left: 12px; /* var(--space-3) */
-        font-weight: 500;
-        user-select: none;
-    }
-    .version-indicator.temp {
-        background-color: #f59e0b; /* Amarelo/Warn */
-        color: #1f2937; /* Cor do texto escuro */
-    }
-    .version-indicator.main {
-        background-color: #3b82f6; /* Azul/Info */
-        color: white; 
-    }
-
-    /* Sidebar - Ícones para os painéis */
-    .icon-kpi {
-      font-size: 1.2rem;
-      margin-right: 4px;
-    }
-
-    /* Responsividade da Sidebar */
-    @media (max-width: 768px) {
-      .version-indicator {
-        margin-left: 8px;
-        padding: 2px 4px;
-        font-size: 0.65rem;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
-<body>
-
-  <div id="app-wrapper">
-    
-    <!-- SIDEBAR -->
-    <aside id="sidebar" role="navigation">
-      <button id="menu-toggle" class="btn-toggle" aria-label="Abrir e Fechar Menu">
+<body class="app-blank">
+  <div id="app-wrapper" class="dashboard-shell">
+    <aside id="sidebar" role="navigation" aria-label="Painéis do dashboard">
+      <button id="menu-toggle" class="btn-toggle" aria-label="Abrir e fechar menu">
         <span class="app-icon" id="menu-close-icon">✖️</span>
         <span class="app-icon" id="menu-open-icon">☰</span>
       </button>
@@ -94,22 +24,18 @@
       <ul class="nav-list">
         <li><a href="#" class="nav-item active"><span class="app-icon">🏠</span> <span>Dashboard Geral</span></a></li>
         <li class="separator">Painéis de KPI</li>
-        <li><a href="#" class="nav-item"><span class="icon-kpi">🥇</span> <span>K01–K05 (Serviços Essenciais)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="icon-kpi">🥈</span> <span>K06–K10 (Gestão e Finanças)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="icon-kpi">🥉</span> <span>K11–K15 (Infraestrutura)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="icon-kpi">🏅</span> <span>K16–K20 (Social e Cultural)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">🥇</span> <span>K01–K05 (Serviços Essenciais)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">🥈</span> <span>K06–K10 (Gestão e Finanças)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">🥉</span> <span>K11–K15 (Infraestrutura)</span></a></li>
+        <li><a href="#" class="nav-item"><span class="app-icon">🏅</span> <span>K16–K20 (Social e Cultural)</span></a></li>
         <li class="separator">Pessoa</li>
         <li><a href="#" class="nav-item"><span class="app-icon">👤</span> <span>Variáveis Persona (P01–P20)</span></a></li>
       </ul>
-      
-      <div style="padding: 0 var(--space-4); font-size: var(--font-size-s); color: var(--text-color-muted);">
-        MiniApp v1.0.0
-      </div>
+
+      <p class="nav-meta">MiniApp v1.0.0</p>
     </aside>
 
-    <!-- CONTEÚDO PRINCIPAL -->
     <div id="main-content">
-
       <div class="miniapp-toolbar">
         <button
           type="button"
@@ -121,83 +47,64 @@
         </button>
       </div>
 
-      <!-- HEADER FIXO -->
-      <header>
-        <div class="header-title-text">
+      <header class="dashboard-header">
+        <div class="dashboard-header__text">
           <h1>Dashboard de Indicadores Transversais</h1>
-          <p class="subtitle-with-version">
-            KPIs (K01–K20) / Escala 1-5 
-            <!-- INDICADOR DE VERSÃO (Será preenchido pelo JS) -->
-            <span id="version-status" class="version-indicator">Carregando...</span>
-          </p>
+          <p>KPIs (K01–K20) / Escala 1-5</p>
         </div>
+        <span id="version-status" class="badge badge--status">Design System</span>
       </header>
 
-      <!-- SEÇÃO DE CONTEÚDO -->
-      
-      <!-- CARROSSEL DE KPI'S (K01, K06, K11 - Exemplos dos 3 Painéis) -->
-      <section class="carousel" style="min-height: 140px; margin-top: 24px;">
-        
-        <!-- Card 1: K01 - Saúde (Alto) -->
-        <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">K01: Satisfação c/ Saúde (Setor 1)</p>
-            <p class="kpi-value success">4.2</p> 
-            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+      <main class="dashboard-main" aria-live="polite">
+        <section class="grid kpi-grid" aria-label="Indicadores em destaque">
+          <article class="card kpi-card">
+            <p class="subtitle">K01: Satisfação c/ Saúde (Setor 1)</p>
+            <p class="kpi-value success">4.2</p>
+            <p class="kpi-description">Média da Avaliação (1-5)</p>
             <span class="tag success">Excelente</span>
-        </article>
-        
-        <!-- Card 2: K06 - Planejamento/Finanças (Médio) -->
-        <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">K06: Desempenho Administrativo (Setor 6)</p>
+          </article>
+          <article class="card kpi-card">
+            <p class="subtitle">K06: Desempenho Administrativo (Setor 6)</p>
             <p class="kpi-value warn">3.1</p>
-            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+            <p class="kpi-description">Média da Avaliação (1-5)</p>
             <span class="tag warn">Atenção</span>
-        </article>
-        
-        <!-- Card 3: K11 - Obras Públicas e Infraestrutura (Baixo) -->
-        <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">K11: Qualidade da Infraestrutura (Setor 5)</p>
+          </article>
+          <article class="card kpi-card">
+            <p class="subtitle">K11: Qualidade da Infraestrutura (Setor 5)</p>
             <p class="kpi-value danger">2.5</p>
-            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Média da Avaliação (1-5)</p>
+            <p class="kpi-description">Média da Avaliação (1-5)</p>
             <span class="tag danger">Crítico</span>
-        </article>
-
-        <!-- Card 4: P01 - Variavel de Persona (Exemplo de Número) -->
-        <article class="card kpi-card">
-            <p class="subtitle" style="color: var(--text-color-muted);">P01: Idade Média do Participante</p>
+          </article>
+          <article class="card kpi-card">
+            <p class="subtitle">P01: Idade Média do Participante</p>
             <p class="kpi-value info">38 anos</p>
-            <p class="description" style="font-size: var(--font-size-s); color: var(--text-color-muted);">Variável Persona (P01)</p>
+            <p class="kpi-description">Variável Persona (P01)</p>
             <span class="tag info">Dados Demográficos</span>
-        </article>
-      </section>
-      
-      <!-- GRID DE GRÁFICOS (Foco em K01-K05 e Comparativo Setorial) -->
-      <main class="grid" aria-live="polite" style="margin-top: 24px;">
-        
-        <!-- Gráfico de Linha: Evolução da Satisfação ao Longo do Tempo -->
-        <article class="card chart-card">
-          <div class="chart-header"><h3>Evolução da Satisfação por Setor (1-5)</h3></div>
-          <div id="chart_line" class="chart-container"></div>
-        </article>
+          </article>
+        </section>
 
-        <!-- Gráfico de Barra: Comparativo de Satisfação Média (K06-K10) -->
-        <article class="card chart-card">
-          <div class="chart-header"><h3>Comparativo de Satisfação Média (Painel K06-K10)</h3></div>
-          <div id="chart_bar" class="chart-container"></div>
-        </article>
-        
-        <!-- Ação em Destaque -->
-        <article class="card full-width app-card" style="min-height: auto; flex-direction: row; align-items: center; justify-content: space-between;">
-          <h3>Relatório Detalhado de Resoluções e Comentários (K01-K20)</h3>
-          <a href="#" class="btn primary">Exportar Dados Brutos</a>
-        </article>
-        
+        <section class="grid chart-grid" aria-label="Visualizações principais">
+          <article class="card chart-card">
+            <div class="chart-header"><h3>Evolução da Satisfação por Setor (1-5)</h3></div>
+            <div id="chart_line" class="chart-container"></div>
+          </article>
+          <article class="card chart-card">
+            <div class="chart-header"><h3>Comparativo de Satisfação Média (Painel K06-K10)</h3></div>
+            <div id="chart_bar" class="chart-container"></div>
+          </article>
+          <article class="card callout-card">
+            <div class="callout-card__content">
+              <h3>Relatório Detalhado de Resoluções e Comentários (K01-K20)</h3>
+              <a href="#" class="btn primary">Exportar Dados Brutos</a>
+            </div>
+          </article>
+        </section>
       </main>
-
     </div>
   </div>
 
-  <!-- JAVASCRIPT: TOGGLE, GRÁFICOS E LOAD CSS -->
+  <div id="info-modal" class="modal-container" aria-live="assertive"></div>
+
   <script src="../miniapp-base/js/atoms/messaging.js"></script>
   <script src="../miniapp-base/js/molecules/shell-sync.js"></script>
   <script src="../miniapp-base/js/organisms/prefeito/sample-data.js"></script>
@@ -205,7 +112,6 @@
   <script src="../miniapp-base/js/organisms/prefeito/template-loader.js"></script>
   <script src="../miniapp-base/js/organisms/prefeito/theme.js"></script>
   <script src="../miniapp-base/js/organisms/prefeito/loader.js"></script>
-
   <script src="../miniapp-base/js/organisms/prefeito/main.js"></script>
 </body>
 </html>

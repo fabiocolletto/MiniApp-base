@@ -1,274 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Roteiros para TTS</title>
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="pageTitle">Gerador de Roteiros para TTS</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      min-height: 100vh;
-    }
-
-    .tts-shell {
-      padding: clamp(24px, 5vw, 64px);
-      background: var(--background-page);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tts-container {
-      max-width: 960px;
-      margin: 0 auto;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: clamp(24px, 4vw, 40px);
-    }
-
-    .tts-header {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .tts-header__title h1 {
-      font-size: clamp(1.5rem, 4vw, 2.25rem);
-      margin: 0;
-    }
-
-    .tts-header__title p {
-      margin: 0;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-l);
-    }
-
-    .tts-card {
-      background: var(--background-surface);
-      border: var(--border-default);
-      border-radius: var(--radius-xl);
-      padding: clamp(24px, 4vw, 40px);
-      box-shadow: var(--box-shadow-default);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .tts-form fieldset {
-      border: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .tts-form legend {
-      font-size: clamp(1.125rem, 3vw, 1.5rem);
-      font-weight: 700;
-      margin-bottom: var(--space-2);
-    }
-
-    .tts-form__description {
-      margin: 0;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-l);
-    }
-
-    .tts-form__grid {
-      display: grid;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .tts-field {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .tts-field label {
-      font-weight: 600;
-      font-size: var(--font-size-l);
-    }
-
-    .tts-input,
-    .tts-textarea,
-    #scriptOutput {
-      width: 100%;
-      border-radius: var(--radius-m);
-      border: var(--border-default);
-      background: var(--background-surface-alternate);
-      color: var(--text-color-primary);
-      font-size: var(--font-size-l);
-      padding: var(--space-3);
-      resize: vertical;
-      min-height: 48px;
-    }
-
-    .tts-textarea {
-      min-height: 96px;
-    }
-
-    #scriptOutput {
-      min-height: clamp(200px, 40vh, 360px);
-      resize: vertical;
-    }
-
-    .tts-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-    }
-
-    .tts-actions .btn {
-      min-width: clamp(160px, 30vw, 220px);
-    }
-
-    .tts-output-status {
-      margin: 0;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-m);
-    }
-
-    .tts-card .controls {
-      display: grid;
-      gap: clamp(12px, 3vw, 20px);
-    }
-
-    .tts-control {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .tts-control__header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .tts-control__value {
-      font-weight: 600;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-m);
-    }
-
-    .tts-control__helper {
-      margin: 0;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-m);
-    }
-
-    .tts-slider {
-      width: 100%;
-      accent-color: var(--color-primary, #0053ff);
-    }
-
-    .tts-audio-header {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .tts-audio-footer {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .tts-history-header {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .tts-history-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .tts-history-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: clamp(12px, 3vw, 20px);
-    }
-
-    .tts-history-item {
-      border: var(--border-default);
-      border-radius: var(--radius-l);
-      padding: clamp(12px, 2vw, 20px);
-      background: var(--background-surface-alternate);
-      display: grid;
-      gap: var(--space-3);
-    }
-
-    .tts-history-item__meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-      color: var(--text-color-muted);
-      font-size: var(--font-size-m);
-    }
-
-    .tts-history-item__meta span {
-      display: inline-flex;
-      gap: var(--space-1);
-      align-items: baseline;
-    }
-
-    .tts-history-item__meta span strong {
-      font-weight: 600;
-      color: var(--text-color-primary);
-    }
-
-    .tts-history-item__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .tts-history-item__actions .btn {
-      min-width: auto;
-    }
-
-    .tts-history-item__audio {
-      width: 100%;
-    }
-
-    .tts-history-empty {
-      margin: 0;
-      color: var(--text-color-muted);
-      font-size: var(--font-size-m);
-    }
-
-    .tts-audio-player {
-      width: 100%;
-      border-radius: var(--radius-m);
-      background: var(--background-surface-alternate);
-    }
-
-    @media (min-width: 720px) {
-      .tts-header {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
-      }
-
-      .tts-form__grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .tts-field--full {
-        grid-column: 1 / -1;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
-<body>
-  <div class="tts-shell">
-    <div class="tts-container">
+<body class="app-blank">
+  <main class="app-board" aria-labelledby="ttsTitle">
+    <header class="app-board__header">
+      <div class="app-board__intro">
+        <div class="app-board__title-row">
+          <span class="app-icon app-icon--theme-tts" aria-hidden="true">
+            <span class="material-symbols-rounded">text_to_speech</span>
+          </span>
+          <div>
+            <h1 id="ttsTitle" data-i18n="app.title">Gerador de Roteiros para TTS</h1>
+            <p class="app-board__subtitle" data-i18n="app.subtitle">
+              Combine dados essenciais para gerar um roteiro consistente de locução.
+            </p>
+          </div>
+        </div>
+      </div>
       <div class="miniapp-toolbar">
         <button
           type="button"
@@ -279,110 +36,184 @@
           <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
         </button>
       </div>
-      <header class="tts-header">
-        <div class="tts-header__title">
-          <h1 data-i18n="app.title">Gerador de Roteiros para TTS</h1>
-          <p data-i18n="app.subtitle">Combine dados essenciais para gerar um roteiro consistente de locução.</p>
+    </header>
+
+    <section class="card form-card">
+      <form id="scriptForm" class="form-card__form">
+        <fieldset class="form-fieldset">
+          <legend data-i18n="form.legend">Informações essenciais</legend>
+          <p class="form-card__description" data-i18n="form.description">
+            Preencha os campos abaixo para montar um roteiro automaticamente.
+          </p>
+          <div class="form-grid form-grid--split">
+            <div class="form-field">
+              <label class="form-field__label" for="cityInput" data-i18n="fields.city.label">Cidade</label>
+              <input
+                type="text"
+                id="cityInput"
+                name="city"
+                class="form-field__control"
+                required
+                data-i18n-placeholder="fields.city.placeholder"
+              >
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="audienceInput" data-i18n="fields.audience.label">Público</label>
+              <input
+                type="text"
+                id="audienceInput"
+                name="audience"
+                class="form-field__control"
+                required
+                data-i18n-placeholder="fields.audience.placeholder"
+              >
+            </div>
+            <div class="form-field form-field--full">
+              <label class="form-field__label" for="highlightInput" data-i18n="fields.highlight.label">Destaque</label>
+              <textarea
+                id="highlightInput"
+                name="highlight"
+                class="form-field__control form-field__control--textarea"
+                rows="3"
+                required
+                data-i18n-placeholder="fields.highlight.placeholder"
+              ></textarea>
+            </div>
+            <div class="form-field form-field--full">
+              <label class="form-field__label" for="ctaInput" data-i18n="fields.cta.label">Chamada à ação</label>
+              <textarea
+                id="ctaInput"
+                name="cta"
+                class="form-field__control form-field__control--textarea"
+                rows="3"
+                required
+                data-i18n-placeholder="fields.cta.placeholder"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="generateButton" class="btn primary" data-i18n="actions.generate">Gerar roteiro</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <section class="card stack">
+      <div class="stack stack--gap-xs">
+        <h2 data-i18n="output.label">Roteiro gerado</h2>
+        <p id="outputStatus" class="status-message" aria-live="polite" data-i18n="output.helper">
+          Preencha o formulário para gerar um roteiro automático.
+        </p>
+      </div>
+      <textarea
+        id="scriptOutput"
+        name="script"
+        class="form-field__control form-field__control--textarea"
+        rows="10"
+        readonly
+        data-i18n-placeholder="output.placeholder"
+      ></textarea>
+      <div class="form-actions">
+        <button type="button" id="editButton" class="btn ghost" data-i18n="actions.edit" disabled>Editar manualmente</button>
+      </div>
+    </section>
+
+    <section class="card stack">
+      <div class="stack stack--gap-xs">
+        <h2 id="audioTitle" data-i18n="audio.title">Prévia de áudio</h2>
+        <p id="audioDescription" class="status-message" data-i18n="audio.description">
+          Personalize os ajustes antes de gerar a prévia simplificada e o download.
+        </p>
+      </div>
+      <div class="control-grid">
+        <div class="control-card">
+          <div class="control-card__header">
+            <label for="audioSpeed" data-audio-label="speed" data-i18n="audio.controls.speed.label">Velocidade</label>
+            <span class="control-card__value" data-audio-value="speed">1,00×</span>
+          </div>
+          <input
+            type="range"
+            id="audioSpeed"
+            class="slider"
+            min="0.5"
+            max="1.5"
+            step="0.05"
+            value="1"
+            aria-describedby="audioSpeedHelper"
+            data-audio-input="speed"
+            data-i18n-title="audio.controls.speed.tooltip"
+          >
+          <p id="audioSpeedHelper" class="control-card__helper" data-audio-helper="speed" data-i18n="audio.controls.speed.helper">
+            Controla a rapidez da locução gerada.
+          </p>
         </div>
-      </header>
+        <div class="control-card">
+          <div class="control-card__header">
+            <label for="audioVolume" data-audio-label="volume" data-i18n="audio.controls.volume.label">Volume</label>
+            <span class="control-card__value" data-audio-value="volume">100%</span>
+          </div>
+          <input
+            type="range"
+            id="audioVolume"
+            class="slider"
+            min="0"
+            max="1"
+            step="0.05"
+            value="1"
+            aria-describedby="audioVolumeHelper"
+            data-audio-input="volume"
+            data-i18n-title="audio.controls.volume.tooltip"
+          >
+          <p id="audioVolumeHelper" class="control-card__helper" data-audio-helper="volume" data-i18n="audio.controls.volume.helper">
+            Equilibra o volume aplicado à prévia e ao download.
+          </p>
+        </div>
+        <div class="control-card">
+          <div class="control-card__header">
+            <label for="audioPause" data-audio-label="pause" data-i18n="audio.controls.pause.label">Pausa entre blocos</label>
+            <span class="control-card__value" data-audio-value="pause">0,6 s</span>
+          </div>
+          <input
+            type="range"
+            id="audioPause"
+            class="slider"
+            min="0"
+            max="3"
+            step="0.1"
+            value="0.6"
+            aria-describedby="audioPauseHelper"
+            data-audio-input="pause"
+            data-i18n-title="audio.controls.pause.tooltip"
+          >
+          <p id="audioPauseHelper" class="control-card__helper" data-audio-helper="pause" data-i18n="audio.controls.pause.helper">
+            Controla o silêncio entre os parágrafos do roteiro.
+          </p>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="audioGenerateButton" class="btn primary" data-i18n="audio.actions.preview" disabled>Gerar prévia de áudio</button>
+        <button type="button" id="audioDownloadButton" class="btn ghost" data-i18n="audio.actions.download" disabled>Baixar áudio (WAV)</button>
+      </div>
+      <div class="stack stack--gap-xs">
+        <p id="audioStatus" class="status-message" data-i18n="audio.status.empty">Gere um roteiro para habilitar a prévia de áudio.</p>
+        <audio id="audioPlayer" class="audio-player" controls preload="none"></audio>
+      </div>
+    </section>
 
-      <main class="tts-main">
-        <section class="tts-card">
-          <form id="scriptForm" class="tts-form">
-            <fieldset>
-              <legend data-i18n="form.legend">Informações essenciais</legend>
-              <p class="tts-form__description" data-i18n="form.description">Preencha os campos abaixo para montar um roteiro automaticamente.</p>
-              <div class="tts-form__grid">
-                <div class="tts-field">
-                  <label for="cityInput" data-i18n="form.city.label">Cidade</label>
-                  <input type="text" id="cityInput" class="tts-input" name="city" required data-i18n-placeholder="form.city.placeholder" placeholder="Ex.: Recife">
-                </div>
-                <div class="tts-field">
-                  <label for="audienceInput" data-i18n="form.audience.label">Público</label>
-                  <input type="text" id="audienceInput" class="tts-input" name="audience" required data-i18n-placeholder="form.audience.placeholder" placeholder="Ex.: moradores, empreendedores locais">
-                </div>
-                <div class="tts-field tts-field--full">
-                  <label for="highlightInput" data-i18n="form.highlight.label">Destaque</label>
-                  <textarea id="highlightInput" class="tts-textarea" name="highlight" rows="3" required data-i18n-placeholder="form.highlight.placeholder" placeholder="Ex.: novo centro de apoio ao empreendedor"></textarea>
-                </div>
-                <div class="tts-field tts-field--full">
-                  <label for="ctaInput" data-i18n="form.cta.label">Chamada à ação</label>
-                  <textarea id="ctaInput" class="tts-textarea" name="cta" rows="3" required data-i18n-placeholder="form.cta.placeholder" placeholder="Ex.: inscreva-se no site da prefeitura"></textarea>
-                </div>
-              </div>
-              <div class="tts-actions">
-                <button type="submit" id="generateButton" class="btn primary" data-i18n="actions.generate">Gerar roteiro</button>
-              </div>
-            </fieldset>
-          </form>
-        </section>
-
-        <section class="tts-card">
-          <div class="tts-output-header">
-            <h2 data-i18n="output.label">Roteiro gerado</h2>
-            <p id="outputStatus" class="tts-output-status" aria-live="polite" data-i18n="output.helper">Preencha o formulário para gerar um roteiro automático.</p>
-          </div>
-          <textarea id="scriptOutput" name="script" rows="10" readonly data-i18n-placeholder="output.placeholder" placeholder="O roteiro aparecerá aqui após a geração."></textarea>
-          <div class="tts-actions">
-            <button type="button" id="editButton" class="btn ghost" data-i18n="actions.edit" disabled>Editar manualmente</button>
-          </div>
-        </section>
-
-        <section class="tts-card">
-          <div class="tts-audio-header">
-            <h2 id="audioTitle" data-i18n="audio.title">Prévia de áudio</h2>
-            <p id="audioDescription" class="tts-output-status" data-i18n="audio.description">Ajuste as opções e gere um arquivo de áudio simplificado para revisão.</p>
-          </div>
-          <div class="controls">
-            <div class="tts-control">
-              <div class="tts-control__header">
-                <label for="audioSpeed" data-audio-label="speed" data-i18n="audio.controls.speed.label">Velocidade</label>
-                <span class="tts-control__value" data-audio-value="speed">1,00×</span>
-              </div>
-              <input type="range" id="audioSpeed" class="tts-slider" min="0.5" max="1.5" step="0.05" value="1" aria-describedby="audioSpeedHelper" data-audio-input="speed" data-i18n-title="audio.controls.speed.tooltip" title="Defina a rapidez da narração.">
-              <p id="audioSpeedHelper" class="tts-control__helper" data-audio-helper="speed" data-i18n="audio.controls.speed.helper">Controla a rapidez da locução na prévia.</p>
-            </div>
-            <div class="tts-control">
-              <div class="tts-control__header">
-                <label for="audioVolume" data-audio-label="volume" data-i18n="audio.controls.volume.label">Volume</label>
-                <span class="tts-control__value" data-audio-value="volume">100%</span>
-              </div>
-              <input type="range" id="audioVolume" class="tts-slider" min="0" max="1" step="0.05" value="1" aria-describedby="audioVolumeHelper" data-audio-input="volume" data-i18n-title="audio.controls.volume.tooltip" title="Ajuste o volume da narração.">
-              <p id="audioVolumeHelper" class="tts-control__helper" data-audio-helper="volume" data-i18n="audio.controls.volume.helper">Equilibra o volume aplicado à prévia e ao download.</p>
-            </div>
-            <div class="tts-control">
-              <div class="tts-control__header">
-                <label for="audioPause" data-audio-label="pause" data-i18n="audio.controls.pause.label">Pausa entre trechos</label>
-                <span class="tts-control__value" data-audio-value="pause">0,6 s</span>
-              </div>
-              <input type="range" id="audioPause" class="tts-slider" min="0" max="3" step="0.1" value="0.6" aria-describedby="audioPauseHelper" data-audio-input="pause" data-i18n-title="audio.controls.pause.tooltip" title="Defina a pausa entre cada bloco do texto.">
-              <p id="audioPauseHelper" class="tts-control__helper" data-audio-helper="pause" data-i18n="audio.controls.pause.helper">Controla o silêncio entre os blocos do roteiro.</p>
-            </div>
-          </div>
-          <div class="tts-actions">
-            <button type="button" id="audioGenerateButton" class="btn primary" data-i18n="audio.actions.preview" disabled>Gerar prévia de áudio</button>
-            <button type="button" id="audioDownloadButton" class="btn ghost" data-i18n="audio.actions.download" disabled>Baixar áudio (WAV)</button>
-          </div>
-          <div class="tts-audio-footer">
-            <p id="audioStatus" class="tts-output-status">Gere um roteiro para habilitar a prévia de áudio.</p>
-            <audio id="audioPlayer" class="tts-audio-player" controls preload="none"></audio>
-          </div>
-        </section>
-
-        <section class="tts-card">
-          <div class="tts-history-header">
-            <h2 id="historyTitle" data-i18n="history.title">Histórico</h2>
-            <p id="historyDescription" class="tts-output-status" data-i18n="history.description">Consulte os áudios já gerados para ouvir novamente ou baixar.</p>
-          </div>
-          <div class="tts-history-actions">
-            <button type="button" id="historyClearButton" class="btn ghost" data-i18n="history.actions.clear" disabled>Limpar histórico</button>
-          </div>
-          <ul id="historyList" class="tts-history-list" aria-live="polite"></ul>
-          <p id="historyEmptyState" class="tts-history-empty" data-i18n="history.empty">Nenhum áudio gerado ainda.</p>
-        </section>
-      </main>
-    </div>
-  </div>
+    <section class="card stack">
+      <div class="stack stack--gap-xs">
+        <h2 id="historyTitle" data-i18n="history.title">Histórico</h2>
+        <p id="historyDescription" class="status-message" data-i18n="history.description">
+          Consulte os áudios já gerados para ouvir novamente ou baixar.
+        </p>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="historyClearButton" class="btn ghost" data-i18n="history.actions.clear" disabled>Limpar histórico</button>
+      </div>
+      <ul id="historyList" class="history-list" aria-live="polite"></ul>
+      <p id="historyEmptyState" class="status-message" data-i18n="history.empty">Nenhum áudio gerado ainda.</p>
+    </section>
+  </main>
 
   <script src="../miniapp-base/js/atoms/messaging.js"></script>
   <script src="../miniapp-base/js/molecules/shell-sync.js"></script>
