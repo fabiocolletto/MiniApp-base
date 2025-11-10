@@ -28,6 +28,8 @@
       feedback: {
         saved: 'Dados salvos localmente.',
         updated: 'Dados atualizados com sucesso.',
+        restored: 'Dados restaurados para a última versão salva.',
+        cleared: 'Todos os dados armazenados foram excluídos.',
         error: 'Não foi possível salvar os dados no dispositivo.',
       },
       form: {
@@ -84,7 +86,8 @@
           },
         },
         actions: {
-          reset: 'Limpar',
+          cancel: 'Cancelar',
+          delete: 'Excluir dados',
           submit: 'Salvar cadastro',
         },
         errors: {
@@ -131,6 +134,8 @@
       feedback: {
         saved: 'Data saved locally.',
         updated: 'Data updated successfully.',
+        restored: 'Form restored to the last saved data.',
+        cleared: 'Stored data deleted.',
         error: 'We could not save the data on this device.',
       },
       form: {
@@ -186,7 +191,8 @@
           },
         },
         actions: {
-          reset: 'Clear',
+          cancel: 'Cancel',
+          delete: 'Delete data',
           submit: 'Save registration',
         },
         errors: {
@@ -233,6 +239,8 @@
       feedback: {
         saved: 'Datos guardados localmente.',
         updated: 'Datos actualizados correctamente.',
+        restored: 'Datos restaurados a la última versión guardada.',
+        cleared: 'Los datos guardados fueron eliminados.',
         error: 'No fue posible guardar los datos en este dispositivo.',
       },
       form: {
@@ -288,7 +296,8 @@
           },
         },
         actions: {
-          reset: 'Limpiar',
+          cancel: 'Cancelar',
+          delete: 'Eliminar datos',
           submit: 'Guardar registro',
         },
         errors: {
@@ -333,9 +342,12 @@
       icon: 'error',
     },
   };
+  const FEEDBACK_DURATION = 5000;
 
   const root = document.documentElement;
   const form = document.getElementById('registrationForm');
+  const cancelButton = document.querySelector('[data-js="cancel-form"]');
+  const deleteButton = document.querySelector('[data-js="delete-data"]');
   const feedbackContainer = document.getElementById('formFeedback');
   const feedbackMessage = feedbackContainer
     ? feedbackContainer.querySelector('[data-js="feedback-message"]')
@@ -345,6 +357,7 @@
     : null;
 
   let lastFeedbackKey = null;
+  let feedbackHideTimeoutId = null;
 
   let currentLocale = detectLocale();
   const storageAvailable = isLocalStorageAvailable();
@@ -609,6 +622,11 @@
       return;
     }
 
+    if (feedbackHideTimeoutId) {
+      window.clearTimeout(feedbackHideTimeoutId);
+      feedbackHideTimeoutId = null;
+    }
+
     feedbackContainer.style.display = 'none';
     feedbackContainer.style.background = FEEDBACK_VARIANTS.success.background;
     feedbackContainer.style.border = FEEDBACK_VARIANTS.success.border;
@@ -657,6 +675,11 @@
       return;
     }
 
+    if (feedbackHideTimeoutId) {
+      window.clearTimeout(feedbackHideTimeoutId);
+      feedbackHideTimeoutId = null;
+    }
+
     const message = messageKey ? getTranslation(currentLocale, messageKey) : null;
     if (typeof message !== 'string' || !message.trim()) {
       return;
@@ -674,6 +697,12 @@
 
     feedbackMessage.textContent = message;
     lastFeedbackKey = messageKey;
+
+    if (FEEDBACK_DURATION > 0) {
+      feedbackHideTimeoutId = window.setTimeout(() => {
+        hideFeedback();
+      }, FEEDBACK_DURATION);
+    }
   }
 
   function isLocalStorageAvailable() {
@@ -725,14 +754,30 @@
     }
   }
 
+  function clearStoredData() {
+    if (!storageAvailable) {
+      return false;
+    }
+
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (error) {
+      console.warn('Não foi possível remover os dados salvos.', error);
+      return false;
+    }
+  }
+
   function restoreStoredData() {
     if (!form) {
-      return;
+      return false;
     }
+
+    form.reset();
 
     const stored = getStoredData();
     if (!stored) {
-      return;
+      return false;
     }
 
     const fieldNames = ['fullName', 'email', 'phone', 'role', 'department'];
@@ -748,6 +793,8 @@
     if (termsField) {
       termsField.checked = Boolean(stored.termsAccepted);
     }
+
+    return true;
   }
 
   function validateForm() {
@@ -862,6 +909,29 @@
     validateForm();
   }
 
+  function handleCancel(event) {
+    event.preventDefault();
+    clearErrors();
+    const restored = restoreStoredData();
+    if (restored) {
+      showFeedback('feedback.restored', 'success');
+    } else {
+      hideFeedback();
+    }
+  }
+
+  function handleDelete(event) {
+    event.preventDefault();
+    clearErrors();
+    const cleared = clearStoredData();
+    restoreStoredData();
+    if (cleared) {
+      showFeedback('feedback.cleared', 'success');
+    } else {
+      showFeedback('feedback.error', 'error');
+    }
+  }
+
   function setupForm() {
     if (!form) {
       return;
@@ -869,10 +939,13 @@
 
     form.addEventListener('submit', handleSubmit);
 
-    form.addEventListener('reset', () => {
-      clearErrors();
-      hideFeedback();
-    });
+    if (cancelButton) {
+      cancelButton.addEventListener('click', handleCancel);
+    }
+
+    if (deleteButton) {
+      deleteButton.addEventListener('click', handleDelete);
+    }
 
     form.querySelectorAll('input, select').forEach((field) => {
       field.addEventListener('input', () => {
@@ -905,6 +978,7 @@
     setupCatalogButton();
     setupForm();
     restoreStoredData();
+    hideFeedback();
   }
 
   window.addEventListener('message', handleMessage);

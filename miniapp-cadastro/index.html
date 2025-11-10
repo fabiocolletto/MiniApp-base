@@ -10,30 +10,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
-<body class="app-blank">
-  <main class="app-board" aria-labelledby="registrationTitle">
-    <header class="app-board__header">
-      <div class="app-board__intro">
-        <span class="badge" data-i18n="header.badge">Fluxo guiado</span>
-        <h1 id="registrationTitle" data-i18n="header.title">Cadastro de novos usuários</h1>
-        <p class="app-board__subtitle" data-i18n="header.subtitle">
-          Centralize o onboarding e valide os dados essenciais antes de liberar o acesso.
-        </p>
-      </div>
-      <div class="miniapp-toolbar">
-        <button
-          type="button"
-          class="btn ghost miniapp-toolbar__button"
-          data-js="open-catalog"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-          <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
-        </button>
-      </div>
-    </header>
+<body class="app-blank miniapp-cadastro">
+  <main class="app-board app-board--flush" aria-labelledby="registrationTitle">
+    <form id="registrationForm" class="form-surface" novalidate>
+      <h1 id="registrationTitle" class="u-sr-only" data-i18n="header.title">Cadastro de novos usuários</h1>
 
-    <form id="registrationForm" class="card form-card" novalidate>
-      <p class="form-card__description" data-i18n="form.description">
+      <p class="form-intro" data-i18n="form.description">
         Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.
       </p>
 
@@ -45,8 +27,8 @@
           </p>
         </div>
 
-        <div class="form-grid">
-          <div class="form-field">
+        <div class="form-grid form-grid--balanced">
+          <div class="form-field form-field--full">
             <label class="form-field__label" for="fullName" data-i18n="form.fields.fullName.label">Nome completo *</label>
             <input
               id="fullName"
@@ -166,15 +148,18 @@
         </div>
       </section>
 
-      <div class="form-actions">
-        <button type="reset" class="btn ghost" data-i18n="form.actions.reset">Limpar</button>
-        <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
-      </div>
+      <footer class="form-footer">
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-js="cancel-form" data-i18n="form.actions.cancel">Cancelar</button>
+          <button type="button" class="btn danger" data-js="delete-data" data-i18n="form.actions.delete">Excluir dados</button>
+          <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
+        </div>
 
-      <div id="formFeedback" class="pill form-feedback" role="status" aria-live="polite">
-        <span class="material-symbols-rounded" aria-hidden="true" data-js="feedback-icon">check_circle</span>
-        <span data-js="feedback-message"></span>
-      </div>
+        <div id="formFeedback" class="pill form-feedback" role="status" aria-live="polite">
+          <span class="material-symbols-rounded" aria-hidden="true" data-js="feedback-icon">check_circle</span>
+          <span data-js="feedback-message"></span>
+        </div>
+      </footer>
     </form>
   </main>
 
