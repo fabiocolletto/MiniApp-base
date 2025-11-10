@@ -20,20 +20,25 @@
       actions: {
         openCatalog: 'Catálogo',
       },
-      intro: {
-        title: 'Pronto para receber novos acessos',
-        description:
-          'Reúna dados pessoais, defina o papel do usuário e confirme o aceite dos termos de uso. Você pode revisar tudo no resumo antes de concluir.',
-        highlights: {
-          dataQuality: 'Validação de email e senha com regras personalizadas.',
-          roles: 'Seleção rápida de perfis e setores atendidos.',
-          audit: 'Registro do aceite de políticas para auditoria.',
-        },
+      feedback: {
+        saved: 'Dados salvos localmente.',
+        updated: 'Dados atualizados com sucesso.',
+        error: 'Não foi possível salvar os dados no dispositivo.',
       },
       form: {
         title: 'Dados do usuário',
         description:
           'Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.',
+        sections: {
+          personal: {
+            title: 'Dados pessoais',
+            description: 'Comece identificando quem receberá o acesso.',
+          },
+          professional: {
+            title: 'Dados profissionais',
+            description: 'Defina como a pessoa atuará na plataforma.',
+          },
+        },
         fields: {
           fullName: {
             label: 'Nome completo *',
@@ -100,30 +105,6 @@
           },
         },
       },
-      summary: {
-        title: 'Resumo do cadastro',
-        description: {
-          success: 'Revisão concluída com sucesso. Compartilhe o acesso com o usuário.',
-        },
-        success: {
-          message: 'Cadastro salvo e pronto para ativação no diretório corporativo.',
-        },
-        labels: {
-          fullName: 'Nome completo',
-          email: 'Email',
-          phone: 'Telefone',
-          role: 'Perfil de acesso',
-          department: 'Departamento',
-          password: 'Senha temporária',
-          terms: 'Termos de uso',
-        },
-        values: {
-          password: 'Senha registrada (oculta por segurança).',
-          terms: {
-            accepted: 'Termos aceitos às {{time}}.',
-          },
-        },
-      },
     },
     'en-US': {
       meta: {
@@ -142,19 +123,24 @@
       actions: {
         openCatalog: 'Catalog',
       },
-      intro: {
-        title: 'Ready to welcome new access',
-        description:
-          'Gather personal data, select the user role, and confirm policy acceptance. Review everything in the summary before finishing.',
-        highlights: {
-          dataQuality: 'Email and password validation with tailored rules.',
-          roles: 'Quick selection of roles and supported departments.',
-          audit: 'Policy acceptance logged for auditing.',
-        },
+      feedback: {
+        saved: 'Data saved locally.',
+        updated: 'Data updated successfully.',
+        error: 'We could not save the data on this device.',
       },
       form: {
         title: 'User information',
         description: 'Fill in the required fields to provision the initial access. All fields marked with * are mandatory.',
+        sections: {
+          personal: {
+            title: 'Personal details',
+            description: 'Start by identifying who will receive access.',
+          },
+          professional: {
+            title: 'Professional details',
+            description: 'Define how this person will operate on the platform.',
+          },
+        },
         fields: {
           fullName: {
             label: 'Full name *',
@@ -221,30 +207,6 @@
           },
         },
       },
-      summary: {
-        title: 'Registration summary',
-        description: {
-          success: 'Review completed successfully. Share the access details with the user.',
-        },
-        success: {
-          message: 'Registration saved and ready for directory activation.',
-        },
-        labels: {
-          fullName: 'Full name',
-          email: 'Email',
-          phone: 'Phone',
-          role: 'Access profile',
-          department: 'Department',
-          password: 'Temporary password',
-          terms: 'Terms of use',
-        },
-        values: {
-          password: 'Password recorded (hidden for security).',
-          terms: {
-            accepted: 'Terms accepted at {{time}}.',
-          },
-        },
-      },
     },
     'es-ES': {
       meta: {
@@ -263,19 +225,24 @@
       actions: {
         openCatalog: 'Catálogo',
       },
-      intro: {
-        title: 'Listo para habilitar nuevos accesos',
-        description:
-          'Reúne datos personales, define el rol del usuario y confirma la aceptación de políticas. Revisa todo en el resumen antes de finalizar.',
-        highlights: {
-          dataQuality: 'Validación de correo y contraseña con reglas personalizadas.',
-          roles: 'Selección ágil de perfiles y áreas atendidas.',
-          audit: 'Registro del consentimiento para auditoría.',
-        },
+      feedback: {
+        saved: 'Datos guardados localmente.',
+        updated: 'Datos actualizados correctamente.',
+        error: 'No fue posible guardar los datos en este dispositivo.',
       },
       form: {
         title: 'Datos del usuario',
         description: 'Completa los campos obligatorios para habilitar el acceso inicial. Todos los campos con * son obligatorios.',
+        sections: {
+          personal: {
+            title: 'Datos personales',
+            description: 'Comienza identificando a la persona que recibirá el acceso.',
+          },
+          professional: {
+            title: 'Datos profesionales',
+            description: 'Define cómo actuará la persona en la plataforma.',
+          },
+        },
         fields: {
           fullName: {
             label: 'Nombre completo *',
@@ -342,52 +309,41 @@
           },
         },
       },
-      summary: {
-        title: 'Resumen del registro',
-        description: {
-          success: 'Revisión completada correctamente. Comparte el acceso con la persona usuaria.',
-        },
-        success: {
-          message: 'Registro guardado y listo para activarse en el directorio.',
-        },
-        labels: {
-          fullName: 'Nombre completo',
-          email: 'Correo',
-          phone: 'Teléfono',
-          role: 'Perfil de acceso',
-          department: 'Departamento',
-          password: 'Contraseña temporal',
-          terms: 'Términos de uso',
-        },
-        values: {
-          password: 'Contraseña registrada (oculta por seguridad).',
-          terms: {
-            accepted: 'Términos aceptados a las {{time}}.',
-          },
-        },
-      },
     },
   };
 
-  const summaryFields = [
-    { key: 'fullName', labelKey: 'summary.labels.fullName' },
-    { key: 'email', labelKey: 'summary.labels.email' },
-    { key: 'phone', labelKey: 'summary.labels.phone' },
-    { key: 'role', labelKey: 'summary.labels.role' },
-    { key: 'department', labelKey: 'summary.labels.department' },
-  ];
+  const STORAGE_KEY = 'miniapp-cadastro-data';
+
+  const FEEDBACK_VARIANTS = {
+    success: {
+      background: 'rgba(22, 163, 74, 0.12)',
+      border: '1px solid rgba(22, 163, 74, 0.28)',
+      color: 'var(--color-accent-green)',
+      icon: 'check_circle',
+    },
+    error: {
+      background: 'rgba(220, 38, 38, 0.12)',
+      border: '1px solid rgba(220, 38, 38, 0.28)',
+      color: 'var(--color-danger-red)',
+      icon: 'error',
+    },
+  };
 
   const root = document.documentElement;
   const form = document.getElementById('registrationForm');
   const languageSelect = document.getElementById('languageSelect');
-  const summaryCard = document.getElementById('summaryCard');
-  const summaryList = document.getElementById('summaryList');
-  const summaryDescription = document.getElementById('summaryDescription');
-  const summaryAlert = document.getElementById('summaryAlert');
+  const feedbackContainer = document.getElementById('formFeedback');
+  const feedbackMessage = feedbackContainer
+    ? feedbackContainer.querySelector('[data-js="feedback-message"]')
+    : null;
+  const feedbackIcon = feedbackContainer
+    ? feedbackContainer.querySelector('[data-js="feedback-icon"]')
+    : null;
 
-  let lastSummaryData = null;
+  let lastFeedbackKey = null;
 
   let currentLocale = detectLocale();
+  const storageAvailable = isLocalStorageAvailable();
 
   function detectLocale() {
     const languageCandidates = Array.isArray(window.navigator.languages)
@@ -528,8 +484,16 @@
       languageSelect.value = currentLocale;
     }
 
-    if (summaryCard && summaryCard.style.display !== 'none' && lastSummaryData) {
-      showSummary(lastSummaryData);
+    if (
+      feedbackContainer &&
+      feedbackContainer.style.display !== 'none' &&
+      lastFeedbackKey &&
+      feedbackMessage
+    ) {
+      const feedbackText = getTranslation(currentLocale, lastFeedbackKey);
+      if (typeof feedbackText === 'string') {
+        feedbackMessage.textContent = feedbackText;
+      }
     }
   }
 
@@ -599,6 +563,24 @@
     });
   }
 
+  function hideFeedback() {
+    if (!feedbackContainer) {
+      return;
+    }
+
+    feedbackContainer.style.display = 'none';
+    feedbackContainer.style.background = FEEDBACK_VARIANTS.success.background;
+    feedbackContainer.style.border = FEEDBACK_VARIANTS.success.border;
+    feedbackContainer.style.color = FEEDBACK_VARIANTS.success.color;
+    if (feedbackMessage) {
+      feedbackMessage.textContent = '';
+    }
+    if (feedbackIcon) {
+      feedbackIcon.textContent = FEEDBACK_VARIANTS.success.icon;
+    }
+    lastFeedbackKey = null;
+  }
+
   function clearFieldError(field) {
     const name = field.getAttribute('name');
     if (!name) {
@@ -629,114 +611,102 @@
     }
   }
 
-  function hideSummary() {
-    if (summaryCard) {
-      summaryCard.style.display = 'none';
-    }
-    lastSummaryData = null;
-  }
-
-  function showSummary(data) {
-    if (!summaryCard || !summaryList) {
+  function showFeedback(messageKey, variant = 'success') {
+    if (!feedbackContainer || !feedbackMessage) {
       return;
     }
 
-    summaryList.innerHTML = '';
+    const message = messageKey ? getTranslation(currentLocale, messageKey) : null;
+    if (typeof message !== 'string' || !message.trim()) {
+      return;
+    }
 
-    summaryFields.forEach(({ key, labelKey }) => {
-      const label = getTranslation(currentLocale, labelKey) || key;
-      let value = data[key] || '';
+    const config = FEEDBACK_VARIANTS[variant] || FEEDBACK_VARIANTS.success;
+    feedbackContainer.style.background = config.background;
+    feedbackContainer.style.border = config.border;
+    feedbackContainer.style.color = config.color;
+    feedbackContainer.style.display = 'inline-flex';
 
-      if (key === 'phone') {
-        value = formatPhone(value);
+    if (feedbackIcon) {
+      feedbackIcon.textContent = config.icon;
+    }
+
+    feedbackMessage.textContent = message;
+    lastFeedbackKey = messageKey;
+  }
+
+  function isLocalStorageAvailable() {
+    try {
+      if (!('localStorage' in window)) {
+        return false;
       }
 
-      if (key === 'role') {
-        const roleLabel = getTranslation(currentLocale, `form.fields.role.options.${value}`);
-        value = roleLabel || value;
+      const testKey = `${STORAGE_KEY}__test__`;
+      window.localStorage.setItem(testKey, '1');
+      window.localStorage.removeItem(testKey);
+      return true;
+    } catch (error) {
+      console.warn('Local storage não está disponível.', error);
+      return false;
+    }
+  }
+
+  function getStoredData() {
+    if (!storageAvailable) {
+      return null;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return null;
       }
 
-      if (!value) {
-        return;
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'object' && parsed ? parsed : null;
+    } catch (error) {
+      console.warn('Não foi possível ler os dados salvos.', error);
+      return null;
+    }
+  }
+
+  function persistStoredData(data) {
+    if (!storageAvailable) {
+      return false;
+    }
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.warn('Não foi possível salvar os dados localmente.', error);
+      return false;
+    }
+  }
+
+  function restoreStoredData() {
+    if (!form) {
+      return;
+    }
+
+    const stored = getStoredData();
+    if (!stored) {
+      return;
+    }
+
+    const fieldNames = ['fullName', 'email', 'phone', 'role', 'department'];
+    fieldNames.forEach((name) => {
+      const value = stored[name];
+      const field = form.elements.namedItem(name);
+      if (field && typeof value === 'string') {
+        field.value = value;
       }
-
-      const item = document.createElement('li');
-      item.style.display = 'grid';
-      item.style.gap = 'var(--space-1)';
-
-      const labelElement = document.createElement('span');
-      labelElement.style.fontWeight = 'var(--font-weight-semibold)';
-      labelElement.textContent = label;
-
-      const valueElement = document.createElement('span');
-      valueElement.textContent = value;
-
-      item.appendChild(labelElement);
-      item.appendChild(valueElement);
-      summaryList.appendChild(item);
     });
 
-    const passwordLabel = getTranslation(currentLocale, 'summary.labels.password');
-    const passwordValue = getTranslation(currentLocale, 'summary.values.password');
-    if (passwordLabel && passwordValue) {
-      const item = document.createElement('li');
-      item.style.display = 'grid';
-      item.style.gap = 'var(--space-1)';
-
-      const labelElement = document.createElement('span');
-      labelElement.style.fontWeight = 'var(--font-weight-semibold)';
-      labelElement.textContent = passwordLabel;
-
-      const valueElement = document.createElement('span');
-      valueElement.textContent = passwordValue;
-
-      item.appendChild(labelElement);
-      item.appendChild(valueElement);
-      summaryList.appendChild(item);
+    const termsField = form.elements.namedItem('terms');
+    if (termsField) {
+      termsField.checked = Boolean(stored.termsAccepted);
     }
-
-    const termsLabel = getTranslation(currentLocale, 'summary.labels.terms');
-    const timeFormatter = new Intl.DateTimeFormat(currentLocale, {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const termsValueTemplate = getTranslation(currentLocale, 'summary.values.terms.accepted');
-    const termsValue = termsValueTemplate
-      ? termsValueTemplate.replace('{{time}}', timeFormatter.format(new Date()))
-      : '';
-
-    if (termsLabel && termsValue) {
-      const item = document.createElement('li');
-      item.style.display = 'grid';
-      item.style.gap = 'var(--space-1)';
-
-      const labelElement = document.createElement('span');
-      labelElement.style.fontWeight = 'var(--font-weight-semibold)';
-      labelElement.textContent = termsLabel;
-
-      const valueElement = document.createElement('span');
-      valueElement.textContent = termsValue;
-
-      item.appendChild(labelElement);
-      item.appendChild(valueElement);
-      summaryList.appendChild(item);
-    }
-
-    const description = getTranslation(currentLocale, 'summary.description.success');
-    if (summaryDescription && description) {
-      summaryDescription.textContent = description;
-    }
-
-    const successMessage = getTranslation(currentLocale, 'summary.success.message');
-    if (summaryAlert) {
-      const messageElement = summaryAlert.querySelector('[data-i18n="summary.success.message"]');
-      if (messageElement && successMessage) {
-        messageElement.textContent = successMessage;
-      }
-    }
-
-    summaryCard.style.display = 'grid';
-    lastSummaryData = { ...data };
   }
 
   function validateForm() {
@@ -822,17 +792,26 @@
     }
 
     if (hasError) {
-      hideSummary();
+      hideFeedback();
       return false;
     }
 
-    showSummary({
+    const previousData = getStoredData();
+    const storedSuccessfully = persistStoredData({
       fullName,
       email,
       phone,
       role,
       department,
+      termsAccepted,
+      updatedAt: new Date().toISOString(),
     });
+
+    if (storedSuccessfully) {
+      showFeedback(previousData ? 'feedback.updated' : 'feedback.saved', 'success');
+    } else {
+      showFeedback('feedback.error', 'error');
+    }
 
     return true;
   }
@@ -851,10 +830,7 @@
 
     form.addEventListener('reset', () => {
       clearErrors();
-      hideSummary();
-      if (summaryList) {
-        summaryList.innerHTML = '';
-      }
+      hideFeedback();
     });
 
     form.querySelectorAll('input, select').forEach((field) => {
@@ -891,6 +867,7 @@
     setupCatalogButton();
     setupForm();
     setupLanguageSwitcher();
+    restoreStoredData();
   }
 
   if (document.readyState === 'loading') {

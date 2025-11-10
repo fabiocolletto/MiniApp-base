@@ -14,7 +14,8 @@
 - Indicadores exibem resumos dinâmicos e estados de carregamento/erro integrados à sincronização multi-dispositivo.
 - Cartões do catálogo para o Importador de Pesquisas, incluindo novo ícone dedicado e link para o protótipo.
 - Cartão do catálogo para o Gerador de Roteiros TTS com ícone dedicado e metadados para o shell.
-- Miniapp de Cadastro de Usuários com validações, resumo pós-envio e suporte completo a `pt-BR`, `en-US` e `es-ES`.
+- Miniapp de Cadastro de Usuários com validações, seções de dados pessoais e profissionais e suporte completo a `pt-BR`, `en-US` e `es-ES`.
+- Miniapp de Cadastro passa a persistir os dados localmente após envios válidos e exibe retorno visual indicando sucesso ou falha na atualização.
 - Atalho dedicado no menu do shell para abrir o cadastro diretamente do rodapé.
 - Importador de Pesquisas reposicionado para o miniapp dedicado `miniapp-importador/`, preservando o CSS central e movendo estilos complementares para `style/importador-pesquisas.css`.
 - Miniapp TTS com formulário guiado, geração automática de roteiro e traduções completas para `pt-BR`, `en-US` e `es-ES`.
@@ -25,6 +26,7 @@
 
 ### Alterado
 - Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
+- Miniapp de Cadastro simplificado para um único formulário em card branco alinhado ao shell base, com feedback direto e sem resumo pós-envio.
 - Botão de tela cheia e identidade do Shell passam a utilizar os ícones circulares do catálogo baseados na biblioteca Material.
 - Cartões do catálogo ocupam toda a largura útil do painel com espaçamento interno próprio, deixam de exibir botão secundário e tornam-se completamente clicáveis.
 - Shell concentra os controles de catálogo e tela cheia no menu do rodapé, removendo botões espalhados pelo painel principal e delegando a navegação aos cartões e integrações via `postMessage`.
