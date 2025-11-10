@@ -79,10 +79,190 @@
         }
       ];
 
+      var FAVORITES_STORAGE_KEY = 'miniappCatalog.favorites';
+      var SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
+      var FAVORITE_COPY = {
+        'pt-BR': {
+          add: 'Adicionar aos favoritos',
+          remove: 'Remover dos favoritos'
+        },
+        'en-US': {
+          add: 'Add to favorites',
+          remove: 'Remove from favorites'
+        },
+        'es-ES': {
+          add: 'Agregar a favoritos',
+          remove: 'Quitar de favoritos'
+        }
+      };
+
+      var CATALOG_HEADER_COPY = {
+        'pt-BR': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Escolha um MiniApp para abrir.'
+        },
+        'en-US': {
+          title: 'MiniApps Catalog',
+          subtitle: 'Choose a MiniApp to open.'
+        },
+        'es-ES': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Elige un MiniApp para abrir.'
+        }
+      };
+
+      var miniappsById = new Map();
+      miniapps.forEach(function (app) {
+        miniappsById.set(app.id, app);
+      });
+
+      function getActiveLocale() {
+        var docLang = (document.documentElement && document.documentElement.lang) || '';
+        var normalized = SUPPORTED_LOCALES.find(function (locale) {
+          return docLang.toLowerCase() === locale.toLowerCase();
+        });
+
+        if (normalized) {
+          return normalized;
+        }
+
+        var baseLang = docLang.split('-')[0];
+        var fallback = SUPPORTED_LOCALES.find(function (locale) {
+          return locale.toLowerCase().indexOf(baseLang.toLowerCase()) === 0;
+        });
+
+        return fallback || 'pt-BR';
+      }
+
+      function getFavoriteActionCopy(isActive) {
+        var locale = getActiveLocale();
+        var copy = FAVORITE_COPY[locale] || FAVORITE_COPY['pt-BR'];
+        return isActive ? copy.remove : copy.add;
+      }
+
+      function sanitizeFavoriteIds(ids) {
+        if (!Array.isArray(ids)) {
+          return [];
+        }
+
+        var seen = new Set();
+
+        return ids.filter(function (id) {
+          if (typeof id !== 'string' || seen.has(id) || !miniappsById.has(id)) {
+            return false;
+          }
+
+          seen.add(id);
+          return true;
+        });
+      }
+
+      function loadStoredFavoriteIds() {
+        try {
+          if (!window.localStorage) {
+            return [];
+          }
+        } catch (error) {
+          return [];
+        }
+
+        try {
+          var raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+
+          if (!raw) {
+            return [];
+          }
+
+          var parsed = JSON.parse(raw);
+          return sanitizeFavoriteIds(parsed);
+        } catch (error) {
+          console.warn('Não foi possível carregar os favoritos salvos.', error);
+          return [];
+        }
+      }
+
+      function persistFavoriteIds(ids) {
+        try {
+          if (!window.localStorage) {
+            return;
+          }
+        } catch (error) {
+          return;
+        }
+
+        try {
+          window.localStorage.setItem(
+            FAVORITES_STORAGE_KEY,
+            JSON.stringify(ids)
+          );
+        } catch (error) {
+          console.warn('Não foi possível salvar os favoritos.', error);
+        }
+      }
+
+      function getDefaultFavoriteIds() {
+        return miniapps
+          .filter(function (app) {
+            return app.favorite;
+          })
+          .map(function (app) {
+            return app.id;
+          });
+      }
+
+      var storedFavoriteIds = loadStoredFavoriteIds();
+      var favoritesSet = new Set(
+        storedFavoriteIds.length ? storedFavoriteIds : getDefaultFavoriteIds()
+      );
+
+      miniapps.forEach(function (app) {
+        app.favorite = favoritesSet.has(app.id);
+      });
+
+      function isFavorite(appId) {
+        return favoritesSet.has(appId);
+      }
+
+      function createFavoriteButton(app) {
+        var isActive = isFavorite(app.id);
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'catalog-card__favorite';
+
+        if (isActive) {
+          button.classList.add('is-active');
+        }
+
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+        var label = getFavoriteActionCopy(isActive);
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+
+        var icon = document.createElement('span');
+        icon.className = 'material-symbols-rounded catalog-card__favorite-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'star';
+
+        button.appendChild(icon);
+
+        button.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleFavorite(app.id);
+        });
+
+        return button;
+      }
+
       function createCard(app) {
         var article = document.createElement('article');
         article.className = 'app-card catalog-card';
         article.setAttribute('data-miniapp-id', app.id);
+
+        if (isFavorite(app.id)) {
+          article.classList.add('is-favorited');
+        }
 
         var link = document.createElement('a');
         link.className = 'catalog-card__link';
@@ -118,6 +298,8 @@
         link.appendChild(header);
         article.appendChild(link);
 
+        article.appendChild(createFavoriteButton(app));
+
         return article;
       }
 
@@ -127,10 +309,32 @@
         }
 
         var section = container.closest('section');
-        if (!Array.isArray(items) || !items.length) {
+        var hasItems = Array.isArray(items) && items.length > 0;
+
+        if (!hasItems) {
           if (section) {
             section.hidden = true;
           }
+
+          if (container.hasAttribute('data-carousel-bound')) {
+            var track = container.querySelector('.carousel-track');
+
+            if (track) {
+              track.innerHTML = '';
+            } else {
+              container.innerHTML = '';
+            }
+
+            if (
+              window.CarouselManager &&
+              typeof window.CarouselManager.refresh === 'function'
+            ) {
+              window.CarouselManager.refresh(container);
+            }
+          } else {
+            container.innerHTML = '';
+          }
+
           return;
         }
 
@@ -138,38 +342,110 @@
           section.hidden = false;
         }
 
+        var isBound = container.hasAttribute('data-carousel-bound');
         var fragment = document.createDocumentFragment();
+
         items.forEach(function (app) {
-          fragment.appendChild(createCard(app));
+          var card = createCard(app);
+
+          if (isBound) {
+            var slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+            slide.setAttribute('role', 'listitem');
+            slide.appendChild(card);
+            fragment.appendChild(slide);
+          } else {
+            fragment.appendChild(card);
+          }
         });
 
-        container.innerHTML = '';
-        container.appendChild(fragment);
+        if (isBound) {
+          var track = container.querySelector('.carousel-track');
 
-        if (window.CarouselManager && typeof window.CarouselManager.mount === 'function') {
-          window.CarouselManager.mount(container);
+          if (track) {
+            track.innerHTML = '';
+            track.appendChild(fragment);
+          }
+
+          if (
+            window.CarouselManager &&
+            typeof window.CarouselManager.refresh === 'function'
+          ) {
+            window.CarouselManager.refresh(container);
+          }
+        } else {
+          container.innerHTML = '';
+          container.appendChild(fragment);
+
+          if (
+            window.CarouselManager &&
+            typeof window.CarouselManager.mount === 'function'
+          ) {
+            window.CarouselManager.mount(container);
+          }
         }
       }
 
       var favoritesContainer = document.querySelector('[data-carousel="favorites"]');
       var allContainer = document.querySelector('[data-carousel="all"]');
 
-      var favorites = miniapps.filter(function (app) {
-        return app.favorite;
-      });
+      function renderCatalog(options) {
+        var focusMiniAppId = options && options.focusMiniAppId;
 
-      mountCarousel(favoritesContainer, favorites);
-      mountCarousel(allContainer, miniapps);
+        var favorites = miniapps.filter(function (app) {
+          return isFavorite(app.id);
+        });
+
+        mountCarousel(favoritesContainer, favorites);
+        mountCarousel(allContainer, miniapps);
+
+        if (!focusMiniAppId) {
+          return;
+        }
+
+        requestAnimationFrame(function () {
+          var selector = '[data-miniapp-id="' + focusMiniAppId + '"] .catalog-card__favorite';
+          var button = document.querySelector(selector);
+
+          if (button && typeof button.focus === 'function') {
+            button.focus();
+          }
+        });
+      }
+
+      function toggleFavorite(appId) {
+        if (!miniappsById.has(appId)) {
+          return;
+        }
+
+        if (favoritesSet.has(appId)) {
+          favoritesSet.delete(appId);
+        } else {
+          favoritesSet.add(appId);
+        }
+
+        miniappsById.forEach(function (app) {
+          app.favorite = favoritesSet.has(app.id);
+        });
+
+        persistFavoriteIds(Array.from(favoritesSet));
+        renderCatalog({ focusMiniAppId: appId });
+      }
+
+      renderCatalog();
 
       function notifyShell() {
         if (!window.parent || window.parent === window) {
           return;
         }
 
+        var locale = getActiveLocale();
+        var copy = CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+
         var message = {
           action: 'miniapp-header',
-          title: 'Catálogo de MiniApps',
-          subtitle: 'Escolha um MiniApp para abrir.',
+          title: copy.title,
+          subtitle: copy.subtitle,
           icon: 'apps',
           iconTheme: 'catalog'
         };

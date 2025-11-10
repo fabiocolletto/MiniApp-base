@@ -121,6 +121,9 @@
   --sidebar-width-closed: 64px;
   --header-height: 60px;
   --layout-footer-height: clamp(2rem, 1.25rem + 1vh, 2.75rem);
+  --layout-footer-safe-area: env(safe-area-inset-bottom, 0px);
+  --layout-footer-padding-block: clamp(var(--space-2), 0.75rem + 1vh, var(--space-3));
+  --layout-footer-panel-offset: clamp(var(--space-3), 3vw, var(--space-5));
 
   --layout-html-min-height: var(--size-full);
   --layout-body-min-height: var(--size-full);
@@ -952,30 +955,30 @@ header .subtitle {
 
 .app-icon--theme-prefeito {
   color: var(--color-brand-secondary);
-  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(11, 87, 208, 0.28));
-  border: 1px solid rgba(11, 87, 208, 0.32);
-  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+  background: linear-gradient(135deg, rgba(11, 87, 208, 0.14), rgba(59, 130, 246, 0.28));
+  border: 1px solid rgba(11, 87, 208, 0.34);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.1);
 }
 
 .app-icon--theme-importador {
   color: var(--color-accent-green);
-  background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
-  border: 1px solid rgba(22, 163, 74, 0.24);
-  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.14), rgba(16, 185, 129, 0.28));
+  border: 1px solid rgba(22, 163, 74, 0.26);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.1);
 }
 
 .app-icon--theme-cadastro {
-  color: var(--color-brand-secondary);
-  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(72, 149, 239, 0.32));
-  border: 1px solid rgba(11, 87, 208, 0.28);
-  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+  color: #7c3aed;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(168, 85, 247, 0.3));
+  border: 1px solid rgba(124, 58, 237, 0.28);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.1);
 }
 
 .app-icon--theme-tts {
-  color: var(--color-brand-primary);
-  background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(255, 122, 0, 0.28));
-  border: 1px solid rgba(255, 122, 0, 0.24);
-  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+  color: #f97316;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(249, 115, 22, 0.3));
+  border: 1px solid rgba(249, 115, 22, 0.26);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.1);
 }
 
 /* --- Molécula: Pill (Aviso) --- */
@@ -1049,7 +1052,11 @@ header .subtitle {
   grid-template-rows: auto 1fr auto;
   background: var(--background-page);
   color: var(--text-color-primary);
-  padding-bottom: var(--layout-footer-height);
+  padding-bottom: calc(
+    var(--layout-footer-height) +
+    var(--layout-footer-safe-area) +
+    var(--layout-footer-padding-block)
+  );
   position: relative;
 }
 
@@ -1207,9 +1214,15 @@ header .subtitle {
   background: var(--background-surface);
   position: fixed;
   inset: auto 0 0 0;
-  height: var(--layout-footer-height);
+  min-height: var(--layout-footer-height);
   display: flex;
   align-items: center;
+  padding-block: var(--layout-footer-padding-block);
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-7));
+  padding-block-end: calc(
+    var(--layout-footer-padding-block) +
+    var(--layout-footer-safe-area)
+  );
   z-index: 5;
 }
 
@@ -1345,14 +1358,45 @@ header .subtitle {
   }
 }
 
-@media (max-width: 40rem) {
+@media (max-width: 48rem) {
+  .app-footer .shell-container {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: clamp(var(--space-3), 3vw, var(--space-4));
+  }
+
+  .app-footer__info {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .footer-command {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-command__toggle {
+    inline-size: 100%;
+    justify-content: center;
+  }
+
   .footer-command__panel {
-    inline-size: min(
-      clamp(14rem, 60vw, 22rem),
-      calc(100vw - clamp(1.5rem, 8vw, 3rem))
+    position: fixed;
+    left: 50%;
+    bottom: calc(
+      var(--layout-footer-height) +
+      var(--layout-footer-safe-area) +
+      var(--layout-footer-panel-offset)
     );
-    padding: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+    transform: translate3d(-50%, 0.75rem, 0);
+    transform-origin: bottom center;
+    inline-size: min(100vw - clamp(1.5rem, 8vw, 3rem), 26rem);
     box-shadow: var(--box-shadow-default), 0 16px 32px rgb(15 23 42 / 0.18);
+  }
+
+  .footer-command__panel.footer-command__panel--open {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
@@ -1418,7 +1462,11 @@ header .subtitle {
 .app-shell.is-fullscreen {
   height: 100vh;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  padding-bottom: var(--layout-footer-height);
+  padding-bottom: calc(
+    var(--layout-footer-height) +
+    var(--layout-footer-safe-area) +
+    var(--layout-footer-padding-block)
+  );
 }
 
 .app-shell.is-fullscreen-fallback {
