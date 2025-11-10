@@ -330,6 +330,19 @@ header .subtitle {
   flex-direction: column;
 }
 
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* --- Organismo: CSS GRID (Para Gráficos e Cards) --- */
 .grid {
   display: grid;
@@ -345,10 +358,10 @@ header .subtitle {
 .carousel {
   display: flex;
   overflow-x: auto; /* Habilita a rolagem horizontal */
-  gap: var(--space-4); 
+  gap: var(--space-4);
   scroll-snap-type: x mandatory; /* Força o "snap" */
   -webkit-overflow-scrolling: touch; /* Melhora a rolagem em iOS */
-  padding-bottom: var(--space-2); 
+  padding-bottom: var(--space-2);
 }
 /* Item do Carrossel (KPI Card) */
 .carousel > .card {
@@ -357,6 +370,92 @@ header .subtitle {
   scroll-snap-align: start;
   padding: var(--space-4);
   text-align: center;
+}
+
+.carousel[data-carousel-bound="true"] {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(var(--space-2), 1vw, var(--space-4));
+  width: var(--layout-catalog-container-width);
+  margin-inline: auto;
+  padding: 0;
+}
+
+.carousel[data-carousel-bound="true"] .carousel-viewport {
+  position: relative;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-inline: var(--layout-catalog-scroll-padding);
+  scroll-padding-inline: var(--layout-catalog-scroll-padding);
+}
+
+.carousel[data-carousel-bound="true"] .carousel-track {
+  display: flex;
+  gap: var(--layout-catalog-card-gap);
+}
+
+.carousel[data-carousel-bound="true"] .carousel-slide {
+  flex: 0 0 calc(100% / var(--carousel-per-view, 1));
+  max-width: calc(100% / var(--carousel-per-view, 1));
+  scroll-snap-align: start;
+  display: flex;
+}
+
+.carousel[data-carousel-bound="true"] .carousel-slide > * {
+  flex: 1;
+}
+
+.carousel-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2.5rem, 1.1vw + 2.15rem, 3rem);
+  height: clamp(2.5rem, 1.1vw + 2.15rem, 3rem);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--background-surface);
+  color: var(--text-color-muted);
+  cursor: pointer;
+  transition:
+    transform var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    box-shadow var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    border-color var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    color var(--layout-transition-duration-fast) var(--layout-transition-easing);
+}
+
+.carousel-control[hidden] {
+  display: none;
+}
+
+.carousel-control:focus-visible {
+  outline: var(--layout-catalog-card-outline);
+  outline-offset: var(--layout-catalog-card-outline-offset);
+}
+
+.carousel-control:hover:not(:disabled) {
+  transform: translateY(calc(var(--space-1) * -0.5));
+  box-shadow: var(--layout-catalog-card-shadow-hover);
+  border-color: var(--layout-catalog-card-border-hover);
+}
+
+.carousel-control:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.carousel-control-icon {
+  font-size: clamp(1.4rem, 0.6vw + 1.2rem, 1.75rem);
+  line-height: 1;
+}
+
+.carousel[data-carousel-bound="true"] .carousel-status {
+  position: absolute;
+  inset-inline: var(--layout-catalog-scroll-padding);
+  inset-block-end: calc(var(--space-4) * -1);
 }
 
 /* Ocultar barra de rolagem (opcional) */
