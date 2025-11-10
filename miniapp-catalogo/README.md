@@ -13,6 +13,7 @@ Esta pasta hospeda o catálogo padrão carregado pelo shell (`index.html`). O ar
 - `renderCatalog` chama `mountCarousel` para preencher os carrosséis. Quando o container já está vinculado ao `CarouselManager`, o helper atualiza apenas a `carousel-track` e aciona `CarouselManager.refresh` para preservar a acessibilidade.
 - Ao finalizar a renderização, o catálogo notifica o shell via `postMessage` com `{ action: 'miniapp-header', title, subtitle, icon, iconTheme }`, garantindo a sincronização do cabeçalho.
 - O cabeçalho enviado ao shell e os rótulos do botão de favorito possuem variações em `pt-BR`, `en-US` e `es-ES`, usando `getActiveLocale()` para escolher o texto correto.
+- O container visual de cada MiniApp no catálogo nasce do `<template data-miniapp-card-template>` em `index.html`. O organismo `catalog.js` clona o modelo, preenche os dados (ícone, título, descrição e atributos do shell) e aplica os estados de favorito, permitindo reutilizar o mesmo layout em qualquer carrossel.
 
 ## Diretrizes
 

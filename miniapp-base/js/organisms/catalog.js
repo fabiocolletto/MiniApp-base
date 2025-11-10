@@ -208,6 +208,12 @@
     var favoritesSection = favoritesContainer && favoritesContainer.closest('section');
     var allSection = allContainer && allContainer.closest('section');
     var catalogBoard = document.querySelector('.catalog-board');
+    var cardTemplateElement = document.querySelector('[data-miniapp-card-template]');
+    var cardTemplateRoot =
+      cardTemplateElement && cardTemplateElement.content
+        ? cardTemplateElement.content.querySelector('[data-miniapp-card]') ||
+          cardTemplateElement.content.firstElementChild
+        : null;
 
     function getActiveLocale() {
       return getDocumentLocale(SUPPORTED_LOCALES, 'pt-BR');
@@ -218,41 +224,100 @@
       return favoritesManager.getActionCopy(locale, isActive);
     }
 
-    function createFavoriteButton(app) {
+    function configureFavoriteButton(button, app) {
+      var target = button || document.createElement('button');
       var isActive = favoritesManager.isFavorite(app.id);
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'catalog-card__favorite';
 
-      if (isActive) {
-        button.classList.add('is-active');
+      target.type = 'button';
+      target.classList.add('catalog-card__favorite');
+      target.classList.toggle('is-active', isActive);
+      target.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+      var label = getFavoriteActionCopy(isActive) || '';
+      target.setAttribute('aria-label', label);
+      target.setAttribute('title', label);
+
+      var icon = target.querySelector('.catalog-card__favorite-icon');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.className = 'material-symbols-rounded catalog-card__favorite-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        target.appendChild(icon);
       }
-
-      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-
-      var label = getFavoriteActionCopy(isActive);
-      button.setAttribute('aria-label', label);
-      button.setAttribute('title', label);
-
-      var icon = document.createElement('span');
-      icon.className = 'material-symbols-rounded catalog-card__favorite-icon';
-      icon.setAttribute('aria-hidden', 'true');
       icon.textContent = 'star';
 
-      button.appendChild(icon);
-
-      button.addEventListener('click', function (event) {
+      target.addEventListener('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
         toggleFavorite(app.id);
       });
 
-      return button;
+      return target;
     }
 
-    function createCard(app) {
+    function createCardFromTemplate(app) {
+      var article = cardTemplateRoot.cloneNode(true);
+      article.setAttribute('data-miniapp-id', app.id);
+
+      article.classList.remove('is-favorited');
+      if (favoritesManager.isFavorite(app.id)) {
+        article.classList.add('is-favorited');
+      }
+
+      var link =
+        article.querySelector('[data-miniapp-card-link]') ||
+        article.querySelector('.catalog-card__link');
+      if (link) {
+        link.href = app.href;
+        link.target = 'miniapp-panel';
+        link.setAttribute('data-miniapp-target', app.href);
+        link.setAttribute('data-miniapp-name', app.name);
+        link.setAttribute('data-miniapp-description', app.description);
+        link.setAttribute('data-miniapp-icon-symbol', app.icon);
+        link.setAttribute('data-miniapp-icon-theme', app.theme);
+      }
+
+      var icon =
+        article.querySelector('[data-miniapp-card-icon]') ||
+        article.querySelector('.catalog-card__header .app-icon');
+      if (icon) {
+        icon.className =
+          'material-symbols-rounded app-icon app-icon--theme-' + app.theme;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = app.icon;
+      }
+
+      var title =
+        article.querySelector('[data-miniapp-card-title]') ||
+        article.querySelector('.catalog-card__content h3');
+      if (title) {
+        title.textContent = app.name;
+      }
+
+      var description =
+        article.querySelector('[data-miniapp-card-description]') ||
+        article.querySelector('.catalog-card__content p');
+      if (description) {
+        description.textContent = app.description;
+      }
+
+      var favoriteButton =
+        configureFavoriteButton(
+          article.querySelector('[data-miniapp-card-favorite]') ||
+            article.querySelector('.catalog-card__favorite'),
+          app,
+        );
+
+      if (!favoriteButton.parentNode) {
+        article.appendChild(favoriteButton);
+      }
+
+      return article;
+    }
+
+    function createLegacyCard(app) {
       var article = document.createElement('article');
-      article.className = 'app-card catalog-card';
+      article.className = 'catalog-card';
       article.setAttribute('data-miniapp-id', app.id);
 
       if (favoritesManager.isFavorite(app.id)) {
@@ -293,9 +358,17 @@
       link.appendChild(header);
       article.appendChild(link);
 
-      article.appendChild(createFavoriteButton(app));
+      article.appendChild(configureFavoriteButton(null, app));
 
       return article;
+    }
+
+    function createCard(app) {
+      if (cardTemplateRoot) {
+        return createCardFromTemplate(app);
+      }
+
+      return createLegacyCard(app);
     }
 
     function getLocalizedMiniapps(locale) {

@@ -37,6 +37,37 @@
     </section>
   </main>
 
+  <template id="miniapp-card-template" data-miniapp-card-template>
+    <article class="catalog-card" data-miniapp-card>
+      <a class="catalog-card__link" data-miniapp-card-link>
+        <div class="catalog-card__header">
+          <span
+            class="material-symbols-rounded app-icon"
+            aria-hidden="true"
+            data-miniapp-card-icon
+          ></span>
+          <div class="catalog-card__content">
+            <h3 data-miniapp-card-title></h3>
+            <p data-miniapp-card-description></p>
+          </div>
+        </div>
+      </a>
+      <button
+        type="button"
+        class="catalog-card__favorite"
+        data-miniapp-card-favorite
+      >
+        <span
+          class="material-symbols-rounded catalog-card__favorite-icon"
+          aria-hidden="true"
+          data-miniapp-card-favorite-icon
+        >
+          star
+        </span>
+      </button>
+    </article>
+  </template>
+
   <script src="../miniapp-base/js/atoms/i18n.js" defer></script>
   <script src="../miniapp-base/js/atoms/locale.js" defer></script>
   <script src="../miniapp-base/js/atoms/storage.js" defer></script>

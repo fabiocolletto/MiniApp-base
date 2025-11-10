@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Adicionado
+- Template reutilizável `<template data-miniapp-card-template>` no catálogo para padronizar o container de cartões antes de renderizar cada miniapp.
 - Barra de favoritos no catálogo permitindo marcar miniapps com estrela, persistir a seleção e apresentá-los em carrossel dedicado.
 - Rodapé do shell fixo com indicação de versão e controle de tela cheia disponível em telas amplas.
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
@@ -26,6 +27,7 @@
 - `miniapp-catalogo/README.md` descrevendo as regras para manter cartões e atributos sincronizados com o shell.
 
 ### Alterado
+- Estilos do catálogo atualizados em `miniapp-base/style/styles.css` para reintroduzir o container dos cartões com tokens atômicos e foco responsivo.
 - Miniapps do catálogo, cadastro, importador, TTS e prefeito agora compartilham o layout `app-board` e utilitários responsivos do design system, eliminando folhas de estilo locais e mantendo a transição visual alinhada ao shell.
 - O design system em `miniapp-base/style/styles.css` ganhou componentes para formulários, tabelas, modais e painéis reutilizados por todos os miniapps.
 - Miniapp do Prefeito passa a consumir o idioma enviado pelo shell via `postMessage({ action: 'set-locale' })`, utiliza `I18nManager.setLocale(locale, { persist: false })` para sincronizar traduções sem gravar preferências locais e reenviar o cabeçalho atualizado após cada troca.
