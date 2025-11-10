@@ -351,7 +351,7 @@ ol {
 
 .shell-main {
   flex: 1;
-  padding-block: var(--space-5);
+  padding-block: var(--space-4);
 }
 
 .shell-container {
@@ -361,6 +361,19 @@ ol {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.shell-main .shell-container {
+  padding: var(--space-3);
+}
+
+.app-shell.is-catalog-open .shell-main {
+  padding-block: var(--space-5);
+}
+
+.app-shell.is-catalog-open .shell-main .shell-container,
+.shell-main .shell-container.shell-container--catalog {
+  padding: var(--space-4);
 }
 
 .header-content {
@@ -430,16 +443,18 @@ ol {
   box-shadow: none;
   padding: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: clamp(var(--space-4), 3vw, var(--space-5));
+  min-height: 100vh;
 }
 
 .panel-wrapper iframe {
   width: 100%;
-  min-height: min(70vh, 40rem);
+  height: 100%;
+  min-height: 100%;
   border: 0;
-  border-radius: var(--radius-lg);
-  background-color: var(--color-surface-50);
+  background-color: transparent;
 }
 
 .app-footer {
