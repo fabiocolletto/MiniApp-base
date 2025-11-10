@@ -6,6 +6,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 - `index.html`: shell PWA responsável por carregar o catálogo padrão e hospedar os miniapps ativos em um iframe central.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
 - `miniapp-importador/`: miniapp dedicado ao fluxo de importação de pesquisas.
+- `miniapp-cadastro/`: miniapp focado no cadastro e onboarding de usuários.
 - `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
 - `miniapp-catalogo/index.html`: variante do catálogo publicada em ambientes de homologação.
 
@@ -37,6 +38,7 @@ Para uma lista completa de requisitos visuais e de integração, consulte `docs/
 ## Miniapps disponíveis
 - **Painel do Prefeito** – painel com KPIs, filtros e relatórios setoriais acessível em `miniapp-prefeito/index.html`.
 - **Importador de Pesquisas** – fluxo para importar arquivos CSV e revisar resultados em `miniapp-importador/index.html`.
+- **Cadastro de Usuários** – formulário guiado de onboarding com validações e resumo localizado em `miniapp-cadastro/index.html`.
 - **Gerador de Roteiros TTS** – formulário com campos guiados e tradução automática em `miniapp-tts/index.html`.
 
 ## Licença
