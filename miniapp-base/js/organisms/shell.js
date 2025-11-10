@@ -25,8 +25,11 @@
       const localeToggle = document.querySelector('[data-action="toggle-locale"]');
       const localeToggleLabel = document.querySelector('[data-locale-toggle-label]');
       const localeMenu = document.querySelector('[data-locale-menu]');
-      const localeInputs = Array.from(
-        document.querySelectorAll('[data-locale-input]')
+      const localeMenuDescription = document.querySelector(
+        '[data-locale-menu-description]'
+      );
+      const localeActions = Array.from(
+        document.querySelectorAll('[data-locale-action]')
       );
       const fullscreenCommandLabel = document.querySelector('[data-fullscreen-command-label]');
       const footerAboutTitle = document.querySelector('[data-footer-about-title]');
@@ -333,13 +336,18 @@
           localeMenu.setAttribute('aria-label', safeCopy.menuLabel);
         }
 
-        if (safeCopy && safeCopy.options && localeInputs.length > 0) {
-          localeInputs.forEach((input) => {
-            const optionLocale = input && input.value;
-            const container = input ? input.closest('[data-locale-option]') : null;
-            const labelElement = container
-              ? container.querySelector('[data-locale-option-label]')
-              : null;
+        if (localeMenuDescription && safeCopy && safeCopy.menuLabel) {
+          localeMenuDescription.textContent = safeCopy.menuLabel;
+        }
+
+        if (safeCopy && safeCopy.options && localeActions.length > 0) {
+          localeActions.forEach((action) => {
+            if (!action) {
+              return;
+            }
+
+            const optionLocale = action.dataset ? action.dataset.localeOption : null;
+            const labelElement = action.querySelector('[data-locale-option-label]');
 
             if (labelElement && optionLocale && safeCopy.options[optionLocale]) {
               labelElement.textContent = safeCopy.options[optionLocale];
@@ -381,26 +389,23 @@
         syncLocaleCommandCopy(copy.localeCommand);
       }
 
-      function syncLocaleInputsState() {
-        if (!localeInputs.length) {
+      function syncLocaleActionsState() {
+        if (!localeActions.length) {
           return;
         }
 
         const currentLocale = getActiveLocale();
 
-        localeInputs.forEach((input) => {
-          if (!input) {
+        localeActions.forEach((action) => {
+          if (!action) {
             return;
           }
 
-          const isActive = input.value === currentLocale;
-          input.checked = isActive;
+          const optionLocale = action.dataset ? action.dataset.localeOption : null;
+          const isActive = optionLocale === currentLocale;
 
-          if (isActive) {
-            input.setAttribute('checked', '');
-          } else {
-            input.removeAttribute('checked');
-          }
+          action.setAttribute('aria-checked', isActive ? 'true' : 'false');
+          action.classList.toggle('footer-locale__action--active', isActive);
         });
       }
 
@@ -415,15 +420,16 @@
 
         localeMenu.hidden = false;
         localeMenu.removeAttribute('hidden');
+        localeMenu.classList.add('footer-command__panel--open');
         localeToggle.setAttribute('aria-expanded', 'true');
 
-        const focusedInput =
-          localeMenu.querySelector('input[type="radio"]:checked') ||
-          localeMenu.querySelector('input[type="radio"]');
+        const focusedAction =
+          localeMenu.querySelector('[data-locale-action].footer-locale__action--active') ||
+          localeMenu.querySelector('[data-locale-action]');
 
-        if (focusedInput && typeof focusedInput.focus === 'function') {
+        if (focusedAction && typeof focusedAction.focus === 'function') {
           requestAnimationFrame(() => {
-            focusedInput.focus();
+            focusedAction.focus();
           });
         }
       }
@@ -437,6 +443,7 @@
 
         localeMenu.hidden = true;
         localeMenu.setAttribute('hidden', '');
+        localeMenu.classList.remove('footer-command__panel--open');
         localeToggle.setAttribute('aria-expanded', 'false');
 
         if (restoreFocus && typeof localeToggle.focus === 'function') {
@@ -482,7 +489,7 @@
 
       closeFooterCommandPanel();
       syncFooterCommandCopy();
-      syncLocaleInputsState();
+      syncLocaleActionsState();
       syncFooterAboutSection();
 
       if (footerCommandToggle && footerCommandPanel) {
@@ -540,18 +547,20 @@
         });
       }
 
-      if (localeInputs.length > 0) {
-        localeInputs.forEach((input) => {
-          if (!input) {
+      if (localeActions.length > 0) {
+        localeActions.forEach((action) => {
+          if (!action) {
             return;
           }
 
-          input.addEventListener('change', () => {
-            if (!input.checked) {
+          action.addEventListener('click', () => {
+            const targetLocale = action.dataset ? action.dataset.localeOption : null;
+
+            if (!targetLocale) {
               return;
             }
 
-            setActiveLocale(input.value);
+            setActiveLocale(targetLocale);
             closeLocaleMenu({ restoreFocus: false });
             closeFooterCommandPanel();
           });
@@ -593,7 +602,7 @@
 
         writeStoredLocale(activeLocale);
         syncFooterCommandCopy();
-        syncLocaleInputsState();
+        syncLocaleActionsState();
         syncFooterAboutSection();
         const normalizedCatalogForLocale = normalizeMiniAppUrl(defaultMiniApp);
 

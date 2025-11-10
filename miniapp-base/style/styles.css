@@ -1370,6 +1370,74 @@ header .subtitle {
   align-items: center;
 }
 
+.footer-locale {
+  position: relative;
+  inline-size: 100%;
+}
+
+.footer-locale__panel {
+  align-items: stretch;
+  gap: clamp(var(--space-2), 2vw, var(--space-3));
+  inline-size: clamp(14rem, 56vw, 20rem);
+}
+
+.footer-locale__description {
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--text-color-muted);
+}
+
+.footer-locale__actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.footer-locale__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  inline-size: 100%;
+  padding: clamp(var(--space-2), 1.5vw, var(--space-3))
+    clamp(var(--space-3), 2vw, var(--space-4));
+  border-radius: var(--radius-full);
+  border: var(--border-default);
+  background: var(--background-surface);
+  color: var(--text-color-primary);
+  font-weight: 600;
+  font-size: var(--font-size-m);
+  line-height: 1.2;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--layout-transition-duration-fast)
+      var(--layout-transition-easing),
+    border-color var(--layout-transition-duration-fast)
+      var(--layout-transition-easing),
+    box-shadow var(--layout-transition-duration-fast)
+      var(--layout-transition-easing);
+}
+
+.footer-locale__action .material-symbols-rounded {
+  font-size: clamp(1.5rem, 1rem + 1vw, 2rem);
+  line-height: 1;
+}
+
+.footer-locale__action:hover,
+.footer-locale__action:focus-visible {
+  background: var(--background-surface-alternate);
+  outline: none;
+}
+
+.footer-locale__action:focus-visible {
+  box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.35);
+}
+
+.footer-locale__action--active {
+  border-color: var(--color-brand-secondary);
+  background: var(--background-surface-alternate);
+}
+
 @media (max-width: 63.99rem) {
   .footer-command__panel {
     transition: opacity 180ms ease, transform 180ms ease;
@@ -1421,6 +1489,19 @@ header .subtitle {
   }
 
   .footer-command__panel.footer-command__panel--open {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  .footer-locale__panel {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + var(--space-2));
+    inline-size: min(100vw - clamp(2rem, 12vw, 3.5rem), 22rem);
+    transform: translate3d(-50%, 0.75rem, 0);
+    box-shadow: var(--box-shadow-default);
+  }
+
+  .footer-locale__panel.footer-command__panel--open {
     transform: translate3d(-50%, 0, 0);
   }
 }

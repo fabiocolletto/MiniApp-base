@@ -7,7 +7,7 @@
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.
 - Botão único no rodapé do shell que abre uma janela com os atalhos de catálogo e tela cheia, localizado para `pt-BR`, `en-US` e `es-ES`.
-- Controle de idioma persistente no menu do shell com rádios acessíveis, sincronização automática do iframe via `postMessage({ action: 'set-locale' })` e suporte a `postMessage({ action: 'request-locale' })`.
+- Controle de idioma persistente no menu do shell com botões icônicos acessíveis, sincronização automática do iframe via `postMessage({ action: 'set-locale' })` e suporte a `postMessage({ action: 'request-locale' })`.
 - Documento `AGENTE.md` com diretrizes para manutenção do projeto.
 - `README.md` descrevendo a estrutura do repositório e o fluxo de trabalho recomendado.
 - Motor do painel Prefeito agora lê agregados do IndexedDB (persona, KPIs e indicadores) com atualização assíncrona.

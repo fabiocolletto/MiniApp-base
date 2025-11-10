@@ -91,7 +91,7 @@
                   type="button"
                   class="btn ghost footer-locale__toggle"
                   data-action="toggle-locale"
-                  aria-haspopup="listbox"
+                  aria-haspopup="menu"
                   aria-expanded="false"
                   aria-controls="footer-locale-panel"
                 >
@@ -99,40 +99,58 @@
                   <span data-locale-toggle-label>Idioma</span>
                 </button>
                 <div
-                  class="footer-locale__panel"
+                  class="footer-command__panel footer-locale__panel"
                   id="footer-locale-panel"
-                  role="radiogroup"
+                  role="menu"
                   data-locale-menu
                   hidden
                   aria-label="Selecionar idioma do shell"
                 >
-                  <label class="footer-locale__option" data-locale-option="pt-BR">
-                    <input
-                      type="radio"
-                      name="footer-locale"
-                      value="pt-BR"
-                      data-locale-input
+                  <p
+                    class="footer-locale__description"
+                    id="footer-locale-description"
+                    data-locale-menu-description
+                  >
+                    Selecione o idioma do shell
+                  </p>
+                  <div class="footer-locale__actions" role="none">
+                    <button
+                      type="button"
+                      class="footer-locale__action"
+                      data-locale-action
+                      data-locale-option="pt-BR"
+                      role="menuitemradio"
+                      aria-checked="false"
+                      aria-describedby="footer-locale-description"
                     >
-                    <span data-locale-option-label>Português (Brasil)</span>
-                  </label>
-                  <label class="footer-locale__option" data-locale-option="en-US">
-                    <input
-                      type="radio"
-                      name="footer-locale"
-                      value="en-US"
-                      data-locale-input
+                      <span class="material-symbols-rounded" aria-hidden="true">flag</span>
+                      <span data-locale-option-label>Português (Brasil)</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="footer-locale__action"
+                      data-locale-action
+                      data-locale-option="en-US"
+                      role="menuitemradio"
+                      aria-checked="false"
+                      aria-describedby="footer-locale-description"
                     >
-                    <span data-locale-option-label>English (US)</span>
-                  </label>
-                  <label class="footer-locale__option" data-locale-option="es-ES">
-                    <input
-                      type="radio"
-                      name="footer-locale"
-                      value="es-ES"
-                      data-locale-input
+                      <span class="material-symbols-rounded" aria-hidden="true">public</span>
+                      <span data-locale-option-label>English (US)</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="footer-locale__action"
+                      data-locale-action
+                      data-locale-option="es-ES"
+                      role="menuitemradio"
+                      aria-checked="false"
+                      aria-describedby="footer-locale-description"
                     >
-                    <span data-locale-option-label>Español (ES)</span>
-                  </label>
+                      <span class="material-symbols-rounded" aria-hidden="true">translate</span>
+                      <span data-locale-option-label>Español (ES)</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               <button
