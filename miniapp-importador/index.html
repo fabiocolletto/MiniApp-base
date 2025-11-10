@@ -150,8 +150,28 @@
         <script>
           (function () {
             const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
+            const DEFAULT_HEADER = {
+              title: 'Importador de Pesquisas',
+              subtitle: 'Importar arquivos, revisar resultados e sincronizar dados.',
+            };
 
-            function notifyShell() {
+            function resolveHeaderTitle(detail) {
+              const provided = detail && typeof detail.headerTitle === 'string' ? detail.headerTitle.trim() : '';
+              if (provided) {
+                return provided;
+              }
+
+              const titleElement = document.querySelector('h1[data-i18n="app.title"]');
+              const titleText = titleElement && titleElement.textContent ? titleElement.textContent.trim() : '';
+              return titleText || DEFAULT_HEADER.title;
+            }
+
+            function resolveHeaderSubtitle(detail) {
+              const provided = detail && typeof detail.headerSubtitle === 'string' ? detail.headerSubtitle.trim() : '';
+              return provided || DEFAULT_HEADER.subtitle;
+            }
+
+            function notifyShell(detail) {
               if (!window.parent || window.parent === window) {
                 return;
               }
@@ -160,8 +180,8 @@
                 window.parent.postMessage(
                   {
                     action: 'miniapp-header',
-                    title: 'Importador de Pesquisas',
-                    subtitle: 'Importar arquivos, revisar resultados e sincronizar dados.',
+                    title: resolveHeaderTitle(detail),
+                    subtitle: resolveHeaderSubtitle(detail),
                     icon: 'cloud_upload',
                     iconTheme: 'importador',
                   },
@@ -192,7 +212,7 @@
               }
             }
 
-            function setupCatalogButton() {
+            function updateCatalogButtonLabel() {
               const trigger = document.querySelector('[data-js="open-catalog"]');
 
               if (!trigger) {
@@ -213,6 +233,16 @@
 
               trigger.setAttribute('aria-label', label);
               trigger.setAttribute('title', label);
+            }
+
+            function setupCatalogButton() {
+              const trigger = document.querySelector('[data-js="open-catalog"]');
+
+              if (!trigger) {
+                return;
+              }
+
+              updateCatalogButtonLabel();
 
               trigger.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -220,9 +250,16 @@
               });
             }
 
+            function handleLanguageChange(event) {
+              const detail = event && event.detail ? event.detail : undefined;
+              notifyShell(detail);
+              updateCatalogButtonLabel();
+            }
+
             function initialize() {
               notifyShell();
               setupCatalogButton();
+              window.addEventListener('miniapp:language-changed', handleLanguageChange);
             }
 
             if (document.readyState === 'interactive' || document.readyState === 'complete') {

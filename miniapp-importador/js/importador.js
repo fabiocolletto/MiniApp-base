@@ -5,6 +5,7 @@
             'pt-BR': {
                 'meta.title': 'Ferramenta de Importação de Pesquisas',
                 'app.title': 'Importação de Pesquisas',
+                'app.subtitle': 'Importar arquivos, revisar resultados e sincronizar dados.',
                 'app.db.loading': 'Carregando DB...',
                 'storage.title': 'Visão Geral do Armazenamento Local',
                 'storage.loading': 'Carregando...',
@@ -43,8 +44,8 @@
                 'status.tag.update': 'ATUALIZAÇÃO',
                 'status.tag.old': 'Antiga',
                 'status.tag.na': 'N/A',
-                'status.file.success': 'Arquivo carregado com sucesso!',
-                'status.file.error': 'Erro ao carregar JSON:',
+                'status.file.success': 'Arquivo carregado com sucesso! ({{count}})',
+                'status.file.error': 'Erro ao carregar JSON: {{message}}',
                 'status.file.readError': 'Erro de leitura de arquivo.',
                 'status.import.error': 'ERRO: Por favor, selecione pelo menos uma pesquisa para continuar.',
                 'status.import.loading': 'Importando...',
@@ -84,6 +85,7 @@
             'en-US': {
                 'meta.title': 'Survey Import Tool',
                 'app.title': 'Survey Importer',
+                'app.subtitle': 'Import files, review results, and sync data.',
                 'app.db.loading': 'Loading DB...',
                 'storage.title': 'Local Storage Overview',
                 'storage.loading': 'Loading...',
@@ -122,8 +124,8 @@
                 'status.tag.update': 'UPDATE',
                 'status.tag.old': 'Old',
                 'status.tag.na': 'N/A',
-                'status.file.success': 'File loaded successfully!',
-                'status.file.error': 'Error loading JSON:',
+                'status.file.success': 'File loaded successfully! ({{count}})',
+                'status.file.error': 'Error loading JSON: {{message}}',
                 'status.file.readError': 'File read error.',
                 'status.import.error': 'ERROR: Please select at least one survey to continue.',
                 'status.import.loading': 'Importing...',
@@ -163,6 +165,7 @@
             'es-ES': {
                 'meta.title': 'Herramienta de Importación de Encuestas',
                 'app.title': 'Importador de Encuestas',
+                'app.subtitle': 'Importar archivos, revisar resultados y sincronizar datos.',
                 'app.db.loading': 'Cargando BD...',
                 'storage.title': 'Resumen del Almacenamiento Local',
                 'storage.loading': 'Cargando...',
@@ -201,8 +204,8 @@
                 'status.tag.update': 'ACTUALIZACIÓN',
                 'status.tag.old': 'Antigua',
                 'status.tag.na': 'N/D',
-                'status.file.success': '¡Archivo cargado correctamente!',
-                'status.file.error': 'Error al cargar el JSON:',
+                'status.file.success': '¡Archivo cargado correctamente! ({{count}})',
+                'status.file.error': 'Error al cargar el JSON: {{message}}',
                 'status.file.readError': 'Error al leer el archivo.',
                 'status.import.error': 'ERROR: Selecciona al menos una encuesta para continuar.',
                 'status.import.loading': 'Importando...',
@@ -241,9 +244,20 @@
             }
         };
 
+        function normalizeLanguageCode(lang) {
+            return typeof lang === 'string' ? lang.trim() : '';
+        }
+
+        function resolveLanguage(lang) {
+            const normalized = normalizeLanguageCode(lang).toLowerCase();
+            if (!normalized) return null;
+            return SUPPORTED_LANGS.find(code => normalized.startsWith(code.toLowerCase())) || null;
+        }
+
         function detectLanguage() {
-            const userLang = navigator.language || navigator.userLanguage || DEFAULT_LANG;
-            return SUPPORTED_LANGS.find(lang => userLang.startsWith(lang)) || DEFAULT_LANG;
+            const documentLang = normalizeLanguageCode(document.documentElement.getAttribute('lang'));
+            const supportedFromDocument = resolveLanguage(documentLang);
+            return supportedFromDocument || DEFAULT_LANG;
         }
 
         function translate(key, vars = {}) {
@@ -275,10 +289,12 @@
         }
 
         let currentLanguage = detectLanguage();
-
-        document.documentElement.lang = currentLanguage;
-        document.title = translate('meta.title');
-        applyTranslations();
+        const initialDocumentLanguage = normalizeLanguageCode(document.documentElement.getAttribute('lang'));
+        const shouldRequestLocaleFromShell = !resolveLanguage(initialDocumentLanguage);
+        let lastDbStatusPayload = null;
+        let fileStatusState = { type: 'hint' };
+        let isAppInitialized = false;
+        const isEmbeddedInShell = window.parent && window.parent !== window;
 
         // =======================================================
         // ESTADO GLOBAL
@@ -324,6 +340,16 @@
         const STORE_NAME = 'researches';
         const KEY_PATH = 'researchId';
 
+        applyLanguage(currentLanguage);
+
+        if (shouldRequestLocaleFromShell) {
+            requestShellLocale();
+        }
+
+        if (isEmbeddedInShell) {
+            window.addEventListener('message', handleShellMessage);
+        }
+
         const MOCK_DATA = [
             { "researchId": "RES-NEW-001", "researchName": "Nova Pesquisa de Mercado", "sector": "Varejo", "participants": [{},{},{}], "researchDate": Date.parse('2025-11-05T10:00:00Z') },
             { "researchId": "RES-TCH-002", "researchName": "Versão Nova de Tecnologia", "sector": "Tecnologia", "participants": [{},{},{},{}], "researchDate": Date.parse('2025-11-08T15:00:00Z') },
@@ -353,7 +379,53 @@
             }
         }
 
-        function updateDbStatus(state, message) {
+        function normalizeStatusDescriptor(message) {
+            if (!message) {
+                return null;
+            }
+
+            if (message.type === 'raw' || message.type === 'i18n') {
+                return {
+                    type: message.type,
+                    value: message.value,
+                    key: message.key,
+                    vars: message.vars ? { ...message.vars } : {}
+                };
+            }
+
+            if (typeof message === 'string') {
+                return { type: 'raw', value: message };
+            }
+
+            if (typeof message === 'object' && typeof message.key === 'string') {
+                return { type: 'i18n', key: message.key, vars: { ...(message.vars || {}) } };
+            }
+
+            return null;
+        }
+
+        function resolveStatusDescriptor(descriptor) {
+            if (!descriptor) {
+                return '';
+            }
+
+            if (descriptor.type === 'raw') {
+                return descriptor.value || '';
+            }
+
+            if (descriptor.type === 'i18n') {
+                return translate(descriptor.key, descriptor.vars || {});
+            }
+
+            return '';
+        }
+
+        function applyDbStatus(payload) {
+            if (!payload) return;
+
+            const { state, descriptor } = payload;
+            const messageText = resolveStatusDescriptor(descriptor);
+
             if (state === 'loading') {
                 headerDbStatus.dataset.state = 'loading';
             } else if (state === 'ok') {
@@ -363,17 +435,109 @@
             } else if (state === 'sync') {
                 headerDbStatus.dataset.state = 'sync';
             }
-            headerDbStatusText.textContent = message;
-            headerDbStatus.setAttribute('aria-label', message);
+
+            headerDbStatusText.textContent = messageText;
+            headerDbStatus.setAttribute('aria-label', messageText);
 
             if (globalStatus) {
-                if (message) {
+                if (messageText) {
                     globalStatus.classList.remove('is-hidden');
-                    setStatusMessage(globalStatus, message, state === 'error' ? 'error' : state === 'ok' ? 'success' : 'info');
+                    setStatusMessage(globalStatus, messageText, state === 'error' ? 'error' : state === 'ok' ? 'success' : 'info');
                 } else {
                     globalStatus.classList.add('is-hidden');
                 }
             }
+        }
+
+        function updateDbStatus(state, message) {
+            lastDbStatusPayload = {
+                state,
+                descriptor: normalizeStatusDescriptor(message)
+            };
+
+            applyDbStatus(lastDbStatusPayload);
+        }
+
+        function renderFileStatus() {
+            if (!fileStatus) return;
+
+            const state = fileStatusState?.type || 'hint';
+
+            if (state === 'success') {
+                const count = typeof fileStatusState.count === 'number' ? fileStatusState.count : 0;
+                fileStatus.innerHTML = translate('status.file.success', { count });
+            } else if (state === 'error') {
+                fileStatus.textContent = translate('status.file.error', { message: fileStatusState.message || '' });
+            } else if (state === 'read-error') {
+                fileStatus.textContent = translate('status.file.readError');
+            } else {
+                fileStatus.textContent = translate('upload.file.hint');
+            }
+        }
+
+        function emitLanguageChange() {
+            const detail = {
+                language: currentLanguage,
+                headerTitle: translate('app.title'),
+                headerSubtitle: translate('app.subtitle'),
+                catalogLabel: translate('actions.openCatalog')
+            };
+
+            window.dispatchEvent(new CustomEvent('miniapp:language-changed', { detail }));
+        }
+
+        function applyLanguage(language) {
+            const resolved = resolveLanguage(language) || DEFAULT_LANG;
+            currentLanguage = resolved;
+
+            document.documentElement.lang = currentLanguage;
+            document.title = translate('meta.title');
+            applyTranslations();
+            renderFileStatus();
+
+            if (isAppInitialized) {
+                updateImportButton();
+
+                if (loadedResearchData.length > 0) {
+                    renderTable();
+                }
+
+                loadAllResearches().catch(console.error);
+                updateOnlineStatus();
+
+                if (lastDbStatusPayload) {
+                    applyDbStatus(lastDbStatusPayload);
+                }
+
+                emitLanguageChange();
+            }
+        }
+
+        function requestShellLocale() {
+            if (!isEmbeddedInShell) return;
+
+            try {
+                window.parent.postMessage({ action: 'request-locale' }, window.location.origin);
+            } catch (error) {
+                console.error('Não foi possível solicitar o idioma ao shell.', error);
+            }
+        }
+
+        function handleShellMessage(event) {
+            if (!event || typeof event.data !== 'object') {
+                return;
+            }
+
+            if (event.origin && event.origin !== window.location.origin && event.origin !== 'null') {
+                return;
+            }
+
+            const { action, locale } = event.data;
+            if (action !== 'set-locale' || typeof locale !== 'string') {
+                return;
+            }
+
+            applyLanguage(locale);
         }
 
         function showCustomModal(title, message, showCancel) {
@@ -589,18 +753,18 @@
 
             syncAllButton.disabled = true;
             clearAllOnlineButton.disabled = true;
-            updateDbStatus('loading', translate('status.db.syncAll'));
+            updateDbStatus('loading', { key: 'status.db.syncAll' });
 
             try {
                 const allLocalResearches = await getAllLocalResearches();
                 await saveOnlineResearches(allLocalResearches);
-                updateDbStatus('ok', translate('status.db.syncReady', { count: allLocalResearches.length }));
+                updateDbStatus('ok', { key: 'status.db.syncReady', vars: { count: allLocalResearches.length } });
                 await updateOnlineStatus();
             } catch (error) {
-                updateDbStatus('error', translate('status.db.syncFailure', { message: error.message }));
+                updateDbStatus('error', { key: 'status.db.syncFailure', vars: { message: error.message } });
             } finally {
                 setTimeout(() => {
-                    updateDbStatus('ok', translate('status.db.ready', { count: existingResearchMap.size }));
+                    updateDbStatus('ok', { key: 'status.db.ready', vars: { count: existingResearchMap.size } });
                     syncAllButton.disabled = (existingResearchMap.size === 0);
                     updateOnlineStatus();
                 }, 2000);
@@ -610,7 +774,7 @@
         async function confirmClearOnline() {
             const hasData = onlineResearchesMap.size > 0;
             if (!hasData) {
-                updateDbStatus('sync', translate('status.db.clearOnlineNone'));
+                updateDbStatus('sync', { key: 'status.db.clearOnlineNone' });
                 return;
             }
 
@@ -621,34 +785,34 @@
             );
             if (!confirmed) return;
 
-            updateDbStatus('loading', translate('status.db.onlineClearing'));
+            updateDbStatus('loading', { key: 'status.db.onlineClearing' });
             syncAllButton.disabled = true;
             clearAllOnlineButton.disabled = true;
 
             try {
                 await clearOnlineDatabase();
-                updateDbStatus('ok', translate('status.db.onlineCleared'));
+                updateDbStatus('ok', { key: 'status.db.onlineCleared' });
                 await updateOnlineStatus();
             } catch (error) {
-                updateDbStatus('error', translate('status.db.syncFailure', { message: error.message }));
+                updateDbStatus('error', { key: 'status.db.syncFailure', vars: { message: error.message } });
             }
         }
 
         function openDB() {
             return new Promise((resolve, reject) => {
                 if (!window.indexedDB) {
-                    updateDbStatus('error', translate('status.db.unsupported'));
+                    updateDbStatus('error', { key: 'status.db.unsupported' });
                     renderMemoryStatus();
                     reject(new Error('IndexedDB not supported'));
                     return;
                 }
 
-                updateDbStatus('loading', translate('status.db.loading'));
+                updateDbStatus('loading', { key: 'status.db.loading' });
 
                 const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
                 request.onerror = (event) => {
-                    updateDbStatus('error', translate('status.db.openError'));
+                    updateDbStatus('error', { key: 'status.db.openError' });
                     renderMemoryStatus();
                     reject(event.target.error);
                 };
@@ -657,7 +821,7 @@
                     db = event.target.result;
                     try {
                         await loadAllResearches();
-                        updateDbStatus('ok', translate('status.db.ready', { count: existingResearchMap.size }));
+                        updateDbStatus('ok', { key: 'status.db.ready', vars: { count: existingResearchMap.size } });
                         renderMemoryStatus();
                         resolve();
                     } catch (error) {
@@ -767,12 +931,12 @@
 
             request.onsuccess = () => {
                 existingResearchMap.delete(researchId);
-                updateDbStatus('ok', translate('status.action.deleteSuccess'));
+                updateDbStatus('ok', { key: 'status.action.deleteSuccess' });
                 loadAllResearches();
             };
 
             request.onerror = (event) => {
-                updateDbStatus('error', translate('status.action.deleteFailure', { message: event.target.error?.message || '?' }));
+                updateDbStatus('error', { key: 'status.action.deleteFailure', vars: { message: event.target.error?.message || '?' } });
             };
         }
 
@@ -784,12 +948,12 @@
             );
             if (!confirmed) return;
 
-            updateDbStatus('loading', translate('status.db.clearing'));
+            updateDbStatus('loading', { key: 'status.db.clearing' });
 
             if (!db) {
                 existingResearchMap.clear();
                 renderMemoryStatus();
-                updateDbStatus('ok', translate('status.db.clearedEmpty'));
+                updateDbStatus('ok', { key: 'status.db.clearedEmpty' });
                 return;
             }
 
@@ -799,19 +963,20 @@
 
             request.onsuccess = () => {
                 existingResearchMap.clear();
-                updateDbStatus('ok', translate('status.db.cleared'));
+                updateDbStatus('ok', { key: 'status.db.cleared' });
                 loadAllResearches();
             };
 
             request.onerror = (event) => {
-                updateDbStatus('error', translate('status.action.deleteFailure', { message: event.target.error?.message || '?' }));
+                updateDbStatus('error', { key: 'status.action.deleteFailure', vars: { message: event.target.error?.message || '?' } });
             };
         }
 
         function handleFileUpload() {
             const file = jsonFileInput.files?.[0];
             if (!file) {
-                fileStatus.textContent = translate('upload.file.hint');
+                fileStatusState = { type: 'hint' };
+                renderFileStatus();
                 return;
             }
 
@@ -820,12 +985,14 @@
                 try {
                     const data = JSON.parse(event.target.result);
                     loadedResearchData = Array.isArray(data) ? data : [];
-                    fileStatus.innerHTML = `${translate('status.file.success')} (${loadedResearchData.length})`;
+                    fileStatusState = { type: 'success', count: loadedResearchData.length };
+                    renderFileStatus();
                     selectionArea.classList.remove('is-hidden');
                     actionArea.classList.remove('is-hidden');
                     renderTable();
                 } catch (error) {
-                    fileStatus.textContent = `${translate('status.file.error')} ${error.message}`;
+                    fileStatusState = { type: 'error', message: error.message };
+                    renderFileStatus();
                     loadedResearchData = [];
                     selectionArea.classList.add('is-hidden');
                     actionArea.classList.add('is-hidden');
@@ -834,7 +1001,8 @@
             };
 
             reader.onerror = function() {
-                fileStatus.textContent = translate('status.file.readError');
+                fileStatusState = { type: 'read-error' };
+                renderFileStatus();
                 loadedResearchData = [];
                 selectionArea.classList.add('is-hidden');
                 actionArea.classList.add('is-hidden');
@@ -846,7 +1014,8 @@
 
         function loadTestData() {
             loadedResearchData = JSON.parse(JSON.stringify(MOCK_DATA));
-            fileStatus.innerHTML = `${translate('status.file.success')} (${loadedResearchData.length})`;
+            fileStatusState = { type: 'success', count: loadedResearchData.length };
+            renderFileStatus();
             selectionArea.classList.remove('is-hidden');
             actionArea.classList.remove('is-hidden');
             renderTable();
@@ -984,7 +1153,8 @@
             selectionArea.classList.add('is-hidden');
             actionArea.classList.add('is-hidden');
             document.getElementById('researchTableBody').innerHTML = '';
-            fileStatus.textContent = translate('upload.file.hint');
+            fileStatusState = { type: 'hint' };
+            renderFileStatus();
             updateImportButton();
             actionStatusMessage.textContent = translate('action.status.none');
             loadAllResearches().then(() => renderMemoryStatus());
@@ -1003,7 +1173,7 @@
             const researchesToImport = loadedResearchData.filter(r => selectedIds.includes(r.researchId));
             importButton.textContent = translate('status.import.loading');
             importButton.disabled = true;
-            updateDbStatus('loading', translate('status.import.loading'));
+            updateDbStatus('loading', { key: 'status.import.loading' });
 
             try {
                 if (!db) {
@@ -1014,10 +1184,10 @@
                     );
                 } else {
                     await saveResearches(researchesToImport);
-                    updateDbStatus('ok', translate('status.import.success', { count: researchesToImport.length }));
+                    updateDbStatus('ok', { key: 'status.import.success', vars: { count: researchesToImport.length } });
                 }
             } catch (error) {
-                updateDbStatus('error', translate('status.import.failure', { message: error.message }));
+                updateDbStatus('error', { key: 'status.import.failure', vars: { message: error.message } });
             } finally {
                 setTimeout(() => {
                     resetUI();
@@ -1042,6 +1212,8 @@
             await openDB().catch(console.error);
             updateImportButton();
             await updateOnlineStatus();
+            isAppInitialized = true;
+            applyLanguage(currentLanguage);
         }
 
         document.addEventListener('DOMContentLoaded', init);
