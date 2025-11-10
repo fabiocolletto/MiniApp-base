@@ -23,7 +23,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', function () {
-    var miniapps = [
+    var miniappDefinitions = [
       {
         id: 'miniapp-prefeito',
         name: 'Painel do Prefeito',
@@ -31,36 +31,90 @@
         icon: 'monitoring',
         theme: 'prefeito',
         href: '../miniapp-prefeito/index.html',
-        favorite: true,
+        isDefaultFavorite: true,
       },
       {
         id: 'miniapp-cadastro',
         name: 'Cadastro de Usuários',
-        description: 'Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.',
+        description:
+          'Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.',
         icon: 'person_add',
         theme: 'cadastro',
         href: '../miniapp-cadastro/index.html',
-        favorite: true,
+        isDefaultFavorite: true,
       },
       {
         id: 'miniapp-importador',
         name: 'Importador de Pesquisas',
-        description: 'Fluxo para importar arquivos CSV de pesquisas e revisar resultados.',
+        description:
+          'Fluxo para importar arquivos CSV de pesquisas e revisar resultados.',
         icon: 'cloud_upload',
         theme: 'importador',
         href: '../miniapp-importador/index.html',
-        favorite: false,
+        isDefaultFavorite: false,
       },
       {
         id: 'miniapp-tts',
         name: 'Gerador de Roteiros TTS',
-        description: 'Formulário guiado com prévias de áudio e exportação otimizada para locução.',
+        description:
+          'Formulário guiado com prévias de áudio e exportação otimizada para locução.',
         icon: 'text_to_speech',
         theme: 'tts',
         href: '../miniapp-tts/index.html',
-        favorite: false,
+        isDefaultFavorite: false,
       },
     ];
+
+    var MINIAPP_COPY = {
+      'pt-BR': miniappDefinitions.reduce(function (dictionary, app) {
+        dictionary[app.id] = {
+          name: app.name,
+          description: app.description,
+        };
+        return dictionary;
+      }, {}),
+      'en-US': {
+        'miniapp-prefeito': {
+          name: "Mayor's Dashboard",
+          description: 'Dashboard with KPIs, filters, and sector reports.',
+        },
+        'miniapp-cadastro': {
+          name: 'User Registration',
+          description:
+            'Guided flow to register new users and record terms acceptance.',
+        },
+        'miniapp-importador': {
+          name: 'Survey Importer',
+          description: 'Flow to import survey CSV files and review results.',
+        },
+        'miniapp-tts': {
+          name: 'TTS Script Generator',
+          description:
+            'Guided form with audio previews and optimized export for voice-over.',
+        },
+      },
+      'es-ES': {
+        'miniapp-prefeito': {
+          name: 'Panel del Alcalde',
+          description: 'Panel con KPI, filtros e informes sectoriales.',
+        },
+        'miniapp-cadastro': {
+          name: 'Registro de Usuarios',
+          description:
+            'Flujo guiado para registrar nuevos usuarios y guardar la aceptación de términos.',
+        },
+        'miniapp-importador': {
+          name: 'Importador de Encuestas',
+          description:
+            'Flujo para importar archivos CSV de encuestas y revisar resultados.',
+        },
+        'miniapp-tts': {
+          name: 'Generador de Guiones TTS',
+          description:
+            'Formulario guiado con vistas previas de audio y exportación optimizada para locución.',
+        },
+      },
+    };
 
     var FAVORITES_STORAGE_KEY = 'miniappCatalog.favorites';
     var SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
@@ -68,6 +122,47 @@
       'pt-BR': { add: 'Adicionar aos favoritos', remove: 'Remover dos favoritos' },
       'en-US': { add: 'Add to favorites', remove: 'Remove from favorites' },
       'es-ES': { add: 'Agregar a favoritos', remove: 'Quitar de favoritos' },
+    };
+    var CATALOG_SECTION_COPY = {
+      'pt-BR': {
+        boardLabel: 'Catálogo de MiniApps',
+        favorites: {
+          title: 'Favoritos',
+          description: 'MiniApps fixos para acesso rápido.',
+          carouselLabel: 'MiniApps favoritos',
+        },
+        all: {
+          title: 'Todos os MiniApps',
+          description: 'Lista completa de MiniApps disponíveis.',
+          carouselLabel: 'MiniApps disponíveis',
+        },
+      },
+      'en-US': {
+        boardLabel: 'MiniApps Catalog',
+        favorites: {
+          title: 'Favorites',
+          description: 'Pinned MiniApps for quick access.',
+          carouselLabel: 'Favorite MiniApps',
+        },
+        all: {
+          title: 'All MiniApps',
+          description: 'Complete list of available MiniApps.',
+          carouselLabel: 'Available MiniApps',
+        },
+      },
+      'es-ES': {
+        boardLabel: 'Catálogo de MiniApps',
+        favorites: {
+          title: 'Favoritos',
+          description: 'MiniApps fijos para acceso rápido.',
+          carouselLabel: 'MiniApps favoritos',
+        },
+        all: {
+          title: 'Todos los MiniApps',
+          description: 'Lista completa de MiniApps disponibles.',
+          carouselLabel: 'MiniApps disponibles',
+        },
+      },
     };
     var CATALOG_HEADER_COPY = {
       'pt-BR': {
@@ -92,10 +187,10 @@
 
     var favoritesManager = createFavoriteManager({
       storageKey: FAVORITES_STORAGE_KEY,
-      apps: miniapps,
-      defaultFavorites: miniapps
+      apps: miniappDefinitions,
+      defaultFavorites: miniappDefinitions
         .filter(function (app) {
-          return app.favorite;
+          return app.isDefaultFavorite;
         })
         .map(function (app) {
           return app.id;
@@ -110,6 +205,9 @@
 
     var favoritesContainer = document.querySelector('[data-carousel="favorites"]');
     var allContainer = document.querySelector('[data-carousel="all"]');
+    var favoritesSection = favoritesContainer && favoritesContainer.closest('section');
+    var allSection = allContainer && allContainer.closest('section');
+    var catalogBoard = document.querySelector('.catalog-board');
 
     function getActiveLocale() {
       return getDocumentLocale(SUPPORTED_LOCALES, 'pt-BR');
@@ -200,6 +298,82 @@
       return article;
     }
 
+    function getLocalizedMiniapps(locale) {
+      var normalized = normalizeLocale(locale, SUPPORTED_LOCALES, 'pt-BR');
+      var fallbackDictionary = MINIAPP_COPY['pt-BR'] || {};
+      var dictionary = MINIAPP_COPY[normalized] || fallbackDictionary;
+
+      return miniappDefinitions.map(function (definition) {
+        var localized = dictionary[definition.id] || fallbackDictionary[definition.id] || {};
+
+        return {
+          id: definition.id,
+          icon: definition.icon,
+          theme: definition.theme,
+          href: definition.href,
+          name: localized.name || definition.name,
+          description: localized.description || definition.description,
+        };
+      });
+    }
+
+    function updateSectionCopy(locale) {
+      var normalized = normalizeLocale(locale, SUPPORTED_LOCALES, 'pt-BR');
+      var fallback = CATALOG_SECTION_COPY['pt-BR'] || {};
+      var dictionary = CATALOG_SECTION_COPY[normalized] || fallback;
+
+      if (catalogBoard && dictionary.boardLabel) {
+        catalogBoard.setAttribute('aria-label', dictionary.boardLabel);
+      }
+
+      if (favoritesSection) {
+        var favoritesHeader = favoritesSection.querySelector('.catalog-favorites__header');
+        if (favoritesHeader) {
+          var favoritesTitle = favoritesHeader.querySelector('h2');
+          var favoritesDescription = favoritesHeader.querySelector('p');
+          if (favoritesTitle && dictionary.favorites && dictionary.favorites.title) {
+            favoritesTitle.textContent = dictionary.favorites.title;
+          }
+          if (
+            favoritesDescription &&
+            dictionary.favorites &&
+            dictionary.favorites.description
+          ) {
+            favoritesDescription.textContent = dictionary.favorites.description;
+          }
+        }
+
+        if (
+          favoritesContainer &&
+          dictionary.favorites &&
+          dictionary.favorites.carouselLabel
+        ) {
+          favoritesContainer.setAttribute(
+            'data-carousel-label',
+            dictionary.favorites.carouselLabel,
+          );
+        }
+      }
+
+      if (allSection) {
+        var allHeader = allSection.querySelector('.catalog-favorites__header');
+        if (allHeader) {
+          var allTitle = allHeader.querySelector('h2');
+          var allDescription = allHeader.querySelector('p');
+          if (allTitle && dictionary.all && dictionary.all.title) {
+            allTitle.textContent = dictionary.all.title;
+          }
+          if (allDescription && dictionary.all && dictionary.all.description) {
+            allDescription.textContent = dictionary.all.description;
+          }
+        }
+
+        if (allContainer && dictionary.all && dictionary.all.carouselLabel) {
+          allContainer.setAttribute('data-carousel-label', dictionary.all.carouselLabel);
+        }
+      }
+    }
+
     function mountCarousel(container, items) {
       if (!container) {
         return;
@@ -264,16 +438,17 @@
     function renderCatalog(options) {
       var focusMiniAppId = options && options.focusMiniAppId;
 
-      miniapps.forEach(function (app) {
-        app.favorite = favoritesManager.isFavorite(app.id);
-      });
+      var locale = getActiveLocale();
+      var localizedMiniapps = getLocalizedMiniapps(locale);
 
-      var favorites = miniapps.filter(function (app) {
+      var favorites = localizedMiniapps.filter(function (app) {
         return favoritesManager.isFavorite(app.id);
       });
 
+      updateSectionCopy(locale);
+
       mountCarousel(favoritesContainer, favorites);
-      mountCarousel(allContainer, miniapps);
+      mountCarousel(allContainer, localizedMiniapps);
 
       if (!focusMiniAppId) {
         return;
