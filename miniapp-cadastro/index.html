@@ -11,54 +11,47 @@
   <link rel="stylesheet" href="../miniapp-base/style/styles.css">
 </head>
 <body>
-  <div style="min-height: 100vh; display: flex; flex-direction: column; background: var(--background-page); color: var(--text-color-primary);">
-    <header style="padding: clamp(var(--space-5), 6vw, var(--space-7)) clamp(var(--space-4), 4vw, var(--space-7)) 0;">
-      <div style="display: flex; flex-direction: column; gap: clamp(var(--space-4), 3vw, var(--space-6)); max-width: min(960px, 100%); margin: 0 auto;">
-        <div style="display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between;">
-          <div style="display: grid; gap: var(--space-2); min-width: 220px;">
-            <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="header.badge">Fluxo guiado</p>
-            <h1 style="margin: 0; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);" data-i18n="header.title">Cadastro de novos usuários</h1>
-            <p style="margin: 0; font-size: var(--font-size-l); color: var(--text-color-muted);" data-i18n="header.subtitle">Centralize o onboarding e valide os dados essenciais antes de liberar o acesso.</p>
-          </div>
-          <div style="display: flex; gap: var(--space-3); align-items: center;">
-            <label for="languageSelect" style="font-size: var(--font-size-m); font-weight: var(--font-weight-medium);" data-i18n="language.label">Idioma</label>
-            <select id="languageSelect" aria-label="Idioma" data-i18n-aria-label="language.label" style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); background: var(--background-surface); color: var(--text-color-primary); font-family: inherit;">
-              <option value="pt-BR">Português</option>
-              <option value="en-US">English</option>
-              <option value="es-ES">Español</option>
-            </select>
-          </div>
-        </div>
-        <div class="miniapp-toolbar" style="justify-content: flex-start; padding: 0;">
-          <button
-            type="button"
-            class="btn ghost miniapp-toolbar__button"
-            data-js="open-catalog"
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: clamp(var(--space-6), 6vw, var(--space-8)); background: var(--background-page); color: var(--text-color-primary);">
+    <form
+      id="registrationForm"
+      novalidate
+      class="card"
+      style="width: min(720px, 100%); display: grid; gap: clamp(var(--space-5), 4vw, var(--space-6));"
+    >
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: clamp(var(--space-3), 3vw, var(--space-5));">
+        <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.description">Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.</p>
+        <div style="display: flex; gap: var(--space-3); align-items: center;">
+          <label for="languageSelect" style="font-size: var(--font-size-m); font-weight: var(--font-weight-medium);" data-i18n="language.label">Idioma</label>
+          <select
+            id="languageSelect"
+            aria-label="Idioma"
+            data-i18n-aria-label="language.label"
+            style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); background: var(--background-surface); color: var(--text-color-primary); font-family: inherit;"
           >
-            <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-            <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
-          </button>
+            <option value="pt-BR">Português</option>
+            <option value="en-US">English</option>
+            <option value="es-ES">Español</option>
+          </select>
         </div>
       </div>
-    </header>
 
-    <main style="flex: 1; padding: 0 clamp(var(--space-4), 4vw, var(--space-7)) clamp(var(--space-7), 8vw, calc(var(--space-8) + var(--space-2))); display: grid; gap: clamp(var(--space-5), 5vw, var(--space-7));">
-      <section class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: grid; gap: var(--space-4);" aria-labelledby="introTitle">
-        <h2 id="introTitle" style="margin: 0; font-size: clamp(1.25rem, 1rem + 0.6vw, 1.6rem);" data-i18n="intro.title">Pronto para receber novos acessos</h2>
-        <p style="margin: 0; font-size: var(--font-size-l); color: var(--text-color-muted);" data-i18n="intro.description">Reúna dados pessoais, defina o papel do usuário e confirme o aceite dos termos de uso. Você pode revisar tudo no resumo antes de concluir.</p>
-        <ul style="margin: 0; padding-left: 1.25rem; display: grid; gap: var(--space-2); font-size: var(--font-size-m); color: var(--text-color-strong);">
-          <li data-i18n="intro.highlights.dataQuality">Validação de email e senha com regras personalizadas.</li>
-          <li data-i18n="intro.highlights.roles">Seleção rápida de perfis e setores atendidos.</li>
-          <li data-i18n="intro.highlights.audit">Registro do aceite de políticas para auditoria.</li>
-        </ul>
-      </section>
+      <div class="miniapp-toolbar" style="margin: 0; justify-content: flex-end;">
+        <button
+          type="button"
+          class="btn ghost miniapp-toolbar__button"
+          data-js="open-catalog"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+          <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
+        </button>
+      </div>
 
-      <section class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: grid; gap: var(--space-5);" aria-labelledby="formTitle">
-        <div style="display: grid; gap: var(--space-2);">
-          <h2 id="formTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.5vw, 1.5rem);" data-i18n="form.title">Dados do usuário</h2>
-          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.description">Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.</p>
+      <section aria-labelledby="personalDataTitle" style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
+        <div style="display: grid; gap: var(--space-1);">
+          <h2 id="personalDataTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.4vw, 1.5rem);" data-i18n="form.sections.personal.title">Dados pessoais</h2>
+          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.sections.personal.description">Comece identificando quem receberá o acesso.</p>
         </div>
-        <form id="registrationForm" novalidate style="display: grid; gap: clamp(var(--space-4), 3vw, var(--space-5));">
+        <div style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
           <div style="display: grid; gap: var(--space-2);">
             <label for="fullName" data-i18n="form.fields.fullName.label">Nome completo *</label>
             <input
@@ -97,7 +90,15 @@
             >
             <p data-field-error="phone" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
           </div>
+        </div>
+      </section>
 
+      <section aria-labelledby="professionalDataTitle" style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
+        <div style="display: grid; gap: var(--space-1);">
+          <h2 id="professionalDataTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.4vw, 1.5rem);" data-i18n="form.sections.professional.title">Dados profissionais</h2>
+          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.sections.professional.description">Defina como a pessoa atuará na plataforma.</p>
+        </div>
+        <div style="display: grid; gap: clamp(var(--space-3), 3vw, var(--space-4));">
           <div style="display: grid; gap: clamp(var(--space-3), 2vw, var(--space-4)); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
             <div style="display: grid; gap: var(--space-2);">
               <label for="role" data-i18n="form.fields.role.label">Papel na plataforma *</label>
@@ -165,26 +166,25 @@
             </label>
             <p data-field-error="terms" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
           </div>
-
-          <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;">
-            <button type="reset" class="btn ghost" data-i18n="form.actions.reset">Limpar</button>
-            <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
-          </div>
-        </form>
-      </section>
-
-      <section id="summaryCard" class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: none; gap: var(--space-4);" aria-labelledby="summaryTitle">
-        <div style="display: grid; gap: var(--space-2);">
-          <h2 id="summaryTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.5vw, 1.5rem);" data-i18n="summary.title">Resumo do cadastro</h2>
-          <p id="summaryDescription" style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="summary.description.success">Revisão concluída com sucesso. Compartilhe o acesso com o usuário.</p>
-        </div>
-        <ul id="summaryList" style="margin: 0; padding-left: 1.25rem; display: grid; gap: var(--space-2); font-size: var(--font-size-m);"></ul>
-        <div id="summaryAlert" class="pill" style="background: rgba(22, 163, 74, 0.12); border: 1px solid rgba(22, 163, 74, 0.28); color: var(--color-accent-green);">
-          <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
-          <span data-i18n="summary.success.message">Cadastro salvo e pronto para ativação no diretório corporativo.</span>
         </div>
       </section>
-    </main>
+
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;">
+        <button type="reset" class="btn ghost" data-i18n="form.actions.reset">Limpar</button>
+        <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
+      </div>
+
+      <div
+        id="formFeedback"
+        class="pill"
+        style="display: none; align-items: center; gap: var(--space-2); background: rgba(22, 163, 74, 0.12); border: 1px solid rgba(22, 163, 74, 0.28); color: var(--color-accent-green);"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true" data-js="feedback-icon">check_circle</span>
+        <span data-js="feedback-message"></span>
+      </div>
+    </form>
   </div>
 
   <noscript>Habilite o JavaScript para enviar o formulário de cadastro.</noscript>
