@@ -869,6 +869,16 @@ header .subtitle {
   gap: var(--space-3);
 }
 
+.panel-action {
+  align-items: center;
+  font-weight: 600;
+  gap: var(--space-2);
+}
+
+.panel-action .material-symbols-rounded {
+  font-size: clamp(1.25rem, 0.9rem + 0.6vw, 1.75rem);
+}
+
 .app-footer {
   border-top: var(--border-default);
   background: var(--background-surface);
