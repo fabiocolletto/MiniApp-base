@@ -342,20 +342,26 @@
       icon.setAttribute('aria-hidden', 'true');
       icon.textContent = app.icon;
 
-      var content = document.createElement('div');
-      content.className = 'catalog-card__content';
-
       var title = document.createElement('h3');
       title.textContent = app.name;
+
+      header.appendChild(icon);
+      header.appendChild(title);
+
+      var content = document.createElement('div');
+      content.className = 'catalog-card__content';
 
       var description = document.createElement('p');
       description.textContent = app.description;
 
-      content.appendChild(title);
       content.appendChild(description);
-      header.appendChild(icon);
-      header.appendChild(content);
+
+      var footer = document.createElement('div');
+      footer.className = 'catalog-card__footer';
+
       link.appendChild(header);
+      link.appendChild(content);
+      link.appendChild(footer);
       article.appendChild(link);
 
       article.appendChild(configureFavoriteButton(null, app));
