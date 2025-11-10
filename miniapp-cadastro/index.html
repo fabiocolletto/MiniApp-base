@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="meta.title">Cadastro de Usuários</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+</head>
+<body>
+  <div style="min-height: 100vh; display: flex; flex-direction: column; background: var(--background-page); color: var(--text-color-primary);">
+    <header style="padding: clamp(var(--space-5), 6vw, var(--space-7)) clamp(var(--space-4), 4vw, var(--space-7)) 0;">
+      <div style="display: flex; flex-direction: column; gap: clamp(var(--space-4), 3vw, var(--space-6)); max-width: min(960px, 100%); margin: 0 auto;">
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between;">
+          <div style="display: grid; gap: var(--space-2); min-width: 220px;">
+            <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="header.badge">Fluxo guiado</p>
+            <h1 style="margin: 0; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);" data-i18n="header.title">Cadastro de novos usuários</h1>
+            <p style="margin: 0; font-size: var(--font-size-l); color: var(--text-color-muted);" data-i18n="header.subtitle">Centralize o onboarding e valide os dados essenciais antes de liberar o acesso.</p>
+          </div>
+          <div style="display: flex; gap: var(--space-3); align-items: center;">
+            <label for="languageSelect" style="font-size: var(--font-size-m); font-weight: var(--font-weight-medium);" data-i18n="language.label">Idioma</label>
+            <select id="languageSelect" aria-label="Idioma" data-i18n-aria-label="language.label" style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); background: var(--background-surface); color: var(--text-color-primary); font-family: inherit;">
+              <option value="pt-BR">Português</option>
+              <option value="en-US">English</option>
+              <option value="es-ES">Español</option>
+            </select>
+          </div>
+        </div>
+        <div class="miniapp-toolbar" style="justify-content: flex-start; padding: 0;">
+          <button
+            type="button"
+            class="btn ghost miniapp-toolbar__button"
+            data-js="open-catalog"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+            <span data-js="catalog-label" data-i18n="actions.openCatalog">Catálogo</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main style="flex: 1; padding: 0 clamp(var(--space-4), 4vw, var(--space-7)) clamp(var(--space-7), 8vw, calc(var(--space-8) + var(--space-2))); display: grid; gap: clamp(var(--space-5), 5vw, var(--space-7));">
+      <section class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: grid; gap: var(--space-4);" aria-labelledby="introTitle">
+        <h2 id="introTitle" style="margin: 0; font-size: clamp(1.25rem, 1rem + 0.6vw, 1.6rem);" data-i18n="intro.title">Pronto para receber novos acessos</h2>
+        <p style="margin: 0; font-size: var(--font-size-l); color: var(--text-color-muted);" data-i18n="intro.description">Reúna dados pessoais, defina o papel do usuário e confirme o aceite dos termos de uso. Você pode revisar tudo no resumo antes de concluir.</p>
+        <ul style="margin: 0; padding-left: 1.25rem; display: grid; gap: var(--space-2); font-size: var(--font-size-m); color: var(--text-color-strong);">
+          <li data-i18n="intro.highlights.dataQuality">Validação de email e senha com regras personalizadas.</li>
+          <li data-i18n="intro.highlights.roles">Seleção rápida de perfis e setores atendidos.</li>
+          <li data-i18n="intro.highlights.audit">Registro do aceite de políticas para auditoria.</li>
+        </ul>
+      </section>
+
+      <section class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: grid; gap: var(--space-5);" aria-labelledby="formTitle">
+        <div style="display: grid; gap: var(--space-2);">
+          <h2 id="formTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.5vw, 1.5rem);" data-i18n="form.title">Dados do usuário</h2>
+          <p style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="form.description">Preencha os campos obrigatórios para liberar o acesso inicial. Todos os campos marcados com * são obrigatórios.</p>
+        </div>
+        <form id="registrationForm" novalidate style="display: grid; gap: clamp(var(--space-4), 3vw, var(--space-5));">
+          <div style="display: grid; gap: var(--space-2);">
+            <label for="fullName" data-i18n="form.fields.fullName.label">Nome completo *</label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              required
+              data-i18n-placeholder="form.fields.fullName.placeholder"
+              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+            >
+            <p data-field-error="fullName" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+          </div>
+
+          <div style="display: grid; gap: var(--space-2);">
+            <label for="email" data-i18n="form.fields.email.label">Email corporativo *</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              data-i18n-placeholder="form.fields.email.placeholder"
+              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+            >
+            <p data-field-error="email" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+          </div>
+
+          <div style="display: grid; gap: var(--space-2);">
+            <label for="phone" data-i18n="form.fields.phone.label">Telefone de contato *</label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              required
+              data-i18n-placeholder="form.fields.phone.placeholder"
+              style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+            >
+            <p data-field-error="phone" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+          </div>
+
+          <div style="display: grid; gap: clamp(var(--space-3), 2vw, var(--space-4)); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div style="display: grid; gap: var(--space-2);">
+              <label for="role" data-i18n="form.fields.role.label">Papel na plataforma *</label>
+              <select
+                id="role"
+                name="role"
+                required
+                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+              >
+                <option value="" data-i18n="form.fields.role.placeholder">Selecione uma opção</option>
+                <option value="administrator" data-i18n="form.fields.role.options.administrator">Administrador</option>
+                <option value="manager" data-i18n="form.fields.role.options.manager">Gestor de área</option>
+                <option value="analyst" data-i18n="form.fields.role.options.analyst">Analista</option>
+                <option value="viewer" data-i18n="form.fields.role.options.viewer">Acesso somente leitura</option>
+              </select>
+              <p data-field-error="role" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            </div>
+            <div style="display: grid; gap: var(--space-2);">
+              <label for="department" data-i18n="form.fields.department.label">Departamento *</label>
+              <input
+                id="department"
+                name="department"
+                type="text"
+                required
+                data-i18n-placeholder="form.fields.department.placeholder"
+                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+              >
+              <p data-field-error="department" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            </div>
+          </div>
+
+          <div style="display: grid; gap: clamp(var(--space-3), 2vw, var(--space-4)); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div style="display: grid; gap: var(--space-2);">
+              <label for="password" data-i18n="form.fields.password.label">Senha temporária *</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+                data-i18n-placeholder="form.fields.password.placeholder"
+                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+              >
+              <p data-field-error="password" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            </div>
+            <div style="display: grid; gap: var(--space-2);">
+              <label for="confirmPassword" data-i18n="form.fields.confirmPassword.label">Confirmação *</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                minlength="8"
+                data-i18n-placeholder="form.fields.confirmPassword.placeholder"
+                style="border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3); font-size: var(--font-size-l); background: var(--background-surface); color: var(--text-color-primary);"
+              >
+              <p data-field-error="confirmPassword" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+            </div>
+          </div>
+
+          <div style="display: grid; gap: var(--space-2); background: var(--background-surface-alternate); border: var(--border-default); border-radius: var(--radius-m); padding: var(--space-3);">
+            <label style="display: flex; gap: var(--space-2); align-items: flex-start; font-size: var(--font-size-m);">
+              <input id="terms" name="terms" type="checkbox" required style="margin-top: var(--space-1);">
+              <span data-i18n="form.fields.terms.label">Declaro que li e aceito os termos de uso e a política de privacidade.</span>
+            </label>
+            <p data-field-error="terms" role="alert" style="margin: 0; font-size: var(--font-size-m); color: var(--color-danger-red); display: none;"></p>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;">
+            <button type="reset" class="btn ghost" data-i18n="form.actions.reset">Limpar</button>
+            <button type="submit" class="btn primary" data-i18n="form.actions.submit">Salvar cadastro</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="summaryCard" class="card" style="max-width: min(960px, 100%); margin: 0 auto; display: none; gap: var(--space-4);" aria-labelledby="summaryTitle">
+        <div style="display: grid; gap: var(--space-2);">
+          <h2 id="summaryTitle" style="margin: 0; font-size: clamp(1.2rem, 1rem + 0.5vw, 1.5rem);" data-i18n="summary.title">Resumo do cadastro</h2>
+          <p id="summaryDescription" style="margin: 0; font-size: var(--font-size-m); color: var(--text-color-muted);" data-i18n="summary.description.success">Revisão concluída com sucesso. Compartilhe o acesso com o usuário.</p>
+        </div>
+        <ul id="summaryList" style="margin: 0; padding-left: 1.25rem; display: grid; gap: var(--space-2); font-size: var(--font-size-m);"></ul>
+        <div id="summaryAlert" class="pill" style="background: rgba(22, 163, 74, 0.12); border: 1px solid rgba(22, 163, 74, 0.28); color: var(--color-accent-green);">
+          <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+          <span data-i18n="summary.success.message">Cadastro salvo e pronto para ativação no diretório corporativo.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <noscript>Habilite o JavaScript para enviar o formulário de cadastro.</noscript>
+  <script src="./js/cadastro.js"></script>
+</body>
+</html>

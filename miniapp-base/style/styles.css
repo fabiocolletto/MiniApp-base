@@ -754,6 +754,13 @@ header .subtitle {
   box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
 }
 
+.app-icon--theme-cadastro {
+  color: var(--color-brand-secondary);
+  background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(72, 149, 239, 0.32));
+  border: 1px solid rgba(11, 87, 208, 0.28);
+  box-shadow: 0 10px 25px rgb(15 23 42 / 0.08);
+}
+
 .app-icon--theme-tts {
   color: var(--color-brand-primary);
   background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(255, 122, 0, 0.28));
