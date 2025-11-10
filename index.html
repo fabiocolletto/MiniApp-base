@@ -792,7 +792,7 @@
 
         const targetUrl = typeof url === 'string' && url.trim() ? url : defaultMiniApp;
         const normalizedTarget = normalizeMiniAppUrl(targetUrl);
-        const absoluteTarget = new URL(targetUrl, window.location.href).href;
+        const normalizedPanelLocation = normalizeMiniAppUrl(getPanelLocationHref());
 
         if (options && typeof options.metadata === 'object' && normalizedTarget) {
           storeMetadataForUrl(normalizedTarget, options.metadata);
@@ -801,7 +801,7 @@
         activeMiniAppUrl = normalizedTarget;
         applyMiniAppMetadata(activeMiniAppUrl);
 
-        if (panel.src !== absoluteTarget) {
+        if (!normalizedTarget || normalizedPanelLocation !== normalizedTarget) {
           panel.src = targetUrl;
         }
 
