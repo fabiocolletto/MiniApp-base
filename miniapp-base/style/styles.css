@@ -1248,7 +1248,10 @@ header .subtitle {
 
 @media (max-width: 40rem) {
   .footer-command__panel {
-    inline-size: min(24rem, calc(100vw - clamp(1.5rem, 8vw, 3rem)));
+    inline-size: min(
+      clamp(14rem, 60vw, 22rem),
+      calc(100vw - clamp(1.5rem, 8vw, 3rem))
+    );
     padding: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
     box-shadow: var(--box-shadow-default), 0 16px 32px rgb(15 23 42 / 0.18);
   }
