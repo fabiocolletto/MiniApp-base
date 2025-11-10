@@ -26,6 +26,7 @@
 - `miniapp-catalogo/README.md` descrevendo as regras para manter cartões e atributos sincronizados com o shell.
 
 ### Alterado
+- Miniapp do Prefeito passa a consumir o idioma enviado pelo shell via `postMessage({ action: 'set-locale' })`, utiliza `I18nManager.setLocale(locale, { persist: false })` para sincronizar traduções sem gravar preferências locais e reenviar o cabeçalho atualizado após cada troca.
 - Miniapp de Importação passa a solicitar o idioma ao shell quando necessário, aplicar a seleção recebida via `postMessage({ action: 'set-locale' })` e reenviar o cabeçalho localizado sempre que o idioma mudar.
 - Miniapp de Cadastro passa a receber o idioma exclusivamente do shell, removendo o seletor interno e sincronizando via mensagens `postMessage`.
 - Miniapp TTS passa a receber o idioma exclusivamente do shell, removendo o seletor interno, regenerando roteiros automáticos quando aplicável e reenviando o cabeçalho após `postMessage({ action: 'set-locale' })`.

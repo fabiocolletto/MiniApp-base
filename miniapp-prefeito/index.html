@@ -383,6 +383,8 @@
         'es-ES': 'Catálogo',
       };
       const SUPPORTED_LOCALES = Object.keys(CATALOG_LABELS);
+      let i18nConnected = false;
+      let pendingLocale = null;
 
       function getActiveLocale() {
         const docLang = (document.documentElement && document.documentElement.lang) || '';
@@ -461,9 +463,58 @@
         });
       }
 
+      function refreshLocalizedComponents() {
+        setupCatalogButton();
+        notifyShell();
+      }
+
+      async function applyIncomingLocale(locale) {
+        if (locale) {
+          pendingLocale = locale;
+        }
+
+        if (!pendingLocale || !window.I18nManager || typeof window.I18nManager.setLocale !== 'function') {
+          return;
+        }
+
+        const nextLocale = pendingLocale;
+        pendingLocale = null;
+
+        connectI18n();
+
+        try {
+          await window.I18nManager.setLocale(nextLocale, { persist: false });
+          if (typeof window.I18nManager.apply === 'function') {
+            window.I18nManager.apply();
+          }
+          refreshLocalizedComponents();
+        } catch (error) {
+          pendingLocale = nextLocale;
+          console.error('Não foi possível aplicar o idioma recebido do shell.', error);
+        }
+      }
+
+      function connectI18n() {
+        if (i18nConnected || !window.I18nManager) {
+          return;
+        }
+
+        const manager = window.I18nManager;
+
+        if (typeof manager.onChange === 'function') {
+          manager.onChange(() => {
+            refreshLocalizedComponents();
+          });
+        }
+
+        i18nConnected = true;
+      }
+
       function initialize() {
         notifyShell();
         setupCatalogButton();
+        connectI18n();
+        applyIncomingLocale();
       }
 
       if (document.readyState === 'interactive' || document.readyState === 'complete') {
@@ -471,6 +522,47 @@
       } else {
         document.addEventListener('DOMContentLoaded', initialize);
       }
+
+      window.addEventListener('message', (event) => {
+        if (!event || typeof event.data !== 'object') {
+          return;
+        }
+
+        if (event.origin && event.origin !== window.location.origin) {
+          return;
+        }
+
+        const { action, locale } = event.data;
+
+        if (action === 'set-locale' && locale) {
+          pendingLocale = locale;
+          applyIncomingLocale();
+        }
+      });
+
+      connectI18n();
+      applyIncomingLocale();
+
+      let i18nRetries = 0;
+      const maxI18nRetries = 50;
+      const i18nInterval = setInterval(() => {
+        if (i18nConnected) {
+          clearInterval(i18nInterval);
+          return;
+        }
+
+        if (window.I18nManager) {
+          connectI18n();
+          applyIncomingLocale();
+          clearInterval(i18nInterval);
+          return;
+        }
+
+        i18nRetries += 1;
+        if (i18nRetries > maxI18nRetries) {
+          clearInterval(i18nInterval);
+        }
+      }, 100);
     })();
   </script>
 </body>
