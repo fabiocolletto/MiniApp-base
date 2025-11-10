@@ -529,6 +529,11 @@ header .subtitle {
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
   border-color: rgba(22, 163, 74, 0.24);
 }
+.app-card .app-icon.icon-tts {
+  color: var(--color-brand-primary);
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(255, 122, 0, 0.28));
+  border-color: rgba(255, 122, 0, 0.24);
+}
 .catalog-board {
   min-height: 100%;
   display: flex;
@@ -639,6 +644,11 @@ header .subtitle {
   color: var(--color-accent-green);
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.28));
   border-color: rgba(22, 163, 74, 0.24);
+}
+.catalog-card .app-icon.icon-tts {
+  color: var(--color-brand-primary);
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(255, 122, 0, 0.28));
+  border-color: rgba(255, 122, 0, 0.24);
 }
 
 /* --- Molécula: Pill (Aviso) --- */
