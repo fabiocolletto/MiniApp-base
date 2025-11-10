@@ -115,7 +115,10 @@
           type="button"
           class="btn ghost miniapp-toolbar__button"
           data-js="open-catalog"
-        >Voltar ao catálogo</button>
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+          <span data-js="catalog-label">Catálogo</span>
+        </button>
       </div>
 
       <!-- HEADER FIXO -->
@@ -375,9 +378,9 @@
     (function () {
       const CATALOG_FALLBACK = '../miniapp-catalogo/index.html';
       const CATALOG_LABELS = {
-        'pt-BR': 'Voltar ao catálogo',
-        'en-US': 'Return to catalog',
-        'es-ES': 'Volver al catálogo',
+        'pt-BR': 'Catálogo',
+        'en-US': 'Catalog',
+        'es-ES': 'Catálogo',
       };
       const SUPPORTED_LOCALES = Object.keys(CATALOG_LABELS);
 
@@ -404,6 +407,8 @@
               action: 'miniapp-header',
               title: 'Painel do Prefeito',
               subtitle: 'Indicadores estratégicos, tendências e alertas prioritários.',
+              icon: 'monitoring',
+              iconTheme: 'prefeito',
             },
             window.location.origin,
           );
@@ -441,7 +446,12 @@
 
         const locale = getActiveLocale();
         const label = CATALOG_LABELS[locale] || CATALOG_LABELS['pt-BR'];
-        trigger.textContent = label;
+        const labelElement = trigger.querySelector('[data-js="catalog-label"]');
+
+        if (labelElement) {
+          labelElement.textContent = label;
+        }
+
         trigger.setAttribute('aria-label', label);
         trigger.setAttribute('title', label);
 

@@ -21,10 +21,12 @@
           data-miniapp-target="../miniapp-prefeito/index.html"
           data-miniapp-name="Painel do Prefeito"
           data-miniapp-description="Painel com KPIs, filtros e relatórios setoriais."
+          data-miniapp-icon-symbol="monitoring"
+          data-miniapp-icon-theme="prefeito"
         >
           <div class="row catalog-card__header">
             <span
-              class="material-symbols-rounded app-icon icon-prefeito"
+              class="material-symbols-rounded app-icon app-icon--theme-prefeito"
               aria-hidden="true"
             >monitoring</span>
             <div class="catalog-card__content">
@@ -43,10 +45,12 @@
           data-miniapp-target="../miniapp-importador/index.html"
           data-miniapp-name="Importador de Pesquisas"
           data-miniapp-description="Fluxo para importar arquivos CSV de pesquisas e revisar resultados."
+          data-miniapp-icon-symbol="cloud_upload"
+          data-miniapp-icon-theme="importador"
         >
           <div class="row catalog-card__header">
             <span
-              class="material-symbols-rounded app-icon icon-importador"
+              class="material-symbols-rounded app-icon app-icon--theme-importador"
               aria-hidden="true"
             >cloud_upload</span>
             <div class="catalog-card__content">
@@ -65,10 +69,12 @@
           data-miniapp-target="../miniapp-tts/index.html"
           data-miniapp-name="Gerador de Roteiros TTS"
           data-miniapp-description="Formulário guiado com prévias de áudio e exportação otimizada para locução."
+          data-miniapp-icon-symbol="text_to_speech"
+          data-miniapp-icon-theme="tts"
         >
           <div class="row catalog-card__header">
             <span
-              class="material-symbols-rounded app-icon icon-tts"
+              class="material-symbols-rounded app-icon app-icon--theme-tts"
               aria-hidden="true"
             >text_to_speech</span>
             <div class="catalog-card__content">
@@ -93,6 +99,8 @@
               action: 'miniapp-header',
               title: 'Catálogo de MiniApps',
               subtitle: 'Navegue pelas experiências disponíveis e escolha uma para abrir.',
+              icon: 'apps',
+              iconTheme: 'catalog',
             },
             window.location.origin,
           );
