@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Adicionado
+- Barra de favoritos no catálogo permitindo marcar miniapps com estrela, persistir a seleção e apresentá-los em carrossel dedicado.
 - Rodapé do shell fixo com indicação de versão e controle de tela cheia disponível em telas amplas.
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.

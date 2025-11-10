@@ -651,8 +651,61 @@ header .subtitle {
   -webkit-overflow-scrolling: touch;
 }
 
+.catalog-favorites {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: none;
+  gap: clamp(var(--space-4), 1.2vw + var(--space-2), var(--space-6));
+  width: var(--layout-catalog-container-width);
+  margin-inline: auto;
+  padding-inline: 0;
+  scroll-padding-inline: 0;
+}
+
+.catalog-favorites[hidden] {
+  display: none;
+}
+
+.catalog-favorites__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.catalog-favorites__header h2 {
+  margin: 0;
+  font-size: clamp(1.1rem, 0.6vw + 1rem, 1.6rem);
+}
+
+.catalog-favorites__header p {
+  margin: 0;
+  color: var(--text-color-muted);
+  font-size: clamp(0.9rem, 0.3vw + 0.85rem, 1rem);
+}
+
+.catalog-favorites__list {
+  display: grid;
+  grid-auto-flow: var(--layout-catalog-carousel-flow);
+  grid-auto-columns: var(--layout-catalog-card-width-mobile);
+  grid-template-columns: var(--layout-catalog-grid-template);
+  gap: var(--layout-catalog-card-gap);
+  padding-inline: var(--layout-catalog-scroll-padding);
+  scroll-padding-inline: var(--layout-catalog-scroll-padding);
+  scroll-snap-type: var(--layout-catalog-carousel-snap);
+  list-style: none;
+  margin: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.catalog-favorites__card {
+  scroll-snap-align: start;
+}
+
 @media (min-width: 48rem) {
-  .catalog-board__cards {
+  .catalog-board__cards,
+  .catalog-favorites__list {
     grid-auto-columns: initial;
     overflow-x: visible;
     justify-content: center;
@@ -660,6 +713,7 @@ header .subtitle {
 }
 
 .catalog-card {
+  position: relative;
   background: transparent;
   border: none;
   padding: 0;
@@ -723,6 +777,63 @@ header .subtitle {
   width: clamp(3rem, 2vw + 2.5rem, 3.75rem);
   height: clamp(3rem, 2vw + 2.5rem, 3.75rem);
   border-radius: var(--radius-full);
+}
+
+.catalog-card__favorite {
+  position: absolute;
+  top: clamp(var(--space-3), 1.2vw + var(--space-2), var(--space-5));
+  right: clamp(var(--space-3), 1.2vw + var(--space-2), var(--space-5));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2.5rem, 1.1vw + 2.15rem, 3rem);
+  height: clamp(2.5rem, 1.1vw + 2.15rem, 3rem);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--background-surface);
+  background: color-mix(in srgb, var(--background-surface) 90%, rgba(15, 23, 42, 0.05));
+  color: var(--text-color-muted);
+  cursor: pointer;
+  transition:
+    transform var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    box-shadow var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    border-color var(--layout-transition-duration-fast) var(--layout-transition-easing),
+    color var(--layout-transition-duration-fast) var(--layout-transition-easing);
+  z-index: 1;
+}
+
+.catalog-card__favorite:focus-visible {
+  outline: var(--layout-catalog-card-outline);
+  outline-offset: var(--layout-catalog-card-outline-offset);
+}
+
+.catalog-card__favorite:hover {
+  transform: translateY(calc(var(--space-1) * -0.5));
+  box-shadow: var(--layout-catalog-card-shadow-hover);
+  border-color: var(--layout-catalog-card-border-hover);
+}
+
+.catalog-card__favorite-icon {
+  pointer-events: none;
+  font-size: clamp(1.4rem, 0.6vw + 1.2rem, 1.75rem);
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  transition: color var(--layout-transition-duration-fast) var(--layout-transition-easing);
+}
+
+.catalog-card__favorite.is-active,
+.catalog-card.is-favorited .catalog-card__favorite {
+  border-color: rgba(245, 158, 11, 0.55);
+  color: var(--color-warning-yellow);
+}
+
+.catalog-card.is-favorited .catalog-card__link {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: var(--layout-catalog-card-shadow-hover);
+}
+
+.catalog-card.is-favorited .catalog-card__favorite-icon {
+  color: var(--color-warning-yellow);
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 .app-icon--theme-shell,
