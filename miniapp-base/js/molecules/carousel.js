@@ -301,7 +301,15 @@
 
   function updateLayout(instance) {
     instance.items = Array.from(instance.track.children);
-    instance.currentPerView = resolvePerView(instance);
+    var resolvedPerView = resolvePerView(instance);
+    var availableItems = instance.items.length;
+    var nextPerView = resolvedPerView;
+
+    if (availableItems > 0) {
+      nextPerView = Math.min(resolvedPerView, availableItems);
+    }
+
+    instance.currentPerView = Math.max(1, nextPerView || 1);
     instance.container.style.setProperty('--carousel-per-view', String(instance.currentPerView));
     instance.slideWidth = instance.items.length ? instance.items[0].offsetWidth || 0 : instance.slideWidth;
     updateStatus(instance);
