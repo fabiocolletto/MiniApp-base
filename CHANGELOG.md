@@ -5,8 +5,7 @@
 - Rodapé do shell fixo com indicação de versão e controle de tela cheia disponível em telas amplas.
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.
-- Atalho fixo no shell para reabrir o catálogo em um clique com suporte a `pt-BR`, `en-US` e `es-ES`.
-- Botão no cabeçalho do painel principal que reabre o catálogo diretamente no iframe ativo.
+- Botão único no rodapé do shell que abre uma janela com os atalhos de catálogo e tela cheia, localizado para `pt-BR`, `en-US` e `es-ES`.
 - Documento `AGENTE.md` com diretrizes para manutenção do projeto.
 - `README.md` descrevendo a estrutura do repositório e o fluxo de trabalho recomendado.
 - Motor do painel Prefeito agora lê agregados do IndexedDB (persona, KPIs e indicadores) com atualização assíncrona.
@@ -23,11 +22,12 @@
 - Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
 - Botão de tela cheia e identidade do Shell passam a utilizar os ícones circulares do catálogo baseados na biblioteca Material.
 - Cartões do catálogo ocupam toda a largura útil do painel com espaçamento interno próprio, deixam de exibir botão secundário e tornam-se completamente clicáveis.
-- Shell remove os botões redundantes de “Abrir catálogo” e delega a navegação principal aos próprios cartões e integrações via `postMessage`.
+- Shell concentra os controles de catálogo e tela cheia no menu do rodapé, removendo botões espalhados pelo painel principal e delegando a navegação aos cartões e integrações via `postMessage`.
 - Controle de tela cheia passa a utilizar a API nativa do navegador (`requestFullscreen`), sincronizando o estado do layout com entradas de teclado como `Esc`.
+- Controle de tela cheia agora aplica fallback em CSS quando a API nativa não está disponível, garantindo o mesmo layout e rotulagem do botão em qualquer dispositivo.
 - Rodapé passa a exibir o ícone oficial da 5 Horas ao lado do selo “5 horas de pesquisa e análise limitada”, mantendo a versão do shell.
 - Rodapé do shell passa a alinhar o conteúdo à esquerda para harmonizar com o cabeçalho dinâmico.
-- Menu do rodapé concentra os atalhos de catálogo e tela cheia e inclui uma seção “Sobre o app” com o nome e a versão do shell, removendo o texto permanente dessas informações.
+- Menu do rodapé passa a abrir uma janela sobreposta única que reúne catálogo, tela cheia e a seção “Sobre o app”, mantendo o botão de acesso idêntico em todas as larguras.
 
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
