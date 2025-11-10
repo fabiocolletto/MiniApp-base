@@ -47,28 +47,6 @@
       font-size: var(--font-size-l);
     }
 
-    .tts-language-picker {
-      display: grid;
-      gap: var(--space-2);
-      align-self: flex-start;
-    }
-
-    .tts-language-picker label {
-      font-size: var(--font-size-m);
-      font-weight: 600;
-      color: var(--text-color-muted);
-    }
-
-    .tts-language-picker select {
-      min-width: 200px;
-      padding: var(--space-3);
-      border-radius: var(--radius-m);
-      border: var(--border-default);
-      background: var(--background-surface);
-      color: var(--text-color-primary);
-      font-size: var(--font-size-l);
-    }
-
     .tts-card {
       background: var(--background-surface);
       border: var(--border-default);
@@ -305,15 +283,6 @@
         <div class="tts-header__title">
           <h1 data-i18n="app.title">Gerador de Roteiros para TTS</h1>
           <p data-i18n="app.subtitle">Combine dados essenciais para gerar um roteiro consistente de locução.</p>
-        </div>
-        <div class="tts-language-picker">
-          <label for="languageSelect" data-i18n="language.label">Idioma</label>
-          <select id="languageSelect" aria-describedby="languageHelper">
-            <option value="pt-BR" data-i18n-option="language.pt-BR">Português (Brasil)</option>
-            <option value="en-US" data-i18n-option="language.en-US">English (US)</option>
-            <option value="es-ES" data-i18n-option="language.es-ES">Español (ES)</option>
-          </select>
-          <span id="languageHelper" class="tts-output-status" data-i18n="language.helper">Escolha o idioma da interface.</span>
         </div>
       </header>
 
@@ -686,8 +655,15 @@
       }
     };
 
+    const DEFAULT_LANGUAGE = 'pt-BR';
+    const documentLanguage = document.documentElement.lang;
+    const initialLanguage =
+      typeof documentLanguage === 'string' && translations[documentLanguage]
+        ? documentLanguage
+        : DEFAULT_LANGUAGE;
+
     const state = {
-      currentLanguage: 'pt-BR',
+      currentLanguage: initialLanguage,
       lastGeneratedValues: null,
       manualOverride: false,
       audio: {
@@ -708,7 +684,6 @@
       }
     };
 
-    const languageSelect = document.getElementById('languageSelect');
     const form = document.getElementById('scriptForm');
     const cityInput = document.getElementById('cityInput');
     const audienceInput = document.getElementById('audienceInput');
@@ -724,8 +699,6 @@
     const outputStatus = document.getElementById('outputStatus');
     const titleElement = document.querySelector('[data-i18n="app.title"]');
     const subtitleElement = document.querySelector('[data-i18n="app.subtitle"]');
-    const languageLabel = document.querySelector('[data-i18n="language.label"]');
-    const languageHelper = document.querySelector('[data-i18n="language.helper"]');
     const formLegend = document.querySelector('[data-i18n="form.legend"]');
     const formDescription = document.querySelector('[data-i18n="form.description"]');
     const outputLabel = document.querySelector('[data-i18n="output.label"]');
@@ -788,6 +761,42 @@
         window.location.href = CATALOG_FALLBACK;
       } catch (navigationError) {
         console.error('Não foi possível carregar o catálogo diretamente.', navigationError);
+      }
+    }
+
+    function notifyShell() {
+      if (!window.parent || window.parent === window) {
+        return;
+      }
+
+      try {
+        window.parent.postMessage(
+          {
+            action: 'miniapp-header',
+            title: 'Gerador de Roteiros para TTS',
+            subtitle: 'Crie roteiros, ajuste vozes e exporte conteúdos prontos para locução.',
+            icon: 'text_to_speech',
+            iconTheme: 'tts',
+          },
+          window.location.origin,
+        );
+      } catch (error) {
+        console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
+      }
+    }
+
+    function requestLocaleSync() {
+      if (!window.parent || window.parent === window) {
+        return;
+      }
+
+      try {
+        window.parent.postMessage(
+          { action: 'request-locale' },
+          window.location.origin,
+        );
+      } catch (error) {
+        console.error('Não foi possível solicitar o idioma ao shell.', error);
       }
     }
 
@@ -1147,20 +1156,37 @@
 
     function applyTranslations(language) {
       const localeTexts = translations[language];
+      if (!localeTexts) {
+        return;
+      }
+
       document.documentElement.lang = language;
       document.title = localeTexts.pageTitle;
-      languageSelect.value = language;
 
-      titleElement.textContent = localeTexts.appTitle;
-      subtitleElement.textContent = localeTexts.appSubtitle;
-      languageLabel.textContent = localeTexts.languageLabel;
-      languageHelper.textContent = localeTexts.languageHelper;
-      formLegend.textContent = localeTexts.formLegend;
-      formDescription.textContent = localeTexts.formDescription;
-      outputLabel.textContent = localeTexts.outputLabel;
-      scriptOutput.placeholder = localeTexts.outputPlaceholder;
-      generateButton.textContent = localeTexts.actions.generate;
-      editButton.textContent = localeTexts.actions.edit;
+      if (titleElement) {
+        titleElement.textContent = localeTexts.appTitle;
+      }
+      if (subtitleElement) {
+        subtitleElement.textContent = localeTexts.appSubtitle;
+      }
+      if (formLegend) {
+        formLegend.textContent = localeTexts.formLegend;
+      }
+      if (formDescription) {
+        formDescription.textContent = localeTexts.formDescription;
+      }
+      if (outputLabel) {
+        outputLabel.textContent = localeTexts.outputLabel;
+      }
+      if (scriptOutput) {
+        scriptOutput.placeholder = localeTexts.outputPlaceholder;
+      }
+      if (generateButton) {
+        generateButton.textContent = localeTexts.actions.generate;
+      }
+      if (editButton) {
+        editButton.textContent = localeTexts.actions.edit;
+      }
       if (catalogButton) {
         const label = localeTexts.actions.openCatalog;
         if (catalogLabel) {
@@ -1173,22 +1199,22 @@
       }
 
       const fieldTranslations = getFieldTranslations(language);
-      cityInput.labels[0].textContent = fieldTranslations.city.label;
+      if (cityInput?.labels?.[0]) {
+        cityInput.labels[0].textContent = fieldTranslations.city.label;
+      }
       cityInput.placeholder = fieldTranslations.city.placeholder;
-      audienceInput.labels[0].textContent = fieldTranslations.audience.label;
+      if (audienceInput?.labels?.[0]) {
+        audienceInput.labels[0].textContent = fieldTranslations.audience.label;
+      }
       audienceInput.placeholder = fieldTranslations.audience.placeholder;
-      highlightInput.labels[0].textContent = fieldTranslations.highlight.label;
+      if (highlightInput?.labels?.[0]) {
+        highlightInput.labels[0].textContent = fieldTranslations.highlight.label;
+      }
       highlightInput.placeholder = fieldTranslations.highlight.placeholder;
-      ctaInput.labels[0].textContent = fieldTranslations.cta.label;
+      if (ctaInput?.labels?.[0]) {
+        ctaInput.labels[0].textContent = fieldTranslations.cta.label;
+      }
       ctaInput.placeholder = fieldTranslations.cta.placeholder;
-
-      languageSelect.querySelectorAll('[data-i18n-option]').forEach((option) => {
-        const key = option.getAttribute('data-i18n-option');
-        const label = localeTexts.languageNames[key];
-        if (label) {
-          option.textContent = label;
-        }
-      });
 
       const audioTexts = localeTexts.audio;
       audioTitle.textContent = audioTexts.title;
@@ -1253,22 +1279,6 @@
       scriptOutput.focus();
       scriptOutput.setSelectionRange(scriptOutput.value.length, scriptOutput.value.length);
       handleScriptContentChange();
-    }
-
-    function handleLanguageChange(event) {
-      const newLanguage = event.target.value;
-      if (!translations[newLanguage]) {
-        return;
-      }
-      state.currentLanguage = newLanguage;
-      applyTranslations(newLanguage);
-
-      if (state.lastGeneratedValues && !state.manualOverride) {
-        const regeneratedScript = composeScript(state.lastGeneratedValues, newLanguage);
-        scriptOutput.value = regeneratedScript;
-        scriptOutput.readOnly = true;
-        handleScriptContentChange();
-      }
     }
 
     function enableManualEditing() {
@@ -1576,8 +1586,42 @@
       clearHistoryEntries();
     }
 
+    window.addEventListener('message', (event) => {
+      if (!event || typeof event.data !== 'object' || event.data === null) {
+        return;
+      }
+
+      if (
+        window.location.origin &&
+        event.origin &&
+        event.origin !== window.location.origin
+      ) {
+        return;
+      }
+
+      const { action, locale } = event.data;
+      if (action !== 'set-locale' || typeof locale !== 'string') {
+        return;
+      }
+
+      if (!translations[locale]) {
+        return;
+      }
+
+      state.currentLanguage = locale;
+      applyTranslations(locale);
+
+      if (state.lastGeneratedValues && !state.manualOverride) {
+        const regeneratedScript = composeScript(state.lastGeneratedValues, locale);
+        scriptOutput.value = regeneratedScript;
+        scriptOutput.readOnly = true;
+        handleScriptContentChange();
+      }
+
+      notifyShell();
+    });
+
     form.addEventListener('submit', handleFormSubmit);
-    languageSelect.addEventListener('change', handleLanguageChange);
     editButton.addEventListener('click', enableManualEditing);
     scriptOutput.addEventListener('input', handleScriptContentChange);
     if (catalogButton) {
@@ -1601,36 +1645,17 @@
     initializeHistory();
     applyTranslations(state.currentLanguage);
     updateAudioActionsState();
-  </script>
-  <script>
-    (function () {
-      function notifyShell() {
-        if (!window.parent || window.parent === window) {
-          return;
-        }
 
-        try {
-          window.parent.postMessage(
-            {
-              action: 'miniapp-header',
-              title: 'Gerador de Roteiros para TTS',
-              subtitle: 'Crie roteiros, ajuste vozes e exporte conteúdos prontos para locução.',
-              icon: 'text_to_speech',
-              iconTheme: 'tts',
-            },
-            window.location.origin,
-          );
-        } catch (error) {
-          console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
-        }
-      }
+    const synchronizeWithShell = () => {
+      notifyShell();
+      requestLocaleSync();
+    };
 
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        notifyShell();
-      } else {
-        document.addEventListener('DOMContentLoaded', notifyShell);
-      }
-    })();
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      synchronizeWithShell();
+    } else {
+      document.addEventListener('DOMContentLoaded', synchronizeWithShell);
+    }
   </script>
 </body>
 </html>
