@@ -86,6 +86,55 @@
                 <span class="material-symbols-rounded" aria-hidden="true">apps</span>
                 <span data-catalog-button-label>Catálogo</span>
               </button>
+              <div class="footer-command__action footer-locale" data-locale-command>
+                <button
+                  type="button"
+                  class="btn ghost footer-locale__toggle"
+                  data-action="toggle-locale"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="footer-locale-panel"
+                >
+                  <span class="material-symbols-rounded" aria-hidden="true">language</span>
+                  <span data-locale-toggle-label>Idioma</span>
+                </button>
+                <div
+                  class="footer-locale__panel"
+                  id="footer-locale-panel"
+                  role="radiogroup"
+                  data-locale-menu
+                  hidden
+                  aria-label="Selecionar idioma do shell"
+                >
+                  <label class="footer-locale__option" data-locale-option="pt-BR">
+                    <input
+                      type="radio"
+                      name="footer-locale"
+                      value="pt-BR"
+                      data-locale-input
+                    >
+                    <span data-locale-option-label>Português (Brasil)</span>
+                  </label>
+                  <label class="footer-locale__option" data-locale-option="en-US">
+                    <input
+                      type="radio"
+                      name="footer-locale"
+                      value="en-US"
+                      data-locale-input
+                    >
+                    <span data-locale-option-label>English (US)</span>
+                  </label>
+                  <label class="footer-locale__option" data-locale-option="es-ES">
+                    <input
+                      type="radio"
+                      name="footer-locale"
+                      value="es-ES"
+                      data-locale-input
+                    >
+                    <span data-locale-option-label>Español (ES)</span>
+                  </label>
+                </div>
+              </div>
               <button
                 type="button"
                 class="btn ghost footer-command__action"
@@ -164,6 +213,13 @@
       const footerCommandToggleLabel = document.querySelector('[data-footer-command-toggle-label]');
       const footerCommandTitle = document.querySelector('[data-footer-command-title]');
       const footerCommandActions = document.querySelector('[data-footer-command-actions]');
+      const localeCommand = document.querySelector('[data-locale-command]');
+      const localeToggle = document.querySelector('[data-action="toggle-locale"]');
+      const localeToggleLabel = document.querySelector('[data-locale-toggle-label]');
+      const localeMenu = document.querySelector('[data-locale-menu]');
+      const localeInputs = Array.from(
+        document.querySelectorAll('[data-locale-input]')
+      );
       const fullscreenCommandLabel = document.querySelector('[data-fullscreen-command-label]');
       const footerAboutTitle = document.querySelector('[data-footer-about-title]');
       const footerAboutProduct = document.querySelector('[data-footer-about-product]');
@@ -173,6 +229,8 @@
       const SHELL_PRODUCT_NAME = 'MiniApps Shell';
       const SHELL_VERSION = '0.2.0 (experimental)';
       const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
+      const DEFAULT_LOCALE = 'pt-BR';
+      const LOCALE_STORAGE_KEY = 'miniapp-shell.locale';
       const DEFAULT_ICON_SYMBOL = 'apps';
       const DEFAULT_ICON_THEME = 'shell';
       const ICON_THEME_CLASS_PREFIX = 'app-icon--theme-';
@@ -245,6 +303,19 @@
           toggleText: 'Menu',
           panelTitle: 'Menu do shell',
           actionsLabel: 'Ações rápidas do shell',
+          localeCommand: {
+            toggle: {
+              label: 'Alterar idioma do shell',
+              title: 'Alterar idioma do shell',
+            },
+            buttonLabel: 'Idioma',
+            menuLabel: 'Selecione o idioma do shell',
+            options: {
+              'pt-BR': 'Português (Brasil)',
+              'en-US': 'Inglês (EUA)',
+              'es-ES': 'Espanhol (Espanha)',
+            },
+          },
         },
         'en-US': {
           toggle: {
@@ -260,6 +331,19 @@
           toggleText: 'Menu',
           panelTitle: 'Shell menu',
           actionsLabel: 'Shell quick actions',
+          localeCommand: {
+            toggle: {
+              label: 'Change shell language',
+              title: 'Change shell language',
+            },
+            buttonLabel: 'Language',
+            menuLabel: 'Choose the shell language',
+            options: {
+              'pt-BR': 'Portuguese (Brazil)',
+              'en-US': 'English (US)',
+              'es-ES': 'Spanish (Spain)',
+            },
+          },
         },
         'es-ES': {
           toggle: {
@@ -275,6 +359,19 @@
           toggleText: 'Menú',
           panelTitle: 'Menú del shell',
           actionsLabel: 'Acciones rápidas del shell',
+          localeCommand: {
+            toggle: {
+              label: 'Cambiar idioma del shell',
+              title: 'Cambiar idioma del shell',
+            },
+            buttonLabel: 'Idioma',
+            menuLabel: 'Elige el idioma del shell',
+            options: {
+              'pt-BR': 'Portugués (Brasil)',
+              'en-US': 'Inglés (EE. UU.)',
+              'es-ES': 'Español (España)',
+            },
+          },
         },
       };
 
@@ -311,9 +408,66 @@
         },
       };
 
+      function normalizeLocaleCandidate(locale) {
+        if (!locale || typeof locale !== 'string') {
+          return null;
+        }
+
+        const trimmed = locale.trim();
+
+        if (!trimmed) {
+          return null;
+        }
+
+        const exactMatch = SUPPORTED_LOCALES.find(
+          (supportedLocale) => supportedLocale.toLowerCase() === trimmed.toLowerCase()
+        );
+
+        if (exactMatch) {
+          return exactMatch;
+        }
+
+        const base = trimmed.split('-')[0];
+
+        return (
+          SUPPORTED_LOCALES.find((supportedLocale) => supportedLocale.startsWith(base)) ||
+          null
+        );
+      }
+
+      function readStoredLocale() {
+        try {
+          return window.localStorage.getItem(LOCALE_STORAGE_KEY);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function writeStoredLocale(locale) {
+        try {
+          window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+        } catch (_) {
+          // Ignorado: armazenamento indisponível.
+        }
+      }
+
+      function initializeActiveLocale() {
+        const storedLocale = normalizeLocaleCandidate(readStoredLocale());
+        const documentLocale =
+          (document.documentElement && document.documentElement.lang) || '';
+        const normalizedDocumentLocale = normalizeLocaleCandidate(documentLocale);
+
+        return storedLocale || normalizedDocumentLocale || DEFAULT_LOCALE;
+      }
+
       const miniAppMetadata = new Map();
       let activeMiniAppUrl = null;
       let fullscreenFallbackActive = false;
+      let activeLocale = initializeActiveLocale();
+
+      if (document.documentElement) {
+        document.documentElement.lang = activeLocale;
+      }
 
       function isFooterCommandOpen() {
         return Boolean(
@@ -324,7 +478,49 @@
 
       function getFooterCommandCopy() {
         const locale = getActiveLocale();
-        return FOOTER_COMMAND_COPY[locale] || FOOTER_COMMAND_COPY['pt-BR'];
+        return FOOTER_COMMAND_COPY[locale] || FOOTER_COMMAND_COPY[DEFAULT_LOCALE];
+      }
+
+      function syncLocaleCommandCopy(localeCopy) {
+        if (!localeCommand) {
+          return;
+        }
+
+        const safeCopy =
+          localeCopy || FOOTER_COMMAND_COPY[DEFAULT_LOCALE].localeCommand;
+        const toggleCopy = safeCopy && safeCopy.toggle ? safeCopy.toggle : null;
+
+        if (localeToggle && toggleCopy) {
+          if (toggleCopy.label) {
+            localeToggle.setAttribute('aria-label', toggleCopy.label);
+          }
+
+          if (toggleCopy.title) {
+            localeToggle.setAttribute('title', toggleCopy.title);
+          }
+        }
+
+        if (localeToggleLabel && safeCopy && safeCopy.buttonLabel) {
+          localeToggleLabel.textContent = safeCopy.buttonLabel;
+        }
+
+        if (localeMenu && safeCopy && safeCopy.menuLabel) {
+          localeMenu.setAttribute('aria-label', safeCopy.menuLabel);
+        }
+
+        if (safeCopy && safeCopy.options && localeInputs.length > 0) {
+          localeInputs.forEach((input) => {
+            const optionLocale = input && input.value;
+            const container = input ? input.closest('[data-locale-option]') : null;
+            const labelElement = container
+              ? container.querySelector('[data-locale-option-label]')
+              : null;
+
+            if (labelElement && optionLocale && safeCopy.options[optionLocale]) {
+              labelElement.textContent = safeCopy.options[optionLocale];
+            }
+          });
+        }
       }
 
       function syncFooterCommandCopy() {
@@ -356,6 +552,71 @@
         if (footerCommandActions && copy.actionsLabel) {
           footerCommandActions.setAttribute('aria-label', copy.actionsLabel);
         }
+
+        syncLocaleCommandCopy(copy.localeCommand);
+      }
+
+      function syncLocaleInputsState() {
+        if (!localeInputs.length) {
+          return;
+        }
+
+        const currentLocale = getActiveLocale();
+
+        localeInputs.forEach((input) => {
+          if (!input) {
+            return;
+          }
+
+          const isActive = input.value === currentLocale;
+          input.checked = isActive;
+
+          if (isActive) {
+            input.setAttribute('checked', '');
+          } else {
+            input.removeAttribute('checked');
+          }
+        });
+      }
+
+      function isLocaleMenuOpen() {
+        return Boolean(localeMenu && !localeMenu.hasAttribute('hidden'));
+      }
+
+      function openLocaleMenu() {
+        if (!localeMenu || !localeToggle) {
+          return;
+        }
+
+        localeMenu.hidden = false;
+        localeMenu.removeAttribute('hidden');
+        localeToggle.setAttribute('aria-expanded', 'true');
+
+        const focusedInput =
+          localeMenu.querySelector('input[type="radio"]:checked') ||
+          localeMenu.querySelector('input[type="radio"]');
+
+        if (focusedInput && typeof focusedInput.focus === 'function') {
+          requestAnimationFrame(() => {
+            focusedInput.focus();
+          });
+        }
+      }
+
+      function closeLocaleMenu(options = {}) {
+        if (!localeMenu || !localeToggle) {
+          return;
+        }
+
+        const { restoreFocus = false } = options;
+
+        localeMenu.hidden = true;
+        localeMenu.setAttribute('hidden', '');
+        localeToggle.setAttribute('aria-expanded', 'false');
+
+        if (restoreFocus && typeof localeToggle.focus === 'function') {
+          localeToggle.focus();
+        }
       }
 
       function openFooterCommandPanel() {
@@ -383,6 +644,7 @@
 
         const { restoreFocus = false } = options;
 
+        closeLocaleMenu();
         footerCommandPanel.classList.remove('footer-command__panel--open');
         footerCommandPanel.hidden = true;
         footerCommandPanel.setAttribute('hidden', '');
@@ -395,6 +657,7 @@
 
       closeFooterCommandPanel();
       syncFooterCommandCopy();
+      syncLocaleInputsState();
       syncFooterAboutSection();
 
       if (footerCommandToggle && footerCommandPanel) {
@@ -433,35 +696,133 @@
         syncFooterCommandCopy();
       }
 
-      function getActiveLocale() {
-        const docLang = (document.documentElement && document.documentElement.lang) || '';
-        const normalized = SUPPORTED_LOCALES.find((locale) => docLang.toLowerCase() === locale.toLowerCase());
+      if (localeToggle && localeMenu) {
+        localeToggle.addEventListener('click', () => {
+          if (isLocaleMenuOpen()) {
+            closeLocaleMenu({ restoreFocus: true });
+          } else {
+            openLocaleMenu();
+          }
+        });
+      }
 
-        if (normalized) {
-          return normalized;
+      if (localeMenu) {
+        localeMenu.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && isLocaleMenuOpen()) {
+            event.preventDefault();
+            closeLocaleMenu({ restoreFocus: true });
+          }
+        });
+      }
+
+      if (localeInputs.length > 0) {
+        localeInputs.forEach((input) => {
+          if (!input) {
+            return;
+          }
+
+          input.addEventListener('change', () => {
+            if (!input.checked) {
+              return;
+            }
+
+            setActiveLocale(input.value);
+            closeLocaleMenu({ restoreFocus: false });
+            closeFooterCommandPanel();
+          });
+        });
+      }
+
+      document.addEventListener('click', (event) => {
+        if (!isLocaleMenuOpen()) {
+          return;
         }
 
-        const baseLang = docLang.split('-')[0];
-        const fallback = SUPPORTED_LOCALES.find((locale) => locale.startsWith(baseLang));
+        if (localeCommand && localeCommand.contains(event.target)) {
+          return;
+        }
 
-        return fallback || 'pt-BR';
+        closeLocaleMenu();
+      });
+
+      function getActiveLocale() {
+        return activeLocale || DEFAULT_LOCALE;
+      }
+
+      function setActiveLocale(locale, { broadcast = true } = {}) {
+        const normalizedLocale = normalizeLocaleCandidate(locale) || DEFAULT_LOCALE;
+
+        if (normalizedLocale === activeLocale) {
+          if (broadcast) {
+            broadcastLocaleToPanel();
+          }
+
+          return;
+        }
+
+        activeLocale = normalizedLocale;
+
+        if (document.documentElement) {
+          document.documentElement.lang = activeLocale;
+        }
+
+        writeStoredLocale(activeLocale);
+        syncFooterCommandCopy();
+        syncLocaleInputsState();
+        syncFooterAboutSection();
+        const normalizedCatalogForLocale = normalizeMiniAppUrl(defaultMiniApp);
+
+        if (normalizedCatalogForLocale) {
+          storeMetadataForUrl(normalizedCatalogForLocale, getCatalogHeaderCopy());
+        }
+
+        applyCatalogToggleState(isCatalogUrl(getPanelLocationHref()));
+        syncFullscreenState();
+        applyMiniAppMetadata(activeMiniAppUrl);
+
+        if (broadcast) {
+          broadcastLocaleToPanel();
+        }
+      }
+
+      function postLocaleToTarget(targetWindow) {
+        if (!targetWindow || typeof targetWindow.postMessage !== 'function') {
+          return;
+        }
+
+        try {
+          targetWindow.postMessage(
+            { action: 'set-locale', locale: getActiveLocale() },
+            window.location.origin
+          );
+        } catch (_) {
+          // Ignorado: alvo indisponível.
+        }
+      }
+
+      function broadcastLocaleToPanel() {
+        if (!panel || !panel.contentWindow) {
+          return;
+        }
+
+        postLocaleToTarget(panel.contentWindow);
       }
 
       function getDefaultHeaderCopy() {
         const locale = getActiveLocale();
-        const copy = SHELL_HEADER_COPY[locale] || SHELL_HEADER_COPY['pt-BR'];
+        const copy = SHELL_HEADER_COPY[locale] || SHELL_HEADER_COPY[DEFAULT_LOCALE];
         return { ...copy };
       }
 
       function getCatalogHeaderCopy() {
         const locale = getActiveLocale();
-        const copy = CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+        const copy = CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY[DEFAULT_LOCALE];
         return { ...copy };
       }
 
       function getFooterAboutCopy() {
         const locale = getActiveLocale();
-        return FOOTER_ABOUT_COPY[locale] || FOOTER_ABOUT_COPY['pt-BR'];
+        return FOOTER_ABOUT_COPY[locale] || FOOTER_ABOUT_COPY[DEFAULT_LOCALE];
       }
 
       function syncFooterAboutSection() {
@@ -658,8 +1019,10 @@
         }
 
         const locale = getActiveLocale();
-        const copy = CATALOG_BUTTON_COPY[locale] || CATALOG_BUTTON_COPY['pt-BR'];
-        const label = (copy && copy.label) || CATALOG_BUTTON_COPY['pt-BR'].label;
+        const copy =
+          CATALOG_BUTTON_COPY[locale] || CATALOG_BUTTON_COPY[DEFAULT_LOCALE];
+        const label =
+          (copy && copy.label) || CATALOG_BUTTON_COPY[DEFAULT_LOCALE].label;
 
         catalogToggles.forEach((toggle) => {
           toggle.disabled = Boolean(isCatalog);
@@ -721,7 +1084,8 @@
       function syncFullscreenState() {
         const fullscreen = isFullscreenActive();
         const locale = getActiveLocale();
-        const fullscreenCopy = FULLSCREEN_COPY[locale] || FULLSCREEN_COPY['pt-BR'];
+        const fullscreenCopy =
+          FULLSCREEN_COPY[locale] || FULLSCREEN_COPY[DEFAULT_LOCALE];
         const label = fullscreen ? fullscreenCopy.exit : fullscreenCopy.enter;
         const fallbackActive = fullscreenFallbackActive;
 
@@ -900,6 +1264,7 @@
         }
 
         updateCatalogState(targetUrl);
+        broadcastLocaleToPanel();
 
         if (options.focus !== false && typeof panel.focus === 'function') {
           requestAnimationFrame(() => {
@@ -940,6 +1305,7 @@
 
           updateCatalogState(panelHref);
           applyMiniAppMetadata(activeMiniAppUrl);
+          broadcastLocaleToPanel();
         });
       }
 
@@ -949,6 +1315,8 @@
         }
 
         const { data } = event;
+
+        broadcastLocaleToPanel();
 
         if (typeof data === 'string') {
           if (data === 'open-catalog') {
@@ -962,6 +1330,14 @@
         }
 
         if (data && typeof data === 'object') {
+          if (data.action === 'request-locale') {
+            if (panel && event.source === panel.contentWindow) {
+              postLocaleToTarget(event.source);
+            }
+
+            return;
+          }
+
           if (typeof data.miniAppUrl === 'string') {
             loadMiniApp(data.miniAppUrl);
             return;
