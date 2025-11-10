@@ -141,7 +141,10 @@
   --carousel-card-width-desktop: calc(var(--ratio-quarter) - var(--space-4));
   --layout-carousel-card-width: var(--carousel-card-width-mobile);
 
-  --layout-catalog-container-width: min(calc(3 * var(--size-grid-card-min) + 2 * var(--layout-catalog-card-gap)), 100%);
+  --layout-catalog-container-width: min(
+    calc(4 * var(--size-grid-card-min) + 3 * var(--layout-catalog-card-gap)),
+    100%
+  );
   --layout-catalog-gap: clamp(var(--space-6), 4vw, calc(var(--space-6) * 2));
   --layout-catalog-padding: clamp(calc(var(--space-6) + var(--space-2)), 6vw, calc(var(--space-8) + var(--space-6)));
   --layout-catalog-card-gap: clamp(var(--space-4), 2vw, var(--space-6));
@@ -149,7 +152,10 @@
   --layout-catalog-card-radius: clamp(var(--radius-l), 2vw, var(--radius-xl));
   --layout-catalog-scroll-padding: clamp(var(--space-3), 4vw, var(--space-5));
   --layout-catalog-card-width-mobile: clamp(calc(var(--size-grid-card-min) - var(--space-4)), var(--ratio-90), var(--size-grid-card-min));
-  --layout-catalog-grid-columns: repeat(3, minmax(var(--size-grid-card-min), var(--grid-fr-unit)));
+  --layout-catalog-grid-columns: repeat(
+    4,
+    minmax(var(--size-grid-card-min), var(--grid-fr-unit))
+  );
   --layout-catalog-grid-template: none;
   --layout-catalog-carousel-flow: column;
   --layout-catalog-carousel-snap: x mandatory;
@@ -398,11 +404,30 @@ header .subtitle {
 .carousel[data-carousel-bound="true"] .carousel-track {
   display: flex;
   gap: var(--layout-catalog-card-gap);
+  column-gap: var(--layout-catalog-card-gap);
+  row-gap: var(--layout-catalog-card-gap);
 }
 
 .carousel[data-carousel-bound="true"] .carousel-slide {
-  flex: 0 0 calc(100% / var(--carousel-per-view, 1));
-  max-width: calc(100% / var(--carousel-per-view, 1));
+  flex: 0 0
+    calc(
+      (
+          100% -
+          (
+            var(--layout-catalog-card-gap) * (var(--carousel-per-view, 1) - 1)
+          )
+        ) /
+        max(var(--carousel-per-view, 1), 1)
+    );
+  max-width: calc(
+    (
+        100% -
+        (
+          var(--layout-catalog-card-gap) * (var(--carousel-per-view, 1) - 1)
+        )
+      ) /
+      max(var(--carousel-per-view, 1), 1)
+  );
   scroll-snap-align: start;
   display: flex;
 }
@@ -883,8 +908,8 @@ header .subtitle {
 
 .catalog-card__favorite {
   position: absolute;
-  top: clamp(var(--space-3), 1.2vw + var(--space-2), var(--space-5));
-  right: clamp(var(--space-3), 1.2vw + var(--space-2), var(--space-5));
+  top: clamp(var(--space-4), 1.4vw + var(--space-3), var(--space-6));
+  right: clamp(var(--space-4), 1.4vw + var(--space-3), var(--space-6));
   display: inline-flex;
   align-items: center;
   justify-content: center;
