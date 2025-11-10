@@ -2278,3 +2278,66 @@ body.app-blank {
 .modal-container .backdrop {
   display: block;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Shell menu – Idiomas: layout vertical e neutralização de heranças          */
+/* -------------------------------------------------------------------------- */
+.shell-menu .locale-list,
+.menu-shell .locale-list,
+.language-selector .locale-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  position: relative;
+  width: 100%;
+}
+
+.shell-menu .locale-list label,
+.menu-shell .locale-list label,
+.language-selector .locale-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  line-height: 1.25;
+  position: static !important;
+  float: none !important;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.shell-menu .locale-list input[type="radio"],
+.menu-shell .locale-list input[type="radio"],
+.language-selector .locale-list input[type="radio"] {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+/* Garantir que o popover/box do menu comporte o conteúdo */
+.shell-menu .menu-popover,
+.menu-shell .menu-popover {
+  min-width: 280px;
+  z-index: 1000;
+  overflow: visible;
+}
+
+/* Breakpoints: manter coluna no tablet/mobile */
+@media (max-width: 1024px) {
+  .shell-menu .locale-list,
+  .menu-shell .locale-list,
+  .language-selector .locale-list {
+    flex-direction: column !important;
+  }
+}
+
+/* Neutralizar possíveis regras globais agressivas dentro do menu */
+.shell-menu .locale-list input,
+.shell-menu .locale-list label,
+.menu-shell .locale-list input,
+.menu-shell .locale-list label {
+  /* Evita bugs de temas que usam inline/absolute para form-inline */
+  position: static !important;
+  float: none !important;
+}
