@@ -6,6 +6,7 @@
 - Shell PWA em `index.html` incorporando o catálogo padrão e concentrando a navegação dos miniapps pelo iframe `#miniapp-panel`.
 - Fluxo de navegação via `window.loadMiniApp` e `postMessage` permitindo que os miniapps abram o catálogo ou troquem entre si sem recarregar o shell.
 - Atalho fixo no shell para reabrir o catálogo em um clique com suporte a `pt-BR`, `en-US` e `es-ES`.
+- Botão no cabeçalho do painel principal que reabre o catálogo diretamente no iframe ativo.
 - Documento `AGENTE.md` com diretrizes para manutenção do projeto.
 - `README.md` descrevendo a estrutura do repositório e o fluxo de trabalho recomendado.
 - Motor do painel Prefeito agora lê agregados do IndexedDB (persona, KPIs e indicadores) com atualização assíncrona.

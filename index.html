@@ -28,6 +28,16 @@
         <section class="panel-wrapper" aria-label="Painel de miniapp incorporado">
           <header>
             <h2>MiniApp em execução</h2>
+            <div class="panel-actions" role="group" aria-label="Ações do painel">
+              <button
+                type="button"
+                class="btn panel-action"
+                data-action="open-catalog"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">apps</span>
+                <span data-catalog-button-label>Abrir catálogo</span>
+              </button>
+            </div>
           </header>
           <iframe id="miniapp-panel" name="miniapp-panel" src="./miniapp-catalogo/index.html" title="MiniApp embarcado"></iframe>
           <noscript>Ative o JavaScript para alternar entre os mini‑apps.</noscript>
@@ -123,7 +133,7 @@
       const headerTitle = document.querySelector('[data-shell-app-title]');
       const headerSubtitle = document.querySelector('[data-shell-app-subtitle]');
       const fullscreenToggle = document.querySelector('[data-action="toggle-fullscreen"]');
-      const catalogToggle = document.querySelector('[data-action="open-catalog"]');
+      const catalogToggles = Array.from(document.querySelectorAll('[data-action="open-catalog"]'));
       const footerMenuToggle = document.querySelector('[data-action="toggle-footer-actions"]');
       const footerActions = document.querySelector('[data-footer-actions]');
       const footerAboutTitle = document.querySelector('[data-footer-about-title]');
@@ -440,7 +450,7 @@
       }
 
       function applyCatalogToggleState(isCatalog) {
-        if (!catalogToggle) {
+        if (!catalogToggles.length) {
           return;
         }
 
@@ -448,14 +458,25 @@
         const labels = CATALOG_LABELS[locale] || CATALOG_LABELS['pt-BR'];
         const label = isCatalog ? labels.active : labels.open;
 
-        if (isCatalog) {
-          catalogToggle.setAttribute('disabled', '');
-        } else {
-          catalogToggle.removeAttribute('disabled');
-        }
-        catalogToggle.setAttribute('aria-disabled', isCatalog ? 'true' : 'false');
-        catalogToggle.setAttribute('aria-label', label);
-        catalogToggle.setAttribute('title', label);
+        catalogToggles.forEach((toggle) => {
+          toggle.disabled = Boolean(isCatalog);
+
+          if (isCatalog) {
+            toggle.setAttribute('disabled', '');
+          } else {
+            toggle.removeAttribute('disabled');
+          }
+
+          toggle.setAttribute('aria-disabled', isCatalog ? 'true' : 'false');
+          toggle.setAttribute('aria-label', label);
+          toggle.setAttribute('title', label);
+
+          const labelElement = toggle.querySelector('[data-catalog-button-label]');
+
+          if (labelElement) {
+            labelElement.textContent = label;
+          }
+        });
       }
 
       function isCatalogUrl(url) {
@@ -563,15 +584,26 @@
         });
       }
 
-      if (catalogToggle) {
-        catalogToggle.addEventListener('click', () => {
-          loadMiniApp(defaultMiniApp, {
-            metadata: getCatalogHeaderCopy(),
-          });
+      if (catalogToggles.length > 0) {
+        catalogToggles.forEach((toggle) => {
+          toggle.addEventListener('click', () => {
+            loadMiniApp(defaultMiniApp, {
+              metadata: getCatalogHeaderCopy(),
+            });
 
-          if (!isDesktopLayout()) {
-            closeFooterActions();
-          }
+            if (toggle.closest('[data-footer-actions]')) {
+              if (typeof isDesktopLayout === 'function') {
+                if (!isDesktopLayout()) {
+                  closeFooterActions();
+                }
+              } else if (window.matchMedia) {
+                const desktopQuery = window.matchMedia('(min-width: 64rem)');
+                if (!desktopQuery.matches) {
+                  closeFooterActions();
+                }
+              }
+            }
+          });
         });
       }
 
