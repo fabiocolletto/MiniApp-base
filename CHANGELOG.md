@@ -37,7 +37,8 @@
 - Miniapp de Cadastro passa a receber o idioma exclusivamente do shell, removendo o seletor interno e sincronizando via mensagens `postMessage`.
 - Miniapp TTS passa a receber o idioma exclusivamente do shell, removendo o seletor interno, regenerando roteiros automáticos quando aplicável e reenviando o cabeçalho após `postMessage({ action: 'set-locale' })`.
 - Layout em tela cheia mantém cabeçalho e rodapé visíveis, expandindo apenas o painel ativo do miniapp.
-- Miniapp de Cadastro simplificado para um único formulário em card branco alinhado ao shell base, com feedback direto e sem resumo pós-envio.
+- Miniapp de Cadastro apresenta apenas o formulário principal no painel, com feedback direto e controles localizados para cancelar ou excluir dados salvos enquanto restaura automaticamente informações armazenadas.
+- Miniapp de Cadastro passa a ocupar todo o painel com fundo contínuo, reorganiza os campos em grade compacta, reduz o tamanho dos botões e exibe alertas temporários no rodapé.
 - Botão de tela cheia e identidade do Shell passam a utilizar os ícones circulares do catálogo baseados na biblioteca Material.
 - Cartões do catálogo ocupam toda a largura útil do painel com espaçamento interno próprio, deixam de exibir botão secundário e tornam-se completamente clicáveis.
 - Shell concentra os controles de catálogo e tela cheia no menu do rodapé, removendo botões espalhados pelo painel principal e delegando a navegação aos cartões e integrações via `postMessage`.

@@ -580,6 +580,12 @@ ol {
   gap: var(--space-5);
 }
 
+.app-board--flush {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .app-board__header {
   display: flex;
   flex-direction: column;
@@ -686,6 +692,12 @@ ol {
   color: var(--color-neutral-500);
 }
 
+.form-intro {
+  margin: 0;
+  color: var(--color-neutral-500);
+  font-size: var(--font-size-sm);
+}
+
 .form-card__form {
   display: grid;
   gap: var(--space-4);
@@ -706,6 +718,10 @@ ol {
 
 .form-grid--split {
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.form-grid--balanced {
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
 .form-field {
@@ -772,6 +788,97 @@ ol {
   color: var(--color-surface-0);
   border-radius: var(--radius-full);
   padding: var(--space-2) var(--space-4);
+}
+
+.form-footer {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.miniapp-cadastro {
+  background-color: var(--color-surface-0);
+}
+
+.miniapp-cadastro .app-board {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 100vh;
+  gap: 0;
+}
+
+.miniapp-cadastro .form-surface {
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(var(--space-4), 4vw, var(--space-5));
+  background-color: var(--color-surface-0);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100%;
+}
+
+.miniapp-cadastro .form-section {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+}
+
+.miniapp-cadastro .form-section + .form-section {
+  border-top: 1px solid var(--color-surface-200);
+}
+
+.miniapp-cadastro .form-section__header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.miniapp-cadastro .form-section__description {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.miniapp-cadastro .form-grid {
+  gap: var(--space-3);
+}
+
+.miniapp-cadastro .form-field {
+  gap: var(--space-1);
+}
+
+.miniapp-cadastro .form-field__label {
+  font-size: var(--font-size-sm);
+}
+
+.miniapp-cadastro .form-field__control {
+  padding: var(--space-2) var(--space-3);
+}
+
+.miniapp-cadastro .form-field__checkbox {
+  align-items: flex-start;
+  font-size: var(--font-size-sm);
+}
+
+.miniapp-cadastro .form-actions {
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.miniapp-cadastro .form-actions .btn {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  min-height: auto;
+}
+
+.miniapp-cadastro .form-feedback {
+  display: none;
+  justify-self: flex-end;
+}
+
+.miniapp-cadastro .form-footer {
+  margin-top: var(--space-2);
+  align-items: stretch;
 }
 
 .file-input {
