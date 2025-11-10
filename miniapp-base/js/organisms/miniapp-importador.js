@@ -1,4 +1,9 @@
-(function() {
+(function (window) {
+        const root = window.miniappBase || (window.miniappBase = {});
+        const atoms = root.atoms || (root.atoms = {});
+        const molecules = root.molecules || (root.molecules = {});
+        const shellSync = molecules.shellSync || null;
+
         const SUPPORTED_LANGS = ['pt-BR', 'en-US', 'es-ES'];
         const DEFAULT_LANG = 'pt-BR';
         const I18N = {
@@ -515,6 +520,10 @@
 
         function requestShellLocale() {
             if (!isEmbeddedInShell) return;
+
+            if (atoms.postToParent && atoms.postToParent({ action: 'request-locale' })) {
+                return;
+            }
 
             try {
                 window.parent.postMessage({ action: 'request-locale' }, window.location.origin);
@@ -1217,4 +1226,4 @@
         }
 
         document.addEventListener('DOMContentLoaded', init);
-    })();
+    })(window);

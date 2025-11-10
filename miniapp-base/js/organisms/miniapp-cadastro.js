@@ -1,4 +1,9 @@
-(function () {
+(function (window) {
+  const root = window.miniappBase || (window.miniappBase = {});
+  const atoms = root.atoms || (root.atoms = {});
+  const molecules = root.molecules || (root.molecules = {});
+  const shellSync = molecules.shellSync || null;
+
   const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
   const DEFAULT_LOCALE = 'pt-BR';
 
@@ -514,12 +519,22 @@
   }
 
   function notifyShell() {
-    if (!window.parent || window.parent === window) {
+    const header = getTranslation(currentLocale, 'header');
+    if (!header || typeof header !== 'object') {
       return;
     }
 
-    const header = getTranslation(currentLocale, 'header');
-    if (!header || typeof header !== 'object') {
+    if (shellSync && typeof shellSync.sendMiniAppHeader === 'function') {
+      if (shellSync.sendMiniAppHeader(header)) {
+        return;
+      }
+    }
+
+    if (atoms.postToParent && atoms.postToParent({ action: 'miniapp-header', ...header })) {
+      return;
+    }
+
+    if (!window.parent || window.parent === window) {
       return;
     }
 
@@ -540,12 +555,22 @@
   }
 
   function requestCatalog() {
+    if (shellSync && typeof shellSync.requestCatalog === 'function') {
+      if (shellSync.requestCatalog()) {
+        return;
+      }
+    }
+
+    if (atoms.postToParent && atoms.postToParent({ action: 'open-catalog' })) {
+      return;
+    }
+
     if (!window.parent || window.parent === window) {
       return;
     }
 
     try {
-      window.parent.postMessage('open-catalog', window.location.origin);
+      window.parent.postMessage({ action: 'open-catalog' }, window.location.origin);
     } catch (error) {
       console.error('Não foi possível solicitar o catálogo ao shell.', error);
     }
@@ -889,4 +914,4 @@
   } else {
     initialize();
   }
-})();
+})(window);

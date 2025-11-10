@@ -1,4 +1,10 @@
-(function () {
+(function (window, document) {
+      'use strict';
+
+      const root = window.miniappBase || (window.miniappBase = {});
+      const atoms = root.atoms || (root.atoms = {});
+      const molecules = root.molecules || (root.molecules = {});
+
       const defaultMiniApp = './miniapp-catalogo/index.html';
       const panel = document.getElementById('miniapp-panel');
       const panelWrapper = document.querySelector('.panel-wrapper');
@@ -210,6 +216,23 @@
         },
       };
 
+      const safeGetItem = atoms.safeGetItem || function (key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (_) {
+          return null;
+        }
+      };
+
+      const safeSetItem = atoms.safeSetItem || function (key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      };
+
       function normalizeLocaleCandidate(locale) {
         if (!locale || typeof locale !== 'string') {
           return null;
@@ -219,6 +242,13 @@
 
         if (!trimmed) {
           return null;
+        }
+
+        if (typeof atoms.normalizeLocale === 'function') {
+          const normalized = atoms.normalizeLocale(trimmed, SUPPORTED_LOCALES, DEFAULT_LOCALE);
+          if (normalized && SUPPORTED_LOCALES.includes(normalized)) {
+            return normalized;
+          }
         }
 
         const exactMatch = SUPPORTED_LOCALES.find(
@@ -238,19 +268,12 @@
       }
 
       function readStoredLocale() {
-        try {
-          return window.localStorage.getItem(LOCALE_STORAGE_KEY);
-        } catch (_) {
-          return null;
-        }
+        const stored = safeGetItem(LOCALE_STORAGE_KEY);
+        return typeof stored === 'string' ? stored : null;
       }
 
       function writeStoredLocale(locale) {
-        try {
-          window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-        } catch (_) {
-          // Ignorado: armazenamento indisponível.
-        }
+        safeSetItem(LOCALE_STORAGE_KEY, locale);
       }
 
       function initializeActiveLocale() {
@@ -1187,4 +1210,4 @@
         focus: false,
         metadata: getCatalogHeaderCopy(),
       });
-    })();
+    })(window, document);
