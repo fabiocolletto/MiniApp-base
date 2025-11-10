@@ -146,12 +146,12 @@
     100%
   );
   --layout-catalog-gap: clamp(var(--space-6), 4vw, calc(var(--space-6) * 2));
-  --layout-catalog-padding: clamp(calc(var(--space-6) + var(--space-2)), 6vw, calc(var(--space-8) + var(--space-6)));
-  --layout-catalog-card-gap: clamp(var(--space-4), 2vw, var(--space-6));
-  --layout-catalog-card-padding: clamp(var(--space-7), 4vw, calc(var(--space-8) + var(--space-4)));
-  --layout-catalog-card-radius: clamp(var(--radius-l), 2vw, var(--radius-xl));
-  --layout-catalog-scroll-padding: clamp(var(--space-3), 4vw, var(--space-5));
-  --layout-catalog-card-width-mobile: clamp(calc(var(--size-grid-card-min) - var(--space-4)), var(--ratio-90), var(--size-grid-card-min));
+  --layout-catalog-padding: clamp(calc(var(--space-5) + var(--space-2)), 6vw, calc(var(--space-8) + var(--space-6)));
+  --layout-catalog-card-gap: clamp(var(--space-3), 2vw, var(--space-6));
+  --layout-catalog-card-padding: clamp(var(--space-6), 4vw, calc(var(--space-8) + var(--space-4)));
+  --layout-catalog-card-radius: clamp(var(--radius-m), 2vw, var(--radius-xl));
+  --layout-catalog-scroll-padding: clamp(var(--space-2), 4vw, var(--space-4));
+  --layout-catalog-card-width-mobile: min(100%, clamp(18rem, 90vw, var(--size-grid-card-min)));
   --layout-catalog-grid-columns: repeat(
     4,
     minmax(var(--size-grid-card-min), var(--grid-fr-unit))
