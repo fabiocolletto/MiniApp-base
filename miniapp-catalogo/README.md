@@ -1,6 +1,6 @@
 # Catálogo de MiniApps
 
-Esta pasta hospeda o catálogo padrão carregado pelo shell (`index.html`). O arquivo cria dois carrosséis horizontais utilizando o utilitário `miniapp-base/components/carousel.js` e mantém o estado de favoritos no `localStorage` quando disponível:
+Esta pasta hospeda o catálogo padrão carregado pelo shell (`index.html`). O arquivo cria dois carrosséis horizontais utilizando o utilitário `miniapp-base/js/carousel.js` e mantém o estado de favoritos no `localStorage` quando disponível:
 
 - **Favoritos:** linha fixa com os MiniApps destacados (`favorite: true` no array do script).
 - **Todos os MiniApps:** linha com a lista completa disponível no MiniApp Base.

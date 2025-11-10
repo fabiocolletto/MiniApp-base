@@ -1,4 +1,5 @@
 # Guia do Agente
+- Scripts compartilhados devem permanecer em `miniapp-base/js/`, com os miniapps referenciando-os diretamente pelo caminho relativo.
 
 - Leia este arquivo, bem como o `README.md` e o `CHANGELOG.md`, sempre antes de iniciar qualquer atividade.
 - Prefira ajustes incrementais com commits limpos e mensagens descritivas.

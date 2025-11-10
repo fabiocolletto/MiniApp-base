@@ -5,6 +5,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 ## Estrutura
 - `index.html`: shell PWA responsável por carregar o catálogo padrão e hospedar os miniapps ativos em um iframe central.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
+- `miniapp-base/js/`: scripts compartilhados entre o shell e os miniapps.
 - `miniapp-importador/`: miniapp dedicado ao fluxo de importação de pesquisas.
 - `miniapp-cadastro/`: miniapp focado no cadastro e onboarding de usuários.
 - `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
@@ -14,7 +15,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 1. Leia `AGENTE.md` e `CHANGELOG.md` antes de começar qualquer alteração para entender as convenções vigentes.
 2. Utilize `npm`, `pnpm` ou `yarn` apenas se necessário; os protótipos funcionam abrindo o HTML diretamente no navegador.
 3. Ao alterar estilos, mantenha a responsividade e valide o layout em breakpoints menores (altura e largura).
-4. Utilize o componente `miniapp-base/components/carousel.js` sempre que precisar criar containers roláveis de miniapps, mantendo consistência com os demais fluxos.
+4. Utilize o componente `miniapp-base/js/carousel.js` sempre que precisar criar containers roláveis de miniapps, mantendo consistência com os demais fluxos.
 5. Sempre atualize o `CHANGELOG.md` descrevendo as mudanças relevantes antes de abrir um PR.
 
 ## Shell PWA e fluxo de navegação

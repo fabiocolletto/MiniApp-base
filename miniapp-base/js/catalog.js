@@ -1,0 +1,494 @@
+document.addEventListener('DOMContentLoaded', function () {
+      var miniapps = [
+        {
+          id: 'miniapp-prefeito',
+          name: 'Painel do Prefeito',
+          description: 'Painel com KPIs, filtros e relatórios setoriais.',
+          icon: 'monitoring',
+          theme: 'prefeito',
+          href: '../miniapp-prefeito/index.html',
+          favorite: true
+        },
+        {
+          id: 'miniapp-cadastro',
+          name: 'Cadastro de Usuários',
+          description: 'Fluxo guiado para cadastrar novos usuários e registrar aceite de termos.',
+          icon: 'person_add',
+          theme: 'cadastro',
+          href: '../miniapp-cadastro/index.html',
+          favorite: true
+        },
+        {
+          id: 'miniapp-importador',
+          name: 'Importador de Pesquisas',
+          description: 'Fluxo para importar arquivos CSV de pesquisas e revisar resultados.',
+          icon: 'cloud_upload',
+          theme: 'importador',
+          href: '../miniapp-importador/index.html',
+          favorite: false
+        },
+        {
+          id: 'miniapp-tts',
+          name: 'Gerador de Roteiros TTS',
+          description: 'Formulário guiado com prévias de áudio e exportação otimizada para locução.',
+          icon: 'text_to_speech',
+          theme: 'tts',
+          href: '../miniapp-tts/index.html',
+          favorite: false
+        }
+      ];
+
+      var FAVORITES_STORAGE_KEY = 'miniappCatalog.favorites';
+      var SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
+      var FAVORITE_COPY = {
+        'pt-BR': {
+          add: 'Adicionar aos favoritos',
+          remove: 'Remover dos favoritos'
+        },
+        'en-US': {
+          add: 'Add to favorites',
+          remove: 'Remove from favorites'
+        },
+        'es-ES': {
+          add: 'Agregar a favoritos',
+          remove: 'Quitar de favoritos'
+        }
+      };
+
+      var CATALOG_HEADER_COPY = {
+        'pt-BR': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Escolha um MiniApp para abrir.'
+        },
+        'en-US': {
+          title: 'MiniApps Catalog',
+          subtitle: 'Choose a MiniApp to open.'
+        },
+        'es-ES': {
+          title: 'Catálogo de MiniApps',
+          subtitle: 'Elige un MiniApp para abrir.'
+        }
+      };
+
+      var miniappsById = new Map();
+      miniapps.forEach(function (app) {
+        miniappsById.set(app.id, app);
+      });
+
+      function normalizeLocale(locale) {
+        if (typeof locale !== 'string') {
+          return 'pt-BR';
+        }
+
+        var trimmed = locale.trim();
+
+        if (!trimmed) {
+          return 'pt-BR';
+        }
+
+        var normalized = SUPPORTED_LOCALES.find(function (supported) {
+          return supported.toLowerCase() === trimmed.toLowerCase();
+        });
+
+        if (normalized) {
+          return normalized;
+        }
+
+        var baseLang = trimmed.split('-')[0];
+        var fallback = SUPPORTED_LOCALES.find(function (supported) {
+          return supported.toLowerCase().indexOf(baseLang.toLowerCase()) === 0;
+        });
+
+        return fallback || 'pt-BR';
+      }
+
+      function getActiveLocale() {
+        var docLang = (document.documentElement && document.documentElement.lang) || '';
+
+        if (!docLang) {
+          return 'pt-BR';
+        }
+
+        return normalizeLocale(docLang);
+      }
+
+      function getFavoriteActionCopy(isActive) {
+        var locale = getActiveLocale();
+        var copy = FAVORITE_COPY[locale] || FAVORITE_COPY['pt-BR'];
+        return isActive ? copy.remove : copy.add;
+      }
+
+      function sanitizeFavoriteIds(ids) {
+        if (!Array.isArray(ids)) {
+          return [];
+        }
+
+        var seen = new Set();
+
+        return ids.filter(function (id) {
+          if (typeof id !== 'string' || seen.has(id) || !miniappsById.has(id)) {
+            return false;
+          }
+
+          seen.add(id);
+          return true;
+        });
+      }
+
+      function loadStoredFavoriteIds() {
+        try {
+          if (!window.localStorage) {
+            return [];
+          }
+        } catch (error) {
+          return [];
+        }
+
+        try {
+          var raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+
+          if (!raw) {
+            return [];
+          }
+
+          var parsed = JSON.parse(raw);
+          return sanitizeFavoriteIds(parsed);
+        } catch (error) {
+          console.warn('Não foi possível carregar os favoritos salvos.', error);
+          return [];
+        }
+      }
+
+      function persistFavoriteIds(ids) {
+        try {
+          if (!window.localStorage) {
+            return;
+          }
+        } catch (error) {
+          return;
+        }
+
+        try {
+          window.localStorage.setItem(
+            FAVORITES_STORAGE_KEY,
+            JSON.stringify(ids)
+          );
+        } catch (error) {
+          console.warn('Não foi possível salvar os favoritos.', error);
+        }
+      }
+
+      function getDefaultFavoriteIds() {
+        return miniapps
+          .filter(function (app) {
+            return app.favorite;
+          })
+          .map(function (app) {
+            return app.id;
+          });
+      }
+
+      var storedFavoriteIds = loadStoredFavoriteIds();
+      var favoritesSet = new Set(
+        storedFavoriteIds.length ? storedFavoriteIds : getDefaultFavoriteIds()
+      );
+
+      miniapps.forEach(function (app) {
+        app.favorite = favoritesSet.has(app.id);
+      });
+
+      function isFavorite(appId) {
+        return favoritesSet.has(appId);
+      }
+
+      function createFavoriteButton(app) {
+        var isActive = isFavorite(app.id);
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'catalog-card__favorite';
+
+        if (isActive) {
+          button.classList.add('is-active');
+        }
+
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+        var label = getFavoriteActionCopy(isActive);
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+
+        var icon = document.createElement('span');
+        icon.className = 'material-symbols-rounded catalog-card__favorite-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'star';
+
+        button.appendChild(icon);
+
+        button.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleFavorite(app.id);
+        });
+
+        return button;
+      }
+
+      function createCard(app) {
+        var article = document.createElement('article');
+        article.className = 'app-card catalog-card';
+        article.setAttribute('data-miniapp-id', app.id);
+
+        if (isFavorite(app.id)) {
+          article.classList.add('is-favorited');
+        }
+
+        var link = document.createElement('a');
+        link.className = 'catalog-card__link';
+        link.href = app.href;
+        link.target = 'miniapp-panel';
+        link.setAttribute('data-miniapp-target', app.href);
+        link.setAttribute('data-miniapp-name', app.name);
+        link.setAttribute('data-miniapp-description', app.description);
+        link.setAttribute('data-miniapp-icon-symbol', app.icon);
+        link.setAttribute('data-miniapp-icon-theme', app.theme);
+
+        var header = document.createElement('div');
+        header.className = 'catalog-card__header';
+
+        var icon = document.createElement('span');
+        icon.className = 'material-symbols-rounded app-icon app-icon--theme-' + app.theme;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = app.icon;
+
+        var content = document.createElement('div');
+        content.className = 'catalog-card__content';
+
+        var title = document.createElement('h3');
+        title.textContent = app.name;
+
+        var description = document.createElement('p');
+        description.textContent = app.description;
+
+        content.appendChild(title);
+        content.appendChild(description);
+        header.appendChild(icon);
+        header.appendChild(content);
+        link.appendChild(header);
+        article.appendChild(link);
+
+        article.appendChild(createFavoriteButton(app));
+
+        return article;
+      }
+
+      function mountCarousel(container, items) {
+        if (!container) {
+          return;
+        }
+
+        var section = container.closest('section');
+        var hasItems = Array.isArray(items) && items.length > 0;
+
+        if (!hasItems) {
+          if (section) {
+            section.hidden = true;
+          }
+
+          if (container.hasAttribute('data-carousel-bound')) {
+            var track = container.querySelector('.carousel-track');
+
+            if (track) {
+              track.innerHTML = '';
+            } else {
+              container.innerHTML = '';
+            }
+
+            if (
+              window.CarouselManager &&
+              typeof window.CarouselManager.refresh === 'function'
+            ) {
+              window.CarouselManager.refresh(container);
+            }
+          } else {
+            container.innerHTML = '';
+          }
+
+          return;
+        }
+
+        if (section) {
+          section.hidden = false;
+        }
+
+        var isBound = container.hasAttribute('data-carousel-bound');
+        var fragment = document.createDocumentFragment();
+
+        items.forEach(function (app) {
+          var card = createCard(app);
+
+          if (isBound) {
+            var slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+            slide.setAttribute('role', 'listitem');
+            slide.appendChild(card);
+            fragment.appendChild(slide);
+          } else {
+            fragment.appendChild(card);
+          }
+        });
+
+        if (isBound) {
+          var track = container.querySelector('.carousel-track');
+
+          if (track) {
+            track.innerHTML = '';
+            track.appendChild(fragment);
+          }
+
+          if (
+            window.CarouselManager &&
+            typeof window.CarouselManager.refresh === 'function'
+          ) {
+            window.CarouselManager.refresh(container);
+          }
+        } else {
+          container.innerHTML = '';
+          container.appendChild(fragment);
+
+          if (
+            window.CarouselManager &&
+            typeof window.CarouselManager.mount === 'function'
+          ) {
+            window.CarouselManager.mount(container);
+          }
+        }
+      }
+
+      var favoritesContainer = document.querySelector('[data-carousel="favorites"]');
+      var allContainer = document.querySelector('[data-carousel="all"]');
+
+      function renderCatalog(options) {
+        var focusMiniAppId = options && options.focusMiniAppId;
+
+        var favorites = miniapps.filter(function (app) {
+          return isFavorite(app.id);
+        });
+
+        mountCarousel(favoritesContainer, favorites);
+        mountCarousel(allContainer, miniapps);
+
+        if (!focusMiniAppId) {
+          return;
+        }
+
+        requestAnimationFrame(function () {
+          var selector = '[data-miniapp-id="' + focusMiniAppId + '"] .catalog-card__favorite';
+          var button = document.querySelector(selector);
+
+          if (button && typeof button.focus === 'function') {
+            button.focus();
+          }
+        });
+      }
+
+      function toggleFavorite(appId) {
+        if (!miniappsById.has(appId)) {
+          return;
+        }
+
+        if (favoritesSet.has(appId)) {
+          favoritesSet.delete(appId);
+        } else {
+          favoritesSet.add(appId);
+        }
+
+        miniappsById.forEach(function (app) {
+          app.favorite = favoritesSet.has(app.id);
+        });
+
+        persistFavoriteIds(Array.from(favoritesSet));
+        renderCatalog({ focusMiniAppId: appId });
+      }
+
+      function notifyShell() {
+        if (!window.parent || window.parent === window) {
+          return;
+        }
+
+        var locale = getActiveLocale();
+        var copy = CATALOG_HEADER_COPY[locale] || CATALOG_HEADER_COPY['pt-BR'];
+
+        var message = {
+          action: 'miniapp-header',
+          title: copy.title,
+          subtitle: copy.subtitle,
+          icon: 'apps',
+          iconTheme: 'catalog'
+        };
+
+        var targetOrigin = window.location.origin;
+        if (!targetOrigin || targetOrigin === 'null') {
+          targetOrigin = '*';
+        }
+
+        try {
+          window.parent.postMessage(message, targetOrigin);
+        } catch (error) {
+          console.error('Não foi possível enviar o cabeçalho do miniapp para o shell.', error);
+        }
+      }
+
+      function setLocale(locale) {
+        var nextLocale = normalizeLocale(locale);
+
+        if (document.documentElement) {
+          document.documentElement.lang = nextLocale;
+        }
+
+        renderCatalog();
+        notifyShell();
+      }
+
+      window.addEventListener('message', function (event) {
+        if (!event) {
+          return;
+        }
+
+        if (
+          window.parent &&
+          event.source &&
+          event.source !== window.parent
+        ) {
+          return;
+        }
+
+        var data = event.data;
+
+        if (!data || typeof data !== 'object') {
+          return;
+        }
+
+        if (data.action === 'set-locale' && 'locale' in data) {
+          setLocale(data.locale);
+        }
+      });
+
+      setLocale((document.documentElement && document.documentElement.lang) || 'pt-BR');
+
+      if (window.parent && window.parent !== window) {
+        var requestLocaleTarget = window.location.origin;
+
+        if (!requestLocaleTarget || requestLocaleTarget === 'null') {
+          requestLocaleTarget = '*';
+        }
+
+        try {
+          window.parent.postMessage(
+            { action: 'request-locale' },
+            requestLocaleTarget
+          );
+        } catch (error) {
+          console.error('Não foi possível solicitar o idioma ao shell.', error);
+        }
+      }
+    });
