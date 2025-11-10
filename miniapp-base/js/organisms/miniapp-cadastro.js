@@ -4,7 +4,16 @@
   const molecules = root.molecules || (root.molecules = {});
   const shellSync = molecules.shellSync || null;
 
-  const SUPPORTED_LOCALES = ['pt-BR', 'en-US', 'es-ES'];
+  const sharedLocales = Array.isArray(root.SUPPORTED_LOCALES)
+    ? root.SUPPORTED_LOCALES.filter((locale) => typeof locale === 'string' && locale.trim())
+    : [];
+
+  const SUPPORTED_LOCALES = sharedLocales.length
+    ? Array.from(new Set(sharedLocales))
+    : ['pt-BR', 'en-US', 'es-ES'];
+
+  root.SUPPORTED_LOCALES = SUPPORTED_LOCALES.slice();
+
   const DEFAULT_LOCALE = 'pt-BR';
 
   const translations = {
@@ -362,22 +371,44 @@
   let currentLocale = detectLocale();
   const storageAvailable = isLocalStorageAvailable();
 
-  function detectLocale() {
-    const documentLocale = (document.documentElement && document.documentElement.lang) || '';
-    const normalized = documentLocale.trim();
-
-    if (SUPPORTED_LOCALES.includes(normalized)) {
-      return normalized;
+  function normalizeSupportedLocale(locale) {
+    if (typeof atoms.normalizeLocale === 'function') {
+      return atoms.normalizeLocale(locale, SUPPORTED_LOCALES, DEFAULT_LOCALE);
     }
 
-    if (normalized) {
-      const match = SUPPORTED_LOCALES.find((locale) => locale.startsWith(normalized.slice(0, 2)));
-      if (match) {
-        return match;
-      }
+    if (typeof locale !== 'string') {
+      return DEFAULT_LOCALE;
+    }
+
+    const trimmed = locale.trim();
+
+    if (!trimmed) {
+      return DEFAULT_LOCALE;
+    }
+
+    const exactMatch = SUPPORTED_LOCALES.find(
+      (candidate) => candidate.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    const base = trimmed.split('-')[0];
+    const match = SUPPORTED_LOCALES.find((candidate) =>
+      candidate.toLowerCase().startsWith(base.toLowerCase()),
+    );
+
+    if (match) {
+      return match;
     }
 
     return DEFAULT_LOCALE;
+  }
+
+  function detectLocale() {
+    const documentLocale = (document.documentElement && document.documentElement.lang) || '';
+    return normalizeSupportedLocale(documentLocale);
   }
 
   function getTranslation(locale, path) {
@@ -518,15 +549,13 @@
       return;
     }
 
-    if (!SUPPORTED_LOCALES.includes(locale)) {
+    const normalizedLocale = normalizeSupportedLocale(locale);
+
+    if (!normalizedLocale || normalizedLocale === currentLocale) {
       return;
     }
 
-    if (locale === currentLocale) {
-      return;
-    }
-
-    currentLocale = locale;
+    currentLocale = normalizedLocale;
     translateElements();
     notifyShell();
   }
