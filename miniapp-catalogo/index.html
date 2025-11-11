@@ -4,17 +4,339 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Catálogo de MiniApps</title>
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Estilos customizados para o Tailwind e fontes */
+    body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+    .ma-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .ma-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+    .loading-spinner { border-top-color: #3b82f6; }
+    
+    /* Esconde a barra de rolagem horizontal em dispositivos menores, se necessário */
+    .catalog-container { overflow-x: hidden; }
+    
+    /* Ajustes responsivos para a lista de cards */
+    #catalog-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-  <div class="ma">
-    <div class="wrap">
-      <section id="catalog" class="grid grid--auto"></section>
+<body class="p-4 md:p-8 catalog-container">
+
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Cabeçalho Limpo (Apenas o Título do Catálogo) -->
+    <header class="bg-white p-6 rounded-xl shadow-lg mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Seu Catálogo de MiniApps</h1>
+      <p class="text-gray-600 mb-4">Explore os aplicativos disponíveis para uso.</p>
+      
+      <!-- Barra de Pesquisa e Filtro (Adicionada para usabilidade) -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <input 
+            type="text" 
+            id="searchBar" 
+            placeholder="Buscar por nome, categoria ou descrição..."
+            class="p-3 border border-gray-300 rounded-lg w-full sm:flex-1 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+        />
+        <select id="categoryFilter" class="p-3 border border-gray-300 rounded-lg w-full sm:w-48 bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+            <option value="">Todas as Categorias</option>
+            <!-- Opções de categoria serão preenchidas via JS -->
+        </select>
+      </div>
+      
+      <p id="status-message" class="mt-4 text-sm text-gray-500">Inicializando...</p>
+    </header>
+    
+    <!-- Seção do Catálogo -->
+    <div id="catalog-list" class="grid gap-6">
+      <!-- Cards do Catálogo serão injetados aqui -->
+      <div class="col-span-full flex justify-center items-center h-40">
+        <div class="loading-spinner w-8 h-8 border-4 border-gray-200 rounded-full animate-spin"></div>
+      </div>
     </div>
+
   </div>
+
   <script>
-    // window.CATALOG_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/pub?gid=0&single=true&output=csv";
+    // Configurações do Firebase (Globais no ambiente Canvas)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
   </script>
-  <script src="../js/catalog.js"></script>
+  <!-- Importações do Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Variáveis Globais para o Firebase
+    let app, db, auth;
+    
+    // Lista de Apps Essenciais (Garantia de funcionamento do sistema)
+    const ESSENTIAL_APPS = [
+      { id: 'app_base', name: 'MiniApp Base', description: 'Ponto de partida e template para novos MiniApps.', icon_url: 'https://placehold.co/48x48/1e3a8a/ffffff?text=B', url: 'miniapp-base/index.html', category: 'Sistema', status: 'Essencial' },
+      { id: 'app_catalog', name: 'Catálogo de MiniApps', description: 'Você está aqui! Interface de usuário final para navegação.', icon_url: 'https://placehold.co/48x48/059669/ffffff?text=C', url: 'Teste.html', category: 'Sistema', status: 'Essencial' },
+      { id: 'app_manager', name: 'Gestor de Catálogos (Admin)', description: 'Ferramenta administrativa para importar e gerenciar o catálogo ativo.', icon_url: 'https://placehold.co/48x48/f97316/ffffff?text=G', url: 'index (5).html', category: 'Sistema', status: 'Essencial' },
+    ];
+
+    // Elementos do DOM
+    const statusMessage = document.getElementById('status-message');
+    const catalogList = document.getElementById('catalog-list');
+    const searchBar = document.getElementById('searchBar');
+    const categoryFilter = document.getElementById('categoryFilter');
+    
+    // Dados para uso no script
+    let fullCatalogData = []; // Armazena todos os dados brutos do Firestore
+    let filterOptions = {
+        searchText: '',
+        category: ''
+    };
+
+    // ----------------------------------------------------------------------
+    // 1. FUNÇÕES DE UTILIDADE
+    // ----------------------------------------------------------------------
+
+    /**
+     * Exibe uma mensagem de status.
+     */
+    function showStatus(message, type = 'info') {
+      statusMessage.textContent = message;
+      statusMessage.className = 'mt-4 text-sm';
+      switch (type) {
+        case 'success':
+          statusMessage.classList.add('text-green-600');
+          break;
+        case 'error':
+          statusMessage.classList.add('text-red-600');
+          break;
+        case 'info':
+        default:
+          statusMessage.classList.add('text-gray-500');
+          break;
+      }
+    }
+
+    /**
+     * Cria e retorna o HTML para um único card de MiniApp.
+     */
+    function createCatalogCard(appItem) {
+      const iconUrl = appItem.icon_url || 'https://placehold.co/48x48/cccccc/666666?text=APP';
+      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800' : 
+                          appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800' : 
+                          appItem.status === 'Essencial' ? 'bg-indigo-100 text-indigo-800' :
+                          'bg-blue-100 text-blue-800'; // Fallback
+
+      return `
+        <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl">
+          <div class="flex items-start space-x-4 mb-3">
+            <img src="${iconUrl}" alt="${appItem.name} Icone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';"/>
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-gray-900">${appItem.name}</h4>
+              <p class="text-xs font-medium text-gray-500">${appItem.category || 'Geral'}</p>
+            </div>
+          </div>
+          <p class="text-sm text-gray-700 mb-4 h-12 overflow-hidden">${appItem.description}</p>
+          <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${statusClass}">
+              ${appItem.status || 'Desconhecido'}
+            </span>
+            <a href="${appItem.url || '#'}" target="_self" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition duration-150 ease-in-out">
+              Abrir <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // ----------------------------------------------------------------------
+    // 2. FILTRAGEM E RENDERIZAÇÃO
+    // ----------------------------------------------------------------------
+
+    /**
+     * Popula o dropdown de filtro de categorias.
+     * @param {Array<Object>} data Lista completa de aplicativos.
+     */
+    function populateFilters(data) {
+        // CORREÇÃO: Remove a exclusão da categoria 'Sistema' para que ela apareça no filtro.
+        // 1. Coleta categorias únicas e ordena. Apenas filtra por categorias nulas/vazias.
+        const categories = [...new Set(data.map(app => app.category).filter(c => c))].sort();
+        
+        // 2. Limpa e adiciona a opção padrão
+        categoryFilter.innerHTML = '<option value="">Todas as Categorias</option>';
+        
+        // 3. Adiciona as categorias dinamicamente
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            // Mapeia o valor de volta para 'Sistema' (que é a categoria do Essencial)
+            option.value = category; 
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+        
+        // 4. Garante que o filtro atualmente selecionado seja mantido
+        categoryFilter.value = filterOptions.category;
+    }
+
+    /**
+     * Aplica os filtros atuais aos dados e renderiza o catálogo.
+     */
+    function applyFiltersAndRender() {
+        if (!fullCatalogData || fullCatalogData.length === 0) {
+            catalogList.innerHTML = '<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">Nenhum MiniApp no catálogo. Carregando os essenciais...</p>';
+            return;
+        }
+
+        const searchText = filterOptions.searchText.toLowerCase();
+        const selectedCategory = filterOptions.category;
+        
+        const filteredData = fullCatalogData.filter(app => {
+            // 1. Filtrar por Categoria
+            const matchesCategory = !selectedCategory || app.category === selectedCategory;
+
+            // 2. Filtrar por Texto
+            const matchesSearch = !searchText || 
+                app.name.toLowerCase().includes(searchText) ||
+                (app.description && app.description.toLowerCase().includes(searchText)) ||
+                (app.category && app.category.toLowerCase().includes(searchText));
+
+            return matchesCategory && matchesSearch;
+        });
+
+        if (filteredData.length === 0) {
+            catalogList.innerHTML = '<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">Nenhum MiniApp corresponde aos seus filtros de busca.</p>';
+        } else {
+            catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // 3. LISTENERS DE FILTRO
+    // ----------------------------------------------------------------------
+    
+    // Listener para a barra de pesquisa
+    searchBar.addEventListener('input', (e) => {
+        filterOptions.searchText = e.target.value;
+        applyFiltersAndRender();
+    });
+
+    // Listener para o filtro de categoria
+    categoryFilter.addEventListener('change', (e) => {
+        filterOptions.category = e.target.value;
+        applyFiltersAndRender();
+    });
+
+
+    // ----------------------------------------------------------------------
+    // 4. INICIALIZAÇÃO E FIREBASE
+    // ----------------------------------------------------------------------
+
+    /**
+     * Inicializa o Firebase e a autenticação de forma síncrona com await.
+     */
+    async function initializeFirebase() {
+        if (Object.keys(firebaseConfig).length === 0) {
+            showStatus('Erro: Configuração do Firebase não encontrada.', 'error');
+            return;
+        }
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            showStatus('Firebase inicializado. Autenticando...', 'info');
+            
+            // 1. Configura o listener do Auth para monitorar mudanças (opcional)
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log(`[AUTH] Usuário autenticado (UID: ${user.uid}).`); 
+                } else {
+                    console.log('[AUTH] Usuário deslogado/anônimo.');
+                }
+            });
+
+            // 2. Tenta logar e ESPERA a conclusão com await. 
+            // Isso garante que o estado de autenticação esteja ativo antes de ler o Firestore.
+            if (initialAuthToken) {
+                // Tenta com token customizado e faz fallback para anônimo
+                await signInWithCustomToken(auth, initialAuthToken).catch(async e => {
+                    console.error("Erro ao assinar com token customizado. Tentando login anônimo...", e);
+                    await signInAnonymously(auth).catch(e => {
+                        console.error("Erro fatal no Login Anônimo:", e);
+                        // Re-lança para ser pego pelo bloco catch externo
+                        throw new Error("Falha na autenticação. Verifique as credenciais.");
+                    });
+                });
+            } else {
+                // Tenta apenas login anônimo
+                await signInAnonymously(auth).catch(e => {
+                    console.error("Erro fatal no Login Anônimo:", e);
+                    throw new Error("Falha na autenticação. Verifique as credenciais.");
+                });
+            }
+
+            // 3. Autenticação concluída: Agora que o token está definitivamente definido, anexamos o listener do Firestore.
+            showStatus('Autenticação concluída. Ouvindo catálogo...', 'info');
+            setupCatalogListener(); 
+
+        } catch (error) {
+            showStatus(`Erro ao inicializar Firebase: ${error.message}`, 'error');
+            console.error("Erro ao inicializar Firebase:", error);
+        }
+    }
+
+    /**
+     * Configura o listener em tempo real para o catálogo.
+     */
+    function setupCatalogListener() {
+        // Referência ao documento público do catálogo
+        const catalogRef = doc(db, `artifacts/${appId}/public/data/catalog/data`);
+
+        onSnapshot(catalogRef, (docSnapshot) => {
+            let fetchedData = [];
+            if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+                if (Array.isArray(data.items) && data.items.length > 0) {
+                    fetchedData = data.items;
+                }
+            }
+
+            // Garante que os Apps Essenciais estão sempre incluídos
+            const essentialIds = ESSENTIAL_APPS.map(a => a.id);
+            const nonEssentialData = fetchedData.filter(item => !essentialIds.includes(item.id));
+            
+            // Combina os dados, usando a versão ESSENTIAL_APPS para os apps de sistema
+            const finalCatalog = [...nonEssentialData, ...ESSENTIAL_APPS];
+            
+            // Remove duplicatas se houver
+            fullCatalogData = Array.from(new Set(finalCatalog.map(a => a.id)))
+                .map(id => finalCatalog.find(a => a.id === id));
+            
+            // 1. Popula os filtros com base nos dados completos
+            populateFilters(fullCatalogData);
+
+            // 2. Aplica filtros e renderiza
+            applyFiltersAndRender();
+
+            showStatus(`Catálogo carregado: ${fullCatalogData.length} MiniApps disponíveis.`, 'success');
+        }, (error) => {
+            console.error("Erro no listener do catálogo:", error);
+            showStatus(`Erro ao carregar catálogo: ${error.message}. Exibindo apps essenciais.`, 'error');
+            fullCatalogData = ESSENTIAL_APPS;
+            populateFilters(fullCatalogData);
+            applyFiltersAndRender();
+        });
+    }
+
+    // Inicia tudo
+    initializeFirebase();
+    
+    // Mostra o spinner inicial antes de o Firestore carregar os dados
+    catalogList.innerHTML = `
+        <div class="col-span-full flex flex-col justify-center items-center h-40 text-gray-500">
+            <div class="loading-spinner w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin mb-3"></div>
+            Carregando catálogo...
+        </div>`;
+  </script>
 </body>
 </html>
