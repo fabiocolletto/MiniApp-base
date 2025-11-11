@@ -88,6 +88,9 @@
     
     // Dados para uso no script
     let fullCatalogData = []; // Armazena todos os dados brutos do Firestore
+    const LOCAL_STORAGE_KEYS = {
+        importedCatalog: 'miniapp-catalog.admin.activeItems',
+    };
     let filterOptions = {
         searchText: '',
         category: ''
@@ -260,6 +263,37 @@
         return unique;
     }
 
+    function readCatalogFromLocalStorage() {
+        try {
+            const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.importedCatalog);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            const items = Array.isArray(parsed)
+                ? parsed
+                : Array.isArray(parsed?.items)
+                    ? parsed.items
+                    : [];
+            return items
+                .map((item, index) => normalizeCatalogItem(item, index))
+                .filter(Boolean);
+        } catch (error) {
+            console.warn('Não foi possível carregar o catálogo salvo localmente.', error);
+            return [];
+        }
+    }
+
+    function writeCatalogToLocalStorage(items = []) {
+        try {
+            const payload = {
+                updatedAt: new Date().toISOString(),
+                items: Array.isArray(items) ? items : [],
+            };
+            localStorage.setItem(LOCAL_STORAGE_KEYS.importedCatalog, JSON.stringify(payload));
+        } catch (error) {
+            console.warn('Não foi possível armazenar o catálogo para uso offline.', error);
+        }
+    }
+
     function updateCatalogData(data = []) {
         fullCatalogData = mergeWithEssential(data);
         populateFilters(fullCatalogData);
@@ -330,14 +364,23 @@
             console.warn(reason);
         }
 
-        let localItems = [];
+        const storedItems = readCatalogFromLocalStorage();
+        const localItems = [...storedItems];
+        let fallbackAdded = 0;
 
         try {
             const response = await fetch('../catalog.json', { cache: 'no-store' });
             if (response.ok) {
                 const json = await response.json();
                 if (Array.isArray(json)) {
-                    localItems = json.map(normalizeFallbackItem).filter(Boolean);
+                    const fallbackItems = json.map(normalizeFallbackItem).filter(Boolean);
+                    const existingIds = new Set(localItems.map(item => item.id));
+                    fallbackItems.forEach(item => {
+                        if (!existingIds.has(item.id)) {
+                            localItems.push(item);
+                            fallbackAdded += 1;
+                        }
+                    });
                 }
             }
         } catch (error) {
@@ -346,7 +389,10 @@
 
         const updatedCatalog = updateCatalogData(localItems);
 
-        if (updatedCatalog.length > ESSENTIAL_APPS.length) {
+        if (storedItems.length) {
+            const extraNote = fallbackAdded > 0 ? ` + ${fallbackAdded} MiniApp(s) locais.` : '';
+            showStatus(`${reason ? reason + ' ' : ''}Catálogo importado do dispositivo (${storedItems.length} MiniApps${extraNote}).`, 'warning');
+        } else if (updatedCatalog.length > ESSENTIAL_APPS.length) {
             showStatus(`${reason ? reason + ' ' : ''}Catálogo local carregado (${updatedCatalog.length} MiniApps).`, 'warning');
         } else {
             showStatus(`${reason ? reason + ' ' : ''}Exibindo apenas os MiniApps essenciais.`, 'warning');
@@ -451,6 +497,7 @@
                 return;
             }
 
+            writeCatalogToLocalStorage(fetchedData);
             const updatedCatalog = updateCatalogData(fetchedData);
             showStatus(`Catálogo carregado: ${updatedCatalog.length} MiniApps disponíveis.`, 'success');
         }, async (error) => {
