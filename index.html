@@ -1,119 +1,36 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MiniApps — Shell</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="miniapp-base/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="miniapp-base/icons/icon-192.png" />
+  <link rel="stylesheet" href="miniapp-base/style/styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="shell-header">
-      <div class="shell-brand">
-        <span
-          class="shell-logo"
-          aria-hidden="true"
-          data-shell-app-icon
-          data-icon-theme="shell"
-        >apps</span>
-        <div class="shell-title-wrap">
-          <div class="shell-title" data-shell-app-title>MiniApp Base</div>
-          <div class="shell-subtitle" id="shell-subtitle" data-shell-app-subtitle>
-            Catálogo de MiniApps · Projeto Marco
-          </div>
+  <div id="miniapp-root" class="ma">
+    <div class="app" role="application">
+      <header class="app-header" aria-live="polite">
+        <div>
+          <h1 data-header-title>Catálogo de MiniApps</h1>
+          <p data-header-subtitle class="muted">Escolha um MiniApp para abrir</p>
         </div>
-      </div>
-
-      <div class="shell-actions">
-        <div class="shell-locale" id="shell-locale">
-          <button type="button" data-locale="pt-BR" class="is-active">PT</button>
-          <button type="button" data-locale="en-US">EN</button>
-          <button type="button" data-locale="es-ES">ES</button>
+        <div class="cluster" style="margin-left:auto">
+          <button id="openCatalog" class="btn btn--ghost" type="button" title="Abrir catálogo">Catálogo</button>
         </div>
-        <button class="shell-menu-toggle" id="shell-menu-toggle" aria-label="Abrir menu">
-          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
-        </button>
-      </div>
-    </header>
-
-    <div class="shell-menu-sheet" id="shell-menu-sheet">
-      <div class="shell-menu">
-        <div class="shell-menu-row">
-          <!-- itens do menu principal -->
-          <button class="shell-menu-item" data-target="catalog">
-            <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-            <span data-menu-item-label="catalog">Catálogo de MiniApps</span>
-          </button>
-          <button class="shell-menu-item" data-target="about">
-            <span class="material-symbols-rounded" aria-hidden="true">info</span>
-            <span data-menu-item-label="about">Sobre o Projeto Marco</span>
-          </button>
-          <button class="shell-menu-item" data-target="fullscreen">
-            <span class="material-symbols-rounded" aria-hidden="true">open_in_full</span>
-            <span data-menu-item-label="fullscreen">Modo tela cheia</span>
-          </button>
-        </div>
-
-        <!-- seletor de idioma reutilizado dentro do menu -->
-        <div class="shell-locale shell-locale-inline" id="shell-locale-menu">
-          <button type="button" data-locale="pt-BR" class="is-active">PT</button>
-          <button type="button" data-locale="en-US">EN</button>
-          <button type="button" data-locale="es-ES">ES</button>
-        </div>
-
-        <button class="shell-menu-close" id="shell-menu-close">
-          <span class="material-symbols-rounded" aria-hidden="true">close</span>
-          <span data-menu-close-label>Fechar</span>
-        </button>
-      </div>
+      </header>
+      <main>
+        <iframe id="miniapp-panel" name="miniapp-panel" class="app-panel" src="miniapp-catalogo/index.html" title="Painel de MiniApps" loading="eager"></iframe>
+      </main>
+      <footer class="app-footer">
+        <small>5 Horas — MiniApp Base</small>
+        <a class="btn btn--soft" href="#" id="installPWA" hidden>Instalar</a>
+      </footer>
     </div>
-
-    <main class="shell-main">
-      <div class="shell-container">
-        <section class="panel-wrapper" aria-label="Painel de miniapp incorporado">
-          <header class="u-sr-only">
-            <h2>MiniApp em execução</h2>
-          </header>
-          <iframe id="miniapp-panel" name="miniapp-panel" src="./miniapp-catalogo/index.html" title="MiniApp embarcado"></iframe>
-          <noscript>Ative o JavaScript para alternar entre os mini‑apps.</noscript>
-        </section>
-      </div>
-    </main>
-    <section class="shell-about" id="shell-about">
-      <div class="shell-container">
-        <h2 class="shell-about__title" data-shell-about-title>Sobre o Projeto Marco</h2>
-        <p class="shell-about__description" data-shell-about-description>
-          O MiniApp Base reúne os miniapps do Projeto Marco para demonstrações e testes rápidos.
-        </p>
-        <p class="shell-about__version" data-shell-about-version>Versão 0.2.0 (experimental)</p>
-      </div>
-    </section>
-
-    <footer class="app-footer">
-      <div class="shell-container">
-        <p class="app-footer__info">
-          <span class="app-footer__brand">
-            <img
-              src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-              alt="5 Horas"
-              class="app-footer__logo"
-              loading="lazy"
-              width="48"
-              height="48"
-            >
-            <span class="app-footer__research">5 horas de pesquisa e análise limitada</span>
-          </span>
-        </p>
-      </div>
-    </footer>
   </div>
-
-    <script src="miniapp-base/js/atoms/i18n.js" defer></script>
-    <script src="miniapp-base/js/atoms/locale.js" defer></script>
-    <script src="miniapp-base/js/atoms/storage.js" defer></script>
-    <script src="miniapp-base/js/atoms/messaging.js" defer></script>
-    <script src="miniapp-base/js/molecules/shell-sync.js" defer></script>
-    <script src="miniapp-base/js/organisms/shell.js" defer></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
