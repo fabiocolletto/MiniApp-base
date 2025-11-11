@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-11-14] Fallback local do catálogo sem Firebase
+### Corrigido
+- Catálogo passa a carregar automaticamente os MiniApps essenciais e itens do `catalog.json` quando a configuração do Firebase está ausente ou indisponível, mantendo a navegação pelo shell durante testes offline.【F:miniapp-catalogo/index.html†L118-L263】
+- Tratamento de falhas no listener do Firestore foi atualizado para exibir o catálogo local em vez de deixar a tela vazia, garantindo acesso ao MiniApp Gestor e retorno ao catálogo.【F:miniapp-catalogo/index.html†L265-L323】
+- Normalização dos itens do catálogo antes da renderização para evitar falhas quando campos obrigatórios (como `name`, `category` ou `status`) chegam incompletos do Firestore, mantendo os MiniApps essenciais visíveis mesmo com dados inconsistentes.【F:miniapp-catalogo/index.html†L205-L253】
+
 ## [2025-11-13] Shell com visões dedicadas e setup de planilha
 ### Adicionado
 - Visões `#catalog-view` e `#app-view` no shell com helper `window.changeView` para alternar entre catálogo e MiniApps sem recarregar a página, além do formulário `#setup-sheet-view` para configurar a planilha do catálogo.【F:index.html†L32-L66】【F:js/app.js†L20-L134】

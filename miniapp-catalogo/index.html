@@ -212,16 +212,21 @@
 
         const searchText = filterOptions.searchText.toLowerCase();
         const selectedCategory = filterOptions.category;
-        
-        const filteredData = fullCatalogData.filter(app => {
+
+        const filteredData = fullCatalogData.filter((app, index) => {
+            const rawName = typeof app.name === 'string' ? app.name : '';
+            const safeName = rawName || `MiniApp ${index + 1}`;
+            const rawDescription = typeof app.description === 'string' ? app.description : '';
+            const rawCategory = typeof app.category === 'string' ? app.category : '';
+
             // 1. Filtrar por Categoria
-            const matchesCategory = !selectedCategory || app.category === selectedCategory;
+            const matchesCategory = !selectedCategory || rawCategory === selectedCategory;
 
             // 2. Filtrar por Texto
-            const matchesSearch = !searchText || 
-                app.name.toLowerCase().includes(searchText) ||
-                (app.description && app.description.toLowerCase().includes(searchText)) ||
-                (app.category && app.category.toLowerCase().includes(searchText));
+            const matchesSearch = !searchText ||
+                safeName.toLowerCase().includes(searchText) ||
+                rawDescription.toLowerCase().includes(searchText) ||
+                rawCategory.toLowerCase().includes(searchText);
 
             return matchesCategory && matchesSearch;
         });
@@ -232,6 +237,122 @@
             catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
             attachMiniAppOpenHandlers();
         }
+    }
+
+    function mergeWithEssential(data = []) {
+        const list = Array.isArray(data)
+            ? data
+                .map((item, index) => normalizeCatalogItem(item, index))
+                .filter(Boolean)
+            : [];
+        const essentialIds = new Set(ESSENTIAL_APPS.map(app => app.id));
+        const nonEssential = list.filter(item => !essentialIds.has(item.id));
+        const combined = [...nonEssential, ...ESSENTIAL_APPS];
+        const unique = [];
+        const seen = new Set();
+
+        combined.forEach(item => {
+            if (!item || !item.id || seen.has(item.id)) return;
+            seen.add(item.id);
+            unique.push(item);
+        });
+
+        return unique;
+    }
+
+    function updateCatalogData(data = []) {
+        fullCatalogData = mergeWithEssential(data);
+        populateFilters(fullCatalogData);
+        applyFiltersAndRender();
+        return fullCatalogData;
+    }
+
+    function slugify(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '') || 'miniapp';
+    }
+
+    function buildPlaceholderIcon(name, color = '0ea5e9') {
+        const label = encodeURIComponent((name || '?').charAt(0).toUpperCase() || 'M');
+        return `https://placehold.co/48x48/${color}/ffffff?text=${label}`;
+    }
+
+    function normalizeCatalogItem(item, index, options = {}) {
+        if (!item) return null;
+
+        const {
+            defaultCategory = 'Geral',
+            defaultStatus = 'Disponível',
+            placeholderColor = '0ea5e9',
+        } = options;
+
+        const rawUrl = typeof item.url === 'string' ? item.url.trim() : '';
+        if (!rawUrl) return null;
+
+        const rawName = typeof item.name === 'string' ? item.name.trim() : '';
+        const name = rawName || `MiniApp ${index + 1}`;
+        const rawId = typeof item.id === 'string' ? item.id.trim() : '';
+        const id = rawId || `miniapp_${slugify(`${name}_${index}`)}`;
+        const category = typeof item.category === 'string' && item.category.trim()
+            ? item.category.trim()
+            : defaultCategory;
+        const status = typeof item.status === 'string' && item.status.trim()
+            ? item.status.trim()
+            : defaultStatus;
+        const description = typeof item.description === 'string' ? item.description : '';
+        const iconUrl = item.icon_url || item.iconUrl;
+
+        return {
+            id,
+            name,
+            description,
+            url: rawUrl,
+            category,
+            status,
+            icon_url: iconUrl || buildPlaceholderIcon(name, placeholderColor),
+        };
+    }
+
+    function normalizeFallbackItem(item, index) {
+        return normalizeCatalogItem(item, index, {
+            defaultCategory: 'Local',
+            defaultStatus: 'Disponível',
+            placeholderColor: '0ea5e9',
+        });
+    }
+
+    async function loadLocalCatalogFallback(reason = '') {
+        if (reason) {
+            console.warn(reason);
+        }
+
+        let localItems = [];
+
+        try {
+            const response = await fetch('../catalog.json', { cache: 'no-store' });
+            if (response.ok) {
+                const json = await response.json();
+                if (Array.isArray(json)) {
+                    localItems = json.map(normalizeFallbackItem).filter(Boolean);
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar catalog.json:', error);
+        }
+
+        const updatedCatalog = updateCatalogData(localItems);
+
+        if (updatedCatalog.length > ESSENTIAL_APPS.length) {
+            showStatus(`${reason ? reason + ' ' : ''}Catálogo local carregado (${updatedCatalog.length} MiniApps).`, 'warning');
+        } else {
+            showStatus(`${reason ? reason + ' ' : ''}Exibindo apenas os MiniApps essenciais.`, 'warning');
+        }
+
+        return updatedCatalog;
     }
 
     // ----------------------------------------------------------------------
@@ -260,7 +381,7 @@
      */
     async function initializeFirebase() {
         if (Object.keys(firebaseConfig).length === 0) {
-            showStatus('Erro: Configuração do Firebase não encontrada.', 'error');
+            await loadLocalCatalogFallback('Configuração do Firebase ausente.');
             return;
         }
 
@@ -301,11 +422,11 @@
 
             // 3. Autenticação concluída: Agora que o token está definitivamente definido, anexamos o listener do Firestore.
             showStatus('Autenticação concluída. Ouvindo catálogo...', 'info');
-            setupCatalogListener(); 
+            setupCatalogListener();
 
         } catch (error) {
-            showStatus(`Erro ao inicializar Firebase: ${error.message}`, 'error');
             console.error("Erro ao inicializar Firebase:", error);
+            await loadLocalCatalogFallback(`Erro ao inicializar Firebase: ${error.message}.`);
         }
     }
 
@@ -316,7 +437,7 @@
         // Referência ao documento público do catálogo
         const catalogRef = doc(db, `artifacts/${appId}/public/data/catalog/data`);
 
-        onSnapshot(catalogRef, (docSnapshot) => {
+        onSnapshot(catalogRef, async (docSnapshot) => {
             let fetchedData = [];
             if (docSnapshot.exists()) {
                 const data = docSnapshot.data();
@@ -325,30 +446,16 @@
                 }
             }
 
-            // Garante que os Apps Essenciais estão sempre incluídos
-            const essentialIds = ESSENTIAL_APPS.map(a => a.id);
-            const nonEssentialData = fetchedData.filter(item => !essentialIds.includes(item.id));
-            
-            // Combina os dados, usando a versão ESSENTIAL_APPS para os apps de sistema
-            const finalCatalog = [...nonEssentialData, ...ESSENTIAL_APPS];
-            
-            // Remove duplicatas se houver
-            fullCatalogData = Array.from(new Set(finalCatalog.map(a => a.id)))
-                .map(id => finalCatalog.find(a => a.id === id));
-            
-            // 1. Popula os filtros com base nos dados completos
-            populateFilters(fullCatalogData);
+            if (!fetchedData.length) {
+                await loadLocalCatalogFallback('Nenhum MiniApp publicado no catálogo remoto.');
+                return;
+            }
 
-            // 2. Aplica filtros e renderiza
-            applyFiltersAndRender();
-
-            showStatus(`Catálogo carregado: ${fullCatalogData.length} MiniApps disponíveis.`, 'success');
-        }, (error) => {
+            const updatedCatalog = updateCatalogData(fetchedData);
+            showStatus(`Catálogo carregado: ${updatedCatalog.length} MiniApps disponíveis.`, 'success');
+        }, async (error) => {
             console.error("Erro no listener do catálogo:", error);
-            showStatus(`Erro ao carregar catálogo: ${error.message}. Exibindo apps essenciais.`, 'error');
-            fullCatalogData = ESSENTIAL_APPS;
-            populateFilters(fullCatalogData);
-            applyFiltersAndRender();
+            await loadLocalCatalogFallback(`Erro ao carregar catálogo remoto: ${error.message}.`);
         });
     }
 
