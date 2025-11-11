@@ -1,0 +1,6 @@
+[
+  { "genero": "Feminino",  "data": "2025-10-01", "qtd": 32 },
+  { "genero": "Masculino", "data": "2025-10-01", "qtd": 28 },
+  { "genero": "Feminino",  "data": "2025-10-02", "qtd": 41 },
+  { "genero": "Masculino", "data": "2025-10-02", "qtd": 22 }
+]

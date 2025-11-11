@@ -1,117 +1,127 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel Prefeito — Dashboard de Indicadores</title>
-
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiniApp Prefeito</title>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
 </head>
-<body class="app-blank">
-  <div id="app-wrapper" class="dashboard-shell">
-    <aside id="sidebar" role="navigation" aria-label="Painéis do dashboard">
-      <button id="menu-toggle" class="btn-toggle" aria-label="Abrir e fechar menu">
-        <span class="app-icon" id="menu-close-icon">✖️</span>
-        <span class="app-icon" id="menu-open-icon">☰</span>
-      </button>
+<body>
+  <div class="ma">
+    <div class="wrap">
+      <h1>MiniApp Prefeito</h1>
+      <p class="muted">Cole a URL da sua fonte (dados JSON/CSV ou um painel para incorporar).</p>
 
-      <ul class="nav-list">
-        <li><a href="#" class="nav-item active"><span class="app-icon">🏠</span> <span>Dashboard Geral</span></a></li>
-        <li class="separator">Painéis de KPI</li>
-        <li><a href="#" class="nav-item"><span class="app-icon">🥇</span> <span>K01–K05 (Serviços Essenciais)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">🥈</span> <span>K06–K10 (Gestão e Finanças)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">🥉</span> <span>K11–K15 (Infraestrutura)</span></a></li>
-        <li><a href="#" class="nav-item"><span class="app-icon">🏅</span> <span>K16–K20 (Social e Cultural)</span></a></li>
-        <li class="separator">Pessoa</li>
-        <li><a href="#" class="nav-item"><span class="app-icon">👤</span> <span>Variáveis Persona (P01–P20)</span></a></li>
-      </ul>
-
-      <p class="nav-meta">MiniApp v1.0.0</p>
-    </aside>
-
-    <div id="main-content">
-      <div class="miniapp-toolbar">
-        <button
-          type="button"
-          class="btn ghost miniapp-toolbar__button"
-          data-js="open-catalog"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-          <span data-js="catalog-label">Catálogo</span>
-        </button>
+      <div class="toolbar">
+        <button class="btn" id="btnFonte">Fonte de dados</button>
+        <small id="fonteInfo" class="muted"></small>
       </div>
 
-      <header class="dashboard-header">
-        <div class="dashboard-header__text">
-          <h1>Dashboard de Indicadores Transversais</h1>
-          <p>KPIs (K01–K20) / Escala 1-5</p>
-        </div>
-        <span id="version-status" class="badge badge--status">Design System</span>
-      </header>
+      <iframe id="embedPanel" class="panel" hidden
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+              referrerpolicy="no-referrer"></iframe>
 
-      <main class="dashboard-main" aria-live="polite">
-        <section class="grid kpi-grid" aria-label="Indicadores em destaque">
-          <article class="card kpi-card">
-            <p class="subtitle">K01: Satisfação c/ Saúde (Setor 1)</p>
-            <p class="kpi-value success">4.2</p>
-            <p class="kpi-description">Média da Avaliação (1-5)</p>
-            <span class="tag success">Excelente</span>
-          </article>
-          <article class="card kpi-card">
-            <p class="subtitle">K06: Desempenho Administrativo (Setor 6)</p>
-            <p class="kpi-value warn">3.1</p>
-            <p class="kpi-description">Média da Avaliação (1-5)</p>
-            <span class="tag warn">Atenção</span>
-          </article>
-          <article class="card kpi-card">
-            <p class="subtitle">K11: Qualidade da Infraestrutura (Setor 5)</p>
-            <p class="kpi-value danger">2.5</p>
-            <p class="kpi-description">Média da Avaliação (1-5)</p>
-            <span class="tag danger">Crítico</span>
-          </article>
-          <article class="card kpi-card">
-            <p class="subtitle">P01: Idade Média do Participante</p>
-            <p class="kpi-value info">38 anos</p>
-            <p class="kpi-description">Variável Persona (P01)</p>
-            <span class="tag info">Dados Demográficos</span>
-          </article>
-        </section>
-
-        <section class="grid chart-grid" aria-label="Visualizações principais">
-          <article class="card chart-card">
-            <div class="chart-header"><h3>Evolução da Satisfação por Setor (1-5)</h3></div>
-            <div id="chart_line" class="chart-container"></div>
-          </article>
-          <article class="card chart-card">
-            <div class="chart-header"><h3>Comparativo de Satisfação Média (Painel K06-K10)</h3></div>
-            <div id="chart_bar" class="chart-container"></div>
-          </article>
-          <article class="card callout-card">
-            <div class="callout-card__content">
-              <h3>Relatório Detalhado de Resoluções e Comentários (K01-K20)</h3>
-              <a href="#" class="btn primary">Exportar Dados Brutos</a>
-            </div>
-          </article>
-        </section>
-      </main>
+      <div id="dataView" class="surface wrap"></div>
     </div>
   </div>
 
-  <div id="info-modal" class="modal-container" aria-live="assertive"></div>
+  <script src="js/config-source.js"></script>
+  <script>
+  (async () => {
+    const btn = document.getElementById('btnFonte');
+    const info = document.getElementById('fonteInfo');
+    const frame = document.getElementById('embedPanel');
+    const dataView = document.getElementById('dataView');
 
-  <script src="../miniapp-base/js/atoms/messaging.js"></script>
-  <script src="../miniapp-base/js/molecules/shell-sync.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/sample-data.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/i18n.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/template-loader.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/theme.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/loader.js"></script>
-  <script src="../miniapp-base/js/organisms/prefeito/main.js"></script>
+    const sendHeader = (subtitle) => {
+      try {
+        window.parent?.postMessage({ action: 'miniapp-header', title: 'MiniApp Prefeito', subtitle }, '*');
+      } catch {}
+    };
+
+    sendHeader('Configure a fonte de dados ou utilize o exemplo offline.');
+
+    btn.addEventListener('click', async () => {
+      const u = await window.PrefeitoConfig.pickSourceUrl();
+      if (u) initFromSource(u);
+    });
+
+    // Tenta iniciar com a fonte salva ou fallback local
+    const saved = window.PrefeitoConfig.getSourceUrl();
+    initFromSource(saved || '');
+
+    function setInfo(u, mode) {
+      info.textContent = u ? `Fonte: ${u} (${mode})` : 'Nenhuma fonte definida (usando dados locais).';
+      sendHeader(info.textContent || 'MiniApp Prefeito');
+    }
+
+    async function initFromSource(u) {
+      // Limpa estado
+      frame.hidden = true;
+      frame.removeAttribute('src');
+      dataView.innerHTML = '';
+
+      if (!u) {
+        setInfo('', 'local');
+        try {
+          const res = await fetch('./data/sample.json');
+          const data = await res.json();
+          renderData(data, 'local');
+        } catch {
+          const message = 'Sem fonte definida e sem fallback local.';
+          dataView.innerHTML = `<p class="muted">${message}</p>`;
+          sendHeader(message);
+        }
+        return;
+      }
+
+      if (window.PrefeitoConfig.isLikelyDataUrl(u)) {
+        // Modo DADOS (JSON/CSV)
+        setInfo(u, 'dados');
+        try {
+          const data = await fetchData(u);
+          renderData(data, 'dados');
+          localStorage.setItem('prefeito.lastData', JSON.stringify(data));
+        } catch (e) {
+          const cached = localStorage.getItem('prefeito.lastData');
+          if (cached) {
+            renderData(JSON.parse(cached), 'cache local');
+            setInfo(u, 'cache local (falha ao buscar ao vivo)');
+          } else {
+            const message = 'Não consegui obter os dados e não há cache local.';
+            dataView.innerHTML = `<p class="muted">${message}</p>`;
+            sendHeader(message);
+          }
+        }
+      } else {
+        // Modo IFRAME (painel)
+        setInfo(u, 'painel');
+        frame.hidden = false;
+        frame.src = u;
+      }
+    }
+
+    async function fetchData(u) {
+      if (/\.csv($|\?)/i.test(u)) {
+        const text = await (await fetch(u, { cache: 'no-store' })).text();
+        const rows = text.split(/\r?\n/).filter(Boolean).map(r => r.split(','));
+        const [header, ...data] = rows;
+        const toObj = r => Object.fromEntries(header.map((k,i) => [k, r[i] ?? '']));
+        return data.map(toObj);
+      } else {
+        const res = await fetch(u, { cache: 'no-store' });
+        return res.json();
+      }
+    }
+
+    function renderData(data, origem) {
+      if (!data) { dataView.innerHTML = '<p class="muted">Sem dados.</p>'; return; }
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(data, null, 2);
+      dataView.innerHTML = '';
+      dataView.appendChild(pre);
+    }
+  })();
+  </script>
 </body>
 </html>

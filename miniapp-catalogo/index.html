@@ -1,70 +1,28 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MiniApps — Catálogo</title>
-
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-  <link rel="stylesheet" href="../miniapp-base/style/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo de MiniApps</title>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
 </head>
-<body class="catalog-blank">
-  <main class="catalog-board" aria-label="Catálogo de MiniApps" aria-live="polite">
-      <section class="catalog-favorites">
-      <header class="catalog-favorites__header">
-        <h2>Todos os MiniApps</h2>
-        <p>Lista completa de MiniApps disponíveis.</p>
-      </header>
-      <div
-        class="carousel"
-        data-carousel="all"
-        data-carousel-per-view="1 2 3 4 4"
-        data-carousel-label="MiniApps disponíveis"
-      ></div>
-    </section>
-  </main>
-
-  <template id="miniapp-card-template" data-miniapp-card-template>
-    <article class="catalog-card" data-miniapp-card>
-      <a class="catalog-card__link" data-miniapp-card-link>
-        <div class="catalog-card__header">
-          <span
-            class="material-symbols-rounded app-icon"
-            aria-hidden="true"
-            data-miniapp-card-icon
-          ></span>
-          <h3 data-miniapp-card-title></h3>
-        </div>
-
-        <div class="catalog-card__content">
-          <p data-miniapp-card-description></p>
-        </div>
-
-        <div class="catalog-card__footer"></div>
-      </a>
-      <button
-        type="button"
-        class="catalog-card__favorite"
-        data-miniapp-card-favorite
-      >
-        <span
-          class="material-symbols-rounded catalog-card__favorite-icon"
-          aria-hidden="true"
-          data-miniapp-card-favorite-icon
-        >
-          star
-        </span>
-      </button>
-    </article>
-  </template>
-
-  <script src="../miniapp-base/js/atoms/i18n.js" defer></script>
-  <script src="../miniapp-base/js/atoms/locale.js" defer></script>
-  <script src="../miniapp-base/js/atoms/storage.js" defer></script>
-  <script src="../miniapp-base/js/atoms/messaging.js" defer></script>
-  <script src="../miniapp-base/js/molecules/carousel.js" defer></script>
-  <script src="../miniapp-base/js/molecules/catalog-favorites.js" defer></script>
-  <script src="../miniapp-base/js/molecules/shell-sync.js" defer></script>
-  <script src="../miniapp-base/js/organisms/catalog.js" defer></script>
+<body>
+  <div class="ma">
+    <div class="wrap">
+      <section id="catalog" class="grid grid--auto"></section>
+    </div>
+  </div>
+  <script>
+    window.CATALOG_FALLBACK = [
+      {
+        name: 'MiniApp Prefeito',
+        description: 'Gestão de pesquisas de opinião pública do município.',
+        url: '../miniapp-prefeito/index.html',
+        iconSymbol: 'monitoring',
+        iconTheme: 'brand'
+      }
+    ];
+  </script>
+  <script src="../js/catalog.js"></script>
 </body>
 </html>
