@@ -1,10 +1,12 @@
-/* styles.css — Demo v0.2 (2025-11-11) — escopo .ma
-   Correções: remove moldura branca, header/footer fixos, scroll só no painel central, sem rolagem horizontal
+/* styles.css — v0.3 (2025-11-11)
+   Escopo: .ma
+   Objetivo: header/footer fixos, rolagem só no conteúdo, sem overflow horizontal,
+             grid responsivo sólido, tabelas legíveis, contraste aprimorado no dark.
 */
 @layer reset, tokens, base, components, utilities, compat;
 
 /* ========================
-   RESET (inclui remoção da "moldura" do body)
+   RESET (remove "moldura" e normaliza)
    ======================== */
 @layer reset {
   html, body { margin: 0; padding: 0; }
@@ -63,10 +65,10 @@
 
   .ma[data-theme="dark"] {
     --ma-bg: #0b1220;
-    --ma-surface: #0f172a;
+    --ma-surface: #101827;    /* +contraste que #0f172a */
     --ma-ink: #e2e8f0;
     --ma-muted: #94a3b8;
-    --ma-border: #1e293b;
+    --ma-border: #334155;     /* +visível que #1e293b */
     --ma-brand: #38bdf8;
     --ma-brand-ink: #cffafe;
     --ma-shadow-1: 0 1px 2px rgba(0,0,0,.45), 0 1px 1px rgba(0,0,0,.35);
@@ -75,7 +77,7 @@
 
   @media (prefers-color-scheme: dark) {
     .ma:not([data-theme]) {
-      --ma-bg: #0b1220; --ma-surface:#0f172a; --ma-ink:#e2e8f0; --ma-muted:#94a3b8; --ma-border:#1e293b;
+      --ma-bg: #0b1220; --ma-surface:#101827; --ma-ink:#e2e8f0; --ma-muted:#94a3b8; --ma-border:#334155;
       --ma-brand:#38bdf8; --ma-brand-ink:#cffafe; --ma-shadow-1:0 1px 2px rgba(0,0,0,.45),0 1px 1px rgba(0,0,0,.35);
       --ma-shadow-2:0 8px 24px rgba(0,0,0,.6);
     }
@@ -86,7 +88,7 @@
    BASE TIPOGRAFIA + LAYOUT
    ======================== */
 @layer base {
-  .ma { font-family: var(--ma-font-sans); font-size: var(--ma-fs-2); }
+  .ma { font-family: var(--ma-font-sans); font-size: var(--ma-fs-2); overflow-x: hidden; }
   .ma :where(h1,h2,h3,h4) { margin: 0 0 var(--ma-sp-3); font-weight: 700; letter-spacing: -0.01em; }
   .ma :where(h1){ font-size: var(--ma-fs-6); }
   .ma :where(h2){ font-size: var(--ma-fs-5); }
@@ -96,43 +98,51 @@
   .ma :where(small){ font-size: var(--ma-fs-1); color: var(--ma-muted); }
   .ma :where(code,pre,kbd,samp){ font-family: var(--ma-font-mono); }
 
-  .ma .container { width: min(1120px, 100% - 2*var(--ma-sp-4)); margin-inline: auto; }
-  .ma .wrap { padding: var(--ma-sp-4); }
+  .ma .container { width: min(1120px, 100% - 2*var(--ma-sp-4)); margin-inline: auto; min-width: 0; }
+  .ma .wrap { padding: var(--ma-sp-4); min-width: 0; }
 
   .ma .surface { background: var(--ma-surface); border: 1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); }
 }
 
 /* ========================
-   COMPONENTES — shell fixo e UI básica
+   COMPONENTES — shell fixo, grids, tabelas
    ======================== */
 @layer components {
-  /* Shell da aplicação: header/topo e footer/base fixos com rolagem apenas no <main> */
+  /* Shell fixo: header/topo e footer/base visíveis; scroll só no main */
   .ma .app {
     height: 100svh;                 /* ocupa a viewport toda */
     display: grid;
     grid-template-rows: auto 1fr auto; /* header | main | footer */
-    overflow: hidden;               /* bloqueia rolagem da página inteira */
+    overflow: hidden;               /* bloqueia rolagem fora do main */
   }
   .ma .app-header {
-    position: sticky; top: 0; z-index: 10; /* mantém no topo ao rolar o main */
+    position: sticky; top: 0; z-index: 10;
     padding: var(--ma-sp-3) var(--ma-sp-4);
     border-bottom: 1px solid var(--ma-border);
-    display: flex; gap: var(--ma-sp-3); align-items: center;
+    display: flex; gap: var(--ma-sp-3); align-items: center; min-width: 0;
     background: var(--ma-bg);
+    box-shadow: 0 1px 0 var(--ma-border);
   }
   .ma main {
-    overflow-y: auto;               /* só rolagem vertical aqui */
-    overflow-x: hidden;             /* evita rolagem horizontal */
+    overflow-y: auto;               /* rolagem vertical aqui */
+    overflow-x: hidden;             /* nunca horizontal */
     -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+    min-width: 0;
   }
-  .ma .app-panel { width: 100%; height: 100%; border: 0; display: block; }
+  .ma .app-panel { width: 100%; height: 100%; border: 0; display: block; min-width: 0; }
   .ma .app-footer {
-    position: sticky; bottom: 0;    /* visível no fim do grid */
+    position: sticky; bottom: 0; z-index: 5;
     padding: var(--ma-sp-3) var(--ma-sp-4);
     border-top: 1px solid var(--ma-border);
     display:flex; justify-content:space-between; align-items:center;
     background: var(--ma-bg);
+    box-shadow: 0 -1px 0 var(--ma-border);
   }
+
+  /* Grid responsivo sem overflow */
+  .ma .grid { display:grid; gap: var(--ma-sp-3); grid-template-columns: repeat(12, minmax(0,1fr)); min-width: 0; }
+  .ma .grid--auto { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
 
   /* Botões */
   .ma .btn { display:inline-flex; align-items:center; gap:.5em; padding:.55em .9em; border-radius: var(--ma-radius-1);
@@ -144,7 +154,7 @@
   .ma .btn--soft { background: color-mix(in oklab, var(--ma-brand) 12%, #fff); color: var(--ma-brand-ink); border-color: color-mix(in oklab, var(--ma-brand) 25%, var(--ma-border)); }
   .ma .btn--ghost { background: transparent; color: var(--ma-brand); border-color: color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); }
   .ma .btn--danger { background: var(--ma-danger); color:#fff; border-color: color-mix(in oklab, var(--ma-danger) 40%, black); }
-  .ma .btn[disabled], .ma .btn:disabled { opacity:.5; pointer-events:none; }
+  .ma .btn[disabled], .ma .btn:disabled { opacity:.6; filter: saturate(.7); pointer-events:none; }
 
   /* Formulários */
   .ma .field { display:grid; gap:.35rem; }
@@ -160,8 +170,8 @@
   .ma :where(textarea){ min-height: 120px; resize: vertical; }
   .ma .help { color: var(--ma-muted); font-size: var(--ma-fs-1); }
 
-  /* Card */
-  .ma .card { background: #fff; border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); overflow: clip; display:flex; flex-direction: column; }
+  /* Cards */
+  .ma .card { background: #fff; border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); overflow: clip; display:flex; flex-direction: column; min-width: 0; }
   .ma .card__header { padding: var(--ma-sp-4); border-bottom:1px solid var(--ma-border); font-weight:700; }
   .ma .card__body { padding: var(--ma-sp-4); }
   .ma .card__footer { padding: var(--ma-sp-3) var(--ma-sp-4); border-top:1px solid var(--ma-border); background: var(--ma-surface); }
@@ -170,19 +180,14 @@
   .ma .toolbar { display:flex; align-items:center; gap: var(--ma-sp-2); padding: var(--ma-sp-3) 0; border-bottom:1px solid var(--ma-border); background: transparent; margin-bottom: var(--ma-sp-3); }
   .ma .toolbar .title { font-weight:700; }
 
-  /* Tabela */
-  .ma .table { width:100%; border-collapse: collapse; font-size: .96em; }
-  .ma .table :where(th, td){ padding: .65rem .75rem; border-bottom:1px solid var(--ma-border); text-align:left; }
+  /* Tabelas: legibilidade e scroll isolado */
+  .ma .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ma .table { min-width: 720px; border-collapse: separate; border-spacing: 0; width: 100%; font-size: .96em; }
+  .ma .table :where(th, td){ padding: .65rem .75rem; border-bottom:1px solid var(--ma-border); text-align:left; white-space: nowrap; }
   .ma .table th { color: var(--ma-muted); font-weight:600; }
   .ma .table tr:hover { background: color-mix(in oklab, var(--ma-brand) 6%, var(--ma-bg)); }
 
-  /* Badge */
-  .ma .badge { display:inline-block; border-radius: 999px; padding:.25em .6em; font-weight:600; font-size: .82em; border:1px solid color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); color: var(--ma-brand-ink); background: color-mix(in oklab, var(--ma-brand) 14%, #fff); }
-
-  /* Painel embutido (iframe) */
-  .ma .panel { width:100%; height:70vh; border:0; border-radius: var(--ma-radius-2); box-shadow: var(--ma-shadow-1); }
-
-  /* Vega/Vega-Lite: tooltip e ações */
+  /* Tooltip Vega-Lite */
   .ma .vega-actions { display:none !important; }
   .ma .vega-tooltip { position: absolute; z-index: 10; padding:.5rem .65rem; background: var(--ma-bg); color: var(--ma-ink); border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-2); font-size: var(--ma-fs-1); pointer-events: none; }
 }
@@ -191,24 +196,29 @@
    UTILITÁRIOS
    ======================== */
 @layer utilities {
-  .ma { overflow-x: hidden; } /* sem rolagem horizontal no app */
+  /* Sem rolagem horizontal no app */
+  .ma { overflow-x: hidden; }
 
+  /* Espaçamentos utilitários */
   .ma .mt-0{margin-top:0} .ma .mb-0{margin-bottom:0} .ma .pt-0{padding-top:0} .ma .pb-0{padding-bottom:0}
   .ma .mt-1{margin-top:var(--ma-sp-1)} .ma .mb-1{margin-bottom:var(--ma-sp-1)}
   .ma .mt-2{margin-top:var(--ma-sp-2)} .ma .mb-2{margin-bottom:var(--ma-sp-2)}
   .ma .mt-3{margin-top:var(--ma-sp-3)} .ma .mb-3{margin-bottom:var(--ma-sp-3)}
   .ma .mt-4{margin-top:var(--ma-sp-4)} .ma .mb-4{margin-bottom:var(--ma-sp-4)}
 
+  /* Helpers */
   .ma .stack { display:flex; flex-direction:column; gap: var(--ma-sp-3); }
   .ma .cluster { display:flex; flex-wrap:wrap; align-items:center; gap: var(--ma-sp-2); }
-  .ma .grid { display:grid; gap: var(--ma-sp-3); grid-template-columns: repeat(12, minmax(0,1fr)); }
-  .ma .grid--auto { grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); }
   .ma .center { margin-inline:auto; }
-
   .ma .maxw-sm{ max-width: 480px; } .ma .maxw-md{ max-width: 720px; } .ma .maxw-lg{ max-width: 960px; } .ma .maxw-xl{ max-width: 1120px; }
-
   .ma .muted{ color: var(--ma-muted); }
   .ma .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* Mobile refinado */
+  @media (max-width: 480px) {
+    .ma .wrap { padding: 12px; }
+    .ma h1 { font-size: clamp(20px, 6vw, 28px); }
+  }
 }
 
 /* ========================
@@ -219,7 +229,7 @@
 }
 
 /* ========================
-   BREAKPOINTS
+   BREAKPOINTS / PREFS
    ======================== */
 @media (width >= 640px){ .ma .wrap{ padding: var(--ma-sp-6); } }
 @media (width >= 1024px){ .ma .container{ width: min(1280px, 100% - 2*var(--ma-sp-6)); } }
