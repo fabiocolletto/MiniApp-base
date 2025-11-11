@@ -5,12 +5,16 @@ import { doc, getDoc, getFirestore, setDoc } from 'https://www.gstatic.com/fireb
 const headerTitle = document.querySelector('[data-header-title]');
 const headerSubtitle = document.querySelector('[data-header-subtitle]');
 const openCatalogBtn = document.getElementById('openCatalog');
+let themeToggleBtn = document.getElementById('themeToggle');
+let themeToggleLabel = themeToggleBtn ? themeToggleBtn.querySelector('[data-theme-toggle-label]') : null;
 const installBtn = document.getElementById('installPWA');
 const catalogFrame = document.getElementById('catalog-frame');
 const appFrame = document.getElementById('miniapp-panel');
 const setupView = document.getElementById('setup-sheet-view');
 const catalogView = document.getElementById('catalog-view');
 const appView = document.getElementById('app-view');
+const miniAppRoot = document.getElementById('miniapp-root');
+const themeMetaTag = document.querySelector('meta[name="theme-color"]');
 const sheetForm = document.getElementById('sheet-config-form');
 const sheetInput = document.getElementById('sheetIdInput');
 const sheetStatus = document.getElementById('sheet-setup-status');
@@ -28,6 +32,49 @@ const viewMap = {
   app: appView,
 };
 
+if (catalogFrame) {
+  catalogFrame.addEventListener('load', () => {
+    notifyFrameTheme(catalogFrame);
+  });
+}
+
+if (appFrame) {
+  appFrame.addEventListener('load', () => {
+    notifyFrameTheme(appFrame);
+  });
+}
+
+const THEME_STORAGE_KEY = 'miniapp-shell.theme';
+const THEME_META_COLORS = {
+  light: '#f8fafc',
+  dark: '#0f172a',
+};
+
+let currentTheme = 'light';
+
+const storedTheme = readStoredTheme();
+const initialTheme = resolveInitialTheme(storedTheme);
+applyTheme(initialTheme, { persist: Boolean(storedTheme) });
+
+if (window.matchMedia) {
+  const prefersDarkMedia = window.matchMedia('(prefers-color-scheme: dark)');
+  const handlePrefersChange = (event) => {
+    const savedTheme = readStoredTheme();
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return;
+    }
+    applyTheme(event.matches ? 'dark' : 'light', { persist: false });
+  };
+
+  if (prefersDarkMedia) {
+    if (typeof prefersDarkMedia.addEventListener === 'function') {
+      prefersDarkMedia.addEventListener('change', handlePrefersChange);
+    } else if (typeof prefersDarkMedia.addListener === 'function') {
+      prefersDarkMedia.addListener(handlePrefersChange);
+    }
+  }
+}
+
 const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
 const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : null;
 const initialAuthToken = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
@@ -38,6 +85,92 @@ let auth;
 let sheetConfigDoc;
 let authPromise;
 let deferredPrompt;
+
+function readStoredTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Não foi possível recuperar o tema salvo.', error);
+    return null;
+  }
+}
+
+function storeTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (error) {
+    console.warn('Não foi possível armazenar o tema escolhido.', error);
+  }
+}
+
+function updateThemeToggle(theme) {
+  if (!themeToggleBtn) return;
+  const isDark = theme === 'dark';
+  const nextActionLabel = isDark ? 'Ativar tema claro' : 'Ativar tema escuro';
+  themeToggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+  themeToggleBtn.setAttribute('title', nextActionLabel);
+  if (themeToggleLabel) {
+    themeToggleLabel.textContent = nextActionLabel;
+  }
+}
+
+
+function notifyFrameTheme(frame, theme = currentTheme) {
+  if (!frame) return;
+  try {
+    frame.contentWindow?.postMessage({ action: 'shell-theme', theme }, '*');
+  } catch (error) {
+    console.warn('Não foi possível enviar tema para um iframe.', error);
+  }
+}
+
+function notifyFrames(theme = currentTheme) {
+  notifyFrameTheme(catalogFrame, theme);
+  notifyFrameTheme(appFrame, theme);
+}
+
+function applyTheme(theme, { persist = true, notify = true } = {}) {
+  currentTheme = theme === 'dark' ? 'dark' : 'light';
+
+  if (miniAppRoot) {
+    if (currentTheme === 'dark') {
+      miniAppRoot.setAttribute('data-theme', 'dark');
+    } else {
+      miniAppRoot.removeAttribute('data-theme');
+    }
+  }
+
+  if (themeMetaTag) {
+    const color = THEME_META_COLORS[currentTheme] || THEME_META_COLORS.light;
+    themeMetaTag.setAttribute('content', color);
+  }
+
+  updateThemeToggle(currentTheme);
+
+  if (persist) {
+    storeTheme(currentTheme);
+  }
+
+  if (notify) {
+    notifyFrames(currentTheme);
+  }
+}
+/**
+ * Exposes theme application for automated flows (e.g., Playwright tests).
+ * Consumers can override persistence/notification if needed via options.
+ */
+window.__applyShellTheme = (theme, options = {}) =>
+  applyTheme(theme, { persist: true, notify: true, ...options });
+
+function resolveInitialTheme(storedTheme) {
+  if (storedTheme === 'dark' || storedTheme === 'light') {
+    return storedTheme;
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
 
 function setHeader(meta = {}) {
   if (meta.title && headerTitle) {
@@ -86,6 +219,7 @@ window.changeView = changeView;
 function openCatalog(meta = defaultCatalogHeader) {
   setHeader(meta);
   changeView('catalog');
+  notifyFrameTheme(catalogFrame);
 }
 window.openCatalogView = openCatalog;
 
@@ -102,6 +236,7 @@ function loadMiniApp(url, meta = {}) {
     }
   }
   changeView('app');
+  notifyFrameTheme(appFrame);
 }
 window.loadMiniApp = loadMiniApp;
 
@@ -337,6 +472,19 @@ if (openCatalogBtn) {
   });
 }
 
+document.addEventListener('click', (event) => {
+  if (!(event.target instanceof Element)) return;
+  const target = event.target.closest('#themeToggle');
+  if (!target) return;
+  event.preventDefault();
+  if (!themeToggleBtn) {
+    themeToggleBtn = target;
+    themeToggleLabel = themeToggleBtn.querySelector('[data-theme-toggle-label]');
+  }
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(nextTheme);
+});
+
 window.addEventListener('message', (event) => {
   const { data } = event;
   if (!data) return;
@@ -350,6 +498,12 @@ window.addEventListener('message', (event) => {
     loadMiniApp(data.url, data.metadata || {});
   } else if (data.action === 'miniapp-header') {
     setHeader(data);
+  } else if (data.action === 'miniapp-theme-ready') {
+    const frames = [catalogFrame, appFrame];
+    const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
+    if (targetFrame) {
+      notifyFrameTheme(targetFrame);
+    }
   }
 });
 

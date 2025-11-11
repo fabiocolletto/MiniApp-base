@@ -10,6 +10,11 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 - **MiniApp Prefeito (`miniapp-prefeito/`)** – experiência padrão carregada pelo catálogo, capaz de consumir dados em JSON/CSV ou incorporar um painel externo via iframe seguro.
 - **Design System (`miniapp-base/style/styles.css`)** – CSS escopado com a classe `.ma`, responsável por reset, tokens, componentes e utilitários compartilhados.
 
+## Tema claro/escuro integrado
+- O shell possui um botão dedicado no cabeçalho que alterna entre claro e escuro, persiste a escolha em `localStorage` (`miniapp-shell.theme`), aplica `data-theme="dark"` ao `#miniapp-root` e sincroniza a cor do `<meta name="theme-color">` para manter a barra do navegador coerente.【F:index.html†L27-L51】【F:js/app.js†L20-L133】
+- Sempre que o tema muda o shell envia `{ action: 'shell-theme', theme }` para o catálogo e o MiniApp ativo via `postMessage`, esperando por `{ action: 'miniapp-theme-ready' }` após o carregamento e registrando `{ action: 'miniapp-theme-applied', theme }` quando o iframe confirma a aplicação.【F:js/app.js†L134-L333】
+- Miniapps baseados no design system precisam apenas espelhar o atributo `data-theme` na raiz `.ma`. Interfaces em Tailwind (catálogo público e gestor) contam com CSS adicional observando `body[data-theme="dark"]` e os respectivos scripts de handshake com o shell; preserve esses handlers ao criar experiências semelhantes.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-gestor-de-catalogo/index.html†L1-L120】【F:miniapp-prefeito/index.html†L1-L52】
+
 ## Integração com o Gestor e o Catálogo
 
 ### 1. Adicionar o `miniapp-gestor-de-catalogo`

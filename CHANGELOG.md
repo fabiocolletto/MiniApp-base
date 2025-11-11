@@ -1,5 +1,13 @@
 # Changelog
 
+## [2025-11-15] Alternância de tema integrada ao shell
+### Adicionado
+- Botão para alternar tema claro/escuro diretamente no cabeçalho do shell, com persistência em `localStorage`, atualização do `<meta name="theme-color">` e broadcast do estado via `{ action: 'shell-theme', theme }` para catálogo e MiniApps.【F:index.html†L32-L51】【F:js/app.js†L20-L333】
+- Scripts utilitários nos iframes (catálogo, gestor e MiniApp Prefeito) para responder aos eventos `{ action: 'shell-theme' }`, confirmar com `{ action: 'miniapp-theme-applied' }` e aplicar as classes `data-theme` necessárias.【F:miniapp-catalogo/index.html†L1-L396】【F:miniapp-gestor-de-catalogo/index.html†L1-L836】【F:miniapp-prefeito/index.html†L1-L52】
+### Alterado
+- Catálogo público e gestor administrativo receberam overrides de Tailwind condicionados a `body[data-theme="dark"]`, garantindo contraste adequado quando o shell força o modo escuro.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-gestor-de-catalogo/index.html†L1-L120】
+- Documentação atualizada com o fluxo de tema e handshake necessário para novos MiniApps.【F:README.md†L1-L60】【F:miniapp-catalogo/README.md†L1-L9】【F:miniapp-prefeito/README.md†L1-L13】
+
 ## [2025-11-11] Validação automatizada do catálogo e gestor
 ### Adicionado
 - Suite de testes end-to-end com Playwright cobrindo catálogo público e gestor administrativo, usando servidor estático embutido e stubs do Firebase para validar persistência local e importação via Google Sheets.【F:playwright.config.js†L1-L17】【F:tests/catalog.spec.js†L1-L36】【F:tests/manager.spec.js†L1-L74】【F:tests/helpers/firebase.js†L1-L32】
