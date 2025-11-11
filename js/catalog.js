@@ -4,7 +4,7 @@
   render(items);
 
   async function loadItems() {
-    // 1) Google Sheets (opcional): defina window.CATALOG_GOOGLE_SHEET_CSV com a URL CSV pública
+    // 1) Google Sheets (opcional)
     if (window.CATALOG_GOOGLE_SHEET_CSV) {
       try {
         const res = await fetch(window.CATALOG_GOOGLE_SHEET_CSV, { cache: 'no-store' });
@@ -60,6 +60,6 @@
   }
 
   function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    return String(s).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[c]));
   }
 })();

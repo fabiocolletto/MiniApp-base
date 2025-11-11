@@ -3,125 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MiniApp Prefeito</title>
+  <title>MiniApp Prefeito — Demo</title>
   <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
 </head>
 <body>
   <div class="ma">
     <div class="wrap">
-      <h1>MiniApp Prefeito</h1>
-      <p class="muted">Cole a URL da sua fonte (dados JSON/CSV ou um painel para incorporar).</p>
+      <h1>MiniApp Prefeito — Demo</h1>
+      <p class="muted">Use o botão <b>Configurar fonte</b> para informar <i>ID da planilha</i> e <i>Nome da aba</i> (compartilhada como leitura). Clique em <b>Atualizar</b> para buscar dados. Offline usa o último cache salvo.</p>
 
-      <div class="toolbar">
-        <button class="btn" id="btnFonte">Fonte de dados</button>
-        <small id="fonteInfo" class="muted"></small>
+      <div class="cluster">
+        <button class="btn" id="btnConfig">Configurar fonte</button>
+        <button class="btn" id="btnUpdate">Atualizar</button>
+        <small id="status" class="muted"></small>
       </div>
 
-      <iframe id="embedPanel" class="panel" hidden
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-              referrerpolicy="no-referrer"></iframe>
-
-      <div id="dataView" class="surface wrap"></div>
+      <div class="surface" style="margin-top:16px;">
+        <h3>Prévia dos dados (máx. 12 linhas)</h3>
+        <pre id="preview" style="white-space:pre-wrap;overflow:auto;"></pre>
+      </div>
     </div>
   </div>
 
-  <script src="js/config-source.js"></script>
-  <script>
-  (async () => {
-    const btn = document.getElementById('btnFonte');
-    const info = document.getElementById('fonteInfo');
-    const frame = document.getElementById('embedPanel');
-    const dataView = document.getElementById('dataView');
-
-    const sendHeader = (subtitle) => {
-      try {
-        window.parent?.postMessage({ action: 'miniapp-header', title: 'MiniApp Prefeito', subtitle }, '*');
-      } catch {}
-    };
-
-    sendHeader('Configure a fonte de dados ou utilize o exemplo offline.');
-
-    btn.addEventListener('click', async () => {
-      const u = await window.PrefeitoConfig.pickSourceUrl();
-      if (u) initFromSource(u);
-    });
-
-    // Tenta iniciar com a fonte salva ou fallback local
-    const saved = window.PrefeitoConfig.getSourceUrl();
-    initFromSource(saved || '');
-
-    function setInfo(u, mode) {
-      info.textContent = u ? `Fonte: ${u} (${mode})` : 'Nenhuma fonte definida (usando dados locais).';
-      sendHeader(info.textContent || 'MiniApp Prefeito');
-    }
-
-    async function initFromSource(u) {
-      // Limpa estado
-      frame.hidden = true;
-      frame.removeAttribute('src');
-      dataView.innerHTML = '';
-
-      if (!u) {
-        setInfo('', 'local');
-        try {
-          const res = await fetch('./data/sample.json');
-          const data = await res.json();
-          renderData(data, 'local');
-        } catch {
-          const message = 'Sem fonte definida e sem fallback local.';
-          dataView.innerHTML = `<p class="muted">${message}</p>`;
-          sendHeader(message);
-        }
-        return;
-      }
-
-      if (window.PrefeitoConfig.isLikelyDataUrl(u)) {
-        // Modo DADOS (JSON/CSV)
-        setInfo(u, 'dados');
-        try {
-          const data = await fetchData(u);
-          renderData(data, 'dados');
-          localStorage.setItem('prefeito.lastData', JSON.stringify(data));
-        } catch (e) {
-          const cached = localStorage.getItem('prefeito.lastData');
-          if (cached) {
-            renderData(JSON.parse(cached), 'cache local');
-            setInfo(u, 'cache local (falha ao buscar ao vivo)');
-          } else {
-            const message = 'Não consegui obter os dados e não há cache local.';
-            dataView.innerHTML = `<p class="muted">${message}</p>`;
-            sendHeader(message);
-          }
-        }
-      } else {
-        // Modo IFRAME (painel)
-        setInfo(u, 'painel');
-        frame.hidden = false;
-        frame.src = u;
-      }
-    }
-
-    async function fetchData(u) {
-      if (/\.csv($|\?)/i.test(u)) {
-        const text = await (await fetch(u, { cache: 'no-store' })).text();
-        const rows = text.split(/\r?\n/).filter(Boolean).map(r => r.split(','));
-        const [header, ...data] = rows;
-        const toObj = r => Object.fromEntries(header.map((k,i) => [k, r[i] ?? '']));
-        return data.map(toObj);
-      } else {
-        const res = await fetch(u, { cache: 'no-store' });
-        return res.json();
-      }
-    }
-
-    function renderData(data, origem) {
-      if (!data) { dataView.innerHTML = '<p class="muted">Sem dados.</p>'; return; }
-      const pre = document.createElement('pre');
-      pre.textContent = JSON.stringify(data, null, 2);
-      dataView.innerHTML = '';
-      dataView.appendChild(pre);
-    }
-  })();
-  </script>
+  <script src="js/config-source-simple.js"></script>
 </body>
 </html>

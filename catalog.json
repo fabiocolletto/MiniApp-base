@@ -1,7 +1,7 @@
 [
   {
     "name": "MiniApp Prefeito",
-    "description": "Gestão de pesquisas de opinião pública do município.",
+    "description": "Demo de pesquisas municipais (CSV agregado).",
     "url": "miniapp-prefeito/index.html",
     "iconSymbol": "monitoring",
     "iconTheme": "brand"

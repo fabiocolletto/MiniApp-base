@@ -1,16 +1,27 @@
-const CACHE = 'miniapp-shell-v1';
+const CACHE = 'miniapp-shell-v3-demo';
+
 const PRECACHE = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/catalog.json',
-  '/js/app.js',
-  '/js/catalog.js',
+  '/', '/index.html', '/manifest.webmanifest',
+  '/catalog.json', '/js/app.js', '/js/catalog.js',
   '/miniapp-base/style/styles.css',
   '/miniapp-catalogo/index.html',
   '/miniapp-prefeito/index.html',
-  '/miniapp-prefeito/js/config-source.js',
-  '/miniapp-prefeito/data/sample.json'
+  '/miniapp-prefeito/js/config-source-simple.js',
+  '/miniapp-prefeito/data/demo_fato_kpi_diario.csv',
+  // ícones locais (fallback e PWA)
+  '/miniapp-base/icons/icon-192.png',
+  '/miniapp-base/icons/icon-512.png',
+  // WordPress assets (logos/ícones)
+  'https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp',
+  'https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp',
+  'https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp',
+  'https://5horas.com.br/wp-content/uploads/2025/10/Icone-Dark-Transparente-500x500px.webp'
+];
+
+const RUNTIME_ALLOW = [
+  self.location.origin,
+  'https://5horas.com.br',
+  'https://docs.google.com'
 ];
 
 self.addEventListener('install', (e) => {
@@ -31,29 +42,37 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
+
+  // Navegação: network-first com fallback ao index
   if (e.request.mode === 'navigate') {
-    // Navegações: tenta rede → cache fallback
     e.respondWith((async () => {
-      try {
-        const fresh = await fetch(e.request);
-        return fresh;
-      } catch {
+      try { return await fetch(e.request); }
+      catch {
         const cache = await caches.open(CACHE);
         return (await cache.match('/index.html')) || Response.error();
       }
     })());
     return;
   }
-  // Assets: cache-first
+
+  // Demais assets: cache-first + runtime fill para origens permitidas
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const cached = await cache.match(e.request);
     if (cached) return cached;
+
     try {
       const res = await fetch(e.request);
-      if (res && res.ok && url.origin === location.origin) cache.put(e.request, res.clone());
+      const ok = res && (res.ok || res.type === 'opaque');
+      if (ok && RUNTIME_ALLOW.includes(url.origin)) {
+        cache.put(e.request, res.clone());
+      }
       return res;
     } catch {
+      if (e.request.destination === 'image') {
+        const fallback = await cache.match('/miniapp-base/icons/icon-192.png');
+        if (fallback) return fallback;
+      }
       return cached || Response.error();
     }
   })());

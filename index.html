@@ -14,9 +14,16 @@
   <div id="miniapp-root" class="ma">
     <div class="app" role="application">
       <header class="app-header" aria-live="polite">
-        <div>
-          <h1 data-header-title>Catálogo de MiniApps</h1>
-          <p data-header-subtitle class="muted">Escolha um MiniApp para abrir</p>
+        <div class="cluster">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp">
+            <source media="(prefers-color-scheme: light)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp">
+            <img src="miniapp-base/icons/icon-192.png" alt="5 Horas" style="height:32px" loading="eager">
+          </picture>
+          <div>
+            <h1 data-header-title>Catálogo de MiniApps</h1>
+            <p data-header-subtitle class="muted">Escolha um MiniApp para abrir</p>
+          </div>
         </div>
         <div class="cluster" style="margin-left:auto">
           <button id="openCatalog" class="btn btn--ghost" type="button" title="Abrir catálogo">Catálogo</button>

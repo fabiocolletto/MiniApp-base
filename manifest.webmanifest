@@ -1,5 +1,5 @@
 {
-  "name": "MiniApps — 5 Horas",
+  "name": "MiniApps \u2014 5 Horas (Demo)",
   "short_name": "MiniApps",
   "start_url": ".",
   "scope": ".",
@@ -7,7 +7,17 @@
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
   "icons": [
-    { "src": "miniapp-base/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "miniapp-base/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "miniapp-base/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "miniapp-base/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
