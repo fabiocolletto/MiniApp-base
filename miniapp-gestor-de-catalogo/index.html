@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Catálogo de MiniApps (Admin)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Estilos customizados para o Tailwind e fontes */
+    body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+    .loading-spinner { border-top-color: #3b82f6; }
+    
+    /* Estilo para todas as tabelas e células */
+    .summary-table th, .summary-table td, .preview-table-container th, .preview-table-container td {
+        padding: 12px 16px;
+        border: 1px solid #e5e7eb;
+        text-align: left;
+        font-size: 0.875rem; /* text-sm */
+    }
+    
+    /* Regras CRUCIAIS para prevenir expansão de coluna por texto longo */
+    .summary-table td, .preview-table-container td {
+        white-space: nowrap; /* Não quebra linha */
+        overflow: hidden; /* Esconde o excesso */
+        text-overflow: ellipsis; /* Adiciona "..." no final */
+        max-width: 200px; /* Largura máxima para a célula de dados */
+    }
+    
+    /* Estilo específico para células editáveis */
+    .editable-cell {
+        cursor: text;
+        transition: background-color 0.1s;
+    }
+    .editable-cell:focus {
+        outline: 2px solid #3b82f6; /* Ring azul ao focar */
+        background-color: #fff;
+    }
+    .data-edited {
+        background-color: #ffedd5; /* Laranja claro para indicar edição pendente */
+    }
+    
+    .summary-table th, .preview-table-container th { 
+        background-color: #f3f4f6; 
+        font-weight: 600; 
+        color: #1f2937; 
+    }
+    .summary-table, .preview-table-container table { 
+        width: 100%; 
+        border-collapse: collapse;
+        border-radius: 0.5rem;
+        overflow: hidden; 
+    }
+    /* Ths clicáveis para ordenação */
+    .sortable-th {
+        cursor: pointer;
+    }
+
+    /* Estilo para os botões de ação na tabela */
+    .action-button {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-left: 0.5rem;
+        border-radius: 0.375rem;
+        transition: background-color 0.15s ease;
+    }
+    /* Classe para esconder/mostrar o formulário */
+    .hidden-form { display: none; }
+    /* Adicionando um estilo visual para a linha selecionada na pré-visualização */
+    .preview-table-container tr.selected {
+        background-color: #f0f9ff;
+    }
+  </style>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
+  <!-- Firebase Imports -->
+  <script type="module">
+    // --- Configuração e Variáveis Globais ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    setLogLevel('Debug');
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    let app, db, auth; 
+    let firebaseInitialized = false;
+    
+    // Armazenamento global para os MiniApps ATIVOS importados
+    // Simulação de dados já carregados
+    window.ACTIVE_MINIAPPS = {
+        'app_1': { id: 'app_1', name: 'Calculadora Rápida', status: 'Ativo', category: 'Produtividade', lastImport: '10:00:00', isEdited: false },
+        'app_4': { id: 'app_4', name: 'Notas Rápidas', status: 'Ativo', category: 'Produtividade', lastImport: '10:15:30', isEdited: false }
+    }; 
+    // Armazenamento temporário para os MiniApps lidos no Passo 2
+    window.CATALOG_PREVIEW_DATA = [];
+    
+    // Estado de ordenação da tabela ativa (Passo 3)
+    let summarySortState = { key: 'name', direction: 'asc' }; 
+    // Estado de ordenação da tabela de pré-visualização (Passo 2)
+    let previewSortState = { key: 'name', direction: 'asc' }; 
+
+    if (firebaseConfig) {
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            firebaseInitialized = true;
+            window.db = db;
+            window.auth = auth;
+            window.appId = appId;
+        } catch (e) {
+            console.error("Erro ao inicializar Firebase:", e);
+        }
+    }
+    
+    // Referências de UI
+    const statusMessage = document.getElementById('status-message');
+    const configFormContainer = document.getElementById('config-form-container'); 
+    const configStatusBar = document.getElementById('config-status-bar'); 
+    const previewContainer = document.getElementById('preview-data-container');
+    const summaryContainer = document.getElementById('loaded-summary-container');
+    const sheetUrlInput = document.getElementById('sheetUrlInput');
+    const importButton = document.getElementById('importCatalogButton');
+    const testButton = document.getElementById('testSheetButton');
+    
+    // --- FUNÇÕES DE PERSISTÊNCIA (simplificadas e ocultas para foco) ---
+    const DOCUMENT_ID = 'sheet_config';
+    function getUserSettingsRef() { /* ... */ return null; }
+    async function saveSheetId(sheetId) { /* ... */ }
+    async function trySignIn() { /* ... */ }
+    function setupAuthListenerAndSignIn() { /* ... */ }
+    async function loadSavedSheetId() { /* ... */ }
+    
+    // --- LÓGICA DO CATÁLOGO E TABELA ---
+
+    function buildCsvUrl(sheetIdOrUrl) {
+        let sheetId = sheetIdOrUrl;
+        let gid = '0';
+        const idMatch = sheetIdOrUrl.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+        if (idMatch && idMatch[1]) { sheetId = idMatch[1]; }
+        const gidMatch = sheetIdOrUrl.match(/[?&]gid=(\d+)/);
+        if (gidMatch && gidMatch[1]) { gid = gidMatch[1]; }
+        if (!sheetId) return null;
+        return { 
+            sheetId,
+            csvUrl: `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
+        };
+    }
+    
+    function parseCsv(csvText) {
+        const lines = csvText.trim().split('\n');
+        if (lines.length < 2) return [];
+        
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const data = lines.slice(1).map(line => {
+            const values = line.split(',').map(d => d.trim().replace(/"/g, ''));
+            const item = {};
+            headers.forEach((header, index) => {
+                item[header] = values[index] ? values[index].replace(/^"|"$/g, '') : '';
+            });
+            // Adiciona a propriedade 'selected' e define como true por padrão
+            item.selected = true; 
+            return item;
+        }).filter(item => item.id && item.name); // MiniApps devem ter ID e Nome
+        
+        return data;
+    }
+    
+    // Mapeamento dos Headers de Dados para Chaves (Usado nas duas seções)
+    const DATA_HEADERS_MAP = [
+        { id: 'id', name: 'ID', editable: false },
+        { id: 'name', name: 'Nome', editable: true },
+        { id: 'status', name: 'Status', editable: true },
+        { id: 'category', name: 'Categoria', editable: true },
+        { id: 'lastImport', name: 'Última Carga', editable: false } // Esta chave armazena o tempo de importação do servidor
+    ];
+    // Chaves de dados para ordenação (excluindo a coluna 'Selecionar' e 'Ações')
+    const SORTABLE_KEYS = DATA_HEADERS_MAP.map(h => h.id).filter(key => key !== 'lastImport'); // 'lastImport' é dado do servidor, não da planilha CSV
+
+    // Headers completos para a Seção 2 (Seleção) - Inclui a data do SERVIDOR
+    const PREVIEW_HEADERS_CONFIG = [
+        { id: 'select', name: 'Selecionar' },
+        ...DATA_HEADERS_MAP.filter(h => h.id !== 'lastImport'), // Dados da planilha
+        { id: 'serverLastImport', name: 'Última Carga (no Servidor)', key: 'lastImport' } // Dado do servidor para comparação
+    ];
+
+    // Headers completos para a Seção 3 (Ativa) com chaves para ordenação
+    const ACTIVE_HEADERS_CONFIG = [
+        ...DATA_HEADERS_MAP, 
+        { id: 'actions', name: 'Ações', editable: false }
+    ];
+
+    // Função genérica de ordenação
+    function sortData(data, sortState) {
+        if (data.length === 0) return data;
+
+        const key = sortState.key;
+        const direction = sortState.direction === 'asc' ? 1 : -1;
+        
+        // A chave 'serverLastImport' na Seção 2 se refere ao 'lastImport' no ACTIVE_MINIAPPS
+        const actualKey = key === 'serverLastImport' ? 'lastImport' : key;
+        
+        data.sort((a, b) => {
+            // Se estiver ordenando a Pré-Visualização pelo tempo no servidor
+            const valA = (key === 'serverLastImport' ? window.ACTIVE_MINIAPPS[a.id]?.lastImport : a[actualKey]) || '';
+            const valB = (key === 'serverLastImport' ? window.ACTIVE_MINIAPPS[b.id]?.lastImport : b[actualKey]) || '';
+            
+            if (valA < valB) return -1 * direction;
+            if (valA > valB) return 1 * direction;
+            return 0;
+        });
+        
+        return data;
+    }
+
+    // Função de Ordenação da Tabela de Pré-Visualização (Passo 2)
+    window.sortPreview = function(key) {
+        if (previewSortState.key === key) {
+            previewSortState.direction = previewSortState.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            previewSortState.key = key;
+            previewSortState.direction = 'asc';
+        }
+        renderPreviewSelection(window.CATALOG_PREVIEW_DATA);
+    }
+
+    // Renderiza a tabela de Pré-visualização e Seleção (Passo 2)
+    function renderPreviewSelection(data) {
+        const hasData = data.length > 0;
+        
+        // Ordena os dados ANTES de renderizar
+        if (hasData) {
+            data = sortData(data, previewSortState);
+        }
+
+        let tableHtml = `
+            <div class="flex gap-2 mb-3 ${hasData ? '' : 'hidden'}">
+                <button id="selectAllButton" class="action-button bg-gray-200 hover:bg-gray-300 text-gray-800">Selecionar Todos</button>
+                <button id="clearSelectionButton" class="action-button bg-gray-200 hover:bg-gray-300 text-gray-800">Limpar Seleção</button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200 preview-table-container">
+                <table class="w-full">
+                <thead><tr>
+                ${PREVIEW_HEADERS_CONFIG.map(h => {
+                    if (h.id === 'select') {
+                        return `<th class="whitespace-nowrap">${h.name}</th>`;
+                    }
+                    
+                    const isCurrentSort = previewSortState.key === h.id;
+                    const arrow = isCurrentSort 
+                        ? (previewSortState.direction === 'asc' ? '▲' : '▼') 
+                        : '';
+                        
+                    return `<th class="sortable-th whitespace-nowrap" 
+                                onclick="window.sortPreview('${h.id}')"
+                                title="Ordenar por ${h.name}">
+                                ${h.name} ${arrow}
+                            </th>`;
+                }).join('')}
+                </tr></thead>
+                <tbody>
+        `;
+        
+        if (!hasData) {
+            tableHtml += `
+                <tr class="bg-gray-50">
+                    <td colspan="${PREVIEW_HEADERS_CONFIG.length}" class="text-center italic text-gray-500 py-6">
+                        Clique em "Testar e Visualizar" (Passo 2) para carregar os MiniApps.
+                    </td>
+                </tr>
+            `;
+        } else {
+            data.forEach((app, index) => {
+                const isDuplicate = !!window.ACTIVE_MINIAPPS[app.id];
+                const serverImportTime = isDuplicate ? window.ACTIVE_MINIAPPS[app.id].lastImport : '-';
+                const rowClass = app.selected ? 'selected' : '';
+                const checkboxId = `chk-${app.id}`;
+                
+                // Texto que indica se é atualização ou novo item
+                let statusLabel = '';
+                if (isDuplicate) {
+                    statusLabel = ' (Atualização)';
+                } else if (app.selected) {
+                    statusLabel = ' (Novo)';
+                }
+                
+
+                tableHtml += `<tr id="row-${app.id}" class="${rowClass}">
+                    <td class="text-center">
+                        <input type="checkbox" id="${checkboxId}" 
+                            data-appid="${app.id}" 
+                            ${app.selected ? 'checked' : ''} 
+                            onchange="window.toggleRowSelection('${app.id}', this.checked)"
+                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="${checkboxId}" class="ml-2 text-xs">${statusLabel}</label>
+                    </td>
+                    <td title="${app.id}">${app.id}</td>
+                    <td title="${app.name}">${app.name}</td>
+                    <td title="${app.status}">${app.status || 'N/A'}</td>
+                    <td title="${app.category}">${app.category || 'N/A'}</td>
+                    <td class="text-sm italic text-gray-600">${serverImportTime}</td>
+                </tr>`;
+            });
+        }
+        
+        tableHtml += '</tbody></table></div>';
+        
+        previewContainer.innerHTML = tableHtml;
+
+        if (hasData) {
+            // Adiciona listeners para os botões de seleção global
+            document.getElementById('selectAllButton').addEventListener('click', () => {
+                window.toggleAllSelection(true);
+            });
+            document.getElementById('clearSelectionButton').addEventListener('click', () => {
+                window.toggleAllSelection(false);
+            });
+        }
+    }
+
+    // Alterna a seleção de uma linha individualmente
+    window.toggleRowSelection = function(appId, isChecked) {
+        const index = window.CATALOG_PREVIEW_DATA.findIndex(app => app.id === appId);
+        if (index > -1) {
+            window.CATALOG_PREVIEW_DATA[index].selected = isChecked;
+            const row = document.getElementById(`row-${appId}`);
+            if (row) {
+                row.classList.toggle('selected', isChecked);
+            }
+        }
+    }
+
+    // Alterna a seleção de todos os itens
+    window.toggleAllSelection = function(select) {
+        window.CATALOG_PREVIEW_DATA.forEach(app => {
+            app.selected = select;
+            const checkbox = document.getElementById(`chk-${app.id}`);
+            if (checkbox) {
+                checkbox.checked = select;
+                const row = document.getElementById(`row-${app.id}`);
+                if (row) {
+                    row.classList.toggle('selected', select);
+                }
+            }
+        });
+    }
+
+    // --------------------------------------------------------------------------------------------------
+    // NOVAS FUNÇÕES DE EDIÇÃO INLINE (SEÇÃO 3)
+    // --------------------------------------------------------------------------------------------------
+
+    // Marca a célula como editada e atualiza o objeto no ACTIVE_MINIAPPS
+    window.handleCellInput = function(appId, key, element) {
+        const app = window.ACTIVE_MINIAPPS[appId];
+        if (!app) return;
+
+        const newValue = element.textContent.trim();
+        
+        // Verifica se houve alteração real
+        if (app[key] !== newValue) {
+            app[key] = newValue;
+            app.isEdited = true; 
+            element.classList.add('data-edited');
+        } else if (app.isEdited) {
+            // Se o valor voltou ao original, verificamos se a edição deve ser removida
+            // Para simplificar, neste teste, manteremos a flag isEdited, mas um sistema real faria uma comparação mais profunda.
+            // Para nosso propósito, apenas adicionamos/removemos a classe visual.
+            if (element.classList.contains('data-edited')) {
+                // Se o valor de uma célula voltou, mas outras ainda podem estar editadas
+                // Chamamos a função para re-renderizar a linha e atualizar o estado visual
+                // renderActiveSummary() fará isso, mas para fins de performance, vamos apenas checar as classes.
+            }
+        }
+        
+        // Re-renderiza a tabela para garantir que o botão "Salvar Edições" apareça/suma
+        renderActiveSummary();
+    }
+    
+    // Simula a persistência dos dados editados
+    window.saveEditedData = function(appId) {
+        const app = window.ACTIVE_MINIAPPS[appId];
+        if (!app || !app.isEdited) return;
+
+        // Simula o salvamento no banco de dados
+        console.log(`[PERSISTÊNCIA SIMULADA] Salvando dados atualizados para ID: ${appId}`, app);
+        
+        // Remove a flag de edição
+        app.isEdited = false;
+        
+        // Atualiza o tempo de última carga para indicar a mudança
+        app.lastImport = new Date().toLocaleTimeString('pt-BR') + ' (Editado)';
+        
+        statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) teve suas edições salvas com sucesso no catálogo.`;
+        
+        // Re-renderiza para limpar o estilo de edição
+        renderActiveSummary();
+    }
+
+    // --------------------------------------------------------------------------------------------------
+    
+    // Manipulador de Ações (Atualização/Exclusão)
+    window.handleMiniAppAction = function(action, appId) {
+        const app = window.ACTIVE_MINIAPPS[appId];
+        if (!app) return console.error(`MiniApp ID ${appId} não encontrado.`);
+
+        switch (action) {
+            case 'update':
+                app.lastImport = new Date().toLocaleTimeString('pt-BR') + ' (Forçado)';
+                renderActiveSummary();
+                statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) forçado a atualizar (simulação).`;
+                break;
+            case 'delete':
+                delete window.ACTIVE_MINIAPPS[appId];
+                renderActiveSummary();
+                statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) excluído da lista ativa.`;
+                break;
+            default:
+                console.warn(`Ação desconhecida: ${action}`);
+        }
+    }
+    
+    // Função de Ordenação da Tabela de Resumo (Passo 3)
+    window.sortSummary = function(key) {
+        if (summarySortState.key === key) {
+            summarySortState.direction = summarySortState.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            summarySortState.key = key;
+            summarySortState.direction = 'asc';
+        }
+        renderActiveSummary();
+    }
+
+    // Renderiza o resumo ativo na tabela (Passo 3)
+    function renderActiveSummary() {
+        let activeAppsArray = Object.values(window.ACTIVE_MINIAPPS);
+        
+        const headers = ACTIVE_HEADERS_CONFIG;
+
+        // Aplica a ordenação SOMENTE se houver dados
+        if (activeAppsArray.length > 0) {
+            activeAppsArray = sortData(activeAppsArray, summarySortState);
+        }
+
+        let tableHtml = `<h3 class="text-lg font-semibold mb-3 text-gray-800">3. Catálogo Ativo (Edição Inline) - ${activeAppsArray.length} MiniApps</h3>`;
+        tableHtml += '<div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200"><table class="summary-table">';
+        
+        // Cabeçalho da Tabela com Função de Sorteio
+        tableHtml += '<thead><tr>' + headers.map(h => {
+            if (h.id === 'actions') return `<th>${h.name}</th>`;
+            
+            const isCurrentSort = summarySortState.key === h.id;
+            const arrow = isCurrentSort 
+                ? (summarySortState.direction === 'asc' ? '▲' : '▼') 
+                : '';
+                
+            // A Seção 3 permite ordenação
+            return `<th class="sortable-th" onclick="window.sortSummary('${h.id}')" title="Ordenar por ${h.name}">${h.name} ${arrow}</th>`;
+        }).join('') + '</tr></thead>';
+        
+        // Linhas de dados
+        tableHtml += '<tbody>';
+        
+        if (activeAppsArray.length === 0) {
+            tableHtml += `
+                <tr class="bg-gray-50">
+                    <td colspan="${headers.length}" class="text-center italic text-gray-500">
+                        Nenhum MiniApp ativo na lista. Importe no Passo 1 e 2.
+                    </td>
+                </tr>
+            `;
+        } else {
+            activeAppsArray.forEach(app => {
+                let statusColor = 'bg-gray-100 text-gray-800';
+                if (app.status && app.status.toLowerCase() === 'ativo') {
+                    statusColor = 'bg-green-100 text-green-800';
+                } else if (app.status && app.status.toLowerCase() === 'beta') {
+                    statusColor = 'bg-yellow-100 text-yellow-800';
+                }
+                
+                // Mapeia os dados para as células
+                const cellsHtml = ACTIVE_HEADERS_CONFIG.map(header => {
+                    const key = header.id;
+                    const value = app[key] || 'N/A';
+                    
+                    if (key === 'actions') {
+                        const saveButton = app.isEdited 
+                            ? `<button onclick="window.saveEditedData('${app.id}')" class="action-button bg-orange-500 hover:bg-orange-600 text-white font-bold">Salvar Edições</button>`
+                            : '';
+                            
+                        return `<td>
+                            ${saveButton}
+                            <button onclick="window.handleMiniAppAction('update', '${app.id}')" class="action-button bg-blue-500 hover:bg-blue-600 text-white" title="Simular atualização de planilha">Atualizar</button>
+                            <button onclick="window.handleMiniAppAction('delete', '${app.id}')" class="action-button bg-red-500 hover:bg-red-600 text-white">Excluir</button>
+                        </td>`;
+                    }
+                    
+                    // Células Editáveis
+                    if (header.editable) {
+                        const isEditedClass = app.isEdited ? 'data-edited' : '';
+                        
+                        return `<td contenteditable="true" 
+                                    class="editable-cell ${isEditedClass}"
+                                    title="${value}"
+                                    data-appid="${app.id}"
+                                    data-key="${key}"
+                                    onblur="window.handleCellInput('${app.id}', '${key}', this)"
+                                    onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">
+                                    ${value}
+                                </td>`;
+                    }
+                    
+                    // Células Estáticas (ID, Last Import)
+                    if (key === 'status') {
+                        return `<td title="${value}"><span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${value}</span></td>`;
+                    }
+                    
+                    if (key === 'lastImport') {
+                        return `<td class="text-sm italic text-gray-600" title="${value}">${value}</td>`;
+                    }
+                    
+                    // ID
+                    return `<td title="${value}">${value}</td>`;
+                }).join('');
+
+
+                tableHtml += `<tr>${cellsHtml}</tr>`;
+            });
+        }
+        tableHtml += '</tbody></table></div>';
+        
+        summaryContainer.innerHTML = tableHtml;
+    }
+    
+    // Função que garante que a tabela de pré-visualização seja renderizada vazia no início
+    function renderEmptyPreview() {
+        // Renderiza a estrutura da tabela vazia
+        window.CATALOG_PREVIEW_DATA = []; // Garante que a lista de dados esteja vazia
+        renderPreviewSelection([]);
+    }
+
+    // Função de Pré-visualização (Busca os dados e inicia a seleção)
+    window.previewCatalog = async function() {
+        const sheetIdOrUrl = sheetUrlInput.value.trim();
+        const result = buildCsvUrl(sheetIdOrUrl);
+        
+        // Limpa a lista anterior
+        window.CATALOG_PREVIEW_DATA = [];
+        importButton.disabled = true;
+
+        if (!result) {
+            statusMessage.textContent = "Erro: URL ou ID da Planilha inválido. Verifique o formato.";
+            renderEmptyPreview();
+            return;
+        }
+
+        const { sheetId, csvUrl } = result;
+        const gid = result.csvUrl.match(/[?&]gid=(\d+)/)?.[1] || '0';
+        statusMessage.textContent = `Buscando dados da planilha do ID: ${sheetId} (GID: ${gid})...`;
+        
+        try {
+            const response = await fetch(csvUrl, { method: 'GET', mode: 'cors', cache: 'no-cache', credentials: 'omit' }); 
+            
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => response.statusText);
+                throw new Error(`Erro HTTP: ${response.status}. Detalhe: ${errorText}. Certifique-se de que a planilha está pública.`);
+            }
+            
+            const csvText = await response.text();
+            
+            // Armazena os dados completos na variável global para seleção
+            const allData = parseCsv(csvText);
+            window.CATALOG_PREVIEW_DATA = allData;
+            
+            if (allData.length === 0) {
+                 statusMessage.textContent = "Planilha encontrada, mas sem MiniApps válidos (verifique se as colunas 'id' e 'name' existem).";
+                 renderEmptyPreview();
+                 return;
+            }
+
+            // Renderiza a nova tabela com checkboxes
+            renderPreviewSelection(allData);
+            
+            statusMessage.textContent = `Pré-visualização OK! ${allData.length} MiniApps encontrados. Selecione os itens e clique em "Importar e Carregar".`;
+            importButton.disabled = false; 
+
+        } catch (error) {
+            console.error("Erro ao pré-visualizar o catálogo:", error);
+            statusMessage.textContent = `Erro ao carregar: Verifique o link/ID e o status de compartilhamento. O erro foi: ${error.message}`;
+            importButton.disabled = true;
+            renderEmptyPreview();
+        }
+    }
+
+    // Função de Importação Final (processa apenas os MiniApps selecionados)
+    window.importCatalog = function() {
+        const sheetIdOrUrl = sheetUrlInput.value.trim();
+        const result = buildCsvUrl(sheetIdOrUrl);
+        
+        // Filtra APENAS os dados que foram selecionados na etapa 2
+        const newData = window.CATALOG_PREVIEW_DATA.filter(app => app.selected);
+
+        if (!result || newData.length === 0) {
+            statusMessage.textContent = "Erro: Nenhum MiniApp selecionado para importar. Primeiro, clique em 'Testar e Visualizar' com um link válido e selecione os MiniApps.";
+            return;
+        }
+        
+        if (firebaseInitialized) {
+            saveSheetId(result.sheetId);
+        }
+        
+        // Esconde o formulário
+        configFormContainer.classList.add('hidden-form');
+        
+        // Limpa a pré-visualização (Passo 2)
+        renderEmptyPreview();
+        statusMessage.textContent = "Importando e Mesclando MiniApps Ativos...";
+        
+        let newAppsCount = 0;
+        let updateAppsCount = 0;
+
+        // Mescla os dados selecionados com os dados ativos existentes (Passo 3)
+        newData.forEach(app => {
+            if (app.id) {
+                if (window.ACTIVE_MINIAPPS[app.id]) {
+                    updateAppsCount++;
+                } else {
+                    newAppsCount++;
+                }
+                
+                // Sobrescreve/adiciona o objeto, incluindo a data/hora da última importação
+                // Remove a flag temporária 'selected'
+                const { selected, ...appData } = app;
+                
+                window.ACTIVE_MINIAPPS[app.id] = {
+                    ...appData,
+                    // Garante que o MiniApp ativo no servidor receba a hora atual como última carga
+                    lastImport: new Date().toLocaleTimeString('pt-BR'), 
+                    isEdited: false // Garante que a flag de edição seja limpa
+                };
+            }
+        });
+        
+        // Renderiza a tabela de resumo ativa (Passo 3)
+        renderActiveSummary();
+
+        const totalApps = Object.keys(window.ACTIVE_MINIAPPS).length;
+        const successMessage = `Importação Completa! ${newAppsCount} novos MiniApps adicionados e ${updateAppsCount} atualizados (de ${newData.length} selecionados). Total ativo: ${totalApps}.`;
+        
+        // Atualiza a barra de status com a mensagem de sucesso e o botão de reabrir
+        configStatusBar.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-md shadow-md flex-grow" role="alert">
+                    <p class="font-bold">Configuração Finalizada!</p>
+                    <p class="text-sm">${successMessage} A lista gerenciável está na Seção 3, onde você pode editá-los diretamente.</p>
+                </div>
+                <button id="showConfigButton" class="ml-4 mt-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out whitespace-nowrap">
+                    Reabrir Configuração
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('showConfigButton').addEventListener('click', () => {
+            configFormContainer.classList.remove('hidden-form');
+            configStatusBar.innerHTML = '';
+        });
+        
+        statusMessage.textContent = successMessage;
+        testButton.disabled = false;
+        importButton.disabled = true; // Desabilita até que um novo teste seja feito
+    }
+    
+    // --- INICIALIZAÇÃO E LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        importButton.disabled = true;
+
+        testButton.addEventListener('click', window.previewCatalog);
+        importButton.addEventListener('click', window.importCatalog);
+        
+        sheetUrlInput.addEventListener('input', () => {
+            importButton.disabled = true;
+            statusMessage.textContent = "Link/ID alterado. Clique em 'Testar e Visualizar' (Passo 2).";
+            renderEmptyPreview(); // Garante que a seção 2 volte ao estado inicial
+        });
+        
+        if (firebaseInitialized) {
+            // setupAuthListenerAndSignIn();
+        } else {
+             //statusMessage.textContent = "Erro: Configuração do Firebase faltando. Persistência desativada.";
+        }
+        
+        // Renderiza as tabelas vazias no carregamento
+        renderEmptyPreview();
+        renderActiveSummary();
+    });
+    
+  </script>
+  
+</head>
+<body>
+  <div class="ma min-h-screen">
+    <div class="wrap p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      
+      <!-- NOVO TÍTULO ADMINISTRATIVO NO TOPO -->
+      <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">Gestor de Catálogo de MiniApps <span class="text-lg font-normal text-red-500">(Acesso Admin)</span></h1>
+      
+      <!-- Seção de Configuração da Planilha - Passo 1 -->
+      <header id="config-header" class="bg-white shadow-md p-4 mb-8 rounded-lg">
+        
+        <!-- Contêiner da Barra de Status (Fica visível após ocultar) -->
+        <div id="config-status-bar">
+            <!-- Inicialmente vazio, preenchido após importação -->
+        </div>
+
+        <!-- Contêiner do Formulário e Entradas (Fica oculto ao "fechar") -->
+        <div id="config-form-container">
+            <h2 class="text-xl font-bold mb-3 text-gray-800">1. Configuração da Planilha Google</h2>
+            <p class="text-sm text-gray-500 mb-4">Insira o link completo ou o ID da planilha de catálogo. Certifique-se de que ela está **compartilhada publicamente**.</p>
+            
+            <div class="flex flex-col md:flex-row gap-3">
+              <input 
+                type="text" 
+                id="sheetUrlInput" 
+                placeholder="Cole o link COMPLETO (com gid) ou o ID da Planilha Google" 
+                class="flex-grow p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+              <button 
+                id="testSheetButton" 
+                class="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition duration-150 ease-in-out w-full md:w-auto"
+              >
+                Testar e Visualizar (Passo 2)
+              </button>
+              <button 
+                id="importCatalogButton" 
+                disabled
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition duration-150 ease-in-out w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Este botão será ativado após a pré-visualização no Passo 2."
+              >
+                Importar e Carregar (Passo 3)
+              </button>
+            </div>
+            <p id="status-message" class="mt-2 text-sm text-gray-500">Inicializando... Por favor, insira o link da planilha e clique em "Testar e Visualizar".</p>
+        </div>
+      </header>
+      
+      <!-- Seção de Seleção e Pré-Visualização - Passo 2 -->
+      <section id="preview-section" class="mb-8">
+          <h3 class="text-lg font-semibold mb-2 text-gray-800">2. Seleção de MiniApps para Importação (Pré-visualização e Filtro)</h3>
+          <div id="preview-data-container">
+              <!-- O conteúdo da pré-visualização e seleção é renderizado aqui -->
+          </div>
+      </section>
+      
+      <!-- SEÇÃO DE RESUMO E LISTA ATIVA - Passo 3 -->
+      <section id="loaded-summary-section" class="mb-8">
+          <div id="loaded-summary-container">
+              <!-- A tabela de MiniApps ativos será renderizada aqui -->
+          </div>
+      </section>
+
+
+      <!-- Seção do Catálogo (Removida para esta versão administrativa) -->
+      
+    </div>
+  </div>
+</body>
+</html>
