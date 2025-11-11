@@ -86,16 +86,18 @@
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    let app, db, auth; 
+    let app, db, auth;
     let firebaseInitialized = false;
-    
-    // Armazenamento global para os MiniApps ATIVOS importados
-    // Simulação de dados já carregados
-    window.ACTIVE_MINIAPPS = {
-        'app_1': { id: 'app_1', name: 'Calculadora Rápida', status: 'Ativo', category: 'Produtividade', lastImport: '10:00:00', isEdited: false },
-        'app_4': { id: 'app_4', name: 'Notas Rápidas', status: 'Ativo', category: 'Produtividade', lastImport: '10:15:30', isEdited: false }
-    }; 
-    // Armazenamento temporário para os MiniApps lidos no Passo 2
+
+    // Armazenamento local dos dados importados
+    const STORAGE_NAMESPACE = 'miniapp-catalog.admin';
+    const STORAGE_KEYS = {
+        activeItems: `${STORAGE_NAMESPACE}.activeItems`,
+        sheetId: `${STORAGE_NAMESPACE}.sheetId`,
+    };
+    const SHELL_SHEET_KEY = 'miniapp-shell.sheetId';
+
+    window.ACTIVE_MINIAPPS = {};
     window.CATALOG_PREVIEW_DATA = [];
     
     // Estado de ordenação da tabela ativa (Passo 3)
@@ -127,13 +129,78 @@
     const importButton = document.getElementById('importCatalogButton');
     const testButton = document.getElementById('testSheetButton');
     
-    // --- FUNÇÕES DE PERSISTÊNCIA (simplificadas e ocultas para foco) ---
+    // --- FUNÇÕES DE PERSISTÊNCIA (fallback local) ---
     const DOCUMENT_ID = 'sheet_config';
     function getUserSettingsRef() { /* ... */ return null; }
-    async function saveSheetId(sheetId) { /* ... */ }
+
+    function persistActiveMiniApps() {
+        try {
+            const payload = {
+                updatedAt: new Date().toISOString(),
+                items: Object.values(window.ACTIVE_MINIAPPS).map(app => {
+                    const { isEdited, ...rest } = app;
+                    return rest;
+                }),
+            };
+            localStorage.setItem(STORAGE_KEYS.activeItems, JSON.stringify(payload));
+        } catch (error) {
+            console.warn('Não foi possível salvar o catálogo importado localmente.', error);
+        }
+    }
+
+    function restoreActiveMiniAppsFromStorage() {
+        let restoredCount = 0;
+        try {
+            const raw = localStorage.getItem(STORAGE_KEYS.activeItems);
+            if (!raw) return 0;
+            const parsed = JSON.parse(raw);
+            const items = Array.isArray(parsed)
+                ? parsed
+                : Array.isArray(parsed?.items)
+                    ? parsed.items
+                    : [];
+
+            window.ACTIVE_MINIAPPS = {};
+            items.forEach(item => {
+                if (!item || !item.id) return;
+                window.ACTIVE_MINIAPPS[item.id] = {
+                    ...item,
+                    isEdited: false,
+                };
+                restoredCount += 1;
+            });
+        } catch (error) {
+            console.warn('Não foi possível restaurar o catálogo salvo localmente.', error);
+        }
+        return restoredCount;
+    }
+
+    async function saveSheetId(sheetId) {
+        try {
+            localStorage.setItem(STORAGE_KEYS.sheetId, sheetId);
+            localStorage.setItem(SHELL_SHEET_KEY, sheetId);
+        } catch (error) {
+            console.warn('Não foi possível salvar o ID da planilha localmente.', error);
+        }
+        return true;
+    }
+
     async function trySignIn() { /* ... */ }
     function setupAuthListenerAndSignIn() { /* ... */ }
-    async function loadSavedSheetId() { /* ... */ }
+
+    function loadSavedSheetId() {
+        let savedId = null;
+        try {
+            savedId = localStorage.getItem(STORAGE_KEYS.sheetId) || localStorage.getItem(SHELL_SHEET_KEY);
+        } catch (error) {
+            console.warn('Não foi possível ler o ID da planilha salvo.', error);
+        }
+
+        if (savedId && sheetUrlInput) {
+            sheetUrlInput.value = savedId;
+        }
+        return savedId;
+    }
     
     // --- LÓGICA DO CATÁLOGO E TABELA ---
 
@@ -387,15 +454,17 @@
 
         // Simula o salvamento no banco de dados
         console.log(`[PERSISTÊNCIA SIMULADA] Salvando dados atualizados para ID: ${appId}`, app);
-        
+
         // Remove a flag de edição
         app.isEdited = false;
-        
+
         // Atualiza o tempo de última carga para indicar a mudança
         app.lastImport = new Date().toLocaleTimeString('pt-BR') + ' (Editado)';
-        
+
+        persistActiveMiniApps();
+
         statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) teve suas edições salvas com sucesso no catálogo.`;
-        
+
         // Re-renderiza para limpar o estilo de edição
         renderActiveSummary();
     }
@@ -410,11 +479,13 @@
         switch (action) {
             case 'update':
                 app.lastImport = new Date().toLocaleTimeString('pt-BR') + ' (Forçado)';
+                persistActiveMiniApps();
                 renderActiveSummary();
                 statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) forçado a atualizar (simulação).`;
                 break;
             case 'delete':
                 delete window.ACTIVE_MINIAPPS[appId];
+                persistActiveMiniApps();
                 renderActiveSummary();
                 statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) excluído da lista ativa.`;
                 break;
@@ -608,7 +679,8 @@
             return;
         }
         
-        if (firebaseInitialized) {
+        if (result.sheetId) {
+            // Persiste o ID da planilha mesmo sem Firebase para manter a experiência offline.
             saveSheetId(result.sheetId);
         }
         
@@ -638,12 +710,14 @@
                 window.ACTIVE_MINIAPPS[app.id] = {
                     ...appData,
                     // Garante que o MiniApp ativo no servidor receba a hora atual como última carga
-                    lastImport: new Date().toLocaleTimeString('pt-BR'), 
+                    lastImport: new Date().toLocaleTimeString('pt-BR'),
                     isEdited: false // Garante que a flag de edição seja limpa
                 };
             }
         });
-        
+
+        persistActiveMiniApps();
+
         // Renderiza a tabela de resumo ativa (Passo 3)
         renderActiveSummary();
 
@@ -677,9 +751,15 @@
     document.addEventListener('DOMContentLoaded', () => {
         importButton.disabled = true;
 
+        const savedSheetId = loadSavedSheetId();
+        const restoredCount = restoreActiveMiniAppsFromStorage();
+        if (!firebaseInitialized && restoredCount > 0) {
+            statusMessage.textContent = `Catálogo local restaurado (${restoredCount} MiniApps ativos).`;
+        }
+
         testButton.addEventListener('click', window.previewCatalog);
         importButton.addEventListener('click', window.importCatalog);
-        
+
         sheetUrlInput.addEventListener('input', () => {
             importButton.disabled = true;
             statusMessage.textContent = "Link/ID alterado. Clique em 'Testar e Visualizar' (Passo 2).";
@@ -691,10 +771,14 @@
         } else {
              //statusMessage.textContent = "Erro: Configuração do Firebase faltando. Persistência desativada.";
         }
-        
+
         // Renderiza as tabelas vazias no carregamento
         renderEmptyPreview();
         renderActiveSummary();
+
+        if (savedSheetId && restoredCount === 0) {
+            statusMessage.textContent = "ID da planilha recuperado. Clique em 'Testar e Visualizar' (Passo 2) para sincronizar.";
+        }
     });
     
   </script>
