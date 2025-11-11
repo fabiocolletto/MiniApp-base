@@ -39,5 +39,36 @@
   </div>
 
   <script src="js/config-source-simple.js"></script>
+  <script>
+    (function () {
+      const root = document.querySelector('.ma');
+
+      const applyTheme = (theme) => {
+        if (!root) return;
+        const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+        if (normalizedTheme === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+        } else {
+          root.removeAttribute('data-theme');
+        }
+
+        if (window.parent && typeof window.parent.postMessage === 'function') {
+          window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');
+        }
+      };
+
+      window.addEventListener('message', (event) => {
+        const { data } = event;
+        if (!data || data.action !== 'shell-theme') {
+          return;
+        }
+        applyTheme(data.theme);
+      });
+
+      if (window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'miniapp-theme-ready' }, '*');
+      }
+    }());
+  </script>
 </body>
 </html>
