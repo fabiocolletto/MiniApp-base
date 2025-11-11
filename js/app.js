@@ -59,6 +59,27 @@ function changeView(target) {
       delete element.dataset.active;
     }
   });
+
+  const isCatalogActive = target === 'catalog';
+  const isAppActive = target === 'app';
+
+  if (catalogFrame) {
+    catalogFrame.hidden = !isCatalogActive;
+    if (isCatalogActive) {
+      catalogFrame.removeAttribute('inert');
+    } else {
+      catalogFrame.setAttribute('inert', '');
+    }
+  }
+
+  if (appFrame) {
+    appFrame.hidden = !isAppActive;
+    if (isAppActive) {
+      appFrame.removeAttribute('inert');
+    } else {
+      appFrame.setAttribute('inert', '');
+    }
+  }
 }
 window.changeView = changeView;
 
