@@ -1,9 +1,38 @@
 [
   {
+    "id": "app_base",
+    "name": "MiniApp Base",
+    "description": "Ponto de partida e template para novos MiniApps.",
+    "url": "miniapp-base/index.html",
+    "icon_url": "https://placehold.co/48x48/1e3a8a/ffffff?text=B",
+    "category": "Sistema",
+    "status": "Essencial"
+  },
+  {
+    "id": "app_catalog",
+    "name": "Catálogo de MiniApps",
+    "description": "Você está aqui! Interface de navegação entre MiniApps.",
+    "url": "miniapp-catalogo/index.html",
+    "icon_url": "https://placehold.co/48x48/059669/ffffff?text=C",
+    "category": "Sistema",
+    "status": "Essencial"
+  },
+  {
+    "id": "app_manager",
+    "name": "Gestor de Catálogos (Admin)",
+    "description": "Ferramenta administrativa para importar e gerenciar o catálogo ativo.",
+    "url": "miniapp-gestor-de-catalogo/index.html",
+    "icon_url": "https://placehold.co/48x48/f97316/ffffff?text=G",
+    "category": "Sistema",
+    "status": "Essencial"
+  },
+  {
+    "id": "app_prefeito",
     "name": "MiniApp Prefeito",
     "description": "Demo de pesquisas municipais (CSV agregado).",
     "url": "miniapp-prefeito/index.html",
-    "iconSymbol": "monitoring",
-    "iconTheme": "brand"
+    "icon_url": "https://placehold.co/48x48/0ea5e9/ffffff?text=P",
+    "category": "Cidadania",
+    "status": "Disponível"
   }
 ]

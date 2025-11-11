@@ -6,7 +6,7 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 
 ## Componentes principais
 - **Shell PWA (`index.html`)** – organiza a área central em três visões: `#setup-sheet-view` (configuração da planilha), `#catalog-view` (catálogo embutido) e `#app-view` (iframe exclusivo dos MiniApps). Expõe `window.changeView('catalog'|'app')` e `window.loadMiniApp(url, metadata)` para alternar telas sem recarregar a página, além de registrar `sw.js` para operação offline.【F:index.html†L32-L66】【F:js/app.js†L20-L78】
-- **Catálogo (`miniapp-catalogo/index.html`)** – lista de miniapps que consome `catalog.json`, uma planilha pública em CSV ou o fallback embutido.
+- **Catálogo (`miniapp-catalogo/index.html`)** – lista de miniapps que consome exclusivamente `catalog.json`, arquivo estático com os metadados dos MiniApps.
 - **MiniApp Prefeito (`miniapp-prefeito/`)** – experiência padrão carregada pelo catálogo, capaz de consumir dados em JSON/CSV ou incorporar um painel externo via iframe seguro.
 - **Design System (`miniapp-base/style/styles.css`)** – CSS escopado com a classe `.ma`, responsável por reset, tokens, componentes e utilitários compartilhados.
 
@@ -24,10 +24,10 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 4. Ao concluir a importação, envie para o shell um `postMessage` com `{ action: 'load-miniapp', url: 'miniapp-catalogo/index.html', metadata }` para devolver o usuário ao catálogo público, mantendo a experiência integrada.【F:js/app.js†L323-L333】
 
 ### 2. Usar o `miniapp-catalogo` como catálogo oficial
-1. O catálogo escuta o documento `artifacts/{appId}/public/data/catalog/data` no Firestore. Certifique-se de publicar a coleção `items` com o mesmo shape que o gestor produz (ao menos `id`, `name`, `description`, `url`, `category`, `status` e `icon_url`).【F:miniapp-catalogo/index.html†L53-L181】
-2. Inclua sempre os MiniApps essenciais (base, catálogo e gestor). O listener combina o retorno do Firestore com a lista `ESSENTIAL_APPS`, evitando que a navegação seja quebrada caso o backend esteja vazio.【F:miniapp-catalogo/index.html†L63-L158】【F:miniapp-catalogo/index.html†L182-L266】
-3. Cada card publica `postMessage({ action: 'load-miniapp', url, metadata })` para o shell, que responde com `window.loadMiniApp` e alterna para `#app-view`. Garanta que as URLs sejam relativas à raiz do shell para evitar navegar fora do contêiner.【F:miniapp-catalogo/index.html†L123-L234】【F:miniapp-catalogo/index.html†L355-L375】【F:js/app.js†L51-L134】
-4. Mantenha o filtro de categorias e busca alimentado pelo array `fullCatalogData`. Caso acrescente novos campos, ajuste `populateFilters` e `applyFiltersAndRender` para refletir as propriedades que deseja expor no catálogo público.【F:miniapp-catalogo/index.html†L118-L215】
+1. O catálogo lê o arquivo estático `catalog.json` na raiz do projeto. Cada item deve conter `id`, `name`, `description`, `url`, `category`, `status` e `icon_url` para que o cartão seja renderizado corretamente.【F:miniapp-catalogo/index.html†L98-L214】
+2. Inclua sempre os MiniApps essenciais (base, catálogo e gestor) no `catalog.json` para manter a navegação completa mesmo durante testes offline.【F:catalog.json†L1-L28】【F:miniapp-catalogo/index.html†L185-L214】
+3. Cada card publica `postMessage({ action: 'load-miniapp', url, metadata })` para o shell, que responde com `window.loadMiniApp` e alterna para `#app-view`. Garanta que as URLs sejam relativas à raiz do shell para evitar navegar fora do contêiner.【F:miniapp-catalogo/index.html†L157-L214】【F:js/app.js†L51-L134】
+4. Mantenha o filtro de categorias e busca alimentado pelo array `fullCatalogData`. Caso acrescente novos campos, ajuste `populateFilters` e `applyFiltersAndRender` para refletir as propriedades que deseja expor no catálogo público.【F:miniapp-catalogo/index.html†L126-L183】
 
 ### 3. Sincronizar o ID da planilha do catálogo
 1. O shell consulta o documento `artifacts/{appId}/admin/sheet_config` no Firestore (ou o cache local) em busca do campo `GOOGLE_SHEET_ID`. Se encontrar o valor, ele aplica o ID em `window.CATALOG_GOOGLE_SHEET_ID` e restaura o último MiniApp aberto; caso contrário, exibe `#setup-sheet-view` para solicitar o ID manualmente.【F:js/app.js†L80-L172】
