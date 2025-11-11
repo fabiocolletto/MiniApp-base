@@ -53,8 +53,8 @@
     
     <!-- Cabeçalho Limpo (Apenas o Título do Catálogo) -->
     <header class="bg-white p-6 rounded-xl shadow-lg mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Seu Catálogo de MiniApps</h1>
-      <p class="text-gray-600 mb-4">Explore os aplicativos disponíveis para uso.</p>
+      <h1 id="catalogTitle" class="text-3xl font-bold text-gray-900 mb-2">Seu Catálogo de MiniApps</h1>
+      <p id="catalogSubtitle" class="text-gray-600 mb-4">Explore os aplicativos disponíveis para uso.</p>
       
       <!-- Barra de Pesquisa e Filtro (Adicionada para usabilidade) -->
       <div class="flex flex-col sm:flex-row gap-4">
@@ -65,7 +65,7 @@
             class="p-3 border border-gray-300 rounded-lg w-full sm:flex-1 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
         />
         <select id="categoryFilter" class="p-3 border border-gray-300 rounded-lg w-full sm:w-48 bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-            <option value="">Todas as Categorias</option>
+            <option value="" data-default-option>Todas as Categorias</option>
             <!-- Opções de categoria serão preenchidas via JS -->
         </select>
       </div>
@@ -94,6 +94,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { DEFAULT_LOCALE, getCatalogMessages, getDirection } from "../js/i18n.js";
 
     // Variáveis Globais para o Firebase
     let app, db, auth;
@@ -110,7 +111,19 @@
     const catalogList = document.getElementById('catalog-list');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
-    
+    const catalogTitleEl = document.getElementById('catalogTitle');
+    const catalogSubtitleEl = document.getElementById('catalogSubtitle');
+
+    let currentLocale = DEFAULT_LOCALE;
+    let catalogMessages = getCatalogMessages(currentLocale);
+    let currentStatusKey = 'initializing';
+    let currentStatusContext = {};
+    let currentStatusRaw = catalogMessages.status.initializing;
+
+    const getDefaultCategoryOption = () => (categoryFilter ? categoryFilter.querySelector('[data-default-option]') : null);
+
+    showStatus(currentStatusRaw, 'info', currentStatusKey);
+
     // Dados para uso no script
     let fullCatalogData = []; // Armazena todos os dados brutos do Firestore
     const LOCAL_STORAGE_KEYS = {
@@ -128,8 +141,51 @@
     /**
      * Exibe uma mensagem de status.
      */
-    function showStatus(message, type = 'info') {
-      statusMessage.textContent = message;
+    function formatTemplate(template, context = {}) {
+      if (typeof template !== 'string') {
+        return '';
+      }
+      return template.replace(/\{\{(.*?)\}\}/g, (_, rawKey) => {
+        const trimmed = rawKey.trim();
+        return Object.prototype.hasOwnProperty.call(context, trimmed) ? context[trimmed] : '';
+      });
+    }
+
+    function translateStatus(key, fallback = '', context = {}) {
+      const template = catalogMessages.status[key];
+      const templateContext = { ...context };
+
+      if (templateContext.reasonKey) {
+        const nestedKey = templateContext.reasonKey;
+        const nestedFallback = templateContext.reasonFallback || '';
+        const nestedContext = templateContext.reasonContext || {};
+        templateContext.reason = translateStatus(nestedKey, nestedFallback, nestedContext);
+      }
+
+      if (templateContext.extraKey) {
+        const extraKey = templateContext.extraKey;
+        const extraFallback = templateContext.extraFallback || '';
+        const extraContext = templateContext.extraContext || {};
+        templateContext.extra = translateStatus(extraKey, extraFallback, extraContext);
+      }
+
+      delete templateContext.reasonKey;
+      delete templateContext.reasonContext;
+      delete templateContext.reasonFallback;
+      delete templateContext.extraKey;
+      delete templateContext.extraContext;
+      delete templateContext.extraFallback;
+
+      if (template) {
+        return formatTemplate(template, templateContext);
+      }
+      return typeof fallback === 'string' ? fallback : '';
+    }
+
+    function showStatus(message, type = 'info', key = null, context = {}) {
+      if (!statusMessage) return;
+      const resolvedMessage = key ? translateStatus(key, message, context) : message;
+      statusMessage.textContent = resolvedMessage;
       statusMessage.className = 'mt-4 text-sm';
       switch (type) {
         case 'success':
@@ -143,6 +199,9 @@
           statusMessage.classList.add('text-gray-500');
           break;
       }
+      currentStatusKey = key;
+      currentStatusContext = key ? { ...context } : {};
+      currentStatusRaw = resolvedMessage;
     }
 
     /**
@@ -170,6 +229,7 @@
       const safeDescription = escapeHtml(appItem.description || '');
       const safeStatus = escapeHtml(appItem.status || 'Desconhecido');
       const safeUrl = escapeHtml(appItem.url || '#');
+      const openLabel = escapeHtml(catalogMessages.card.open);
 
       return `
         <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl">
@@ -192,12 +252,77 @@
               data-url="${safeUrl}"
               data-name="${safeName}"
               data-description="${safeDescription}"
+              data-open-label
             >
-              Abrir <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+              <span data-open-label-text>${openLabel}</span> <i class="fas fa-external-link-alt ml-1 text-xs"></i>
             </a>
           </div>
         </div>
       `;
+    }
+
+    function refreshCatalogCardLabels() {
+      if (!catalogList) return;
+      const labelNodes = catalogList.querySelectorAll('[data-open-label-text]');
+      labelNodes.forEach((node) => {
+        node.textContent = catalogMessages.card.open;
+      });
+    }
+
+    function renderLoadingState(force = false) {
+      if (!catalogList) return;
+      if (!force && catalogList.dataset.renderState !== 'loading') {
+        return;
+      }
+      catalogList.dataset.renderState = 'loading';
+      const loadingMessage = escapeHtml(catalogMessages.status.loading);
+      catalogList.innerHTML = `
+        <div class="col-span-full flex flex-col justify-center items-center h-40 text-gray-500">
+            <div class="loading-spinner w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin mb-3"></div>
+            ${loadingMessage}
+        </div>`;
+    }
+
+    function applyLanguage(locale, { notify = true } = {}) {
+      currentLocale = typeof locale === 'string' ? locale : DEFAULT_LOCALE;
+      catalogMessages = getCatalogMessages(currentLocale);
+      document.documentElement.lang = currentLocale;
+      document.documentElement.dir = getDirection(currentLocale);
+      document.title = catalogMessages.documentTitle;
+
+      if (catalogTitleEl) {
+        catalogTitleEl.textContent = catalogMessages.headerTitle;
+      }
+
+      if (catalogSubtitleEl) {
+        catalogSubtitleEl.textContent = catalogMessages.headerSubtitle;
+      }
+
+      if (searchBar) {
+        searchBar.placeholder = catalogMessages.searchPlaceholder;
+      }
+
+      const defaultOption = getDefaultCategoryOption();
+      if (defaultOption) {
+        defaultOption.textContent = catalogMessages.filterDefault;
+      }
+
+      if (statusMessage) {
+        if (currentStatusKey) {
+          const translated = translateStatus(currentStatusKey, currentStatusRaw, currentStatusContext);
+          statusMessage.textContent = translated;
+          currentStatusRaw = translated;
+        } else {
+          statusMessage.textContent = currentStatusRaw;
+        }
+      }
+
+      refreshCatalogCardLabels();
+      renderLoadingState(true);
+
+      if (notify && window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'miniapp-language-applied', locale: currentLocale }, '*');
+      }
     }
 
     // ----------------------------------------------------------------------
@@ -214,7 +339,8 @@
         const categories = [...new Set(data.map(app => app.category).filter(c => c))].sort();
         
         // 2. Limpa e adiciona a opção padrão
-        categoryFilter.innerHTML = '<option value="">Todas as Categorias</option>';
+        const defaultOptionLabel = escapeHtml(catalogMessages.filterDefault);
+        categoryFilter.innerHTML = `<option value="" data-default-option>${defaultOptionLabel}</option>`;
         
         // 3. Adiciona as categorias dinamicamente
         categories.forEach(category => {
@@ -234,7 +360,10 @@
      */
     function applyFiltersAndRender() {
         if (!fullCatalogData || fullCatalogData.length === 0) {
-            catalogList.innerHTML = '<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">Nenhum MiniApp no catálogo. Carregando os essenciais...</p>';
+            if (catalogList) {
+              catalogList.dataset.renderState = 'loading';
+              catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.loadingEssentials)}</p>`;
+            }
             return;
         }
 
@@ -260,10 +389,17 @@
         });
 
         if (filteredData.length === 0) {
-            catalogList.innerHTML = '<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">Nenhum MiniApp corresponde aos seus filtros de busca.</p>';
+            if (catalogList) {
+              catalogList.dataset.renderState = 'empty';
+              catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.noMatches)}</p>`;
+            }
         } else {
-            catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
+            if (catalogList) {
+              catalogList.dataset.renderState = 'ready';
+              catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
+            }
             attachMiniAppOpenHandlers();
+            refreshCatalogCardLabels();
         }
     }
 
@@ -384,9 +520,17 @@
         });
     }
 
-    async function loadLocalCatalogFallback(reason = '') {
-        if (reason) {
-            console.warn(reason);
+    async function loadLocalCatalogFallback(reasonInput = '') {
+        const reasonDetails = typeof reasonInput === 'object' && reasonInput !== null
+          ? { key: reasonInput.key || null, context: reasonInput.context || {}, fallback: reasonInput.fallback || '' }
+          : { key: null, context: {}, fallback: typeof reasonInput === 'string' ? reasonInput : '' };
+
+        const reasonMessage = reasonDetails.key
+          ? translateStatus(reasonDetails.key, reasonDetails.fallback, reasonDetails.context)
+          : reasonDetails.fallback;
+        const reasonPrefix = reasonMessage ? `${reasonMessage.trim()} ` : '';
+        if (reasonMessage) {
+            console.warn(reasonMessage);
         }
 
         const storedItems = readCatalogFromLocalStorage();
@@ -414,13 +558,56 @@
 
         const updatedCatalog = updateCatalogData(localItems);
 
-        if (storedItems.length) {
-            const extraNote = fallbackAdded > 0 ? ` + ${fallbackAdded} MiniApp(s) locais.` : '';
-            showStatus(`${reason ? reason + ' ' : ''}Catálogo importado do dispositivo (${storedItems.length} MiniApps${extraNote}).`, 'warning');
-        } else if (updatedCatalog.length > ESSENTIAL_APPS.length) {
-            showStatus(`${reason ? reason + ' ' : ''}Catálogo local carregado (${updatedCatalog.length} MiniApps).`, 'warning');
+        const extraNoteData = fallbackAdded > 0
+          ? {
+              value: translateStatus('localFallbackExtra', ` + ${fallbackAdded} MiniApp(s) locais.`, { count: fallbackAdded }),
+              key: 'localFallbackExtra',
+              context: { count: fallbackAdded },
+              fallback: ` + ${fallbackAdded} MiniApp(s) locais.`,
+            }
+          : null;
+        const extraNote = extraNoteData ? extraNoteData.value : '';
+
+        const baseContext = {
+            reason: reasonPrefix,
+            reasonKey: reasonDetails.key,
+            reasonContext: reasonDetails.context,
+            reasonFallback: reasonDetails.fallback,
+        };
+
+        if (extraNoteData) {
+            baseContext.extra = extraNoteData.value;
+            baseContext.extraKey = extraNoteData.key;
+            baseContext.extraContext = extraNoteData.context;
+            baseContext.extraFallback = extraNoteData.fallback;
         } else {
-            showStatus(`${reason ? reason + ' ' : ''}Exibindo apenas os MiniApps essenciais.`, 'warning');
+            baseContext.extra = '';
+        }
+
+        if (storedItems.length) {
+            const context = { ...baseContext, count: storedItems.length };
+            showStatus(
+              `${reasonPrefix}Catálogo importado do dispositivo (${storedItems.length} MiniApps${extraNote}).`,
+              'warning',
+              'localFallbackImported',
+              context,
+            );
+        } else if (updatedCatalog.length > ESSENTIAL_APPS.length) {
+            const context = { ...baseContext, count: updatedCatalog.length };
+            showStatus(
+              `${reasonPrefix}Catálogo local carregado (${updatedCatalog.length} MiniApps).`,
+              'warning',
+              'localFallbackLoaded',
+              context,
+            );
+        } else {
+            const context = { ...baseContext };
+            showStatus(
+              `${reasonPrefix}Exibindo apenas os MiniApps essenciais.`,
+              'warning',
+              'localFallbackEssentials',
+              context,
+            );
         }
 
         return updatedCatalog;
@@ -452,7 +639,7 @@
      */
     async function initializeFirebase() {
         if (Object.keys(firebaseConfig).length === 0) {
-            await loadLocalCatalogFallback('Configuração do Firebase ausente.');
+            await loadLocalCatalogFallback({ key: 'firebaseMissing', fallback: 'Configuração do Firebase ausente.' });
             return;
         }
 
@@ -460,7 +647,7 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            showStatus('Firebase inicializado. Autenticando...', 'info');
+            showStatus('Firebase inicializado. Autenticando...', 'info', 'firebaseInitialized');
             
             // 1. Configura o listener do Auth para monitorar mudanças (opcional)
             onAuthStateChanged(auth, (user) => {
@@ -492,12 +679,16 @@
             }
 
             // 3. Autenticação concluída: Agora que o token está definitivamente definido, anexamos o listener do Firestore.
-            showStatus('Autenticação concluída. Ouvindo catálogo...', 'info');
+            showStatus('Autenticação concluída. Ouvindo catálogo...', 'info', 'authListening');
             setupCatalogListener();
 
         } catch (error) {
             console.error("Erro ao inicializar Firebase:", error);
-            await loadLocalCatalogFallback(`Erro ao inicializar Firebase: ${error.message}.`);
+            await loadLocalCatalogFallback({
+                key: 'firebaseInitError',
+                context: { message: error.message },
+                fallback: `Erro ao inicializar Firebase: ${error.message}.`,
+            });
         }
     }
 
@@ -518,16 +709,25 @@
             }
 
             if (!fetchedData.length) {
-                await loadLocalCatalogFallback('Nenhum MiniApp publicado no catálogo remoto.');
+                await loadLocalCatalogFallback({ key: 'remoteCatalogEmpty', fallback: 'Nenhum MiniApp publicado no catálogo remoto.' });
                 return;
             }
 
             writeCatalogToLocalStorage(fetchedData);
             const updatedCatalog = updateCatalogData(fetchedData);
-            showStatus(`Catálogo carregado: ${updatedCatalog.length} MiniApps disponíveis.`, 'success');
+            showStatus(
+                `Catálogo carregado: ${updatedCatalog.length} MiniApps disponíveis.`,
+                'success',
+                'catalogLoaded',
+                { count: updatedCatalog.length },
+            );
         }, async (error) => {
             console.error("Erro no listener do catálogo:", error);
-            await loadLocalCatalogFallback(`Erro ao carregar catálogo remoto: ${error.message}.`);
+            await loadLocalCatalogFallback({
+                key: 'remoteCatalogError',
+                context: { message: error.message },
+                fallback: `Erro ao carregar catálogo remoto: ${error.message}.`,
+            });
         });
     }
 
@@ -553,15 +753,25 @@
         });
     }
 
+    window.addEventListener('message', (event) => {
+      const { data } = event;
+      if (!data || data.action !== 'shell-language') {
+        return;
+      }
+      applyLanguage(data.locale);
+    });
+
+    applyLanguage(currentLocale, { notify: false });
+
+    if (window.parent && typeof window.parent.postMessage === 'function') {
+      window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+    }
+
     // Inicia tudo
     initializeFirebase();
 
     // Mostra o spinner inicial antes de o Firestore carregar os dados
-    catalogList.innerHTML = `
-        <div class="col-span-full flex flex-col justify-center items-center h-40 text-gray-500">
-            <div class="loading-spinner w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin mb-3"></div>
-            Carregando catálogo...
-        </div>`;
+    renderLoadingState(true);
   </script>
   <script>
     (function () {

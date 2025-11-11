@@ -102,6 +102,7 @@
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { DEFAULT_LOCALE, getDirection, getManagerMessages } from "../js/i18n.js";
 
     setLogLevel('Debug');
 
@@ -144,17 +145,201 @@
     
     // Referências de UI
     const statusMessage = document.getElementById('status-message');
-    const configFormContainer = document.getElementById('config-form-container'); 
-    const configStatusBar = document.getElementById('config-status-bar'); 
+    const managerHeading = document.getElementById('managerHeading');
+    const managerTitleSpan = managerHeading ? managerHeading.querySelector('[data-manager-title]') : null;
+    const managerBadge = document.getElementById('managerBadge');
+    const managerSubtitle = document.getElementById('managerSubtitle');
+    const configFormContainer = document.getElementById('config-form-container');
+    const configStatusBar = document.getElementById('config-status-bar');
     const previewContainer = document.getElementById('preview-data-container');
     const summaryContainer = document.getElementById('loaded-summary-container');
     const sheetUrlInput = document.getElementById('sheetUrlInput');
     const importButton = document.getElementById('importCatalogButton');
     const testButton = document.getElementById('testSheetButton');
+
+    let currentLocale = DEFAULT_LOCALE;
+    let managerMessages = getManagerMessages(currentLocale);
+    let currentStatusKey = 'initializing';
+    let currentStatusRaw = managerMessages.status.initializing;
+    let currentStatusContext = {};
+    let statusObserver;
+    let suppressStatusObserver = false;
+    let currentPanelKey = null;
+    let currentPanelContext = {};
+    let currentPanelFallbackHtml = '';
+    let currentPanelSummaryFallback = '';
+
+    if (statusMessage) {
+      statusObserver = new MutationObserver(() => {
+        if (suppressStatusObserver) return;
+        currentStatusRaw = statusMessage.textContent;
+        currentStatusKey = null;
+        currentStatusContext = {};
+      });
+      statusObserver.observe(statusMessage, { characterData: true, childList: true, subtree: true });
+    }
     
     // --- FUNÇÕES DE PERSISTÊNCIA (fallback local) ---
     const DOCUMENT_ID = 'sheet_config';
     function getUserSettingsRef() { /* ... */ return null; }
+
+    function formatTemplate(template, context = {}) {
+        if (typeof template !== 'string') {
+            return '';
+        }
+        return template.replace(/\{\{(.*?)\}\}/g, (_, rawKey) => {
+            const trimmed = rawKey.trim();
+            return Object.prototype.hasOwnProperty.call(context, trimmed) ? context[trimmed] : '';
+        });
+    }
+
+    function enhanceContextForKey(key, context = {}) {
+        if (!key) {
+            return { ...context };
+        }
+
+        const enhanced = { ...context };
+
+        if (key === 'linkChanged' || key === 'sheetRestored') {
+            const stepKey = enhanced.stepKey || 'preview';
+            const stepInfo = managerMessages.steps?.[stepKey] || {};
+            enhanced.stepLabel = stepInfo.shortLabel || enhanced.stepLabel || 'Testar e Visualizar';
+            enhanced.stepNumber = stepInfo.number || enhanced.stepNumber || '2';
+        }
+
+        if (key === 'importSummary') {
+            enhanced.sectionNumber = enhanced.sectionNumber || '3';
+        }
+
+        return enhanced;
+    }
+
+    function setStatus(key, fallbackMessage, context = {}) {
+        if (!statusMessage) return;
+        suppressStatusObserver = true;
+        const effectiveContext = enhanceContextForKey(key, context);
+        const template = key ? managerMessages.status[key] : null;
+        const resolved = template ? formatTemplate(template, effectiveContext) : fallbackMessage;
+        statusMessage.textContent = resolved;
+        currentStatusKey = key;
+        currentStatusContext = key ? { ...context } : {};
+        currentStatusRaw = resolved;
+        queueMicrotask(() => {
+            suppressStatusObserver = false;
+        });
+    }
+
+    setStatus('initializing', managerMessages.status.initializing);
+
+    function clearConfigPanel() {
+        currentPanelKey = null;
+        currentPanelContext = {};
+        currentPanelFallbackHtml = '';
+        currentPanelSummaryFallback = '';
+        if (configStatusBar) {
+            configStatusBar.innerHTML = '';
+        }
+    }
+
+    function renderConfigPanel() {
+        if (!configStatusBar) return;
+
+        if (!currentPanelKey) {
+            configStatusBar.innerHTML = '';
+            return;
+        }
+
+        if (currentPanelKey === 'importSummary') {
+            const panelMessages = managerMessages.panel?.importSummary;
+            if (panelMessages) {
+                const panelContext = enhanceContextForKey(currentPanelKey, currentPanelContext);
+                const summaryTemplate = managerMessages.status?.importSummary;
+                const summaryMessage = summaryTemplate
+                    ? formatTemplate(summaryTemplate, panelContext)
+                    : currentPanelSummaryFallback;
+                const title = panelMessages.title || '';
+                const descriptionTemplate = panelMessages.description || '{{summary}}';
+                const description = formatTemplate(descriptionTemplate, {
+                    ...panelContext,
+                    summary: summaryMessage,
+                });
+                const reopenLabel = panelMessages.reopen || '';
+                configStatusBar.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-md shadow-md flex-grow" role="alert">
+                    <p class="font-bold">${title}</p>
+                    <p class="text-sm">${description}</p>
+                </div>
+                <button id="showConfigButton" class="ml-4 mt-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out whitespace-nowrap">
+                    ${reopenLabel}
+                </button>
+            </div>
+        `;
+            } else {
+                configStatusBar.innerHTML = currentPanelFallbackHtml;
+            }
+        } else {
+            configStatusBar.innerHTML = currentPanelFallbackHtml;
+        }
+
+        const reopenButton = document.getElementById('showConfigButton');
+        if (reopenButton) {
+            reopenButton.addEventListener('click', () => {
+                configFormContainer.classList.remove('hidden-form');
+                clearConfigPanel();
+            });
+        }
+    }
+
+    function updateConfigPanel(key, fallbackHtml = '', context = {}, options = {}) {
+        currentPanelKey = key;
+        currentPanelContext = { ...context };
+        currentPanelFallbackHtml = fallbackHtml;
+        currentPanelSummaryFallback = options.summaryFallback || '';
+        renderConfigPanel();
+    }
+
+    function applyLanguage(locale, { notify = true } = {}) {
+        currentLocale = typeof locale === 'string' ? locale : DEFAULT_LOCALE;
+        managerMessages = getManagerMessages(currentLocale);
+        document.documentElement.lang = currentLocale;
+        document.documentElement.dir = getDirection(currentLocale);
+        document.title = managerMessages.documentTitle;
+
+        if (managerTitleSpan) {
+            managerTitleSpan.textContent = managerMessages.headerTitle;
+        }
+
+        if (managerBadge) {
+            managerBadge.textContent = `(${managerMessages.badge})`;
+        }
+
+        if (managerSubtitle) {
+            managerSubtitle.textContent = managerMessages.headerSubtitle;
+        }
+
+        if (statusMessage) {
+            suppressStatusObserver = true;
+            if (currentStatusKey && managerMessages.status[currentStatusKey]) {
+                const template = managerMessages.status[currentStatusKey];
+                const localizedContext = enhanceContextForKey(currentStatusKey, currentStatusContext);
+                const translated = formatTemplate(template, localizedContext);
+                statusMessage.textContent = translated;
+                currentStatusRaw = translated;
+            } else {
+                statusMessage.textContent = currentStatusRaw;
+            }
+            queueMicrotask(() => {
+                suppressStatusObserver = false;
+            });
+        }
+
+        renderConfigPanel();
+
+        if (notify && window.parent && typeof window.parent.postMessage === 'function') {
+            window.parent.postMessage({ action: 'miniapp-language-applied', locale: currentLocale }, '*');
+        }
+    }
 
     function persistActiveMiniApps() {
         try {
@@ -486,7 +671,10 @@
 
         persistActiveMiniApps();
 
-        statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) teve suas edições salvas com sucesso no catálogo.`;
+        setStatus('miniappSaveSuccess', `MiniApp "${app.name}" (ID: ${appId}) teve suas edições salvas com sucesso no catálogo.`, {
+            name: app.name,
+            id: appId,
+        });
 
         // Re-renderiza para limpar o estilo de edição
         renderActiveSummary();
@@ -504,13 +692,19 @@
                 app.lastImport = new Date().toLocaleTimeString('pt-BR') + ' (Forçado)';
                 persistActiveMiniApps();
                 renderActiveSummary();
-                statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) forçado a atualizar (simulação).`;
+                setStatus('miniappForceUpdate', `MiniApp "${app.name}" (ID: ${appId}) forçado a atualizar (simulação).`, {
+                    name: app.name,
+                    id: appId,
+                });
                 break;
             case 'delete':
                 delete window.ACTIVE_MINIAPPS[appId];
                 persistActiveMiniApps();
                 renderActiveSummary();
-                statusMessage.textContent = `MiniApp "${app.name}" (ID: ${appId}) excluído da lista ativa.`;
+                setStatus('miniappRemoved', `MiniApp "${app.name}" (ID: ${appId}) excluído da lista ativa.`, {
+                    name: app.name,
+                    id: appId,
+                });
                 break;
             default:
                 console.warn(`Ação desconhecida: ${action}`);
@@ -646,14 +840,14 @@
         importButton.disabled = true;
 
         if (!result) {
-            statusMessage.textContent = "Erro: URL ou ID da Planilha inválido. Verifique o formato.";
+            setStatus('invalidSheet', 'Erro: URL ou ID da Planilha inválido. Verifique o formato.');
             renderEmptyPreview();
             return;
         }
 
         const { sheetId, csvUrl } = result;
         const gid = result.csvUrl.match(/[?&]gid=(\d+)/)?.[1] || '0';
-        statusMessage.textContent = `Buscando dados da planilha do ID: ${sheetId} (GID: ${gid})...`;
+        setStatus('fetchingSheet', `Buscando dados da planilha do ID: ${sheetId} (GID: ${gid})...`, { sheetId, gid });
         
         try {
             const response = await fetch(csvUrl, { method: 'GET', mode: 'cors', cache: 'no-cache', credentials: 'omit' }); 
@@ -670,7 +864,10 @@
             window.CATALOG_PREVIEW_DATA = allData;
             
             if (allData.length === 0) {
-                 statusMessage.textContent = "Planilha encontrada, mas sem MiniApps válidos (verifique se as colunas 'id' e 'name' existem).";
+                setStatus(
+                    'noValidMiniapps',
+                    "Planilha encontrada, mas sem MiniApps válidos (verifique se as colunas 'id' e 'name' existem).",
+                );
                  renderEmptyPreview();
                  return;
             }
@@ -678,12 +875,20 @@
             // Renderiza a nova tabela com checkboxes
             renderPreviewSelection(allData);
             
-            statusMessage.textContent = `Pré-visualização OK! ${allData.length} MiniApps encontrados. Selecione os itens e clique em "Importar e Carregar".`;
+            setStatus(
+                'previewReady',
+                `Pré-visualização OK! ${allData.length} MiniApps encontrados. Selecione os itens e clique em "Importar e Carregar".`,
+                { count: allData.length },
+            );
             importButton.disabled = false; 
 
         } catch (error) {
             console.error("Erro ao pré-visualizar o catálogo:", error);
-            statusMessage.textContent = `Erro ao carregar: Verifique o link/ID e o status de compartilhamento. O erro foi: ${error.message}`;
+            setStatus(
+                'loadError',
+                `Erro ao carregar: Verifique o link/ID e o status de compartilhamento. O erro foi: ${error.message}`,
+                { message: error.message },
+            );
             importButton.disabled = true;
             renderEmptyPreview();
         }
@@ -698,7 +903,10 @@
         const newData = window.CATALOG_PREVIEW_DATA.filter(app => app.selected);
 
         if (!result || newData.length === 0) {
-            statusMessage.textContent = "Erro: Nenhum MiniApp selecionado para importar. Primeiro, clique em 'Testar e Visualizar' com um link válido e selecione os MiniApps.";
+        setStatus(
+            'noSelection',
+            "Erro: Nenhum MiniApp selecionado para importar. Primeiro, clique em 'Testar e Visualizar' com um link válido e selecione os MiniApps.",
+        );
             return;
         }
         
@@ -712,7 +920,7 @@
         
         // Limpa a pré-visualização (Passo 2)
         renderEmptyPreview();
-        statusMessage.textContent = "Importando e Mesclando MiniApps Ativos...";
+    setStatus('importing', 'Importando e Mesclando MiniApps Ativos...');
         
         let newAppsCount = 0;
         let updateAppsCount = 0;
@@ -746,9 +954,14 @@
 
         const totalApps = Object.keys(window.ACTIVE_MINIAPPS).length;
         const successMessage = `Importação Completa! ${newAppsCount} novos MiniApps adicionados e ${updateAppsCount} atualizados (de ${newData.length} selecionados). Total ativo: ${totalApps}.`;
-        
-        // Atualiza a barra de status com a mensagem de sucesso e o botão de reabrir
-        configStatusBar.innerHTML = `
+        const summaryContext = {
+            newCount: newAppsCount,
+            updatedCount: updateAppsCount,
+            selectedCount: newData.length,
+            totalCount: totalApps,
+            sectionNumber: '3',
+        };
+        const fallbackPanelHtml = `
             <div class="flex justify-between items-start">
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-md shadow-md flex-grow" role="alert">
                     <p class="font-bold">Configuração Finalizada!</p>
@@ -759,17 +972,28 @@
                 </button>
             </div>
         `;
-        
-        document.getElementById('showConfigButton').addEventListener('click', () => {
-            configFormContainer.classList.remove('hidden-form');
-            configStatusBar.innerHTML = '';
-        });
-        
-        statusMessage.textContent = successMessage;
+
+        setStatus('importSummary', successMessage, summaryContext);
+        updateConfigPanel('importSummary', fallbackPanelHtml, summaryContext, { summaryFallback: successMessage });
+
         testButton.disabled = false;
         importButton.disabled = true; // Desabilita até que um novo teste seja feito
     }
     
+    window.addEventListener('message', (event) => {
+        const { data } = event;
+        if (!data || data.action !== 'shell-language') {
+            return;
+        }
+        applyLanguage(data.locale);
+    });
+
+    applyLanguage(currentLocale, { notify: false });
+
+    if (window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+    }
+
     // --- INICIALIZAÇÃO E LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
         importButton.disabled = true;
@@ -777,7 +1001,11 @@
         const savedSheetId = loadSavedSheetId();
         const restoredCount = restoreActiveMiniAppsFromStorage();
         if (!firebaseInitialized && restoredCount > 0) {
-            statusMessage.textContent = `Catálogo local restaurado (${restoredCount} MiniApps ativos).`;
+            setStatus(
+                'localRestored',
+                `Catálogo local restaurado (${restoredCount} MiniApps ativos).`,
+                { count: restoredCount },
+            );
         }
 
         testButton.addEventListener('click', window.previewCatalog);
@@ -785,7 +1013,15 @@
 
         sheetUrlInput.addEventListener('input', () => {
             importButton.disabled = true;
-            statusMessage.textContent = "Link/ID alterado. Clique em 'Testar e Visualizar' (Passo 2).";
+            const previewStep = managerMessages.steps?.preview || {};
+            const stepLabel = previewStep.shortLabel || 'Testar e Visualizar';
+            const stepNumber = previewStep.number || '2';
+            setStatus(
+                'linkChanged',
+                "Link/ID alterado. Clique em 'Testar e Visualizar' (Passo 2).",
+                { stepKey: 'preview', stepLabel, stepNumber },
+            );
+            clearConfigPanel();
             renderEmptyPreview(); // Garante que a seção 2 volte ao estado inicial
         });
         
@@ -800,7 +1036,14 @@
         renderActiveSummary();
 
         if (savedSheetId && restoredCount === 0) {
-            statusMessage.textContent = "ID da planilha recuperado. Clique em 'Testar e Visualizar' (Passo 2) para sincronizar.";
+            const previewStep = managerMessages.steps?.preview || {};
+            const stepLabel = previewStep.shortLabel || 'Testar e Visualizar';
+            const stepNumber = previewStep.number || '2';
+            setStatus(
+                'sheetRestored',
+                "ID da planilha recuperado. Clique em 'Testar e Visualizar' (Passo 2) para sincronizar.",
+                { stepKey: 'preview', stepLabel, stepNumber },
+            );
         }
     });
     
@@ -812,7 +1055,11 @@
     <div class="wrap p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       
       <!-- NOVO TÍTULO ADMINISTRATIVO NO TOPO -->
-      <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">Gestor de Catálogo de MiniApps <span class="text-lg font-normal text-red-500">(Acesso Admin)</span></h1>
+      <h1 id="managerHeading" class="text-3xl font-bold mb-4 text-gray-800">
+        <span data-manager-title>Gestor de Catálogo de MiniApps</span>
+        <span id="managerBadge" class="text-lg font-normal text-red-500 ml-2">(Acesso Admin)</span>
+      </h1>
+      <p id="managerSubtitle" class="text-gray-600 mb-6">Ferramenta completa para importar, validar e publicar o catálogo de MiniApps para todos os usuários.</p>
       
       <!-- Seção de Configuração da Planilha - Passo 1 -->
       <header id="config-header" class="bg-white shadow-md p-4 mb-8 rounded-lg">

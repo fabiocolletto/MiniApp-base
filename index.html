@@ -27,6 +27,9 @@
         </div>
         <div class="cluster" style="margin-left:auto">
           <button id="openCatalog" class="btn btn--ghost" type="button" title="Abrir catálogo">Catálogo</button>
+          <button id="languageToggle" class="btn btn--ghost" type="button" aria-haspopup="true" aria-expanded="false" title="Alterar idioma">
+            <span data-language-toggle-label>Português</span>
+          </button>
           <button id="themeToggle" class="btn btn--ghost" type="button" aria-pressed="false" title="Ativar tema escuro">
             <span data-theme-toggle-label>Ativar tema escuro</span>
           </button>
@@ -38,14 +41,14 @@
             <div class="surface stack app-view__card" role="region" aria-labelledby="sheet-setup-title">
               <header class="stack">
                 <h2 id="sheet-setup-title">Configurar planilha do catálogo</h2>
-                <p class="support-text" data-tone="info">
+                <p class="support-text" data-tone="info" data-sheet-instructions>
                   Informe o ID da planilha do Google Sheets que centraliza os MiniApps. Use o trecho entre
                   <code>/d/</code> e <code>/edit</code> da URL compartilhada.
                 </p>
               </header>
               <form id="sheet-config-form" class="stack" autocomplete="off">
                 <label class="form-field" for="sheetIdInput">
-                  <span class="form-label">ID da planilha</span>
+                  <span class="form-label" data-sheet-label>ID da planilha</span>
                   <input id="sheetIdInput" name="sheetId" type="text" class="input" placeholder="1A2B3C…" required />
                 </label>
                 <div class="form-actions">

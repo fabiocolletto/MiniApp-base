@@ -1,8 +1,8 @@
-const CACHE = 'miniapp-shell-v3-demo';
+const CACHE = 'miniapp-shell-v4-demo';
 
 const PRECACHE = [
   '/', '/index.html', '/manifest.webmanifest',
-  '/catalog.json', '/js/app.js', '/js/catalog.js',
+  '/catalog.json', '/js/app.js', '/js/catalog.js', '/js/i18n.js',
   '/miniapp-base/style/styles.css',
   '/miniapp-catalogo/index.html',
   '/miniapp-prefeito/index.html',
