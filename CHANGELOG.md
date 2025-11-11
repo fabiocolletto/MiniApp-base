@@ -1,5 +1,14 @@
 # Changelog
 
+## [2025-11-17] Internacionalização do catálogo estático
+### Adicionado
+- Campos `category_key`, `status_key` e o bloco `translations` nos itens do `catalog.json`, preparando dados padronizados para filtros e rótulos localizados.【F:catalog.json†L2-L53】
+- Mapa `catalog.card.statusByKey` em `js/i18n.js` para traduzir estados conhecidos independentemente do idioma do item.【F:js/i18n.js†L5-L88】
+### Alterado
+- `miniapp-catalogo/index.html` agora preserva as traduções dos itens, aplica filtros por `category_key`, escolhe os rótulos pela localidade atual e mantém classes visuais consistentes por `status_key`.【F:miniapp-catalogo/index.html†L150-L298】
+### Documentação
+- README principal e `miniapp-catalogo/README.md` atualizados com o fluxo de internacionalização e passos para cadastrar novos idiomas ou MiniApps traduzidos.【F:README.md†L26-L55】【F:miniapp-catalogo/README.md†L4-L18】
+
 ## [2025-11-16] Catálogo estático em `catalog.json`
 ### Alterado
 - Catálogo público passa a consumir apenas o arquivo estático `catalog.json`, removendo integração com Firebase e dependências de cache local.【F:miniapp-catalogo/index.html†L98-L214】

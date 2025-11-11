@@ -157,17 +157,96 @@
       })[char]);
     }
 
+    const STATUS_CLASS_MAP = {
+      essential: 'bg-indigo-100 text-indigo-800',
+      available: 'bg-green-100 text-green-800',
+      beta: 'bg-yellow-100 text-yellow-800',
+      maintenance: 'bg-yellow-100 text-yellow-800',
+      deprecated: 'bg-red-100 text-red-800',
+    };
+
+    const DEFAULT_STATUS_CLASS = 'bg-blue-100 text-blue-800';
+
+    function getStatusClass(statusKey) {
+      if (typeof statusKey !== 'string' || !statusKey.trim()) {
+        return DEFAULT_STATUS_CLASS;
+      }
+      return STATUS_CLASS_MAP[statusKey.trim()] || DEFAULT_STATUS_CLASS;
+    }
+
+    function slugifyKey(value) {
+      if (typeof value !== 'string') {
+        return '';
+      }
+      return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        || '';
+    }
+
+    function normalizeTranslations(raw) {
+      if (typeof raw !== 'object' || raw === null) {
+        return {};
+      }
+      const sanitized = {};
+      Object.entries(raw).forEach(([locale, fields]) => {
+        if (typeof fields !== 'object' || fields === null) {
+          return;
+        }
+        const normalizedFields = {};
+        ['name', 'description', 'category', 'status'].forEach((field) => {
+          if (typeof fields[field] === 'string' && fields[field].trim()) {
+            normalizedFields[field] = fields[field].trim();
+          }
+        });
+        if (Object.keys(normalizedFields).length > 0) {
+          sanitized[locale] = normalizedFields;
+        }
+      });
+      return sanitized;
+    }
+
+    function getLocalizedCatalogEntry(appItem, locale, messages = catalogMessages) {
+      const base = {
+        name: typeof appItem.name === 'string' ? appItem.name : '',
+        description: typeof appItem.description === 'string' ? appItem.description : '',
+        category: typeof appItem.category === 'string' ? appItem.category : '',
+        status: typeof appItem.status === 'string' ? appItem.status : '',
+      };
+
+      if (typeof appItem.translations === 'object' && appItem.translations !== null) {
+        const localized = appItem.translations[locale];
+        if (typeof localized === 'object' && localized !== null) {
+          ['name', 'description', 'category', 'status'].forEach((field) => {
+            if (typeof localized[field] === 'string' && localized[field].trim()) {
+              base[field] = localized[field].trim();
+            }
+          });
+        }
+      }
+
+      if ((!base.status || !base.status.trim()) && appItem.statusKey && messages?.card?.statusByKey) {
+        const fallbackStatus = messages.card.statusByKey[appItem.statusKey];
+        if (typeof fallbackStatus === 'string' && fallbackStatus.trim()) {
+          base.status = fallbackStatus.trim();
+        }
+      }
+
+      return base;
+    }
+
     function createCatalogCard(appItem) {
       const iconUrl = appItem.icon_url || 'https://placehold.co/48x48/cccccc/666666?text=APP';
-      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800'
-        : appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800'
-        : appItem.status === 'Essencial' ? 'bg-indigo-100 text-indigo-800'
-        : 'bg-blue-100 text-blue-800';
+      const localized = getLocalizedCatalogEntry(appItem, currentLocale);
+      const statusClass = getStatusClass(appItem.statusKey);
 
-      const safeName = escapeHtml(appItem.name || 'MiniApp');
-      const safeCategory = escapeHtml(appItem.category || 'Geral');
-      const safeDescription = escapeHtml(appItem.description || '');
-      const safeStatus = escapeHtml(appItem.status || 'Desconhecido');
+      const safeName = escapeHtml(localized.name || 'MiniApp');
+      const safeCategory = escapeHtml(localized.category || appItem.category || 'Geral');
+      const safeDescription = escapeHtml(localized.description || appItem.description || '');
+      const safeStatus = escapeHtml(localized.status || appItem.status || 'Desconhecido');
       const safeUrl = escapeHtml(appItem.url || '#');
       const openLabel = escapeHtml(catalogMessages.card.open);
 
@@ -225,15 +304,33 @@
 
     function populateFilters(data) {
       if (!categoryFilter) return;
-      const categories = [...new Set(data.map((app) => app.category).filter(Boolean))].sort();
+      const categories = new Map();
+      data.forEach((app) => {
+        if (!app || !app.categoryKey) {
+          return;
+        }
+        if (!categories.has(app.categoryKey)) {
+          const localized = getLocalizedCatalogEntry(app, currentLocale);
+          const label = localized.category || app.category || app.categoryKey;
+          categories.set(app.categoryKey, label);
+        }
+      });
       const defaultOptionLabel = escapeHtml(catalogMessages.filterDefault);
       categoryFilter.innerHTML = `<option value="" data-default-option>${defaultOptionLabel}</option>`;
-      categories.forEach((category) => {
+      const sortedCategories = [...categories.entries()].sort((a, b) => {
+        const labelA = (a[1] || '').toString();
+        const labelB = (b[1] || '').toString();
+        return labelA.localeCompare(labelB, currentLocale);
+      });
+      sortedCategories.forEach(([key, label]) => {
         const option = document.createElement('option');
-        option.value = category;
-        option.textContent = category;
+        option.value = key;
+        option.textContent = label;
         categoryFilter.appendChild(option);
       });
+      if (filterOptions.category && !categories.has(filterOptions.category)) {
+        filterOptions.category = '';
+      }
       categoryFilter.value = filterOptions.category;
     }
 
@@ -246,22 +343,35 @@
         return;
       }
 
-      const searchText = filterOptions.searchText.toLowerCase();
+      const searchText = filterOptions.searchText.toLocaleLowerCase(currentLocale);
       const selectedCategory = filterOptions.category;
 
       const filteredData = fullCatalogData.filter((app, index) => {
-        const rawName = typeof app.name === 'string' ? app.name : '';
-        const safeName = rawName || `MiniApp ${index + 1}`;
-        const rawDescription = typeof app.description === 'string' ? app.description : '';
-        const rawCategory = typeof app.category === 'string' ? app.category : '';
+        const matchesCategory = !selectedCategory || app.categoryKey === selectedCategory;
+        if (!matchesCategory) {
+          return false;
+        }
 
-        const matchesCategory = !selectedCategory || rawCategory === selectedCategory;
-        const matchesSearch = !searchText
-          || safeName.toLowerCase().includes(searchText)
-          || rawDescription.toLowerCase().includes(searchText)
-          || rawCategory.toLowerCase().includes(searchText);
+        if (!searchText) {
+          return true;
+        }
 
-        return matchesCategory && matchesSearch;
+        const localized = getLocalizedCatalogEntry(app, currentLocale);
+        const fallbackName = typeof app.name === 'string' && app.name.trim()
+          ? app.name
+          : `MiniApp ${index + 1}`;
+        const tokens = [
+          localized.name,
+          localized.description,
+          localized.category,
+          typeof app.name === 'string' ? app.name : '',
+          typeof app.description === 'string' ? app.description : '',
+          typeof app.category === 'string' ? app.category : '',
+          fallbackName,
+        ];
+
+        return tokens.some((value) => typeof value === 'string'
+          && value.toLocaleLowerCase(currentLocale).includes(searchText));
       });
 
       if (filteredData.length === 0) {
@@ -312,6 +422,13 @@
       const status = typeof item.status === 'string' && item.status.trim() ? item.status.trim() : 'Disponível';
       const icon_url = typeof item.icon_url === 'string' && item.icon_url.trim() ? item.icon_url.trim() : null;
       const url = typeof item.url === 'string' && item.url.trim() ? item.url.trim() : null;
+      const categoryKey = typeof item.category_key === 'string' && item.category_key.trim()
+        ? item.category_key.trim()
+        : slugifyKey(category);
+      const statusKey = typeof item.status_key === 'string' && item.status_key.trim()
+        ? item.status_key.trim()
+        : slugifyKey(status);
+      const translations = normalizeTranslations(item.translations);
 
       if (!url) {
         return null;
@@ -325,6 +442,9 @@
         status,
         icon_url,
         url,
+        categoryKey,
+        statusKey,
+        translations,
       };
     }
 

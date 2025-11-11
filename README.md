@@ -24,10 +24,20 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 4. Ao concluir a importação, envie para o shell um `postMessage` com `{ action: 'load-miniapp', url: 'miniapp-catalogo/index.html', metadata }` para devolver o usuário ao catálogo público, mantendo a experiência integrada.【F:js/app.js†L323-L333】
 
 ### 2. Usar o `miniapp-catalogo` como catálogo oficial
-1. O catálogo lê o arquivo estático `catalog.json` na raiz do projeto. Cada item deve conter `id`, `name`, `description`, `url`, `category`, `status` e `icon_url` para que o cartão seja renderizado corretamente.【F:miniapp-catalogo/index.html†L98-L214】
-2. Inclua sempre os MiniApps essenciais (base, catálogo e gestor) no `catalog.json` para manter a navegação completa mesmo durante testes offline.【F:catalog.json†L1-L28】【F:miniapp-catalogo/index.html†L185-L214】
+1. O catálogo lê o arquivo estático `catalog.json` na raiz do projeto. Cada item deve conter `id`, `name`, `description`, `url`, `icon_url`, além dos metadados `category`, `category_key`, `status`, `status_key` e, quando disponível, o bloco `translations` com textos localizados por idioma.【F:catalog.json†L2-L53】【F:miniapp-catalogo/index.html†L150-L215】
+2. Inclua sempre os MiniApps essenciais (base, catálogo e gestor) no `catalog.json` para manter a navegação completa mesmo durante testes offline.【F:catalog.json†L1-L53】【F:miniapp-catalogo/index.html†L185-L214】
 3. Cada card publica `postMessage({ action: 'load-miniapp', url, metadata })` para o shell, que responde com `window.loadMiniApp` e alterna para `#app-view`. Garanta que as URLs sejam relativas à raiz do shell para evitar navegar fora do contêiner.【F:miniapp-catalogo/index.html†L157-L214】【F:js/app.js†L51-L134】
-4. Mantenha o filtro de categorias e busca alimentado pelo array `fullCatalogData`. Caso acrescente novos campos, ajuste `populateFilters` e `applyFiltersAndRender` para refletir as propriedades que deseja expor no catálogo público.【F:miniapp-catalogo/index.html†L126-L183】
+4. Mantenha o filtro de categorias e busca alimentado pelo array `fullCatalogData`. Caso acrescente novos campos, ajuste `populateFilters` e `applyFiltersAndRender` para refletir as propriedades que deseja expor no catálogo público.【F:miniapp-catalogo/index.html†L229-L298】
+
+#### Internacionalização do catálogo
+
+- Os idiomas disponíveis são definidos em `js/i18n.js`. Ao adicionar um novo locale, inclua a sigla em `AVAILABLE_LOCALES`, descreva metadados (`meta.direction`, `languageNames`) e traduções de interface (`catalog`, `shell`, `manager`). Garanta também um mapa `catalog.card.statusByKey` cobrindo os `status_key` usados no catálogo.【F:js/i18n.js†L1-L122】
+- Cada item do `catalog.json` pode expor traduções específicas em `translations[locale]` para `name`, `description`, `category` e `status`. Quando um idioma não estiver definido no item, o catálogo recorre ao texto padrão ou ao fallback por `status_key`, garantindo consistência visual ao alternar o idioma no shell.【F:catalog.json†L2-L53】【F:miniapp-catalogo/index.html†L150-L298】
+- Para incluir um novo MiniApp ou idioma:
+  1. Preencha os campos padrão (`name`, `description`, `category`, `status`) em português.
+  2. Defina `category_key` e `status_key` com identificadores estáveis em inglês (ex.: `system`, `essential`). Evite acentos ou espaços para manter compatibilidade com filtros e estilos.【F:catalog.json†L5-L52】
+  3. Adicione as traduções em `translations['novo-locale']` e, se necessário, complemente o mapa `statusByKey` no arquivo de i18n.
+  4. Valide no shell alternando o idioma pelo botão de tradução e confirmando a renderização dos cards, filtros e metadados enviados via `postMessage`.
 
 ### 3. Sincronizar o ID da planilha do catálogo
 1. O shell consulta o documento `artifacts/{appId}/admin/sheet_config` no Firestore (ou o cache local) em busca do campo `GOOGLE_SHEET_ID`. Se encontrar o valor, ele aplica o ID em `window.CATALOG_GOOGLE_SHEET_ID` e restaura o último MiniApp aberto; caso contrário, exibe `#setup-sheet-view` para solicitar o ID manualmente.【F:js/app.js†L80-L172】
