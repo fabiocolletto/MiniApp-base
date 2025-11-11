@@ -123,6 +123,9 @@
     background: var(--ma-bg);
     box-shadow: 0 1px 0 var(--ma-border);
   }
+  .ma .app-header__branding { gap: var(--ma-sp-3); }
+  .ma .app-header__actions { margin-left: auto; }
+  .ma .app-logo { height: 32px; width: auto; }
   .ma main {
     display: flex;
     flex-direction: column;
@@ -254,6 +257,13 @@
 @media (max-width: 480px) {
   .ma .wrap { padding: 12px; }
   .ma h1 { font-size: clamp(20px, 6vw, 28px); }
+  .ma .app-header { flex-direction: column; align-items: flex-start; gap: var(--ma-sp-2); }
+  .ma .app-header__branding { width: 100%; align-items: flex-start; gap: var(--ma-sp-2); }
+  .ma .app-header__actions { margin-left: 0; width: 100%; justify-content: flex-start; }
+  .ma .app-logo { height: 28px; }
+  .ma .app-view__card { width: 100%; padding: var(--ma-sp-4); gap: var(--ma-sp-3); }
+  .ma .form-actions { flex-direction: column; align-items: stretch; width: 100%; }
+  .ma .form-actions .btn { width: 100%; justify-content: center; }
 }
 @media (width >= 640px){ .ma .wrap{ padding: var(--ma-sp-6); } }
 @media (width >= 1024px){ .ma .container{ width: min(1280px, 100% - 2*var(--ma-sp-6)); } }
