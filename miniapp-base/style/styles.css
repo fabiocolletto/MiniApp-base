@@ -131,6 +131,11 @@
     min-height: 0;                  /* permite o main encolher sem empurrar o footer */
   }
   .ma .app-panel { width: 100%; height: 100%; border: 0; display: block; }
+  .ma .app-view { min-height: 100%; display: flex; }
+  .ma .app-view .app-panel { flex: 1 1 auto; }
+  .ma .app-view--centered { align-items: center; justify-content: center; }
+  .ma .app-view__wrap { width: 100%; display: flex; justify-content: center; }
+  .ma .app-view__card { width: min(520px, 100%); padding: var(--ma-sp-5); gap: var(--ma-sp-4); }
   .ma .app-footer {
     position: sticky; bottom: 0;
     padding: var(--ma-sp-3) var(--ma-sp-4);
@@ -160,6 +165,29 @@
   .ma .card__header { padding: var(--ma-sp-4); border-bottom:1px solid var(--ma-border); font-weight:700; }
   .ma .card__body { padding: var(--ma-sp-4); }
   .ma .card__footer { padding: var(--ma-sp-3) var(--ma-sp-4); border-top:1px solid var(--ma-border); background: var(--ma-surface); }
+
+  .ma .form-field { display: flex; flex-direction: column; gap: var(--ma-sp-2); }
+  .ma .form-label { font-weight: 600; }
+  .ma .input {
+    width: 100%;
+    padding: var(--ma-sp-3);
+    border-radius: var(--ma-radius-1);
+    border: 1px solid var(--ma-border);
+    background: #fff;
+    box-shadow: var(--ma-shadow-1);
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .ma .input:focus {
+    border-color: var(--ma-brand);
+    box-shadow: var(--ma-focus-ring);
+    outline: none;
+  }
+  .ma .form-actions { display: flex; justify-content: flex-end; gap: var(--ma-sp-2); }
+  .ma .support-text { font-size: var(--ma-fs-1); color: var(--ma-muted); }
+  .ma .support-text[data-tone="success"] { color: var(--ma-success); }
+  .ma .support-text[data-tone="error"] { color: var(--ma-danger); }
+  .ma .support-text[data-tone="warning"] { color: var(--ma-warning); }
+  .ma .support-text[data-tone="info"] { color: var(--ma-muted); }
 
   /* Toolbar / Header interno */
   .ma .toolbar { display:flex; align-items:center; gap: var(--ma-sp-2); padding: var(--ma-sp-3) 0; border-bottom:1px solid var(--ma-border); background: transparent; margin-bottom: var(--ma-sp-3); }

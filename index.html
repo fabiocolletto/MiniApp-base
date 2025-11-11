@@ -30,7 +30,37 @@
         </div>
       </header>
       <main>
-        <iframe id="miniapp-panel" name="miniapp-panel" class="app-panel" src="miniapp-catalogo/index.html" title="Painel de MiniApps" loading="eager"></iframe>
+        <section id="setup-sheet-view" class="app-view app-view--centered" hidden>
+          <div class="wrap app-view__wrap">
+            <div class="surface stack app-view__card" role="region" aria-labelledby="sheet-setup-title">
+              <header class="stack">
+                <h2 id="sheet-setup-title">Configurar planilha do catálogo</h2>
+                <p class="support-text" data-tone="info">
+                  Informe o ID da planilha do Google Sheets que centraliza os MiniApps. Use o trecho entre
+                  <code>/d/</code> e <code>/edit</code> da URL compartilhada.
+                </p>
+              </header>
+              <form id="sheet-config-form" class="stack" autocomplete="off">
+                <label class="form-field" for="sheetIdInput">
+                  <span class="form-label">ID da planilha</span>
+                  <input id="sheetIdInput" name="sheetId" type="text" class="input" placeholder="1A2B3C…" required />
+                </label>
+                <div class="form-actions">
+                  <button id="sheetConfigSubmit" class="btn btn--primary" type="submit">Salvar e carregar catálogo</button>
+                </div>
+                <p id="sheet-setup-status" class="support-text" role="status" aria-live="polite"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="catalog-view" class="app-view" hidden>
+          <iframe id="catalog-frame" class="app-panel" src="miniapp-catalogo/index.html" title="Catálogo de MiniApps" loading="eager"></iframe>
+        </section>
+
+        <section id="app-view" class="app-view" hidden>
+          <iframe id="miniapp-panel" name="miniapp-panel" class="app-panel" src="about:blank" title="MiniApp selecionado" loading="lazy"></iframe>
+        </section>
       </main>
       <footer class="app-footer">
         <small>5 Horas — MiniApp Base</small>
@@ -38,6 +68,6 @@
       </footer>
     </div>
   </div>
-  <script src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
