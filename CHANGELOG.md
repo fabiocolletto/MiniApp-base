@@ -1,5 +1,18 @@
 # Changelog
 
+## [2025-11-13] Shell com visões dedicadas e setup de planilha
+### Adicionado
+- Visões `#catalog-view` e `#app-view` no shell com helper `window.changeView` para alternar entre catálogo e MiniApps sem recarregar a página, além do formulário `#setup-sheet-view` para configurar a planilha do catálogo.【F:index.html†L32-L66】【F:js/app.js†L20-L134】
+- Fluxo de bootstrap que consulta `artifacts/{appId}/admin/sheet_config` no Firestore (com fallback em cache) para recuperar o `GOOGLE_SHEET_ID`, exibindo o setup quando necessário.【F:js/app.js†L80-L223】
+### Alterado
+- Botão do catálogo passa a reabrir `#catalog-view` sem trocar o iframe principal, e o catálogo envia `postMessage` para carregar MiniApps no painel dedicado.【F:js/app.js†L51-L134】【F:miniapp-catalogo/index.html†L123-L375】
+- CSS base incorpora estilos para as novas visões e campos de formulário utilizados na configuração da planilha.【F:miniapp-base/style/styles.css†L126-L169】
+
+## [2025-11-12] Documentação de integração do catálogo
+### Adicionado
+- Orientações no `README.md` sobre como carregar o `miniapp-gestor-de-catalogo` a partir do shell e publicar o catálogo final.
+- Detalhes de uso do `miniapp-catalogo`, incluindo dependências do Firestore e requisitos dos dados consumidos.
+
 ## [2025-11-11] Reset 100%
 ### Adicionado
 - Shell PWA simplificado em `index.html` com botão de catálogo fixo, restauração do último miniapp e fluxo de instalação PWA.

@@ -120,28 +120,51 @@
     /**
      * Cria e retorna o HTML para um único card de MiniApp.
      */
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]);
+    }
+
     function createCatalogCard(appItem) {
       const iconUrl = appItem.icon_url || 'https://placehold.co/48x48/cccccc/666666?text=APP';
-      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800' : 
-                          appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800' : 
+      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800' :
+                          appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800' :
                           appItem.status === 'Essencial' ? 'bg-indigo-100 text-indigo-800' :
                           'bg-blue-100 text-blue-800'; // Fallback
+
+      const safeName = escapeHtml(appItem.name || 'MiniApp');
+      const safeCategory = escapeHtml(appItem.category || 'Geral');
+      const safeDescription = escapeHtml(appItem.description || '');
+      const safeStatus = escapeHtml(appItem.status || 'Desconhecido');
+      const safeUrl = escapeHtml(appItem.url || '#');
 
       return `
         <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl">
           <div class="flex items-start space-x-4 mb-3">
-            <img src="${iconUrl}" alt="${appItem.name} Icone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';"/>
+            <img src="${iconUrl}" alt="${safeName} Ícone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';"/>
             <div class="flex-1">
-              <h4 class="text-lg font-semibold text-gray-900">${appItem.name}</h4>
-              <p class="text-xs font-medium text-gray-500">${appItem.category || 'Geral'}</p>
+              <h4 class="text-lg font-semibold text-gray-900">${safeName}</h4>
+              <p class="text-xs font-medium text-gray-500">${safeCategory}</p>
             </div>
           </div>
-          <p class="text-sm text-gray-700 mb-4 h-12 overflow-hidden">${appItem.description}</p>
+          <p class="text-sm text-gray-700 mb-4 h-12 overflow-hidden">${safeDescription}</p>
           <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${statusClass}">
-              ${appItem.status || 'Desconhecido'}
+              ${safeStatus}
             </span>
-            <a href="${appItem.url || '#'}" target="_self" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition duration-150 ease-in-out">
+            <a
+              href="#"
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition duration-150 ease-in-out"
+              data-open-miniapp
+              data-url="${safeUrl}"
+              data-name="${safeName}"
+              data-description="${safeDescription}"
+            >
               Abrir <i class="fas fa-external-link-alt ml-1 text-xs"></i>
             </a>
           </div>
@@ -207,6 +230,7 @@
             catalogList.innerHTML = '<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">Nenhum MiniApp corresponde aos seus filtros de busca.</p>';
         } else {
             catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
+            attachMiniAppOpenHandlers();
         }
     }
 
@@ -325,6 +349,28 @@
             fullCatalogData = ESSENTIAL_APPS;
             populateFilters(fullCatalogData);
             applyFiltersAndRender();
+        });
+    }
+
+    function attachMiniAppOpenHandlers() {
+        const triggers = catalogList.querySelectorAll('[data-open-miniapp]');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                const { url, name, description } = trigger.dataset;
+                if (!url) return;
+                const metadata = {
+                    title: name || undefined,
+                    subtitle: description || undefined,
+                };
+                if (window.parent && typeof window.parent.postMessage === 'function') {
+                    window.parent.postMessage({ action: 'load-miniapp', url, metadata }, '*');
+                } else if (window.parent && typeof window.parent.loadMiniApp === 'function') {
+                    window.parent.loadMiniApp(url, metadata);
+                } else {
+                    window.location.href = url;
+                }
+            });
         });
     }
 
