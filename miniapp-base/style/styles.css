@@ -125,7 +125,7 @@
   }
   .ma .app-header__branding { gap: var(--ma-sp-3); }
   .ma .app-header__actions { margin-left: auto; }
-  .ma .app-logo { height: 32px; width: auto; }
+  .ma .app-logo { height: 24px; width: auto; }
   .ma main {
     display: flex;
     flex-direction: column;
@@ -260,7 +260,7 @@
   .ma .app-header { flex-direction: column; align-items: flex-start; gap: var(--ma-sp-2); }
   .ma .app-header__branding { width: 100%; align-items: flex-start; gap: var(--ma-sp-2); }
   .ma .app-header__actions { margin-left: 0; width: 100%; justify-content: flex-start; }
-  .ma .app-logo { height: 28px; }
+  .ma .app-logo { height: 24px; }
   .ma .app-view__card { width: 100%; padding: var(--ma-sp-4); gap: var(--ma-sp-3); }
   .ma .form-actions { flex-direction: column; align-items: stretch; width: 100%; }
   .ma .form-actions .btn { width: 100%; justify-content: center; }

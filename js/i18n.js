@@ -80,6 +80,13 @@ const TRANSLATIONS = {
       },
       card: {
         open: 'Abrir',
+        statusByKey: {
+          essential: 'Essencial',
+          available: 'Disponível',
+          beta: 'Beta',
+          maintenance: 'Em manutenção',
+          deprecated: 'Descontinuado',
+        },
       },
     },
     manager: {
@@ -203,6 +210,13 @@ const TRANSLATIONS = {
       },
       card: {
         open: 'Open',
+        statusByKey: {
+          essential: 'Essential',
+          available: 'Available',
+          beta: 'Beta',
+          maintenance: 'Under maintenance',
+          deprecated: 'Deprecated',
+        },
       },
     },
     manager: {
