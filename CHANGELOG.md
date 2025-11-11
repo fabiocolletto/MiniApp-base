@@ -1,5 +1,12 @@
 # Changelog
 
+## [2025-11-16] Catálogo estático em `catalog.json`
+### Alterado
+- Catálogo público passa a consumir apenas o arquivo estático `catalog.json`, removendo integração com Firebase e dependências de cache local.【F:miniapp-catalogo/index.html†L98-L214】
+- Lista padrão de MiniApps essenciais movida para `catalog.json`, simplificando a manutenção do catálogo durante testes offline.【F:catalog.json†L1-L28】【F:miniapp-catalogo/index.html†L185-L214】
+### Documentação
+- README principal e `miniapp-catalogo/README.md` atualizados com instruções para editar o arquivo estático do catálogo.【F:README.md†L9-L52】【F:miniapp-catalogo/README.md†L1-L16】
+
 ## [2025-11-15] Alternância de tema integrada ao shell
 ### Adicionado
 - Botão para alternar tema claro/escuro diretamente no cabeçalho do shell, com persistência em `localStorage`, atualização do `<meta name="theme-color">` e broadcast do estado via `{ action: 'shell-theme', theme }` para catálogo e MiniApps.【F:index.html†L32-L51】【F:js/app.js†L20-L333】

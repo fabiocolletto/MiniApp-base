@@ -83,30 +83,9 @@
 
   </div>
 
-  <script>
-    // Configurações do Firebase (Globais no ambiente Canvas)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-  </script>
-  <!-- Importações do Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { DEFAULT_LOCALE, getCatalogMessages, getDirection } from "../js/i18n.js";
 
-    // Variáveis Globais para o Firebase
-    let app, db, auth;
-    
-    // Lista de Apps Essenciais (Garantia de funcionamento do sistema)
-    const ESSENTIAL_APPS = [
-      { id: 'app_base', name: 'MiniApp Base', description: 'Ponto de partida e template para novos MiniApps.', icon_url: 'https://placehold.co/48x48/1e3a8a/ffffff?text=B', url: 'miniapp-base/index.html', category: 'Sistema', status: 'Essencial' },
-      { id: 'app_catalog', name: 'Catálogo de MiniApps', description: 'Você está aqui! Interface de usuário final para navegação.', icon_url: 'https://placehold.co/48x48/059669/ffffff?text=C', url: 'miniapp-catalogo/index.html', category: 'Sistema', status: 'Essencial' },
-      { id: 'app_manager', name: 'Gestor de Catálogos (Admin)', description: 'Ferramenta administrativa para importar e gerenciar o catálogo ativo.', icon_url: 'https://placehold.co/48x48/f97316/ffffff?text=G', url: 'miniapp-gestor-de-catalogo/index.html', category: 'Sistema', status: 'Essencial' },
-    ];
-
-    // Elementos do DOM
     const statusMessage = document.getElementById('status-message');
     const catalogList = document.getElementById('catalog-list');
     const searchBar = document.getElementById('searchBar');
@@ -116,31 +95,16 @@
 
     let currentLocale = DEFAULT_LOCALE;
     let catalogMessages = getCatalogMessages(currentLocale);
-    let currentStatusKey = 'initializing';
+    let fullCatalogData = [];
+    let currentStatusKey = null;
     let currentStatusContext = {};
-    let currentStatusRaw = catalogMessages.status.initializing;
+    let currentStatusFallback = '';
 
-    const getDefaultCategoryOption = () => (categoryFilter ? categoryFilter.querySelector('[data-default-option]') : null);
-
-    showStatus(currentStatusRaw, 'info', currentStatusKey);
-
-    // Dados para uso no script
-    let fullCatalogData = []; // Armazena todos os dados brutos do Firestore
-    const LOCAL_STORAGE_KEYS = {
-        importedCatalog: 'miniapp-catalog.admin.activeItems',
-    };
-    let filterOptions = {
-        searchText: '',
-        category: ''
+    const filterOptions = {
+      searchText: '',
+      category: '',
     };
 
-    // ----------------------------------------------------------------------
-    // 1. FUNÇÕES DE UTILIDADE
-    // ----------------------------------------------------------------------
-
-    /**
-     * Exibe uma mensagem de status.
-     */
     function formatTemplate(template, context = {}) {
       if (typeof template !== 'string') {
         return '';
@@ -152,39 +116,19 @@
     }
 
     function translateStatus(key, fallback = '', context = {}) {
-      const template = catalogMessages.status[key];
-      const templateContext = { ...context };
-
-      if (templateContext.reasonKey) {
-        const nestedKey = templateContext.reasonKey;
-        const nestedFallback = templateContext.reasonFallback || '';
-        const nestedContext = templateContext.reasonContext || {};
-        templateContext.reason = translateStatus(nestedKey, nestedFallback, nestedContext);
+      if (!key) {
+        return typeof fallback === 'string' ? fallback : '';
       }
-
-      if (templateContext.extraKey) {
-        const extraKey = templateContext.extraKey;
-        const extraFallback = templateContext.extraFallback || '';
-        const extraContext = templateContext.extraContext || {};
-        templateContext.extra = translateStatus(extraKey, extraFallback, extraContext);
-      }
-
-      delete templateContext.reasonKey;
-      delete templateContext.reasonContext;
-      delete templateContext.reasonFallback;
-      delete templateContext.extraKey;
-      delete templateContext.extraContext;
-      delete templateContext.extraFallback;
-
-      if (template) {
-        return formatTemplate(template, templateContext);
+      const template = catalogMessages?.status?.[key];
+      if (typeof template === 'string') {
+        return formatTemplate(template, context);
       }
       return typeof fallback === 'string' ? fallback : '';
     }
 
-    function showStatus(message, type = 'info', key = null, context = {}) {
+    function showStatus(key, fallback = '', type = 'info', context = {}) {
       if (!statusMessage) return;
-      const resolvedMessage = key ? translateStatus(key, message, context) : message;
+      const resolvedMessage = key ? translateStatus(key, fallback, context) : fallback;
       statusMessage.textContent = resolvedMessage;
       statusMessage.className = 'mt-4 text-sm';
       switch (type) {
@@ -194,19 +138,15 @@
         case 'error':
           statusMessage.classList.add('text-red-600');
           break;
-        case 'info':
         default:
           statusMessage.classList.add('text-gray-500');
           break;
       }
       currentStatusKey = key;
       currentStatusContext = key ? { ...context } : {};
-      currentStatusRaw = resolvedMessage;
+      currentStatusFallback = typeof fallback === 'string' ? fallback : '';
     }
 
-    /**
-     * Cria e retorna o HTML para um único card de MiniApp.
-     */
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -219,10 +159,10 @@
 
     function createCatalogCard(appItem) {
       const iconUrl = appItem.icon_url || 'https://placehold.co/48x48/cccccc/666666?text=APP';
-      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800' :
-                          appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800' :
-                          appItem.status === 'Essencial' ? 'bg-indigo-100 text-indigo-800' :
-                          'bg-blue-100 text-blue-800'; // Fallback
+      const statusClass = appItem.status === 'Ativo' ? 'bg-green-100 text-green-800'
+        : appItem.status === 'Beta' ? 'bg-yellow-100 text-yellow-800'
+        : appItem.status === 'Essencial' ? 'bg-indigo-100 text-indigo-800'
+        : 'bg-blue-100 text-blue-800';
 
       const safeName = escapeHtml(appItem.name || 'MiniApp');
       const safeCategory = escapeHtml(appItem.category || 'Geral');
@@ -234,7 +174,7 @@
       return `
         <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl">
           <div class="flex items-start space-x-4 mb-3">
-            <img src="${iconUrl}" alt="${safeName} Ícone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';"/>
+            <img src="${iconUrl}" alt="${safeName} Ícone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';" />
             <div class="flex-1">
               <h4 class="text-lg font-semibold text-gray-900">${safeName}</h4>
               <p class="text-xs font-medium text-gray-500">${safeCategory}</p>
@@ -278,9 +218,160 @@
       const loadingMessage = escapeHtml(catalogMessages.status.loading);
       catalogList.innerHTML = `
         <div class="col-span-full flex flex-col justify-center items-center h-40 text-gray-500">
-            <div class="loading-spinner w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin mb-3"></div>
-            ${loadingMessage}
+          <div class="loading-spinner w-8 h-8 border-4 border-gray-200 border-t-transparent border-t-indigo-500 rounded-full animate-spin mb-3"></div>
+          ${loadingMessage}
         </div>`;
+    }
+
+    function populateFilters(data) {
+      if (!categoryFilter) return;
+      const categories = [...new Set(data.map((app) => app.category).filter(Boolean))].sort();
+      const defaultOptionLabel = escapeHtml(catalogMessages.filterDefault);
+      categoryFilter.innerHTML = `<option value="" data-default-option>${defaultOptionLabel}</option>`;
+      categories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+      });
+      categoryFilter.value = filterOptions.category;
+    }
+
+    function applyFiltersAndRender() {
+      if (!catalogList) return;
+
+      if (!Array.isArray(fullCatalogData) || fullCatalogData.length === 0) {
+        catalogList.dataset.renderState = 'empty';
+        catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.empty)}</p>`;
+        return;
+      }
+
+      const searchText = filterOptions.searchText.toLowerCase();
+      const selectedCategory = filterOptions.category;
+
+      const filteredData = fullCatalogData.filter((app, index) => {
+        const rawName = typeof app.name === 'string' ? app.name : '';
+        const safeName = rawName || `MiniApp ${index + 1}`;
+        const rawDescription = typeof app.description === 'string' ? app.description : '';
+        const rawCategory = typeof app.category === 'string' ? app.category : '';
+
+        const matchesCategory = !selectedCategory || rawCategory === selectedCategory;
+        const matchesSearch = !searchText
+          || safeName.toLowerCase().includes(searchText)
+          || rawDescription.toLowerCase().includes(searchText)
+          || rawCategory.toLowerCase().includes(searchText);
+
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filteredData.length === 0) {
+        catalogList.dataset.renderState = 'empty';
+        catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.noMatches)}</p>`;
+        return;
+      }
+
+      catalogList.dataset.renderState = 'ready';
+      catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
+      attachMiniAppOpenHandlers();
+      refreshCatalogCardLabels();
+    }
+
+    function attachMiniAppOpenHandlers() {
+      if (!catalogList) return;
+      const triggers = catalogList.querySelectorAll('[data-open-miniapp]');
+      triggers.forEach((trigger) => {
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          const { url, name, description } = trigger.dataset;
+          if (!url) return;
+          const metadata = {
+            title: name || undefined,
+            subtitle: description || undefined,
+          };
+          if (window.parent && typeof window.parent.postMessage === 'function') {
+            window.parent.postMessage({ action: 'load-miniapp', url, metadata }, '*');
+          } else if (window.parent && typeof window.parent.loadMiniApp === 'function') {
+            window.parent.loadMiniApp(url, metadata);
+          } else {
+            window.location.href = url;
+          }
+        });
+      });
+    }
+
+    function normalizeCatalogItem(item, index = 0) {
+      if (typeof item !== 'object' || item === null) {
+        return null;
+      }
+
+      const fallbackId = `miniapp_${index + 1}`;
+      const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : fallbackId;
+      const name = typeof item.name === 'string' && item.name.trim() ? item.name.trim() : `MiniApp ${index + 1}`;
+      const description = typeof item.description === 'string' ? item.description : '';
+      const category = typeof item.category === 'string' && item.category.trim() ? item.category.trim() : 'Geral';
+      const status = typeof item.status === 'string' && item.status.trim() ? item.status.trim() : 'Disponível';
+      const icon_url = typeof item.icon_url === 'string' && item.icon_url.trim() ? item.icon_url.trim() : null;
+      const url = typeof item.url === 'string' && item.url.trim() ? item.url.trim() : null;
+
+      if (!url) {
+        return null;
+      }
+
+      return {
+        id,
+        name,
+        description,
+        category,
+        status,
+        icon_url,
+        url,
+      };
+    }
+
+    async function loadStaticCatalog() {
+      showStatus('loading', catalogMessages.status.loading, 'info');
+      renderLoadingState(true);
+      try {
+        const response = await fetch('../catalog.json', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const json = await response.json();
+        const normalized = Array.isArray(json)
+          ? json.map((item, index) => normalizeCatalogItem(item, index)).filter(Boolean)
+          : [];
+        fullCatalogData = normalized;
+
+        if (!fullCatalogData.length) {
+          catalogList.dataset.renderState = 'empty';
+          catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.empty)}</p>`;
+          showStatus('empty', catalogMessages.status.empty, 'info');
+          return;
+        }
+
+        populateFilters(fullCatalogData);
+        applyFiltersAndRender();
+        showStatus('catalogLoaded', catalogMessages.status.catalogLoaded, 'success', { count: fullCatalogData.length });
+      } catch (error) {
+        console.error('Erro ao carregar catalog.json:', error);
+        catalogList.dataset.renderState = 'error';
+        catalogList.innerHTML = `<p class="text-red-600 col-span-full p-4 text-center border border-dashed rounded-lg bg-red-50">${escapeHtml(catalogMessages.status.loadError)}</p>`;
+        showStatus('loadError', catalogMessages.status.loadError, 'error', { message: error.message });
+      }
+    }
+
+    if (searchBar) {
+      searchBar.addEventListener('input', (event) => {
+        filterOptions.searchText = event.target.value || '';
+        applyFiltersAndRender();
+      });
+    }
+
+    if (categoryFilter) {
+      categoryFilter.addEventListener('change', (event) => {
+        filterOptions.category = event.target.value || '';
+        applyFiltersAndRender();
+      });
     }
 
     function applyLanguage(locale, { notify = true } = {}) {
@@ -302,455 +393,26 @@
         searchBar.placeholder = catalogMessages.searchPlaceholder;
       }
 
-      const defaultOption = getDefaultCategoryOption();
-      if (defaultOption) {
-        defaultOption.textContent = catalogMessages.filterDefault;
-      }
-
-      if (statusMessage) {
-        if (currentStatusKey) {
-          const translated = translateStatus(currentStatusKey, currentStatusRaw, currentStatusContext);
-          statusMessage.textContent = translated;
-          currentStatusRaw = translated;
-        } else {
-          statusMessage.textContent = currentStatusRaw;
+      if (categoryFilter) {
+        const defaultOption = categoryFilter.querySelector('[data-default-option]');
+        if (defaultOption) {
+          defaultOption.textContent = catalogMessages.filterDefault;
         }
       }
 
+      if (currentStatusKey) {
+        statusMessage.textContent = translateStatus(currentStatusKey, currentStatusFallback, currentStatusContext);
+      } else {
+        statusMessage.textContent = currentStatusFallback || '';
+      }
+
+      populateFilters(fullCatalogData);
+      applyFiltersAndRender();
       refreshCatalogCardLabels();
-      renderLoadingState(true);
 
       if (notify && window.parent && typeof window.parent.postMessage === 'function') {
         window.parent.postMessage({ action: 'miniapp-language-applied', locale: currentLocale }, '*');
       }
-    }
-
-    // ----------------------------------------------------------------------
-    // 2. FILTRAGEM E RENDERIZAÇÃO
-    // ----------------------------------------------------------------------
-
-    /**
-     * Popula o dropdown de filtro de categorias.
-     * @param {Array<Object>} data Lista completa de aplicativos.
-     */
-    function populateFilters(data) {
-        // CORREÇÃO: Remove a exclusão da categoria 'Sistema' para que ela apareça no filtro.
-        // 1. Coleta categorias únicas e ordena. Apenas filtra por categorias nulas/vazias.
-        const categories = [...new Set(data.map(app => app.category).filter(c => c))].sort();
-        
-        // 2. Limpa e adiciona a opção padrão
-        const defaultOptionLabel = escapeHtml(catalogMessages.filterDefault);
-        categoryFilter.innerHTML = `<option value="" data-default-option>${defaultOptionLabel}</option>`;
-        
-        // 3. Adiciona as categorias dinamicamente
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            // Mapeia o valor de volta para 'Sistema' (que é a categoria do Essencial)
-            option.value = category; 
-            option.textContent = category;
-            categoryFilter.appendChild(option);
-        });
-        
-        // 4. Garante que o filtro atualmente selecionado seja mantido
-        categoryFilter.value = filterOptions.category;
-    }
-
-    /**
-     * Aplica os filtros atuais aos dados e renderiza o catálogo.
-     */
-    function applyFiltersAndRender() {
-        if (!fullCatalogData || fullCatalogData.length === 0) {
-            if (catalogList) {
-              catalogList.dataset.renderState = 'loading';
-              catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.loadingEssentials)}</p>`;
-            }
-            return;
-        }
-
-        const searchText = filterOptions.searchText.toLowerCase();
-        const selectedCategory = filterOptions.category;
-
-        const filteredData = fullCatalogData.filter((app, index) => {
-            const rawName = typeof app.name === 'string' ? app.name : '';
-            const safeName = rawName || `MiniApp ${index + 1}`;
-            const rawDescription = typeof app.description === 'string' ? app.description : '';
-            const rawCategory = typeof app.category === 'string' ? app.category : '';
-
-            // 1. Filtrar por Categoria
-            const matchesCategory = !selectedCategory || rawCategory === selectedCategory;
-
-            // 2. Filtrar por Texto
-            const matchesSearch = !searchText ||
-                safeName.toLowerCase().includes(searchText) ||
-                rawDescription.toLowerCase().includes(searchText) ||
-                rawCategory.toLowerCase().includes(searchText);
-
-            return matchesCategory && matchesSearch;
-        });
-
-        if (filteredData.length === 0) {
-            if (catalogList) {
-              catalogList.dataset.renderState = 'empty';
-              catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.noMatches)}</p>`;
-            }
-        } else {
-            if (catalogList) {
-              catalogList.dataset.renderState = 'ready';
-              catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
-            }
-            attachMiniAppOpenHandlers();
-            refreshCatalogCardLabels();
-        }
-    }
-
-    function mergeWithEssential(data = []) {
-        const list = Array.isArray(data)
-            ? data
-                .map((item, index) => normalizeCatalogItem(item, index))
-                .filter(Boolean)
-            : [];
-        const essentialIds = new Set(ESSENTIAL_APPS.map(app => app.id));
-        const nonEssential = list.filter(item => !essentialIds.has(item.id));
-        const combined = [...nonEssential, ...ESSENTIAL_APPS];
-        const unique = [];
-        const seen = new Set();
-
-        combined.forEach(item => {
-            if (!item || !item.id || seen.has(item.id)) return;
-            seen.add(item.id);
-            unique.push(item);
-        });
-
-        return unique;
-    }
-
-    function readCatalogFromLocalStorage() {
-        try {
-            const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.importedCatalog);
-            if (!raw) return [];
-            const parsed = JSON.parse(raw);
-            const items = Array.isArray(parsed)
-                ? parsed
-                : Array.isArray(parsed?.items)
-                    ? parsed.items
-                    : [];
-            return items
-                .map((item, index) => normalizeCatalogItem(item, index))
-                .filter(Boolean);
-        } catch (error) {
-            console.warn('Não foi possível carregar o catálogo salvo localmente.', error);
-            return [];
-        }
-    }
-
-    function writeCatalogToLocalStorage(items = []) {
-        try {
-            const payload = {
-                updatedAt: new Date().toISOString(),
-                items: Array.isArray(items) ? items : [],
-            };
-            localStorage.setItem(LOCAL_STORAGE_KEYS.importedCatalog, JSON.stringify(payload));
-        } catch (error) {
-            console.warn('Não foi possível armazenar o catálogo para uso offline.', error);
-        }
-    }
-
-    function updateCatalogData(data = []) {
-        fullCatalogData = mergeWithEssential(data);
-        populateFilters(fullCatalogData);
-        applyFiltersAndRender();
-        return fullCatalogData;
-    }
-
-    function slugify(value) {
-        return String(value || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '') || 'miniapp';
-    }
-
-    function buildPlaceholderIcon(name, color = '0ea5e9') {
-        const label = encodeURIComponent((name || '?').charAt(0).toUpperCase() || 'M');
-        return `https://placehold.co/48x48/${color}/ffffff?text=${label}`;
-    }
-
-    function normalizeCatalogItem(item, index, options = {}) {
-        if (!item) return null;
-
-        const {
-            defaultCategory = 'Geral',
-            defaultStatus = 'Disponível',
-            placeholderColor = '0ea5e9',
-        } = options;
-
-        const rawUrl = typeof item.url === 'string' ? item.url.trim() : '';
-        if (!rawUrl) return null;
-
-        const rawName = typeof item.name === 'string' ? item.name.trim() : '';
-        const name = rawName || `MiniApp ${index + 1}`;
-        const rawId = typeof item.id === 'string' ? item.id.trim() : '';
-        const id = rawId || `miniapp_${slugify(`${name}_${index}`)}`;
-        const category = typeof item.category === 'string' && item.category.trim()
-            ? item.category.trim()
-            : defaultCategory;
-        const status = typeof item.status === 'string' && item.status.trim()
-            ? item.status.trim()
-            : defaultStatus;
-        const description = typeof item.description === 'string' ? item.description : '';
-        const iconUrl = item.icon_url || item.iconUrl;
-
-        return {
-            id,
-            name,
-            description,
-            url: rawUrl,
-            category,
-            status,
-            icon_url: iconUrl || buildPlaceholderIcon(name, placeholderColor),
-        };
-    }
-
-    function normalizeFallbackItem(item, index) {
-        return normalizeCatalogItem(item, index, {
-            defaultCategory: 'Local',
-            defaultStatus: 'Disponível',
-            placeholderColor: '0ea5e9',
-        });
-    }
-
-    async function loadLocalCatalogFallback(reasonInput = '') {
-        const reasonDetails = typeof reasonInput === 'object' && reasonInput !== null
-          ? { key: reasonInput.key || null, context: reasonInput.context || {}, fallback: reasonInput.fallback || '' }
-          : { key: null, context: {}, fallback: typeof reasonInput === 'string' ? reasonInput : '' };
-
-        const reasonMessage = reasonDetails.key
-          ? translateStatus(reasonDetails.key, reasonDetails.fallback, reasonDetails.context)
-          : reasonDetails.fallback;
-        const reasonPrefix = reasonMessage ? `${reasonMessage.trim()} ` : '';
-        if (reasonMessage) {
-            console.warn(reasonMessage);
-        }
-
-        const storedItems = readCatalogFromLocalStorage();
-        const localItems = [...storedItems];
-        let fallbackAdded = 0;
-
-        try {
-            const response = await fetch('../catalog.json', { cache: 'no-store' });
-            if (response.ok) {
-                const json = await response.json();
-                if (Array.isArray(json)) {
-                    const fallbackItems = json.map(normalizeFallbackItem).filter(Boolean);
-                    const existingIds = new Set(localItems.map(item => item.id));
-                    fallbackItems.forEach(item => {
-                        if (!existingIds.has(item.id)) {
-                            localItems.push(item);
-                            fallbackAdded += 1;
-                        }
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao carregar catalog.json:', error);
-        }
-
-        const updatedCatalog = updateCatalogData(localItems);
-
-        const extraNoteData = fallbackAdded > 0
-          ? {
-              value: translateStatus('localFallbackExtra', ` + ${fallbackAdded} MiniApp(s) locais.`, { count: fallbackAdded }),
-              key: 'localFallbackExtra',
-              context: { count: fallbackAdded },
-              fallback: ` + ${fallbackAdded} MiniApp(s) locais.`,
-            }
-          : null;
-        const extraNote = extraNoteData ? extraNoteData.value : '';
-
-        const baseContext = {
-            reason: reasonPrefix,
-            reasonKey: reasonDetails.key,
-            reasonContext: reasonDetails.context,
-            reasonFallback: reasonDetails.fallback,
-        };
-
-        if (extraNoteData) {
-            baseContext.extra = extraNoteData.value;
-            baseContext.extraKey = extraNoteData.key;
-            baseContext.extraContext = extraNoteData.context;
-            baseContext.extraFallback = extraNoteData.fallback;
-        } else {
-            baseContext.extra = '';
-        }
-
-        if (storedItems.length) {
-            const context = { ...baseContext, count: storedItems.length };
-            showStatus(
-              `${reasonPrefix}Catálogo importado do dispositivo (${storedItems.length} MiniApps${extraNote}).`,
-              'warning',
-              'localFallbackImported',
-              context,
-            );
-        } else if (updatedCatalog.length > ESSENTIAL_APPS.length) {
-            const context = { ...baseContext, count: updatedCatalog.length };
-            showStatus(
-              `${reasonPrefix}Catálogo local carregado (${updatedCatalog.length} MiniApps).`,
-              'warning',
-              'localFallbackLoaded',
-              context,
-            );
-        } else {
-            const context = { ...baseContext };
-            showStatus(
-              `${reasonPrefix}Exibindo apenas os MiniApps essenciais.`,
-              'warning',
-              'localFallbackEssentials',
-              context,
-            );
-        }
-
-        return updatedCatalog;
-    }
-
-    // ----------------------------------------------------------------------
-    // 3. LISTENERS DE FILTRO
-    // ----------------------------------------------------------------------
-    
-    // Listener para a barra de pesquisa
-    searchBar.addEventListener('input', (e) => {
-        filterOptions.searchText = e.target.value;
-        applyFiltersAndRender();
-    });
-
-    // Listener para o filtro de categoria
-    categoryFilter.addEventListener('change', (e) => {
-        filterOptions.category = e.target.value;
-        applyFiltersAndRender();
-    });
-
-
-    // ----------------------------------------------------------------------
-    // 4. INICIALIZAÇÃO E FIREBASE
-    // ----------------------------------------------------------------------
-
-    /**
-     * Inicializa o Firebase e a autenticação de forma síncrona com await.
-     */
-    async function initializeFirebase() {
-        if (Object.keys(firebaseConfig).length === 0) {
-            await loadLocalCatalogFallback({ key: 'firebaseMissing', fallback: 'Configuração do Firebase ausente.' });
-            return;
-        }
-
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            showStatus('Firebase inicializado. Autenticando...', 'info', 'firebaseInitialized');
-            
-            // 1. Configura o listener do Auth para monitorar mudanças (opcional)
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log(`[AUTH] Usuário autenticado (UID: ${user.uid}).`); 
-                } else {
-                    console.log('[AUTH] Usuário deslogado/anônimo.');
-                }
-            });
-
-            // 2. Tenta logar e ESPERA a conclusão com await. 
-            // Isso garante que o estado de autenticação esteja ativo antes de ler o Firestore.
-            if (initialAuthToken) {
-                // Tenta com token customizado e faz fallback para anônimo
-                await signInWithCustomToken(auth, initialAuthToken).catch(async e => {
-                    console.error("Erro ao assinar com token customizado. Tentando login anônimo...", e);
-                    await signInAnonymously(auth).catch(e => {
-                        console.error("Erro fatal no Login Anônimo:", e);
-                        // Re-lança para ser pego pelo bloco catch externo
-                        throw new Error("Falha na autenticação. Verifique as credenciais.");
-                    });
-                });
-            } else {
-                // Tenta apenas login anônimo
-                await signInAnonymously(auth).catch(e => {
-                    console.error("Erro fatal no Login Anônimo:", e);
-                    throw new Error("Falha na autenticação. Verifique as credenciais.");
-                });
-            }
-
-            // 3. Autenticação concluída: Agora que o token está definitivamente definido, anexamos o listener do Firestore.
-            showStatus('Autenticação concluída. Ouvindo catálogo...', 'info', 'authListening');
-            setupCatalogListener();
-
-        } catch (error) {
-            console.error("Erro ao inicializar Firebase:", error);
-            await loadLocalCatalogFallback({
-                key: 'firebaseInitError',
-                context: { message: error.message },
-                fallback: `Erro ao inicializar Firebase: ${error.message}.`,
-            });
-        }
-    }
-
-    /**
-     * Configura o listener em tempo real para o catálogo.
-     */
-    function setupCatalogListener() {
-        // Referência ao documento público do catálogo
-        const catalogRef = doc(db, `artifacts/${appId}/public/data/catalog/data`);
-
-        onSnapshot(catalogRef, async (docSnapshot) => {
-            let fetchedData = [];
-            if (docSnapshot.exists()) {
-                const data = docSnapshot.data();
-                if (Array.isArray(data.items) && data.items.length > 0) {
-                    fetchedData = data.items;
-                }
-            }
-
-            if (!fetchedData.length) {
-                await loadLocalCatalogFallback({ key: 'remoteCatalogEmpty', fallback: 'Nenhum MiniApp publicado no catálogo remoto.' });
-                return;
-            }
-
-            writeCatalogToLocalStorage(fetchedData);
-            const updatedCatalog = updateCatalogData(fetchedData);
-            showStatus(
-                `Catálogo carregado: ${updatedCatalog.length} MiniApps disponíveis.`,
-                'success',
-                'catalogLoaded',
-                { count: updatedCatalog.length },
-            );
-        }, async (error) => {
-            console.error("Erro no listener do catálogo:", error);
-            await loadLocalCatalogFallback({
-                key: 'remoteCatalogError',
-                context: { message: error.message },
-                fallback: `Erro ao carregar catálogo remoto: ${error.message}.`,
-            });
-        });
-    }
-
-    function attachMiniAppOpenHandlers() {
-        const triggers = catalogList.querySelectorAll('[data-open-miniapp]');
-        triggers.forEach(trigger => {
-            trigger.addEventListener('click', (event) => {
-                event.preventDefault();
-                const { url, name, description } = trigger.dataset;
-                if (!url) return;
-                const metadata = {
-                    title: name || undefined,
-                    subtitle: description || undefined,
-                };
-                if (window.parent && typeof window.parent.postMessage === 'function') {
-                    window.parent.postMessage({ action: 'load-miniapp', url, metadata }, '*');
-                } else if (window.parent && typeof window.parent.loadMiniApp === 'function') {
-                    window.parent.loadMiniApp(url, metadata);
-                } else {
-                    window.location.href = url;
-                }
-            });
-        });
     }
 
     window.addEventListener('message', (event) => {
@@ -762,17 +424,15 @@
     });
 
     applyLanguage(currentLocale, { notify: false });
+    showStatus('initializing', catalogMessages.status.initializing, 'info');
+    renderLoadingState(true);
+    loadStaticCatalog();
 
     if (window.parent && typeof window.parent.postMessage === 'function') {
       window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
     }
-
-    // Inicia tudo
-    initializeFirebase();
-
-    // Mostra o spinner inicial antes de o Firestore carregar os dados
-    renderLoadingState(true);
   </script>
+
   <script>
     (function () {
       const themeHost = document.body;
