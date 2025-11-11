@@ -8,20 +8,33 @@
 </head>
 <body>
   <div class="ma">
-    <div class="wrap">
-      <h1>MiniApp Prefeito — Demo</h1>
-      <p class="muted">Use o botão <b>Configurar fonte</b> para informar <i>ID da planilha</i> e <i>Nome da aba</i> (compartilhada como leitura). Clique em <b>Atualizar</b> para buscar dados. Offline usa o último cache salvo.</p>
+    <div class="app">
+      <header class="app-header">
+        <div class="wrap">
+          <h1>MiniApp Prefeito — Demo</h1>
+          <p class="muted">Use o botão <b>Configurar fonte</b> para informar <i>ID da planilha</i> e <i>Nome da aba</i> (compartilhada como leitura). Clique em <b>Atualizar</b> para buscar dados. Offline usa o último cache salvo.</p>
+        </div>
+      </header>
 
-      <div class="cluster">
-        <button class="btn" id="btnConfig">Configurar fonte</button>
-        <button class="btn" id="btnUpdate">Atualizar</button>
-        <small id="status" class="muted"></small>
-      </div>
+      <main>
+        <div class="wrap">
+          <div class="cluster">
+            <button class="btn" id="btnConfig">Configurar fonte</button>
+            <button class="btn" id="btnUpdate">Atualizar</button>
+          </div>
 
-      <div class="surface" style="margin-top:16px;">
-        <h3>Prévia dos dados (máx. 12 linhas)</h3>
-        <pre id="preview" style="white-space:pre-wrap;overflow:auto;"></pre>
-      </div>
+          <div class="surface" style="margin-top:16px;">
+            <h3>Prévia dos dados (máx. 12 linhas)</h3>
+            <pre id="preview" style="white-space:pre-wrap;overflow:auto;"></pre>
+          </div>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="wrap">
+          <small id="status" class="muted" role="status" aria-live="polite"></small>
+        </div>
+      </footer>
     </div>
   </div>
 
