@@ -95,5 +95,24 @@
         "status": "Available"
       }
     }
+  },
+  {
+    "id": "app_minha_conta",
+    "name": "Minha Conta",
+    "description": "Gerencie backups e preferências pessoais no seu appDataFolder.",
+    "url": "miniapp-minha-conta/index.html",
+    "icon_url": "https://placehold.co/48x48/2563eb/ffffff?text=M",
+    "category": "Conta",
+    "category_key": "account",
+    "status": "Disponível",
+    "status_key": "available",
+    "translations": {
+      "en-US": {
+        "name": "My Account",
+        "description": "Manage backups and personal preferences in your appDataFolder.",
+        "category": "Account",
+        "status": "Available"
+      }
+    }
   }
 ]

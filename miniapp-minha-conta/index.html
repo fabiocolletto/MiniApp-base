@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiniApp — Minha Conta</title>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
+  <link rel="stylesheet" href="./minha-conta.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="../config/app-config.js"></script>
+</head>
+<body>
+  <div class="ma">
+    <div class="app">
+      <header class="app-header">
+        <div class="wrap">
+          <h1>Minha Conta</h1>
+          <p class="muted">Gerencie os dados vinculados ao seu MiniApp diretamente no Google Drive (pasta oculta `appDataFolder`).</p>
+        </div>
+      </header>
+
+      <main>
+        <div class="wrap">
+          <section class="surface" style="margin-bottom:16px;">
+            <div class="cluster" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div>
+                <h2 class="section-title">Autenticação com Google</h2>
+                <p class="muted" id="authStatus" role="status" aria-live="polite">Conecte sua conta Google para habilitar os recursos.</p>
+              </div>
+              <button class="btn" type="button" id="btnAuthorize">Autorizar meu Google</button>
+            </div>
+          </section>
+
+          <div class="tabs" role="tablist" aria-label="Configurações da minha conta">
+            <button type="button" role="tab" aria-selected="true" class="tab is-active" id="tab-backup-btn" data-tab-target="backup">Dados do meu app</button>
+            <button type="button" role="tab" aria-selected="false" class="tab" id="tab-preferences-btn" data-tab-target="preferences">Minhas preferências</button>
+          </div>
+
+          <section class="surface tab-panel is-active" id="tab-backup" role="tabpanel" aria-labelledby="tab-backup-btn">
+            <div class="stack" style="gap:16px;">
+              <div>
+                <h3 class="section-title">Backup e restauração</h3>
+                <p class="muted">Exporte um arquivo JSON com os dados locais do MiniApp para sincronizar entre dispositivos. A restauração sobrescreve os dados atuais.</p>
+              </div>
+
+              <div class="cluster" style="gap:12px;flex-wrap:wrap;">
+                <button class="btn" type="button" id="btnExport" data-requires-auth disabled>Exportar dados</button>
+                <button class="btn" type="button" id="btnRestore" data-requires-auth disabled>Restaurar dados</button>
+                <button class="btn ghost" type="button" id="btnRemoveBackup" data-requires-auth disabled>Remover backup</button>
+              </div>
+
+              <div class="surface subtle" id="backupMeta">
+                <dl class="meta-list">
+                  <div>
+                    <dt>Última atualização</dt>
+                    <dd id="backupUpdatedAt">—</dd>
+                  </div>
+                  <div>
+                    <dt>Tamanho aproximado</dt>
+                    <dd id="backupSize">—</dd>
+                  </div>
+                </dl>
+                <p class="muted" id="backupStatus" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="surface tab-panel" id="tab-preferences" role="tabpanel" aria-labelledby="tab-preferences-btn" hidden>
+            <form class="stack" id="prefsForm" style="gap:16px;">
+              <div class="stack" style="gap:8px;">
+                <h3 class="section-title">Preferências pessoais</h3>
+                <p class="muted">Defina o tema, idioma e notificações desejadas. As escolhas são armazenadas em `prefs.json` dentro do seu `appDataFolder`.</p>
+              </div>
+
+              <label class="stack muted" style="gap:4px;max-width:320px;">
+                Tema preferido
+                <select class="input" name="theme" id="prefTheme" data-requires-auth disabled>
+                  <option value="system">Seguir sistema</option>
+                  <option value="light">Claro</option>
+                  <option value="dark">Escuro</option>
+                </select>
+              </label>
+
+              <label class="stack muted" style="gap:4px;max-width:320px;">
+                Idioma
+                <select class="input" name="language" id="prefLanguage" data-requires-auth disabled>
+                  <option value="pt-BR">Português (Brasil)</option>
+                  <option value="en-US">English (US)</option>
+                  <option value="es-419">Español (LatAm)</option>
+                </select>
+              </label>
+
+              <label class="cluster muted" style="gap:8px;align-items:center;">
+                <input type="checkbox" id="prefNotifications" name="notifications" data-requires-auth disabled />
+                Receber alertas críticos por e-mail
+              </label>
+
+              <div class="cluster" style="gap:12px;">
+                <button class="btn" type="submit" id="btnSavePrefs" data-requires-auth disabled>Salvar preferências</button>
+                <button class="btn ghost" type="button" id="btnResetPrefs" data-requires-auth disabled>Restaurar padrão</button>
+              </div>
+
+              <p class="muted" id="prefsStatus" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="wrap">
+          <small class="muted">Os arquivos ficam ocultos no seu Google Drive e contam na sua cota pessoal.</small>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script type="module" src="./minha-conta.js"></script>
+</body>
+</html>

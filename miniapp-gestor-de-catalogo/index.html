@@ -1050,8 +1050,8 @@
   </script>
   
 </head>
-<body data-theme="light">
-  <div class="ma min-h-screen" data-theme="light">
+<body>
+  <div class="ma min-h-screen">
     <div class="wrap p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       
       <!-- NOVO TÍTULO ADMINISTRATIVO NO TOPO -->
@@ -1127,10 +1127,18 @@
     const applyTheme = (theme) => {
       const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
       if (root) {
-        root.setAttribute('data-theme', normalizedTheme);
+        if (normalizedTheme === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+        } else {
+          root.removeAttribute('data-theme');
+        }
       }
 
-      document.body.setAttribute('data-theme', normalizedTheme);
+      if (normalizedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+      } else {
+        document.body.removeAttribute('data-theme');
+      }
 
       if (window.parent && typeof window.parent.postMessage === 'function') {
         window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');
