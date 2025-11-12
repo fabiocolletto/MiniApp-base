@@ -33,6 +33,8 @@
     --ma-ink: #0f172a;
     --ma-muted: #64748b;
     --ma-border: #e2e8f0;
+    --ma-on-brand: #04101f;
+    --ma-on-danger: #ffffff;
 
     --ma-brand: #0ea5e9;
     --ma-brand-ink: #0c4a6e;
@@ -70,6 +72,7 @@
     --ma-border: #334155;    /* +contraste */
     --ma-brand: #38bdf8;
     --ma-brand-ink: #cffafe;
+    --ma-on-brand: #04101f;
     --ma-shadow-1: 0 1px 2px rgba(0,0,0,.45), 0 1px 1px rgba(0,0,0,.35);
     --ma-shadow-2: 0 8px 24px rgba(0,0,0,.6);
   }
@@ -152,24 +155,32 @@
     background: var(--ma-bg);
     box-shadow: 0 -1px 0 var(--ma-border);
   }
+  .ma [data-theme-logo] { display: none; height: 24px; width: auto; }
+  .ma [data-theme-logo="light"] { display: inline-block; }
+  .ma[data-theme="dark"] [data-theme-logo="light"] { display: none; }
+  .ma[data-theme="dark"] [data-theme-logo="dark"] { display: inline-block; }
+  @media (prefers-color-scheme: dark) {
+    .ma:not([data-theme]) [data-theme-logo="light"] { display: none; }
+    .ma:not([data-theme]) [data-theme-logo="dark"] { display: inline-block; }
+  }
 
   /* IMPORTANTE: nada empurra o layout para fora da tela */
   .ma main, .ma .wrap, .ma .container, .ma .grid, .ma .card, .ma .panel { min-width: 0; }
 
   /* Botões */
   .ma .btn { display:inline-flex; align-items:center; gap:.5em; padding:.55em .9em; border-radius: var(--ma-radius-1);
-             border:1px solid var(--ma-border); background:#fff; color:var(--ma-ink); box-shadow: var(--ma-shadow-1);
+             border:1px solid var(--ma-border); background: var(--ma-surface); color:var(--ma-ink); box-shadow: var(--ma-shadow-1);
              transition: transform .06s ease, box-shadow .2s ease, background .2s ease; }
   .ma .btn:hover { transform: translateY(-1px); box-shadow: var(--ma-shadow-2); }
   .ma .btn:active { transform: translateY(0); box-shadow: var(--ma-shadow-1); }
-  .ma .btn--primary { background: var(--ma-brand); color: #001018; border-color: color-mix(in oklab, var(--ma-brand) 40%, black); }
-  .ma .btn--soft { background: color-mix(in oklab, var(--ma-brand) 12%, #fff); color: var(--ma-brand-ink); border-color: color-mix(in oklab, var(--ma-brand) 25%, var(--ma-border)); }
+  .ma .btn--primary { background: var(--ma-brand); color: var(--ma-on-brand); border-color: color-mix(in oklab, var(--ma-brand) 45%, var(--ma-border)); }
+  .ma .btn--soft { background: color-mix(in oklab, var(--ma-brand) 12%, var(--ma-bg)); color: var(--ma-brand-ink); border-color: color-mix(in oklab, var(--ma-brand) 25%, var(--ma-border)); }
   .ma .btn--ghost { background: transparent; color: var(--ma-brand); border-color: color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); }
-  .ma .btn--danger { background: var(--ma-danger); color:#fff; border-color: color-mix(in oklab, var(--ma-danger) 40%, black); }
+  .ma .btn--danger { background: var(--ma-danger); color: var(--ma-on-danger); border-color: color-mix(in oklab, var(--ma-danger) 45%, var(--ma-border)); }
   .ma .btn[disabled], .ma .btn:disabled { opacity:.6; filter: saturate(.7); pointer-events:none; }
 
   /* Cards */
-  .ma .card { background: #fff; border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); overflow: clip; display:flex; flex-direction: column; }
+  .ma .card { background: var(--ma-surface); border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); overflow: clip; display:flex; flex-direction: column; }
   .ma .card__header { padding: var(--ma-sp-4); border-bottom:1px solid var(--ma-border); font-weight:700; }
   .ma .card__body { padding: var(--ma-sp-4); }
   .ma .card__footer { padding: var(--ma-sp-3) var(--ma-sp-4); border-top:1px solid var(--ma-border); background: var(--ma-surface); }
@@ -181,9 +192,10 @@
     padding: var(--ma-sp-3);
     border-radius: var(--ma-radius-1);
     border: 1px solid var(--ma-border);
-    background: #fff;
+    background: var(--ma-bg);
+    color: var(--ma-ink);
     box-shadow: var(--ma-shadow-1);
-    transition: border-color .2s ease, box-shadow .2s ease;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
   }
   .ma .input:focus {
     border-color: var(--ma-brand);
@@ -209,7 +221,7 @@
   .ma .table tr:hover { background: color-mix(in oklab, var(--ma-brand) 6%, var(--ma-bg)); }
 
   /* Badges */
-  .ma .badge { display:inline-block; border-radius: 999px; padding:.25em .6em; font-weight:600; font-size: .82em; border:1px solid color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); color: var(--ma-brand-ink); background: color-mix(in oklab, var(--ma-brand) 14%, #fff); }
+  .ma .badge { display:inline-block; border-radius: 999px; padding:.25em .6em; font-weight:600; font-size: .82em; border:1px solid color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); color: var(--ma-brand-ink); background: color-mix(in oklab, var(--ma-brand) 14%, var(--ma-bg)); }
 
   /* Painel embutido (iframe) */
   .ma .panel { width:100%; height:70vh; border:0; border-radius: var(--ma-radius-2); box-shadow: var(--ma-shadow-1); }

@@ -65,11 +65,23 @@
       </main>
       <footer class="app-footer">
         <div class="cluster app-footer__branding">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp">
-            <source media="(prefers-color-scheme: light)" srcset="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp">
-            <img src="miniapp-base/icons/icon-192.png" class="app-logo app-footer__logo" alt="5 Horas" loading="eager">
-          </picture>
+          <span class="app-footer__logo" aria-hidden="true">
+            <img
+              src="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Light-Transparente-2000x500px.webp"
+              class="app-logo"
+              data-theme-logo="light"
+              alt=""
+              loading="eager"
+            />
+            <img
+              src="https://5horas.com.br/wp-content/uploads/2025/10/Logo-Dark-Transparente-2000x500px.webp"
+              class="app-logo"
+              data-theme-logo="dark"
+              alt=""
+              loading="eager"
+            />
+          </span>
+          <span class="sr-only">5 Horas</span>
           <small>5 Horas — MiniApp Base</small>
         </div>
         <a class="btn btn--soft" href="#" id="installPWA" hidden>Instalar</a>
