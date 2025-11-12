@@ -1,5 +1,12 @@
 # Changelog
 
+## [2025-11-20] Sistema de usuários — fase 1
+### Adicionado
+- Módulo de autenticação (`miniapp-base/js/auth.js`) com persistência de sessão no shell, bloqueio de MiniApps por papel e sincronia automática com o catálogo.【F:miniapp-base/js/auth.js†L1-L216】【F:js/app.js†L1-L904】
+- MiniApp `miniapp-usuarios` com fluxo de bootstrap do administrador, painel de gestão e login compartilhado para operadores e leitores.【F:miniapp-usuarios/index.html†L1-L375】
+- Adaptador `users-appscript` e documentação `docs/USUARIOS.md` com os endpoints do Web App do Apps Script.【F:miniapp-base/js/adapters/users-appscript.js†L1-L131】【F:docs/USUARIOS.md†L1-L74】
+- Backend de referência em `docs/apps-script/users.gs` persistindo dados no `appDataFolder` com hash PBKDF2 e tokens opacos.【F:docs/apps-script/users.gs†L1-L250】
+
 ## [2025-11-19] Tema claro com tokens garantidos
 ### Corrigido
 - Shell, catálogo e MiniApps agora mantêm `data-theme="light"` ou `"dark"` no corpo e no contêiner `.ma`, evitando resquícios do tema anterior em cabeçalho, rodapé e componentes quando a instância é embutida em outros sites.【F:index.html†L12-L74】【F:js/app.js†L318-L368】【F:miniapp-catalogo/index.html†L1-L612】【F:miniapp-gestor-de-catalogo/index.html†L1053-L1144】【F:miniapp-prefeito/index.html†L1-L129】

@@ -47,10 +47,31 @@
     "category_key": "system",
     "status": "Essencial",
     "status_key": "essential",
+    "required_role": "admin",
     "translations": {
       "en-US": {
         "name": "Catalog Manager (Admin)",
         "description": "Administrative tool to import and manage the active catalog.",
+        "category": "System",
+        "status": "Essential"
+      }
+    }
+  },
+  {
+    "id": "app_users",
+    "name": "Cadastro de Usuários",
+    "description": "Gerencie contas, papéis e o bootstrap do administrador.",
+    "url": "miniapp-usuarios/index.html",
+    "icon_url": "https://placehold.co/48x48/4c1d95/ffffff?text=U",
+    "category": "Sistema",
+    "category_key": "system",
+    "status": "Essencial",
+    "status_key": "essential",
+    "required_role": "admin",
+    "translations": {
+      "en-US": {
+        "name": "User Management",
+        "description": "Manage accounts, roles and the administrator bootstrap.",
         "category": "System",
         "status": "Essential"
       }

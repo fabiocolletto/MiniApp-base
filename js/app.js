@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { doc, getDoc, getFirestore, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { Auth } from '../miniapp-base/js/auth.js';
 import {
   DEFAULT_LOCALE,
   getAvailableLocales,
@@ -45,6 +46,17 @@ let currentHeaderMeta = {
 let currentHeaderKey = 'catalog-default';
 let currentSheetStatusKey = null;
 let currentSheetStatusTone = 'info';
+
+let hasBootstrappedSheet = false;
+const ACCESS_ROLE_LABELS = {
+  admin: 'administrador',
+  operador: 'operador',
+  leitor: 'leitor',
+};
+
+if (typeof window !== 'undefined' && typeof window.__catalogDisabled__ !== 'boolean') {
+  window.__catalogDisabled__ = false;
+}
 
 const viewMap = {
   setup: setupView,
@@ -139,6 +151,38 @@ function notifyFrameLanguage(frame, locale = currentLanguage) {
 function notifyLanguages(locale = currentLanguage) {
   notifyFrameLanguage(catalogFrame, locale);
   notifyFrameLanguage(appFrame, locale);
+}
+
+function formatRoleLabel(role) {
+  if (typeof role !== 'string') {
+    return 'adequado';
+  }
+  const normalized = role.trim().toLowerCase();
+  if (!normalized) {
+    return 'adequado';
+  }
+  return ACCESS_ROLE_LABELS[normalized] || normalized;
+}
+
+function isUsersMiniApp(url) {
+  if (typeof url !== 'string') {
+    return false;
+  }
+  return url.includes('miniapp-usuarios');
+}
+
+function notifyFrameSession(frame) {
+  if (!frame) return;
+  try {
+    frame.contentWindow?.postMessage({ action: 'shell-session', session: Auth.getSession() }, '*');
+  } catch (error) {
+    console.warn('Não foi possível enviar a sessão para um iframe.', error);
+  }
+}
+
+function broadcastSessionToFrames() {
+  notifyFrameSession(catalogFrame);
+  notifyFrameSession(appFrame);
 }
 
 function applyLanguage(locale, { persist = true, notify = true } = {}) {
@@ -450,17 +494,88 @@ function openCatalog(meta = defaultCatalogHeader) {
   changeView('catalog');
   notifyFrameTheme(catalogFrame);
   notifyFrameLanguage(catalogFrame);
+  notifyFrameSession(catalogFrame);
 }
 window.openCatalogView = openCatalog;
 
-function loadMiniApp(url, meta = {}) {
+function ensureSheetBootstrap() {
+  if (hasBootstrappedSheet) {
+    return;
+  }
+  hasBootstrappedSheet = true;
+  bootstrapSheetConfig();
+}
+
+function handleAccessDenied(requiredRole) {
+  const roleLabel = formatRoleLabel(requiredRole);
+  setHeader(
+    {
+      title: defaultCatalogHeader.title,
+      subtitle: `Acesso negado. É necessário o papel ${roleLabel}.`,
+    },
+    { source: 'shell', key: 'access-denied' },
+  );
+  changeView('catalog');
+  if (catalogFrame && catalogFrame.contentWindow) {
+    try {
+      catalogFrame.contentWindow.postMessage(
+        { action: 'shell-access-denied', requiredRole: requiredRole || null },
+        '*',
+      );
+    } catch (error) {
+      console.warn('Não foi possível avisar o catálogo sobre o bloqueio de acesso.', error);
+    }
+  }
+}
+
+function handleSessionChange() {
+  const session = Auth.refreshSession();
+  const hasSession = Boolean(session);
+  broadcastSessionToFrames();
+  if (hasSession) {
+    window.__catalogDisabled__ = false;
+    if (currentHeaderSource === 'shell' && currentHeaderKey === 'access-denied') {
+      setHeader(defaultCatalogHeader, { source: 'shell', key: 'catalog-default' });
+    }
+    ensureSheetBootstrap();
+  } else {
+    window.__catalogDisabled__ = true;
+    if (!isUsersMiniApp(appFrame?.src || '')) {
+      loadMiniApp('miniapp-usuarios/index.html?mode=login', {}, { bypassAuth: true, persistHistory: false });
+    }
+  }
+}
+
+function loadMiniApp(url, meta = {}, options = {}) {
+  const config = typeof options === 'object' && options !== null ? options : {};
+  const requiredRole = config.requiredRole ?? meta?.requiredRole ?? null;
+  const bypassAuth = Boolean(config.bypassAuth);
+  const persistHistory = config.persistHistory !== false;
+  const targetUrl = url;
+  const usersApp = isUsersMiniApp(targetUrl || '');
+
+  if (!bypassAuth) {
+    if (requiredRole && !Auth.require(requiredRole)) {
+      handleAccessDenied(requiredRole);
+      return;
+    }
+    if (window.__catalogDisabled__ && !usersApp) {
+      handleAccessDenied(requiredRole || 'leitor');
+      return;
+    }
+  }
+
   if (meta && (meta.title || meta.subtitle)) {
     setHeader(meta, { source: 'miniapp', key: 'miniapp' });
   }
-  if (url) {
-    appFrame.src = url;
+  if (targetUrl) {
+    appFrame.src = targetUrl;
     try {
-      localStorage.setItem('miniapp-shell.last', url);
+      if (persistHistory && !usersApp) {
+        localStorage.setItem('miniapp-shell.last', targetUrl);
+      } else if (!persistHistory) {
+        localStorage.removeItem('miniapp-shell.last');
+      }
     } catch (error) {
       console.warn('Não foi possível armazenar o último MiniApp carregado.', error);
     }
@@ -468,10 +583,15 @@ function loadMiniApp(url, meta = {}) {
   changeView('app');
   notifyFrameTheme(appFrame);
   notifyFrameLanguage(appFrame);
+  notifyFrameSession(appFrame);
 }
 window.loadMiniApp = loadMiniApp;
 
 function restoreLastMiniAppOrCatalog() {
+  if (window.__catalogDisabled__) {
+    openCatalog();
+    return;
+  }
   let lastUrl = null;
   try {
     lastUrl = localStorage.getItem('miniapp-shell.last');
@@ -769,7 +889,7 @@ window.addEventListener('message', (event) => {
     if (data.metadata?.sheetId) {
       applySheetId(data.metadata.sheetId);
     }
-    loadMiniApp(data.url, data.metadata || {});
+    loadMiniApp(data.url, data.metadata || {}, { requiredRole: data.requiredRole || null });
   } else if (data.action === 'miniapp-header') {
     setHeader(data, { source: 'miniapp', key: 'miniapp' });
   } else if (data.action === 'miniapp-theme-ready') {
@@ -778,13 +898,25 @@ window.addEventListener('message', (event) => {
     if (targetFrame) {
       notifyFrameTheme(targetFrame);
       notifyFrameLanguage(targetFrame);
+      notifyFrameSession(targetFrame);
     }
   } else if (data.action === 'miniapp-language-ready') {
     const frames = [catalogFrame, appFrame];
     const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
     if (targetFrame) {
       notifyFrameLanguage(targetFrame);
+      notifyFrameSession(targetFrame);
     }
+  } else if (data.action === 'miniapp-session-ready') {
+    const frames = [catalogFrame, appFrame];
+    const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
+    if (targetFrame) {
+      notifyFrameSession(targetFrame);
+    }
+  } else if (data.action === 'auth-session-changed') {
+    handleSessionChange();
+  } else if (data.action === 'miniapp-access-denied') {
+    handleAccessDenied(data.requiredRole || null);
   }
 });
 
@@ -813,6 +945,30 @@ if (installBtn) {
   });
 }
 
+window.addEventListener('storage', (event) => {
+  if (event.key === 'miniapp.session') {
+    handleSessionChange();
+  }
+});
+
+async function initializeShell() {
+  const bootstrapState = await Auth.bootstrap();
+  if (bootstrapState?.adminMissing) {
+    window.__catalogDisabled__ = true;
+    setHeader(
+      {
+        title: 'Configurar administrador',
+        subtitle: 'Crie a conta inicial para continuar.',
+      },
+      { source: 'shell', key: 'auth-setup' },
+    );
+    loadMiniApp('miniapp-usuarios/index.html?mode=setup', {}, { bypassAuth: true, persistHistory: false });
+    broadcastSessionToFrames();
+    return;
+  }
+  handleSessionChange();
+}
+
 if ('serviceWorker' in navigator) {
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -835,4 +991,4 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-bootstrapSheetConfig();
+initializeShell();
