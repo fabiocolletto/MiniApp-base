@@ -1,6 +1,3 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { doc, getDoc, getFirestore, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 import { Auth } from '../miniapp-base/js/auth.js';
 import { UsersApi } from '../miniapp-base/js/adapters/users-appscript.js';
 import {
@@ -54,6 +51,50 @@ const ACCESS_ROLE_LABELS = {
   operador: 'operador',
   leitor: 'leitor',
 };
+
+let firebaseApp = null;
+let db = null;
+let auth = null;
+let sheetConfigDoc = null;
+let authPromise = null;
+let firebaseModulesPromise = null;
+
+async function loadFirebaseModules() {
+  if (firebaseModulesPromise) {
+    return firebaseModulesPromise;
+  }
+
+  firebaseModulesPromise = (async () => {
+    try {
+      const [appModule, authModule, firestoreModule] = await Promise.all([
+        import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
+        import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'),
+      ]);
+
+      return {
+        initializeApp: appModule.initializeApp,
+        getAuth: authModule.getAuth,
+        onAuthStateChanged: authModule.onAuthStateChanged,
+        signInAnonymously: authModule.signInAnonymously,
+        signInWithCustomToken: authModule.signInWithCustomToken,
+        getFirestore: firestoreModule.getFirestore,
+        doc: firestoreModule.doc,
+        getDoc: firestoreModule.getDoc,
+        setDoc: firestoreModule.setDoc,
+      };
+    } catch (error) {
+      console.warn('Firebase indisponível; executando shell sem integrações remotas.', error);
+      return null;
+    }
+  })();
+
+  const modules = await firebaseModulesPromise;
+  if (!modules) {
+    firebaseModulesPromise = null;
+  }
+  return modules;
+}
 
 if (typeof window !== 'undefined' && typeof window.__catalogDisabled__ !== 'boolean') {
   window.__catalogDisabled__ = false;
@@ -340,11 +381,6 @@ const initialSheetId = (() => {
   return null;
 })();
 
-let firebaseApp;
-let db;
-let auth;
-let sheetConfigDoc;
-let authPromise;
 let deferredPrompt;
 
 function readStoredTheme() {
@@ -694,11 +730,16 @@ async function ensureFirebase() {
     return { db, auth };
   }
 
+  const modules = await loadFirebaseModules();
+  if (!modules) {
+    return null;
+  }
+
   try {
-    firebaseApp = initializeApp(firebaseConfig);
-    db = getFirestore(firebaseApp);
-    auth = getAuth(firebaseApp);
-    sheetConfigDoc = doc(db, 'artifacts', appId, 'admin', 'sheet_config');
+    firebaseApp = modules.initializeApp(firebaseConfig);
+    db = modules.getFirestore(firebaseApp);
+    auth = modules.getAuth(firebaseApp);
+    sheetConfigDoc = modules.doc(db, 'artifacts', appId, 'admin', 'sheet_config');
     return { db, auth };
   } catch (error) {
     console.error('Erro ao inicializar o Firebase no shell.', error);
@@ -714,8 +755,13 @@ async function ensureAuth() {
     return auth.currentUser;
   }
   if (!authPromise) {
+    const modules = await loadFirebaseModules();
+    if (!modules) {
+      return null;
+    }
+
     authPromise = new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const unsubscribe = modules.onAuthStateChanged(auth, (user) => {
         if (user) {
           unsubscribe();
           resolve(user);
@@ -734,12 +780,12 @@ async function ensureAuth() {
       };
 
       if (initialAuthToken) {
-        signInWithCustomToken(auth, initialAuthToken).catch((error) => {
+        modules.signInWithCustomToken(auth, initialAuthToken).catch((error) => {
           console.warn('Falha com token customizado; tentando login anônimo.', error);
-          signInAnonymously(auth).catch(handleFailure);
+          modules.signInAnonymously(auth).catch(handleFailure);
         });
       } else {
-        signInAnonymously(auth).catch(handleFailure);
+        modules.signInAnonymously(auth).catch(handleFailure);
       }
     });
   }
@@ -751,9 +797,13 @@ async function fetchSheetIdFromFirestore() {
   if (!firebase || !sheetConfigDoc) {
     return null;
   }
+  const modules = await loadFirebaseModules();
+  if (!modules) {
+    return null;
+  }
   try {
     await ensureAuth();
-    const snapshot = await getDoc(sheetConfigDoc);
+    const snapshot = await modules.getDoc(sheetConfigDoc);
     if (snapshot.exists()) {
       const data = snapshot.data();
       return data?.GOOGLE_SHEET_ID || data?.googleSheetId || null;
@@ -771,8 +821,14 @@ async function persistSheetIdToFirestore(sheetId) {
     cacheSheetId(sheetId);
     return false;
   }
+  const modules = await loadFirebaseModules();
+  if (!modules) {
+    console.warn('Firebase indisponível; salvando o ID da planilha apenas localmente.');
+    cacheSheetId(sheetId);
+    return false;
+  }
   await ensureAuth();
-  await setDoc(sheetConfigDoc, {
+  await modules.setDoc(sheetConfigDoc, {
     GOOGLE_SHEET_ID: sheetId,
     updatedAt: new Date().toISOString(),
   }, { merge: true });
