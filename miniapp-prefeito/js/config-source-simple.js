@@ -2,13 +2,16 @@
 (() => {
   const KEY_SOURCES = 'prefeito.sources';
   const KEY_ACTIVE = 'prefeito.activeSource';
-  const KEY_DB = 'prefeito.cache';
+  const CACHE_PREFIX = 'prefeito.cache.';
+  const LEGACY_CACHE_KEY = 'prefeito.cache';
   const KEY_CFG_OLD = 'prefeito.cfg';
   const TITLE = 'MiniApp Prefeito — Demo';
 
   const statusEl = document.getElementById('status');
   const previewWrapper = document.getElementById('previewWrapper');
   const previewEl = document.getElementById('preview');
+  const previewSelectWrapper = document.getElementById('previewSelectWrapper');
+  const previewSelectEl = document.getElementById('previewSourceSelect');
   const btnUpdate = document.getElementById('btnUpdate');
   const btnAddSource = document.getElementById('btnAddSource');
   const sourceListEl = document.getElementById('sourceList');
@@ -22,13 +25,16 @@
   const sheetNameInput = document.getElementById('sheetName');
   const btnCancelAdd = document.getElementById('btnCancelAdd');
 
+  const previewState = { entries: [], focusId: '' };
+
   btnAddSource?.addEventListener('click', openSourceDialog);
   btnCancelAdd?.addEventListener('click', closeSourceDialog);
   sourceForm?.addEventListener('submit', onSubmitSource);
   sourceListEl?.addEventListener('change', onToggleSource);
-  sourceListEl?.addEventListener('click', onRemoveSource);
+  sourceListEl?.addEventListener('click', onSourceListClick);
   activeSelectEl?.addEventListener('change', onActiveChange);
   btnUpdate?.addEventListener('click', onUpdate);
+  previewSelectEl?.addEventListener('change', onPreviewSourceChange);
 
   if (sourceDialog && typeof sourceDialog.addEventListener === 'function') {
     sourceDialog.addEventListener('cancel', (event) => {
@@ -139,23 +145,34 @@
     if (!target.checked && getActiveSourceId() === id) {
       setActiveSourceId('');
     }
-    await refresh({ message: target.checked ? 'Planilha habilitada.' : 'Planilha desabilitada.' });
+    await refresh({ message: target.checked ? 'Planilha ativada.' : 'Planilha desativada.' });
   }
 
-  async function onRemoveSource(event) {
+  async function onSourceListClick(event) {
     const target = event.target;
     if (!(target instanceof HTMLButtonElement)) return;
-    if (target.dataset.role !== 'remove') return;
+    const role = target.dataset.role;
     const id = target.dataset.id;
-    if (!id) return;
+    if (!role || !id) return;
 
-    const remaining = getSources().filter((s) => s.id !== id);
-    saveSources(remaining);
-    deleteCacheFor(id);
-    if (getActiveSourceId() === id) {
-      setActiveSourceId('');
+    if (role === 'remove') {
+      const remaining = getSources().filter((s) => s.id !== id);
+      saveSources(remaining);
+      deleteCacheFor(id);
+      if (getActiveSourceId() === id) {
+        setActiveSourceId('');
+      }
+      await refresh({ message: 'Planilha removida.' });
+      return;
     }
-    await refresh({ message: 'Planilha removida.' });
+
+    if (role === 'clear-cache') {
+      const sources = getSources();
+      const targetSource = sources.find((s) => s.id === id);
+      deleteCacheFor(id);
+      const label = targetSource ? sourceLabel(targetSource) : id;
+      await refresh({ message: `Cache limpo para ${label}.`, previewFocusId: id });
+    }
   }
 
   async function onActiveChange(event) {
@@ -168,14 +185,18 @@
       return;
     }
     setActiveSourceId(id);
-    await refresh({ message: 'Fonte ativa atualizada.' });
+    await refresh({ message: 'Fonte ativa atualizada.', previewFocusId: id });
   }
 
   async function onUpdate() {
     const stateBefore = renderSourcesPanel();
-    const active = stateBefore.active;
-    if (!active) {
-      setStatus('Selecione uma planilha ativa antes de atualizar.', true, stateBefore);
+    const selectedId = stateBefore.activeId;
+    const targets = Array.isArray(stateBefore.sources)
+      ? stateBefore.sources.filter((source) => source.enabled && (!selectedId || source.id === selectedId))
+      : [];
+
+    if (!targets.length) {
+      setStatus('Selecione ao menos uma planilha ativa antes de atualizar.', true, stateBefore);
       hidePreview();
       notifyHeader(stateBefore);
       return;
@@ -187,39 +208,46 @@
     }
 
     try {
-      setStatus('Buscando CSV online…', false, stateBefore);
-      const url = buildCsvUrl(active.sheetId, active.sheetName);
-      const csv = await fetchCsv(url);
-      const rows = parseCsv(csv);
-      const lastDate = maxDate(rows, 'data');
-      const currentCache = getCacheFor(active.id);
-      const nextCache = { rows, lastDate, count: rows.length, updatedAt: Date.now() };
-
-      if (!currentCache || !currentCache.lastDate || isNewer(lastDate, currentCache.lastDate)) {
-        saveCacheFor(active.id, nextCache);
-        renderPreview(rows);
-        const msg = lastDate ? `Atualizado. Última data: ${lastDate} — ${rows.length} linhas.` : `Atualizado. ${rows.length} linhas encontradas.`;
-        await refresh({ message: msg, includePreviewMessage: false });
-      } else {
-        renderPreview(currentCache.rows || []);
-        const msg = currentCache.lastDate ? `Sem novidades. Última data permanece ${currentCache.lastDate}.` : 'Sem novidades no CSV remoto.';
-        await refresh({ message: msg, includePreviewMessage: false });
+      setStatus('Sincronizando fontes ativas…', false, stateBefore);
+      const results = [];
+      for (const source of targets) {
+        try {
+          const url = buildCsvUrl(source.sheetId, source.sheetName);
+          const csv = await fetchCsv(url);
+          const rows = parseCsv(csv);
+          const lastDate = maxDate(rows, 'data');
+          const now = Date.now();
+          const previous = getCacheFor(source.id);
+          const payload = { rows, lastDate, count: rows.length, updatedAt: now };
+          writeCache(source.id, payload);
+          const status = previous && previous.lastDate && !isNewer(lastDate, previous.lastDate) ? 'unchanged' : 'updated';
+          results.push({ source, status, cache: payload });
+        } catch (error) {
+          console.error(error);
+          results.push({ source, status: 'error', error });
+        }
       }
+
+      const focusId = selectedId || results.find((entry) => entry.status !== 'error')?.source.id || '';
+      const message = buildSyncMessage(results);
+      const warn = results.some((entry) => entry.status === 'error');
+      await refresh({ message, warn, previewFocusId: focusId });
     } catch (error) {
       console.error(error);
-      await refresh({ message: 'Falha ao atualizar online.', warn: true });
+      await refresh({ message: 'Falha ao atualizar fontes ativas.', warn: true, previewFocusId: selectedId || '' });
     } finally {
       if (btnUpdate) {
         btnUpdate.removeAttribute('aria-busy');
+        btnUpdate.disabled = false;
       }
     }
   }
 
-  async function refresh({ message = '', warn = false, includePreviewMessage = true } = {}) {
+  async function refresh({ message = '', warn = false, includePreviewMessage = true, previewFocusId = '' } = {}) {
     const state = renderSourcesPanel();
     let previewMessage = '';
     if (includePreviewMessage) {
-      previewMessage = await renderFromCacheOrDemo(state);
+      previewMessage = await renderFromCacheOrDemo(state, { focusId: previewFocusId });
     }
     const text = [message, previewMessage].filter(Boolean).join(' ').trim();
     setStatus(text, warn, state);
@@ -231,7 +259,8 @@
     const sources = getSources();
     let activeId = getActiveSourceId();
     let active = pickActive(sources, activeId);
-    const enabledCount = sources.filter((s) => s.enabled).length;
+    const activeList = sources.filter((s) => s.enabled);
+    const enabledCount = activeList.length;
 
     if (activeId && !active) {
       localStorage.removeItem(KEY_ACTIVE);
@@ -255,7 +284,7 @@
       activeSelectEl.innerHTML = '';
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = enabledCount ? 'Nenhuma planilha ativa' : 'Nenhuma planilha habilitada';
+      placeholder.textContent = enabledCount ? 'Nenhuma planilha ativa selecionada' : 'Nenhuma planilha marcada como ativa';
       activeSelectEl.appendChild(placeholder);
       if (!enabledCount) {
         activeSelectEl.value = '';
@@ -280,42 +309,63 @@
     }
 
     if (btnUpdate) {
-      btnUpdate.disabled = !active;
+      btnUpdate.disabled = enabledCount === 0;
     }
 
-    return { sources, active, activeId, enabledCount };
+    return { sources, active, activeId, enabledCount, activeList };
   }
 
-  async function renderFromCacheOrDemo(state) {
+  async function renderFromCacheOrDemo(state, { focusId = '' } = {}) {
     const sources = state?.sources ?? getSources();
-    const active = state?.active ?? pickActive(sources, state?.activeId || getActiveSourceId());
-    if (!active) {
+    const activeList = state?.activeList ?? sources.filter((s) => s.enabled);
+    const enabledCount = activeList.length;
+    const selectedActive = state?.active ?? pickActive(sources, state?.activeId || getActiveSourceId());
+    const focusCandidate = focusId || selectedActive?.id || (enabledCount ? activeList[0].id : '');
+
+    if (!sources.length) {
       hidePreview();
-      if (!sources.length) return 'Nenhuma planilha cadastrada.';
-      const enabled = sources.filter((s) => s.enabled).length;
-      return enabled ? 'Nenhuma planilha ativa.' : 'Todas as planilhas estão desabilitadas.';
+      return 'Nenhuma planilha cadastrada.';
     }
 
-    const cache = getCacheFor(active.id);
-    if (cache && Array.isArray(cache.rows) && cache.rows.length) {
-      renderPreview(cache.rows);
-      if (cache.demo) {
-        const detail = cache.lastDate ? `Última data ${cache.lastDate} — ${cache.rows.length} linhas.` : `${cache.rows.length} linhas.`;
-        return `DEMO carregada. ${detail}`;
+    if (!enabledCount) {
+      hidePreview();
+      return 'Nenhuma planilha ativa.';
+    }
+
+    const entries = [];
+    const missing = [];
+
+    for (const source of activeList) {
+      let cache = getCacheFor(source.id);
+      if ((!cache || !Array.isArray(cache.rows) || !cache.rows.length) && source.id === focusCandidate) {
+        const demo = await loadDemo(source.id);
+        if (demo && Array.isArray(demo.rows) && demo.rows.length) {
+          cache = demo;
+        }
       }
-      const detail = cache.lastDate ? `Última data ${cache.lastDate} — ${cache.rows.length} linhas.` : `${cache.rows.length} linhas.`;
-      return `Cache disponível. ${detail}`;
+
+      if (cache && Array.isArray(cache.rows) && cache.rows.length) {
+        entries.push({ source, cache });
+      } else {
+        missing.push(source);
+      }
     }
 
-    const demo = await loadDemo(active.id);
-    if (demo && Array.isArray(demo.rows) && demo.rows.length) {
-      renderPreview(demo.rows);
-      const detail = demo.lastDate ? `Última data ${demo.lastDate} — ${demo.rows.length} linhas.` : `${demo.rows.length} linhas.`;
-      return `DEMO carregada. ${detail}`;
+    if (!entries.length) {
+      hidePreview();
+      return 'Sem dados em cache. Clique em “Atualizar” para buscar.';
     }
 
-    hidePreview();
-    return 'Sem dados em cache. Clique em “Atualizar” para buscar.';
+    const focusEntry = entries.find((entry) => entry.source.id === focusCandidate) || entries[0];
+    renderPreview(entries.map(({ source, cache }) => ({ source, rows: cache.rows })), focusEntry.source.id);
+
+    const detailParts = entries.map(({ source, cache }) => formatCacheDetail(source, cache));
+    if (missing.length) {
+      const missingLabels = missing.map((src) => sourceLabel(src)).join('; ');
+      detailParts.push(`Sem dados para ${missingLabels}`);
+    }
+
+    return detailParts.length ? `Cache disponível: ${detailParts.join(' | ')}.` : 'Cache disponível.';
   }
 
   function createSourceListItem(source, activeId) {
@@ -351,6 +401,17 @@
 
     info.append(title, idLine, sheetLine);
 
+    const cache = getCacheFor(source.id);
+    if (cache?.updatedAt) {
+      const when = formatDateTime(cache.updatedAt);
+      if (when) {
+        const updatedLine = document.createElement('div');
+        updatedLine.className = 'muted';
+        updatedLine.textContent = `Última sincronização: ${when}`;
+        info.append(updatedLine);
+      }
+    }
+
     const actions = document.createElement('div');
     actions.className = 'cluster';
     actions.style.gap = '12px';
@@ -369,7 +430,7 @@
     toggle.dataset.id = source.id;
     toggle.checked = !!source.enabled;
 
-    toggleLabel.append(toggle, document.createTextNode('Habilitada'));
+    toggleLabel.append(toggle, document.createTextNode('Ativa'));
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -378,7 +439,14 @@
     removeBtn.dataset.id = source.id;
     removeBtn.textContent = 'Remover';
 
-    actions.append(toggleLabel, removeBtn);
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'btn';
+    clearBtn.dataset.role = 'clear-cache';
+    clearBtn.dataset.id = source.id;
+    clearBtn.textContent = 'Limpar cache';
+
+    actions.append(toggleLabel, clearBtn, removeBtn);
     wrapper.append(info, actions);
     item.append(wrapper);
 
@@ -408,10 +476,10 @@
         const descriptor = masked ? `${active.sheetName || active.id} (${masked})` : (active.sheetName || active.id);
         prefix = `${sources.length} ${label} salva${plural}, exibindo ${descriptor}.`;
       } else if (enabledCount) {
-        const enabledLabel = enabledCount === 1 ? '1 habilitada' : `${enabledCount} habilitadas`;
+        const enabledLabel = enabledCount === 1 ? '1 ativa' : `${enabledCount} ativas`;
         prefix = `${sources.length} ${label} salva${plural}, ${enabledLabel} e nenhuma ativa.`;
       } else {
-        prefix = `${sources.length} ${label} salva${plural}, todas desabilitadas.`;
+        prefix = `${sources.length} ${label} salva${plural}, todas desativadas.`;
       }
     }
 
@@ -439,13 +507,80 @@
   function hidePreview() {
     if (previewWrapper) previewWrapper.hidden = true;
     if (previewEl) previewEl.textContent = '';
+    if (previewSelectWrapper) previewSelectWrapper.hidden = true;
+    if (previewSelectEl) previewSelectEl.innerHTML = '';
+    previewState.entries = [];
+    previewState.focusId = '';
   }
 
-  function renderPreview(rows) {
+  function renderPreview(entries, focusId = '') {
     if (!previewWrapper || !previewEl) return;
+    const normalized = Array.isArray(entries)
+      ? entries.filter((item) => item && Array.isArray(item.rows) && item.rows.length)
+      : [];
+
+    if (!normalized.length) {
+      hidePreview();
+      return;
+    }
+
+    previewState.entries = normalized;
+    previewState.focusId = focusId || previewState.focusId || normalized[0]?.source?.id || '';
+
     previewWrapper.hidden = false;
+
+    if (previewSelectWrapper && previewSelectEl) {
+      if (normalized.length > 1) {
+        previewSelectWrapper.hidden = false;
+        previewSelectEl.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        normalized.forEach(({ source }) => {
+          const opt = document.createElement('option');
+          opt.value = source.id;
+          opt.textContent = sourceLabel(source);
+          fragment.appendChild(opt);
+        });
+        previewSelectEl.appendChild(fragment);
+      } else {
+        previewSelectWrapper.hidden = true;
+        previewSelectEl.innerHTML = '';
+      }
+    }
+
+    updatePreviewDisplay(previewState.focusId);
+  }
+
+  function onPreviewSourceChange(event) {
+    const select = event.target;
+    if (!(select instanceof HTMLSelectElement)) return;
+    updatePreviewDisplay(select.value);
+  }
+
+  function updatePreviewDisplay(focusId = '') {
+    if (!previewEl) return;
+    if (!previewState.entries.length) {
+      previewEl.textContent = '';
+      return;
+    }
+
+    let targetId = focusId || previewState.focusId;
+    let entry = previewState.entries.find((item) => item.source?.id === targetId);
+    if (!entry) {
+      entry = previewState.entries[0];
+    }
+
+    if (!entry) {
+      previewEl.textContent = '';
+      return;
+    }
+
+    previewState.focusId = entry.source?.id || '';
+    if (previewSelectWrapper && previewSelectEl && !previewSelectWrapper.hidden) {
+      previewSelectEl.value = previewState.focusId;
+    }
+
     const max = 12;
-    const subset = Array.isArray(rows) ? rows.slice(0, max) : [];
+    const subset = Array.isArray(entry.rows) ? entry.rows.slice(0, max) : [];
     previewEl.textContent = JSON.stringify(subset, null, 2);
   }
 
@@ -529,52 +664,69 @@
 
   function migrateLegacyDb(targetId) {
     if (!targetId) return;
-    const raw = readJson(KEY_DB);
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
-    if (!Array.isArray(raw.rows)) return;
-    const map = { [targetId]: raw };
-    writeDbStore(map);
+    const raw = readJson(LEGACY_CACHE_KEY);
+    if (!raw) return;
+    if (Array.isArray(raw.rows)) {
+      writeCache(targetId, raw);
+      localStorage.removeItem(LEGACY_CACHE_KEY);
+      return;
+    }
+
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      const entry = raw[targetId];
+      if (entry && typeof entry === 'object' && Array.isArray(entry.rows)) {
+        writeCache(targetId, entry);
+      }
+      localStorage.removeItem(LEGACY_CACHE_KEY);
+    }
   }
 
   function ensureDbMigrated(sources) {
-    const raw = readJson(KEY_DB);
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
-    if (!Array.isArray(raw.rows)) return;
-    const target = Array.isArray(sources) && sources.length === 1 ? sources[0] : null;
-    if (!target) return;
-    writeDbStore({ [target.id]: raw });
+    const raw = readJson(LEGACY_CACHE_KEY);
+    if (!raw) return;
+
+    if (Array.isArray(raw.rows)) {
+      const target = Array.isArray(sources) && sources.length === 1 ? sources[0] : null;
+      if (target) {
+        writeCache(target.id, raw);
+      }
+      localStorage.removeItem(LEGACY_CACHE_KEY);
+      return;
+    }
+
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      Object.entries(raw).forEach(([id, value]) => {
+        if (value && typeof value === 'object' && Array.isArray(value.rows)) {
+          writeCache(id, value);
+        }
+      });
+      localStorage.removeItem(LEGACY_CACHE_KEY);
+    }
   }
 
-  function readDbStore() {
-    const raw = readJson(KEY_DB);
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  function cacheKey(sourceId) {
+    return `${CACHE_PREFIX}${sourceId}`;
+  }
+
+  function readCache(sourceId) {
+    if (!sourceId) return null;
+    const raw = readJson(cacheKey(sourceId));
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.rows)) return null;
     return raw;
   }
 
-  function writeDbStore(store) {
-    localStorage.setItem(KEY_DB, JSON.stringify(store));
+  function writeCache(sourceId, entry) {
+    if (!sourceId || !entry) return;
+    localStorage.setItem(cacheKey(sourceId), JSON.stringify(entry));
   }
 
   function getCacheFor(sourceId) {
-    const store = readDbStore();
-    const entry = store[sourceId];
-    if (!entry || typeof entry !== 'object') return null;
-    if (!Array.isArray(entry.rows)) return null;
-    return entry;
-  }
-
-  function saveCacheFor(sourceId, entry) {
-    const store = readDbStore();
-    store[sourceId] = entry;
-    writeDbStore(store);
+    return readCache(sourceId);
   }
 
   function deleteCacheFor(sourceId) {
-    const store = readDbStore();
-    if (Object.prototype.hasOwnProperty.call(store, sourceId)) {
-      delete store[sourceId];
-      writeDbStore(store);
-    }
+    if (!sourceId) return;
+    localStorage.removeItem(cacheKey(sourceId));
   }
 
   async function loadDemo(targetId) {
@@ -585,11 +737,77 @@
       const rows = parseCsv(csv);
       const lastDate = maxDate(rows, 'data');
       const payload = { rows, lastDate, count: rows.length, updatedAt: Date.now(), demo: true };
-      if (targetId) saveCacheFor(targetId, payload);
+      if (targetId) writeCache(targetId, payload);
       return payload;
     } catch (error) {
       console.error(error);
       return null;
+    }
+  }
+
+  function buildSyncMessage(results) {
+    if (!Array.isArray(results) || !results.length) return '';
+    const updated = [];
+    const unchanged = [];
+    const failures = [];
+
+    results.forEach((entry) => {
+      if (!entry || !entry.source) return;
+      if (entry.status === 'error') {
+        failures.push(sourceLabel(entry.source));
+        return;
+      }
+      if (entry.status === 'updated') {
+        updated.push(formatSyncDetail(entry.source, entry.cache));
+        return;
+      }
+      if (entry.status === 'unchanged') {
+        unchanged.push(formatSyncDetail(entry.source, entry.cache));
+      }
+    });
+
+    const parts = [];
+    if (updated.length) {
+      parts.push(`Atualizado${updated.length > 1 ? 's' : ''}: ${updated.join('; ')}`);
+    }
+    if (unchanged.length) {
+      parts.push(`Sem novidades: ${unchanged.join('; ')}`);
+    }
+    if (failures.length) {
+      parts.push(`Falha${failures.length > 1 ? 's' : ''}: ${failures.join('; ')}`);
+    }
+    return parts.join(' ');
+  }
+
+  function formatSyncDetail(source, cache) {
+    if (!cache) return sourceLabel(source);
+    return formatCacheDetail(source, cache);
+  }
+
+  function formatCacheDetail(source, cache) {
+    const label = sourceLabel(source);
+    if (!cache || !Array.isArray(cache.rows)) return `${label} (sem dados)`;
+    const parts = [];
+    if (cache.updatedAt) parts.push(`sincronizado ${formatDateTime(cache.updatedAt)}`);
+    if (cache.lastDate) parts.push(`última data ${cache.lastDate}`);
+    parts.push(`${cache.rows.length} linha${cache.rows.length === 1 ? '' : 's'}`);
+    if (cache.demo) parts.push('DEMO');
+    return `${label} (${parts.join(' — ')})`;
+  }
+
+  function sourceLabel(source) {
+    if (!source) return '';
+    const label = source.sheetName || source.id || '';
+    const masked = mask(source.sheetId);
+    return masked ? `${label} (${masked})` : label;
+  }
+
+  function formatDateTime(timestamp) {
+    if (!timestamp) return '';
+    try {
+      return new Date(timestamp).toLocaleString('pt-BR');
+    } catch {
+      return '';
     }
   }
 
@@ -663,4 +881,11 @@
     }
     return candidate;
   }
+
+  if (!window.PrefeitoCache) {
+    window.PrefeitoCache = {};
+  }
+  window.PrefeitoCache.readCache = readCache;
+  window.PrefeitoCache.writeCache = writeCache;
+  window.PrefeitoCache.deleteCache = deleteCacheFor;
 })();
