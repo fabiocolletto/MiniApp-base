@@ -243,8 +243,8 @@ if (appFrame) {
 
 const THEME_STORAGE_KEY = 'miniapp-shell.theme';
 const THEME_META_COLORS = {
-  light: '#f8fafc',
-  dark: '#0f172a',
+  light: '#ffffff',
+  dark: '#0b1220',
 };
 
 let currentTheme = 'light';
