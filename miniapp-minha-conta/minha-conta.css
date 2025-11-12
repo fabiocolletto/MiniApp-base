@@ -1,0 +1,98 @@
+/* Estilos específicos do miniapp Minha Conta. Todos os seletores permanecem sob o escopo .ma. */
+
+.ma .section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ma .tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ma .tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: var(--ma-radius-sm);
+  font: inherit;
+  cursor: pointer;
+  color: var(--ma-color-text-muted);
+  border: 1px solid transparent;
+}
+
+.ma .tab:focus-visible {
+  outline: 2px solid var(--ma-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ma .tab.is-active {
+  color: var(--ma-color-text-primary);
+  background: var(--ma-color-surface-raised);
+  border-color: var(--ma-color-border);
+}
+
+.ma .tab[aria-selected="false"] {
+  opacity: 0.8;
+}
+
+.ma .tab-panel {
+  display: none;
+  margin-bottom: 24px;
+}
+
+.ma .tab-panel.is-active {
+  display: block;
+}
+
+.ma .surface.subtle {
+  background: var(--ma-color-surface-subtle);
+  border: 1px dashed var(--ma-color-border);
+  padding: 16px;
+}
+
+.ma .meta-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.ma .meta-list dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ma-color-text-muted);
+}
+
+.ma .meta-list dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.ma .status {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ma .status.is-success {
+  color: var(--ma-color-success-strong);
+}
+
+.ma .status.is-error {
+  color: var(--ma-color-danger-strong);
+}
+
+.ma .status.is-warning {
+  color: var(--ma-color-warning-strong);
+}
+
+.ma [data-requires-auth][disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

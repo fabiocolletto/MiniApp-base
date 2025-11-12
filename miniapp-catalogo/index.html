@@ -47,7 +47,7 @@
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body class="p-4 md:p-8 catalog-container" data-theme="light">
+<body class="p-4 md:p-8 catalog-container">
 
   <div class="max-w-7xl mx-auto">
     
@@ -99,7 +99,9 @@
     let currentStatusKey = null;
     let currentStatusContext = {};
     let currentStatusFallback = '';
+    let currentStatusExtras = null;
     let currentUserRole = null;
+    const LOCAL_STORAGE_KEY = 'miniapp-catalog.admin.activeItems';
 
     const filterOptions = {
       searchText: '',
@@ -204,6 +206,9 @@
         case 'error':
           statusMessage.classList.add('text-red-600');
           break;
+        case 'warning':
+          statusMessage.classList.add('text-yellow-600');
+          break;
         default:
           statusMessage.classList.add('text-gray-500');
           break;
@@ -211,6 +216,49 @@
       currentStatusKey = key;
       currentStatusContext = key ? { ...context } : {};
       currentStatusFallback = typeof fallback === 'string' ? fallback : '';
+      currentStatusExtras = null;
+    }
+
+    function mergeCatalogEntries(primary = [], extras = []) {
+      const merged = new Map();
+
+      const push = (item, prefix) => {
+        if (!item) {
+          return;
+        }
+        const rawKey = typeof item.id === 'string' && item.id.trim()
+          ? item.id.trim()
+          : typeof item.url === 'string' && item.url.trim()
+            ? item.url.trim()
+            : null;
+        const key = rawKey || `${prefix}-${merged.size}`;
+        if (merged.has(key)) {
+          merged.set(key, { ...merged.get(key), ...item });
+        } else {
+          merged.set(key, item);
+        }
+      };
+
+      primary.forEach((item) => push(item, 'catalog'));
+      extras.forEach((item) => push(item, 'local'));
+      return Array.from(merged.values());
+    }
+
+    function loadLocalCatalogItems() {
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!stored) {
+          return [];
+        }
+        const parsed = JSON.parse(stored);
+        const items = Array.isArray(parsed?.items) ? parsed.items : [];
+        return items
+          .map((item, index) => normalizeCatalogItem(item, index + 1000))
+          .filter(Boolean);
+      } catch (error) {
+        console.warn('Não foi possível carregar itens locais do catálogo.', error);
+        return [];
+      }
     }
 
     function escapeHtml(value) {
@@ -548,32 +596,63 @@
     async function loadStaticCatalog() {
       showStatus('loading', catalogMessages.status.loading, 'info');
       renderLoadingState(true);
+
+      let normalized = [];
+      let loadError = null;
+
       try {
         const response = await fetch('../catalog.json', { cache: 'no-store' });
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
         const json = await response.json();
-        const normalized = Array.isArray(json)
+        normalized = Array.isArray(json)
           ? json.map((item, index) => normalizeCatalogItem(item, index)).filter(Boolean)
           : [];
-        fullCatalogData = normalized;
+      } catch (error) {
+        loadError = error;
+        console.error('Erro ao carregar catalog.json:', error);
+      }
 
-        if (!fullCatalogData.length) {
+      const localItems = loadLocalCatalogItems();
+      fullCatalogData = mergeCatalogEntries(normalized, localItems);
+
+      if (!fullCatalogData.length) {
+        if (loadError) {
+          catalogList.dataset.renderState = 'error';
+          catalogList.innerHTML = `<p class="text-red-600 col-span-full p-4 text-center border border-dashed rounded-lg bg-red-50">${escapeHtml(catalogMessages.status.loadError)}</p>`;
+          showStatus('loadError', catalogMessages.status.loadError, 'error', { message: loadError.message });
+        } else {
           catalogList.dataset.renderState = 'empty';
           catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.empty)}</p>`;
           showStatus('empty', catalogMessages.status.empty, 'info');
-          return;
         }
+        return;
+      }
 
-        populateFilters(fullCatalogData);
-        applyFiltersAndRender();
-        showStatus('catalogLoaded', catalogMessages.status.catalogLoaded, 'success', { count: fullCatalogData.length });
-      } catch (error) {
-        console.error('Erro ao carregar catalog.json:', error);
-        catalogList.dataset.renderState = 'error';
-        catalogList.innerHTML = `<p class="text-red-600 col-span-full p-4 text-center border border-dashed rounded-lg bg-red-50">${escapeHtml(catalogMessages.status.loadError)}</p>`;
-        showStatus('loadError', catalogMessages.status.loadError, 'error', { message: error.message });
+      populateFilters(fullCatalogData);
+      applyFiltersAndRender();
+
+      const statusContext = { count: fullCatalogData.length };
+      if (localItems.length) {
+        statusContext.localCount = localItems.length;
+      }
+
+      const tone = 'warning';
+      const baseFallback = catalogMessages.status.firebaseMissing;
+      const catalogLoadedText = formatTemplate(catalogMessages.status.catalogLoaded, statusContext).trim();
+
+      showStatus('firebaseMissing', baseFallback, tone, statusContext);
+
+      if (catalogLoadedText) {
+        const combinedMessage = `${statusMessage.textContent} ${catalogLoadedText}`.trim();
+        statusMessage.textContent = combinedMessage;
+        currentStatusFallback = combinedMessage;
+        currentStatusExtras = {
+          key: 'catalogLoaded',
+          fallback: catalogLoadedText,
+          context: { ...statusContext },
+        };
       }
     }
 
@@ -618,7 +697,18 @@
       }
 
       if (currentStatusKey) {
-        statusMessage.textContent = translateStatus(currentStatusKey, currentStatusFallback, currentStatusContext);
+        const baseMessage = translateStatus(currentStatusKey, currentStatusFallback, currentStatusContext);
+        let combinedMessage = baseMessage;
+        if (currentStatusExtras?.key) {
+          const extraMessage = translateStatus(
+            currentStatusExtras.key,
+            currentStatusExtras.fallback,
+            currentStatusExtras.context || {}
+          );
+          combinedMessage = `${baseMessage} ${extraMessage}`.trim();
+        }
+        statusMessage.textContent = combinedMessage;
+        currentStatusFallback = combinedMessage;
       } else {
         statusMessage.textContent = currentStatusFallback || '';
       }
@@ -666,7 +756,11 @@
       const applyTheme = (theme) => {
         if (!themeHost) return;
         const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
-        themeHost.setAttribute('data-theme', normalizedTheme);
+        if (normalizedTheme === 'dark') {
+          themeHost.setAttribute('data-theme', 'dark');
+        } else {
+          themeHost.removeAttribute('data-theme');
+        }
 
         if (window.parent && typeof window.parent.postMessage === 'function') {
           window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');

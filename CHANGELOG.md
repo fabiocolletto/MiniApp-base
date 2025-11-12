@@ -1,5 +1,18 @@
 # Changelog
 
+## [2025-11-21] Minha Conta com Google Drive appDataFolder
+### Adicionado
+- MiniApp "Minha Conta" (`miniapp-minha-conta/`) com estrutura SPA, abas para backups e preferências e handshake completo com o shell.
+- Adaptador `drive-appdata` (`miniapp-base/js/adapters/drive-appdata.js`) para acessar o `appDataFolder` via Google Identity Services.
+- Configuração pública `config/app-config.js` contendo o placeholder do client ID OAuth requerido pelo miniapp.
+- Entrada do catálogo `app_minha_conta` apontando para o novo miniapp e disponível para todos os papéis.
+
+### Corrigido
+- Catálogo público volta a combinar itens locais salvos em `miniapp-catalog.admin.activeItems` com o catálogo estático, garantindo que backups offline apareçam ao lado dos MiniApps essenciais.
+- Shell desativa o bloqueio de login quando o serviço de usuários não está configurado, mantendo o catálogo acessível em ambientes de teste e permitindo a alternância de idioma e tema sem sessão.
+- Status do catálogo agora apresenta o aviso de ausência do Firebase em tom de alerta, inclui o total de MiniApps carregados e se atualiza conforme o idioma selecionado.
+- MiniApps removem o atributo `data-theme="light"` no carregamento inicial para que o shell defina o tema vigente de forma consistente.
+
 ## [2025-11-20] Sistema de usuários — fase 1
 ### Adicionado
 - Módulo de autenticação (`miniapp-base/js/auth.js`) com persistência de sessão no shell, bloqueio de MiniApps por papel e sincronia automática com o catálogo.【F:miniapp-base/js/auth.js†L1-L216】【F:js/app.js†L1-L904】

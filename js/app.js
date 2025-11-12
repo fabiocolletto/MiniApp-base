@@ -2,6 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { doc, getDoc, getFirestore, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 import { Auth } from '../miniapp-base/js/auth.js';
+import { UsersApi } from '../miniapp-base/js/adapters/users-appscript.js';
 import {
   DEFAULT_LOCALE,
   getAvailableLocales,
@@ -391,16 +392,20 @@ function notifyThemeFrames(theme = currentTheme) {
   notifyFrameTheme(appFrame, theme);
 }
 
+function setElementTheme(element, theme) {
+  if (!element) return;
+  if (theme === 'dark') {
+    element.setAttribute('data-theme', 'dark');
+  } else {
+    element.removeAttribute('data-theme');
+  }
+}
+
 function applyTheme(theme, { persist = true, notify = true } = {}) {
   currentTheme = theme === 'dark' ? 'dark' : 'light';
 
-  if (miniAppRoot) {
-    miniAppRoot.setAttribute('data-theme', currentTheme);
-  }
-
-  if (document.body) {
-    document.body.setAttribute('data-theme', currentTheme);
-  }
+  setElementTheme(miniAppRoot, currentTheme);
+  setElementTheme(document.body, currentTheme);
 
   if (themeMetaTag) {
     const color = THEME_META_COLORS[currentTheme] || THEME_META_COLORS.light;
@@ -528,12 +533,20 @@ function handleAccessDenied(requiredRole) {
   }
 }
 
-function handleSessionChange() {
+function handleSessionChange(options = {}) {
+  const { skipLogin = false } = options;
   const session = Auth.refreshSession();
   const hasSession = Boolean(session);
+
   broadcastSessionToFrames();
-  if (hasSession) {
+
+  if (hasSession || skipLogin) {
     window.__catalogDisabled__ = false;
+
+    if (skipLogin && !hasSession) {
+      openCatalog();
+    }
+
     if (currentHeaderSource === 'shell' && currentHeaderKey === 'access-denied') {
       setHeader(defaultCatalogHeader, { source: 'shell', key: 'catalog-default' });
     }
@@ -953,7 +966,15 @@ window.addEventListener('storage', (event) => {
 
 async function initializeShell() {
   const bootstrapState = await Auth.bootstrap();
-  if (bootstrapState?.adminMissing) {
+  let usersApiConfigured = false;
+  try {
+    usersApiConfigured = Boolean(UsersApi.getBaseUrl());
+  } catch (error) {
+    usersApiConfigured = false;
+  }
+  const skipLogin = !usersApiConfigured;
+
+  if (bootstrapState?.adminMissing && usersApiConfigured) {
     window.__catalogDisabled__ = true;
     setHeader(
       {
@@ -966,7 +987,12 @@ async function initializeShell() {
     broadcastSessionToFrames();
     return;
   }
-  handleSessionChange();
+
+  handleSessionChange({ skipLogin });
+
+  if (!usersApiConfigured && bootstrapState?.error) {
+    console.warn('Serviço de usuários indisponível; executando o shell sem autenticação.', bootstrapState.error);
+  }
 }
 
 if ('serviceWorker' in navigator) {
