@@ -351,11 +351,11 @@ function applyTheme(theme, { persist = true, notify = true } = {}) {
   currentTheme = theme === 'dark' ? 'dark' : 'light';
 
   if (miniAppRoot) {
-    if (currentTheme === 'dark') {
-      miniAppRoot.setAttribute('data-theme', 'dark');
-    } else {
-      miniAppRoot.removeAttribute('data-theme');
-    }
+    miniAppRoot.setAttribute('data-theme', currentTheme);
+  }
+
+  if (document.body) {
+    document.body.setAttribute('data-theme', currentTheme);
   }
 
   if (themeMetaTag) {
