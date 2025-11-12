@@ -79,6 +79,17 @@
 
   <script src="js/config-source-simple.js"></script>
   <script>
+    function announceHeader({ title, subtitle }) {
+      if (!title && !subtitle) return;
+      if (!window.parent || typeof window.parent.postMessage !== 'function') return;
+      window.parent.postMessage({ action: 'miniapp-header', title, subtitle }, '*');
+    }
+
+    function announceLanguageReady() {
+      if (!window.parent || typeof window.parent.postMessage !== 'function') return;
+      window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+    }
+
     (function () {
       const root = document.querySelector('.ma');
 

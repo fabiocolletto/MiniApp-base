@@ -5,7 +5,7 @@
   const CACHE_PREFIX = 'prefeito.cache.';
   const LEGACY_CACHE_KEY = 'prefeito.cache';
   const KEY_CFG_OLD = 'prefeito.cfg';
-  const TITLE = 'MiniApp Prefeito — Demo';
+  const TITLE = 'Dashboard do Prefeito';
 
   const statusEl = document.getElementById('status');
   const previewWrapper = document.getElementById('previewWrapper');
@@ -61,6 +61,11 @@
     const fallbackMessage = previewMessage || (state.sources.length ? 'Selecione uma planilha ativa para visualizar os dados.' : 'Adicione uma planilha para começar.');
     setStatus(fallbackMessage, false, state);
     notifyHeader(state);
+    if (typeof window.announceLanguageReady === 'function') {
+      window.announceLanguageReady();
+    } else if (window.parent && typeof window.parent.postMessage === 'function') {
+      window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+    }
   }
 
   function openSourceDialog() {
@@ -489,19 +494,24 @@
   }
 
   function notifyHeader(state) {
-    if (!window.parent || typeof window.parent.postMessage !== 'function') return;
+    const announcer = typeof window.announceHeader === 'function' ? window.announceHeader : null;
+    if (!announcer && (!window.parent || typeof window.parent.postMessage !== 'function')) return;
     const sources = state?.sources ?? getSources();
     const active = state?.active ?? pickActive(sources, state?.activeId || getActiveSourceId());
     let subtitle = '';
     if (active) {
-      const masked = mask(active.sheetId);
-      subtitle = masked ? `${active.sheetName || active.id} (${masked})` : (active.sheetName || active.id);
+      subtitle = active.sheetName || active.id || '';
     } else if (!sources.length) {
       subtitle = 'Cadastre uma planilha para começar';
     } else {
       subtitle = 'Nenhuma planilha ativa';
     }
-    window.parent.postMessage({ action: 'miniapp-header', title: TITLE, subtitle }, '*');
+    const payload = { title: TITLE, subtitle };
+    if (announcer) {
+      announcer(payload);
+    } else {
+      window.parent.postMessage({ action: 'miniapp-header', ...payload }, '*');
+    }
   }
 
   function hidePreview() {

@@ -17,3 +17,8 @@ MiniApp focado em consumo de dados públicos para prefeitos. A interface agora p
 7. Quando múltiplas planilhas estão ativas, o preview oferece um seletor para alternar rapidamente entre as prévias (máx. 12 linhas por planilha).
 
 Os valores são guardados em `localStorage` e aplicados a cada recarregamento. Qualquer ajuste de integração deve preservar o envio de `{ action: 'miniapp-header', title, subtitle }` sempre que o estado mudar, além de respeitar o fallback DEMO para ambientes offline.
+
+## Integração com o shell
+- O arquivo `index.html` expõe `window.announceHeader({ title, subtitle })`, responsável por avisar o shell (via `postMessage`) sobre o cabeçalho do miniapp.
+- O controlador (`js/config-source-simple.js`) chama `announceHeader` após concluir o `init`, depois de cada atualização e sempre que a planilha ativa muda. O título padrão enviado é **Dashboard do Prefeito**, enquanto o subtítulo reflete a planilha ativa ou um texto de fallback.
+- Assim que a interface está montada o miniapp também dispara `{ action: 'miniapp-language-ready' }` para que o shell reforce traduções se necessário.
