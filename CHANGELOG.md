@@ -1,5 +1,9 @@
 # Changelog
 
+## [2025-11-24] Logo responsivo no rodapé
+### Corrigido
+- Rodapé do shell limita a área do logotipo e impede que as imagens temáticas se expandam em telas estreitas, evitando distorção visual no catálogo e nos MiniApps carregados.【F:miniapp-base/style/styles.css†L159-L168】
+
 ## [2025-11-23] Backup local do sistema de usuários no Google Drive
 ### Adicionado
 - Painel de usuários ganhou o bloco “Backup no Google Drive”, permitindo autorizar o Drive pessoal e sincronizar o estado local diretamente do MiniApp administrativo.【F:miniapp-usuarios/index.html†L143-L227】

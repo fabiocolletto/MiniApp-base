@@ -159,6 +159,13 @@
     background: var(--ma-bg);
     box-shadow: 0 -1px 0 var(--ma-border);
   }
+  .ma .app-footer__branding { gap: var(--ma-sp-3); }
+  .ma .app-footer__logo {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    max-width: 140px;
+  }
   .ma [data-theme-logo] { display: none; height: 24px; width: auto; }
   .ma [data-theme-logo="light"] { display: inline-block; }
   .ma[data-theme="light"] [data-theme-logo="dark"] { display: none; }
