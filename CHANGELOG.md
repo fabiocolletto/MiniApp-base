@@ -1,5 +1,10 @@
 # Changelog
 
+## [2025-11-19] Tema claro com tokens garantidos
+### Corrigido
+- Shell, catálogo e MiniApps agora mantêm `data-theme="light"` ou `"dark"` no corpo e no contêiner `.ma`, evitando resquícios do tema anterior em cabeçalho, rodapé e componentes quando a instância é embutida em outros sites.【F:index.html†L12-L74】【F:js/app.js†L318-L368】【F:miniapp-catalogo/index.html†L1-L612】【F:miniapp-gestor-de-catalogo/index.html†L1053-L1144】【F:miniapp-prefeito/index.html†L1-L129】
+- Token `--ma-color-scheme` define `color-scheme` automaticamente para cada modo, assegurando contraste correto em elementos nativos do navegador e reforçando os estilos claros/escuros do shell.【F:miniapp-base/style/styles.css†L25-L118】
+
 ## [2025-11-18] Autopreenchimento do ID da planilha
 ### Adicionado
 - Shell aceita `window.__initial_sheet_id` (e aliases compatíveis) para aplicar automaticamente o ID da planilha, sincronizar com o Firestore quando disponível e continuar oferecendo fallback em cache para novos dispositivos.【F:js/app.js†L271-L306】【F:js/app.js†L600-L657】

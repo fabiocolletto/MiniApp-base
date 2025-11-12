@@ -6,8 +6,8 @@
   <title>MiniApp Prefeito — Demo</title>
   <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
 </head>
-<body>
-  <div class="ma">
+<body data-theme="light">
+  <div class="ma" data-theme="light">
     <div class="app">
       <header class="app-header">
         <div class="wrap">
@@ -96,11 +96,11 @@
       const applyTheme = (theme) => {
         if (!root) return;
         const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
-        if (normalizedTheme === 'dark') {
-          root.setAttribute('data-theme', 'dark');
-        } else {
-          root.removeAttribute('data-theme');
+        if (root) {
+          root.setAttribute('data-theme', normalizedTheme);
         }
+
+        document.body.setAttribute('data-theme', normalizedTheme);
 
         if (window.parent && typeof window.parent.postMessage === 'function') {
           window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');
