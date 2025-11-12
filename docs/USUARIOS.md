@@ -17,6 +17,12 @@ O shell filtra os cards do catálogo com base no atributo `data-required-role`. 
 3. O formulário “Definir administrador” envia `POST /users/init-admin`. Após a criação, o próprio MiniApp chama `Auth.login` para registrar a sessão e o shell reabre o catálogo.
 4. Com um administrador ativo, novos acessos são direcionados para o login padrão (`miniapp-usuarios/index.html`).
 
+### Modo local (fallback)
+
+- Quando nenhuma URL é configurada para o serviço de usuários (`UsersApi.getBaseUrl()` vazio), o adaptador entra em modo local e persiste os dados no `localStorage` (`miniapp.users.local.state`).
+- O bootstrap continua exigindo a criação de um administrador antes de liberar o catálogo, exatamente como no fluxo remoto.
+- As operações de login, listagem e atualização de usuários são tratadas no próprio cliente; tokens sintéticos (`local-...`) são usados apenas para manter compatibilidade com a sessão do shell.
+
 ## Endpoints expostos pelo Apps Script
 
 | Método | Rota               | Descrição                                                      |
@@ -31,7 +37,7 @@ O shell filtra os cards do catálogo com base no atributo `data-required-role`. 
 ## Decisões de segurança
 
 - **Segredo no cliente:** nunca persistimos a senha. O cliente mantém apenas o payload de sessão em `localStorage` (`miniapp.session`) com `{ userId, email, role, token }`.
-- **Hash seguro:** o backend usa PBKDF2 com salt único por usuário antes de gravar no `appDataFolder`.
+- **Hash seguro:** o backend usa PBKDF2 com salt único por usuário antes de gravar no `appDataFolder`. No modo local, o cliente aplica `SHA-256` (ou `base64` como fallback) antes de salvar o segredo no dispositivo.
 - **Admin único:** enquanto existir administrador ativo, `/users/init-admin` responde `409` e o MiniApp exibe somente o login.
 - **Auditoria:** cada alteração de usuário salva `updatedAt` (ISO) e `updatedBy` (ID do administrador autenticado).
 - **Tokens opacos:** o Apps Script gera tokens curtos assinados via `PropertiesService`. O cliente envia em `Authorization: Bearer <token>`; o backend valida expiração antes de atender solicitações administrativas.

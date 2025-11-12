@@ -155,16 +155,27 @@ function applySessionPayload(payload) {
 const Auth = {
   async bootstrap(options = {}) {
     restoreSessionFromStorage(Boolean(options.force));
+    const detectedMode = UsersApi.isLocalMode ? (UsersApi.isLocalMode() ? 'local' : 'remote') : undefined;
     try {
       const response = await UsersApi.bootstrap(options);
       if (response && typeof response === 'object') {
-        return { adminMissing: Boolean(response.adminMissing) };
+        return {
+          adminMissing: Boolean(response.adminMissing),
+          mode: detectedMode,
+        };
       }
     } catch (error) {
       console.warn('Falha ao consultar estado de bootstrap de usuários.', error);
-      return { adminMissing: false, error: error.message };
+      return {
+        adminMissing: false,
+        error: error.message,
+        mode: detectedMode,
+      };
     }
-    return { adminMissing: false };
+    return {
+      adminMissing: false,
+      mode: detectedMode,
+    };
   },
   async login(email, secret, options = {}) {
     const sanitizedEmail = sanitizeEmail(email);

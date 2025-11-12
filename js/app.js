@@ -966,15 +966,22 @@ window.addEventListener('storage', (event) => {
 
 async function initializeShell() {
   const bootstrapState = await Auth.bootstrap();
+  const adapterMode = typeof UsersApi.getMode === 'function'
+    ? UsersApi.getMode()
+    : Boolean(UsersApi.getBaseUrl())
+      ? 'remote'
+      : 'local';
+  const isLocalAuth = adapterMode === 'local';
   let usersApiConfigured = false;
   try {
-    usersApiConfigured = Boolean(UsersApi.getBaseUrl());
+    usersApiConfigured = adapterMode === 'remote' && Boolean(UsersApi.getBaseUrl());
   } catch (error) {
     usersApiConfigured = false;
   }
-  const skipLogin = !usersApiConfigured;
+  const hasAuthSupport = usersApiConfigured || isLocalAuth;
+  const skipLogin = !hasAuthSupport;
 
-  if (bootstrapState?.adminMissing && usersApiConfigured) {
+  if (bootstrapState?.adminMissing && hasAuthSupport) {
     window.__catalogDisabled__ = true;
     setHeader(
       {
@@ -990,7 +997,7 @@ async function initializeShell() {
 
   handleSessionChange({ skipLogin });
 
-  if (!usersApiConfigured && bootstrapState?.error) {
+  if (!usersApiConfigured && !isLocalAuth && bootstrapState?.error) {
     console.warn('Serviço de usuários indisponível; executando o shell sem autenticação.', bootstrapState.error);
   }
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2025-11-22] Modo local do sistema de usuários
+### Adicionado
+- Persistência local do administrador e dos demais usuários no adaptador `users-appscript`, com hash do segredo e tokens sintéticos para manter a compatibilidade do shell durante testes offline.【F:miniapp-base/js/adapters/users-appscript.js†L1-L374】
+### Alterado
+- Fluxo de bootstrap do shell agora respeita o modo local de autenticação, exigindo a criação do administrador antes de liberar o catálogo mesmo sem Apps Script configurado.【F:js/app.js†L964-L1006】
+- MiniApp de usuários sinaliza que o cadastro inicial ficará salvo apenas no dispositivo atual, alinhando mensagens com o novo fallback local.【F:miniapp-usuarios/index.html†L26-L83】
+### Documentação
+- README do MiniApp de usuários e o guia `docs/USUARIOS.md` explicam o modo local e as diferenças de segurança em relação ao backend do Apps Script.【F:miniapp-usuarios/README.md†L1-L4】【F:docs/USUARIOS.md†L15-L55】
+
 ## [2025-11-21] Minha Conta com Google Drive appDataFolder
 ### Adicionado
 - MiniApp "Minha Conta" (`miniapp-minha-conta/`) com estrutura SPA, abas para backups e preferências e handshake completo com o shell.
