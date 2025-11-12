@@ -3,6 +3,7 @@ const LOCAL_STATE_KEY = 'miniapp.users.local.state';
 let configuredBaseUrl = null;
 let authToken = null;
 let localMode = false;
+const VALID_ROLES = ['admin', 'operador', 'leitor'];
 
 function isBrowserContext() {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -76,6 +77,57 @@ function writeLocalState(state) {
   } catch (error) {
     console.warn('Não foi possível persistir o estado local de usuários.', error);
   }
+}
+
+function cloneLocalState(state) {
+  if (!state || typeof state !== 'object') {
+    return { version: 1, users: [] };
+  }
+  const users = Array.isArray(state.users) ? state.users : [];
+  return {
+    version: 1,
+    users: users.map((user) => ({ ...user })),
+  };
+}
+
+function normalizeSnapshotUser(user) {
+  if (!user || typeof user !== 'object') {
+    return null;
+  }
+  const now = new Date().toISOString();
+  const normalizedEmail = normalizeEmail(user.email);
+  if (!normalizedEmail) {
+    return null;
+  }
+  const rawRole = typeof user.role === 'string' ? user.role.trim().toLowerCase() : '';
+  const role = VALID_ROLES.includes(rawRole) ? rawRole : 'leitor';
+  const createdAt = typeof user.createdAt === 'string' && user.createdAt ? user.createdAt : now;
+  const updatedAt = typeof user.updatedAt === 'string' && user.updatedAt ? user.updatedAt : createdAt;
+  return {
+    id:
+      typeof user.id === 'string' && user.id.trim()
+        ? user.id.trim()
+        : `usr_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+    name: typeof user.name === 'string' ? user.name : '',
+    email: normalizedEmail,
+    role,
+    active: user.active !== false,
+    secretHash: typeof user.secretHash === 'string' ? user.secretHash : '',
+    createdAt,
+    updatedAt,
+  };
+}
+
+function applyLocalSnapshot(snapshot) {
+  const incomingState = snapshot && typeof snapshot === 'object' ? snapshot : {};
+  const incomingUsers = Array.isArray(incomingState.users) ? incomingState.users : [];
+  const normalizedUsers = incomingUsers
+    .map((user) => normalizeSnapshotUser(user))
+    .filter((user) => user !== null);
+
+  const state = { version: 1, users: normalizedUsers };
+  writeLocalState(state);
+  return state;
 }
 
 function normalizeEmail(email) {
@@ -373,6 +425,20 @@ export const UsersApi = {
   getBaseUrl: resolveBaseUrl,
   getMode: getAdapterMode,
   isLocalMode: () => getAdapterMode() === 'local',
+  exportLocalState() {
+    if (getAdapterMode() !== 'local') {
+      throw new Error('Exportação de backup disponível apenas no modo local.');
+    }
+    const state = ensureLocalState();
+    return cloneLocalState(state);
+  },
+  importLocalState(snapshot) {
+    if (getAdapterMode() !== 'local') {
+      throw new Error('Restauração de backup disponível apenas no modo local.');
+    }
+    const state = applyLocalSnapshot(snapshot);
+    return state.users.map((user) => sanitizeUserForClient(user));
+  },
   async bootstrap(options) {
     if (getAdapterMode() === 'local') {
       return localBootstrap();
