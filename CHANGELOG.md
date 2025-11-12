@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-11-18] Autopreenchimento do ID da planilha
+### Adicionado
+- Shell aceita `window.__initial_sheet_id` (e aliases compatíveis) para aplicar automaticamente o ID da planilha, sincronizar com o Firestore quando disponível e continuar oferecendo fallback em cache para novos dispositivos.【F:js/app.js†L271-L306】【F:js/app.js†L600-L657】
+### Documentação
+- README detalha como pré-configurar o ID da planilha diretamente no host antes de carregar o shell.【F:README.md†L82-L84】
+
 ## [2025-11-17] Internacionalização do catálogo estático
 ### Adicionado
 - Campos `category_key`, `status_key` e o bloco `translations` nos itens do `catalog.json`, preparando dados padronizados para filtros e rótulos localizados.【F:catalog.json†L2-L53】

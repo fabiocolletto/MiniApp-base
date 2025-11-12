@@ -40,6 +40,7 @@ const TRANSLATIONS = {
         savingButton: 'Salvando…',
         statuses: {
           verifying: 'Verificando configuração do catálogo…',
+          prefilled: 'ID configurado automaticamente. Carregando catálogo…',
           usingCache: 'Sem conexão com o Firestore. Usando o ID da planilha em cache.',
           prompt: 'Informe o ID da planilha do catálogo para começar.',
           invalid: 'Informe um ID de planilha válido.',
@@ -170,6 +171,7 @@ const TRANSLATIONS = {
         savingButton: 'Saving…',
         statuses: {
           verifying: 'Checking catalog configuration…',
+          prefilled: 'Sheet ID applied automatically. Loading catalog…',
           usingCache: 'Firestore unavailable. Using cached spreadsheet ID.',
           prompt: 'Provide the catalog spreadsheet ID to continue.',
           invalid: 'Enter a valid spreadsheet ID.',
