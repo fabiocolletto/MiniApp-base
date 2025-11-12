@@ -1,5 +1,13 @@
 # Changelog
 
+## [2025-11-23] Backup local do sistema de usuários no Google Drive
+### Adicionado
+- Painel de usuários ganhou o bloco “Backup no Google Drive”, permitindo autorizar o Drive pessoal e sincronizar o estado local diretamente do MiniApp administrativo.【F:miniapp-usuarios/index.html†L143-L227】
+### Alterado
+- Adaptador `users-appscript` expõe utilitários para exportar e restaurar o estado local, usados durante o backup no Drive.【F:miniapp-base/js/adapters/users-appscript.js†L1-L223】【F:miniapp-base/js/adapters/users-appscript.js†L345-L378】
+### Documentação
+- README do MiniApp de usuários atualizado com as instruções de configuração do backup via Google Drive.【F:miniapp-usuarios/README.md†L1-L5】
+
 ## [2025-11-22] Modo local do sistema de usuários
 ### Adicionado
 - Persistência local do administrador e dos demais usuários no adaptador `users-appscript`, com hash do segredo e tokens sintéticos para manter a compatibilidade do shell durante testes offline.【F:miniapp-base/js/adapters/users-appscript.js†L1-L374】

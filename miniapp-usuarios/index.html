@@ -125,6 +125,30 @@
                   </tbody>
                 </table>
               </div>
+
+              <div class="surface stack" id="backupSection" style="padding:16px; gap:12px;">
+                <div class="cluster" style="justify-content: space-between; align-items: flex-start; gap:16px; flex-wrap: wrap;">
+                  <div class="stack" style="gap:4px;">
+                    <h3>Backup no Google Drive</h3>
+                    <p class="muted" id="backupDescription">Mantenha uma cópia do estado local deste painel no appDataFolder da sua conta Google.</p>
+                  </div>
+                  <div class="stack" style="gap:8px; align-items:flex-end;">
+                    <button type="button" class="btn btn--secondary" id="backupSyncButton">Habilitar backup</button>
+                    <button type="button" class="btn" id="backupRestoreButton" disabled>Restaurar backup</button>
+                  </div>
+                </div>
+                <div class="cluster" style="gap:24px; flex-wrap: wrap;">
+                  <div class="stack" style="gap:2px;">
+                    <span class="muted">Última sincronização</span>
+                    <strong id="backupLastSync">-</strong>
+                  </div>
+                  <div class="stack" style="gap:2px;">
+                    <span class="muted">Tamanho estimado</span>
+                    <strong id="backupSize">-</strong>
+                  </div>
+                </div>
+                <p id="backupStatus" class="support-text" role="status" aria-live="polite"></p>
+              </div>
             </div>
             <p id="manageStatus" class="support-text" role="status" aria-live="polite"></p>
           </section>
@@ -148,6 +172,12 @@
   <script type="module">
     import { Auth } from '../miniapp-base/js/auth.js';
     import { UsersApi } from '../miniapp-base/js/adapters/users-appscript.js';
+    import {
+      ensureToken as ensureDriveToken,
+      getJSON as getDriveJSON,
+      listByName as listDriveFiles,
+      upsertJSON as upsertDriveJSON,
+    } from '../miniapp-base/js/adapters/drive-appdata.js';
 
     const params = new URLSearchParams(window.location.search);
     const modeParam = params.get('mode');
@@ -178,6 +208,14 @@
     const viewTitle = document.getElementById('viewTitle');
     const viewSubtitle = document.getElementById('viewSubtitle');
 
+    const backupSection = document.getElementById('backupSection');
+    const backupDescription = document.getElementById('backupDescription');
+    const backupSyncButton = document.getElementById('backupSyncButton');
+    const backupRestoreButton = document.getElementById('backupRestoreButton');
+    const backupStatus = document.getElementById('backupStatus');
+    const backupLastSync = document.getElementById('backupLastSync');
+    const backupSize = document.getElementById('backupSize');
+
     const ROLE_LABELS = {
       admin: 'Administrador',
       operador: 'Operador',
@@ -186,6 +224,10 @@
 
     let currentSession = null;
     let usersCache = [];
+    let backupInitialized = false;
+    let driveAuthorized = false;
+
+    const USERS_BACKUP_FILE = 'miniapp-usuarios.backup.json';
 
     function announceHeader(title, subtitle) {
       if (!window.parent || typeof window.parent.postMessage !== 'function') return;
@@ -261,6 +303,174 @@
     function formatRole(role) {
       const normalized = typeof role === 'string' ? role.trim().toLowerCase() : '';
       return ROLE_LABELS[normalized] || normalized || '-';
+    }
+
+    function formatBytes(bytes) {
+      const size = Number(bytes);
+      if (!Number.isFinite(size) || size <= 0) {
+        return '-';
+      }
+      const units = ['bytes', 'KB', 'MB', 'GB'];
+      let value = size;
+      let unitIndex = 0;
+      while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex += 1;
+      }
+      const precision = unitIndex === 0 ? 0 : 1;
+      return `${value.toFixed(precision)} ${units[unitIndex]}`;
+    }
+
+    function updateBackupStatus(message, tone = 'info') {
+      setStatus(backupStatus, message, tone);
+    }
+
+    function resetBackupMetadata() {
+      if (backupLastSync) {
+        backupLastSync.textContent = '-';
+      }
+      if (backupSize) {
+        backupSize.textContent = '-';
+      }
+    }
+
+    async function refreshBackupMetadata({ silent = false } = {}) {
+      if (!driveAuthorized) {
+        resetBackupMetadata();
+        return;
+      }
+      try {
+        const files = await listDriveFiles(USERS_BACKUP_FILE);
+        if (!files.length) {
+          resetBackupMetadata();
+          if (!silent) {
+            updateBackupStatus('Nenhum backup encontrado no Google Drive. Faça a primeira sincronização.', 'warning');
+          }
+          return;
+        }
+        const [file] = files;
+        if (backupLastSync) {
+          backupLastSync.textContent = formatDate(file.modifiedTime);
+        }
+        if (backupSize) {
+          backupSize.textContent = formatBytes(file.size);
+        }
+        if (!silent) {
+          updateBackupStatus('Último backup localizado no Google Drive.', 'success');
+        }
+      } catch (error) {
+        console.error('Falha ao consultar metadados do backup no Google Drive.', error);
+        updateBackupStatus('Não foi possível consultar o Google Drive. Tente novamente.', 'error');
+      }
+    }
+
+    function collectUsersBackupPayload() {
+      const snapshot = UsersApi.exportLocalState();
+      return {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        source: 'miniapp-usuarios',
+        data: snapshot,
+      };
+    }
+
+    async function syncUsersBackup() {
+      if (!UsersApi.isLocalMode()) {
+        updateBackupStatus('O backup no Google Drive está disponível apenas no modo local.', 'warning');
+        return;
+      }
+      try {
+        await ensureDriveToken({ force: !driveAuthorized });
+        driveAuthorized = true;
+      } catch (error) {
+        console.error('Falha ao autorizar acesso ao Google Drive.', error);
+        updateBackupStatus('Não foi possível autorizar o Google Drive. Revise as credenciais e tente novamente.', 'error');
+        return;
+      }
+
+      if (backupRestoreButton) {
+        backupRestoreButton.disabled = false;
+      }
+
+      updateBackupStatus('Sincronizando backup com o Google Drive...', 'info');
+      try {
+        const payload = collectUsersBackupPayload();
+        await upsertDriveJSON(USERS_BACKUP_FILE, payload);
+        updateBackupStatus('Backup sincronizado com sucesso no Google Drive.', 'success');
+        await refreshBackupMetadata({ silent: true });
+      } catch (error) {
+        console.error('Erro ao sincronizar backup com o Google Drive.', error);
+        updateBackupStatus('Não foi possível salvar o backup no Google Drive.', 'error');
+      }
+    }
+
+    async function restoreUsersBackup() {
+      if (!UsersApi.isLocalMode()) {
+        updateBackupStatus('A restauração pelo Google Drive está disponível apenas no modo local.', 'warning');
+        return;
+      }
+      if (!driveAuthorized) {
+        try {
+          await ensureDriveToken({ force: true });
+          driveAuthorized = true;
+        } catch (error) {
+          console.error('Falha ao autorizar acesso ao Google Drive.', error);
+          updateBackupStatus('Não foi possível autorizar o Google Drive para restaurar o backup.', 'error');
+          return;
+        }
+      }
+
+      updateBackupStatus('Carregando backup do Google Drive...', 'info');
+      try {
+        const payload = await getDriveJSON(USERS_BACKUP_FILE);
+        if (!payload || !payload.data) {
+          updateBackupStatus('Nenhum backup disponível no Google Drive para restaurar.', 'warning');
+          return;
+        }
+        UsersApi.importLocalState(payload.data);
+        updateBackupStatus('Backup restaurado. A lista será recarregada.', 'success');
+        await fetchUsers();
+        await refreshBackupMetadata({ silent: true });
+      } catch (error) {
+        console.error('Erro ao restaurar backup do Google Drive.', error);
+        updateBackupStatus('Não foi possível restaurar o backup do Google Drive.', 'error');
+      }
+    }
+
+    function initializeBackupSection() {
+      if (backupInitialized || !backupSection) {
+        return;
+      }
+      backupInitialized = true;
+
+      if (!UsersApi.isLocalMode()) {
+        if (backupDescription) {
+          backupDescription.textContent =
+            'Configure o modo local para habilitar o backup. Quando conectado a um Apps Script, os dados ficam no serviço remoto.';
+        }
+        if (backupSyncButton) {
+          backupSyncButton.disabled = true;
+        }
+        if (backupRestoreButton) {
+          backupRestoreButton.disabled = true;
+        }
+        updateBackupStatus('Backup via Google Drive disponível apenas quando o adaptador estiver em modo local.', 'warning');
+        return;
+      }
+
+      updateBackupStatus('Clique em “Habilitar backup” para autorizar o Google Drive e salvar uma cópia dos dados.', 'info');
+
+      if (backupSyncButton) {
+        backupSyncButton.addEventListener('click', () => {
+          syncUsersBackup();
+        });
+      }
+
+      if (backupRestoreButton) {
+        backupRestoreButton.addEventListener('click', () => {
+          restoreUsersBackup();
+        });
+      }
     }
 
     function renderUsers(users) {
@@ -419,6 +629,7 @@
           viewSubtitle.textContent = 'Crie contas, defina papéis e status de acesso.';
           announceHeader('Gestão de usuários', 'Crie contas, defina papéis e status de acesso.');
           fetchUsers();
+          initializeBackupSection();
         } else {
           showView('restricted');
           viewTitle.textContent = 'Acesso restrito';
@@ -433,6 +644,7 @@
         viewSubtitle.textContent = 'Crie contas, defina papéis e status de acesso.';
         announceHeader('Gestão de usuários', 'Crie contas, defina papéis e status de acesso.');
         fetchUsers();
+        initializeBackupSection();
       } else {
         showView('restricted');
         viewTitle.textContent = 'Acesso restrito';
