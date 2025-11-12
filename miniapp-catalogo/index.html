@@ -99,10 +99,30 @@
     let currentStatusKey = null;
     let currentStatusContext = {};
     let currentStatusFallback = '';
+    let currentUserRole = null;
 
     const filterOptions = {
       searchText: '',
       category: '',
+    };
+
+    const ROLE_PRIORITY = {
+      admin: 3,
+      operador: 2,
+      leitor: 1,
+    };
+
+    const ROLE_ALIASES = {
+      administrador: 'admin',
+      administrator: 'admin',
+      admin: 'admin',
+      operator: 'operador',
+      operador: 'operador',
+      operadora: 'operador',
+      reader: 'leitor',
+      leitor: 'leitor',
+      leitura: 'leitor',
+      viewer: 'leitor',
     };
 
     function formatTemplate(template, context = {}) {
@@ -113,6 +133,52 @@
         const trimmed = rawKey.trim();
         return Object.prototype.hasOwnProperty.call(context, trimmed) ? context[trimmed] : '';
       });
+    }
+
+    function normalizeRole(role) {
+      if (typeof role !== 'string') {
+        return '';
+      }
+      const normalized = role.trim().toLowerCase();
+      if (!normalized) {
+        return '';
+      }
+      if (Object.prototype.hasOwnProperty.call(ROLE_PRIORITY, normalized)) {
+        return normalized;
+      }
+      return ROLE_ALIASES[normalized] || '';
+    }
+
+    function roleSatisfies(requiredRole, userRole) {
+      if (!requiredRole) {
+        return true;
+      }
+      const requiredRoles = Array.isArray(requiredRole)
+        ? requiredRole
+        : String(requiredRole).split(',');
+      const normalizedUser = normalizeRole(userRole);
+      if (!normalizedUser) {
+        return false;
+      }
+      const userRank = ROLE_PRIORITY[normalizedUser] || 0;
+      return requiredRoles.some((role) => {
+        const normalizedRequired = normalizeRole(role);
+        if (!normalizedRequired) {
+          return true;
+        }
+        return userRank >= (ROLE_PRIORITY[normalizedRequired] || 0);
+      });
+    }
+
+    function formatRoleLabel(role) {
+      const normalized = normalizeRole(role);
+      if (!normalized) {
+        return 'adequado';
+      }
+      if (normalized === 'admin') {
+        return 'administrador';
+      }
+      return normalized;
     }
 
     function translateStatus(key, fallback = '', context = {}) {
@@ -242,6 +308,7 @@
       const iconUrl = appItem.icon_url || 'https://placehold.co/48x48/cccccc/666666?text=APP';
       const localized = getLocalizedCatalogEntry(appItem, currentLocale);
       const statusClass = getStatusClass(appItem.statusKey);
+      const requiredRoleAttr = appItem.requiredRole ? ` data-required-role="${escapeHtml(appItem.requiredRole)}"` : '';
 
       const safeName = escapeHtml(localized.name || 'MiniApp');
       const safeCategory = escapeHtml(localized.category || appItem.category || 'Geral');
@@ -251,7 +318,7 @@
       const openLabel = escapeHtml(catalogMessages.card.open);
 
       return `
-        <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl">
+        <div class="ma-card bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between hover:shadow-xl" data-catalog-card${requiredRoleAttr}>
           <div class="flex items-start space-x-4 mb-3">
             <img src="${iconUrl}" alt="${safeName} Ícone" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/666666?text=APP';" />
             <div class="flex-1">
@@ -271,6 +338,7 @@
               data-url="${safeUrl}"
               data-name="${safeName}"
               data-description="${safeDescription}"
+              ${appItem.requiredRole ? `data-required-role="${escapeHtml(appItem.requiredRole)}"` : ''}
               data-open-label
             >
               <span data-open-label-text>${openLabel}</span> <i class="fas fa-external-link-alt ml-1 text-xs"></i>
@@ -285,6 +353,21 @@
       const labelNodes = catalogList.querySelectorAll('[data-open-label-text]');
       labelNodes.forEach((node) => {
         node.textContent = catalogMessages.card.open;
+      });
+    }
+
+    function applyRoleVisibility() {
+      if (!catalogList) return;
+      const cards = catalogList.querySelectorAll('[data-catalog-card]');
+      cards.forEach((card) => {
+        const requiredRole = card.getAttribute('data-required-role');
+        const allowed = roleSatisfies(requiredRole, currentUserRole);
+        card.hidden = !allowed;
+        if (!allowed) {
+          card.setAttribute('data-role-denied', 'true');
+        } else {
+          card.removeAttribute('data-role-denied');
+        }
       });
     }
 
@@ -384,6 +467,7 @@
       catalogList.innerHTML = filteredData.map(createCatalogCard).join('');
       attachMiniAppOpenHandlers();
       refreshCatalogCardLabels();
+      applyRoleVisibility();
     }
 
     function attachMiniAppOpenHandlers() {
@@ -393,15 +477,24 @@
         trigger.addEventListener('click', (event) => {
           event.preventDefault();
           const { url, name, description } = trigger.dataset;
+          const requiredRole = trigger.dataset.requiredRole || trigger.closest('[data-required-role]')?.dataset.requiredRole || '';
           if (!url) return;
+          if (requiredRole && !roleSatisfies(requiredRole, currentUserRole)) {
+            const roleLabel = formatRoleLabel(requiredRole);
+            showStatus(null, `Acesso negado. Papel ${roleLabel} obrigatório.`, 'error');
+            if (window.parent && typeof window.parent.postMessage === 'function') {
+              window.parent.postMessage({ action: 'miniapp-access-denied', requiredRole }, '*');
+            }
+            return;
+          }
           const metadata = {
             title: name || undefined,
             subtitle: description || undefined,
           };
           if (window.parent && typeof window.parent.postMessage === 'function') {
-            window.parent.postMessage({ action: 'load-miniapp', url, metadata }, '*');
+            window.parent.postMessage({ action: 'load-miniapp', url, metadata, requiredRole }, '*');
           } else if (window.parent && typeof window.parent.loadMiniApp === 'function') {
-            window.parent.loadMiniApp(url, metadata);
+            window.parent.loadMiniApp(url, metadata, { requiredRole });
           } else {
             window.location.href = url;
           }
@@ -428,6 +521,9 @@
       const statusKey = typeof item.status_key === 'string' && item.status_key.trim()
         ? item.status_key.trim()
         : slugifyKey(status);
+      const requiredRole = typeof item.required_role === 'string' && item.required_role.trim()
+        ? item.required_role.trim().toLowerCase()
+        : '';
       const translations = normalizeTranslations(item.translations);
 
       if (!url) {
@@ -444,6 +540,7 @@
         url,
         categoryKey,
         statusKey,
+        requiredRole,
         translations,
       };
     }
@@ -537,10 +634,18 @@
 
     window.addEventListener('message', (event) => {
       const { data } = event;
-      if (!data || data.action !== 'shell-language') {
+      if (!data || typeof data !== 'object') {
         return;
       }
-      applyLanguage(data.locale);
+      if (data.action === 'shell-language') {
+        applyLanguage(data.locale);
+      } else if (data.action === 'shell-session') {
+        currentUserRole = data.session?.role || null;
+        applyRoleVisibility();
+      } else if (data.action === 'shell-access-denied') {
+        const label = formatRoleLabel(data.requiredRole);
+        showStatus(null, `Acesso negado. Papel ${label} obrigatório.`, 'error');
+      }
     });
 
     applyLanguage(currentLocale, { notify: false });
@@ -550,6 +655,7 @@
 
     if (window.parent && typeof window.parent.postMessage === 'function') {
       window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+      window.parent.postMessage({ action: 'miniapp-session-ready' }, '*');
     }
   </script>
 

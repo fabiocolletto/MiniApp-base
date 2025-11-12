@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro de Usuários</title>
+  <link rel="stylesheet" href="../miniapp-base/style/styles.css" />
+</head>
+<body data-theme="light">
+  <div class="ma" data-theme="light">
+    <div class="app">
+      <header class="app-header">
+        <div class="wrap">
+          <h1 id="viewTitle">Cadastro de Usuários</h1>
+          <p class="muted" id="viewSubtitle">Configure o administrador ou gerencie contas existentes.</p>
+        </div>
+      </header>
+
+      <main>
+        <div class="wrap stack" style="gap:24px;">
+          <section id="setupView" class="surface stack" hidden>
+            <h2>Definir administrador</h2>
+            <p class="muted">Crie a conta inicial de administrador. Após salvar, use as mesmas credenciais para acessar o catálogo.</p>
+            <form id="setupForm" class="stack" autocomplete="off">
+              <label class="form-field">
+                <span class="form-label">Nome completo</span>
+                <input type="text" name="name" id="setupName" class="input" required autocomplete="name" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">E-mail corporativo</span>
+                <input type="email" name="email" id="setupEmail" class="input" required autocomplete="email" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Senha ou frase-secreta</span>
+                <input type="password" name="secret" id="setupSecret" class="input" required minlength="8" autocomplete="new-password" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Confirme a senha/frase</span>
+                <input type="password" name="confirm" id="setupConfirm" class="input" required minlength="8" autocomplete="new-password" />
+              </label>
+              <div class="form-actions">
+                <button type="submit" class="btn btn--primary" id="setupSubmit">Criar administrador</button>
+              </div>
+              <p id="setupStatus" class="support-text" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section id="loginView" class="surface stack" hidden>
+            <h2>Entrar</h2>
+            <p class="muted">Informe suas credenciais para acessar os MiniApps permitidos.</p>
+            <form id="loginForm" class="stack" autocomplete="off">
+              <label class="form-field">
+                <span class="form-label">E-mail</span>
+                <input type="email" name="email" id="loginEmail" class="input" required autocomplete="email" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Senha ou frase-secreta</span>
+                <input type="password" name="secret" id="loginSecret" class="input" required autocomplete="current-password" />
+              </label>
+              <div class="form-actions">
+                <button type="submit" class="btn btn--primary" id="loginSubmit">Entrar</button>
+              </div>
+              <p id="loginStatus" class="support-text" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section id="manageView" class="surface stack" hidden>
+            <div class="cluster" style="justify-content: space-between; align-items: flex-start; gap:16px; flex-wrap: wrap;">
+              <div class="stack">
+                <h2>Painel de usuários</h2>
+                <p class="muted" id="manageInfo">Gerencie contas, papéis e status de acesso.</p>
+              </div>
+              <div class="stack" style="align-items:flex-end;">
+                <span class="muted" id="sessionInfo"></span>
+                <button type="button" class="btn btn--ghost" id="logoutBtn">Sair</button>
+              </div>
+            </div>
+
+            <div class="stack" style="gap:12px;">
+              <div class="surface" style="padding:16px;">
+                <h3>Novo usuário</h3>
+                <form id="createForm" class="stack" autocomplete="off">
+                  <div class="cluster" style="gap:16px; flex-wrap: wrap;">
+                    <label class="form-field" style="flex:1; min-width:180px;">
+                      <span class="form-label">Nome</span>
+                      <input type="text" name="name" id="createName" class="input" required autocomplete="off" />
+                    </label>
+                    <label class="form-field" style="flex:1; min-width:200px;">
+                      <span class="form-label">E-mail</span>
+                      <input type="email" name="email" id="createEmail" class="input" required autocomplete="off" />
+                    </label>
+                    <label class="form-field" style="width:160px;">
+                      <span class="form-label">Papel</span>
+                      <select name="role" id="createRole" class="input" required>
+                        <option value="operador">Operador</option>
+                        <option value="leitor">Leitor</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn--primary" id="createSubmit">Adicionar usuário</button>
+                  </div>
+                  <p id="createStatus" class="support-text" role="status" aria-live="polite"></p>
+                </form>
+              </div>
+
+              <div class="surface" style="padding:0; overflow-x:auto;">
+                <table class="table" style="min-width:720px;">
+                  <thead>
+                    <tr>
+                      <th scope="col">Nome</th>
+                      <th scope="col">E-mail</th>
+                      <th scope="col">Papel</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Atualizado em</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userTableBody">
+                    <tr>
+                      <td colspan="6" class="muted" style="text-align:center; padding:24px;">Carregando usuários...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p id="manageStatus" class="support-text" role="status" aria-live="polite"></p>
+          </section>
+
+          <section id="restrictedView" class="surface stack" hidden>
+            <h2>Acesso restrito</h2>
+            <p class="muted">Você entrou com uma conta sem privilégios administrativos. Retorne ao catálogo para acessar seus MiniApps.</p>
+            <button type="button" class="btn" id="backToCatalogBtn">Voltar ao catálogo</button>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="wrap">
+          <small class="muted" id="footerStatus" role="status" aria-live="polite"></small>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Auth } from '../miniapp-base/js/auth.js';
+    import { UsersApi } from '../miniapp-base/js/adapters/users-appscript.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode');
+
+    const setupView = document.getElementById('setupView');
+    const loginView = document.getElementById('loginView');
+    const manageView = document.getElementById('manageView');
+    const restrictedView = document.getElementById('restrictedView');
+
+    const setupForm = document.getElementById('setupForm');
+    const setupStatus = document.getElementById('setupStatus');
+    const setupSubmit = document.getElementById('setupSubmit');
+
+    const loginForm = document.getElementById('loginForm');
+    const loginStatus = document.getElementById('loginStatus');
+    const loginSubmit = document.getElementById('loginSubmit');
+
+    const createForm = document.getElementById('createForm');
+    const createStatus = document.getElementById('createStatus');
+    const createSubmit = document.getElementById('createSubmit');
+
+    const userTableBody = document.getElementById('userTableBody');
+    const manageStatus = document.getElementById('manageStatus');
+    const footerStatus = document.getElementById('footerStatus');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const backToCatalogBtn = document.getElementById('backToCatalogBtn');
+    const sessionInfo = document.getElementById('sessionInfo');
+    const viewTitle = document.getElementById('viewTitle');
+    const viewSubtitle = document.getElementById('viewSubtitle');
+
+    const ROLE_LABELS = {
+      admin: 'Administrador',
+      operador: 'Operador',
+      leitor: 'Leitor',
+    };
+
+    let currentSession = null;
+    let usersCache = [];
+
+    function announceHeader(title, subtitle) {
+      if (!window.parent || typeof window.parent.postMessage !== 'function') return;
+      window.parent.postMessage({ action: 'miniapp-header', title, subtitle }, '*');
+    }
+
+    function requestSessionSync() {
+      if (!window.parent || typeof window.parent.postMessage !== 'function') return;
+      window.parent.postMessage({ action: 'miniapp-session-ready' }, '*');
+    }
+
+    function applyTheme(theme) {
+      const root = document.querySelector('.ma');
+      const normalized = theme === 'dark' ? 'dark' : 'light';
+      document.body.setAttribute('data-theme', normalized);
+      if (root) {
+        root.setAttribute('data-theme', normalized);
+      }
+    }
+
+    window.addEventListener('message', (event) => {
+      const { data } = event;
+      if (!data || typeof data !== 'object') {
+        return;
+      }
+      if (data.action === 'shell-theme') {
+        applyTheme(data.theme);
+        if (window.parent && typeof window.parent.postMessage === 'function') {
+          window.parent.postMessage({ action: 'miniapp-theme-applied', theme: data.theme }, '*');
+        }
+      } else if (data.action === 'shell-session') {
+        updateSession(data.session || null);
+      }
+    });
+
+    function showView(target) {
+      const map = { setup: setupView, login: loginView, manage: manageView, restricted: restrictedView };
+      Object.entries(map).forEach(([key, section]) => {
+        if (!section) return;
+        if (key === target) {
+          section.hidden = false;
+        } else {
+          section.hidden = true;
+        }
+      });
+    }
+
+    function setStatus(node, message, tone = 'info') {
+      if (!node) return;
+      node.textContent = message || '';
+      if (message) {
+        node.dataset.tone = tone;
+      } else {
+        delete node.dataset.tone;
+      }
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return '-';
+      }
+      try {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        return date.toLocaleString('pt-BR');
+      } catch (error) {
+        return value;
+      }
+    }
+
+    function formatRole(role) {
+      const normalized = typeof role === 'string' ? role.trim().toLowerCase() : '';
+      return ROLE_LABELS[normalized] || normalized || '-';
+    }
+
+    function renderUsers(users) {
+      if (!userTableBody) return;
+      if (!Array.isArray(users) || users.length === 0) {
+        userTableBody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:24px;">Nenhum usuário cadastrado.</td></tr>';
+        return;
+      }
+      userTableBody.innerHTML = users
+        .map((user) => {
+          const safeName = user.name || '-';
+          const safeEmail = user.email || '-';
+          const safeRole = formatRole(user.role);
+          const active = user.active !== false;
+          const updatedAt = formatDate(user.updatedAt);
+          const statusLabel = active ? 'Ativo' : 'Inativo';
+          const toggleLabel = active ? 'Desativar' : 'Ativar';
+          return `
+            <tr data-user-id="${user.id}">
+              <td>${safeName}</td>
+              <td>${safeEmail}</td>
+              <td>
+                <select class="input" data-action="change-role" data-user-id="${user.id}">
+                  <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrador</option>
+                  <option value="operador" ${user.role === 'operador' ? 'selected' : ''}>Operador</option>
+                  <option value="leitor" ${user.role === 'leitor' ? 'selected' : ''}>Leitor</option>
+                </select>
+              </td>
+              <td>${statusLabel}</td>
+              <td>${updatedAt}</td>
+              <td class="cluster" style="gap:8px;">
+                <button type="button" class="btn btn--soft" data-action="toggle-active" data-user-id="${user.id}" data-active="${active}">${toggleLabel}</button>
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    async function fetchUsers() {
+      if (!Auth.require('admin')) {
+        return;
+      }
+      setStatus(manageStatus, 'Carregando usuários...', 'info');
+      try {
+        const list = await UsersApi.listUsers();
+        usersCache = Array.isArray(list) ? list : [];
+        renderUsers(usersCache);
+        setStatus(manageStatus, `Total: ${usersCache.length} usuário(s).`, 'success');
+      } catch (error) {
+        console.error('Erro ao listar usuários.', error);
+        setStatus(manageStatus, error.message || 'Não foi possível listar os usuários.', 'error');
+      }
+    }
+
+    async function handleCreateUser(event) {
+      event.preventDefault();
+      if (!createForm) return;
+      const formData = new FormData(createForm);
+      const name = (formData.get('name') || '').toString().trim();
+      const email = (formData.get('email') || '').toString().trim();
+      const role = (formData.get('role') || '').toString();
+      if (!name || !email || !role) {
+        setStatus(createStatus, 'Preencha todos os campos.', 'error');
+        return;
+      }
+      createSubmit.disabled = true;
+      setStatus(createStatus, 'Salvando usuário...', 'info');
+      try {
+        await UsersApi.createUser({ name, email, role });
+        createForm.reset();
+        setStatus(createStatus, 'Usuário criado com sucesso.', 'success');
+        await fetchUsers();
+      } catch (error) {
+        console.error('Erro ao criar usuário.', error);
+        setStatus(createStatus, error.message || 'Falha ao criar usuário.', 'error');
+      } finally {
+        createSubmit.disabled = false;
+      }
+    }
+
+    async function handleRoleChange(userId, newRole) {
+      if (!userId || !newRole) return;
+      setStatus(manageStatus, 'Atualizando papel...', 'info');
+      try {
+        await UsersApi.updateUser(userId, { role: newRole });
+        setStatus(manageStatus, 'Papel atualizado.', 'success');
+        await fetchUsers();
+      } catch (error) {
+        console.error('Erro ao atualizar papel.', error);
+        setStatus(manageStatus, error.message || 'Falha ao atualizar papel.', 'error');
+      }
+    }
+
+    async function handleToggleActive(userId, currentActive) {
+      if (!userId) return;
+      setStatus(manageStatus, 'Atualizando status...', 'info');
+      try {
+        await UsersApi.updateUser(userId, { active: !currentActive });
+        setStatus(manageStatus, 'Status atualizado.', 'success');
+        await fetchUsers();
+      } catch (error) {
+        console.error('Erro ao atualizar status.', error);
+        setStatus(manageStatus, error.message || 'Falha ao atualizar status.', 'error');
+      }
+    }
+
+    function bindTableActions() {
+      if (!userTableBody) return;
+      userTableBody.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        if (target.dataset.action !== 'change-role') return;
+        const userId = target.dataset.userId;
+        const role = target.value;
+        if (!userId) return;
+        handleRoleChange(userId, role);
+      });
+
+      userTableBody.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLButtonElement)) return;
+        if (target.dataset.action === 'toggle-active') {
+          const userId = target.dataset.userId;
+          const active = target.dataset.active === 'true';
+          handleToggleActive(userId, active);
+        }
+      });
+    }
+
+    function updateSession(session) {
+      currentSession = session;
+      if (sessionInfo) {
+        if (session) {
+          sessionInfo.textContent = `${session.email || ''} — ${formatRole(session.role)}`;
+        } else {
+          sessionInfo.textContent = '';
+        }
+      }
+      if (!session) {
+        if (modeParam === 'setup') {
+          showView('login');
+          viewTitle.textContent = 'Entrar';
+          viewSubtitle.textContent = 'Use seu e-mail corporativo para acessar.';
+          announceHeader('Entrar', 'Use seu e-mail corporativo para acessar.');
+        } else {
+          showView('login');
+        }
+        return;
+      }
+      if (modeParam === 'setup') {
+        // Caso o setup seja acessado após o bootstrap concluído, redireciona para login/gestão.
+        if (Auth.require('admin')) {
+          showView('manage');
+          viewTitle.textContent = 'Gestão de usuários';
+          viewSubtitle.textContent = 'Crie contas, defina papéis e status de acesso.';
+          announceHeader('Gestão de usuários', 'Crie contas, defina papéis e status de acesso.');
+          fetchUsers();
+        } else {
+          showView('restricted');
+          viewTitle.textContent = 'Acesso restrito';
+          viewSubtitle.textContent = 'Solicite ao administrador a alteração do seu papel.';
+          announceHeader('Acesso restrito', 'Solicite ao administrador a alteração do seu papel.');
+        }
+        return;
+      }
+      if (Auth.require('admin')) {
+        showView('manage');
+        viewTitle.textContent = 'Gestão de usuários';
+        viewSubtitle.textContent = 'Crie contas, defina papéis e status de acesso.';
+        announceHeader('Gestão de usuários', 'Crie contas, defina papéis e status de acesso.');
+        fetchUsers();
+      } else {
+        showView('restricted');
+        viewTitle.textContent = 'Acesso restrito';
+        viewSubtitle.textContent = 'Retorne ao catálogo para abrir os MiniApps permitidos.';
+        announceHeader('Acesso restrito', 'Retorne ao catálogo para abrir os MiniApps permitidos.');
+      }
+    }
+
+    function setInitialView(adminMissing) {
+      if (adminMissing) {
+        showView('setup');
+        viewTitle.textContent = 'Primeiro acesso — Administrador';
+        viewSubtitle.textContent = 'Crie a conta inicial para liberar o catálogo.';
+        announceHeader('Definir administrador', 'Crie a conta inicial para liberar o catálogo.');
+      } else if (modeParam === 'setup') {
+        updateSession(currentSession);
+      } else if (currentSession) {
+        updateSession(currentSession);
+      } else {
+        showView('login');
+        viewTitle.textContent = 'Entrar';
+        viewSubtitle.textContent = 'Use seu e-mail corporativo para acessar.';
+        announceHeader('Entrar', 'Use seu e-mail corporativo para acessar.');
+      }
+    }
+
+    async function bootstrapMiniApp() {
+      const bootstrapState = await Auth.bootstrap({ force: true });
+      currentSession = Auth.getSession();
+      if (bootstrapState?.adminMissing) {
+        setInitialView(true);
+      } else {
+        setInitialView(false);
+      }
+      broadcastReady();
+    }
+
+    function broadcastReady() {
+      if (window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'miniapp-language-ready' }, '*');
+        window.parent.postMessage({ action: 'miniapp-theme-ready' }, '*');
+      }
+      requestSessionSync();
+    }
+
+    async function handleSetupSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(setupForm);
+      const name = (formData.get('name') || '').toString().trim();
+      const email = (formData.get('email') || '').toString().trim();
+      const secret = (formData.get('secret') || '').toString();
+      const confirm = (formData.get('confirm') || '').toString();
+      if (!name || !email || !secret) {
+        setStatus(setupStatus, 'Preencha todos os campos.', 'error');
+        return;
+      }
+      if (secret !== confirm) {
+        setStatus(setupStatus, 'As senhas precisam coincidir.', 'error');
+        return;
+      }
+      setupSubmit.disabled = true;
+      setStatus(setupStatus, 'Criando administrador...', 'info');
+      try {
+        await UsersApi.initAdmin({ name, email, secret });
+        await Auth.login(email, secret, { force: true });
+        setStatus(setupStatus, 'Administrador criado com sucesso. Você será redirecionado.', 'success');
+        updateSession(Auth.getSession());
+        if (window.parent && typeof window.parent.postMessage === 'function') {
+          window.parent.postMessage({ action: 'auth-session-changed' }, '*');
+        }
+      } catch (error) {
+        console.error('Erro ao criar administrador.', error);
+        setStatus(setupStatus, error.message || 'Falha ao criar administrador.', 'error');
+      } finally {
+        setupSubmit.disabled = false;
+      }
+    }
+
+    async function handleLoginSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(loginForm);
+      const email = (formData.get('email') || '').toString().trim();
+      const secret = (formData.get('secret') || '').toString();
+      if (!email || !secret) {
+        setStatus(loginStatus, 'Informe e-mail e senha.', 'error');
+        return;
+      }
+      loginSubmit.disabled = true;
+      setStatus(loginStatus, 'Validando credenciais...', 'info');
+      try {
+        await Auth.login(email, secret, { force: true });
+        setStatus(loginStatus, 'Login realizado. Você pode voltar ao catálogo.', 'success');
+        updateSession(Auth.getSession());
+        if (window.parent && typeof window.parent.postMessage === 'function') {
+          window.parent.postMessage({ action: 'auth-session-changed' }, '*');
+        }
+      } catch (error) {
+        console.error('Erro ao autenticar.', error);
+        setStatus(loginStatus, error.message || 'Falha ao autenticar.', 'error');
+      } finally {
+        loginSubmit.disabled = false;
+      }
+    }
+
+    function handleLogout() {
+      Auth.logout({ notify: true });
+      updateSession(null);
+      if (window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'auth-session-changed' }, '*');
+      }
+    }
+
+    function handleBackToCatalog() {
+      if (window.parent && typeof window.parent.postMessage === 'function') {
+        window.parent.postMessage({ action: 'open-catalog' }, '*');
+      }
+    }
+
+    if (setupForm) {
+      setupForm.addEventListener('submit', handleSetupSubmit);
+    }
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLoginSubmit);
+    }
+    if (createForm) {
+      createForm.addEventListener('submit', handleCreateUser);
+    }
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', handleLogout);
+    }
+    if (backToCatalogBtn) {
+      backToCatalogBtn.addEventListener('click', handleBackToCatalog);
+    }
+
+    bindTableActions();
+    bootstrapMiniApp();
+  </script>
+</body>
+</html>
