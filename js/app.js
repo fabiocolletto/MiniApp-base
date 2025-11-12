@@ -279,6 +279,21 @@ if (window.matchMedia) {
 const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
 const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : null;
 const initialAuthToken = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
+const initialSheetId = (() => {
+  const candidates = [
+    window.__initial_sheet_id,
+    window.__catalog_sheet_id,
+    window.__catalog_google_sheet_id,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'undefined' || candidate === null) continue;
+    const value = String(candidate).trim();
+    if (value) {
+      return value;
+    }
+  }
+  return null;
+})();
 
 let firebaseApp;
 let db;
@@ -479,6 +494,14 @@ function updateSheetStatus(message, tone = 'info', key = null) {
   currentSheetStatusTone = tone;
 }
 
+function clearSheetStatus() {
+  if (!sheetStatus) return;
+  sheetStatus.textContent = '';
+  delete sheetStatus.dataset.tone;
+  currentSheetStatusKey = null;
+  currentSheetStatusTone = 'info';
+}
+
 function setSheetFormDisabled(isDisabled) {
   if (sheetInput) {
     sheetInput.disabled = isDisabled;
@@ -625,21 +648,42 @@ async function persistSheetIdToFirestore(sheetId) {
 
 async function bootstrapSheetConfig() {
   setHeader({ subtitle: shellMessages.setup.statuses.verifying }, { source: 'shell', key: 'verifying' });
+  let sheetIdSource = null;
   let sheetId = await fetchSheetIdFromFirestore();
-  let usingCache = false;
 
-  if (!sheetId) {
+  if (sheetId) {
+    sheetIdSource = 'firestore';
+  } else if (initialSheetId) {
+    sheetId = initialSheetId;
+    sheetIdSource = 'initial';
+  } else {
     const cached = readCachedSheetId();
     if (cached) {
       sheetId = cached;
-      usingCache = true;
+      sheetIdSource = 'cache';
     }
   }
 
   if (sheetId) {
     applySheetId(sheetId);
-    if (usingCache) {
+    if (sheetIdSource === 'cache') {
       updateSheetStatus(shellMessages.setup.statuses.usingCache, 'warning', 'usingCache');
+    } else if (sheetIdSource === 'initial') {
+      updateSheetStatus(shellMessages.setup.statuses.prefilled, 'success', 'prefilled');
+      persistSheetIdToFirestore(sheetId)
+        .then((persistedRemotely) => {
+          if (persistedRemotely) {
+            updateSheetStatus(shellMessages.setup.statuses.savedRemote, 'success', 'savedRemote');
+          } else {
+            updateSheetStatus(shellMessages.setup.statuses.savedLocal, 'warning', 'savedLocal');
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao salvar o ID da planilha configurado automaticamente.', error);
+          updateSheetStatus(shellMessages.setup.statuses.saveError, 'error', 'saveError');
+        });
+    } else {
+      clearSheetStatus();
     }
     restoreLastMiniAppOrCatalog();
   } else {

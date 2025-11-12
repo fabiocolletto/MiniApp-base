@@ -42,6 +42,7 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 ### 3. Sincronizar o ID da planilha do catálogo
 1. O shell consulta o documento `artifacts/{appId}/admin/sheet_config` no Firestore (ou o cache local) em busca do campo `GOOGLE_SHEET_ID`. Se encontrar o valor, ele aplica o ID em `window.CATALOG_GOOGLE_SHEET_ID` e restaura o último MiniApp aberto; caso contrário, exibe `#setup-sheet-view` para solicitar o ID manualmente.【F:js/app.js†L80-L172】
 2. Ao salvar o formulário, o shell tenta persistir o ID no Firestore e, em seguida, troca automaticamente para `#catalog-view`, recarregando o catálogo incorporado quando necessário. Em ambientes sem Firebase, o ID fica salvo apenas no `localStorage`, com aviso visual no formulário.【F:index.html†L32-L51】【F:js/app.js†L174-L223】
+3. Hosts que já conhecem o ID da planilha podem defini-lo antes de carregar `js/app.js` usando `window.__initial_sheet_id` (ou os aliases `window.__catalog_sheet_id` / `window.__catalog_google_sheet_id`). O shell aplicará o valor imediatamente, armazenará o ID localmente e tentará persistir no Firestore assim que disponível.【F:js/app.js†L271-L306】【F:js/app.js†L600-L657】
 
 ## Estrutura
 ```
