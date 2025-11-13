@@ -79,7 +79,40 @@
         </section>
 
         <section id="catalog-view" class="app-view" hidden>
-          <iframe id="catalog-frame" class="app-panel" src="miniapp-catalogo/index.html" title="Catálogo de MiniApps" loading="eager"></iframe>
+          <div id="catalog-app" class="app-panel catalog" data-catalog-root>
+            <div class="catalog__container">
+              <header class="catalog__header">
+                <div class="catalog__heading">
+                  <h2 data-catalog-title>Seu Catálogo de MiniApps</h2>
+                  <p data-catalog-subtitle class="catalog__subtitle">Explore os aplicativos disponíveis para uso.</p>
+                </div>
+                <div class="catalog__controls">
+                  <label class="catalog__search">
+                    <span class="sr-only">Buscar</span>
+                    <input
+                      type="search"
+                      data-catalog-search
+                      placeholder="Buscar por nome, categoria ou descrição..."
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="catalog__filter">
+                    <span class="sr-only">Filtrar por categoria</span>
+                    <select data-catalog-filter>
+                      <option value="" data-default-option>Todas as Categorias</option>
+                    </select>
+                  </label>
+                </div>
+                <p data-catalog-status class="catalog__status">Inicializando...</p>
+              </header>
+              <div data-catalog-list class="catalog__grid" aria-live="polite">
+                <div class="catalog-loading">
+                  <span class="catalog-loading__spinner" aria-hidden="true"></span>
+                  <span>Carregando catálogo…</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section id="app-view" class="app-view" hidden>

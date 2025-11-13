@@ -19,7 +19,7 @@ test.describe('Miniapp catálogo público', () => {
           id: 'local-app',
           name: 'Aplicativo Local',
           description: 'Item disponível apenas neste dispositivo.',
-          url: 'miniapp-catalogo/index.html',
+          url: 'index.html',
           category: 'Local',
           status: 'Ativo',
           icon_url: 'https://placehold.co/48x48/222/fff?text=L'
@@ -28,9 +28,9 @@ test.describe('Miniapp catálogo público', () => {
     }]);
 
     await stubFirebase(page);
-    await page.goto('/miniapp-catalogo/index.html');
+    await page.goto('/index.html');
 
+    await expect(page.getByRole('heading', { name: /Catálogo de MiniApps/i })).toBeVisible();
     await expect(page.getByText('Aplicativo Local', { exact: false })).toBeVisible();
-    await expect(page.getByText('Catálogo de MiniApps', { exact: false })).toBeVisible();
   });
 });

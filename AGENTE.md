@@ -1,7 +1,7 @@
 # Guia do Agente
 
 - Leia este arquivo, bem como `README.md`, `CHANGELOG.md` e a pasta `docs/protocolos/`, antes de qualquer alteração para entender o estado atual do pacote base e verificar se já existe um protocolo aplicável.
-- O shell em `index.html` deve permanecer como ponto único de navegação. Sempre valide se o catálogo (`miniapp-catalogo/index.html`) envia eventos compatíveis com `window.parent.loadMiniApp` e se os miniapps confirmam o cabeçalho via `{ action: 'miniapp-header', title, subtitle }`.
+- O shell em `index.html` deve permanecer como ponto único de navegação. Sempre valide se o catálogo embutido (`js/catalog-app.js`) emite eventos compatíveis com `window.parent.loadMiniApp` e se os miniapps confirmam o cabeçalho via `{ action: 'miniapp-header', title, subtitle }`.
 - Scripts compartilhados residem em `js/` ou dentro dos diretórios dos miniapps. Evite duplicar lógica; prefira funções já expostas pelo shell ou pelo MiniApp.
 - O CSS está centralizado em `miniapp-base/style/styles.css`. Preserve o escopo `.ma`, as camadas `@layer` e utilize tokens existentes antes de adicionar novos.
 - Sempre que criar ou atualizar pastas, mantenha um `README.md` descrevendo propósito, pontos de atenção e instruções de manutenção.
@@ -18,4 +18,4 @@
 ## SISTEMA DE USUÁRIOS — FASE 1
 - O módulo de autenticação reside em `miniapp-base/js/auth.js` e usa o adaptador `miniapp-base/js/adapters/users-appscript.js` para falar com o Web App do Apps Script.
 - O shell consulta `Auth.bootstrap()` apenas para preservar compatibilidade com integrações legadas. Com o catálogo como único MiniApp disponível, mantenha o fluxo liberado mesmo sem sessão e evite reintroduzir bloqueios automáticos ao catálogo.
-- MiniApps administrativos precisam marcar os cards do catálogo com `data-required-role="admin"` (veja o array `STATIC_CATALOG_ITEMS` em `miniapp-catalogo/index.html`). O shell continua bloqueando `loadMiniApp` quando um papel específico for realmente necessário.
+- MiniApps administrativos precisam marcar os cards do catálogo com `data-required-role="admin"` (veja o array `STATIC_CATALOG_ITEMS` em `js/catalog-app.js`). O shell continua bloqueando `loadMiniApp` quando um papel específico for realmente necessário.

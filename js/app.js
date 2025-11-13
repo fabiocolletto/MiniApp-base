@@ -6,6 +6,7 @@ import {
   getLanguageName,
   getShellMessages,
 } from './i18n.js';
+import { createCatalogApp } from './catalog-app.js';
 
 function readAppConfigFlag(flagName) {
   if (typeof window === 'undefined') {
@@ -35,11 +36,12 @@ const downloadMiniAppLabel = downloadMiniAppBtn
 let themeToggleBtn = document.getElementById('themeToggle');
 let themeToggleLabel = themeToggleBtn ? themeToggleBtn.querySelector('[data-theme-toggle-label]') : null;
 const installBtn = document.getElementById('installPWA');
-const catalogFrame = document.getElementById('catalog-frame');
 const appFrame = document.getElementById('miniapp-panel');
-const CATALOG_APP_URL = 'miniapp-catalogo/index.html';
 const setupView = document.getElementById('setup-sheet-view');
 const catalogView = document.getElementById('catalog-view');
+const catalogRoot = document.getElementById('catalog-app');
+const catalogApp = catalogRoot ? createCatalogApp(catalogRoot) : null;
+const catalogEvents = catalogApp ? catalogApp.events : null;
 const appView = document.getElementById('app-view');
 const miniAppRoot = document.getElementById('miniapp-root');
 const themeMetaTag = document.querySelector('meta[name="theme-color"]');
@@ -299,7 +301,9 @@ function notifyFrameLanguage(frame, locale = currentLanguage) {
 }
 
 function notifyLanguages(locale = currentLanguage) {
-  notifyFrameLanguage(catalogFrame, locale);
+  if (catalogApp) {
+    catalogApp.setLanguage(locale);
+  }
   notifyFrameLanguage(appFrame, locale);
 }
 
@@ -327,7 +331,9 @@ function notifyFrameSession(frame) {
 }
 
 function broadcastSessionToFrames() {
-  notifyFrameSession(catalogFrame);
+  if (catalogApp) {
+    catalogApp.setSession(Auth.getSession(), { guardsDisabled: isAuthGuardDisabled() });
+  }
   notifyFrameSession(appFrame);
 }
 
@@ -418,13 +424,6 @@ function applyLanguage(locale, { persist = true, notify = true } = {}) {
 
 window.__applyShellLanguage = (locale, options = {}) =>
   applyLanguage(locale, { persist: true, notify: true, ...options });
-
-if (catalogFrame) {
-  catalogFrame.addEventListener('load', () => {
-    notifyFrameTheme(catalogFrame);
-    notifyFrameLanguage(catalogFrame);
-  });
-}
 
 if (appFrame) {
   appFrame.addEventListener('load', () => {
@@ -547,7 +546,9 @@ function notifyFrameTheme(frame, theme = currentTheme) {
 }
 
 function notifyThemeFrames(theme = currentTheme) {
-  notifyFrameTheme(catalogFrame, theme);
+  if (catalogApp) {
+    catalogApp.setTheme(theme);
+  }
   notifyFrameTheme(appFrame, theme);
 }
 
@@ -634,12 +635,11 @@ function changeView(target) {
   const isCatalogActive = target === 'catalog';
   const isAppActive = target === 'app';
 
-  if (catalogFrame) {
-    catalogFrame.hidden = !isCatalogActive;
+  if (catalogRoot) {
     if (isCatalogActive) {
-      catalogFrame.removeAttribute('inert');
+      catalogRoot.removeAttribute('inert');
     } else {
-      catalogFrame.setAttribute('inert', '');
+      catalogRoot.setAttribute('inert', '');
     }
   }
 
@@ -658,9 +658,11 @@ function openCatalog(meta = defaultCatalogHeader) {
   setHeader(meta, { source: 'shell', key: 'catalog-default' });
   setDownloadTarget(null);
   changeView('catalog');
-  notifyFrameTheme(catalogFrame);
-  notifyFrameLanguage(catalogFrame);
-  notifyFrameSession(catalogFrame);
+  if (catalogApp) {
+    catalogApp.setTheme(currentTheme);
+    catalogApp.setLanguage(currentLanguage, { notify: false });
+    catalogApp.setSession(Auth.getSession(), { guardsDisabled: isAuthGuardDisabled() });
+  }
 }
 window.openCatalogView = openCatalog;
 
@@ -682,15 +684,8 @@ function handleAccessDenied(requiredRole) {
     { source: 'shell', key: 'access-denied' },
   );
   changeView('catalog');
-  if (catalogFrame && catalogFrame.contentWindow) {
-    try {
-      catalogFrame.contentWindow.postMessage(
-        { action: 'shell-access-denied', requiredRole: requiredRole || null },
-        '*',
-      );
-    } catch (error) {
-      console.warn('Não foi possível avisar o catálogo sobre o bloqueio de acesso.', error);
-    }
+  if (catalogApp) {
+    catalogApp.notifyAccessDenied(requiredRole || null);
   }
 }
 
@@ -766,10 +761,8 @@ function loadMiniApp(url, meta = {}, options = {}) {
 }
 window.loadMiniApp = loadMiniApp;
 
-function loadCatalogMiniApp(options = {}) {
-  const config = typeof options === 'object' && options !== null ? options : {};
-  setHeader(defaultCatalogHeader, { source: 'shell', key: 'catalog-default' });
-  loadMiniApp(CATALOG_APP_URL, null, { bypassAuth: true, persistHistory: false, ...config });
+function loadCatalogMiniApp() {
+  openCatalog();
 }
 
 function restoreLastMiniAppOrCatalog() {
@@ -845,17 +838,9 @@ function applySheetId(sheetId) {
 }
 
 function reloadCatalogFrame() {
-  if (!catalogFrame) return;
-  try {
-    const frameWindow = catalogFrame.contentWindow;
-    if (frameWindow && typeof frameWindow.location.reload === 'function') {
-      frameWindow.location.reload();
-      return;
-    }
-  } catch (error) {
-    console.warn('Não foi possível recarregar o catálogo automaticamente.', error);
+  if (catalogApp) {
+    catalogApp.refresh();
   }
-  catalogFrame.src = CATALOG_APP_URL;
 }
 
 async function ensureFirebase() {
@@ -1127,25 +1112,19 @@ window.addEventListener('message', (event) => {
       setDownloadTarget(headerDownload.value);
     }
   } else if (data.action === 'miniapp-theme-ready') {
-    const frames = [catalogFrame, appFrame];
-    const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
-    if (targetFrame) {
-      notifyFrameTheme(targetFrame);
-      notifyFrameLanguage(targetFrame);
-      notifyFrameSession(targetFrame);
+    if (appFrame && appFrame.contentWindow === event.source) {
+      notifyFrameTheme(appFrame);
+      notifyFrameLanguage(appFrame);
+      notifyFrameSession(appFrame);
     }
   } else if (data.action === 'miniapp-language-ready') {
-    const frames = [catalogFrame, appFrame];
-    const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
-    if (targetFrame) {
-      notifyFrameLanguage(targetFrame);
-      notifyFrameSession(targetFrame);
+    if (appFrame && appFrame.contentWindow === event.source) {
+      notifyFrameLanguage(appFrame);
+      notifyFrameSession(appFrame);
     }
   } else if (data.action === 'miniapp-session-ready') {
-    const frames = [catalogFrame, appFrame];
-    const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
-    if (targetFrame) {
-      notifyFrameSession(targetFrame);
+    if (appFrame && appFrame.contentWindow === event.source) {
+      notifyFrameSession(appFrame);
     }
   } else if (data.action === 'auth-session-changed') {
     handleSessionChange();
@@ -1155,6 +1134,46 @@ window.addEventListener('message', (event) => {
     }
   }
 });
+
+if (catalogEvents) {
+  catalogEvents.addEventListener('load-miniapp', (event) => {
+    const detail = event.detail || {};
+    if (!detail.url) {
+      return;
+    }
+    if (detail.metadata?.sheetId) {
+      applySheetId(detail.metadata.sheetId);
+    }
+    loadMiniApp(detail.url, detail.metadata || {}, { requiredRole: detail.requiredRole || null });
+  });
+
+  catalogEvents.addEventListener('miniapp-language-ready', () => {
+    if (catalogApp) {
+      catalogApp.setLanguage(currentLanguage, { notify: false });
+      catalogApp.setSession(Auth.getSession(), { guardsDisabled: isAuthGuardDisabled() });
+      catalogApp.setTheme(currentTheme);
+    }
+  });
+
+  catalogEvents.addEventListener('miniapp-session-ready', () => {
+    if (catalogApp) {
+      catalogApp.setSession(Auth.getSession(), { guardsDisabled: isAuthGuardDisabled() });
+    }
+  });
+
+  catalogEvents.addEventListener('miniapp-theme-ready', () => {
+    if (catalogApp) {
+      catalogApp.setTheme(currentTheme);
+    }
+  });
+
+  catalogEvents.addEventListener('miniapp-access-denied', (event) => {
+    const requiredRole = event.detail?.requiredRole || null;
+    if (!isAuthGuardDisabled()) {
+      handleAccessDenied(requiredRole);
+    }
+  });
+}
 
 window.addEventListener('beforeunload', () => {
   if (sheetStatus) {
