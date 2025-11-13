@@ -1,5 +1,20 @@
 # Changelog
 
+# [2025-12-07] Shell zerado novamente
+### Alterado
+- `js/app.js` reescrito para operar apenas com o catálogo local, removendo integrações com autenticação, Firebase e configuração de planilhas, além de expor utilitários simplificados de idioma e tema.【F:js/app.js†L1-L386】【F:js/app.js†L388-L640】
+- Mensagens de i18n ajustadas para o novo fluxo estático, sem referências a planilhas ou estados do Firebase.【F:js/i18n.js†L1-L120】
+
+### Removido
+- Diretório `miniapp-base/js/` e adaptadores associados, concluindo a limpeza do sistema de usuários legado.【F:README.md†L5-L40】
+- Mocks de Firebase e demais dependências de teste que não fazem mais parte do shell zerado.【F:tests/e2e/catalog.spec.js†L1-L18】
+
+### Documentação
+- `README.md`, `AGENTE.md` e `config/README.md` atualizados para refletir o shell mínimo sem autenticação ou configurações externas.【F:README.md†L1-L68】【F:AGENTE.md†L1-L32】【F:config/README.md†L1-L14】
+
+### Testes
+- Suítes Playwright simplificadas para validar apenas catálogo, idioma e tema no novo cenário estático.【F:tests/e2e/catalog.spec.js†L1-L18】【F:tests/e2e/language.spec.js†L1-L16】【F:tests/e2e/theme.spec.js†L1-L51】
+
 # [2025-12-06] Catálogo integrado ao shell
 ### Alterado
 - Catálogo deixa de ser carregado em um iframe externo e passa a ser renderizado diretamente no shell via `js/catalog-app.js`, mantendo filtros, busca, i18n e eventos próprios expostos pelo `EventTarget`.【F:index.html†L76-L104】【F:js/catalog-app.js†L1-L338】【F:js/app.js†L20-L210】

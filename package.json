@@ -1,7 +1,7 @@
 {
   "name": "miniapp-base",
   "version": "1.0.0",
-  "description": "Este repositório contém o pacote base atualizado do ecossistema de MiniApps da 5 Horas. A estrutura foi simplificada para servir como shell PWA independente, com catálogo inicial, MiniApp Prefeito e suporte offline.",
+  "description": "Shell PWA mínimo do ecossistema de MiniApps da 5 Horas, entregue com catálogo vazio e pronto para receber novos MiniApps.",
   "main": "sw.js",
   "scripts": {
     "test": "playwright test"

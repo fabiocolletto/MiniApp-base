@@ -8,6 +8,4 @@ Arquivos desta pasta expõem variáveis globais não sensíveis que o shell e os
 - Sempre documente novas chaves e mantenha valores de exemplo claros para facilitar a configuração manual após o deploy.
 
 ## Chaves disponíveis
-- `OAUTH_CLIENT_ID`: Client ID OAuth 2.0 utilizado pelo shell para fluxos de autenticação Google.
-- `DISABLE_AUTH_GUARDS`: Quando definido como `true`, desativa o fluxo de login e libera todos os MiniApps para testes controlados.
-- `INITIAL_CATALOG_SHEET_ID`: Identificador (ou marcador estático) aplicado automaticamente pelo shell para pular a tela de configuração do catálogo enquanto o catálogo permanecer embutido.
+O arquivo padrão (`app-config.js`) inicializa `window.__APP_CONFIG__` como um objeto vazio para manter compatibilidade com versões anteriores. Adicione novas chaves conforme necessário e documente-as nesta seção.

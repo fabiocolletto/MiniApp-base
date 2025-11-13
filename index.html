@@ -54,30 +54,6 @@
         </div>
       </header>
       <main>
-        <section id="setup-sheet-view" class="app-view app-view--centered" hidden>
-          <div class="wrap app-view__wrap">
-            <div class="surface stack app-view__card" role="region" aria-labelledby="sheet-setup-title">
-              <header class="stack">
-                <h2 id="sheet-setup-title">Configurar planilha do catálogo</h2>
-                <p class="support-text" data-tone="info" data-sheet-instructions>
-                  Informe o ID da planilha do Google Sheets que centraliza os MiniApps. Use o trecho entre
-                  <code>/d/</code> e <code>/edit</code> da URL compartilhada.
-                </p>
-              </header>
-              <form id="sheet-config-form" class="stack" autocomplete="off">
-                <label class="form-field" for="sheetIdInput">
-                  <span class="form-label" data-sheet-label>ID da planilha</span>
-                  <input id="sheetIdInput" name="sheetId" type="text" class="input" placeholder="1A2B3C…" required />
-                </label>
-                <div class="form-actions">
-                  <button id="sheetConfigSubmit" class="btn btn--primary" type="submit">Salvar e carregar catálogo</button>
-                </div>
-                <p id="sheet-setup-status" class="support-text" role="status" aria-live="polite"></p>
-              </form>
-            </div>
-          </div>
-        </section>
-
         <section id="catalog-view" class="app-view" hidden>
           <div id="catalog-app" class="app-panel catalog" data-catalog-root>
             <div class="catalog__container">
