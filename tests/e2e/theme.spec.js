@@ -1,20 +1,9 @@
 const { test, expect } = require('@playwright/test');
-const { stubFirebase } = require('../helpers/firebase');
 
-test.describe('Alternância de tema no shell', () => {
-  test('propaga tema para catálogo e MiniApps carregados', async ({ page }) => {
-    await stubFirebase(page);
+test.describe('Alternância de tema', () => {
+  test('propaga tema para catálogo e MiniApps', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
-      localStorage.setItem('miniapp-shell.sheetId', 'sheet-theme-test');
-      const session = {
-        token: 'local-session-token',
-        userId: 'usr_local_admin',
-        email: 'admin@example.com',
-        role: 'admin',
-        storedAt: new Date().toISOString(),
-      };
-      localStorage.setItem('miniapp.session', JSON.stringify(session));
       const matchMediaStub = (query) => ({
         matches: false,
         media: query,
@@ -33,7 +22,6 @@ test.describe('Alternância de tema no shell', () => {
     });
 
     await page.goto('/index.html');
-    await page.waitForLoadState('networkidle');
     await page.waitForFunction(() => typeof window.__applyShellTheme === 'function');
 
     const root = page.locator('#miniapp-root');
@@ -44,9 +32,7 @@ test.describe('Alternância de tema no shell', () => {
     await page.evaluate(() => window.__applyShellTheme('dark'));
 
     await expect.poll(async () => root.getAttribute('data-theme')).toBe('dark');
-
-    const catalogRoot = page.locator('#catalog-app');
-    await expect.poll(async () => catalogRoot.getAttribute('data-theme')).toBe('dark');
+    await expect.poll(async () => page.locator('#catalog-app').getAttribute('data-theme')).toBe('dark');
 
     await page.route('**/miniapp-theme-probe.html', (route) => {
       route.fulfill({
@@ -56,8 +42,7 @@ test.describe('Alternância de tema no shell', () => {
       });
     });
 
-    await page.evaluate(() => window.loadMiniApp('/miniapp-theme-probe.html', { title: 'Probe' }, { bypassAuth: true }));
-
+    await page.evaluate(() => window.loadMiniApp('/miniapp-theme-probe.html', { title: 'Probe' }));
     await page.waitForSelector('#app-view[data-active="true"]');
 
     const appFrame = page.frameLocator('#miniapp-panel');
@@ -65,10 +50,9 @@ test.describe('Alternância de tema no shell', () => {
 
     await page.evaluate((theme) => window.__applyShellTheme(theme), initialNormalized);
 
-    const expectedFinalTheme = initialNormalized;
-    await expect.poll(async () => root.getAttribute('data-theme')).toBe(expectedFinalTheme);
-    await expect.poll(async () => appFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);
-    await expect.poll(async () => catalogRoot.getAttribute('data-theme')).toBe(expectedFinalTheme);
+    await expect.poll(async () => root.getAttribute('data-theme')).toBe(initialNormalized);
+    await expect.poll(async () => appFrame.locator('body').getAttribute('data-theme')).toBe(initialNormalized);
+    await expect.poll(async () => page.locator('#catalog-app').getAttribute('data-theme')).toBe(initialNormalized);
 
     const storedTheme = await page.evaluate(() => localStorage.getItem('miniapp-shell.theme'));
     expect(storedTheme).toBe(initialNormalized);

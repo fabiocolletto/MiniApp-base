@@ -15,7 +15,6 @@
 - Revise `CHANGELOG.md` ao final de cada entrega para registrar ajustes relevantes em arquitetura, testes e fluxo de desenvolvimento.
 - Prefira reaproveitar utilitários existentes antes de adicionar dependências ou scripts duplicados; caso uma nova ferramenta seja imprescindível, documente o racional e o passo a passo de uso.
 
-## SISTEMA DE USUÁRIOS — FASE 1
-- O módulo de autenticação reside em `miniapp-base/js/auth.js` e usa o adaptador `miniapp-base/js/adapters/users-appscript.js` para falar com o Web App do Apps Script.
-- O shell consulta `Auth.bootstrap()` apenas para preservar compatibilidade com integrações legadas. Com o catálogo como único MiniApp disponível, mantenha o fluxo liberado mesmo sem sessão e evite reintroduzir bloqueios automáticos ao catálogo.
-- MiniApps administrativos precisam marcar os cards do catálogo com `data-required-role="admin"` (veja o array `STATIC_CATALOG_ITEMS` em `js/catalog-app.js`). O shell continua bloqueando `loadMiniApp` quando um papel específico for realmente necessário.
+## AUTENTICAÇÃO E GUARDAS
+- O shell não carrega mais módulos de autenticação. Sempre mantenha os MiniApps acessíveis sem depender de sessão.
+- Caso algum MiniApp futuro exija controle de acesso, documente o fluxo antes de introduzir novas dependências e garanta que o catálogo continue totalmente navegável quando os guardas estiverem desativados.

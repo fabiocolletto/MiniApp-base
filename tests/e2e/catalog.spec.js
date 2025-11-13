@@ -1,36 +1,24 @@
 const { test, expect } = require('@playwright/test');
 
-const { stubFirebase } = require('../helpers/firebase');
+test.describe('Catálogo embutido', () => {
+  test('renderiza apenas o cartão do catálogo padrão', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.waitForSelector('#catalog-view[data-active="true"]');
 
-const STORAGE_KEY = 'miniapp-catalog.admin.activeItems';
-
-test.describe('Miniapp catálogo público', () => {
-  test.beforeEach(async ({ page }) => {
-    page.on('console', (msg) => console.log('[catalog-console]', msg.text()));
+    const cards = page.locator('[data-catalog-card]');
+    await expect(cards).toHaveCount(1);
+    await expect(cards.first().locator('h4')).toHaveText(/Catálogo de MiniApps/i);
   });
 
-  test('exibe itens importados do armazenamento local junto aos essenciais', async ({ page }) => {
-    await page.addInitScript(([key, payload]) => {
-      localStorage.clear();
-      localStorage.setItem(key, JSON.stringify(payload));
-    }, [STORAGE_KEY, {
-      items: [
-        {
-          id: 'local-app',
-          name: 'Aplicativo Local',
-          description: 'Item disponível apenas neste dispositivo.',
-          url: 'index.html',
-          category: 'Local',
-          status: 'Ativo',
-          icon_url: 'https://placehold.co/48x48/222/fff?text=L'
-        }
-      ],
-    }]);
-
-    await stubFirebase(page);
+  test('mostra estado vazio quando a busca não encontra itens', async ({ page }) => {
     await page.goto('/index.html');
+    const catalogList = page.locator('[data-catalog-list]');
+    await page.waitForSelector('#catalog-view[data-active="true"]');
+    await expect.poll(async () => catalogList.getAttribute('data-render-state')).toBe('ready');
 
-    await expect(page.getByRole('heading', { name: /Catálogo de MiniApps/i })).toBeVisible();
-    await expect(page.getByText('Aplicativo Local', { exact: false })).toBeVisible();
+    await page.locator('[data-catalog-search]').fill('não existe');
+
+    await expect.poll(async () => catalogList.getAttribute('data-render-state')).toBe('empty');
+    await expect(page.getByText('Nenhum MiniApp corresponde aos seus filtros de busca.', { exact: false })).toBeVisible();
   });
 });
