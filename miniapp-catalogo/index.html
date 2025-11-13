@@ -101,6 +101,7 @@
     let currentStatusFallback = '';
     let currentStatusExtras = null;
     let currentUserRole = null;
+    let authGuardsDisabled = false;
     const LOCAL_STORAGE_KEY = 'miniapp-catalog.admin.activeItems';
 
     const filterOptions = {
@@ -152,6 +153,9 @@
     }
 
     function roleSatisfies(requiredRole, userRole) {
+      if (authGuardsDisabled) {
+        return true;
+      }
       if (!requiredRole) {
         return true;
       }
@@ -730,6 +734,7 @@
       if (data.action === 'shell-language') {
         applyLanguage(data.locale);
       } else if (data.action === 'shell-session') {
+        authGuardsDisabled = Boolean(data.guardsDisabled);
         currentUserRole = data.session?.role || null;
         applyRoleVisibility();
       } else if (data.action === 'shell-access-denied') {

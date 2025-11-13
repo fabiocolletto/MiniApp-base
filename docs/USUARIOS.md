@@ -41,6 +41,7 @@ O shell filtra os cards do catálogo com base no atributo `data-required-role`. 
 - **Admin único:** enquanto existir administrador ativo, `/users/init-admin` responde `409` e o MiniApp exibe somente o login.
 - **Auditoria:** cada alteração de usuário salva `updatedAt` (ISO) e `updatedBy` (ID do administrador autenticado).
 - **Tokens opacos:** o Apps Script gera tokens curtos assinados via `PropertiesService`. O cliente envia em `Authorization: Bearer <token>`; o backend valida expiração antes de atender solicitações administrativas.
+- **Modo testes temporário:** defina `window.__APP_CONFIG__.DISABLE_AUTH_GUARDS = true` (vide `config/app-config.js`) para liberar catálogo e MiniApps sem exigir login. Utilize apenas em ambientes controlados e lembre-se de reverter para `false` após os testes.
 
 ## Estrutura no Drive (`appDataFolder`)
 

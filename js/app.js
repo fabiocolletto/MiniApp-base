@@ -8,6 +8,24 @@ import {
   getShellMessages,
 } from './i18n.js';
 
+function readAppConfigFlag(flagName) {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  const appConfig = window.__APP_CONFIG__;
+  if (!appConfig || typeof appConfig !== 'object') {
+    return false;
+  }
+  return Boolean(appConfig[flagName]);
+}
+
+function isAuthGuardDisabled() {
+  if (typeof Auth.areGuardsDisabled === 'function') {
+    return Boolean(Auth.areGuardsDisabled());
+  }
+  return readAppConfigFlag('DISABLE_AUTH_GUARDS');
+}
+
 const headerTitle = document.querySelector('[data-header-title]');
 const headerSubtitle = document.querySelector('[data-header-subtitle]');
 const openCatalogBtn = document.getElementById('openCatalog');
@@ -217,7 +235,10 @@ function isUsersMiniApp(url) {
 function notifyFrameSession(frame) {
   if (!frame) return;
   try {
-    frame.contentWindow?.postMessage({ action: 'shell-session', session: Auth.getSession() }, '*');
+    frame.contentWindow?.postMessage(
+      { action: 'shell-session', session: Auth.getSession(), guardsDisabled: isAuthGuardDisabled() },
+      '*',
+    );
   } catch (error) {
     console.warn('Não foi possível enviar a sessão para um iframe.', error);
   }
@@ -568,7 +589,9 @@ function handleAccessDenied(requiredRole) {
 }
 
 function handleSessionChange(options = {}) {
-  const { skipLogin = false } = options;
+  const baseSkipLogin = Boolean(options.skipLogin);
+  const guardsDisabled = isAuthGuardDisabled();
+  const skipLogin = baseSkipLogin || guardsDisabled;
   const session = Auth.refreshSession();
   const hasSession = Boolean(session);
 
@@ -601,7 +624,7 @@ function loadMiniApp(url, meta = {}, options = {}) {
   const targetUrl = url;
   const usersApp = isUsersMiniApp(targetUrl || '');
 
-  if (!bypassAuth) {
+  if (!bypassAuth && !isAuthGuardDisabled()) {
     if (requiredRole && !Auth.require(requiredRole)) {
       handleAccessDenied(requiredRole);
       return;
@@ -989,7 +1012,9 @@ window.addEventListener('message', (event) => {
   } else if (data.action === 'auth-session-changed') {
     handleSessionChange();
   } else if (data.action === 'miniapp-access-denied') {
-    handleAccessDenied(data.requiredRole || null);
+    if (!isAuthGuardDisabled()) {
+      handleAccessDenied(data.requiredRole || null);
+    }
   }
 });
 
@@ -1039,9 +1064,10 @@ async function initializeShell() {
     usersApiConfigured = false;
   }
   const hasAuthSupport = usersApiConfigured || isLocalAuth;
-  const skipLogin = !hasAuthSupport;
+  const guardsDisabled = isAuthGuardDisabled();
+  const skipLogin = guardsDisabled || !hasAuthSupport;
 
-  if (bootstrapState?.adminMissing && hasAuthSupport) {
+  if (bootstrapState?.adminMissing && hasAuthSupport && !guardsDisabled) {
     window.__catalogDisabled__ = true;
     setHeader(
       {
