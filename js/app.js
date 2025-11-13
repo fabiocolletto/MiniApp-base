@@ -1,5 +1,4 @@
 import { Auth } from '../miniapp-base/js/auth.js';
-import { UsersApi } from '../miniapp-base/js/adapters/users-appscript.js';
 import {
   DEFAULT_LOCALE,
   getAvailableLocales,
@@ -313,13 +312,6 @@ function formatRoleLabel(role) {
     return 'adequado';
   }
   return ACCESS_ROLE_LABELS[normalized] || normalized;
-}
-
-function isUsersMiniApp(url) {
-  if (typeof url !== 'string') {
-    return false;
-  }
-  return url.includes('miniapp-usuarios');
 }
 
 function notifyFrameSession(frame) {
@@ -703,17 +695,16 @@ function handleAccessDenied(requiredRole) {
 }
 
 function handleSessionChange(options = {}) {
-  const baseSkipLogin = Boolean(options.skipLogin);
   const guardsDisabled = isAuthGuardDisabled();
-  const skipLogin = baseSkipLogin || guardsDisabled;
+  const skipLogin = options.skipLogin !== false || guardsDisabled;
   const session = Auth.refreshSession();
   const hasSession = Boolean(session);
 
   broadcastSessionToFrames();
 
-  if (hasSession || skipLogin) {
-    window.__catalogDisabled__ = false;
+  window.__catalogDisabled__ = false;
 
+  if (skipLogin || hasSession) {
     if (skipLogin && !hasSession) {
       openCatalog();
     }
@@ -722,12 +713,10 @@ function handleSessionChange(options = {}) {
       setHeader(defaultCatalogHeader, { source: 'shell', key: 'catalog-default' });
     }
     ensureSheetBootstrap();
-  } else {
-    window.__catalogDisabled__ = true;
-    if (!isUsersMiniApp(appFrame?.src || '')) {
-      loadMiniApp('miniapp-usuarios/index.html?mode=login', {}, { bypassAuth: true, persistHistory: false });
-    }
+    return;
   }
+
+  handleAccessDenied('leitor');
 }
 
 function loadMiniApp(url, meta = {}, options = {}) {
@@ -736,15 +725,10 @@ function loadMiniApp(url, meta = {}, options = {}) {
   const bypassAuth = Boolean(config.bypassAuth);
   const persistHistory = config.persistHistory !== false;
   const targetUrl = url;
-  const usersApp = isUsersMiniApp(targetUrl || '');
 
   if (!bypassAuth && !isAuthGuardDisabled()) {
     if (requiredRole && !Auth.require(requiredRole)) {
       handleAccessDenied(requiredRole);
-      return;
-    }
-    if (window.__catalogDisabled__ && !usersApp) {
-      handleAccessDenied(requiredRole || 'leitor');
       return;
     }
   }
@@ -766,7 +750,7 @@ function loadMiniApp(url, meta = {}, options = {}) {
   if (targetUrl) {
     appFrame.src = targetUrl;
     try {
-      if (persistHistory && !usersApp) {
+      if (persistHistory) {
         localStorage.setItem('miniapp-shell.last', targetUrl);
       } else if (!persistHistory) {
         localStorage.removeItem('miniapp-shell.last');
@@ -1211,42 +1195,13 @@ window.addEventListener('storage', (event) => {
 });
 
 async function initializeShell() {
-  const bootstrapState = await Auth.bootstrap();
-  const adapterMode = typeof UsersApi.getMode === 'function'
-    ? UsersApi.getMode()
-    : Boolean(UsersApi.getBaseUrl())
-      ? 'remote'
-      : 'local';
-  const isLocalAuth = adapterMode === 'local';
-  let usersApiConfigured = false;
   try {
-    usersApiConfigured = adapterMode === 'remote' && Boolean(UsersApi.getBaseUrl());
+    await Auth.bootstrap();
   } catch (error) {
-    usersApiConfigured = false;
-  }
-  const hasAuthSupport = usersApiConfigured || isLocalAuth;
-  const guardsDisabled = isAuthGuardDisabled();
-  const skipLogin = guardsDisabled || !hasAuthSupport;
-
-  if (bootstrapState?.adminMissing && hasAuthSupport && !guardsDisabled) {
-    window.__catalogDisabled__ = true;
-    setHeader(
-      {
-        title: 'Configurar administrador',
-        subtitle: 'Crie a conta inicial para continuar.',
-      },
-      { source: 'shell', key: 'auth-setup' },
-    );
-    loadMiniApp('miniapp-usuarios/index.html?mode=setup', {}, { bypassAuth: true, persistHistory: false });
-    broadcastSessionToFrames();
-    return;
+    console.warn('Falha ao inicializar o módulo de autenticação; prosseguindo sem sessão.', error);
   }
 
-  handleSessionChange({ skipLogin });
-
-  if (!usersApiConfigured && !isLocalAuth && bootstrapState?.error) {
-    console.warn('Serviço de usuários indisponível; executando o shell sem autenticação.', bootstrapState.error);
-  }
+  handleSessionChange({ skipLogin: true });
 }
 
 if ('serviceWorker' in navigator) {

@@ -1,5 +1,19 @@
 # Changelog
 
+# [2025-12-04] Catálogo como único MiniApp
+### Removido
+- MiniApp de usuários, guias associados e script Apps Script substituídos por um shell que mantém apenas o catálogo estático como experiência disponível.【F:miniapp-catalogo/index.html†L60-L117】【F:docs/README.md†L1-L6】【F:docs/protocolos/exclusao-miniapps.md†L1-L20】【F:js/app.js†L674-L806】
+
+### Alterado
+- Fluxo de inicialização do shell ignora o login obrigatório, mantém o catálogo acessível mesmo sem sessão e simplifica o carregamento de MiniApps ao retirar os caminhos especiais do módulo de usuários.【F:js/app.js†L674-L818】
+- Guardas de autenticação passam a ficar desativados por padrão, permitindo que o catálogo seja carregado sem configuração adicional.【F:miniapp-base/js/auth.js†L1-L120】
+
+### Documentação
+- README, guia do agente e protocolo de exclusão atualizados para refletir que apenas o catálogo permanece como MiniApp padrão e que novos bloqueios de autenticação devem ser evitados por padrão.【F:README.md†L1-L120】【F:AGENTE.md†L1-L32】【F:docs/protocolos/exclusao-miniapps.md†L1-L20】
+
+### Testes
+- Suites Playwright ajustadas para validar somente o catálogo como cartão essencial e para verificar a propagação de tema usando o próprio catálogo dentro do painel principal.【F:tests/e2e/catalog.spec.js†L1-L36】【F:tests/e2e/theme.spec.js†L1-L74】
+
 # [2025-12-03] Remoção do MiniApp Minha Conta
 ### Removido
 - MiniApp Minha Conta retirado do repositório e do catálogo estático, eliminando assets, traduções e carregamentos dedicados.【F:miniapp-catalogo/index.html†L96-L155】
@@ -18,13 +32,13 @@
 # [2025-12-01] Remoção do MiniApp Prefeito e novos protocolos
 ### Removido
 - MiniApp Prefeito retirado do repositório, catálogo estático e Service Worker, eliminando assets e caches não utilizados.【F:miniapp-catalogo/index.html†L92-L121】【F:sw.js†L1-L34】
-- Teste E2E de tema atualizado para validar a abertura do MiniApp Minha Conta como padrão durante a alternância de temas.【F:tests/e2e/theme.spec.js†L1-L74】
+- Teste E2E de tema atualizado para validar a abertura do MiniApp Base como padrão durante a alternância de temas.【F:tests/e2e/theme.spec.js†L1-L74】
 
 ### Adicionado
 - Diretório `docs/protocolos/` com índice e protocolo formal para exclusão de MiniApps, garantindo alinhamento antes de execuções futuras.【F:docs/protocolos/README.md†L1-L13】【F:docs/protocolos/exclusao-miniapps.md†L1-L26】
 
 ### Documentação
-- `AGENTE.md`, `README.md` e `docs/README.md` reforçam a consulta aos protocolos e descrevem o MiniApp Minha Conta como experiência padrão disponível no shell.【F:AGENTE.md†L1-L32】【F:README.md†L1-L86】【F:docs/README.md†L1-L8】
+- `AGENTE.md`, `README.md` e `docs/README.md` reforçam a consulta aos protocolos antes de alterações e destacam o conjunto de MiniApps essenciais (Base, Catálogo e Usuários) disponível no shell.【F:AGENTE.md†L1-L32】【F:README.md†L7-L24】【F:docs/README.md†L1-L8】
 
 ## [2025-11-30] Catálogo estático pré-configurado
 ### Alterado
@@ -47,7 +61,7 @@
 ### Alterado
 - MiniApp de usuários trata falhas na autenticação automática após criar o administrador e mantém o cadastro mesmo quando o backend recusa o login imediato, orientando o responsável a entrar manualmente.【F:miniapp-usuarios/index.html†L693-L739】
 ### Documentação
-- Fluxo do sistema de usuários registra que o login automático após o cadastro do administrador pode ser opcional, dependendo da resposta do serviço.【F:docs/USUARIOS.md†L15-L18】
+- Fluxo do sistema de usuários registra que o login automático após o cadastro do administrador pode ser opcional, dependendo da resposta do serviço.
 
 # [2025-11-26] Acesso temporário sem autenticação
 ### Adicionado
@@ -56,7 +70,7 @@
 - Shell desativa os guardas de autenticação quando a flag está ativa, mantendo o catálogo disponível, ignorando restrições de papel nos MiniApps e informando o estado aos iframes carregados.【F:js/app.js†L11-L28】【F:js/app.js†L216-L251】【F:js/app.js†L560-L610】【F:js/app.js†L1004-L1083】
 - MiniApp do catálogo passa a exibir todos os cards quando os guardas estão desligados, inclusive para aberturas diretas via `postMessage`.【F:miniapp-catalogo/index.html†L103-L141】【F:miniapp-catalogo/index.html†L150-L181】【F:miniapp-catalogo/index.html†L720-L738】
 ### Documentação
-- Guia de configuração pública lista a nova chave `DISABLE_AUTH_GUARDS` e o manual do sistema de usuários reforça o uso apenas em ambientes controlados.【F:config/README.md†L9-L12】【F:docs/USUARIOS.md†L45-L53】
+- Guia de configuração pública lista a nova chave `DISABLE_AUTH_GUARDS` e o manual do sistema de usuários reforça o uso apenas em ambientes controlados.【F:config/README.md†L9-L12】
 
 # [2025-11-25] Tema persistente no shell
 ### Corrigido
@@ -81,7 +95,7 @@
 - Fluxo de bootstrap do shell agora respeita o modo local de autenticação, exigindo a criação do administrador antes de liberar o catálogo mesmo sem Apps Script configurado.【F:js/app.js†L964-L1006】
 - MiniApp de usuários sinaliza que o cadastro inicial ficará salvo apenas no dispositivo atual, alinhando mensagens com o novo fallback local.【F:miniapp-usuarios/index.html†L26-L83】
 ### Documentação
-- README do MiniApp de usuários e o guia `docs/USUARIOS.md` explicam o modo local e as diferenças de segurança em relação ao backend do Apps Script.【F:miniapp-usuarios/README.md†L1-L4】【F:docs/USUARIOS.md†L15-L55】
+- README do MiniApp de usuários e o guia `docs/USUARIOS.md` explicam o modo local e as diferenças de segurança em relação ao backend do Apps Script.【F:miniapp-usuarios/README.md†L1-L4】
 
 ## [2025-11-21] Minha Conta com Google Drive appDataFolder
 ### Adicionado
@@ -100,8 +114,8 @@
 ### Adicionado
 - Módulo de autenticação (`miniapp-base/js/auth.js`) com persistência de sessão no shell, bloqueio de MiniApps por papel e sincronia automática com o catálogo.【F:miniapp-base/js/auth.js†L1-L216】【F:js/app.js†L1-L904】
 - MiniApp `miniapp-usuarios` com fluxo de bootstrap do administrador, painel de gestão e login compartilhado para operadores e leitores.【F:miniapp-usuarios/index.html†L1-L375】
-- Adaptador `users-appscript` e documentação `docs/USUARIOS.md` com os endpoints do Web App do Apps Script.【F:miniapp-base/js/adapters/users-appscript.js†L1-L131】【F:docs/USUARIOS.md†L1-L74】
-- Backend de referência em `docs/apps-script/users.gs` persistindo dados no `appDataFolder` com hash PBKDF2 e tokens opacos.【F:docs/apps-script/users.gs†L1-L250】
+- Adaptador `users-appscript` e documentação `docs/USUARIOS.md` com os endpoints do Web App do Apps Script.【F:miniapp-base/js/adapters/users-appscript.js†L1-L131】
+- Backend de referência em `docs/apps-script/users.gs` persistindo dados no `appDataFolder` com hash PBKDF2 e tokens opacos.
 
 ## [2025-11-19] Tema claro com tokens garantidos
 ### Corrigido

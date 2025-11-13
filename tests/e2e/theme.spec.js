@@ -51,19 +51,19 @@ test.describe('Alternância de tema no shell', () => {
     await catalogFrame.locator('body').waitFor();
     await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe('dark');
 
-    const openBase = catalogFrame.locator('[data-open-miniapp][data-url="miniapp-base/index.html"]');
-    await openBase.click();
+    const openCatalogCard = catalogFrame.locator('[data-open-miniapp]').first();
+    await openCatalogCard.click();
 
     await page.waitForSelector('#app-view[data-active="true"]');
 
     const appFrame = page.frameLocator('#miniapp-panel');
-    await expect.poll(async () => appFrame.locator('.ma').getAttribute('data-theme')).toBe('dark');
+    await expect.poll(async () => appFrame.locator('body').getAttribute('data-theme')).toBe('dark');
 
     await page.evaluate((theme) => window.__applyShellTheme(theme), initialNormalized);
 
     const expectedFinalTheme = initialNormalized;
     await expect.poll(async () => root.getAttribute('data-theme')).toBe(expectedFinalTheme);
-    await expect.poll(async () => appFrame.locator('.ma').getAttribute('data-theme')).toBe(expectedFinalTheme);
+    await expect.poll(async () => appFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);
     await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);
 
     const storedTheme = await page.evaluate(() => localStorage.getItem('miniapp-shell.theme'));
