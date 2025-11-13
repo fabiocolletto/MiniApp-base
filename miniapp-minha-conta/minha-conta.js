@@ -35,16 +35,9 @@ function postMessageToParent(payload) {
 
 function applyTheme(theme) {
   const normalized = theme === 'dark' ? 'dark' : 'light';
-  if (normalized === 'dark') {
-    document.body.setAttribute('data-theme', 'dark');
-    if (root) {
-      root.setAttribute('data-theme', 'dark');
-    }
-  } else {
-    document.body.removeAttribute('data-theme');
-    if (root) {
-      root.removeAttribute('data-theme');
-    }
+  document.body.setAttribute('data-theme', normalized);
+  if (root) {
+    root.setAttribute('data-theme', normalized);
   }
   postMessageToParent({ action: 'miniapp-theme-applied', theme: normalized });
 }

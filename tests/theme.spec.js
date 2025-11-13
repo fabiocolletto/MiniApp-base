@@ -61,7 +61,7 @@ test.describe('Alternância de tema no shell', () => {
 
     await page.evaluate((theme) => window.__applyShellTheme(theme), initialNormalized);
 
-    const expectedFinalTheme = initialNormalized === 'dark' ? 'dark' : null;
+    const expectedFinalTheme = initialNormalized;
     await expect.poll(async () => root.getAttribute('data-theme')).toBe(expectedFinalTheme);
     await expect.poll(async () => appFrame.locator('.ma').getAttribute('data-theme')).toBe(expectedFinalTheme);
     await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);

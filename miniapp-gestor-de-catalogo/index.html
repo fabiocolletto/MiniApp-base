@@ -1127,18 +1127,10 @@
     const applyTheme = (theme) => {
       const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
       if (root) {
-        if (normalizedTheme === 'dark') {
-          root.setAttribute('data-theme', 'dark');
-        } else {
-          root.removeAttribute('data-theme');
-        }
+        root.setAttribute('data-theme', normalizedTheme);
       }
 
-      if (normalizedTheme === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-      } else {
-        document.body.removeAttribute('data-theme');
-      }
+      document.body.setAttribute('data-theme', normalizedTheme);
 
       if (window.parent && typeof window.parent.postMessage === 'function') {
         window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');

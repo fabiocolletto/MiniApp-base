@@ -756,11 +756,7 @@
       const applyTheme = (theme) => {
         if (!themeHost) return;
         const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
-        if (normalizedTheme === 'dark') {
-          themeHost.setAttribute('data-theme', 'dark');
-        } else {
-          themeHost.removeAttribute('data-theme');
-        }
+        themeHost.setAttribute('data-theme', normalizedTheme);
 
         if (window.parent && typeof window.parent.postMessage === 'function') {
           window.parent.postMessage({ action: 'miniapp-theme-applied', theme: normalizedTheme }, '*');
