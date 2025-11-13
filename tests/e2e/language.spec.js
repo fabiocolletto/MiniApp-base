@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { stubFirebase } = require('../helpers/firebase');
 
 test.describe('Idioma do shell e miniapps', () => {
-  test('alternar idioma atualiza shell, catálogo e gestor', async ({ page }) => {
+  test('alternar idioma atualiza shell e catálogo', async ({ page }) => {
     await stubFirebase(page);
 
     await page.addInitScript(() => {
@@ -52,18 +52,5 @@ test.describe('Idioma do shell e miniapps', () => {
     const catalogStatus = page.frameLocator('#catalog-frame').locator('#status-message');
     await expect(catalogStatus).toHaveText(/Firebase configuration missing\.|Catalog loaded: \d+ MiniApps available\./);
 
-    await page.evaluate(() => {
-      window.loadMiniApp('miniapp-gestor-de-catalogo/index.html', {
-        title: 'MiniApp Catalog Manager',
-        subtitle: 'Admin tooling',
-      });
-    });
-
-    const managerFrame = page.frameLocator('#miniapp-panel');
-    await expect(managerFrame.locator('#managerHeading [data-manager-title]')).toHaveText('MiniApp Catalog Manager');
-    await expect(managerFrame.locator('#managerBadge')).toHaveText('(Admin Access)');
-    await expect(managerFrame.locator('#status-message')).toHaveText("Spreadsheet ID restored. Click 'Test & Preview' (Step 2) to sync.");
-
-    await expect(managerFrame.locator('html')).toHaveAttribute('lang', 'en-US');
   });
 });

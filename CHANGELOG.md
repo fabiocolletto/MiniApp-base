@@ -1,5 +1,13 @@
 # Changelog
 
+# [2025-12-02] Catálogo sem gestor administrativo
+### Removido
+- MiniApp Gestor de Catálogos retirado do repositório e do catálogo estático, eliminando assets, traduções e testes dedicados.【F:miniapp-catalogo/index.html†L60-L147】【F:js/i18n.js†L1-L214】【83ff47†L1-L2】
+- Suites Playwright atualizadas após a remoção do MiniApp administrativo, mantendo apenas os cenários de catálogo, idioma e tema e removendo referências ao gestor.【83ff47†L1-L2】【F:tests/e2e/language.spec.js†L1-L61】
+
+### Documentação
+- README, protocolo de exclusão e guia de scripts atualizados para refletir o catálogo sem o gestor administrativo.【F:README.md†L1-L120】【F:docs/protocolos/exclusao-miniapps.md†L1-L20】【F:js/README.md†L1-L12】
+
 # [2025-12-01] Remoção do MiniApp Prefeito e novos protocolos
 ### Removido
 - MiniApp Prefeito retirado do repositório, catálogo estático e Service Worker, eliminando assets e caches não utilizados.【F:miniapp-catalogo/index.html†L92-L121】【F:sw.js†L1-L34】
@@ -45,7 +53,7 @@
 
 # [2025-11-25] Tema persistente no shell
 ### Corrigido
-- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-gestor-de-catalogo/index.html†L1068-L1108】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/e2e/theme.spec.js†L1-L74】
+- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/e2e/theme.spec.js†L1-L74】
 
 ## [2025-11-24] Logo responsivo no rodapé
 ### Corrigido
@@ -90,7 +98,7 @@
 
 ## [2025-11-19] Tema claro com tokens garantidos
 ### Corrigido
-- Shell, catálogo e MiniApps agora mantêm `data-theme="light"` ou `"dark"` no corpo e no contêiner `.ma`, evitando resquícios do tema anterior em cabeçalho, rodapé e componentes quando a instância é embutida em outros sites.【F:index.html†L12-L74】【F:js/app.js†L318-L368】【F:miniapp-catalogo/index.html†L1-L612】【F:miniapp-gestor-de-catalogo/index.html†L1053-L1144】【F:miniapp-prefeito/index.html†L1-L129】
+- Shell, catálogo e MiniApps agora mantêm `data-theme="light"` ou `"dark"` no corpo e no contêiner `.ma`, evitando resquícios do tema anterior em cabeçalho, rodapé e componentes quando a instância é embutida em outros sites.【F:index.html†L12-L74】【F:js/app.js†L318-L368】【F:miniapp-catalogo/index.html†L1-L612】【F:miniapp-prefeito/index.html†L1-L129】
 - Token `--ma-color-scheme` define `color-scheme` automaticamente para cada modo, assegurando contraste correto em elementos nativos do navegador e reforçando os estilos claros/escuros do shell.【F:miniapp-base/style/styles.css†L25-L118】
 
 ## [2025-11-19] Catálogo embutido no miniapp
@@ -126,16 +134,16 @@
 ## [2025-11-15] Alternância de tema integrada ao shell
 ### Adicionado
 - Botão para alternar tema claro/escuro diretamente no cabeçalho do shell, com persistência em `localStorage`, atualização do `<meta name="theme-color">` e broadcast do estado via `{ action: 'shell-theme', theme }` para catálogo e MiniApps.【F:index.html†L32-L51】【F:js/app.js†L20-L333】
-- Scripts utilitários nos iframes (catálogo, gestor e MiniApp Prefeito) para responder aos eventos `{ action: 'shell-theme' }`, confirmar com `{ action: 'miniapp-theme-applied' }` e aplicar as classes `data-theme` necessárias.【F:miniapp-catalogo/index.html†L1-L396】【F:miniapp-gestor-de-catalogo/index.html†L1-L836】【F:miniapp-prefeito/index.html†L1-L52】
+- Scripts utilitários nos iframes (catálogo e MiniApp Prefeito) para responder aos eventos `{ action: 'shell-theme' }`, confirmar com `{ action: 'miniapp-theme-applied' }` e aplicar as classes `data-theme` necessárias.【F:miniapp-catalogo/index.html†L1-L396】【F:miniapp-prefeito/index.html†L1-L52】
 ### Alterado
-- Catálogo público e gestor administrativo receberam overrides de Tailwind condicionados a `body[data-theme="dark"]`, garantindo contraste adequado quando o shell força o modo escuro.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-gestor-de-catalogo/index.html†L1-L120】
+- Catálogo público recebeu overrides de Tailwind condicionados a `body[data-theme="dark"]`, garantindo contraste adequado quando o shell força o modo escuro.【F:miniapp-catalogo/index.html†L8-L206】
 - Documentação atualizada com o fluxo de tema e handshake necessário para novos MiniApps.【F:README.md†L1-L60】【F:miniapp-catalogo/README.md†L1-L9】【F:miniapp-prefeito/README.md†L1-L13】
 
 ## [2025-11-11] Validação automatizada do catálogo e gestor
 ### Adicionado
-- Suite de testes end-to-end com Playwright cobrindo catálogo público e gestor administrativo, usando servidor estático embutido e stubs do Firebase para validar persistência local e importação via Google Sheets.【F:playwright.config.js†L1-L17】【F:tests/e2e/catalog.spec.js†L1-L36】【F:tests/e2e/manager.spec.js†L1-L74】【F:tests/helpers/firebase.js†L1-L32】
+- Suite de testes end-to-end com Playwright cobrindo catálogo público e gestor administrativo, usando servidor estático embutido e stubs do Firebase para validar persistência local e importação via Google Sheets.【F:playwright.config.js†L1-L17】【F:tests/e2e/catalog.spec.js†L1-L36】【F:tests/helpers/firebase.js†L1-L32】
 ### Corrigido
-- Gestor de catálogos salva o ID da planilha importada no armazenamento local mesmo sem Firebase configurado, mantendo o shell sincronizado após importações offline.【F:miniapp-gestor-de-catalogo/index.html†L679-L686】
+- Gestor de catálogos salva o ID da planilha importada no armazenamento local mesmo sem Firebase configurado, mantendo o shell sincronizado após importações offline.
 
 ## [2025-11-14] Fallback local do catálogo sem Firebase
 ### Corrigido
