@@ -1,6 +1,6 @@
 # MiniApp Base — Reset 100%
 
-Este repositório contém o pacote base atualizado do ecossistema de MiniApps da 5 Horas. A estrutura foi simplificada para servir como shell PWA independente, com catálogo inicial, MiniApp Minha Conta e suporte offline.
+Este repositório contém o pacote base atualizado do ecossistema de MiniApps da 5 Horas. A estrutura foi simplificada para servir como shell PWA independente, com catálogo inicial e suporte offline para os MiniApps essenciais.
 
 > **Integração recomendada com WordPress/Elementor**: publique esta pasta em um host estático (GitHub Pages, Vercel, etc.) e incorpore o shell (`index.html`) via `<iframe>` no site principal. Não injete CSS ou JS deste repositório diretamente no WordPress.
 
@@ -8,12 +8,12 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 - **Shell PWA (`index.html`)** – organiza a área central em três visões: `#setup-sheet-view` (configuração da planilha), `#catalog-view` (catálogo embutido) e `#app-view` (iframe exclusivo dos MiniApps). Expõe `window.changeView('catalog'|'app')` e `window.loadMiniApp(url, metadata)` para alternar telas sem recarregar a página, além de registrar `sw.js` para operação offline.【F:index.html†L32-L66】【F:js/app.js†L20-L78】
 - **Catálogo (`miniapp-catalogo/index.html`)** – lista de MiniApps mantida no próprio arquivo via o array `STATIC_CATALOG_ITEMS`, facilitando a edição direta dos cartões exibidos no shell.
 - **Design System (`miniapp-base/style/styles.css`)** – CSS escopado com a classe `.ma`, responsável por reset, tokens, componentes e utilitários compartilhados.
-- **Minha Conta (`miniapp-minha-conta/`)** – MiniApp administrativo para backups, preferências pessoais e handshake de tema com o shell.【F:miniapp-minha-conta/index.html†L1-L118】【F:miniapp-minha-conta/minha-conta.js†L1-L132】
+- **Usuários (`miniapp-usuarios/`)** – MiniApp administrativo para bootstrap do administrador, gestão de contas e confirmação do tema aplicado pelo shell.【F:miniapp-usuarios/index.html†L1-L739】
 
 ## Tema claro/escuro integrado
 - O shell possui um botão dedicado no cabeçalho que alterna entre claro e escuro, persiste a escolha em `localStorage` (`miniapp-shell.theme`), aplica `data-theme="dark"` ao `#miniapp-root` e sincroniza a cor do `<meta name="theme-color">` para manter a barra do navegador coerente.【F:index.html†L27-L51】【F:js/app.js†L20-L133】
 - Sempre que o tema muda o shell envia `{ action: 'shell-theme', theme }` para o catálogo e o MiniApp ativo via `postMessage`, esperando por `{ action: 'miniapp-theme-ready' }` após o carregamento e registrando `{ action: 'miniapp-theme-applied', theme }` quando o iframe confirma a aplicação.【F:js/app.js†L134-L333】
-- Miniapps baseados no design system precisam apenas espelhar o atributo `data-theme` na raiz `.ma`. Interfaces em Tailwind (catálogo público) contam com CSS adicional observando `body[data-theme="dark"]` e os respectivos scripts de handshake com o shell; preserve esses handlers ao criar experiências semelhantes.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-minha-conta/minha-conta.js†L1-L132】
+- Miniapps baseados no design system precisam apenas espelhar o atributo `data-theme` na raiz `.ma`. Interfaces em Tailwind (catálogo público) contam com CSS adicional observando `body[data-theme="dark"]` e os respectivos scripts de handshake com o shell; preserve esses handlers ao criar experiências semelhantes.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-usuarios/index.html†L1-L739】
 
 ## Integração com o catálogo
 
@@ -50,6 +50,7 @@ miniapp-base/
   style/styles.css       # Único arquivo de estilo compartilhado
   icons/README.md        # Instruções para adicionar manualmente os ícones PWA
 miniapp-catalogo/index.html      # Catálogo inicial com dataset embutido
+miniapp-usuarios/index.html      # MiniApp administrativo de usuários
 docs/
   protocolos/            # Protocolos operacionais (ex.: remoção de MiniApps)
 ```
@@ -67,7 +68,7 @@ Todas as pastas possuem um `README.md` próprio descrevendo responsabilidades e 
 1. Gere um build estático copiando a raiz do projeto para o host.
 2. Limpe o cache do navegador e abra `index.html` hospedado.
 3. Ao ser solicitado, utilize o botão **Instalar** para testar o modo PWA.
-4. Com a internet desconectada, verifique o catálogo, abra o MiniApp Minha Conta e confirme o fallback de dados local.
+4. Com a internet desconectada, verifique o catálogo, abra um MiniApp essencial (ex.: Usuários) e confirme o fallback de dados local.
 
 ## Licença
 Uso interno. Consulte os responsáveis antes de compartilhar ou reutilizar.

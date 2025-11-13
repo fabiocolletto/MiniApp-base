@@ -1,5 +1,12 @@
 # Changelog
 
+# [2025-12-03] Remoção do MiniApp Minha Conta
+### Removido
+- MiniApp Minha Conta retirado do repositório e do catálogo estático, eliminando assets, traduções e carregamentos dedicados.【F:miniapp-catalogo/index.html†L96-L155】
+
+### Documentação
+- README atualizado para refletir o conjunto atual de MiniApps essenciais e o fluxo de validação offline sem o Minha Conta.【F:README.md†L1-L120】
+
 # [2025-12-02] Catálogo sem gestor administrativo
 ### Removido
 - MiniApp Gestor de Catálogos retirado do repositório e do catálogo estático, eliminando assets, traduções e testes dedicados.【F:miniapp-catalogo/index.html†L60-L147】【F:js/i18n.js†L1-L214】【83ff47†L1-L2】
@@ -53,7 +60,7 @@
 
 # [2025-11-25] Tema persistente no shell
 ### Corrigido
-- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/e2e/theme.spec.js†L1-L74】
+- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-prefeito/index.html†L88-L132】【F:tests/e2e/theme.spec.js†L1-L74】
 
 ## [2025-11-24] Logo responsivo no rodapé
 ### Corrigido
