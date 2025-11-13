@@ -1,6 +1,6 @@
 # MiniApp Base — Reset 100%
 
-Este repositório contém o pacote base atualizado do ecossistema de MiniApps da 5 Horas. A estrutura foi simplificada para servir como shell PWA independente, com catálogo inicial e suporte offline para os MiniApps essenciais.
+Este repositório contém o pacote base atualizado do ecossistema de MiniApps da 5 Horas. A estrutura foi simplificada para servir como shell PWA independente com catálogo inicial — atualmente o único MiniApp embarcado — e suporte offline para o fluxo de navegação.
 
 > **Integração recomendada com WordPress/Elementor**: publique esta pasta em um host estático (GitHub Pages, Vercel, etc.) e incorpore o shell (`index.html`) via `<iframe>` no site principal. Não injete CSS ou JS deste repositório diretamente no WordPress.
 
@@ -8,18 +8,17 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
 - **Shell PWA (`index.html`)** – organiza a área central em três visões: `#setup-sheet-view` (configuração da planilha), `#catalog-view` (catálogo embutido) e `#app-view` (iframe exclusivo dos MiniApps). Expõe `window.changeView('catalog'|'app')` e `window.loadMiniApp(url, metadata)` para alternar telas sem recarregar a página, além de registrar `sw.js` para operação offline.【F:index.html†L32-L66】【F:js/app.js†L20-L78】
 - **Catálogo (`miniapp-catalogo/index.html`)** – lista de MiniApps mantida no próprio arquivo via o array `STATIC_CATALOG_ITEMS`, facilitando a edição direta dos cartões exibidos no shell.
 - **Design System (`miniapp-base/style/styles.css`)** – CSS escopado com a classe `.ma`, responsável por reset, tokens, componentes e utilitários compartilhados.
-- **Usuários (`miniapp-usuarios/`)** – MiniApp administrativo para bootstrap do administrador, gestão de contas e confirmação do tema aplicado pelo shell.【F:miniapp-usuarios/index.html†L1-L739】
 
 ## Tema claro/escuro integrado
 - O shell possui um botão dedicado no cabeçalho que alterna entre claro e escuro, persiste a escolha em `localStorage` (`miniapp-shell.theme`), aplica `data-theme="dark"` ao `#miniapp-root` e sincroniza a cor do `<meta name="theme-color">` para manter a barra do navegador coerente.【F:index.html†L27-L51】【F:js/app.js†L20-L133】
 - Sempre que o tema muda o shell envia `{ action: 'shell-theme', theme }` para o catálogo e o MiniApp ativo via `postMessage`, esperando por `{ action: 'miniapp-theme-ready' }` após o carregamento e registrando `{ action: 'miniapp-theme-applied', theme }` quando o iframe confirma a aplicação.【F:js/app.js†L134-L333】
-- Miniapps baseados no design system precisam apenas espelhar o atributo `data-theme` na raiz `.ma`. Interfaces em Tailwind (catálogo público) contam com CSS adicional observando `body[data-theme="dark"]` e os respectivos scripts de handshake com o shell; preserve esses handlers ao criar experiências semelhantes.【F:miniapp-catalogo/index.html†L8-L206】【F:miniapp-usuarios/index.html†L1-L739】
+- Miniapps baseados no design system precisam apenas espelhar o atributo `data-theme` na raiz `.ma`. Interfaces em Tailwind (catálogo público) contam com CSS adicional observando `body[data-theme="dark"]` e os respectivos scripts de handshake com o shell; preserve esses handlers ao criar experiências semelhantes.【F:miniapp-catalogo/index.html†L8-L206】
 
 ## Integração com o catálogo
 
 ### 1. Usar o `miniapp-catalogo` como catálogo oficial
-1. Atualize o array `STATIC_CATALOG_ITEMS` dentro de `miniapp-catalogo/index.html` sempre que quiser incluir, remover ou editar MiniApps. Cada objeto deve conter `id`, `name`, `description`, `url`, `icon_url`, além dos metadados `category`, `category_key`, `status`, `status_key` e, quando necessário, `required_role` e `translations` localizadas por idioma.【F:miniapp-catalogo/index.html†L60-L154】
-2. Mantenha os MiniApps essenciais (base, catálogo e usuários) listados nesse array para que o shell continue navegável mesmo durante testes offline.【F:miniapp-catalogo/index.html†L60-L117】
+1. Atualize o array `STATIC_CATALOG_ITEMS` dentro de `miniapp-catalogo/index.html` sempre que quiser incluir, remover ou editar MiniApps. Cada objeto deve conter `id`, `name`, `description`, `url`, `icon_url`, além dos metadados `category`, `category_key`, `status`, `status_key` e, quando necessário, `required_role` e `translations` localizadas por idioma.【F:miniapp-catalogo/index.html†L60-L117】
+2. O catálogo vem como único MiniApp essencial do shell. Caso novos MiniApps sejam adicionados, inclua-os nesse array e valide o funcionamento offline antes de publicar.
 3. Cada card publica `postMessage({ action: 'load-miniapp', url, metadata })` para o shell, que responde com `window.loadMiniApp` e alterna para `#app-view`. Garanta que as URLs sejam relativas à raiz do shell para evitar navegar fora do contêiner.【F:miniapp-catalogo/index.html†L368-L436】【F:js/app.js†L51-L134】
 4. Mantenha o filtro de categorias e busca alimentado pelo array `fullCatalogData`. Caso acrescente novos campos, ajuste `populateFilters` e `applyFiltersAndRender` para refletir as propriedades que deseja expor no catálogo público.【F:miniapp-catalogo/index.html†L312-L418】
 
@@ -33,7 +32,7 @@ Este repositório contém o pacote base atualizado do ecossistema de MiniApps da
   3. Adicione as traduções em `translations['novo-locale']` e, se necessário, complemente o mapa `statusByKey` no arquivo de i18n.
   4. Valide no shell alternando o idioma pelo botão de tradução e confirmando a renderização dos cards, filtros e metadados enviados via `postMessage`.
 
-### 3. Sincronizar o ID da planilha do catálogo
+### 2. Sincronizar o ID da planilha do catálogo
 1. O shell consulta o documento `artifacts/{appId}/admin/sheet_config` no Firestore (ou o cache local) em busca do campo `GOOGLE_SHEET_ID`. Se encontrar o valor, ele aplica o ID em `window.CATALOG_GOOGLE_SHEET_ID` e restaura o último MiniApp aberto; caso contrário, exibe `#setup-sheet-view` para solicitar o ID manualmente.【F:js/app.js†L80-L172】
 2. Ao salvar o formulário, o shell tenta persistir o ID no Firestore e, em seguida, troca automaticamente para `#catalog-view`, recarregando o catálogo incorporado quando necessário. Em ambientes sem Firebase, o ID fica salvo apenas no `localStorage`, com aviso visual no formulário.【F:index.html†L32-L51】【F:js/app.js†L174-L223】
 3. Hosts que já conhecem o ID da planilha podem defini-lo antes de carregar `js/app.js` usando `window.__initial_sheet_id` (ou os aliases `window.__catalog_sheet_id` / `window.__catalog_google_sheet_id`). O shell aplicará o valor imediatamente, armazenará o ID localmente e tentará persistir no Firestore assim que disponível.【F:js/app.js†L271-L306】【F:js/app.js†L600-L657】
@@ -50,7 +49,6 @@ miniapp-base/
   style/styles.css       # Único arquivo de estilo compartilhado
   icons/README.md        # Instruções para adicionar manualmente os ícones PWA
 miniapp-catalogo/index.html      # Catálogo inicial com dataset embutido
-miniapp-usuarios/index.html      # MiniApp administrativo de usuários
 docs/
   protocolos/            # Protocolos operacionais (ex.: remoção de MiniApps)
 ```
@@ -68,7 +66,7 @@ Todas as pastas possuem um `README.md` próprio descrevendo responsabilidades e 
 1. Gere um build estático copiando a raiz do projeto para o host.
 2. Limpe o cache do navegador e abra `index.html` hospedado.
 3. Ao ser solicitado, utilize o botão **Instalar** para testar o modo PWA.
-4. Com a internet desconectada, verifique o catálogo, abra um MiniApp essencial (ex.: Usuários) e confirme o fallback de dados local.
+4. Com a internet desconectada, verifique o catálogo e confirme o fallback de dados local para os itens carregados.
 
 ## Licença
 Uso interno. Consulte os responsáveis antes de compartilhar ou reutilizar.

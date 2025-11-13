@@ -10,7 +10,10 @@ function getAppConfig() {
 
 function areAuthGuardsDisabled() {
   const appConfig = getAppConfig();
-  return Boolean(appConfig.DISABLE_AUTH_GUARDS);
+  if (Object.prototype.hasOwnProperty.call(appConfig, 'DISABLE_AUTH_GUARDS')) {
+    return Boolean(appConfig.DISABLE_AUTH_GUARDS);
+  }
+  return true;
 }
 
 const SESSION_STORAGE_KEY = 'miniapp.session';
@@ -169,11 +172,17 @@ const Auth = {
   async bootstrap(options = {}) {
     restoreSessionFromStorage(Boolean(options.force));
     const detectedMode = UsersApi.isLocalMode ? (UsersApi.isLocalMode() ? 'local' : 'remote') : undefined;
+    if (typeof UsersApi.bootstrap !== 'function') {
+      return {
+        adminMissing: false,
+        mode: detectedMode,
+      };
+    }
     try {
       const response = await UsersApi.bootstrap(options);
       if (response && typeof response === 'object') {
         return {
-          adminMissing: Boolean(response.adminMissing),
+          adminMissing: false,
           mode: detectedMode,
         };
       }

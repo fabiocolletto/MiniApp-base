@@ -17,6 +17,5 @@
 
 ## SISTEMA DE USUÁRIOS — FASE 1
 - O módulo de autenticação reside em `miniapp-base/js/auth.js` e usa o adaptador `miniapp-base/js/adapters/users-appscript.js` para falar com o Web App do Apps Script.
-- O shell consulta `Auth.bootstrap()` antes de abrir o catálogo. Se `adminMissing` for `true`, carregue `miniapp-usuarios/index.html?mode=setup` e mantenha `window.__catalogDisabled__ = true` até concluir o bootstrap.
-- MiniApps administrativos precisam marcar os cards do catálogo com `data-required-role="admin"` (veja o array `STATIC_CATALOG_ITEMS` em `miniapp-catalogo/index.html`). O shell bloqueia `loadMiniApp` quando o papel atual não atende ao requisito.
-- Documentação e backend ficam em `docs/USUARIOS.md` e `docs/apps-script/users.gs`. Sempre atualize esses arquivos ao alterar regras de segurança ou formato do `usuarios.json`.
+- O shell consulta `Auth.bootstrap()` apenas para preservar compatibilidade com integrações legadas. Com o catálogo como único MiniApp disponível, mantenha o fluxo liberado mesmo sem sessão e evite reintroduzir bloqueios automáticos ao catálogo.
+- MiniApps administrativos precisam marcar os cards do catálogo com `data-required-role="admin"` (veja o array `STATIC_CATALOG_ITEMS` em `miniapp-catalogo/index.html`). O shell continua bloqueando `loadMiniApp` quando um papel específico for realmente necessário.
