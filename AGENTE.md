@@ -1,6 +1,6 @@
 # Guia do Agente
 
-- Leia este arquivo, bem como `README.md` e `CHANGELOG.md`, antes de qualquer alteração para entender o estado atual do pacote base.
+- Leia este arquivo, bem como `README.md`, `CHANGELOG.md` e a pasta `docs/protocolos/`, antes de qualquer alteração para entender o estado atual do pacote base e verificar se já existe um protocolo aplicável.
 - O shell em `index.html` deve permanecer como ponto único de navegação. Sempre valide se o catálogo (`miniapp-catalogo/index.html`) envia eventos compatíveis com `window.parent.loadMiniApp` e se os miniapps confirmam o cabeçalho via `{ action: 'miniapp-header', title, subtitle }`.
 - Scripts compartilhados residem em `js/` ou dentro dos diretórios dos miniapps. Evite duplicar lógica; prefira funções já expostas pelo shell ou pelo MiniApp.
 - O CSS está centralizado em `miniapp-base/style/styles.css`. Preserve o escopo `.ma`, as camadas `@layer` e utilize tokens existentes antes de adicionar novos.
