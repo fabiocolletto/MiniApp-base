@@ -20,6 +20,11 @@ const TRANSLATIONS = {
       actions: {
         openCatalog: 'Catálogo',
         install: 'Instalar',
+        download: {
+          label: 'Baixar MiniApp',
+          title: 'Baixar o MiniApp atual',
+          ariaLabel: 'Baixar o MiniApp atualmente aberto.',
+        },
         theme: {
           toDark: 'Ativar tema escuro',
           toLight: 'Ativar tema claro',
@@ -151,6 +156,11 @@ const TRANSLATIONS = {
       actions: {
         openCatalog: 'Catalog',
         install: 'Install',
+        download: {
+          label: 'Download MiniApp',
+          title: 'Download the current MiniApp',
+          ariaLabel: 'Download the MiniApp that is currently open.',
+        },
         theme: {
           toDark: 'Switch to dark theme',
           toLight: 'Switch to light theme',

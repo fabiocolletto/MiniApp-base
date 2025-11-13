@@ -29,6 +29,10 @@ function isAuthGuardDisabled() {
 const headerTitle = document.querySelector('[data-header-title]');
 const headerSubtitle = document.querySelector('[data-header-subtitle]');
 const openCatalogBtn = document.getElementById('openCatalog');
+const downloadMiniAppBtn = document.getElementById('downloadMiniApp');
+const downloadMiniAppLabel = downloadMiniAppBtn
+  ? downloadMiniAppBtn.querySelector('[data-download-label]')
+  : null;
 let themeToggleBtn = document.getElementById('themeToggle');
 let themeToggleLabel = themeToggleBtn ? themeToggleBtn.querySelector('[data-theme-toggle-label]') : null;
 const installBtn = document.getElementById('installPWA');
@@ -72,6 +76,7 @@ let currentHeaderMeta = {
   title: headerTitle ? headerTitle.textContent : '',
   subtitle: headerSubtitle ? headerSubtitle.textContent : '',
 };
+let currentMiniAppDownloadUrl = null;
 let currentHeaderKey = 'catalog-default';
 let currentSheetStatusKey = null;
 let currentSheetStatusTone = 'info';
@@ -158,6 +163,79 @@ function formatTemplate(template, context = {}) {
     const trimmed = key.trim();
     return Object.prototype.hasOwnProperty.call(context, trimmed) ? context[trimmed] : '';
   });
+}
+
+function resolveDownloadUrlValue(value) {
+  if (value instanceof URL) {
+    return value.href;
+  }
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    const base = typeof window !== 'undefined' ? window.location.href : undefined;
+    return new URL(trimmed, base).href;
+  } catch (error) {
+    if (typeof document !== 'undefined') {
+      const anchor = document.createElement('a');
+      anchor.href = trimmed;
+      return anchor.href;
+    }
+    return trimmed;
+  }
+}
+
+function extractDownloadUrl(source) {
+  if (typeof source !== 'object' || source === null) {
+    return { hasValue: false, value: null };
+  }
+  const candidateKeys = ['downloadUrl', 'download_url', 'download', 'packageUrl', 'package_url'];
+  for (const key of candidateKeys) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      return { hasValue: true, value: resolveDownloadUrlValue(source[key]) };
+    }
+  }
+  return { hasValue: false, value: null };
+}
+
+function setDownloadTarget(url) {
+  currentMiniAppDownloadUrl = typeof url === 'string' && url.trim() ? url : null;
+  if (!downloadMiniAppBtn) {
+    return;
+  }
+  const hasUrl = Boolean(currentMiniAppDownloadUrl);
+  downloadMiniAppBtn.hidden = !hasUrl;
+  downloadMiniAppBtn.disabled = !hasUrl;
+  if (hasUrl) {
+    downloadMiniAppBtn.removeAttribute('aria-disabled');
+    downloadMiniAppBtn.dataset.downloadAvailable = 'true';
+    downloadMiniAppBtn.dataset.downloadUrl = currentMiniAppDownloadUrl;
+  } else {
+    downloadMiniAppBtn.setAttribute('aria-disabled', 'true');
+    downloadMiniAppBtn.dataset.downloadAvailable = 'false';
+    delete downloadMiniAppBtn.dataset.downloadUrl;
+  }
+}
+
+function updateDownloadButtonLabel() {
+  if (!downloadMiniAppBtn) {
+    return;
+  }
+  const downloadMessages = shellMessages?.actions?.download || {};
+  const label = downloadMessages.label || 'Baixar MiniApp';
+  const title = downloadMessages.title || label;
+  const ariaLabel = downloadMessages.ariaLabel || title;
+  if (downloadMiniAppLabel) {
+    downloadMiniAppLabel.textContent = label;
+  } else {
+    downloadMiniAppBtn.textContent = label;
+  }
+  downloadMiniAppBtn.setAttribute('title', title);
+  downloadMiniAppBtn.setAttribute('aria-label', ariaLabel);
 }
 
 function readStoredLanguage() {
@@ -298,6 +376,8 @@ function applyLanguage(locale, { persist = true, notify = true } = {}) {
   if (installBtn) {
     installBtn.textContent = shellMessages.actions.install;
   }
+
+  updateDownloadButtonLabel();
 
   updateLanguageToggle(currentLanguage);
   updateThemeToggle(currentTheme);
@@ -541,6 +621,9 @@ function setHeader(meta = {}, { source = currentHeaderSource, key = currentHeade
 }
 
 function changeView(target) {
+  if (target !== 'app') {
+    setDownloadTarget(null);
+  }
   Object.entries(viewMap).forEach(([name, element]) => {
     if (!element) return;
     if (name === target) {
@@ -577,6 +660,7 @@ window.changeView = changeView;
 
 function openCatalog(meta = defaultCatalogHeader) {
   setHeader(meta, { source: 'shell', key: 'catalog-default' });
+  setDownloadTarget(null);
   changeView('catalog');
   notifyFrameTheme(catalogFrame);
   notifyFrameLanguage(catalogFrame);
@@ -664,6 +748,17 @@ function loadMiniApp(url, meta = {}, options = {}) {
   if (meta && (meta.title || meta.subtitle)) {
     setHeader(meta, { source: 'miniapp', key: 'miniapp' });
   }
+  let downloadUrlToApply = null;
+  const metaDownload = extractDownloadUrl(meta);
+  if (metaDownload.hasValue) {
+    downloadUrlToApply = metaDownload.value;
+  } else {
+    const optionsDownload = extractDownloadUrl(config);
+    if (optionsDownload.hasValue) {
+      downloadUrlToApply = optionsDownload.value;
+    }
+  }
+  setDownloadTarget(downloadUrlToApply);
   if (targetUrl) {
     appFrame.src = targetUrl;
     try {
@@ -973,6 +1068,31 @@ if (sheetForm) {
   });
 }
 
+if (downloadMiniAppBtn) {
+  downloadMiniAppBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (!currentMiniAppDownloadUrl) {
+      return;
+    }
+    try {
+      const opened = window.open(currentMiniAppDownloadUrl, '_blank', 'noopener,noreferrer');
+      if (!opened && typeof document !== 'undefined') {
+        const tempLink = document.createElement('a');
+        tempLink.href = currentMiniAppDownloadUrl;
+        tempLink.target = '_blank';
+        tempLink.rel = 'noopener noreferrer';
+        tempLink.download = '';
+        tempLink.style.display = 'none';
+        document.body?.appendChild(tempLink);
+        tempLink.click();
+        tempLink.remove();
+      }
+    } catch (error) {
+      window.location.href = currentMiniAppDownloadUrl;
+    }
+  });
+}
+
 if (openCatalogBtn) {
   openCatalogBtn.addEventListener('click', (event) => {
     event.preventDefault();
@@ -1014,6 +1134,10 @@ window.addEventListener('message', (event) => {
     loadMiniApp(data.url, data.metadata || {}, { requiredRole: data.requiredRole || null });
   } else if (data.action === 'miniapp-header') {
     setHeader(data, { source: 'miniapp', key: 'miniapp' });
+    const headerDownload = extractDownloadUrl(data);
+    if (headerDownload.hasValue) {
+      setDownloadTarget(headerDownload.value);
+    }
   } else if (data.action === 'miniapp-theme-ready') {
     const frames = [catalogFrame, appFrame];
     const targetFrame = frames.find((frame) => frame && frame.contentWindow === event.source);
