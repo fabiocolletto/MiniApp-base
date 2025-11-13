@@ -1,5 +1,9 @@
 # Changelog
 
+# [2025-11-25] Tema persistente no shell
+### Corrigido
+- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-gestor-de-catalogo/index.html†L1068-L1108】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/theme.spec.js†L48-L70】
+
 ## [2025-11-24] Logo responsivo no rodapé
 ### Corrigido
 - Rodapé do shell limita a área do logotipo e impede que as imagens temáticas se expandam em telas estreitas, evitando distorção visual no catálogo e nos MiniApps carregados.【F:miniapp-base/style/styles.css†L159-L168】

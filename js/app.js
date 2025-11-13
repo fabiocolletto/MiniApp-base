@@ -431,11 +431,8 @@ function notifyThemeFrames(theme = currentTheme) {
 
 function setElementTheme(element, theme) {
   if (!element) return;
-  if (theme === 'dark') {
-    element.setAttribute('data-theme', 'dark');
-  } else {
-    element.removeAttribute('data-theme');
-  }
+  const normalized = theme === 'dark' ? 'dark' : 'light';
+  element.setAttribute('data-theme', normalized);
 }
 
 function applyTheme(theme, { persist = true, notify = true } = {}) {
