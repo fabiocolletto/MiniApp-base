@@ -479,8 +479,12 @@ if (window.matchMedia) {
 const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
 const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : null;
 const initialAuthToken = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
+const appConfig = typeof window.__APP_CONFIG__ === 'object' && window.__APP_CONFIG__ !== null
+  ? window.__APP_CONFIG__
+  : null;
 const initialSheetId = (() => {
   const candidates = [
+    appConfig && appConfig.INITIAL_CATALOG_SHEET_ID,
     window.__initial_sheet_id,
     window.__catalog_sheet_id,
     window.__catalog_google_sheet_id,

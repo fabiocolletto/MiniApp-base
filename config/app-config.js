@@ -10,5 +10,10 @@
      * Utilize apenas em ambientes de teste ou durante implantações acompanhadas.
      */
     DISABLE_AUTH_GUARDS: true,
+    /**
+     * ID fixo da planilha (ou marcador estático) utilizado para dispensar a tela de configuração do catálogo.
+     * Mantém o shell apontando para o catálogo embutido até que uma fonte dinâmica seja habilitada.
+     */
+    INITIAL_CATALOG_SHEET_ID: 'static-catalog',
   };
 }());
