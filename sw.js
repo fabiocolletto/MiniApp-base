@@ -5,9 +5,6 @@ const PRECACHE = [
   '/js/app.js', '/js/i18n.js',
   '/miniapp-base/style/styles.css',
   '/miniapp-catalogo/index.html',
-  '/miniapp-prefeito/index.html',
-  '/miniapp-prefeito/js/config-source-simple.js',
-  '/miniapp-prefeito/data/demo_fato_kpi_diario.csv',
   // ícones locais (fallback e PWA)
   '/miniapp-base/icons/icon-192.png',
   '/miniapp-base/icons/icon-512.png'
