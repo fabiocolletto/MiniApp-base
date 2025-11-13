@@ -1,5 +1,11 @@
 # Changelog
 
+# [2025-11-27] Cadastro inicial resiliente
+### Alterado
+- MiniApp de usuários trata falhas na autenticação automática após criar o administrador e mantém o cadastro mesmo quando o backend recusa o login imediato, orientando o responsável a entrar manualmente.【F:miniapp-usuarios/index.html†L693-L739】
+### Documentação
+- Fluxo do sistema de usuários registra que o login automático após o cadastro do administrador pode ser opcional, dependendo da resposta do serviço.【F:docs/USUARIOS.md†L15-L18】
+
 # [2025-11-26] Acesso temporário sem autenticação
 ### Adicionado
 - Flag `window.__APP_CONFIG__.DISABLE_AUTH_GUARDS` em `config/app-config.js` permite liberar o catálogo e os MiniApps durante testes controlados, sem bloquear a navegação por falta de sessão.【F:config/app-config.js†L2-L11】

@@ -14,7 +14,7 @@ O shell filtra os cards do catálogo com base no atributo `data-required-role`. 
 
 1. O shell executa `Auth.bootstrap()` ao iniciar.
 2. Se o endpoint `/users/bootstrap` responder com `adminMissing: true`, o MiniApp `miniapp-usuarios` é carregado em modo *setup* (`miniapp-usuarios/index.html?mode=setup`).
-3. O formulário “Definir administrador” envia `POST /users/init-admin`. Após a criação, o próprio MiniApp chama `Auth.login` para registrar a sessão e o shell reabre o catálogo.
+3. O formulário “Definir administrador” envia `POST /users/init-admin`. Após a criação, o MiniApp tenta chamar `Auth.login` para registrar a sessão e liberar o catálogo; quando a autenticação automática falha, exibimos o aviso de sucesso do cadastro e pedimos que o administrador faça login manualmente.
 4. Com um administrador ativo, novos acessos são direcionados para o login padrão (`miniapp-usuarios/index.html`).
 
 ### Modo local (fallback)
