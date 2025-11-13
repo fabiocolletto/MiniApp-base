@@ -51,8 +51,8 @@ test.describe('Alternância de tema no shell', () => {
     await catalogFrame.locator('body').waitFor();
     await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe('dark');
 
-    const openPrefeito = catalogFrame.locator('[data-open-miniapp][data-url="miniapp-prefeito/index.html"]');
-    await openPrefeito.click();
+    const openBase = catalogFrame.locator('[data-open-miniapp][data-url="miniapp-base/index.html"]');
+    await openBase.click();
 
     await page.waitForSelector('#app-view[data-active="true"]');
 

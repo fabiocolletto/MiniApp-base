@@ -1,5 +1,16 @@
 # Changelog
 
+# [2025-12-01] Remoção do MiniApp Prefeito e novos protocolos
+### Removido
+- MiniApp Prefeito retirado do repositório, catálogo estático e Service Worker, eliminando assets e caches não utilizados.【F:miniapp-catalogo/index.html†L92-L121】【F:sw.js†L1-L34】
+- Teste E2E de tema atualizado para validar a abertura do MiniApp Minha Conta como padrão durante a alternância de temas.【F:tests/e2e/theme.spec.js†L1-L74】
+
+### Adicionado
+- Diretório `docs/protocolos/` com índice e protocolo formal para exclusão de MiniApps, garantindo alinhamento antes de execuções futuras.【F:docs/protocolos/README.md†L1-L13】【F:docs/protocolos/exclusao-miniapps.md†L1-L26】
+
+### Documentação
+- `AGENTE.md`, `README.md` e `docs/README.md` reforçam a consulta aos protocolos e descrevem o MiniApp Minha Conta como experiência padrão disponível no shell.【F:AGENTE.md†L1-L32】【F:README.md†L1-L86】【F:docs/README.md†L1-L8】
+
 ## [2025-11-30] Catálogo estático pré-configurado
 ### Alterado
 - Shell passa a aceitar `INITIAL_CATALOG_SHEET_ID` dentro de `window.__APP_CONFIG__`, aplicando automaticamente o ID do catálogo embutido e evitando a tela de configuração durante a implantação estática.【F:js/app.js†L452-L472】
