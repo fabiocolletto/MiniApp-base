@@ -1,5 +1,11 @@
 # Changelog
 
+# [2025-11-28] Instalação PWA com ícone temático
+### Adicionado
+- Rodapé do shell exibe botão "Instalar" quando o navegador sinaliza suporte ao fluxo PWA e aciona o prompt de instalação sob demanda, recolhendo o botão após o usuário interagir ou concluir a instalação.【F:index.html†L66-L88】【F:js/app.js†L1004-L1048】
+### Alterado
+- Alternância de tema atualiza automaticamente favicon e ícone touch, mantendo o asset alinhado ao modo claro ou escuro configurado pelo usuário ou pelo sistema.【F:index.html†L9-L23】【F:js/app.js†L34-L89】【F:js/app.js†L444-L507】
+
 # [2025-11-27] Cadastro inicial resiliente
 ### Alterado
 - MiniApp de usuários trata falhas na autenticação automática após criar o administrador e mantém o cadastro mesmo quando o backend recusa o login imediato, orientando o responsável a entrar manualmente.【F:miniapp-usuarios/index.html†L693-L739】
