@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-11-30] Catálogo estático pré-configurado
+### Alterado
+- Shell passa a aceitar `INITIAL_CATALOG_SHEET_ID` dentro de `window.__APP_CONFIG__`, aplicando automaticamente o ID do catálogo embutido e evitando a tela de configuração durante a implantação estática.【F:js/app.js†L452-L472】
+### Documentação
+- Guia de configuração pública descreve a nova chave `INITIAL_CATALOG_SHEET_ID` e seu uso em cenários sem integração com planilha ou Firestore.【F:config/README.md†L13-L15】
+
 ## [2025-11-29] Propagação acelerada do shell PWA
 ### Alterado
 - Service Worker passa a usar o cache `miniapp-shell-v5-demo`, descartando imediatamente versões antigas e aplicando busca `network-first` para logos hospedados no WordPress, garantindo que novas publicações apareçam rapidamente em dispositivos já instalados.【F:sw.js†L1-L98】
