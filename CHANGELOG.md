@@ -1,5 +1,14 @@
 # Changelog
 
+# [2025-11-26] Acesso temporário sem autenticação
+### Adicionado
+- Flag `window.__APP_CONFIG__.DISABLE_AUTH_GUARDS` em `config/app-config.js` permite liberar o catálogo e os MiniApps durante testes controlados, sem bloquear a navegação por falta de sessão.【F:config/app-config.js†L2-L11】
+### Alterado
+- Shell desativa os guardas de autenticação quando a flag está ativa, mantendo o catálogo disponível, ignorando restrições de papel nos MiniApps e informando o estado aos iframes carregados.【F:js/app.js†L11-L28】【F:js/app.js†L216-L251】【F:js/app.js†L560-L610】【F:js/app.js†L1004-L1083】
+- MiniApp do catálogo passa a exibir todos os cards quando os guardas estão desligados, inclusive para aberturas diretas via `postMessage`.【F:miniapp-catalogo/index.html†L103-L141】【F:miniapp-catalogo/index.html†L150-L181】【F:miniapp-catalogo/index.html†L720-L738】
+### Documentação
+- Guia de configuração pública lista a nova chave `DISABLE_AUTH_GUARDS` e o manual do sistema de usuários reforça o uso apenas em ambientes controlados.【F:config/README.md†L9-L12】【F:docs/USUARIOS.md†L45-L53】
+
 # [2025-11-25] Tema persistente no shell
 ### Corrigido
 - Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-gestor-de-catalogo/index.html†L1068-L1108】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/theme.spec.js†L48-L70】

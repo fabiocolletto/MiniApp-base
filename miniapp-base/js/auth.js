@@ -1,5 +1,18 @@
 import { UsersApi } from './adapters/users-appscript.js';
 
+function getAppConfig() {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  const appConfig = window.__APP_CONFIG__;
+  return appConfig && typeof appConfig === 'object' ? appConfig : {};
+}
+
+function areAuthGuardsDisabled() {
+  const appConfig = getAppConfig();
+  return Boolean(appConfig.DISABLE_AUTH_GUARDS);
+}
+
 const SESSION_STORAGE_KEY = 'miniapp.session';
 const ROLE_RANK = {
   admin: 3,
@@ -206,6 +219,9 @@ const Auth = {
     }
   },
   require(requiredRole) {
+    if (areAuthGuardsDisabled()) {
+      return true;
+    }
     if (!requiredRole) {
       return Boolean(Auth.getSession());
     }
@@ -253,6 +269,7 @@ const Auth = {
     }
     return Auth.getSession();
   },
+  areGuardsDisabled: areAuthGuardsDisabled,
 };
 
 restoreSessionFromStorage();
