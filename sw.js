@@ -4,7 +4,6 @@ const PRECACHE = [
   '/', '/index.html', '/manifest.webmanifest',
   '/js/app.js', '/js/i18n.js',
   '/miniapp-base/style/styles.css',
-  '/miniapp-catalogo/index.html',
   // ícones locais (fallback e PWA)
   '/miniapp-base/icons/icon-192.png',
   '/miniapp-base/icons/icon-512.png'

@@ -1,5 +1,14 @@
 # Changelog
 
+# [2025-12-06] Catálogo integrado ao shell
+### Alterado
+- Catálogo deixa de ser carregado em um iframe externo e passa a ser renderizado diretamente no shell via `js/catalog-app.js`, mantendo filtros, busca, i18n e eventos próprios expostos pelo `EventTarget`.【F:index.html†L76-L104】【F:js/catalog-app.js†L1-L338】【F:js/app.js†L20-L210】
+- O Service Worker e a suíte Playwright agora consideram apenas `index.html` como ponto de entrada, garantindo precache e testes alinhados ao catálogo embutido.【F:sw.js†L1-L34】【F:tests/e2e/catalog.spec.js†L1-L40】
+### Removido
+- Diretório `miniapp-catalogo/` substituído pelo módulo `js/catalog-app.js`, consolidando dataset e renderização no mesmo documento que o shell.【F:README.md†L9-L80】【F:js/README.md†L1-L20】
+### Documentação
+- README, AGENTE e protocolo de exclusão atualizados para apontar o novo local do `STATIC_CATALOG_ITEMS` e das regras de manutenção do catálogo embutido.【F:README.md†L9-L120】【F:AGENTE.md†L1-L32】【F:docs/protocolos/exclusao-miniapps.md†L1-L20】
+
 # [2025-12-04] Catálogo como único MiniApp
 ### Removido
 - MiniApp de usuários, guias associados e script Apps Script substituídos por um shell que mantém apenas o catálogo estático como experiência disponível.【F:miniapp-catalogo/index.html†L60-L117】【F:docs/README.md†L1-L6】【F:docs/protocolos/exclusao-miniapps.md†L1-L20】【F:js/app.js†L674-L806】

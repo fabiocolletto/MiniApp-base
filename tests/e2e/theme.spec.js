@@ -45,14 +45,18 @@ test.describe('Alternância de tema no shell', () => {
 
     await expect.poll(async () => root.getAttribute('data-theme')).toBe('dark');
 
-    await page.evaluate(() => window.openCatalogView());
+    const catalogRoot = page.locator('#catalog-app');
+    await expect.poll(async () => catalogRoot.getAttribute('data-theme')).toBe('dark');
 
-    const catalogFrame = page.frameLocator('#catalog-frame');
-    await catalogFrame.locator('body').waitFor();
-    await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe('dark');
+    await page.route('**/miniapp-theme-probe.html', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: `<!doctype html><html><body data-theme=""><script>\nwindow.addEventListener('message', (event) => {\n  if (event.data && event.data.action === 'shell-theme') {\n    document.body.setAttribute('data-theme', event.data.theme === 'dark' ? 'dark' : 'light');\n    if (window.parent) {\n      window.parent.postMessage({ action: 'miniapp-theme-ready' }, '*');\n      window.parent.postMessage({ action: 'miniapp-theme-applied', theme: event.data.theme }, '*');\n    }\n  } else if (event.data && event.data.action === 'shell-language') {\n    window.parent?.postMessage({ action: 'miniapp-language-ready' }, '*');\n  } else if (event.data && event.data.action === 'shell-session') {\n    window.parent?.postMessage({ action: 'miniapp-session-ready' }, '*');\n  }\n});\n</script></body></html>`
+      });
+    });
 
-    const openCatalogCard = catalogFrame.locator('[data-open-miniapp]').first();
-    await openCatalogCard.click();
+    await page.evaluate(() => window.loadMiniApp('/miniapp-theme-probe.html', { title: 'Probe' }, { bypassAuth: true }));
 
     await page.waitForSelector('#app-view[data-active="true"]');
 
@@ -64,7 +68,7 @@ test.describe('Alternância de tema no shell', () => {
     const expectedFinalTheme = initialNormalized;
     await expect.poll(async () => root.getAttribute('data-theme')).toBe(expectedFinalTheme);
     await expect.poll(async () => appFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);
-    await expect.poll(async () => catalogFrame.locator('body').getAttribute('data-theme')).toBe(expectedFinalTheme);
+    await expect.poll(async () => catalogRoot.getAttribute('data-theme')).toBe(expectedFinalTheme);
 
     const storedTheme = await page.evaluate(() => localStorage.getItem('miniapp-shell.theme'));
     expect(storedTheme).toBe(initialNormalized);

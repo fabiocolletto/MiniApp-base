@@ -3,7 +3,7 @@
 Siga este roteiro sempre que um MiniApp precisar ser descontinuado do shell.
 
 ## 1. Atualizar o catálogo e navegação
-- Remova o item correspondente do array `STATIC_CATALOG_ITEMS` em `miniapp-catalogo/index.html`, mantendo apenas os MiniApps ativos.
+- Remova o item correspondente do array `STATIC_CATALOG_ITEMS` em `js/catalog-app.js`, mantendo apenas os MiniApps ativos.
 - Garanta que o shell permaneça navegável offline ao menos com o catálogo padrão. Se um novo MiniApp substituir o catálogo como experiência principal, valide a navegação antes da remoção definitiva.
 
 ## 2. Revisar dependências técnicas

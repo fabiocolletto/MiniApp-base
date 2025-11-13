@@ -4,6 +4,7 @@ Scripts compartilhados entre o shell (`index.html`) e os miniapps.
 
 ## Arquivos
 - `app.js` – controla o iframe principal, integra `postMessage`, restaura o último miniapp aberto e registra o Service Worker.
+- `catalog-app.js` – renderiza o catálogo embutido, aplicando filtros, busca, i18n e emitindo eventos para o shell carregar MiniApps.
 - `i18n.js` – centraliza mensagens, nomes de idioma e rótulos utilizados pelo shell e catálogo.
 
 ## Manutenção
