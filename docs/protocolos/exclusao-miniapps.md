@@ -4,7 +4,7 @@ Siga este roteiro sempre que um MiniApp precisar ser descontinuado do shell.
 
 ## 1. Atualizar o catálogo e navegação
 - Remova o item correspondente do array `STATIC_CATALOG_ITEMS` em `miniapp-catalogo/index.html`, mantendo apenas os MiniApps ativos.
-- Garanta que o shell continue com os cartões essenciais (Base, Catálogo e Gestor) para preservar a navegação mínima, inclusive em modo offline.
+- Garanta que o shell continue com os cartões essenciais (Base, Catálogo e Usuários) para preservar a navegação mínima, inclusive em modo offline.
 
 ## 2. Revisar dependências técnicas
 - Faça uma busca global pelo identificador do MiniApp removido para localizar integrações (`postMessage`, loaders dedicados, autenticação, tests) e limpe referências órfãs.

@@ -95,48 +95,6 @@ const TRANSLATIONS = {
         },
       },
     },
-    manager: {
-      documentTitle: 'Gestor de Catálogo de MiniApps (Admin)',
-      headerTitle: 'Gestor de Catálogo de MiniApps',
-      headerSubtitle: 'Importe dados de planilha, valide e publique seu catálogo ativo.',
-      badge: 'Acesso Admin',
-      status: {
-        initializing: 'Inicializando gestor…',
-        miniappSaveSuccess: 'MiniApp "{{name}}" (ID: {{id}}) teve suas edições salvas com sucesso no catálogo.',
-        miniappForceUpdate: 'MiniApp "{{name}}" (ID: {{id}}) forçado a atualizar (simulação).',
-        miniappRemoved: 'MiniApp "{{name}}" (ID: {{id}}) excluído da lista ativa.',
-        invalidSheet: 'Erro: URL ou ID da Planilha inválido. Verifique o formato.',
-        fetchingSheet: 'Buscando dados da planilha do ID: {{sheetId}} (GID: {{gid}})...',
-        noValidMiniapps: "Planilha encontrada, mas sem MiniApps válidos (verifique se as colunas 'id' e 'name' existem).",
-        previewReady:
-          'Pré-visualização OK! {{count}} MiniApps encontrados. Selecione os itens e clique em "Importar e Carregar".',
-        loadError:
-          'Erro ao carregar: Verifique o link/ID e o status de compartilhamento. O erro foi: {{message}}',
-        noSelection:
-          "Erro: Nenhum MiniApp selecionado para importar. Primeiro, clique em 'Testar e Visualizar' com um link válido e selecione os MiniApps.",
-        importing: 'Importando e Mesclando MiniApps Ativos...',
-        importSummary:
-          'Importação Completa! {{newCount}} novos MiniApps adicionados e {{updatedCount}} atualizados (de {{selectedCount}} selecionados). Total ativo: {{totalCount}}.',
-        localRestored: 'Catálogo local restaurado ({{count}} MiniApps ativos).',
-        linkChanged: "Link/ID alterado. Clique em '{{stepLabel}}' (Passo {{stepNumber}}).",
-        sheetRestored:
-          "ID da planilha recuperado. Clique em '{{stepLabel}}' (Passo {{stepNumber}}) para sincronizar.",
-      },
-      panel: {
-        importSummary: {
-          title: 'Configuração Finalizada!',
-          description:
-            '{{summary}} A lista gerenciável está na Seção {{sectionNumber}}, onde você pode editá-los diretamente.',
-          reopen: 'Reabrir Configuração',
-        },
-      },
-      steps: {
-        preview: {
-          number: '2',
-          shortLabel: 'Testar e Visualizar',
-        },
-      },
-    },
   },
   'en-US': {
     meta: {
@@ -231,48 +189,6 @@ const TRANSLATIONS = {
         },
       },
     },
-    manager: {
-      documentTitle: 'MiniApp Catalog Manager (Admin)',
-      headerTitle: 'MiniApp Catalog Manager',
-      headerSubtitle: 'Import spreadsheet data, validate it, and publish your active catalog.',
-      badge: 'Admin Access',
-      status: {
-        initializing: 'Bootstrapping manager…',
-        miniappSaveSuccess: 'MiniApp "{{name}}" (ID: {{id}}) saved successfully to the catalog.',
-        miniappForceUpdate: 'MiniApp "{{name}}" (ID: {{id}}) force-updated (simulation).',
-        miniappRemoved: 'MiniApp "{{name}}" (ID: {{id}}) removed from the active list.',
-        invalidSheet: 'Error: Invalid spreadsheet URL or ID. Check the format.',
-        fetchingSheet: 'Fetching spreadsheet data for ID: {{sheetId}} (GID: {{gid}})…',
-        noValidMiniapps: 'Spreadsheet found, but no valid MiniApps (ensure columns "id" and "name" exist).',
-        previewReady:
-          'Preview ready! {{count}} MiniApps found. Select them and click "Import & Load".',
-        loadError:
-          'Load failed: Check the link/ID and sharing status. Error: {{message}}',
-        noSelection:
-          'Error: No MiniApps selected to import. First run "Test & Preview" with a valid link and select the MiniApps.',
-        importing: 'Importing and merging active MiniApps…',
-        importSummary:
-          'Import complete! {{newCount}} new MiniApps added and {{updatedCount}} updated (out of {{selectedCount}} selected). Total active: {{totalCount}}.',
-        localRestored: 'Local catalog restored ({{count}} active MiniApps).',
-        linkChanged: "Link/ID changed. Click '{{stepLabel}}' (Step {{stepNumber}}).",
-        sheetRestored:
-          "Spreadsheet ID restored. Click '{{stepLabel}}' (Step {{stepNumber}}) to sync.",
-      },
-      panel: {
-        importSummary: {
-          title: 'Setup complete!',
-          description:
-            '{{summary}} The manageable list is in Section {{sectionNumber}} where you can edit entries directly.',
-          reopen: 'Reopen setup',
-        },
-      },
-      steps: {
-        preview: {
-          number: '2',
-          shortLabel: 'Test & Preview',
-        },
-      },
-    },
   },
 };
 
@@ -290,10 +206,6 @@ export function getShellMessages(locale) {
 
 export function getCatalogMessages(locale) {
   return getLocaleData(locale).catalog;
-}
-
-export function getManagerMessages(locale) {
-  return getLocaleData(locale).manager;
 }
 
 export function getLanguageName(locale, targetLocale) {
