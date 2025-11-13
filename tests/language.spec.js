@@ -8,6 +8,14 @@ test.describe('Idioma do shell e miniapps', () => {
     await page.addInitScript(() => {
       localStorage.clear();
       localStorage.setItem('miniapp-shell.sheetId', 'sheet-language-test');
+      const session = {
+        token: 'local-session-token',
+        userId: 'usr_local_admin',
+        email: 'admin@example.com',
+        role: 'admin',
+        storedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('miniapp.session', JSON.stringify(session));
     });
 
     await page.setViewportSize({ width: 390, height: 844 });
