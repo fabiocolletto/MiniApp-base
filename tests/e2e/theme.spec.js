@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { stubFirebase } = require('./helpers/firebase');
+const { stubFirebase } = require('../helpers/firebase');
 
 test.describe('Alternância de tema no shell', () => {
   test('propaga tema para catálogo e MiniApps carregados', async ({ page }) => {

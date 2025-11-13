@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { stubFirebase } = require('./helpers/firebase');
+const { stubFirebase } = require('../helpers/firebase');
 
 const STORAGE_NAMESPACE = 'miniapp-catalog.admin';
 const ACTIVE_KEY = `${STORAGE_NAMESPACE}.activeItems`;

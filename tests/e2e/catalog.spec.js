@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const { stubFirebase } = require('./helpers/firebase');
+const { stubFirebase } = require('../helpers/firebase');
 
 const STORAGE_KEY = 'miniapp-catalog.admin.activeItems';
 
