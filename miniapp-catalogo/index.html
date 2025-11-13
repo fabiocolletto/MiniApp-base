@@ -486,6 +486,7 @@
       const safeDescription = escapeHtml(localized.description || appItem.description || '');
       const safeStatus = escapeHtml(localized.status || appItem.status || 'Desconhecido');
       const safeUrl = escapeHtml(appItem.url || '#');
+      const downloadAttr = appItem.downloadUrl ? ` data-download-url="${escapeHtml(appItem.downloadUrl)}"` : '';
       const openLabel = escapeHtml(catalogMessages.card.open);
 
       return `
@@ -509,6 +510,7 @@
               data-url="${safeUrl}"
               data-name="${safeName}"
               data-description="${safeDescription}"
+              ${downloadAttr}
               ${appItem.requiredRole ? `data-required-role="${escapeHtml(appItem.requiredRole)}"` : ''}
               data-open-label
             >
@@ -647,7 +649,7 @@
       triggers.forEach((trigger) => {
         trigger.addEventListener('click', (event) => {
           event.preventDefault();
-          const { url, name, description } = trigger.dataset;
+          const { url, name, description, downloadUrl } = trigger.dataset;
           const requiredRole = trigger.dataset.requiredRole || trigger.closest('[data-required-role]')?.dataset.requiredRole || '';
           if (!url) return;
           if (requiredRole && !roleSatisfies(requiredRole, currentUserRole)) {
@@ -662,6 +664,9 @@
             title: name || undefined,
             subtitle: description || undefined,
           };
+          if (downloadUrl) {
+            metadata.downloadUrl = downloadUrl;
+          }
           if (window.parent && typeof window.parent.postMessage === 'function') {
             window.parent.postMessage({ action: 'load-miniapp', url, metadata, requiredRole }, '*');
           } else if (window.parent && typeof window.parent.loadMiniApp === 'function') {
@@ -686,6 +691,22 @@
       const status = typeof item.status === 'string' && item.status.trim() ? item.status.trim() : 'Disponível';
       const icon_url = typeof item.icon_url === 'string' && item.icon_url.trim() ? item.icon_url.trim() : null;
       const url = typeof item.url === 'string' && item.url.trim() ? item.url.trim() : null;
+      const downloadUrlCandidate = (() => {
+        if (typeof item.download_url === 'string' && item.download_url.trim()) {
+          return item.download_url.trim();
+        }
+        if (typeof item.downloadUrl === 'string' && item.downloadUrl.trim()) {
+          return item.downloadUrl.trim();
+        }
+        if (typeof item.package_url === 'string' && item.package_url.trim()) {
+          return item.package_url.trim();
+        }
+        if (typeof item.packageUrl === 'string' && item.packageUrl.trim()) {
+          return item.packageUrl.trim();
+        }
+        return '';
+      })();
+      const downloadUrl = downloadUrlCandidate || null;
       const categoryKey = typeof item.category_key === 'string' && item.category_key.trim()
         ? item.category_key.trim()
         : slugifyKey(category);
@@ -709,6 +730,7 @@
         status,
         icon_url,
         url,
+        downloadUrl,
         categoryKey,
         statusKey,
         requiredRole,
