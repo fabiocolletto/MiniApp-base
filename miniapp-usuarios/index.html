@@ -709,15 +709,31 @@
       setStatus(setupStatus, 'Criando administrador...', 'info');
       try {
         await UsersApi.initAdmin({ name, email, secret });
+      } catch (error) {
+        console.error('Erro ao criar administrador.', error);
+        setStatus(setupStatus, error.message || 'Falha ao criar administrador.', 'error');
+        setupSubmit.disabled = false;
+        return;
+      }
+
+      setStatus(setupStatus, 'Administrador criado. Validando acesso...', 'info');
+      try {
         await Auth.login(email, secret, { force: true });
         setStatus(setupStatus, 'Administrador criado com sucesso. Você será redirecionado.', 'success');
-        updateSession(Auth.getSession());
+        currentSession = Auth.getSession();
+        updateSession(currentSession);
         if (window.parent && typeof window.parent.postMessage === 'function') {
           window.parent.postMessage({ action: 'auth-session-changed' }, '*');
         }
       } catch (error) {
-        console.error('Erro ao criar administrador.', error);
-        setStatus(setupStatus, error.message || 'Falha ao criar administrador.', 'error');
+        console.warn('Administrador criado, mas falha ao autenticar automaticamente.', error);
+        currentSession = Auth.getSession();
+        setStatus(
+          setupStatus,
+          'Administrador criado. Faça login com as credenciais informadas para liberar o catálogo.',
+          'warning',
+        );
+        setInitialView(false);
       } finally {
         setupSubmit.disabled = false;
       }
