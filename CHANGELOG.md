@@ -1,5 +1,10 @@
 # Changelog
 
+## [2025-11-29] Propagação acelerada do shell PWA
+### Alterado
+- Service Worker passa a usar o cache `miniapp-shell-v5-demo`, descartando imediatamente versões antigas e aplicando busca `network-first` para logos hospedados no WordPress, garantindo que novas publicações apareçam rapidamente em dispositivos já instalados.【F:sw.js†L1-L98】
+- Shell envia `postMessage({ type: 'SKIP_WAITING' })` para o Service Worker aguardando ativação, reduzindo o tempo entre o deploy e o carregamento da build atualizada no cliente.【F:js/app.js†L1100-L1139】
+
 # [2025-11-28] Instalação PWA com ícone temático
 ### Adicionado
 - Rodapé do shell exibe botão "Instalar" quando o navegador sinaliza suporte ao fluxo PWA e aciona o prompt de instalação sob demanda, recolhendo o botão após o usuário interagir ou concluir a instalação.【F:index.html†L66-L88】【F:js/app.js†L1004-L1048】

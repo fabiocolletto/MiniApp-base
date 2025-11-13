@@ -1129,9 +1129,37 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
+  const requestSkipWaiting = (registration) => {
+    if (!registration || !navigator.serviceWorker.controller) {
+      return;
+    }
+
+    const sendMessage = (worker) => {
+      if (!worker) return;
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    };
+
+    if (registration.waiting) {
+      sendMessage(registration.waiting);
+    }
+
+    registration.addEventListener('updatefound', () => {
+      const { installing } = registration;
+      if (!installing) return;
+
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && registration.waiting) {
+          sendMessage(registration.waiting);
+        }
+      });
+    });
+  };
+
   navigator.serviceWorker
     .register('sw.js')
     .then((registration) => {
+      requestSkipWaiting(registration);
+
       if (typeof registration.update === 'function') {
         registration.update().catch((error) => {
           console.warn('Não foi possível verificar atualizações do Service Worker.', error);
