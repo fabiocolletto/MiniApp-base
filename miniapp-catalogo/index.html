@@ -93,6 +93,125 @@
     const catalogTitleEl = document.getElementById('catalogTitle');
     const catalogSubtitleEl = document.getElementById('catalogSubtitle');
 
+    const STATIC_CATALOG_ITEMS = Object.freeze([
+      {
+        id: 'app_base',
+        name: 'MiniApp Base',
+        description: 'Ponto de partida e template para novos MiniApps.',
+        url: 'miniapp-base/index.html',
+        icon_url: 'https://placehold.co/48x48/1e3a8a/ffffff?text=B',
+        category: 'Sistema',
+        category_key: 'system',
+        status: 'Essencial',
+        status_key: 'essential',
+        translations: {
+          'en-US': {
+            name: 'Base MiniApp',
+            description: 'Starting point and template for new MiniApps.',
+            category: 'System',
+            status: 'Essential',
+          },
+        },
+      },
+      {
+        id: 'app_catalog',
+        name: 'Catálogo de MiniApps',
+        description: 'Você está aqui! Interface de navegação entre MiniApps.',
+        url: 'miniapp-catalogo/index.html',
+        icon_url: 'https://placehold.co/48x48/059669/ffffff?text=C',
+        category: 'Sistema',
+        category_key: 'system',
+        status: 'Essencial',
+        status_key: 'essential',
+        translations: {
+          'en-US': {
+            name: 'MiniApps Catalog',
+            description: 'You are here! Navigation interface between MiniApps.',
+            category: 'System',
+            status: 'Essential',
+          },
+        },
+      },
+      {
+        id: 'app_manager',
+        name: 'Gestor de Catálogos (Admin)',
+        description: 'Ferramenta administrativa para importar e gerenciar o catálogo ativo.',
+        url: 'miniapp-gestor-de-catalogo/index.html',
+        icon_url: 'https://placehold.co/48x48/f97316/ffffff?text=G',
+        category: 'Sistema',
+        category_key: 'system',
+        status: 'Essencial',
+        status_key: 'essential',
+        required_role: 'admin',
+        translations: {
+          'en-US': {
+            name: 'Catalog Manager (Admin)',
+            description: 'Administrative tool to import and manage the active catalog.',
+            category: 'System',
+            status: 'Essential',
+          },
+        },
+      },
+      {
+        id: 'app_users',
+        name: 'Cadastro de Usuários',
+        description: 'Gerencie contas, papéis e o bootstrap do administrador.',
+        url: 'miniapp-usuarios/index.html',
+        icon_url: 'https://placehold.co/48x48/4c1d95/ffffff?text=U',
+        category: 'Sistema',
+        category_key: 'system',
+        status: 'Essencial',
+        status_key: 'essential',
+        required_role: 'admin',
+        translations: {
+          'en-US': {
+            name: 'User Management',
+            description: 'Manage accounts, roles and the administrator bootstrap.',
+            category: 'System',
+            status: 'Essential',
+          },
+        },
+      },
+      {
+        id: 'app_prefeito',
+        name: 'MiniApp Prefeito',
+        description: 'Demo de pesquisas municipais (CSV agregado).',
+        url: 'miniapp-prefeito/index.html',
+        icon_url: 'https://placehold.co/48x48/0ea5e9/ffffff?text=P',
+        category: 'Cidadania',
+        category_key: 'citizenship',
+        status: 'Disponível',
+        status_key: 'available',
+        translations: {
+          'en-US': {
+            name: 'Mayor MiniApp',
+            description: 'Municipal survey demo (aggregated CSV).',
+            category: 'Citizenship',
+            status: 'Available',
+          },
+        },
+      },
+      {
+        id: 'app_minha_conta',
+        name: 'Minha Conta',
+        description: 'Gerencie backups e preferências pessoais no seu appDataFolder.',
+        url: 'miniapp-minha-conta/index.html',
+        icon_url: 'https://placehold.co/48x48/2563eb/ffffff?text=M',
+        category: 'Conta',
+        category_key: 'account',
+        status: 'Disponível',
+        status_key: 'available',
+        translations: {
+          'en-US': {
+            name: 'My Account',
+            description: 'Manage backups and personal preferences in your appDataFolder.',
+            category: 'Account',
+            status: 'Available',
+          },
+        },
+      },
+    ]);
+
     let currentLocale = DEFAULT_LOCALE;
     let catalogMessages = getCatalogMessages(currentLocale);
     let fullCatalogData = [];
@@ -597,40 +716,18 @@
       };
     }
 
-    async function loadStaticCatalog() {
+    function loadStaticCatalog() {
       showStatus('loading', catalogMessages.status.loading, 'info');
       renderLoadingState(true);
 
-      let normalized = [];
-      let loadError = null;
-
-      try {
-        const response = await fetch('../catalog.json', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const json = await response.json();
-        normalized = Array.isArray(json)
-          ? json.map((item, index) => normalizeCatalogItem(item, index)).filter(Boolean)
-          : [];
-      } catch (error) {
-        loadError = error;
-        console.error('Erro ao carregar catalog.json:', error);
-      }
-
+      const normalized = STATIC_CATALOG_ITEMS.map((item, index) => normalizeCatalogItem(item, index)).filter(Boolean);
       const localItems = loadLocalCatalogItems();
       fullCatalogData = mergeCatalogEntries(normalized, localItems);
 
       if (!fullCatalogData.length) {
-        if (loadError) {
-          catalogList.dataset.renderState = 'error';
-          catalogList.innerHTML = `<p class="text-red-600 col-span-full p-4 text-center border border-dashed rounded-lg bg-red-50">${escapeHtml(catalogMessages.status.loadError)}</p>`;
-          showStatus('loadError', catalogMessages.status.loadError, 'error', { message: loadError.message });
-        } else {
-          catalogList.dataset.renderState = 'empty';
-          catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.empty)}</p>`;
-          showStatus('empty', catalogMessages.status.empty, 'info');
-        }
+        catalogList.dataset.renderState = 'empty';
+        catalogList.innerHTML = `<p class="text-gray-500 col-span-full p-4 text-center border border-dashed rounded-lg bg-gray-50">${escapeHtml(catalogMessages.status.empty)}</p>`;
+        showStatus('empty', catalogMessages.status.empty, 'info');
         return;
       }
 
@@ -638,25 +735,24 @@
       applyFiltersAndRender();
 
       const statusContext = { count: fullCatalogData.length };
-      if (localItems.length) {
-        statusContext.localCount = localItems.length;
-      }
-
-      const tone = 'warning';
-      const baseFallback = catalogMessages.status.firebaseMissing;
       const catalogLoadedText = formatTemplate(catalogMessages.status.catalogLoaded, statusContext).trim();
+      const fallback = catalogLoadedText || 'Catálogo carregado.';
 
-      showStatus('firebaseMissing', baseFallback, tone, statusContext);
+      showStatus('catalogLoaded', fallback, 'success', statusContext);
 
-      if (catalogLoadedText) {
-        const combinedMessage = `${statusMessage.textContent} ${catalogLoadedText}`.trim();
-        statusMessage.textContent = combinedMessage;
-        currentStatusFallback = combinedMessage;
-        currentStatusExtras = {
-          key: 'catalogLoaded',
-          fallback: catalogLoadedText,
-          context: { ...statusContext },
-        };
+      if (localItems.length) {
+        const extrasContext = { count: localItems.length };
+        const localFallbackExtra = formatTemplate(catalogMessages.status.localFallbackExtra, extrasContext).trim();
+        if (localFallbackExtra) {
+          const combinedMessage = `${statusMessage.textContent} ${localFallbackExtra}`.trim();
+          statusMessage.textContent = combinedMessage;
+          currentStatusFallback = combinedMessage;
+          currentStatusExtras = {
+            key: 'localFallbackExtra',
+            fallback: localFallbackExtra,
+            context: { ...extrasContext },
+          };
+        }
       }
     }
 

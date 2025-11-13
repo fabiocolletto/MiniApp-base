@@ -59,6 +59,14 @@
 - Shell, catálogo e MiniApps agora mantêm `data-theme="light"` ou `"dark"` no corpo e no contêiner `.ma`, evitando resquícios do tema anterior em cabeçalho, rodapé e componentes quando a instância é embutida em outros sites.【F:index.html†L12-L74】【F:js/app.js†L318-L368】【F:miniapp-catalogo/index.html†L1-L612】【F:miniapp-gestor-de-catalogo/index.html†L1053-L1144】【F:miniapp-prefeito/index.html†L1-L129】
 - Token `--ma-color-scheme` define `color-scheme` automaticamente para cada modo, assegurando contraste correto em elementos nativos do navegador e reforçando os estilos claros/escuros do shell.【F:miniapp-base/style/styles.css†L25-L118】
 
+## [2025-11-19] Catálogo embutido no miniapp
+### Removido
+- Arquivo `catalog.json` e o loader legado `js/catalog.js`; o catálogo passa a ser mantido apenas no array `STATIC_CATALOG_ITEMS` dentro do miniapp.【F:miniapp-catalogo/index.html†L60-L154】【F:sw.js†L1-L20】
+### Alterado
+- `miniapp-catalogo/index.html` agora normaliza e renderiza o catálogo exclusivamente a partir do dataset embutido, mantendo filtros, busca e traduções funcionando sem requisições externas.【F:miniapp-catalogo/index.html†L296-L444】
+### Documentação
+- `README.md`, `miniapp-catalogo/README.md`, `js/README.md` e `AGENTE.md` atualizados para refletir a edição direta do catálogo pelo `STATIC_CATALOG_ITEMS`.【F:README.md†L9-L116】【F:miniapp-catalogo/README.md†L1-L17】【F:js/README.md†L1-L12】【F:AGENTE.md†L1-L20】
+
 ## [2025-11-18] Autopreenchimento do ID da planilha
 ### Adicionado
 - Shell aceita `window.__initial_sheet_id` (e aliases compatíveis) para aplicar automaticamente o ID da planilha, sincronizar com o Firestore quando disponível e continuar oferecendo fallback em cache para novos dispositivos.【F:js/app.js†L271-L306】【F:js/app.js†L600-L657】

@@ -4,7 +4,7 @@ Scripts compartilhados entre o shell (`index.html`) e os miniapps.
 
 ## Arquivos
 - `app.js` – controla o iframe principal, integra `postMessage`, restaura o último miniapp aberto e registra o Service Worker.
-- `catalog.js` – carrega a lista de miniapps a partir de `window.CATALOG_GOOGLE_SHEET_CSV`, `catalog.json` ou do fallback embutido e renderiza os cartões clicáveis.
+- `i18n.js` – centraliza mensagens, nomes de idioma e rótulos utilizados pelo shell, catálogo e gestor.
 
 ## Manutenção
 - Prefira funções puras e utilitários reutilizáveis. Novos módulos devem ser adicionados aqui apenas quando realmente compartilhados entre múltiplos miniapps.

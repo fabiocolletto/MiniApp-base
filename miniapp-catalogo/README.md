@@ -1,10 +1,10 @@
 # miniapp-catalogo
 
-Catálogo público de MiniApps com filtros de busca. Os dados são carregados de forma estática a partir do arquivo `catalog.json` localizado na raiz do repositório.
+Catálogo público de MiniApps com filtros de busca. Os dados são carregados do array `STATIC_CATALOG_ITEMS` declarado no próprio `index.html`, permitindo que todas as alterações sejam feitas diretamente neste arquivo.【F:miniapp-catalogo/index.html†L60-L154】
 
 ## Dados estáticos
-- Cada MiniApp exibido no catálogo deve possuir um objeto no `catalog.json` com `id`, `name`, `description`, `url`, `icon_url`, além dos metadados `category`, `category_key`, `status`, `status_key` e, opcionalmente, `translations` para localizar os campos por idioma.【F:catalog.json†L2-L53】
-- Alterações no catálogo exigem apenas a atualização deste arquivo; não há dependências com Firestore ou planilhas externas.
+- Cada MiniApp exibido no catálogo deve possuir um objeto dentro do `STATIC_CATALOG_ITEMS` com `id`, `name`, `description`, `url`, `icon_url`, além dos metadados `category`, `category_key`, `status`, `status_key` e, opcionalmente, `required_role` e `translations` para localizar os campos por idioma.【F:miniapp-catalogo/index.html†L60-L154】
+- Alterações no catálogo exigem apenas a atualização deste array; não há dependências com Firestore ou planilhas externas.
 - O script normaliza os campos, aplica valores padrão (`Geral`/`Disponível`) quando necessário e preserva as traduções para que o shell continue recebendo os eventos `load-miniapp` com o idioma correto.【F:miniapp-catalogo/index.html†L150-L298】
 
 ### Tradução dos cards
