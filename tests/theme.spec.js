@@ -7,6 +7,14 @@ test.describe('Alternância de tema no shell', () => {
     await page.addInitScript(() => {
       localStorage.clear();
       localStorage.setItem('miniapp-shell.sheetId', 'sheet-theme-test');
+      const session = {
+        token: 'local-session-token',
+        userId: 'usr_local_admin',
+        email: 'admin@example.com',
+        role: 'admin',
+        storedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('miniapp.session', JSON.stringify(session));
       const matchMediaStub = (query) => ({
         matches: false,
         media: query,
@@ -36,6 +44,8 @@ test.describe('Alternância de tema no shell', () => {
     await page.evaluate(() => window.__applyShellTheme('dark'));
 
     await expect.poll(async () => root.getAttribute('data-theme')).toBe('dark');
+
+    await page.evaluate(() => window.openCatalogView());
 
     const catalogFrame = page.frameLocator('#catalog-frame');
     await catalogFrame.locator('body').waitFor();

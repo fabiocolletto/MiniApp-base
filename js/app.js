@@ -16,6 +16,7 @@ let themeToggleLabel = themeToggleBtn ? themeToggleBtn.querySelector('[data-them
 const installBtn = document.getElementById('installPWA');
 const catalogFrame = document.getElementById('catalog-frame');
 const appFrame = document.getElementById('miniapp-panel');
+const CATALOG_APP_URL = 'miniapp-catalogo/index.html';
 const setupView = document.getElementById('setup-sheet-view');
 const catalogView = document.getElementById('catalog-view');
 const appView = document.getElementById('app-view');
@@ -636,9 +637,15 @@ function loadMiniApp(url, meta = {}, options = {}) {
 }
 window.loadMiniApp = loadMiniApp;
 
+function loadCatalogMiniApp(options = {}) {
+  const config = typeof options === 'object' && options !== null ? options : {};
+  setHeader(defaultCatalogHeader, { source: 'shell', key: 'catalog-default' });
+  loadMiniApp(CATALOG_APP_URL, null, { bypassAuth: true, persistHistory: false, ...config });
+}
+
 function restoreLastMiniAppOrCatalog() {
   if (window.__catalogDisabled__) {
-    openCatalog();
+    loadCatalogMiniApp();
     return;
   }
   let lastUrl = null;
@@ -651,7 +658,7 @@ function restoreLastMiniAppOrCatalog() {
   if (lastUrl) {
     loadMiniApp(lastUrl);
   } else {
-    openCatalog();
+    loadCatalogMiniApp();
   }
 }
 
@@ -719,7 +726,7 @@ function reloadCatalogFrame() {
   } catch (error) {
     console.warn('Não foi possível recarregar o catálogo automaticamente.', error);
   }
-  catalogFrame.src = 'miniapp-catalogo/index.html';
+  catalogFrame.src = CATALOG_APP_URL;
 }
 
 async function ensureFirebase() {

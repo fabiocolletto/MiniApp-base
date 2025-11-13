@@ -146,8 +146,6 @@ function findLocalUserByEmail(state, email) {
 }
 
 function sanitizeBaseUrl(baseUrl) {
-
-function sanitizeBaseUrl(baseUrl) {
   if (typeof baseUrl !== 'string') {
     return '';
   }
