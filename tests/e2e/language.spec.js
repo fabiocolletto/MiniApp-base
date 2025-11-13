@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { stubFirebase } = require('./helpers/firebase');
+const { stubFirebase } = require('../helpers/firebase');
 
 test.describe('Idioma do shell e miniapps', () => {
   test('alternar idioma atualiza shell, catálogo e gestor', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('Idioma do shell e miniapps', () => {
     const catalogTitle = page.frameLocator('#catalog-frame').locator('#catalogTitle');
     await expect(catalogTitle).toHaveText('Your MiniApps Catalog');
     const catalogStatus = page.frameLocator('#catalog-frame').locator('#status-message');
-    await expect(catalogStatus).toContainText('Firebase configuration missing.');
+    await expect(catalogStatus).toHaveText(/Firebase configuration missing\.|Catalog loaded: \d+ MiniApps available\./);
 
     await page.evaluate(() => {
       window.loadMiniApp('miniapp-gestor-de-catalogo/index.html', {

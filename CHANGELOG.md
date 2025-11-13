@@ -17,7 +17,7 @@
 
 # [2025-11-25] Tema persistente no shell
 ### Corrigido
-- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-gestor-de-catalogo/index.html†L1068-L1108】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/theme.spec.js†L48-L70】
+- Botão de tema volta a atualizar cabeçalho, rodapé e iframes mesmo quando o sistema operacional prefere modo escuro, mantendo `data-theme="light"` ou `"dark"` ativo no shell e nos MiniApps.【F:js/app.js†L432-L454】【F:miniapp-catalogo/index.html†L730-L780】【F:miniapp-gestor-de-catalogo/index.html†L1068-L1108】【F:miniapp-prefeito/index.html†L88-L132】【F:miniapp-minha-conta/minha-conta.js†L16-L40】【F:tests/e2e/theme.spec.js†L1-L74】
 
 ## [2025-11-24] Logo responsivo no rodapé
 ### Corrigido
@@ -105,7 +105,7 @@
 
 ## [2025-11-11] Validação automatizada do catálogo e gestor
 ### Adicionado
-- Suite de testes end-to-end com Playwright cobrindo catálogo público e gestor administrativo, usando servidor estático embutido e stubs do Firebase para validar persistência local e importação via Google Sheets.【F:playwright.config.js†L1-L17】【F:tests/catalog.spec.js†L1-L36】【F:tests/manager.spec.js†L1-L74】【F:tests/helpers/firebase.js†L1-L32】
+- Suite de testes end-to-end com Playwright cobrindo catálogo público e gestor administrativo, usando servidor estático embutido e stubs do Firebase para validar persistência local e importação via Google Sheets.【F:playwright.config.js†L1-L17】【F:tests/e2e/catalog.spec.js†L1-L36】【F:tests/e2e/manager.spec.js†L1-L74】【F:tests/helpers/firebase.js†L1-L32】
 ### Corrigido
 - Gestor de catálogos salva o ID da planilha importada no armazenamento local mesmo sem Firebase configurado, mantendo o shell sincronizado após importações offline.【F:miniapp-gestor-de-catalogo/index.html†L679-L686】
 
