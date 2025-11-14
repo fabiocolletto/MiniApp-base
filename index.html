@@ -414,7 +414,7 @@
       </div>
     </div>
     <div class="title-actions">
-      <span class="version"><span class="sr-only">Versão do catálogo: </span>v1.1.0</span>
+      <span class="version"><span class="sr-only">Versão do catálogo: </span>v1.2.0</span>
       <div class="user-status" data-user-status>
         <span data-user-label>Você está navegando como visitante.</span>
         <button type="button" class="primary" data-action="auth">Fazer login</button>
@@ -424,38 +424,10 @@
 
   <main aria-live="polite" aria-labelledby="catalog-title">
     <section class="catalog-grid">
-      <article class="catalog-card">
-        <div class="card-header">
-          <img src="./miniapp-base/assets/icons/prefeito.png" alt="Ícone do Painel do Prefeito">
-          <div>
-            <h3>Painel do Prefeito</h3>
-            <p>KPIs e relatórios setoriais para gestão municipal integrada.</p>
-          </div>
-        </div>
-        <p class="sr-only" id="catalog-meta-title">Metadados do mini‑app Painel do Prefeito</p>
-        <ul class="catalog-meta">
-          <li class="meta-chip" data-status-chip>
-            <span class="material-symbols-outlined" aria-hidden="true">verified</span>
-            Estável
-          </li>
-          <li class="meta-chip">
-            <span class="material-symbols-outlined" aria-hidden="true">update</span>
-            Atualizado em 12/2023
-          </li>
-          <li class="meta-chip">
-            <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            Equipe de Dados
-          </li>
-        </ul>
-        <div class="catalog-actions">
-          <button type="button" class="btn" data-action="details">
-            <span class="material-symbols-outlined" aria-hidden="true">info</span>
-            Ver detalhes
-          </button>
-          <a class="btn primary" href="./miniapp-prefeito/index.html">
-            <span class="material-symbols-outlined" aria-hidden="true">launch</span>
-            Abrir mini‑app
-          </a>
+      <article class="catalog-card" aria-labelledby="catalog-empty-title">
+        <div>
+          <h3 id="catalog-empty-title">Nenhum mini‑app disponível</h3>
+          <p>O catálogo foi simplificado e aguarda a publicação de novos miniapps pelo painel administrativo.</p>
         </div>
       </article>
     </section>
@@ -473,47 +445,10 @@
     </section>
   </main>
 
-  <dialog class="modal" data-modal="details" aria-labelledby="modal-title" aria-modal="true">
-    <div class="modal-header">
-      <h2 id="modal-title">Painel do Prefeito</h2>
-      <button type="button" data-action="close-modal" aria-label="Fechar detalhes">
-        <span class="material-symbols-outlined" aria-hidden="true">close</span>
-      </button>
-    </div>
-    <div class="modal-content">
-      <p>O Painel do Prefeito reúne KPIs estratégicos, filtros interativos e relatórios por secretaria para facilitar o acompanhamento diário da gestão municipal.</p>
-      <p>O mini‑app suporta personalização por perfil de usuário, exportação de relatórios e sincronização automática em múltiplos dispositivos.</p>
-    </div>
-    <div class="modal-footer">
-      <a class="btn primary" href="./miniapp-prefeito/index.html">Abrir mini‑app</a>
-    </div>
-  </dialog>
-
   <script>
-    const modal = document.querySelector('[data-modal="details"]');
-    const openDetailsBtn = document.querySelector('[data-action="details"]');
-    const closeModalBtn = document.querySelector('[data-action="close-modal"]');
     const authButton = document.querySelector('[data-action="auth"]');
     const userLabel = document.querySelector('[data-user-label]');
     let isLoggedIn = false;
-
-    if (modal && typeof modal.showModal === 'function') {
-      openDetailsBtn?.addEventListener('click', () => {
-        modal.showModal();
-      });
-
-      closeModalBtn?.addEventListener('click', () => {
-        modal.close();
-      });
-
-      modal.addEventListener('cancel', (event) => {
-        event.preventDefault();
-        modal.close();
-      });
-    } else {
-      modal?.classList.add('hidden');
-      openDetailsBtn?.classList.add('hidden');
-    }
 
     authButton?.addEventListener('click', () => {
       isLoggedIn = !isLoggedIn;
