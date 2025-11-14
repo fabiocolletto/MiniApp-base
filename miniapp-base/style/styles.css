@@ -1,28 +1,43 @@
-/* styles.css — Demo v0.4 (2025-11-11)
-   Escopo: .ma
-   Correções: sem “moldura”, header/footer fixos, rolagem só no centro, sem overflow horizontal,
-   grid responsivo seguro, tabela com melhor legibilidade, contraste dark melhorado. */
+/*
+ * Projeto: MiniApp-Base
+ * Versão: 1.x.x
+ * Autor: Fabio Colletto / 5 Horas
+ * Descrição: CSS principal para o shell do MiniApp-Base embutido via iframe.
+ * Licença: MIT (ou conforme definido)
+ */
 @layer reset, tokens, base, components, utilities, compat;
 
-/* ========================
-   RESET
-   ======================== */
+/* || RESET */
 @layer reset {
-  html, body { margin: 0 !important; padding: 0 !important; height: 100%; }
-  .ma { line-height: 1.5; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  #miniapp-root {
+    /* Root do app dentro do host externo/iframe. */
+    height: 100%;
+    width: 100%;
+  }
+
+  .ma {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
   .ma :where(*, *::before, *::after) { box-sizing: border-box; }
   .ma :where(img, svg, video, canvas, audio, iframe) { display: block; max-width: 100%; }
   .ma :where(input, button, textarea, select) { font: inherit; color: inherit; }
   .ma :where(button) { background: none; border: 0; padding: 0; cursor: pointer; }
   .ma :where(a) { color: inherit; text-decoration: none; }
-  .ma :where([hidden]) { display: none !important; }
+  .ma :where([hidden]) { display: none; }
   .ma :where(:focus-visible) { outline: var(--ma-focus-outline, 2px solid var(--ma-brand)); outline-offset: 2px; }
   .ma :where(::selection) { background: color-mix(in oklab, var(--ma-brand) 18%, transparent); }
 }
 
-/* ========================
-   TOKENS (light/dark)
-   ======================== */
+/* || TOKENS (light/dark) */
 @layer tokens {
   .ma {
     --ma-font-sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
@@ -90,12 +105,19 @@
   }
 }
 
-/* ========================
-   BASE TIPOGRAFIA + LAYOUT
-   ======================== */
+/* || BASE TIPOGRAFIA + LAYOUT */
 @layer base {
-  #miniapp-root, .ma { min-height: 100svh; }
-  .ma { font-family: var(--ma-font-sans); font-size: var(--ma-fs-2); }
+  #miniapp-root,
+  .ma {
+    /* Garante altura plena dentro do iframe, respeitando viewports dinâmicos. */
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .ma {
+    font-family: var(--ma-font-sans);
+    font-size: var(--ma-fs-2);
+  }
   .ma :where(h1,h2,h3,h4) { margin: 0 0 var(--ma-sp-3); font-weight: 700; letter-spacing: -0.01em; }
   .ma :where(h1){ font-size: var(--ma-fs-6); }
   .ma :where(h2){ font-size: var(--ma-fs-5); }
@@ -105,34 +127,34 @@
   .ma :where(small){ font-size: var(--ma-fs-1); color: var(--ma-muted); }
   .ma :where(code,pre,kbd,samp){ font-family: var(--ma-font-mono); }
 
-  .ma .container { width: min(1120px, 100% - 2*var(--ma-sp-4)); margin-inline: auto; }
-  .ma .wrap { padding: var(--ma-sp-4); }
+  .ma .container { width: min(70rem, 100% - 2 * var(--ma-sp-4)); margin-inline: auto; }
+  .ma .wrap { padding: var(--ma-sp-3); }
 
   .ma .surface { background: var(--ma-surface); border: 1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-1); }
 }
 
-/* ========================
-   COMPONENTES — shell fixo e UI
-   ======================== */
+/* || COMPONENTES — shell fixo e UI */
 @layer components {
   /* Shell da aplicação: header/topo e footer/base fixos com rolagem apenas no <main> */
   .ma .app {
+    /* Ensures full-height container for iframe embedding */
     height: 100svh;                 /* viewport inteira */
+    min-height: 100vh;
     display: grid;
     grid-template-rows: auto minmax(0,1fr) auto; /* header | main | footer -> main pode encolher */ /* header | main | footer */
     overflow: hidden;               /* sem scroll fora do main */
   }
   .ma .app-header {
     position: sticky; top: 0; z-index: 10;
-    padding: var(--ma-sp-3) var(--ma-sp-4);
+    padding: var(--ma-sp-3);
     border-bottom: 1px solid var(--ma-border);
-    display: flex; gap: var(--ma-sp-3); align-items: center;
+    display: flex; gap: var(--ma-sp-2); align-items: flex-start; flex-direction: column;
     background: var(--ma-bg);
     box-shadow: 0 1px 0 var(--ma-border);
   }
-  .ma .app-header__branding { gap: var(--ma-sp-3); }
-  .ma .app-header__actions { margin-left: auto; }
-  .ma .app-logo { height: 24px; width: auto; }
+  .ma .app-header__branding { display: flex; gap: var(--ma-sp-2); width: 100%; align-items: flex-start; }
+  .ma .app-header__actions { margin-left: 0; width: 100%; display: flex; justify-content: flex-start; gap: var(--ma-sp-2); }
+  .ma .app-logo { height: 1.5rem; width: auto; }
   .ma main {
     display: flex;
     flex-direction: column;
@@ -150,10 +172,10 @@
   .ma .app-view .app-panel { flex: 1 1 auto; }
   .ma .app-view--centered { align-items: center; justify-content: center; }
   .ma .app-view__wrap { width: 100%; display: flex; justify-content: center; }
-  .ma .app-view__card { width: min(520px, 100%); padding: var(--ma-sp-5); gap: var(--ma-sp-4); }
+  .ma .app-view__card { width: min(32.5rem, 100%); padding: var(--ma-sp-4); gap: var(--ma-sp-3); }
   .ma .app-footer {
     position: sticky; bottom: 0;
-    padding: var(--ma-sp-3) var(--ma-sp-4);
+    padding: var(--ma-sp-3);
     border-top: 1px solid var(--ma-border);
     display:flex; justify-content:space-between; align-items:center;
     background: var(--ma-bg);
@@ -164,9 +186,9 @@
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    max-width: 140px;
+    max-width: 8.75rem;
   }
-  .ma [data-theme-logo] { display: none; height: 24px; width: auto; }
+  .ma [data-theme-logo] { display: none; height: 1.5rem; width: auto; }
   .ma [data-theme-logo="light"] { display: inline-block; }
   .ma[data-theme="light"] [data-theme-logo="dark"] { display: none; }
   .ma[data-theme="light"] [data-theme-logo="light"] { display: inline-block; }
@@ -215,7 +237,15 @@
     box-shadow: var(--ma-focus-ring);
     outline: none;
   }
-  .ma .form-actions { display: flex; justify-content: flex-end; gap: var(--ma-sp-2); }
+  /* Ações de formulário mobile-first: colunas por padrão. */
+  .ma .form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: var(--ma-sp-2);
+    width: 100%;
+  }
   .ma .support-text { font-size: var(--ma-fs-1); color: var(--ma-muted); }
   .ma .support-text[data-tone="success"] { color: var(--ma-success); }
   .ma .support-text[data-tone="error"] { color: var(--ma-danger); }
@@ -228,7 +258,7 @@
 
   /* Tabelas */
   .ma .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .ma .table { width:100%; min-width: 720px; border-collapse: separate; border-spacing: 0; font-size: .96em; }
+  .ma .table { width:100%; min-width: min(45rem, 100%); border-collapse: separate; border-spacing: 0; font-size: .96em; }
   .ma .table :where(th, td){ padding: .65rem .75rem; border-bottom:1px solid var(--ma-border); text-align:left; white-space: nowrap; }
   .ma .table th { color: var(--ma-muted); font-weight:600; position: sticky; top: 0; background: var(--ma-bg); }
   .ma .table tr:hover { background: color-mix(in oklab, var(--ma-brand) 6%, var(--ma-bg)); }
@@ -236,8 +266,14 @@
   /* Badges */
   .ma .badge { display:inline-block; border-radius: 999px; padding:.25em .6em; font-weight:600; font-size: .82em; border:1px solid color-mix(in oklab, var(--ma-brand) 35%, var(--ma-border)); color: var(--ma-brand-ink); background: color-mix(in oklab, var(--ma-brand) 14%, var(--ma-bg)); }
 
-  /* Painel embutido (iframe) */
-  .ma .panel { width:100%; height:70vh; border:0; border-radius: var(--ma-radius-2); box-shadow: var(--ma-shadow-1); }
+  /* Painel embutido (iframe) utiliza altura fluida para se adaptar ao container hospedeiro. */
+  .ma .panel {
+    width:100%;
+    min-height: clamp(24rem, 70vh, 60rem);
+    border:0;
+    border-radius: var(--ma-radius-2);
+    box-shadow: var(--ma-shadow-1);
+  }
 
   /* Catálogo embutido */
   .ma .catalog {
@@ -248,7 +284,7 @@
   }
 
   .ma .catalog__container {
-    width: min(1120px, 100%);
+    width: min(70rem, 100%);
     margin: 0 auto;
     padding: var(--ma-sp-5);
     display: flex;
@@ -284,7 +320,7 @@
 
   .ma .catalog__search,
   .ma .catalog__filter {
-    flex: 1 1 240px;
+    flex: 1 1 15rem;
     display: flex;
   }
 
@@ -317,7 +353,7 @@
     display: grid;
     gap: var(--ma-sp-4);
     padding-bottom: var(--ma-sp-6);
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(16.25rem, 1fr));
   }
 
   .ma .catalog-empty {
@@ -340,7 +376,7 @@
     background: var(--ma-bg);
     box-shadow: var(--ma-shadow-1);
     transition: transform .18s ease, box-shadow .18s ease;
-    min-height: 220px;
+    min-height: clamp(12.5rem, 32vh, 16rem);
   }
 
   .ma .catalog-card:hover {
@@ -355,8 +391,8 @@
   }
 
   .ma .catalog-card__icon {
-    width: 48px;
-    height: 48px;
+    width: 3rem;
+    height: 3rem;
     border-radius: var(--ma-radius-1);
     border: 1px solid var(--ma-border);
     object-fit: cover;
@@ -428,22 +464,20 @@
   }
 
   .ma .catalog-loading__spinner {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
-    border: 3px solid color-mix(in oklab, var(--ma-border) 70%, transparent);
+    border: 0.1875rem solid color-mix(in oklab, var(--ma-border) 70%, transparent);
     border-top-color: var(--ma-brand);
     animation: ma-spin 1s linear infinite;
   }
 
   /* Vega/Vega-Lite: tooltip e ações */
-  .ma .vega-actions { display:none !important; }
+  .ma .vega-actions { display:none; }
   .ma .vega-tooltip { position: absolute; z-index: 10; padding:.5rem .65rem; background: var(--ma-bg); color: var(--ma-ink); border:1px solid var(--ma-border); border-radius: var(--ma-radius-1); box-shadow: var(--ma-shadow-2); font-size: var(--ma-fs-1); pointer-events: none; }
 }
 
-/* ========================
-   UTILITÁRIOS
-   ======================== */
+/* || UTILITÁRIOS */
 @layer utilities {
   .ma { overflow-x: hidden; } /* sem rolagem horizontal no app */
 
@@ -457,36 +491,51 @@
   .ma .cluster { display:flex; flex-wrap:wrap; align-items:center; gap: var(--ma-sp-2); }
   .ma .grid { display:grid; gap: var(--ma-sp-3); grid-template-columns: repeat(12, minmax(0,1fr)); }
   /* Grid auto seguro (sem overflow): */
-  .ma .grid--auto { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+  .ma .grid--auto { grid-template-columns: repeat(auto-fit, minmax(min(16.25rem, 100%), 1fr)); }
   .ma .center { margin-inline:auto; }
 
-  .ma .maxw-sm{ max-width: 480px; } .ma .maxw-md{ max-width: 720px; } .ma .maxw-lg{ max-width: 960px; } .ma .maxw-xl{ max-width: 1120px; }
+  .ma .maxw-sm{ max-width: 30rem; } .ma .maxw-md{ max-width: 45rem; } .ma .maxw-lg{ max-width: 60rem; } .ma .maxw-xl{ max-width: 70rem; }
 
   .ma .muted{ color: var(--ma-muted); }
   .ma .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 }
 
-/* ========================
-   COMPAT (apelidos antigos)
-   ======================== */
+/* || COMPAT (apelidos antigos) */
 @layer compat {
   /* Mapeie aliases antigos aqui se necessário */
 }
 
-/* ========================
-   BREAKPOINTS
-   ======================== */
-@media (max-width: 480px) {
-  .ma .wrap { padding: 12px; }
+/* || BREAKPOINTS */
+@media (min-width: 30rem) {
   .ma h1 { font-size: clamp(20px, 6vw, 28px); }
-  .ma .app-header { flex-direction: column; align-items: flex-start; gap: var(--ma-sp-2); }
-  .ma .app-header__branding { width: 100%; align-items: flex-start; gap: var(--ma-sp-2); }
-  .ma .app-header__actions { margin-left: 0; width: 100%; justify-content: flex-start; }
-  .ma .app-logo { height: 24px; }
-  .ma .app-view__card { width: 100%; padding: var(--ma-sp-4); gap: var(--ma-sp-3); }
-  .ma .form-actions { flex-direction: column; align-items: stretch; width: 100%; }
-  .ma .form-actions .btn { width: 100%; justify-content: center; }
+  .ma .app-header {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ma-sp-3);
+    padding: var(--ma-sp-3) var(--ma-sp-4);
+  }
+  .ma .app-header__branding {
+    width: auto;
+    gap: var(--ma-sp-3);
+    align-items: center;
+  }
+  .ma .app-header__actions {
+    margin-left: auto;
+    width: auto;
+    justify-content: flex-end;
+  }
+  .ma .app-view__card { padding: var(--ma-sp-5); gap: var(--ma-sp-4); }
+  .ma .form-actions { flex-direction: row; align-items: center; width: auto; }
+  .ma .form-actions .btn { width: auto; }
 }
-@media (width >= 640px){ .ma .wrap{ padding: var(--ma-sp-6); } }
-@media (width >= 1024px){ .ma .container{ width: min(1280px, 100% - 2*var(--ma-sp-6)); } }
-@media (prefers-reduced-motion: reduce) { .ma * { animation: none !important; transition: none !important; } }
+
+@media (min-width: 40rem) {
+  .ma .wrap{ padding: var(--ma-sp-4); }
+}
+
+@media (min-width: 64rem) {
+  .ma .wrap{ padding: var(--ma-sp-6); }
+  .ma .container{ width: min(80rem, 100% - 2*var(--ma-sp-6)); }
+}
+
+@media (prefers-reduced-motion: reduce) { .ma * { animation: none; transition: none; } }

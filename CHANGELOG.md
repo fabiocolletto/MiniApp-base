@@ -1,5 +1,12 @@
 # Changelog
 
+# [2025-12-08] Padronização do styles.css
+### Alterado
+- `miniapp-base/style/styles.css` reorganizado com cabeçalho de meta-dados, reset seguro para iframes, estrutura mobile-first e alturas relativas usando `vh/svh` e `clamp` para evitar números mágicos e conflitos externos.【F:miniapp-base/style/styles.css†L1-L205】【F:miniapp-base/style/styles.css†L269-L379】【F:miniapp-base/style/styles.css†L508-L539】
+
+### Documentação
+- Comentários inline adicionados ao CSS para explicar contêineres críticos de viewport e fluxo de formulários mobile-first.【F:miniapp-base/style/styles.css†L19-L143】【F:miniapp-base/style/styles.css†L240-L275】
+
 # [2025-12-07] Shell zerado novamente
 ### Alterado
 - `js/app.js` reescrito para operar apenas com o catálogo local, removendo integrações com autenticação, Firebase e configuração de planilhas, além de expor utilitários simplificados de idioma e tema.【F:js/app.js†L1-L386】【F:js/app.js†L388-L640】
