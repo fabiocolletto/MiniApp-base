@@ -743,24 +743,13 @@
           Olá, <span x-text="$store.user.username"></span>!
       </span>
 
-      <!-- NOVO BOTÃO DE GESTÃO DA CONTA (APARECE QUANDO LOGADO) -->
-      <button x-show="$store.user.isLoggedIn"
-              class="btn p-2 hover:bg-gray-100 rounded-full text-gray-700"
-              @click="$store.app.showAccountModal = true"
-              title="Gerir Conta">
-          <!-- Ícone de Usuário (Conta) -->
-          <i class="material-icons">account_circle</i>
-          <span class="sr-only">Abrir gerenciamento da conta</span>
-      </button>
-
-      <!-- Botão de LOGIN (APARECE QUANDO DESLOGADO) -->
-      <!-- O botão Login continua o mesmo, sem o texto 'Sair' -->
-      <button x-show="!$store.user.isLoggedIn"
-              class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100"
-              @click="$store.user.login('Usuário Teste', ['read'])"
-              title="Entrar">
-          <i class="material-icons">login</i>
-          <span class="sr-only">Login</span>
+      <!-- Botão de conta/login unificado -->
+      <button class="btn p-2 rounded-full"
+              :class="$store.user.isLoggedIn ? 'text-gray-700 hover:bg-gray-100' : 'text-blue-600 hover:bg-blue-100'"
+              @click="$store.user.isLoggedIn ? $store.app.showAccountModal = true : $store.user.login('Usuário Teste', ['read'])"
+              :title="$store.user.isLoggedIn ? 'Gerir Conta' : 'Entrar'">
+          <i class="material-icons" x-text="$store.user.isLoggedIn ? 'account_circle' : 'login'"></i>
+          <span class="sr-only" x-text="$store.user.isLoggedIn ? 'Abrir gerenciamento da conta' : 'Login'"></span>
       </button>
     </div>
   </header>
