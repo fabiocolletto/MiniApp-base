@@ -3,7 +3,7 @@
 Este repositório reúne protótipos HTML/CSS simples utilizados para validar fluxos de interface de miniaplicativos. Os artefatos principais ficam na pasta `miniapp-base`, mas há variações experimentais em `miniapp-prefeito`.
 
 ## Estrutura
-- `index.html`: página de entrada que referencia os estilos compartilhados.
+- `index.html`: catálogo interativo com card do Painel do Prefeito, modal de detalhes e atalho para o painel administrativo.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
 - `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
 
