@@ -38,7 +38,6 @@
       flex: 1;
     }
 
-    .layout-header,
     .layout-main,
     .layout-footer {
       background: var(--card);
@@ -47,17 +46,105 @@
     }
 
     .layout-header {
-      padding: clamp(18px, 4vw, 28px);
+      padding: clamp(16px, 4vw, 24px);
       display: flex;
-      flex-direction: column;
-      gap: clamp(16px, 3vw, 24px);
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(12px, 3vw, 20px);
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      flex-wrap: wrap;
     }
 
     .layout-header .title {
       display: flex;
+      align-items: flex-start;
+      gap: clamp(10px, 2.4vw, 16px);
+      flex-direction: column;
+      flex: 1 1 220px;
+      min-width: 0;
+    }
+
+    .layout-header .title h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 700;
+    }
+
+    .layout-header .title .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(14px, 2.4vw, 16px);
+    }
+
+    .header-actions {
+      display: inline-flex;
       align-items: center;
-      gap: clamp(12px, 2.6vw, 18px);
-      flex-wrap: wrap;
+      gap: clamp(10px, 3vw, 18px);
+      margin-left: auto;
+      flex: 0 1 auto;
+    }
+
+    .header-actions .greeting {
+      font-size: clamp(13px, 2.2vw, 15px);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .icon-action {
+      width: clamp(36px, 8vw, 40px);
+      height: clamp(36px, 8vw, 40px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .icon-action::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgba(15, 23, 42, 0.08);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .icon-action:hover::after,
+    .icon-action:focus-visible::after {
+      opacity: 1;
+    }
+
+    .icon-action:hover,
+    .icon-action:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .icon-action--highlight {
+      color: #0b57d0;
+    }
+
+    [data-theme="dark"] .icon-action::after {
+      background: rgba(148, 163, 184, 0.16);
+    }
+
+    .icon-action .material-icons {
+      font-size: clamp(20px, 4vw, 24px);
+    }
+
+    @media (max-width: 520px) {
+      .header-actions .greeting {
+        display: none;
+      }
     }
 
     .layout-main {
@@ -824,45 +911,45 @@
   <!-- Header simplificado -->
   <header class="layout-header">
     <div class="title">
-      <div>
-        <!-- TÍTULO DO CATÁLOGO (Padrão) -->
-        <div x-show="$store.app.showCatalog">
-          <h1 class="text-xl font-bold text-gray-800 m-0">Catálogo de MiniApps</h1>
-          <p class="subtitle text-sm text-gray-500 m-0">Selecione um mini‑app para abrir</p>
-        </div>
-        
-        <!-- TÍTULO DO ADMIN (Dinâmico) -->
-        <div x-show="$store.app.showAdminPanelContent">
-          <h1 class="text-xl font-bold text-gray-800 m-0" x-text="$store.app.adminTitle"></h1>
-          <p class="subtitle text-sm text-gray-500 m-0">Gerenciamento Central</p>
-        </div>
+      <!-- TÍTULO DO CATÁLOGO (Padrão) -->
+      <div x-show="$store.app.showCatalog">
+        <h1 class="text-xl font-bold text-gray-800 m-0">Catálogo de MiniApps</h1>
+        <p class="subtitle text-sm text-gray-500 m-0">Selecione um mini‑app para abrir</p>
+      </div>
+
+      <!-- TÍTULO DO ADMIN (Dinâmico) -->
+      <div x-show="$store.app.showAdminPanelContent">
+        <h1 class="text-xl font-bold text-gray-800 m-0" x-text="$store.app.adminTitle"></h1>
+        <p class="subtitle text-sm text-gray-500 m-0">Gerenciamento Central</p>
       </div>
     </div>
-    
-    <!-- Componente de Status do Usuário (Usa Alpine.Store) -->
-    <div class="flex items-center gap-3 ml-auto">
 
-      <!-- BOTÃO/ÍCONE HOME -->
-      <button class="btn icon-only text-blue-600"
+    <!-- Componente de Status do Usuário (Usa Alpine.Store) -->
+    <nav class="header-actions" aria-label="Ações principais">
+
+      <!-- Ícone Home -->
+      <button type="button"
+              class="icon-action icon-action--highlight"
               @click.prevent="showCatalogView()"
-              title="Voltar para o Catálogo">
-          <i class="material-icons text-2xl">home</i>
-          <span class="sr-only">Ir para o catálogo</span>
+              title="Voltar para o Catálogo"
+              aria-label="Ir para o catálogo">
+        <span class="material-icons" aria-hidden="true">home</span>
       </button>
 
-      <span x-show="$store.user.isLoggedIn" class="text-sm font-medium text-gray-600 hidden sm:block">
-          Olá, <span x-text="$store.user.username"></span>!
+      <span x-show="$store.user.isLoggedIn" class="greeting">
+        Olá, <span x-text="$store.user.username"></span>!
       </span>
 
-      <!-- Botão de conta/login unificado -->
-      <button class="btn icon-only"
-              :class="$store.user.isLoggedIn ? 'text-gray-700' : 'text-blue-600'"
+      <!-- Ícone de Conta/Login -->
+      <button type="button"
+              class="icon-action"
+              :class="$store.user.isLoggedIn ? '' : 'icon-action--highlight'"
               @click="$store.user.isLoggedIn ? $store.app.showAccountModal = true : $store.user.login('Usuário Teste', ['read'])"
-              :title="$store.user.isLoggedIn ? 'Gerir Conta' : 'Entrar'">
-          <i class="material-icons" x-text="$store.user.isLoggedIn ? 'account_circle' : 'login'"></i>
-          <span class="sr-only" x-text="$store.user.isLoggedIn ? 'Abrir gerenciamento da conta' : 'Login'"></span>
+              :title="$store.user.isLoggedIn ? 'Gerir Conta' : 'Entrar'"
+              :aria-label="$store.user.isLoggedIn ? 'Abrir gerenciamento da conta' : 'Login'">
+        <span class="material-icons" aria-hidden="true" x-text="$store.user.isLoggedIn ? 'account_circle' : 'login'"></span>
       </button>
-    </div>
+    </nav>
   </header>
 
   <!-- Main Content Centralizado -->
