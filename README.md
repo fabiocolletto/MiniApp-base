@@ -13,6 +13,7 @@ Este repositório reúne protótipos HTML/CSS simples utilizados para validar fl
 - Gestão visual de usuários e catálogos com suporte a criação, edição e exclusão.
 - Indicadores de sincronização, memória e atualizações do IndexedDB fixos no rodapé.
 - Interface traduzida para `pt-BR`, `en-US` e `es-ES` com alternância imediata.
+- Pronto para instalação como PWA (manifesto, service worker e cache offline do shell).
 
 ## Como trabalhar
 1. Leia `AGENTE.md` e `CHANGELOG.md` antes de começar qualquer alteração para entender as convenções vigentes.
