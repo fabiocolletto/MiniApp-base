@@ -8,6 +8,9 @@
 - Miniapp Prefeito inclui conjunto de dados de demonstração carregado no IndexedDB para exibir indicadores imediatamente.
 - Indicadores exibem resumos dinâmicos e estados de carregamento/erro integrados à sincronização multi-dispositivo.
 
+### Alterado
+- Catálogo raiz atualizado com layout interativo, modal de detalhes e simulação de login exibindo versão v1.1.0.
+
 ### Corrigido
 - Backdrop do modal agora cobre toda a viewport e mantém o conteúdo centralizado, mesmo com padding responsivo.
 - Comportamento de rolagem das folhas (`.sheet`) aprimorado para preservar cabeçalhos fixos enquanto o corpo desliza.
