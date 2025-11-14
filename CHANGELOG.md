@@ -5,6 +5,7 @@
 - Novo layout do catálogo principal com cabeçalho dinâmico, painel administrativo inicial e rodapé com indicadores de status.
 - Persistência de usuários e MiniApps em IndexedDB usando Dexie.js.
 - Suporte a alternância de idioma (pt-BR, en-US, es-ES) para todos os textos exibidos.
+- Manifesto web e service worker para habilitar a instalação como PWA e cache offline do shell.
 
 ### Alterado
 - Layout principal simplificado com cabeçalho, catálogo e painel administrativo unificados em uma estrutura de cartão.
