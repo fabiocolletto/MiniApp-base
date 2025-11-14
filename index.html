@@ -4,251 +4,443 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MiniApps — Catálogo</title>
-  <link rel="stylesheet" href="./miniapp-base/styles.css?v=1.1.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/MiniApp-base/miniapp-base/styles.css?v=1.1.0" media="print" onload="this.media='all'">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght@300..700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --catalog-bg: var(--surface, #f8fafc);
-      --catalog-card: var(--card, #fff);
-      --catalog-border: var(--card-border, #cbd5e1);
-      --catalog-muted: var(--muted, #64748b);
-      --catalog-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+      color-scheme: light;
+      --surface: #f8fafc;
+      --surface-strong: #0f172a;
+      --card: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --radius-lg: clamp(16px, 3vw, 24px);
+      --radius-md: clamp(12px, 2.5vw, 18px);
+      --radius-sm: clamp(8px, 2vw, 12px);
+      --shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --surface: #0f172a;
+      --surface-strong: #e2e8f0;
+      --card: #111827;
+      --card-border: rgba(148, 163, 184, 0.24);
+      --muted: #cbd5f5;
+      --accent: #60a5fa;
+      --accent-strong: #3b82f6;
+      --accent-soft: rgba(96, 165, 250, 0.16);
+      --shadow: 0 20px 40px rgba(2, 6, 23, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      padding: clamp(24px, 4vw, 48px);
-      background: var(--catalog-bg);
-      font-family: var(--font-family, "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-      color: var(--on-surface, #0f172a);
       min-height: 100vh;
+      background: var(--surface);
+      color: var(--surface-strong);
+      font-family: inherit;
       display: flex;
-      flex-direction: column;
-      gap: clamp(24px, 4vw, 48px);
+      justify-content: center;
+      padding: clamp(16px, 4vw, 32px);
+    }
+
+    .app-shell {
+      width: min(1200px, 100%);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(16px, 4vw, 32px);
     }
 
     header {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      padding: clamp(20px, 4vw, 32px);
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: clamp(16px, 4vw, 32px);
-      background: var(--catalog-card);
-      border-radius: clamp(16px, 3vw, 24px);
-      border: 1px solid var(--catalog-border);
-      padding: clamp(20px, 4vw, 32px);
-      box-shadow: var(--catalog-shadow);
+      position: sticky;
+      top: clamp(8px, 2vw, 16px);
+      z-index: 10;
     }
 
-    header .title {
+    .header-left {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto auto 1fr;
       align-items: center;
-      gap: clamp(12px, 3vw, 20px);
+      gap: clamp(16px, 3vw, 24px);
     }
 
-    .app-icon {
-      font-size: clamp(28px, 4vw, 40px);
+    .panel-icon {
+      width: clamp(48px, 6vw, 64px);
+      height: clamp(48px, 6vw, 64px);
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: clamp(44px, 5vw, 56px);
-      height: clamp(44px, 5vw, 56px);
-      border-radius: 16px;
-      background: linear-gradient(140deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0));
-      color: #2563eb;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: clamp(26px, 4vw, 34px);
     }
 
-    .title-text h1 {
+    .panel-titles {
+      display: grid;
+      gap: 6px;
+    }
+
+    .panel-titles h1 {
       margin: 0;
-      font-size: clamp(20px, 4vw, 28px);
+      font-size: clamp(20px, 5vw, 30px);
       font-weight: 700;
     }
 
-    .title-text p {
-      margin: 4px 0 0;
+    .panel-titles p {
+      margin: 0;
+      color: var(--muted);
       font-size: clamp(14px, 3vw, 16px);
-      color: var(--catalog-muted);
     }
 
-    .title-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: flex-end;
-    }
-
-    .version {
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(59, 130, 246, 0.12);
-      color: #2563eb;
-      font-size: 13px;
-    }
-
-    .user-status {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      color: var(--catalog-muted);
+      gap: clamp(12px, 3vw, 20px);
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .user-status button {
+    .header-actions select,
+    .header-actions button {
       appearance: none;
-      border: 1px solid var(--catalog-border);
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 14px;
-      line-height: 1;
-      cursor: pointer;
-      background: var(--catalog-card);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: var(--card);
       color: inherit;
-      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+      font: inherit;
+      padding: clamp(8px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
     }
 
-    .user-status button.primary {
-      background: #0b57d0;
-      border-color: #0b57d0;
+    .header-actions button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
       color: #fff;
     }
 
-    .user-status button:focus-visible,
-    .catalog-actions .btn:focus-visible,
-    .modal button:focus-visible {
-      outline: 2px solid #1d4ed8;
+    .header-actions button:hover,
+    .header-actions select:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .header-actions button:focus-visible,
+    .header-actions select:focus-visible,
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
 
     main {
-      display: flex;
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      padding: clamp(20px, 4vw, 32px);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: clamp(24px, 4vw, 36px);
+      position: relative;
+      min-height: clamp(420px, 60vh, 720px);
+    }
+
+    .view {
+      display: none;
       flex-direction: column;
-      gap: clamp(24px, 4vw, 40px);
+      gap: clamp(20px, 4vw, 32px);
+    }
+
+    .view.is-active {
+      display: flex;
     }
 
     .catalog-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
       gap: clamp(16px, 3vw, 28px);
     }
 
-    .catalog-card {
-      background: var(--catalog-card);
-      border-radius: clamp(16px, 3vw, 24px);
-      border: 1px solid var(--catalog-border);
+    .catalog-card,
+    .panel-card {
+      background: linear-gradient(140deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0));
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: var(--radius-lg);
       padding: clamp(20px, 4vw, 28px);
       display: grid;
       gap: clamp(16px, 3vw, 24px);
-      box-shadow: var(--catalog-shadow);
       transition: transform 160ms ease, box-shadow 160ms ease;
     }
 
-    .catalog-card:hover {
+    .catalog-card:hover,
+    .panel-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 32px 56px rgba(15, 23, 42, 0.16);
     }
 
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .card-header img {
-      width: clamp(56px, 6vw, 72px);
-      height: clamp(56px, 6vw, 72px);
-      object-fit: contain;
-      border-radius: 20px;
-      border: 1px solid var(--catalog-border);
-      background: #fff;
-      padding: 8px;
-    }
-
-    .card-header h3 {
-      margin: 0 0 4px;
-      font-size: clamp(18px, 3.5vw, 22px);
-    }
-
-    .card-header p {
+    .catalog-card h2,
+    .panel-card h2 {
       margin: 0;
-      color: var(--catalog-muted);
+      font-size: clamp(18px, 4vw, 24px);
+    }
+
+    .catalog-card p,
+    .panel-card p {
+      margin: 0;
+      color: var(--muted);
       font-size: clamp(14px, 3vw, 16px);
     }
 
     .catalog-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      color: var(--catalog-muted);
-      font-size: 13px;
-      list-style: none;
+      gap: 10px;
       padding: 0;
       margin: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    .meta-chip {
+    .chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 12px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.05);
+      padding: 6px 12px;
+      background: rgba(15, 23, 42, 0.06);
     }
 
-    .catalog-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .catalog-actions .btn {
+    .btn-link {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 16px;
-      border-radius: 12px;
-      border: 1px solid var(--catalog-border);
-      background: var(--catalog-card);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: var(--card);
       color: inherit;
-      text-decoration: none;
       font-weight: 600;
+      text-decoration: none;
+      padding: clamp(10px, 3vw, 14px) clamp(16px, 4vw, 20px);
+      justify-self: flex-start;
       transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
     }
 
-    .catalog-actions .btn.primary {
-      background: #0b57d0;
-      border-color: #0b57d0;
+    .btn-link.primary {
+      background: var(--accent);
+      border-color: var(--accent);
       color: #fff;
     }
 
-    .catalog-actions .btn:hover,
-    .user-status button:hover {
+    .btn-link.danger {
+      border-color: rgba(220, 38, 38, 0.3);
+      color: var(--danger);
+      background: rgba(220, 38, 38, 0.05);
+    }
+
+    .btn-link:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+      box-shadow: var(--shadow);
     }
 
-    .catalog-actions .btn.primary:hover,
-    .user-status button.primary:hover {
-      background: #0a4cc9;
-      border-color: #0a4cc9;
+    .panel-columns {
+      display: grid;
+      gap: clamp(20px, 4vw, 32px);
     }
 
-    .material-symbols-outlined {
-      font-family: "Material Symbols Outlined";
-      font-weight: 300;
-      font-style: normal;
-      font-size: 18px;
-      line-height: 1;
+    @media (min-width: 960px) {
+      .panel-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+    }
+
+    .panel-section {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: clamp(20px, 4vw, 28px);
+      display: grid;
+      gap: clamp(16px, 3vw, 24px);
+      box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.2);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(12px, 3vw, 20px);
+      flex-wrap: wrap;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: clamp(18px, 4vw, 22px);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: clamp(12px, 3vw, 16px);
+    }
+
+    .form-grid label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.02);
+      color: inherit;
+      font: inherit;
+      padding: clamp(10px, 3vw, 14px) clamp(12px, 3vw, 16px);
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: clamp(96px, 20vh, 160px);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.04);
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: clamp(10px, 2.5vw, 14px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    tbody tr:hover {
+      background: rgba(37, 99, 235, 0.08);
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    footer {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      padding: clamp(16px, 3vw, 24px);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: clamp(12px, 3vw, 16px);
+      position: sticky;
+      bottom: clamp(8px, 2vw, 16px);
+    }
+
+    .footer-grid {
+      display: grid;
+      gap: clamp(12px, 3vw, 16px);
+    }
+
+    @media (min-width: 720px) {
+      .footer-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .status-card {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      padding: clamp(12px, 3vw, 16px);
+      display: grid;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.03);
+    }
+
+    .status-card strong {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .status-card span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status-indicator {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      letter-spacing: normal;
-      text-transform: none;
-      white-space: nowrap;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.24);
+      transition: background 200ms ease, box-shadow 200ms ease;
+    }
+
+    .status-dot.is-online {
+      background: var(--success);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    }
+
+    .status-dot.is-warning {
+      background: var(--warning);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    .status-dot.is-error {
+      background: var(--danger);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
+    }
+
+    .flash {
+      animation: flash 1.4s ease;
+    }
+
+    @keyframes flash {
+      0% { background: rgba(59, 130, 246, 0.25); }
+      100% { background: transparent; }
     }
 
     .sr-only {
@@ -263,134 +455,26 @@
       border: 0;
     }
 
-    .admin-summary {
-      background: linear-gradient(140deg, rgba(37, 99, 235, 0.16), rgba(37, 99, 235, 0));
-      border: 1px solid rgba(37, 99, 235, 0.35);
-      border-radius: clamp(18px, 3vw, 26px);
-      padding: clamp(20px, 4vw, 32px);
-      display: grid;
-      gap: 16px;
-    }
-
-    .admin-summary h2 {
-      margin: 0;
-      font-size: clamp(18px, 3.5vw, 22px);
-    }
-
-    .admin-summary p {
-      margin: 0;
-      color: rgba(15, 23, 42, 0.75);
-      font-size: clamp(14px, 3vw, 16px);
-    }
-
-    .admin-summary ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 12px;
-      font-size: 14px;
-    }
-
-    .admin-summary li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .admin-summary li::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #0b57d0;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-    }
-
-    dialog::backdrop {
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(6px);
-    }
-
-    dialog.modal {
-      border: none;
-      border-radius: 20px;
-      padding: clamp(20px, 4vw, 32px);
-      box-shadow: var(--catalog-shadow);
-      max-width: min(520px, 90vw);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 0;
-      border: none;
-      box-shadow: none;
-      background: none;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: clamp(18px, 4vw, 22px);
-    }
-
-    .modal-header button {
-      appearance: none;
-      border: none;
-      background: none;
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 999px;
-      color: var(--catalog-muted);
-      transition: background 160ms ease;
-    }
-
-    .modal-header button:hover {
-      background: rgba(15, 23, 42, 0.06);
-      color: inherit;
-    }
-
-    .modal-content {
-      margin-top: 16px;
-      display: grid;
-      gap: 12px;
-      color: var(--catalog-muted);
-      font-size: 14px;
-    }
-
-    .modal-footer {
-      margin-top: 20px;
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    @media (max-width: 720px) {
-      body {
-        padding: clamp(20px, 6vw, 32px);
-      }
-
+    @media (max-width: 640px) {
       header {
         flex-direction: column;
         align-items: stretch;
       }
 
-      .title-actions {
-        align-items: flex-start;
+      .header-left {
+        grid-template-columns: minmax(0, 1fr);
       }
 
-      .user-status {
+      .panel-icon {
+        justify-self: start;
+      }
+
+      .header-actions {
         justify-content: space-between;
-        width: 100%;
       }
 
-      .catalog-actions {
-        justify-content: flex-start;
+      .table-actions {
+        width: 100%;
       }
     }
 
@@ -399,70 +483,998 @@
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
       }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <header aria-labelledby="catalog-title">
-    <div class="title">
-      <span class="app-icon" aria-hidden="true">🧩</span>
-      <div class="title-text">
-        <h1 id="catalog-title">Catálogo de MiniApps</h1>
-        <p class="subtitle">Selecione um mini‑app para abrir</p>
-      </div>
-    </div>
-    <div class="title-actions">
-      <span class="version"><span class="sr-only">Versão do catálogo: </span>v1.2.0</span>
-      <div class="user-status" data-user-status>
-        <span data-user-label>Você está navegando como visitante.</span>
-        <button type="button" class="primary" data-action="auth">Fazer login</button>
-      </div>
-    </div>
-  </header>
-
-  <main aria-live="polite" aria-labelledby="catalog-title">
-    <section class="catalog-grid">
-      <article class="catalog-card" aria-labelledby="catalog-empty-title">
-        <div>
-          <h3 id="catalog-empty-title">Nenhum mini‑app disponível</h3>
-          <p>O catálogo foi simplificado e aguarda a publicação de novos miniapps pelo painel administrativo.</p>
+  <div class="app-shell">
+    <header>
+      <div class="header-left">
+        <button type="button" class="btn-link" data-action="back">
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          <span data-i18n="header.back"></span>
+        </button>
+        <span class="panel-icon" aria-hidden="true">🧩</span>
+        <div class="panel-titles">
+          <h1 data-panel-title></h1>
+          <p data-panel-description></p>
         </div>
-      </article>
-    </section>
-
-    <section class="admin-summary" aria-labelledby="admin-summary-title">
-      <div>
-        <h2 id="admin-summary-title">Painel Administrativo</h2>
-        <p>Gerencie permissões, cadastre usuários e acompanhe eventos em tempo real. O catálogo usa armazenamento local para persistir preferências.</p>
       </div>
-      <ul>
-        <li>Sincronização com IndexedDB e fallback automático para localStorage.</li>
-        <li>Controles de publicação e revisão com registro de alterações.</li>
-        <li>Indicadores de status por mini‑app, incluindo auditoria de versão.</li>
-      </ul>
-    </section>
-  </main>
+      <div class="header-actions">
+        <label class="sr-only" for="language-select" data-i18n="header.langLabel"></label>
+        <select id="language-select" data-language-select>
+          <option value="pt-BR">Português (BR)</option>
+          <option value="en-US">English</option>
+          <option value="es-ES">Español</option>
+        </select>
+        <button type="button" class="primary" data-action="account">
+          <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+          <span data-i18n="header.account"></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view is-active" data-view="catalog" aria-labelledby="catalog-title">
+        <article class="panel-card" role="region" aria-labelledby="catalog-title">
+          <div>
+            <h2 id="catalog-title" data-i18n="catalog.title"></h2>
+            <p data-i18n="catalog.subtitle"></p>
+          </div>
+          <ul class="catalog-meta">
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+              <span data-i18n="catalog.meta.curated"></span>
+            </li>
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">database</span>
+              <span data-i18n="catalog.meta.indexed"></span>
+            </li>
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">group</span>
+              <span data-i18n="catalog.meta.teams"></span>
+            </li>
+          </ul>
+          <a href="#admin" class="btn-link primary" data-action="open-admin">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard_customize</span>
+            <span data-i18n="catalog.open"></span>
+          </a>
+        </article>
+        <div class="catalog-grid" data-catalog-grid>
+        </div>
+      </section>
+
+      <section class="view" data-view="admin" aria-labelledby="admin-panel-title">
+        <div class="panel-card">
+          <div>
+            <h2 id="admin-panel-title" data-i18n="admin.title"></h2>
+            <p data-i18n="admin.subtitle"></p>
+          </div>
+          <ul class="catalog-meta">
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">shield_person</span>
+              <span data-i18n="admin.meta.security"></span>
+            </li>
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">sync_saved_locally</span>
+              <span data-i18n="admin.meta.sync"></span>
+            </li>
+            <li class="chip">
+              <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+              <span data-i18n="admin.meta.flex"></span>
+            </li>
+          </ul>
+        </div>
+        <div class="panel-columns">
+          <section class="panel-section" aria-labelledby="users-title">
+            <div class="section-header">
+              <div>
+                <h2 id="users-title" data-i18n="admin.users.title"></h2>
+                <p data-i18n="admin.users.subtitle"></p>
+              </div>
+              <button type="button" class="btn-link" data-action="seed-users">
+                <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+                <span data-i18n="admin.users.reset"></span>
+              </button>
+            </div>
+            <form data-user-form class="form-grid">
+              <input type="hidden" name="id">
+              <label>
+                <span data-i18n="admin.users.fields.name"></span>
+                <input name="name" type="text" required autocomplete="off" placeholder="" data-placeholder="admin.users.placeholders.name">
+              </label>
+              <label>
+                <span data-i18n="admin.users.fields.email"></span>
+                <input name="email" type="email" required autocomplete="off" placeholder="" data-placeholder="admin.users.placeholders.email">
+              </label>
+              <label>
+                <span data-i18n="admin.users.fields.role"></span>
+                <select name="role" required>
+                  <option value="admin" data-i18n-option="admin.users.roles.admin"></option>
+                  <option value="editor" data-i18n-option="admin.users.roles.editor"></option>
+                  <option value="viewer" data-i18n-option="admin.users.roles.viewer"></option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="admin.users.fields.status"></span>
+                <select name="status" required>
+                  <option value="active" data-i18n-option="status.active"></option>
+                  <option value="inactive" data-i18n-option="status.inactive"></option>
+                </select>
+              </label>
+              <div class="table-actions">
+                <button type="submit" class="btn-link primary" data-i18n="admin.users.submit"></button>
+                <button type="button" class="btn-link" data-action="cancel-user-edit" data-i18n="actions.cancel"></button>
+              </div>
+            </form>
+            <div class="table-wrapper">
+              <table aria-describedby="users-title">
+                <thead>
+                  <tr>
+                    <th data-i18n="admin.users.table.name"></th>
+                    <th data-i18n="admin.users.table.email"></th>
+                    <th data-i18n="admin.users.table.role"></th>
+                    <th data-i18n="admin.users.table.status"></th>
+                    <th class="sr-only" data-i18n="admin.users.table.actions"></th>
+                  </tr>
+                </thead>
+                <tbody data-users-table></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel-section" aria-labelledby="catalogs-title">
+            <div class="section-header">
+              <div>
+                <h2 id="catalogs-title" data-i18n="admin.catalogs.title"></h2>
+                <p data-i18n="admin.catalogs.subtitle"></p>
+              </div>
+              <button type="button" class="btn-link" data-action="seed-catalogs">
+                <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+                <span data-i18n="admin.catalogs.reset"></span>
+              </button>
+            </div>
+            <form data-catalog-form class="form-grid">
+              <input type="hidden" name="id">
+              <label>
+                <span data-i18n="admin.catalogs.fields.title"></span>
+                <input name="title" type="text" required autocomplete="off" placeholder="" data-placeholder="admin.catalogs.placeholders.title">
+              </label>
+              <label>
+                <span data-i18n="admin.catalogs.fields.owner"></span>
+                <input name="owner" type="text" required autocomplete="off" placeholder="" data-placeholder="admin.catalogs.placeholders.owner">
+              </label>
+              <label>
+                <span data-i18n="admin.catalogs.fields.description"></span>
+                <textarea name="description" required placeholder="" data-placeholder="admin.catalogs.placeholders.description"></textarea>
+              </label>
+              <label>
+                <span data-i18n="admin.catalogs.fields.status"></span>
+                <select name="status" required>
+                  <option value="active" data-i18n-option="status.active"></option>
+                  <option value="inactive" data-i18n-option="status.inactive"></option>
+                </select>
+              </label>
+              <div class="table-actions">
+                <button type="submit" class="btn-link primary" data-i18n="admin.catalogs.submit"></button>
+                <button type="button" class="btn-link" data-action="cancel-catalog-edit" data-i18n="actions.cancel"></button>
+              </div>
+            </form>
+            <div class="table-wrapper">
+              <table aria-describedby="catalogs-title">
+                <thead>
+                  <tr>
+                    <th data-i18n="admin.catalogs.table.title"></th>
+                    <th data-i18n="admin.catalogs.table.owner"></th>
+                    <th data-i18n="admin.catalogs.table.status"></th>
+                    <th data-i18n="admin.catalogs.table.updated"></th>
+                    <th class="sr-only" data-i18n="admin.catalogs.table.actions"></th>
+                  </tr>
+                </thead>
+                <tbody data-catalogs-table></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-grid">
+        <div class="status-card" data-sync-card>
+          <strong data-i18n="footer.sync.title"></strong>
+          <span class="status-indicator">
+            <span class="status-dot" data-sync-dot></span>
+            <span data-sync-status></span>
+          </span>
+          <div class="table-actions">
+            <button type="button" class="btn-link" data-action="toggle-sync">
+              <span class="material-symbols-outlined" aria-hidden="true">toggle_on</span>
+              <span data-i18n="footer.sync.toggle"></span>
+            </button>
+          </div>
+        </div>
+        <div class="status-card" data-memory-card>
+          <strong data-i18n="footer.memory.title"></strong>
+          <span data-memory-status></span>
+          <span data-memory-updated></span>
+        </div>
+        <div class="status-card" data-indexed-card>
+          <strong data-i18n="footer.indexed.title"></strong>
+          <span data-indexed-status></span>
+          <span data-indexed-updated></span>
+        </div>
+      </div>
+    </footer>
+  </div>
 
   <script>
-    const authButton = document.querySelector('[data-action="auth"]');
-    const userLabel = document.querySelector('[data-user-label]');
-    let isLoggedIn = false;
-
-    authButton?.addEventListener('click', () => {
-      isLoggedIn = !isLoggedIn;
-
-      if (isLoggedIn) {
-        userLabel.textContent = 'Bem-vindo, Admin. Você tem acesso completo.';
-        authButton.textContent = 'Encerrar sessão';
-        authButton.classList.remove('primary');
-      } else {
-        userLabel.textContent = 'Você está navegando como visitante.';
-        authButton.textContent = 'Fazer login';
-        authButton.classList.add('primary');
+    const translations = {
+      'pt-BR': {
+        'header.back': 'Voltar ao catálogo',
+        'header.account': 'Conta do usuário',
+        'header.langLabel': 'Selecione o idioma',
+        'catalog.title': 'Catálogo de MiniApps',
+        'catalog.subtitle': 'Selecione um painel para abrir',
+        'catalog.meta.curated': 'Curadoria interna',
+        'catalog.meta.indexed': 'Persistência em IndexedDB',
+        'catalog.meta.teams': 'Suporte a equipes multifuncionais',
+        'catalog.open': 'Abrir painel administrativo',
+        'admin.title': 'Painel Administrativo',
+        'admin.subtitle': 'Gerencie usuários, catálogos e políticas de sincronização.',
+        'admin.meta.security': 'Permissões e auditoria ativas',
+        'admin.meta.sync': 'Sincronização assistida por nuvem',
+        'admin.meta.flex': 'Catálogo escalável para novos MiniApps',
+        'admin.users.title': 'Gestão de usuários',
+        'admin.users.subtitle': 'Cadastre novos integrantes, edite perfis e controle acessos.',
+        'admin.users.reset': 'Restaurar conjunto padrão',
+        'admin.users.fields.name': 'Nome completo',
+        'admin.users.fields.email': 'E-mail profissional',
+        'admin.users.fields.role': 'Função',
+        'admin.users.fields.status': 'Status',
+        'admin.users.placeholders.name': 'Ex.: Alice Souza',
+        'admin.users.placeholders.email': 'Ex.: alice@empresa.com',
+        'admin.users.submit': 'Salvar usuário',
+        'admin.users.table.name': 'Nome',
+        'admin.users.table.email': 'E-mail',
+        'admin.users.table.role': 'Função',
+        'admin.users.table.status': 'Status',
+        'admin.users.table.actions': 'Ações',
+        'admin.catalogs.title': 'Catálogo de MiniApps',
+        'admin.catalogs.subtitle': 'Atualize o portfólio e publique novos MiniApps internos.',
+        'admin.catalogs.reset': 'Restaurar catálogo inicial',
+        'admin.catalogs.fields.title': 'Nome do MiniApp',
+        'admin.catalogs.fields.owner': 'Responsável',
+        'admin.catalogs.fields.description': 'Descrição',
+        'admin.catalogs.fields.status': 'Status',
+        'admin.catalogs.placeholders.title': 'Ex.: Painel Financeiro',
+        'admin.catalogs.placeholders.owner': 'Ex.: Equipe Financeira',
+        'admin.catalogs.placeholders.description': 'Resumo das funcionalidades principais.',
+        'admin.catalogs.submit': 'Salvar MiniApp',
+        'admin.catalogs.table.title': 'MiniApp',
+        'admin.catalogs.table.owner': 'Responsável',
+        'admin.catalogs.table.status': 'Status',
+        'admin.catalogs.table.updated': 'Atualizado em',
+        'admin.catalogs.table.actions': 'Ações',
+        'actions.cancel': 'Cancelar',
+        'actions.edit': 'Editar',
+        'actions.delete': 'Excluir',
+        'actions.open': 'Abrir painel',
+        'status.active': 'Ativo',
+        'status.inactive': 'Inativo',
+        'roles.admin': 'Administrador',
+        'roles.editor': 'Editor',
+        'roles.viewer': 'Leitor',
+        'admin.users.roles.admin': 'Administrador',
+        'admin.users.roles.editor': 'Editor',
+        'admin.users.roles.viewer': 'Leitor',
+        'footer.sync.title': 'Sincronização',
+        'footer.sync.toggle': 'Alternar sincronização',
+        'footer.sync.disabled': 'Sincronização desativada',
+        'footer.sync.enabled': 'Sincronização ativa',
+        'footer.sync.syncing': 'Sincronizando…',
+        'footer.sync.error': 'Erro na sincronização',
+        'footer.memory.title': 'Status de memória',
+        'footer.memory.usage': '{used} de {quota} utilizados',
+        'footer.memory.updated': 'Verificado {time}',
+        'footer.indexed.title': 'IndexedDB',
+        'footer.indexed.status': 'Última atualização em {time}',
+        'footer.indexed.empty': 'Nenhuma atualização registrada',
+        'toast.save': 'Dados salvos com sucesso.',
+        'toast.delete': 'Item removido.',
+        'toast.error': 'Não foi possível concluir a operação.',
+        'catalog.empty': 'Nenhum MiniApp cadastrado ainda.',
+        'catalog.item.users': '{count} usuários ativos',
+        'catalog.item.updated': 'Atualizado em {time}',
+        'account.guest': 'Você está navegando como visitante.',
+        'account.admin': 'Bem-vindo, Admin! Sincronização e auditoria habilitadas.',
+      },
+      'en-US': {
+        'header.back': 'Back to catalog',
+        'header.account': 'User account',
+        'header.langLabel': 'Select language',
+        'catalog.title': 'MiniApp Catalog',
+        'catalog.subtitle': 'Choose a panel to open',
+        'catalog.meta.curated': 'Internal curation',
+        'catalog.meta.indexed': 'IndexedDB persistence',
+        'catalog.meta.teams': 'Multi-team support ready',
+        'catalog.open': 'Open admin panel',
+        'admin.title': 'Administrative panel',
+        'admin.subtitle': 'Manage users, catalogs and sync policies.',
+        'admin.meta.security': 'Permissions and auditing enabled',
+        'admin.meta.sync': 'Cloud assisted synchronisation',
+        'admin.meta.flex': 'Scalable catalog for new MiniApps',
+        'admin.users.title': 'User management',
+        'admin.users.subtitle': 'Register new members, edit profiles and control access.',
+        'admin.users.reset': 'Restore default set',
+        'admin.users.fields.name': 'Full name',
+        'admin.users.fields.email': 'Work email',
+        'admin.users.fields.role': 'Role',
+        'admin.users.fields.status': 'Status',
+        'admin.users.placeholders.name': 'e.g. Alice Souza',
+        'admin.users.placeholders.email': 'e.g. alice@company.com',
+        'admin.users.submit': 'Save user',
+        'admin.users.table.name': 'Name',
+        'admin.users.table.email': 'Email',
+        'admin.users.table.role': 'Role',
+        'admin.users.table.status': 'Status',
+        'admin.users.table.actions': 'Actions',
+        'admin.catalogs.title': 'MiniApp catalog',
+        'admin.catalogs.subtitle': 'Update the portfolio and publish new internal MiniApps.',
+        'admin.catalogs.reset': 'Restore seed catalog',
+        'admin.catalogs.fields.title': 'MiniApp name',
+        'admin.catalogs.fields.owner': 'Owner',
+        'admin.catalogs.fields.description': 'Description',
+        'admin.catalogs.fields.status': 'Status',
+        'admin.catalogs.placeholders.title': 'e.g. Finance dashboard',
+        'admin.catalogs.placeholders.owner': 'e.g. Finance team',
+        'admin.catalogs.placeholders.description': 'Summary of the core capabilities.',
+        'admin.catalogs.submit': 'Save MiniApp',
+        'admin.catalogs.table.title': 'MiniApp',
+        'admin.catalogs.table.owner': 'Owner',
+        'admin.catalogs.table.status': 'Status',
+        'admin.catalogs.table.updated': 'Updated on',
+        'admin.catalogs.table.actions': 'Actions',
+        'actions.cancel': 'Cancel',
+        'actions.edit': 'Edit',
+        'actions.delete': 'Delete',
+        'actions.open': 'Open panel',
+        'status.active': 'Active',
+        'status.inactive': 'Inactive',
+        'roles.admin': 'Administrator',
+        'roles.editor': 'Editor',
+        'roles.viewer': 'Viewer',
+        'admin.users.roles.admin': 'Administrator',
+        'admin.users.roles.editor': 'Editor',
+        'admin.users.roles.viewer': 'Viewer',
+        'footer.sync.title': 'Sync',
+        'footer.sync.toggle': 'Toggle sync',
+        'footer.sync.disabled': 'Sync disabled',
+        'footer.sync.enabled': 'Sync enabled',
+        'footer.sync.syncing': 'Syncing…',
+        'footer.sync.error': 'Sync error',
+        'footer.memory.title': 'Memory status',
+        'footer.memory.usage': '{used} of {quota} used',
+        'footer.memory.updated': 'Checked {time}',
+        'footer.indexed.title': 'IndexedDB',
+        'footer.indexed.status': 'Last updated on {time}',
+        'footer.indexed.empty': 'No updates registered',
+        'toast.save': 'Data saved successfully.',
+        'toast.delete': 'Item removed.',
+        'toast.error': 'Operation could not be completed.',
+        'catalog.empty': 'No MiniApps registered yet.',
+        'catalog.item.users': '{count} active users',
+        'catalog.item.updated': 'Updated on {time}',
+        'account.guest': 'You are browsing as a guest.',
+        'account.admin': 'Welcome, Admin! Sync and auditing are enabled.',
+      },
+      'es-ES': {
+        'header.back': 'Volver al catálogo',
+        'header.account': 'Cuenta de usuario',
+        'header.langLabel': 'Seleccione el idioma',
+        'catalog.title': 'Catálogo de MiniApps',
+        'catalog.subtitle': 'Elige un panel para abrir',
+        'catalog.meta.curated': 'Curaduría interna',
+        'catalog.meta.indexed': 'Persistencia en IndexedDB',
+        'catalog.meta.teams': 'Listo para equipos multifuncionales',
+        'catalog.open': 'Abrir panel administrativo',
+        'admin.title': 'Panel administrativo',
+        'admin.subtitle': 'Gestiona usuarios, catálogos y políticas de sincronización.',
+        'admin.meta.security': 'Permisos y auditoría habilitados',
+        'admin.meta.sync': 'Sincronización asistida por la nube',
+        'admin.meta.flex': 'Catálogo escalable para nuevos MiniApps',
+        'admin.users.title': 'Gestión de usuarios',
+        'admin.users.subtitle': 'Registra nuevos miembros, edita perfiles y controla accesos.',
+        'admin.users.reset': 'Restaurar conjunto inicial',
+        'admin.users.fields.name': 'Nombre completo',
+        'admin.users.fields.email': 'Correo corporativo',
+        'admin.users.fields.role': 'Rol',
+        'admin.users.fields.status': 'Estado',
+        'admin.users.placeholders.name': 'Ej.: Alicia Souza',
+        'admin.users.placeholders.email': 'Ej.: alicia@empresa.com',
+        'admin.users.submit': 'Guardar usuario',
+        'admin.users.table.name': 'Nombre',
+        'admin.users.table.email': 'Correo',
+        'admin.users.table.role': 'Rol',
+        'admin.users.table.status': 'Estado',
+        'admin.users.table.actions': 'Acciones',
+        'admin.catalogs.title': 'Catálogo de MiniApps',
+        'admin.catalogs.subtitle': 'Actualiza el portafolio y publica nuevos MiniApps internos.',
+        'admin.catalogs.reset': 'Restaurar catálogo base',
+        'admin.catalogs.fields.title': 'Nombre del MiniApp',
+        'admin.catalogs.fields.owner': 'Responsable',
+        'admin.catalogs.fields.description': 'Descripción',
+        'admin.catalogs.fields.status': 'Estado',
+        'admin.catalogs.placeholders.title': 'Ej.: Panel Financiero',
+        'admin.catalogs.placeholders.owner': 'Ej.: Equipo Financiero',
+        'admin.catalogs.placeholders.description': 'Resumen de las funcionalidades principales.',
+        'admin.catalogs.submit': 'Guardar MiniApp',
+        'admin.catalogs.table.title': 'MiniApp',
+        'admin.catalogs.table.owner': 'Responsable',
+        'admin.catalogs.table.status': 'Estado',
+        'admin.catalogs.table.updated': 'Actualizado el',
+        'admin.catalogs.table.actions': 'Acciones',
+        'actions.cancel': 'Cancelar',
+        'actions.edit': 'Editar',
+        'actions.delete': 'Eliminar',
+        'actions.open': 'Abrir panel',
+        'status.active': 'Activo',
+        'status.inactive': 'Inactivo',
+        'roles.admin': 'Administrador',
+        'roles.editor': 'Editor',
+        'roles.viewer': 'Lector',
+        'admin.users.roles.admin': 'Administrador',
+        'admin.users.roles.editor': 'Editor',
+        'admin.users.roles.viewer': 'Lector',
+        'footer.sync.title': 'Sincronización',
+        'footer.sync.toggle': 'Alternar sincronización',
+        'footer.sync.disabled': 'Sincronización desactivada',
+        'footer.sync.enabled': 'Sincronización activa',
+        'footer.sync.syncing': 'Sincronizando…',
+        'footer.sync.error': 'Error de sincronización',
+        'footer.memory.title': 'Estado de memoria',
+        'footer.memory.usage': '{used} de {quota} utilizados',
+        'footer.memory.updated': 'Revisado {time}',
+        'footer.indexed.title': 'IndexedDB',
+        'footer.indexed.status': 'Última actualización el {time}',
+        'footer.indexed.empty': 'Sin actualizaciones registradas',
+        'toast.save': 'Datos guardados correctamente.',
+        'toast.delete': 'Elemento eliminado.',
+        'toast.error': 'No fue posible completar la operación.',
+        'catalog.empty': 'Aún no hay MiniApps registrados.',
+        'catalog.item.users': '{count} usuarios activos',
+        'catalog.item.updated': 'Actualizado el {time}',
+        'account.guest': 'Estás navegando como invitado.',
+        'account.admin': '¡Bienvenido, Admin! Sincronización y auditoría habilitadas.',
       }
+    };
+
+    const state = {
+      view: 'catalog',
+      lang: document.documentElement.lang || 'pt-BR',
+      sync: {
+        enabled: false,
+        status: 'disabled',
+      },
+      indexedUpdatedAt: null,
+      users: [],
+      catalogs: [],
+    };
+
+    const db = new Dexie('miniapp-admin-shell');
+    db.version(1).stores({
+      users: '++id,name,email,role,status,createdAt,updatedAt',
+      catalogs: '++id,title,owner,description,status,updatedAt',
     });
+
+    const seedData = {
+      users: [
+        { name: 'Alice Souza', email: 'alice.souza@empresa.com', role: 'admin', status: 'active' },
+        { name: 'Bruno Mendes', email: 'bruno.mendes@empresa.com', role: 'editor', status: 'active' },
+        { name: 'Carla Dias', email: 'carla.dias@empresa.com', role: 'viewer', status: 'inactive' },
+      ],
+      catalogs: [
+        {
+          title: 'Painel Administrativo',
+          owner: 'Equipe de Infraestrutura',
+          description: 'Gerencie permissões, cadastre usuários e acompanhe indicadores críticos.',
+          status: 'active',
+        },
+        {
+          title: 'Portal de Relatórios',
+          owner: 'Equipe de BI',
+          description: 'Distribuição de dashboards interativos e exportações automatizadas.',
+          status: 'active',
+        },
+      ],
+    };
+
+    const elements = {
+      views: document.querySelectorAll('[data-view]'),
+      backButton: document.querySelector('[data-action="back"]'),
+      openAdminButton: document.querySelector('[data-action="open-admin"]'),
+      accountButton: document.querySelector('[data-action="account"]'),
+      languageSelect: document.querySelector('[data-language-select]'),
+      panelTitle: document.querySelector('[data-panel-title]'),
+      panelDescription: document.querySelector('[data-panel-description]'),
+      catalogGrid: document.querySelector('[data-catalog-grid]'),
+      usersTable: document.querySelector('[data-users-table]'),
+      catalogsTable: document.querySelector('[data-catalogs-table]'),
+      userForm: document.querySelector('[data-user-form]'),
+      catalogForm: document.querySelector('[data-catalog-form]'),
+      cancelUserButton: document.querySelector('[data-action="cancel-user-edit"]'),
+      cancelCatalogButton: document.querySelector('[data-action="cancel-catalog-edit"]'),
+      seedUsersButton: document.querySelector('[data-action="seed-users"]'),
+      seedCatalogsButton: document.querySelector('[data-action="seed-catalogs"]'),
+      syncStatus: document.querySelector('[data-sync-status]'),
+      syncToggle: document.querySelector('[data-action="toggle-sync"]'),
+      syncDot: document.querySelector('[data-sync-dot]'),
+      memoryStatus: document.querySelector('[data-memory-status]'),
+      memoryUpdated: document.querySelector('[data-memory-updated]'),
+      indexedStatus: document.querySelector('[data-indexed-status]'),
+      indexedUpdated: document.querySelector('[data-indexed-updated]'),
+      panelIcon: document.querySelector('.panel-icon'),
+    };
+
+    function formatDate(date) {
+      if (!date) return '';
+      const formatter = new Intl.DateTimeFormat(state.lang, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+      return formatter.format(date);
+    }
+
+    function t(key, params = {}) {
+      const langPack = translations[state.lang] || translations['pt-BR'];
+      const fallbackPack = translations['pt-BR'];
+      const template = langPack[key] ?? fallbackPack[key] ?? key;
+      return template.replace(/\{(\w+)\}/g, (_, token) => {
+        const value = params[token];
+        return value !== undefined ? value : `{${token}}`;
+      });
+    }
+
+    function applyPlaceholders(root = document) {
+      root.querySelectorAll('[data-placeholder]').forEach((input) => {
+        const key = input.getAttribute('data-placeholder');
+        input.placeholder = t(key);
+      });
+      root.querySelectorAll('[data-i18n-option]').forEach((option) => {
+        const key = option.getAttribute('data-i18n-option');
+        option.textContent = t(key);
+      });
+    }
+
+    function applyTranslations(root = document) {
+      root.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+      applyPlaceholders(root);
+      if (elements.syncStatus) {
+        updateSyncStatus(state.sync.status);
+      }
+      updatePanelInfo();
+      renderCatalogGrid();
+      renderUsersTable();
+      renderCatalogsTable();
+      updateMemoryStatus();
+      updateIndexedStatus();
+      updateAccountState();
+    }
+
+    function updatePanelInfo() {
+      if (!elements.panelTitle || !elements.panelDescription) return;
+      if (state.view === 'catalog') {
+        elements.panelTitle.textContent = t('catalog.title');
+        elements.panelDescription.textContent = t('catalog.subtitle');
+        elements.panelIcon.textContent = '🧩';
+        elements.backButton.setAttribute('hidden', '');
+      } else {
+        elements.panelTitle.textContent = t('admin.title');
+        elements.panelDescription.textContent = t('admin.subtitle');
+        elements.panelIcon.textContent = '🛠️';
+        elements.backButton.removeAttribute('hidden');
+      }
+    }
+
+    function setView(view) {
+      state.view = view;
+      elements.views.forEach((section) => {
+        const isActive = section.dataset.view === view;
+        section.classList.toggle('is-active', isActive);
+        section.hidden = !isActive;
+      });
+      updatePanelInfo();
+    }
+
+    function formatStatus(status) {
+      if (status === 'active') return t('status.active');
+      if (status === 'inactive') return t('status.inactive');
+      return status;
+    }
+
+    function formatRole(role) {
+      if (role === 'admin') return t('roles.admin');
+      if (role === 'editor') return t('roles.editor');
+      if (role === 'viewer') return t('roles.viewer');
+      return role;
+    }
+
+    function renderCatalogGrid() {
+      if (!elements.catalogGrid) return;
+      elements.catalogGrid.innerHTML = '';
+      if (!state.catalogs.length) {
+        const emptyCard = document.createElement('article');
+        emptyCard.className = 'panel-section';
+        emptyCard.textContent = t('catalog.empty');
+        elements.catalogGrid.appendChild(emptyCard);
+        return;
+      }
+
+      state.catalogs.forEach((catalog) => {
+        const card = document.createElement('article');
+        card.className = 'catalog-card';
+        const title = document.createElement('h2');
+        title.textContent = catalog.title;
+        const description = document.createElement('p');
+        description.textContent = catalog.description;
+        const meta = document.createElement('ul');
+        meta.className = 'catalog-meta';
+        const usersChip = document.createElement('li');
+        usersChip.className = 'chip';
+        usersChip.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">group</span><span>${t('catalog.item.users', { count: state.users.filter((user) => user.status === 'active').length })}</span>`;
+        const updatedChip = document.createElement('li');
+        updatedChip.className = 'chip';
+        const updatedAt = catalog.updatedAt ? formatDate(new Date(catalog.updatedAt)) : formatDate(new Date());
+        updatedChip.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">event</span><span>${t('catalog.item.updated', { time: updatedAt })}</span>`;
+        meta.append(usersChip, updatedChip);
+        const actions = document.createElement('a');
+        actions.href = '#admin';
+        actions.className = 'btn-link primary';
+        actions.dataset.catalogId = catalog.id;
+        actions.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">open_in_new</span><span>${t('actions.open')}</span>`;
+        actions.addEventListener('click', (event) => {
+          event.preventDefault();
+          setView('admin');
+        });
+        card.append(title, description, meta, actions);
+        elements.catalogGrid.appendChild(card);
+      });
+    }
+
+    function renderUsersTable() {
+      if (!elements.usersTable) return;
+      elements.usersTable.innerHTML = '';
+      state.users.forEach((user) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>${formatRole(user.role)}</td>
+          <td>${formatStatus(user.status)}</td>
+        `;
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'table-actions';
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn-link';
+        editButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">edit</span><span>${t('actions.edit')}</span>`;
+        editButton.addEventListener('click', () => populateUserForm(user));
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn-link danger';
+        deleteButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">delete</span><span>${t('actions.delete')}</span>`;
+        deleteButton.addEventListener('click', () => deleteUser(user.id));
+        actionsCell.append(editButton, deleteButton);
+        row.appendChild(actionsCell);
+        elements.usersTable.appendChild(row);
+      });
+    }
+
+    function renderCatalogsTable() {
+      if (!elements.catalogsTable) return;
+      elements.catalogsTable.innerHTML = '';
+      state.catalogs.forEach((catalog) => {
+        const row = document.createElement('tr');
+        const updatedAt = catalog.updatedAt ? formatDate(new Date(catalog.updatedAt)) : formatDate(new Date());
+        row.innerHTML = `
+          <td>${catalog.title}</td>
+          <td>${catalog.owner}</td>
+          <td>${formatStatus(catalog.status)}</td>
+          <td>${updatedAt}</td>
+        `;
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'table-actions';
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn-link';
+        editButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">edit</span><span>${t('actions.edit')}</span>`;
+        editButton.addEventListener('click', () => populateCatalogForm(catalog));
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn-link danger';
+        deleteButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">delete</span><span>${t('actions.delete')}</span>`;
+        deleteButton.addEventListener('click', () => deleteCatalog(catalog.id));
+        actionsCell.append(editButton, deleteButton);
+        row.appendChild(actionsCell);
+        elements.catalogsTable.appendChild(row);
+      });
+    }
+
+    function populateUserForm(user) {
+      const form = elements.userForm;
+      if (!form) return;
+      form.name.value = user.name;
+      form.email.value = user.email;
+      form.role.value = user.role;
+      form.status.value = user.status;
+      form.id.value = user.id;
+      form.classList.add('flash');
+      setTimeout(() => form.classList.remove('flash'), 1400);
+    }
+
+    function populateCatalogForm(catalog) {
+      const form = elements.catalogForm;
+      if (!form) return;
+      form.title.value = catalog.title;
+      form.owner.value = catalog.owner;
+      form.description.value = catalog.description;
+      form.status.value = catalog.status;
+      form.id.value = catalog.id;
+      form.classList.add('flash');
+      setTimeout(() => form.classList.remove('flash'), 1400);
+    }
+
+    async function deleteUser(id) {
+      if (typeof id === 'undefined') return;
+      await db.users.delete(id);
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    async function deleteCatalog(id) {
+      if (typeof id === 'undefined') return;
+      await db.catalogs.delete(id);
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    function resetUserForm() {
+      if (!elements.userForm) return;
+      elements.userForm.reset();
+      elements.userForm.id.value = '';
+    }
+
+    function resetCatalogForm() {
+      if (!elements.catalogForm) return;
+      elements.catalogForm.reset();
+      elements.catalogForm.id.value = '';
+    }
+
+    function setIndexedUpdated() {
+      state.indexedUpdatedAt = new Date();
+      updateIndexedStatus();
+    }
+
+    async function loadData() {
+      const [users, catalogs] = await Promise.all([
+        db.users.toArray(),
+        db.catalogs.toArray(),
+      ]);
+      state.users = users;
+      state.catalogs = catalogs;
+      renderCatalogGrid();
+      renderUsersTable();
+      renderCatalogsTable();
+      updateMemoryStatus();
+    }
+
+    async function ensureSeedData() {
+      const userCount = await db.users.count();
+      const catalogCount = await db.catalogs.count();
+      if (!userCount) {
+        await db.users.bulkAdd(seedData.users.map((user) => ({
+          ...user,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })));
+      }
+      if (!catalogCount) {
+        await db.catalogs.bulkAdd(seedData.catalogs.map((catalog) => ({
+          ...catalog,
+          updatedAt: new Date(),
+        })));
+      }
+    }
+
+    async function seedUsers() {
+      await db.users.clear();
+      await db.users.bulkAdd(seedData.users.map((user) => ({
+        ...user,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })));
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    async function seedCatalogs() {
+      await db.catalogs.clear();
+      await db.catalogs.bulkAdd(seedData.catalogs.map((catalog) => ({
+        ...catalog,
+        updatedAt: new Date(),
+      })));
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    function updateSyncStatus(status) {
+      state.sync.status = status;
+      if (!elements.syncStatus || !elements.syncDot) return;
+      let labelKey = 'footer.sync.disabled';
+      elements.syncDot.classList.remove('is-online', 'is-warning', 'is-error');
+      switch (status) {
+        case 'enabled':
+          labelKey = 'footer.sync.enabled';
+          elements.syncDot.classList.add('is-online');
+          break;
+        case 'syncing':
+          labelKey = 'footer.sync.syncing';
+          elements.syncDot.classList.add('is-warning');
+          break;
+        case 'error':
+          labelKey = 'footer.sync.error';
+          elements.syncDot.classList.add('is-error');
+          break;
+        default:
+          labelKey = 'footer.sync.disabled';
+          break;
+      }
+      elements.syncStatus.textContent = t(labelKey);
+    }
+
+    async function updateMemoryStatus() {
+      if (!elements.memoryStatus || !elements.memoryUpdated) return;
+      if (!navigator.storage || !navigator.storage.estimate) {
+        elements.memoryStatus.textContent = t('footer.memory.usage', { used: '—', quota: '—' });
+        elements.memoryUpdated.textContent = '';
+        return;
+      }
+      const { usage, quota } = await navigator.storage.estimate();
+      const usedMB = (usage / (1024 * 1024)).toFixed(2);
+      const quotaMB = (quota / (1024 * 1024)).toFixed(2);
+      elements.memoryStatus.textContent = t('footer.memory.usage', { used: `${usedMB} MB`, quota: `${quotaMB} MB` });
+      elements.memoryUpdated.textContent = t('footer.memory.updated', { time: formatDate(new Date()) });
+    }
+
+    function updateIndexedStatus() {
+      if (!elements.indexedStatus || !elements.indexedUpdated) return;
+      if (!state.indexedUpdatedAt) {
+        elements.indexedStatus.textContent = t('footer.indexed.empty');
+        elements.indexedUpdated.textContent = '';
+        return;
+      }
+      const timeLabel = formatDate(state.indexedUpdatedAt);
+      elements.indexedStatus.textContent = t('footer.indexed.status', { time: timeLabel });
+      elements.indexedUpdated.textContent = '';
+      elements.indexedStatus.classList.add('flash');
+      setTimeout(() => elements.indexedStatus.classList.remove('flash'), 1400);
+    }
+
+    function updateAccountState() {
+      if (!elements.accountButton) return;
+      const text = state.sync.enabled ? t('account.admin') : t('account.guest');
+      elements.accountButton.setAttribute('aria-description', text);
+    }
+
+    async function handleUserSubmit(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const user = {
+        name: formData.get('name').trim(),
+        email: formData.get('email').trim(),
+        role: formData.get('role'),
+        status: formData.get('status'),
+      };
+      const id = formData.get('id');
+      if (!user.name || !user.email) return;
+      if (id) {
+        await db.users.update(Number(id), { ...user, updatedAt: new Date() });
+      } else {
+        await db.users.add({ ...user, createdAt: new Date(), updatedAt: new Date() });
+      }
+      resetUserForm();
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    async function handleCatalogSubmit(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const catalog = {
+        title: formData.get('title').trim(),
+        owner: formData.get('owner').trim(),
+        description: formData.get('description').trim(),
+        status: formData.get('status'),
+        updatedAt: new Date(),
+      };
+      const id = formData.get('id');
+      if (!catalog.title || !catalog.owner) return;
+      if (id) {
+        await db.catalogs.update(Number(id), catalog);
+      } else {
+        await db.catalogs.add(catalog);
+      }
+      resetCatalogForm();
+      await loadData();
+      setIndexedUpdated();
+    }
+
+    async function toggleSync() {
+      if (state.sync.status === 'enabled') {
+        state.sync.enabled = false;
+        updateSyncStatus('disabled');
+        updateAccountState();
+        return;
+      }
+      state.sync.enabled = true;
+      updateSyncStatus('syncing');
+      updateAccountState();
+      setTimeout(() => {
+        const success = Math.random() > 0.15;
+        updateSyncStatus(success ? 'enabled' : 'error');
+        state.sync.enabled = success;
+        updateAccountState();
+      }, 1200);
+    }
+
+    function handleAccountClick() {
+      state.sync.enabled = !state.sync.enabled;
+      updateSyncStatus(state.sync.enabled ? 'enabled' : 'disabled');
+      updateAccountState();
+    }
+
+    function handleLanguageChange(event) {
+      state.lang = event.target.value;
+      document.documentElement.lang = state.lang;
+      applyTranslations();
+    }
+
+    function initEvents() {
+      elements.backButton?.addEventListener('click', () => setView('catalog'));
+      elements.openAdminButton?.addEventListener('click', (event) => {
+        event.preventDefault();
+        setView('admin');
+      });
+      elements.accountButton?.addEventListener('click', handleAccountClick);
+      elements.languageSelect?.addEventListener('change', handleLanguageChange);
+      elements.userForm?.addEventListener('submit', handleUserSubmit);
+      elements.catalogForm?.addEventListener('submit', handleCatalogSubmit);
+      elements.cancelUserButton?.addEventListener('click', resetUserForm);
+      elements.cancelCatalogButton?.addEventListener('click', resetCatalogForm);
+      elements.seedUsersButton?.addEventListener('click', seedUsers);
+      elements.seedCatalogsButton?.addEventListener('click', seedCatalogs);
+      elements.syncToggle?.addEventListener('click', toggleSync);
+    }
+
+    async function bootstrap() {
+      applyPlaceholders();
+      await ensureSeedData();
+      await loadData();
+      applyTranslations();
+      initEvents();
+      updateSyncStatus('disabled');
+      elements.languageSelect.value = state.lang;
+      setView('catalog');
+    }
+
+    bootstrap();
   </script>
 </body>
 </html>

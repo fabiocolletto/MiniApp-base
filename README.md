@@ -3,9 +3,16 @@
 Este repositório reúne protótipos HTML/CSS simples utilizados para validar fluxos de interface de miniaplicativos. Os artefatos principais ficam na pasta `miniapp-base`.
 
 ## Estrutura
-- `index.html`: catálogo interativo com estado vazio e atalho para o painel administrativo.
+- `index.html`: catálogo interativo com cabeçalho dinâmico, painel administrativo para gestão de usuários e MiniApps, além de
+  footer com indicadores de sincronização e uso de memória.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
 - *(miniapps experimentais foram removidos na versão 1.2.0)*
+
+## Recursos principais
+- Persistência em IndexedDB utilizando [Dexie.js](https://dexie.org/) com fallback implícito do navegador.
+- Gestão visual de usuários e catálogos com suporte a criação, edição e exclusão.
+- Indicadores de sincronização, memória e atualizações do IndexedDB fixos no rodapé.
+- Interface traduzida para `pt-BR`, `en-US` e `es-ES` com alternância imediata.
 
 ## Como trabalhar
 1. Leia `AGENTE.md` e `CHANGELOG.md` antes de começar qualquer alteração para entender as convenções vigentes.
