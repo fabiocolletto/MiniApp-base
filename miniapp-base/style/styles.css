@@ -174,14 +174,18 @@
   .ma .app-view__wrap { width: 100%; display: flex; justify-content: center; }
   .ma .app-view__card { width: min(32.5rem, 100%); padding: var(--ma-sp-4); gap: var(--ma-sp-3); }
   .ma .app-footer {
-    position: sticky; bottom: 0;
-    padding: var(--ma-sp-3);
+    padding: 0 var(--ma-sp-3);
+    height: 3.5rem;
     border-top: 1px solid var(--ma-border);
     display:flex; justify-content:space-between; align-items:center;
     background: var(--ma-bg);
     box-shadow: 0 -1px 0 var(--ma-border);
   }
-  .ma .app-footer__branding { gap: var(--ma-sp-3); }
+  .ma .app-footer__branding {
+    gap: var(--ma-sp-2);
+    flex-wrap: nowrap;
+    align-items: center;
+  }
   .ma .app-footer__logo {
     display: flex;
     flex: 0 0 auto;
