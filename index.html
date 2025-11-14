@@ -93,6 +93,12 @@
       white-space: nowrap;
     }
 
+    .footer-greeting {
+      font-size: clamp(13px, 2.2vw, 15px);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
     .icon-action {
       width: clamp(36px, 8vw, 40px);
       height: clamp(36px, 8vw, 40px);
@@ -936,10 +942,6 @@
         <span class="material-icons" aria-hidden="true">home</span>
       </button>
 
-      <span x-show="$store.user.isLoggedIn" class="greeting">
-        Olá, <span x-text="$store.user.username"></span>!
-      </span>
-
       <!-- Ícone de Conta/Login -->
       <button type="button"
               class="icon-action"
@@ -1371,8 +1373,13 @@
 
   <!-- Rodapé -->
   <footer class="layout-footer text-sm">
-    <div class="text-gray-500">
-        MiniApps Base <span class="font-semibold text-gray-600">v2.0.0</span>
+    <div class="text-gray-500 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+        <span>
+          MiniApps Base <span class="font-semibold text-gray-600">v2.0.0</span>
+        </span>
+        <span x-show="$store.user.isLoggedIn" class="footer-greeting">
+          Olá, <span x-text="$store.user.username"></span>!
+        </span>
     </div>
     
     <!-- Pill Indicador de Status de Memória (IndexedDB/localForage) e Status de Salvamento -->
