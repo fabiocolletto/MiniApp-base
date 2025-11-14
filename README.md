@@ -1,11 +1,11 @@
 # MiniApp Base
 
-Este repositório reúne protótipos HTML/CSS simples utilizados para validar fluxos de interface de miniaplicativos. Os artefatos principais ficam na pasta `miniapp-base`, mas há variações experimentais em `miniapp-prefeito`.
+Este repositório reúne protótipos HTML/CSS simples utilizados para validar fluxos de interface de miniaplicativos. Os artefatos principais ficam na pasta `miniapp-base`.
 
 ## Estrutura
-- `index.html`: catálogo interativo com card do Painel do Prefeito, modal de detalhes e atalho para o painel administrativo.
+- `index.html`: catálogo interativo com estado vazio e atalho para o painel administrativo.
 - `miniapp-base/`: assets e folhas de estilo do miniaplicativo base.
-- `miniapp-prefeito/`: variantes visuais e fluxos específicos para cenários municipais.
+- *(miniapps experimentais foram removidos na versão 1.2.0)*
 
 ## Como trabalhar
 1. Leia `AGENTE.md` e `CHANGELOG.md` antes de começar qualquer alteração para entender as convenções vigentes.
