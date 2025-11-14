@@ -711,15 +711,7 @@
   
   <!-- Header Fixo e Clean -->
   <header class="fixed top-0 left-0 right-0 bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center z-50">
-    <div class="title flex items-center gap-3">
-        
-      <!-- NOVO BOTÃO/ÍCONE HOME -->
-      <button class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100" 
-              @click.prevent="showCatalogView()"
-              title="Voltar para a Home (Catálogo)">
-          <i class="material-icons text-2xl">home</i>
-      </button>
-      
+    <div class="title flex items-center gap-2">
       <div>
         <!-- TÍTULO DO CATÁLOGO (Padrão) -->
         <div x-show="$store.app.showCatalog">
@@ -737,29 +729,38 @@
     
     <!-- Componente de Status do Usuário (Usa Alpine.Store) -->
     <!-- ESTE CONTÊINER JÁ ESTÁ ALINHADO À DIREITA POR CAUSA DO 'justify-between' no Header -->
-    <div class="flex items-center gap-3">
-      
-      <!-- REMOVIDO: Botão VOLTAR (Substituído pelo Ícone Home) -->
+    <div class="flex items-center gap-2 ml-auto">
+
+      <!-- BOTÃO/ÍCONE HOME -->
+      <button class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100"
+              @click.prevent="showCatalogView()"
+              title="Voltar para o Catálogo">
+          <i class="material-icons text-2xl">home</i>
+          <span class="sr-only">Ir para o catálogo</span>
+      </button>
 
       <span x-show="$store.user.isLoggedIn" class="text-sm font-medium text-gray-600 hidden sm:block">
           Olá, <span x-text="$store.user.username"></span>!
       </span>
-      
+
       <!-- NOVO BOTÃO DE GESTÃO DA CONTA (APARECE QUANDO LOGADO) -->
       <button x-show="$store.user.isLoggedIn"
-              class="btn p-2 hover:bg-gray-100 rounded-full text-gray-700" 
-              @click="$store.app.showAccountModal = true" 
+              class="btn p-2 hover:bg-gray-100 rounded-full text-gray-700"
+              @click="$store.app.showAccountModal = true"
               title="Gerir Conta">
           <!-- Ícone de Usuário (Conta) -->
           <i class="material-icons">account_circle</i>
+          <span class="sr-only">Abrir gerenciamento da conta</span>
       </button>
-      
+
       <!-- Botão de LOGIN (APARECE QUANDO DESLOGADO) -->
       <!-- O botão Login continua o mesmo, sem o texto 'Sair' -->
       <button x-show="!$store.user.isLoggedIn"
-              class="btn primary text-sm" 
-              @click="$store.user.login('Usuário Teste', ['read'])">
-          Login
+              class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100"
+              @click="$store.user.login('Usuário Teste', ['read'])"
+              title="Entrar">
+          <i class="material-icons">login</i>
+          <span class="sr-only">Login</span>
       </button>
     </div>
   </header>
