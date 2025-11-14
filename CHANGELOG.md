@@ -1,5 +1,14 @@
 # Changelog
 
+# [2025-12-09] Bootstrap compatível com Elementor
+### Corrigido
+- `index.html` ganhou bootstrap para resolver os assets do shell (CSS, manifestos, ícones e módulos) com base no atributo
+  `data-miniapp-base`, permitindo incorporar o catálogo no WordPress/Elementor sem quebrar estilos ou o carregamento do catálogo.【F:index.html†L1-L132】
+- `config/app-config.js` preserva configurações existentes e aceita `data-base-url`, evitando sobrescrever `window.__APP_CONFIG__` durante embeds externos.【F:config/app-config.js†L1-L9】
+
+### Documentação
+- README explica como ajustar `data-miniapp-base` ao publicar o shell em WordPress/Elementor e reforça a preferência pelo iframe quando possível.【F:README.md†L7-L24】
+
 # [2025-12-08] Padronização do styles.css
 ### Alterado
 - `miniapp-base/style/styles.css` reorganizado com cabeçalho de meta-dados, reset seguro para iframes, estrutura mobile-first e alturas relativas usando `vh/svh` e `clamp` para evitar números mágicos e conflitos externos.【F:miniapp-base/style/styles.css†L1-L205】【F:miniapp-base/style/styles.css†L269-L379】【F:miniapp-base/style/styles.css†L508-L539】
