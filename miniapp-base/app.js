@@ -13,7 +13,7 @@ import { SYNC_STATUSES } from './sync.js';
 const state = {
   prefs: null,
   miniapps: listMiniApps(),
-  currentView: 'home',
+  currentView: 'miniapps',
   activeMiniApp: null,
   storageStatus: null,
   version: null,
@@ -621,7 +621,7 @@ function handlePopState() {
   } else if (state.activeMiniApp) {
     closeMiniApp({ updateHistory: false });
   } else {
-    setView('home', { navTarget: 'home' });
+    setView('miniapps', { navTarget: 'miniapps' });
   }
 }
 
@@ -654,7 +654,7 @@ async function bootstrap() {
   if (initialMiniApp) {
     openMiniApp(initialMiniApp, { updateHistory: false });
   } else {
-    setView('home', { navTarget: 'home' });
+    setView('miniapps', { navTarget: 'miniapps' });
   }
 
   window.addEventListener('popstate', handlePopState);

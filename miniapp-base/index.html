@@ -19,154 +19,266 @@
       --card-border: #374151;
       --muted: #9ca3af;
     }
-    /* CRUCIAL: Adiciona padding superior e inferior ao body para compensar header e footer fixos */
-    body{
-      /* Removendo padding lateral do body para que o conteúdo do admin possa preencher a largura total */
-      padding: 80px 0 60px 0; /* Topo (80px), Rodapé (60px), Laterais (0) */
+    body {
+      margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f9fafb; /* Alterado para bg-gray-50 cor para uniformidade */
-    } 
-    header .title{display:flex;gap:12px;align-items:center}
-    
-    /* Layout da Main: Centraliza o contêiner de grid no centro da página */
-    main {
-        display: flex;
-        /* CRUCIAL: Inicialmente centraliza o catálogo, mas permite expansão */
-        justify-content: center; 
-        align-items: flex-start;
-        width: 100%;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    
-    /* Contêiner para o Grid (Catálogo) */
+
+    .layout-shell {
+      width: min(1080px, 100% - clamp(32px, 6vw, 72px));
+      margin: clamp(24px, 6vw, 48px) auto;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(20px, 5vw, 40px);
+      flex: 1;
+    }
+
+    .layout-header,
+    .layout-main,
+    .layout-footer {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    }
+
+    .layout-header {
+      padding: clamp(18px, 4vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .layout-header .title {
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 2.6vw, 18px);
+      flex-wrap: wrap;
+    }
+
+    .layout-main {
+      flex: 1;
+      padding: clamp(18px, 4vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(24px, 5vw, 40px);
+    }
+
+    .layout-main--catalog {
+      align-items: center;
+    }
+
+    .layout-main--admin {
+      gap: clamp(12px, 3vw, 20px);
+      padding: 0;
+      overflow: hidden;
+    }
+
     .catalog-container {
-        /* Mantém a largura máxima apenas para o Catálogo */
-        max-width: 900px; 
-        padding: 0 24px; /* Adiciona padding lateral para o catálogo (que estava no body) */
+      width: min(640px, 100%);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
     }
 
-    /* Estilo para o novo Card 'Etiqueta' */
     .app-tag {
-        background: var(--card);
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column; /* CRUCIAL: Para usar flex-grow e alinhar o botão ao fundo */
-        align-items: flex-start;
-        justify-content: space-between;
-        transition: all 0.2s ease;
-        /* Removido shadow para um look mais plano no contexto do base */
-        box-shadow: none; 
-        min-height: 120px; /* GARANTE A PROPORÇÃO VERTICAL MÍNIMA */
-    }
-    .app-tag:hover { 
-        transform: translateY(-2px); 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .app-tag img{width:40px;height:40px;object-fit:contain;border-radius:8px;border:1px solid var(--card-border);background:#fff}
-    .app-tag h3{margin:0;font-size:16px; font-weight: 600;}
-    .app-tag p{margin:0;font-size:13px;color:var(--muted)}
-    
-    /* Estilos de Botão base: REMOVIDAS BORDAS E FUNDO para ícones */
-    .btn{
-        display:inline-flex;
-        gap:8px;
-        align-items:center;
-        border: none; /* Removida borda base */
-        padding: 0; /* Removido padding base */
-        border-radius:8px;
-        background: transparent; /* Removido fundo base */
-        text-decoration:none;
-        color:inherit; 
-        transition: background 0.2s;
-    }
-    
-    /* Estilo para botão PRIMÁRIO (Login/Sair no Header) */
-    .btn.primary{
-        background:#0b57d0;
-        border: 1px solid #0b57d0; /* Mantém borda para primário */
-        color:#fff;
-        padding: 8px 12px; /* Mantém padding para primário */
-    }
-    .btn.primary:hover{background:#0a4cc9; border-color:#0a4cc9;}
-    
-    /* Estilo Específico para Material Icons */
-    .material-icons {
-        /* *** AUMENTO DO TAMANHO DO ÍCONE E LINHAS MAIS FINAS *** */
-        font-family: 'Material Symbols Outlined';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 20px; /* Reduzido de 24px para 20px */
-        display: inline-block;
-        line-height: 1;
-        text-transform: none;
-        letter-spacing: normal;
-        word-wrap: normal;
-        white-space: nowrap;
-        direction: ltr;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-        -moz-osx-font-smoothing: grayscale;
-        /* Linhas mais finas (Peso 300) */
-        font-variation-settings: 'wght' 300; 
+    .app-tag:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
     }
 
-    /* NOVO: Truncamento de múltiplas linhas para a descrição */
+    .app-tag img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #fff;
+    }
+
+    .app-tag h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .app-tag p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
     .app-description {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limita a 2 linhas */
-        -webkit-box-orient: vertical;
-        white-space: normal;
-        text-align: left; /* Garante alinhamento à esquerda */
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      white-space: normal;
+      text-align: left;
     }
 
-    /* Indicador de Status (Escondido) */
-    #status-indicator { display: none; }
-    
-    /* Estilo para Tabela Administrativa (Simulação de Planilha) */
+    .btn {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.04);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    .btn.primary {
+      background: #0b57d0;
+      border-color: #0b57d0;
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: #0a4cc9;
+    }
+
+    .btn.icon-only {
+      padding: 8px;
+      border-radius: 50%;
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .btn.icon-only:hover {
+      background: rgba(37, 99, 235, 0.12);
+    }
+
+    .material-icons {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      -moz-osx-font-smoothing: grayscale;
+      font-variation-settings: 'wght' 300;
+    }
+
+    .admin-shell {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 4vw, 28px);
+    }
+
+    .admin-panel {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(241, 245, 249, 0.6);
+      padding: 0 clamp(18px, 4vw, 28px);
+    }
+
+    .admin-tabs button {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .admin-tabs button.active {
+      color: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .admin-content {
+      padding: clamp(18px, 4vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(20px, 4vw, 32px);
+    }
+
     .admin-table {
-        @apply min-w-full divide-y divide-gray-200;
-        border-collapse: separate; /* Permite bordas arredondadas e divisores */
-        border-spacing: 0;
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--card);
     }
-    .admin-table th {
-        /* Cabeçalho mais clean (Planilha style) */
-        /* Removido o bg-white, deixando-o plano, mantendo apenas a borda de separação */
-        @apply px-4 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50;
+
+    .admin-table thead {
+      background: rgba(241, 245, 249, 0.6);
     }
+
+    .admin-table th,
     .admin-table td {
-        /* Linhas limpas */
-        @apply px-4 py-3 whitespace-nowrap text-sm text-gray-800 bg-gray-50; /* Alterado bg-white para bg-gray-50 para uniformidade */
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #1f2937;
+      border-bottom: 1px solid var(--card-border);
+      vertical-align: middle;
     }
+
     .admin-table tbody tr:hover {
-        @apply bg-blue-50/50; /* Hover sutil com um toque de azul */
+      background: rgba(37, 99, 235, 0.08);
     }
-    /* Remove a borda superior do corpo da tabela */
-    .admin-table tbody tr:first-child td {
-        border-top: none;
+
+    .admin-table tbody tr:last-child td {
+      border-bottom: none;
     }
-    
-    /* Estilo para Coluna Título (garante que use o espaço restante) */
-    .admin-table th:nth-child(2), .admin-table td:nth-child(2) {
-        width: auto !important; /* Remove largura fixa implícita */
-    }
-    
-    /* Estilo para Célula Editável */
-    .editable-cell {
-        @apply p-0; /* Remove padding da célula pai */
-    }
-    .editable-input {
-        /* Garante que o input preencha o <td> e pareça parte da tabela */
-        @apply w-full h-full px-4 py-3 border-none bg-blue-50/50 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900;
-        box-shadow: inset 0 0 0 1px #3b82f6; /* Borda azul ao redor da célula */
-    }
-    
-    /* Estilo para Dropdown de Status (para alinhar com o input) */
+
+    .editable-input,
     .status-select {
-        @apply w-full h-full px-4 py-3 border-none bg-blue-50/50 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900;
-        box-shadow: inset 0 0 0 1px #3b82f6;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      background: rgba(219, 234, 254, 0.5);
+      font-size: 14px;
+      color: #1f2937;
+    }
+
+    .layout-footer {
+      padding: clamp(16px, 3vw, 24px);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
     }
   </style>
 
@@ -708,10 +820,11 @@
 
 <!-- x-init chama o método initialize() da store 'app' APÓS o DOM ser ligado ao Alpine. -->
 <body x-data x-init="$store.app.initialize()">
-  
-  <!-- Header Fixo e Clean -->
-  <header class="fixed top-0 left-0 right-0 bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center z-50">
-    <div class="title flex items-center gap-2">
+
+  <div class="layout-shell">
+  <!-- Header simplificado -->
+  <header class="layout-header">
+    <div class="title">
       <div>
         <!-- TÍTULO DO CATÁLOGO (Padrão) -->
         <div x-show="$store.app.showCatalog">
@@ -728,11 +841,10 @@
     </div>
     
     <!-- Componente de Status do Usuário (Usa Alpine.Store) -->
-    <!-- ESTE CONTÊINER JÁ ESTÁ ALINHADO À DIREITA POR CAUSA DO 'justify-between' no Header -->
-    <div class="flex items-center gap-2 ml-auto">
+    <div class="flex items-center gap-3 ml-auto">
 
       <!-- BOTÃO/ÍCONE HOME -->
-      <button class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100"
+      <button class="btn icon-only text-blue-600"
               @click.prevent="showCatalogView()"
               title="Voltar para o Catálogo">
           <i class="material-icons text-2xl">home</i>
@@ -744,8 +856,8 @@
       </span>
 
       <!-- Botão de conta/login unificado -->
-      <button class="btn p-2 rounded-full"
-              :class="$store.user.isLoggedIn ? 'text-gray-700 hover:bg-gray-100' : 'text-blue-600 hover:bg-blue-100'"
+      <button class="btn icon-only"
+              :class="$store.user.isLoggedIn ? 'text-gray-700' : 'text-blue-600'"
               @click="$store.user.isLoggedIn ? $store.app.showAccountModal = true : $store.user.login('Usuário Teste', ['read'])"
               :title="$store.user.isLoggedIn ? 'Gerir Conta' : 'Entrar'">
           <i class="material-icons" x-text="$store.user.isLoggedIn ? 'account_circle' : 'login'"></i>
@@ -755,16 +867,16 @@
   </header>
 
   <!-- Main Content Centralizado -->
-  <main class="mt-2" aria-live="polite" 
-        :class="{ 'justify-center': $store.app.showCatalog, 'justify-start': $store.app.showAdminPanelContent, 'px-6': $store.app.showCatalog }">
+  <main class="layout-main" aria-live="polite"
+        :class="{ 'layout-main--catalog': $store.app.showCatalog, 'layout-main--admin': $store.app.showAdminPanelContent }">
     
     <!-- 1. VISÃO DO CATÁLOGO (Mostrada por padrão) -->
     <!-- Aplicando o Flexbox para Largura Fixa e Alinhamento -->
-    <div x-show="$store.app.showCatalog" 
-         class="catalog-container flex flex-wrap gap-4 justify-center">
+    <div x-show="$store.app.showCatalog"
+         class="catalog-container">
 
         <!-- ÚNICO ITEM: Painel Administrativo -->
-        <article class="app-tag w-72">
+        <article class="app-tag">
           
           <!-- Informações Básicas do Mini-App (USANDO grow) -->
           <div class="flex items-center gap-4 min-w-0 grow">
@@ -783,7 +895,7 @@
           <div class="actions flex gap-2 flex-shrink-0 mt-3 self-end">
             
             <!-- Botão Mais Detalhes (Secundário - Ícone) -->
-            <a class="btn p-2 hover:bg-gray-100 rounded-full text-gray-700" 
+            <a class="btn icon-only text-gray-700"
                href="#" 
                title="Detalhes"
                @click.prevent="$store.app.showDetails($store.app.currentAppDetails)">
@@ -792,7 +904,7 @@
             </a>
 
             <!-- Botão Abrir (Primário - Ícone) - Usa a função JS para simular o carregamento no Base -->
-            <a class="btn p-2 rounded-full text-blue-600 hover:bg-blue-100" 
+            <a class="btn icon-only text-blue-600"
                href="#" 
                title="Abrir"
                @click.prevent="loadAdminPanel()"
@@ -813,42 +925,42 @@
 
     <!-- 2. SIMULAÇÃO DO PAINEL ADMINISTRATIVO (Conteúdo Carregado) -->
     <!-- CRUCIAL: Contêiner de largura total com PADDING ZERO. -->
-    <div x-show="$store.app.showAdminPanelContent" 
-         class="w-full p-0">
-        
+    <div x-show="$store.app.showAdminPanelContent"
+         class="admin-shell">
+
         <!-- Conteúdo Principal do Painel Administrativo -->
         <!-- O fundo branco (bg-white) foi removido daqui para usar o fundo do body (f7f9fb) -->
-        <div class=""> 
+        <div class="admin-panel">
             
             <!-- Navegação por Abas (Mantendo o design plano e a largura total) -->
-            <div class="flex border-b border-gray-200 px-6 bg-gray-50"> <!-- CRUCIAL: Fundo alterado para bg-gray-50 -->
+            <div class="admin-tabs"> <!-- CRUCIAL: Fundo alterado para bg-gray-50 -->
                 <!-- Aba Catálogo -->
                 <button @click="$store.app.activeAdminTab = 'catalogo'"
-                        class="py-3 px-4 text-sm focus:outline-none transition-colors duration-150"
-                        :class="$store.app.activeAdminTab === 'catalogo' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'">
+                        type="button"
+                        :class="{ 'active': $store.app.activeAdminTab === 'catalogo' }">
                     Catálogo MiniApps
                 </button>
                 <!-- Aba Dados do Sistema -->
                 <button @click="$store.app.activeAdminTab = 'sistema'"
-                        class="py-3 px-4 text-sm focus:outline-none transition-colors duration-150"
-                        :class="$store.app.activeAdminTab === 'sistema' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'">
+                        type="button"
+                        :class="{ 'active': $store.app.activeAdminTab === 'sistema' }">
                     Dados do Sistema
                 </button>
                 <!-- Aba Cadastro de Usuários -->
                 <button @click="$store.app.activeAdminTab = 'usuarios'"
-                        class="py-3 px-4 text-sm focus:outline-none transition-colors duration-150"
-                        :class="$store.app.activeAdminTab === 'usuarios' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'">
+                        type="button"
+                        :class="{ 'active': $store.app.activeAdminTab === 'usuarios' }">
                     Cadastro de Usuários
                 </button>
             </div>
-            
+
             <!-- Conteúdo das Abas (Secções Individuais) -->
-            <div class="p-6"> <!-- CRUCIAL: Padding do conteúdo interno -->
+            <div class="admin-content"> <!-- CRUCIAL: Padding do conteúdo interno -->
                 
                 <!-- Conteúdo da Aba 1: Catálogo de MiniApps (Tabela Simples) -->
                 <div x-show="$store.app.activeAdminTab === 'catalogo'">
                     <h3 class="text-xl font-semibold mb-3">Gerenciamento do Catálogo (Tabela)</h3>
-                    <div class="overflow-x-auto bg-white border border-gray-200">
+                    <div class="overflow-x-auto">
                         <table class="admin-table">
                             <thead>
                                 <tr>
@@ -984,7 +1096,7 @@
                                         <!-- AÇÕES (Somente Excluir) -->
                                         <td class="text-center">
                                             <!-- Botão Remover -->
-                                            <button class="btn p-2 hover:bg-red-200 rounded-full text-red-600" 
+                                            <button class="btn icon-only text-red-600"
                                                     @click.prevent="removeApp(app.id)" 
                                                     title="Remover">
                                                 <i class="material-icons">delete</i>
@@ -1011,7 +1123,7 @@
                 <!-- Conteúdo da Aba 3: Cadastro de Usuários (Tabela Simples) -->
                 <div x-show="$store.app.activeAdminTab === 'usuarios'">
                     <h3 class="text-xl font-semibold mb-3">Gerenciamento de Usuários (Tabela)</h3>
-                    <div class="overflow-x-auto bg-white border border-gray-200">
+                    <div class="overflow-x-auto">
                         <table class="admin-table">
                             <thead>
                                 <tr>
@@ -1151,7 +1263,7 @@
                                         <!-- AÇÕES (Somente Excluir) -->
                                         <td class="text-center">
                                             <!-- Botão Remover -->
-                                            <button class="btn p-2 hover:bg-red-200 rounded-full text-red-600" 
+                                            <button class="btn icon-only text-red-600"
                                                     @click.prevent="removeUser(user.id)" 
                                                     title="Remover">
                                                 <i class="material-icons">delete</i>
@@ -1171,8 +1283,8 @@
 
   </main>
 
-  <!-- Rodapé Fixo (Footer) -->
-  <footer class="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 p-3 flex justify-between items-center text-sm z-40">
+  <!-- Rodapé -->
+  <footer class="layout-footer text-sm">
     <div class="text-gray-500">
         MiniApps Base <span class="font-semibold text-gray-600">v2.0.0</span>
     </div>
@@ -1208,6 +1320,8 @@
         </span>
     </div>
   </footer>
+
+  </div>
 
   <!-- MODAL DE DETALHES DO MINI-APP -->
   <div x-show="$store.app.showDetailsModal" 
