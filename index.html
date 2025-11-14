@@ -1,27 +1,162 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-miniapp-base="/miniapp-base/">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MiniApps — Shell</title>
   <meta name="theme-color" content="#0f172a" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="manifest" data-asset-path="manifest.webmanifest" />
   <link
     rel="icon"
     type="image/png"
     sizes="192x192"
-    href="./miniapp-base/icons/icon-192.png"
     data-icon-light="./miniapp-base/icons/icon-192.png"
     data-icon-dark="./miniapp-base/icons/icon-192.png"
+    data-asset-path="miniapp-base/icons/icon-192.png"
   />
   <link
     rel="apple-touch-icon"
-    href="./miniapp-base/icons/icon-192.png"
     data-icon-light="./miniapp-base/icons/icon-192.png"
     data-icon-dark="./miniapp-base/icons/icon-192.png"
+    data-asset-path="miniapp-base/icons/icon-192.png"
   />
-  <link rel="stylesheet" href="./miniapp-base/style/styles.css" />
-  <script src="./config/app-config.js"></script>
+  <link
+    id="miniapp-shell-style"
+    rel="stylesheet"
+    data-asset-path="miniapp-base/style/styles.css"
+  />
+  <script id="miniapp-shell-bootstrap">
+    (function bootstrapMiniAppShell() {
+      var doc = document;
+      var globalConfig = (window.__APP_CONFIG__ = window.__APP_CONFIG__ || {});
+      var origin = window.location.origin || (window.location.protocol + '//' + window.location.host);
+
+      function ensureTrailingSlash(value) {
+        return value.endsWith('/') ? value : value + '/';
+      }
+
+      function normalizeBase(candidate) {
+        if (typeof candidate !== 'string' || !candidate.trim()) {
+          return ensureTrailingSlash(origin + window.location.pathname.replace(/[^/]*$/, ''));
+        }
+
+        var trimmed = candidate.trim();
+        try {
+          var asUrl = new URL(trimmed, origin);
+          return ensureTrailingSlash(asUrl.href);
+        } catch (error) {
+          var prefixed = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+          return ensureTrailingSlash(origin + prefixed);
+        }
+      }
+
+      var declaredBase = doc.documentElement.getAttribute('data-miniapp-base');
+      var fallbackPath = (window.location.pathname || '/').replace(/[^/]*$/, '');
+      var assetBaseUrl = normalizeBase(globalConfig.assetBaseUrl || declaredBase || fallbackPath);
+
+      globalConfig.assetBaseUrl = assetBaseUrl;
+      globalConfig.resolveAsset = function resolveAsset(relativePath) {
+        if (typeof relativePath !== 'string' || !relativePath.trim()) {
+          return relativePath;
+        }
+        try {
+          return new URL(relativePath, assetBaseUrl).href;
+        } catch (error) {
+          return relativePath;
+        }
+      };
+
+      function upgradeAsset(element, attribute, relativePath) {
+        if (!element || !relativePath) {
+          return;
+        }
+        var resolved = globalConfig.resolveAsset(relativePath);
+        if (!resolved || element.getAttribute(attribute) === resolved) {
+          return;
+        }
+        element.setAttribute(attribute, resolved);
+      }
+
+      doc.querySelectorAll('[data-asset-path]').forEach(function (element) {
+        var attribute = element.hasAttribute('data-asset-attr')
+          ? element.getAttribute('data-asset-attr')
+          : element.tagName === 'LINK'
+          ? 'href'
+          : 'src';
+        upgradeAsset(element, attribute, element.getAttribute('data-asset-path'));
+      });
+
+      doc.querySelectorAll('link[data-icon-light], link[data-icon-dark]').forEach(function (element) {
+        if (element.dataset.iconLight) {
+          element.dataset.iconLight = globalConfig.resolveAsset(element.dataset.iconLight);
+        }
+        if (element.dataset.iconDark) {
+          element.dataset.iconDark = globalConfig.resolveAsset(element.dataset.iconDark);
+        }
+      });
+
+      function ensureStylesheet() {
+        var styleLink = doc.getElementById('miniapp-shell-style');
+        if (!styleLink) {
+          styleLink = doc.createElement('link');
+          styleLink.id = 'miniapp-shell-style';
+          styleLink.rel = 'stylesheet';
+          styleLink.dataset.assetPath = 'miniapp-base/style/styles.css';
+          doc.head.appendChild(styleLink);
+        }
+        upgradeAsset(styleLink, 'href', styleLink.getAttribute('data-asset-path'));
+      }
+
+      function loadScript(url, attributes) {
+        return new Promise(function (resolve, reject) {
+          if (!url) {
+            resolve();
+            return;
+          }
+
+          var selectorParts = [];
+          if (attributes) {
+            Object.keys(attributes).forEach(function (key) {
+              selectorParts.push('[' + key + ']');
+            });
+          }
+
+          if (selectorParts.length) {
+            var selector = 'script[src="' + url + '"]' + selectorParts.join('');
+            if (doc.querySelector(selector)) {
+              resolve();
+              return;
+            }
+          }
+
+          var script = doc.createElement('script');
+          script.src = url;
+          if (attributes) {
+            Object.entries(attributes).forEach(function ([key, value]) {
+              if (value !== null && value !== undefined) {
+                script.setAttribute(key, value);
+              }
+            });
+          }
+          script.onload = function () { resolve(script); };
+          script.onerror = function (event) { reject(event); };
+          doc.head.appendChild(script);
+        });
+      }
+
+      ensureStylesheet();
+
+      loadScript(globalConfig.resolveAsset('config/app-config.js'), { 'data-app-config': 'true' })
+        .catch(function (error) {
+          console.warn('MiniApp Shell: não foi possível carregar config/app-config.js.', error);
+        })
+        .finally(function () {
+          loadScript(globalConfig.resolveAsset('js/app.js'), { type: 'module', 'data-app-entry': 'true' }).catch(function (error) {
+            console.error('MiniApp Shell: falha ao carregar o módulo principal.', error);
+          });
+        });
+    })();
+  </script>
 </head>
 <body data-theme="light">
   <div id="miniapp-root" class="ma" data-theme="light">

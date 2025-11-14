@@ -7,6 +7,16 @@ irebase, autenticação ou planilhas externas).
 > **Uso recomendado**: publique a pasta raiz em um host estático (GitHub Pages, Vercel, Netlify, etc.) e incorpore `index.html`
 via `<iframe>` no site principal. Evite importar o CSS/JS diretamente em plataformas como WordPress ou Elementor.
 
+### WordPress / Elementor
+
+- O shell agora resolve automaticamente os assets relativos (CSS, JS, manifestos e ícones) a partir do atributo `data-miniapp-base`
+  definido na tag `<html>`. O valor padrão `/miniapp-base/` cobre a instalação atual no WordPress (`https://5horas.com.br/miniapp-base/`).
+- Se o diretório público for diferente, ajuste o atributo para apontar para a pasta onde `config/`, `js/` e `miniapp-base/` estão publicados.
+- Ao incorporar via Elementor, utilize um bloco HTML com o conteúdo de `index.html` *ou*, preferencialmente, um `<iframe>` apontando
+  para a URL publicada. Em ambos os casos, mantenha o atributo `data-miniapp-base` sincronizado com o caminho real dos assets.
+- O arquivo `config/app-config.js` continua opcional: carregado após o bootstrap automático, ele pode definir chaves extras em
+  `window.__APP_CONFIG__` sem sobrescrever o objeto criado pelo shell.
+
 ## Componentes principais
 
 - **Shell PWA (`index.html` + `js/app.js`)** – controla a navegação entre o catálogo embutido e o iframe de MiniApps, expõe as
