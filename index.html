@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./docs/miniapp-global.css">
     <link rel="stylesheet" href="./docs/miniapp-card.css">
     
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#1f2937">
 </head>
 <body class="bg-gray-900">
@@ -77,7 +77,29 @@
                     <span class="text-xs mt-1">Conta</span>
                 </a>
             </div>
-            
+
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-2" id="statusIndicators">
+                <div class="flex items-center space-x-2">
+                    <span id="connectionDot" class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                    <span id="connectionLabel">Offline</span>
+                </div>
+                <div class="text-right">
+                    <span id="syncStatusLabel">Sincronização não iniciada</span>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-2 mb-2 text-xs">
+                <button id="googleSignInButton" class="bg-orange-600 text-white px-3 py-1 rounded-full shadow hover:bg-orange-700 transition duration-150">
+                    Conectar Google
+                </button>
+                <button id="googleSignOutButton" class="bg-gray-700 text-gray-200 px-3 py-1 rounded-full shadow hover:bg-gray-600 transition duration-150 hidden">
+                    Sair
+                </button>
+                <button id="manualSyncButton" class="bg-gray-800 text-gray-200 px-3 py-1 rounded-full border border-gray-600 hover:border-orange-500 transition duration-150">
+                    Sincronizar agora
+                </button>
+            </div>
+
             <div class="text-center text-xs text-gray-500 pt-1 border-t border-gray-700 mx-auto w-11/12">
                 &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
             </div>
@@ -109,15 +131,33 @@
     <script type="module">
         import { miniAppsData } from './docs/miniapp-data.js';
         import { renderMiniApps } from './docs/miniapp-card.js';
+        import {
+            registerStatusListener,
+            queueForSync,
+            syncPendingChanges,
+            signInWithGoogle,
+            signOutFromGoogle,
+            saveUserSetting,
+            getUserSetting
+        } from './js/googleSync.js';
+        import { openDatabase } from './js/indexeddb-store.js';
 
         let deferredPrompt;
         let messageTimeout;
+        let searchPersistTimeout;
 
         const installButton = document.getElementById('installButton');
         const searchToggle = document.getElementById('searchToggle');
         const searchContainer = document.getElementById('searchContainer');
         const messageContainer = document.getElementById('messageContainer');
         const miniappGrid = document.getElementById('miniappGrid');
+        const connectionDot = document.getElementById('connectionDot');
+        const connectionLabel = document.getElementById('connectionLabel');
+        const syncStatusLabel = document.getElementById('syncStatusLabel');
+        const googleSignInButton = document.getElementById('googleSignInButton');
+        const googleSignOutButton = document.getElementById('googleSignOutButton');
+        const manualSyncButton = document.getElementById('manualSyncButton');
+        const searchInput = document.getElementById('searchInput');
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -158,12 +198,29 @@
             currentMiniApp = null;
         }
 
-        function addToCart() {
-            if (currentMiniApp) {
+        async function addToCart() {
+            if (!currentMiniApp) {
+                showMessage('❌ Erro ao adicionar. Tente novamente.', true);
+                return;
+            }
+
+            try {
+                await queueForSync({
+                    type: 'cart-entry',
+                    miniAppId: currentMiniApp.id,
+                    title: currentMiniApp.title,
+                    queuedAt: new Date().toISOString()
+                });
+                await saveUserSetting('lastMiniApp', {
+                    id: currentMiniApp.id,
+                    title: currentMiniApp.title,
+                    queuedAt: new Date().toISOString()
+                });
                 showMessage(`✅ MiniApp "${currentMiniApp.title}" adicionado ao carrinho!`, false);
                 closeProductModal();
-            } else {
-                showMessage('❌ Erro ao adicionar. Tente novamente.', true);
+            } catch (error) {
+                console.error('Erro ao salvar no IndexedDB', error);
+                showMessage('❌ Não foi possível salvar localmente. Tente novamente.', true);
             }
         }
 
@@ -175,7 +232,7 @@
         searchToggle.addEventListener('click', () => {
             searchContainer.classList.toggle('hidden');
             if (!searchContainer.classList.contains('hidden')) {
-                document.getElementById('searchInput').focus();
+                searchInput.focus();
             }
         });
 
@@ -189,74 +246,148 @@
 
         renderMiniApps(miniAppsData, miniappGrid);
 
-        const swCode = `
-            const CACHE_NAME = 'miniapp-5horas-v1';
-            const urlsToCache = [
-              '/',
-              '/index.html',
-              '/manifest.json',
-              'https://cdn.tailwindcss.com' 
-            ];
-
-            self.addEventListener('install', event => {
-              event.waitUntil(
-                caches.open(CACHE_NAME)
-                  .then(cache => {
-                    return cache.addAll(urlsToCache);
-                  })
-              );
+        function filterMiniApps(term) {
+            const normalized = term.trim().toLowerCase();
+            if (!normalized) {
+                return miniAppsData;
+            }
+            return miniAppsData.filter((app) => {
+                return [app.title, app.description, app.category]
+                    .filter(Boolean)
+                    .some((value) => value.toLowerCase().includes(normalized));
             });
+        }
 
-            self.addEventListener('fetch', event => {
-              if (event.request.method !== 'GET') {
+        function applySearch(term) {
+            const filtered = filterMiniApps(term);
+            renderMiniApps(filtered, miniappGrid);
+        }
+
+        registerStatusListener((status) => {
+            connectionDot.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500', 'bg-orange-600', 'bg-blue-500');
+
+            let indicatorClass = status.online ? 'bg-green-500' : 'bg-red-500';
+            if (status.syncState === 'syncing') {
+                indicatorClass = 'bg-yellow-500';
+            } else if (status.syncState === 'error') {
+                indicatorClass = 'bg-orange-600';
+            } else if (status.syncState === 'auth-required') {
+                indicatorClass = 'bg-blue-500';
+            } else if (!status.online) {
+                indicatorClass = 'bg-red-500';
+            }
+
+            connectionDot.classList.add(indicatorClass);
+            connectionLabel.textContent = status.online ? 'Online' : 'Offline';
+
+            const pendingText = typeof status.pending === 'number' && status.pending > 0 ? ` (${status.pending} pendência(s))` : '';
+            syncStatusLabel.textContent = `${status.message}${pendingText}`;
+
+            if (status.needsAuth) {
+                googleSignInButton.classList.toggle('hidden', status.authenticated);
+                googleSignOutButton.classList.toggle('hidden', !status.authenticated);
+                googleSignInButton.disabled = !status.online || status.syncState === 'syncing';
+                googleSignOutButton.disabled = status.syncState === 'syncing';
+            } else {
+                googleSignInButton.classList.add('hidden');
+                googleSignOutButton.classList.add('hidden');
+            }
+
+            manualSyncButton.disabled =
+                status.syncState === 'syncing' || !status.online || (status.needsAuth && !status.authenticated);
+
+            if (status.syncState === 'error') {
+                showMessage(`❌ ${status.message}`, true);
+            }
+        });
+
+        googleSignInButton.addEventListener('click', async () => {
+            try {
+                await signInWithGoogle();
+                showMessage('✅ Conectado à conta Google.', false);
+            } catch (error) {
+                console.error('Erro ao autenticar com Google', error);
+                showMessage('❌ Erro ao conectar na conta Google.', true);
+            }
+        });
+
+        googleSignOutButton.addEventListener('click', async () => {
+            try {
+                await signOutFromGoogle();
+                showMessage('Sessão Google encerrada.', false);
+            } catch (error) {
+                console.error('Erro ao sair da conta Google', error);
+                showMessage('❌ Não foi possível encerrar a sessão Google.', true);
+            }
+        });
+
+        manualSyncButton.addEventListener('click', async () => {
+            if (!navigator.onLine) {
+                showMessage('Você está offline. Os dados serão enviados assim que a conexão voltar.', true);
                 return;
-              }
+            }
+            try {
+                const result = await syncPendingChanges();
+                if (result.synced > 0) {
+                    showMessage(`✅ ${result.synced} item(ns) sincronizado(s).`, false);
+                } else {
+                    showMessage('Nenhuma pendência para sincronizar.', false);
+                }
+            } catch (error) {
+                console.error('Erro ao sincronizar manualmente', error);
+                showMessage('❌ Erro ao sincronizar com a Google.', true);
+            }
+        });
 
-              event.respondWith(
-                caches.match(event.request)
-                  .then(response => {
-                    if (response) {
-                      return response;
-                    }
-                    
-                    return fetch(event.request);
-                  })
-              );
-            });
+        searchInput.addEventListener('input', () => {
+            const term = searchInput.value;
+            applySearch(term);
+            clearTimeout(searchPersistTimeout);
+            searchPersistTimeout = setTimeout(() => {
+                saveUserSetting('searchQuery', term).catch((error) => {
+                    console.error('Erro ao salvar busca local', error);
+                });
+            }, 500);
+        });
 
-            self.addEventListener('activate', event => {
-              const cacheWhitelist = [CACHE_NAME];
-              event.waitUntil(
-                caches.keys().then(cacheNames => {
-                  return Promise.all(
-                    cacheNames.map(cacheName => {
-                      if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                      }
-                    })
-                  );
-                })
-              );
-            });
-        `;
-        
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => {
-                        showMessage("✅ Service Worker registrado! PWA pronto para o offline.", false);
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(() => {
+                        showMessage('✅ Service Worker registrado! PWA pronto para o offline.', false);
                     })
-                    .catch(error => {
-                        showMessage("❌ Erro ao registrar Service Worker. Modo Offline indisponível.", true);
+                    .catch((error) => {
+                        console.error('Erro ao registrar Service Worker', error);
+                        showMessage('❌ Erro ao registrar Service Worker. Modo Offline indisponível.', true);
                     });
             });
         } else {
-            showMessage("Seu navegador não suporta Service Workers.", true);
+            showMessage('Seu navegador não suporta Service Workers.', true);
         }
-        
+
+
+        (async () => {
+            try {
+                await openDatabase();
+                const savedSearch = await getUserSetting('searchQuery');
+                if (savedSearch && typeof savedSearch.value === 'string') {
+                    searchInput.value = savedSearch.value;
+                    applySearch(savedSearch.value);
+                }
+
+                const lastMiniApp = await getUserSetting('lastMiniApp');
+                if (lastMiniApp && lastMiniApp.value && lastMiniApp.value.title) {
+                    syncStatusLabel.textContent = `Último miniapp enfileirado: ${lastMiniApp.value.title}`;
+                }
+
+                if (navigator.onLine) {
+                    await syncPendingChanges();
+                }
+            } catch (error) {
+                console.error('Falha ao inicializar dados locais', error);
+            }
+        })();
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -282,5 +413,6 @@
         });
         
     </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="window.handleGapiLoad && window.handleGapiLoad()"></script>
 </body>
 </html>
