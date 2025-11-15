@@ -247,10 +247,37 @@
             }, 5000);
         }
 
+        function resolveMiniAppId(app) {
+            if (!app || typeof app !== 'object') {
+                return null;
+            }
+
+            const directId = typeof app.id === 'string' ? app.id.trim() : '';
+            if (directId) {
+                return directId;
+            }
+
+            if (typeof app.title !== 'string') {
+                return null;
+            }
+
+            const normalized = app.title
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            return normalized || null;
+        }
+
         function openProductModal(app) {
             if (!app) return;
 
-            currentMiniApp = app;
+            currentMiniApp = {
+                ...app,
+                id: resolveMiniAppId(app)
+            };
             modalTitle.textContent = app.title;
             modalDescription.textContent = app.description;
             modalPrice.textContent = app.price;
@@ -269,15 +296,22 @@
                 return;
             }
 
+            const miniAppId = resolveMiniAppId(currentMiniApp);
+            if (!miniAppId) {
+                console.warn('MiniApp sem identificador ao tentar adicionar ao carrinho.', currentMiniApp);
+                showMessage('❌ MiniApp sem identificador válido. Atualize o cadastro antes de prosseguir.', true);
+                return;
+            }
+
             try {
                 await queueForSync({
                     type: 'cart-entry',
-                    miniAppId: currentMiniApp.id,
+                    miniAppId,
                     title: currentMiniApp.title,
                     queuedAt: new Date().toISOString()
                 });
                 await saveUserSetting('lastMiniApp', {
-                    id: currentMiniApp.id,
+                    id: miniAppId,
                     title: currentMiniApp.title,
                     queuedAt: new Date().toISOString()
                 });
