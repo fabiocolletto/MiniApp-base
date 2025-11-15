@@ -1,3 +1,72 @@
+import { getAll, saveRecord, deleteRecord } from '../js/indexeddb-store.js';
+
+const FAVORITES_STORE = 'favorites';
+let favoritesCache = new Map();
+let favoritesLoaded = false;
+
+function getShowMessageFn() {
+    if (typeof globalThis !== 'undefined' && typeof globalThis.showMessage === 'function') {
+        return globalThis.showMessage;
+    }
+    return null;
+}
+
+async function loadFavoritesCache() {
+    if (!favoritesLoaded) {
+        try {
+            const favorites = await getAll(FAVORITES_STORE);
+            favoritesCache = new Map(
+                favorites
+                    .filter((item) => item && item.miniAppTitle)
+                    .map((item) => [item.miniAppTitle, true])
+            );
+        } catch (error) {
+            console.error('Erro ao carregar favoritos do IndexedDB', error);
+            favoritesCache = new Map();
+        }
+        favoritesLoaded = true;
+    }
+    return favoritesCache;
+}
+
+function updateFavoriteButtonState(favoriteButton, isFavorited) {
+    const iconSpan = favoriteButton.querySelector('.material-icons-sharp');
+    favoriteButton.classList.toggle('favorited', isFavorited);
+    favoriteButton.dataset.favorite = isFavorited ? 'true' : 'false';
+
+    if (!iconSpan) {
+        return;
+    }
+
+    if (isFavorited) {
+        iconSpan.textContent = 'favorite';
+        iconSpan.classList.add('text-orange-500');
+        iconSpan.classList.remove('text-white');
+    } else {
+        iconSpan.textContent = 'favorite_border';
+        iconSpan.classList.add('text-white');
+        iconSpan.classList.remove('text-orange-500');
+    }
+}
+
+async function persistFavorite(app, shouldFavorite) {
+    if (!app || !app.title) {
+        throw new Error('MiniApp inválido para favorito.');
+    }
+
+    if (shouldFavorite) {
+        await saveRecord(FAVORITES_STORE, {
+            miniAppTitle: app.title,
+            savedAt: new Date().toISOString(),
+            data: app
+        });
+        favoritesCache.set(app.title, true);
+    } else {
+        await deleteRecord(FAVORITES_STORE, app.title);
+        favoritesCache.delete(app.title);
+    }
+}
+
 // miniapp-card.js
 // Este módulo é responsável por gerar o template HTML e anexar os event listeners
 // para os cards, sem a responsabilidade de carregar os dados.
@@ -42,12 +111,21 @@ function createMiniAppCardHTML(app) {
  * Depende das funções globais: openProductModal e showMessage.
  * @param {Array<object>} data - A array de MiniApps que foi renderizada.
  */
-function attachCardListeners(data) {
+async function attachCardListeners(data) {
+    const showMessageFn = getShowMessageFn();
+    const favorites = await loadFavoritesCache();
+
     document.querySelectorAll('.miniapp-card').forEach((card) => {
         // Encontra o objeto de dados correspondente pelo título (mais seguro que índice)
-        const app = data.find(item => item.title === card.dataset.title); 
+        const app = data.find(item => item.title === card.dataset.title);
 
         if (!app) return;
+
+        const favoriteButton = card.querySelector('.favorite-button');
+        if (favoriteButton) {
+            const initiallyFavorited = favorites.has(app.title);
+            updateFavoriteButtonState(favoriteButton, initiallyFavorited);
+        }
 
         // Listener para abrir modal
         const openModalHandler = (e) => {
@@ -61,26 +139,40 @@ function attachCardListeners(data) {
         card.querySelector('.details-button').addEventListener('click', openModalHandler);
 
         // Listener para Favoritar
-        const favoriteButton = card.querySelector('.favorite-button');
-        favoriteButton.addEventListener('click', (event) => {
+        if (!favoriteButton) {
+            return;
+        }
+
+        favoriteButton.addEventListener('click', async (event) => {
             event.stopPropagation();
-            const iconSpan = favoriteButton.querySelector('.material-icons-sharp');
-            favoriteButton.classList.toggle('favorited');
-            
-            if (favoriteButton.classList.contains('favorited')) {
-                iconSpan.textContent = 'favorite';
-                iconSpan.classList.add('text-orange-500');
-                iconSpan.classList.remove('text-white');
-                if (typeof showMessage === 'function') {
-                    showMessage(`⭐ MiniApp "${app.title}" adicionado aos Favoritos!`, false);
+            if (favoriteButton.disabled) {
+                return;
+            }
+
+            const currentlyFavorited = favoriteButton.classList.contains('favorited');
+            const shouldFavorite = !currentlyFavorited;
+
+            favoriteButton.disabled = true;
+
+            try {
+                await persistFavorite(app, shouldFavorite);
+                updateFavoriteButtonState(favoriteButton, shouldFavorite);
+
+                if (typeof showMessageFn === 'function') {
+                    if (shouldFavorite) {
+                        showMessageFn(`⭐ MiniApp "${app.title}" adicionado aos Favoritos!`, false);
+                    } else {
+                        showMessageFn(`MiniApp "${app.title}" removido dos Favoritos.`, true);
+                    }
                 }
-            } else {
-                iconSpan.textContent = 'favorite_border';
-                iconSpan.classList.add('text-white');
-                iconSpan.classList.remove('text-orange-500');
-                if (typeof showMessage === 'function') {
-                    showMessage(`MiniApp "${app.title}" removido dos Favoritos.`, true);
+            } catch (error) {
+                console.error('Erro ao atualizar favorito', error);
+                updateFavoriteButtonState(favoriteButton, currentlyFavorited);
+                if (typeof showMessageFn === 'function') {
+                    showMessageFn('❌ Não foi possível atualizar seus favoritos. Tente novamente.', true);
                 }
+            } finally {
+                favoriteButton.disabled = false;
             }
         });
     });
@@ -92,11 +184,9 @@ function attachCardListeners(data) {
  * @param {Array<object>} data - Array de objetos de MiniApps. (NOVO: Dados passados como argumento)
  * @param {HTMLElement} targetElement - O elemento onde os cards serão injetados.
  */
-export function renderMiniApps(data, targetElement) {
+export async function renderMiniApps(data, targetElement) {
     targetElement.innerHTML = data.map(createMiniAppCardHTML).join('');
-    
+
     // Anexa listeners, passando os dados necessários.
-    setTimeout(() => {
-        attachCardListeners(data);
-    }, 0); 
+    await attachCardListeners(data);
 }

@@ -3,7 +3,7 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 
 workbox.setConfig({ debug: false });
 
-const APP_VERSION = 'v1';
+const APP_VERSION = 'v2';
 const PRECACHE_RESOURCES = [
   { url: './', revision: APP_VERSION },
   { url: './index.html', revision: APP_VERSION },
