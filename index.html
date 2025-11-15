@@ -1,1557 +1,521 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="light">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MiniApps — Catálogo V2</title>
-
-  <!-- Tailwind CSS para Estilização (Melhor compatibilidade e estilo) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Estilos do arquivo original, adaptados para complementar o Tailwind */
-    :root {
-      --card: #fff;
-      --card-border: #cbd5e1;
-      --muted: #64748b;
-    }
-    [data-theme="dark"] {
-      --card: #1f2937;
-      --card-border: #374151;
-      --muted: #9ca3af;
-    }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: #f1f5f9;
-      color: #0f172a;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .layout-shell {
-      width: 100%;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      flex: 1;
-    }
-
-    .layout-main,
-    .layout-footer {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 0;
-    }
-
-    .layout-header {
-      padding: clamp(16px, 4vw, 24px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: clamp(12px, 3vw, 20px);
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      flex-wrap: wrap;
-    }
-
-    .layout-header .title {
-      display: flex;
-      align-items: flex-start;
-      gap: clamp(10px, 2.4vw, 16px);
-      flex-direction: column;
-      flex: 1 1 220px;
-      min-width: 0;
-    }
-
-    .layout-header .title h1 {
-      margin: 0;
-      color: var(--text);
-      font-size: clamp(20px, 3vw, 26px);
-      font-weight: 700;
-    }
-
-    .layout-header .title .subtitle {
-      margin: 0;
-      color: var(--muted);
-      font-size: clamp(14px, 2.4vw, 16px);
-    }
-
-    .header-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: clamp(10px, 3vw, 18px);
-      margin-left: auto;
-      flex: 0 1 auto;
-    }
-
-    .header-actions .greeting {
-      font-size: clamp(13px, 2.2vw, 15px);
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .footer-greeting {
-      font-size: clamp(13px, 2.2vw, 15px);
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .icon-action {
-      width: clamp(36px, 8vw, 40px);
-      height: clamp(36px, 8vw, 40px);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      color: inherit;
-      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .icon-action::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: rgba(15, 23, 42, 0.08);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .icon-action:hover::after,
-    .icon-action:focus-visible::after {
-      opacity: 1;
-    }
-
-    .icon-action:hover,
-    .icon-action:focus-visible {
-      outline: none;
-      transform: translateY(-1px);
-    }
-
-    .icon-action--highlight {
-      color: #0b57d0;
-    }
-
-    [data-theme="dark"] .icon-action::after {
-      background: rgba(148, 163, 184, 0.16);
-    }
-
-    .icon-action .material-icons {
-      font-size: clamp(20px, 4vw, 24px);
-    }
-
-    @media (max-width: 520px) {
-      .header-actions .greeting {
-        display: none;
-      }
-    }
-
-    .layout-main {
-      flex: 1;
-      padding: clamp(18px, 4vw, 28px);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(24px, 5vw, 40px);
-    }
-
-    .layout-main--catalog {
-      align-items: center;
-    }
-
-    .layout-main--admin {
-      gap: clamp(12px, 3vw, 20px);
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .catalog-container {
-      width: min(640px, 100%);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-    }
-
-    .app-tag {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .app-tag:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-    }
-
-    .app-tag img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-      background: #fff;
-    }
-
-    .app-tag h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .app-tag p {
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .app-description {
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      white-space: normal;
-      text-align: left;
-    }
-
-    .btn {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      border-radius: 999px;
-      padding: 8px 12px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.04);
-      text-decoration: none;
-      color: inherit;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .btn:hover {
-      background: rgba(37, 99, 235, 0.1);
-    }
-
-    .btn.primary {
-      background: #0b57d0;
-      border-color: #0b57d0;
-      color: #fff;
-    }
-
-    .btn.primary:hover {
-      background: #0a4cc9;
-    }
-
-    .btn.icon-only {
-      padding: 8px;
-      border-radius: 50%;
-      background: transparent;
-      border-color: transparent;
-    }
-
-    .btn.icon-only:hover {
-      background: rgba(37, 99, 235, 0.12);
-    }
-
-    .material-icons {
-      font-family: 'Material Symbols Outlined';
-      font-weight: normal;
-      font-style: normal;
-      font-size: 20px;
-      display: inline-block;
-      line-height: 1;
-      text-transform: none;
-      letter-spacing: normal;
-      word-wrap: normal;
-      white-space: nowrap;
-      direction: ltr;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      -moz-osx-font-smoothing: grayscale;
-      font-variation-settings: 'wght' 300;
-    }
-
-    .admin-shell {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: clamp(16px, 4vw, 28px);
-    }
-
-    .admin-panel {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(16px, 3vw, 24px);
-    }
-
-    .admin-tabs {
-      display: flex;
-      gap: 4px;
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(241, 245, 249, 0.6);
-      padding: 0 clamp(18px, 4vw, 28px);
-    }
-
-    .admin-tabs button {
-      padding: 12px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #475569;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .admin-tabs button.active {
-      color: #1d4ed8;
-      border-color: #1d4ed8;
-    }
-
-    .admin-content {
-      padding: clamp(18px, 4vw, 28px);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(20px, 4vw, 32px);
-    }
-
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--card);
-    }
-
-    .admin-table thead {
-      background: rgba(241, 245, 249, 0.6);
-    }
-
-    .admin-table th,
-    .admin-table td {
-      text-align: left;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #1f2937;
-      border-bottom: 1px solid var(--card-border);
-      vertical-align: middle;
-    }
-
-    .admin-table tbody tr:hover {
-      background: rgba(37, 99, 235, 0.08);
-    }
-
-    .admin-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .editable-input,
-    .status-select {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      background: rgba(219, 234, 254, 0.5);
-      font-size: 14px;
-      color: #1f2937;
-    }
-
-    .layout-footer {
-      padding: clamp(16px, 3vw, 24px);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-    }
-  </style>
-
-  <!-- === INCLUSÃO DE LIBS === -->
-
-  <!-- Material Symbols Outlined (Google Fonts) para Iconografia moderna -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
-
-  <!-- LÓGICA DE INICIALIZAÇÃO E STORE (Script principal) -->
-  <script>
-    // Variável global para o banco de dados (será Dexie ou localForage)
-    let db;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo MiniApp 5Horas</title>
     
-    // --- CHAVES DE ARMAZENAMENTO ---
-    const DB_APP_ID = 'miniapps-catalog';
-    const STORE_NAME_CATALOG = 'catalogItems';
-    const STORE_NAME_USERS = 'usersItems';
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Material Icons (Sharp Style for Solid Look) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     
-    /**
-     * DADOS FIXOS PARA O MINI-APP (Ajustado para o Painel Administrativo)
-     */
-    const CATALOGO_DETAILS = {
-        title: "Painel Administrativo",
-        iconUrl: "https://placehold.co/40x40/f97316/ffffff?text=A", // Laranja/Admin icon
-        description: "Sistema para controle de permissões e dados mestre. Requer credenciais de administrador e gerenciamento de configurações centrais da plataforma.",
-        version: "2.0.0 (Stable)",
-        author: "Equipe de Infraestrutura",
-        features: [
-            "Gestão de usuários",
-            "Backup de dados e logs",
-            "Configurações de Tema e UI",
-            "Controle de acesso por função (Role-Based Access Control)"
-        ],
-        link: null // Miniapp Prefeito foi descontinuado
-    };
-    
-    /**
-     * DADOS DE EXEMPLO DE INICIALIZAÇÃO (Fallback)
-     */
-    const INITIAL_CATALOG_ITEMS = [
-        { id: 1, title: 'Painel Administrativo', version: '2.0.0', author: 'Infraestrutura', status: 'Ativo' },
-        { id: 2, title: 'MiniApp Relatórios', version: '1.5.0', author: 'BI Team', status: 'Ativo' },
-        { id: 3, title: 'MiniApp RH', version: '1.0.1', author: 'RH Team', status: 'Inativo' },
-        { id: 4, title: 'MiniApp Financeiro', version: '3.0.0', author: 'Financeiro', status: 'Ativo' },
-        { id: 5, title: 'MiniApp Gestão de Projetos e Recursos Humanos', version: '1.1.0', author: 'Gerência', status: 'Ativo' },
-    ];
-    
-    const INITIAL_USERS_ADMIN = [
-        { id: 101, name: 'Alice Silva', email: 'alice.s@empresa.com', role: 'Admin', status: 'Ativo' },
-        { id: 102, name: 'Bruno Mendes', email: 'bruno.m@empresa.com', role: 'Write', status: 'Ativo' },
-        { id: 103, name: 'Carla Souza', email: 'carla.s@empresa.com', role: 'Read', status: 'Inativo' },
-        { id: 104, name: 'David Lima', email: 'david.l@empresa.com', role: 'Write', status: 'Ativo' },
-        { id: 105, name: 'Elena Costa', email: 'elena.c@empresa.com', role: 'Admin', status: 'Ativo' },
-    ];
-
-
-    /**
-     * 1. Verifica se o IndexedDB está disponível no navegador.
-     * @returns {boolean} True se IndexedDB for suportado.
-     */
-    function isIndexedDBSupported() {
-        return 'indexedDB' in window;
-    }
-
-    /**
-     * 2. Configura o armazenamento principal (Dexie ou localForage).
-     * @returns {Promise<string>} O driver de armazenamento usado.
-     */
-    async function setupStorage() {
-        const appId = DB_APP_ID;
-
-        if (isIndexedDBSupported()) {
-            // Tenta usar Dexie.js (IndexedDB)
-            try {
-                // Dexie.js já estará carregado aqui, pois seu script está acima.
-                db = new Dexie(appId);
-                // Define o esquema do banco de dados para persistir os dados
-                db.version(1).stores({
-                    [STORE_NAME_CATALOG]: 'id, title', 
-                    [STORE_NAME_USERS]: 'id, name' 
-                });
-                await db.open();
-                return 'Dexie.js (IndexedDB)';
-            } catch (error) {
-                // Se Dexie falhar (raro, mas possível), tenta o fallback
-                console.warn("Falha ao inicializar Dexie.js. Usando localForage como fallback.", error);
-            }
+    <style>
+        /* ------------------------------------------------ */
+        /* ESTRUTURA GLOBAL (PWA Shell - Largura Fixa Mobile) */
+        /* ------------------------------------------------ */
+        body { font-family: 'Inter', sans-serif; }
+        .app-shell {
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .message-box {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            transition: opacity 0.3s, transform 0.3s;
         }
         
-        // Usa localForage como fallback (IndexedDB -> WebSQL -> localStorage)
-        // localforage já estará carregado aqui
-        localforage.config({
-            name: appId,
-            storeName: 'fallback_store'
-        });
-        db = localforage; // Atribui localForage à variável db
-        return 'localForage (Fallback)';
-    }
-
-    // --- FUNÇÕES DE PERSISTÊNCIA ---
-
-    /**
-     * Salva o array de itens do catálogo no armazenamento local.
-     * @param {Array} items 
-     */
-    async function saveCatalogItems(items) {
-        if (!db) { console.error("Database not initialized."); return; }
+        /* ------------------------------------------------ */
+        /* ESTILOS DA MODAL (Pop-up de Detalhes) */
+        /* ------------------------------------------------ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #1f2937;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
         
-        // CORREÇÃO: Cria uma cópia serializável dos itens para evitar DataCloneError
-        const serializableItems = JSON.parse(JSON.stringify(items)); 
-
-        try {
-            if (db.table && db.table(STORE_NAME_CATALOG)) { // Dexie
-                await db.table(STORE_NAME_CATALOG).clear();
-                await db.table(STORE_NAME_CATALOG).bulkPut(serializableItems); // Alterado para bulkPut para lidar com IDs existentes
-            } else if (db.setItem) { // localForage
-                await db.setItem(STORE_NAME_CATALOG, serializableItems);
-            }
-            console.log(`[Persistência] Catálogo salvo: ${items.length} itens.`);
-        } catch (error) {
-            console.error("[Persistência] Erro ao salvar catálogo:", error);
+        /* ------------------------------------------------ */
+        /* MODELO DE CARD DE MINAPP (Estilo Netflix) */
+        /* ------------------------------------------------ */
+        .miniapp-card {
+            position: relative;
+            background-color: #374151;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s, transform 0.3s;
+            cursor: pointer;
         }
-    }
-
-    /**
-     * Carrega o array de itens do catálogo do armazenamento local.
-     * @returns {Promise<Array>}
-     */
-    async function loadCatalogItems() {
-        if (!db) { return INITIAL_CATALOG_ITEMS; }
-
-        try {
-            if (db.table && db.table(STORE_NAME_CATALOG)) { // Dexie
-                const items = await db.table(STORE_NAME_CATALOG).toArray();
-                return items; // Retorna o array (pode ser vazio)
-            } else if (db.getItem) { // localForage
-                const items = await db.getItem(STORE_NAME_CATALOG);
-                return items || []; // Retorna o array (pode ser vazio)
-            }
-        } catch (error) {
-            console.error("[Persistência] Erro ao carregar catálogo. Retornando vazio.", error);
-            return [];
+        .miniapp-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
         }
-        return [];
-    }
+
+        .miniapp-image {
+            width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            object-fit: cover;
+            aspect-ratio: 4/3;
+        }
+        
+        /* Botões Flutuantes */
+        .favorite-button, .details-button {
+            position: absolute;
+            top: 0.5rem;
+            background-color: transparent; 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            color: white;
+            padding: 0.4rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: background-color 0.2s, border-color 0.2s;
+            z-index: 10;
+        }
+        .details-button {
+            right: 0.5rem;
+        }
+        .favorite-button {
+            right: 3rem;
+        }
+        .favorite-button:hover, .details-button:hover {
+            background-color: rgba(249, 115, 22, 0.4); 
+            border-color: rgba(249, 115, 22, 0.8);
+        }
+
+        /* Etiqueta de Categoria */
+        .category-tag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(31, 41, 55, 0.8);
+            color: #d1d5db;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-top-right-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
+            z-index: 9;
+        }
+
+        /* Etiqueta de Contratação */
+        .contract-tag {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: rgba(249, 115, 22, 0.8);
+            color: #1f2937;
+            font-size: 0.75rem; 
+            font-weight: 700;
+            padding: 0.3rem 0.75rem;
+            border-top-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            z-index: 9;
+        }
+    </style>
     
-    /**
-     * Salva o array de itens de usuários no armazenamento local.
-     * @param {Array} users 
-     */
-    async function saveUserItems(users) {
-        if (!db) { console.error("Database not initialized."); return; }
-
-        // CORREÇÃO: Cria uma cópia serializável dos usuários para evitar DataCloneError
-        const serializableUsers = JSON.parse(JSON.stringify(users));
-
-        try {
-            if (db.table && db.table(STORE_NAME_USERS)) { // Dexie
-                await db.table(STORE_NAME_USERS).clear();
-                await db.table(STORE_NAME_USERS).bulkPut(serializableUsers); // Alterado para bulkPut para lidar com IDs existentes
-            } else if (db.setItem) { // localForage
-                await db.setItem(STORE_NAME_USERS, serializableUsers);
-            }
-            console.log(`[Persistência] Usuários salvos: ${users.length} itens.`);
-        } catch (error) {
-            console.error("[Persistência] Erro ao salvar usuários:", error);
-        }
-    }
-    
-    /**
-     * Carrega o array de itens de usuários do armazenamento local.
-     * @returns {Promise<Array>}
-     */
-    async function loadUserItems() {
-        if (!db) { return INITIAL_USERS_ADMIN; }
-
-        try {
-            if (db.table && db.table(STORE_NAME_USERS)) { // Dexie
-                const items = await db.table(STORE_NAME_USERS).toArray();
-                return items; // Retorna o array (pode ser vazio)
-            } else if (db.getItem) { // localForage
-                const items = await db.getItem(STORE_NAME_USERS);
-                return items || []; // Retorna o array (pode ser vazio)
-            }
-        } catch (error) {
-            console.error("[Persistência] Erro ao carregar usuários. Retornando vazio.", error);
-            return [];
-        }
-        return [];
-    }
-
-    // 3. Inicialização do Estado Global do Alpine.js (Alpine.Store)
-    // ESTE LISTENER DEVE SER REGISTRADO ANTES DO ALPINE.JS SER EXECUTADO
-    document.addEventListener('alpine:init', () => {
-        Alpine.store('user', {
-            isLoggedIn: false,
-            username: 'Visitante',
-            permissions: [],
-            
-            // Simulação de login
-            login(name, perms) {
-                this.isLoggedIn = true;
-                this.username = name;
-                this.permissions = perms || ['read'];
-                console.log(`Usuário logado: ${this.username}`);
-            },
-
-            // Simulação de logout
-            logout() {
-                this.isLoggedIn = false;
-                this.username = 'Visitante';
-                this.permissions = [];
-                // Fecha o modal de conta se estiver aberto
-                Alpine.store('app').showAccountModal = false; 
-                console.log("Usuário deslogado.");
-            },
-
-            // Exemplo de verificação de permissão
-            can(action) {
-                return this.permissions.includes(action);
-            }
-        });
-
-        Alpine.store('app', {
-            isReady: false,
-            storageDriver: 'Carregando...',
-            saveStatus: 'Atualizado', // NOVO: 'Atualizado', 'Desatualizado', 'Salvando', 'Salvo'
-            showDetailsModal: false, // Controla a visibilidade do Modal de Detalhes
-            showAccountModal: false, // NOVO: Controla a visibilidade do Modal de Conta
-            editingId: null, // NOVO: id do item que está sendo editado no modo inline
-            editingField: null, // NOVO: campo do item que está sendo editado no modo inline
-            currentAppDetails: CATALOGO_DETAILS, // Detalhes do App
-            showCatalog: true, // Controla a exibição do catálogo
-            showAdminPanelContent: false, // Controla a exibição do painel admin (simulação)
-            activeAdminTab: 'catalogo', // Aba ativa no painel administrativo
-            catalogItems: INITIAL_CATALOG_ITEMS, // DADOS DA TABELA DE CATÁLOGO (Serão substituídos no initialize)
-            usersItems: INITIAL_USERS_ADMIN, // NOVO: DADOS DA TABELA DE USUÁRIOS (Serão substituídos no initialize)
-            
-            // NOVO: Estado para a Ordenação da Tabela (Catálogo)
-            sortKey: 'id', // Chave de ordenação inicial
-            sortAsc: true, // Direção de ordenação inicial (Ascendente)
-            
-            // NOVO: Estado para a Ordenação da Tabela (Usuários)
-            sortKeyUser: 'id', 
-            sortAscUser: true, 
-            
-            // Propriedade Computada para exibir o título no Header
-            get adminTitle() {
-                switch (this.activeAdminTab) {
-                    case 'catalogo':
-                        return 'Gerenciamento de MiniApps';
-                    case 'sistema':
-                        return 'Dados do Sistema';
-                    case 'usuarios':
-                        return 'Cadastro de Usuários';
-                    default:
-                        return 'Painel Administrativo';
-                }
-            },
-
-            // Propriedade Computada para retornar os itens ordenados (Catálogo)
-            get sortedCatalogItems() {
-                return this.catalogItems.slice().sort((a, b) => {
-                    const aVal = a[this.sortKey];
-                    const bVal = b[this.sortKey];
-
-                    // Comparações
-                    let comparison = 0;
-                    if (typeof aVal === 'string') {
-                        // Comparação de string sensível à localidade (ignora caixa para ordenação)
-                        comparison = aVal.localeCompare(bVal, 'pt-BR', { sensitivity: 'base' });
-                    } else {
-                        // Comparação numérica
-                        if (aVal > bVal) comparison = 1;
-                        else if (aVal < bVal) comparison = -1;
-                    }
-
-                    // Aplica a direção da ordenação
-                    return this.sortAsc ? comparison : comparison * -1;
-                });
-            },
-
-            // Propriedade Computada para retornar os itens ordenados (Usuários)
-            get sortedUsers() {
-                return this.usersItems.slice().sort((a, b) => {
-                    const aVal = a[this.sortKeyUser];
-                    const bVal = b[this.sortKeyUser];
-
-                    let comparison = 0;
-                    if (typeof aVal === 'string') {
-                        comparison = aVal.localeCompare(bVal, 'pt-BR', { sensitivity: 'base' });
-                    } else {
-                        if (aVal > bVal) comparison = 1;
-                        else if (aVal < bVal) comparison = -1;
-                    }
-
-                    return this.sortAscUser ? comparison : comparison * -1;
-                });
-            },
-            
-            // Método para ordenar a tabela (Catálogo)
-            sortBy(key) {
-                if (this.sortKey === key) {
-                    this.sortAsc = !this.sortAsc; // Inverte a direção se a chave for a mesma
-                } else {
-                    this.sortKey = key;
-                    this.sortAsc = true; // Define ascendente por padrão na nova chave
-                }
-            },
-            
-            // NOVO: Método para ordenar a tabela (Usuários)
-            sortByUser(key) {
-                if (this.sortKeyUser === key) {
-                    this.sortAscUser = !this.sortAscUser;
-                } else {
-                    this.sortKeyUser = key;
-                    this.sortAscUser = true;
-                }
-            },
-            
-            // Função para exibir os detalhes do App no modal
-            showDetails(details) {
-                this.currentAppDetails = details;
-                this.showDetailsModal = true;
-            },
-            
-            // Função para entrar no modo de edição (inline)
-            startEditing(id, field) {
-                this.editingId = id;
-                this.editingField = field;
-                this.saveStatus = 'Desatualizado'; // INFORMA: Há alterações não salvas
-                
-                // Timeout para focar no input após a renderização condicional
-                setTimeout(() => {
-                    const input = document.getElementById(`edit-${id}-${field}`);
-                    if (input) input.focus();
-                }, 0);
-            },
-
-            // Função para verificar se a célula está em edição
-            isEditing(id, field) {
-                return this.editingId === id && this.editingField === field;
-            },
-            
-            // Função para sair do modo de edição e salvar
-            async saveInlineEdit(id, field) {
-                // Se a edição foi concluída (e não apenas o blur ocorreu sem mudança), salvar
-                if (this.editingId === id && this.editingField === field) {
-                    this.editingId = null;
-                    this.editingField = null;
-                    
-                    this.saveStatus = 'Salvando'; // MUDA O STATUS: Salvando
-                    
-                    // Salva o estado atual do catálogo após a edição inline
-                    await saveCatalogItems(this.catalogItems);
-                    
-                    this.saveStatus = 'Salvo'; // MUDA O STATUS: Salvo
-                    console.log(`[Persistência] Edição inline de ID ${id} e campo ${field} salva.`);
-                    
-                    // Volta ao status normal após um pequeno atraso
-                    setTimeout(() => {
-                        this.saveStatus = 'Atualizado';
-                    }, 2000);
-                }
-            },
-
-            // Função para sair do modo de edição e salvar (Usuários)
-            async saveUserInlineEdit(id, field) {
-                 // Se a edição foi concluída (e não apenas o blur ocorreu sem mudança), salvar
-                if (this.editingId === id && this.editingField === field) {
-                    this.editingId = null;
-                    this.editingField = null;
-                    
-                    this.saveStatus = 'Salvando'; // MUDA O STATUS: Salvando
-
-                    // Salva o estado atual dos usuários após a edição inline
-                    await saveUserItems(this.usersItems);
-                    
-                    this.saveStatus = 'Salvo'; // MUDA O STATUS: Salvo
-                    console.log(`[Persistência] Edição inline de Usuário ID ${id} e campo ${field} salva.`);
-
-                    // Volta ao status normal após um pequeno atraso
-                    setTimeout(() => {
-                        this.saveStatus = 'Atualizado';
-                    }, 2000);
-                }
-            },
-
-
-            // Função de inicialização assíncrona
-            async initialize() {
-                // 1. Inicializa o DB
-                const driver = await setupStorage();
-                
-                // 2. Carrega dados persistidos (se houver)
-                let persistedCatalog = await loadCatalogItems();
-                let persistedUsers = await loadUserItems();
-
-                // 3. Verifica se o DB estava vazio e, em caso afirmativo, usa o fallback e persiste-o
-                let mustPersistCatalog = false;
-                let mustPersistUsers = false;
-                
-                if (persistedCatalog.length === 0) {
-                    persistedCatalog = INITIAL_CATALOG_ITEMS;
-                    mustPersistCatalog = true;
-                }
-                
-                if (persistedUsers.length === 0) {
-                    persistedUsers = INITIAL_USERS_ADMIN;
-                    mustPersistUsers = true;
-                }
-
-                // 4. Atualiza o estado da aplicação no Alpine Store
-                Alpine.store('app').storageDriver = driver;
-                Alpine.store('app').catalogItems = persistedCatalog; 
-                Alpine.store('app').usersItems = persistedUsers; 
-                Alpine.store('app').isReady = true;
-                this.saveStatus = 'Atualizado'; // Define status inicial como Atualizado
-
-                // 5. Persiste os fallbacks se necessário (Acontece apenas na primeira carga ou após a limpeza do DB)
-                if (mustPersistCatalog) {
-                    await saveCatalogItems(persistedCatalog);
-                }
-                if (mustPersistUsers) {
-                    await saveUserItems(persistedUsers);
-                }
-
-
-                // 6. Simula login
-                Alpine.store('user').login('Admin', ['read', 'write', 'admin']); 
-            }
-        });
-    });
-
-    /**
-     * IMPORTANTE: Esta função simula a chamada da API do MiniApp Base 
-     * para carregar o conteúdo no painel central (que é o comportamento desejado).
-     */
-    function loadAdminPanel() {
-        console.log(`[MiniApp Base] Simulação de carregamento do app: Painel Administrativo`);
-        
-        // Simula a navegação no MiniApp Base: esconde o catálogo e mostra o conteúdo do app
-        Alpine.store('app').showCatalog = false;
-        Alpine.store('app').showAdminPanelContent = true;
-        Alpine.store('app').activeAdminTab = 'catalogo'; // Define aba padrão ao abrir o Admin
-    }
-
-    /**
-     * NOVO: Função para voltar à visualização do Catálogo
-     */
-    function showCatalogView() {
-        Alpine.store('app').showCatalog = true;
-        Alpine.store('app').showAdminPanelContent = false;
-        console.log(`[MiniApp Base] Voltou para o Catálogo.`);
-    }
-
-    
-    // Funções de CRUD de Tabela (Simulação)
-
-    /**
-     * Implementação da lógica de exclusão no Alpine Store
-     */
-    async function removeApp(appId) {
-        console.log(`Ação: Tentativa de Remover MiniApp ID ${appId}`);
-
-        const appStore = Alpine.store('app');
-        
-        // Remove o item filtrando o array no Alpine Store.
-        const newCatalogItems = appStore.catalogItems.filter(app => app.id !== appId);
-        appStore.catalogItems = newCatalogItems;
-        
-        appStore.saveStatus = 'Salvando'; // MUDA O STATUS: Salvando
-
-        // *** PERSISTÊNCIA: Salva o novo estado no armazenamento local ***
-        await saveCatalogItems(newCatalogItems);
-
-        appStore.saveStatus = 'Salvo'; // MUDA O STATUS: Salvo
-        console.log(`MiniApp ID ${appId} removido com sucesso (Simulação de exclusão).`);
-        
-        // Volta ao status normal após um pequeno atraso
-        setTimeout(() => {
-            appStore.saveStatus = 'Atualizado';
-        }, 2000);
-    }
-    
-    /**
-     * NOVO: Implementação da lógica de exclusão de usuário no Alpine Store
-     */
-    async function removeUser(userId) {
-        console.log(`Ação: Tentativa de Remover Usuário ID ${userId}`);
-
-        const appStore = Alpine.store('app');
-        
-        // Remove o item filtrando o array de usuários no Alpine Store.
-        const newUsersItems = appStore.usersItems.filter(user => user.id !== userId);
-        appStore.usersItems = newUsersItems;
-        
-        appStore.saveStatus = 'Salvando'; // MUDA O STATUS: Salvando
-
-        // *** PERSISTÊNCIA: Salva o novo estado no armazenamento local ***
-        await saveUserItems(newUsersItems);
-
-        appStore.saveStatus = 'Salvo'; // MUDA O STATUS: Salvo
-        console.log(`Usuário ID ${userId} removido com sucesso (Simulação de exclusão).`);
-        
-        // Volta ao status normal após um pequeno atraso
-        setTimeout(() => {
-            appStore.saveStatus = 'Atualizado';
-        }, 2000);
-    }
-
-
-    /**
-     * Funções de CRUD de exemplo usando o driver selecionado
-     */
-    async function saveSampleData(key, value) {
-        if (db && typeof db.users !== 'undefined') { // Dexie (Object Store)
-            await db.table(key).put(value);
-            console.log(`Dados salvos em Dexie: ${key}`);
-        } else if (db && typeof db.setItem === 'function') { // localForage (Key-Value)
-            await db.setItem(key, value);
-            console.log(`Dados salvos em localForage: ${key}`);
-        } else {
-            console.error("Banco de dados não inicializado ou driver desconhecido.");
-        }
-    }
-  </script>
-  
-  <!-- 2. DEXIE.JS (para IndexedDB avançado) -->
-  <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
-  
-  <!-- 3. LOCALFORAGE (para Fallback de compatibilidade) -->
-  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
-
-  <!-- 1. ALPINE.JS (para UI e Estado Global) -->
-  <!-- Alpine.js é o último script a ser carregado, garantindo que todas as stores sejam definidas. -->
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1f2937">
 </head>
+<body class="bg-gray-900">
 
-<!-- x-init chama o método initialize() da store 'app' APÓS o DOM ser ligado ao Alpine. -->
-<body x-data x-init="$store.app.initialize()">
-
-  <div class="layout-shell">
-  <!-- Header simplificado -->
-  <header class="layout-header">
-    <div class="title">
-      <!-- TÍTULO DO CATÁLOGO (Padrão) -->
-      <div x-show="$store.app.showCatalog">
-        <h1 class="text-xl font-bold text-gray-800 m-0">Catálogo de MiniApps</h1>
-        <p class="subtitle text-sm text-gray-500 m-0">Selecione um mini‑app para abrir</p>
-      </div>
-
-      <!-- TÍTULO DO ADMIN (Dinâmico) -->
-      <div x-show="$store.app.showAdminPanelContent">
-        <h1 class="text-xl font-bold text-gray-800 m-0" x-text="$store.app.adminTitle"></h1>
-        <p class="subtitle text-sm text-gray-500 m-0">Gerenciamento Central</p>
-      </div>
-    </div>
-
-    <!-- Componente de Status do Usuário (Usa Alpine.Store) -->
-    <nav class="header-actions" aria-label="Ações principais">
-
-      <!-- Ícone Home -->
-      <button type="button"
-              class="icon-action icon-action--highlight"
-              @click.prevent="showCatalogView()"
-              title="Voltar para o Catálogo"
-              aria-label="Ir para o catálogo">
-        <span class="material-icons" aria-hidden="true">home</span>
-      </button>
-
-      <!-- Ícone de Conta/Login -->
-      <button type="button"
-              class="icon-action"
-              :class="$store.user.isLoggedIn ? '' : 'icon-action--highlight'"
-              @click="$store.user.isLoggedIn ? $store.app.showAccountModal = true : $store.user.login('Usuário Teste', ['read'])"
-              :title="$store.user.isLoggedIn ? 'Gerir Conta' : 'Entrar'"
-              :aria-label="$store.user.isLoggedIn ? 'Abrir gerenciamento da conta' : 'Login'">
-        <span class="material-icons" aria-hidden="true" x-text="$store.user.isLoggedIn ? 'account_circle' : 'login'"></span>
-      </button>
-    </nav>
-  </header>
-
-  <!-- Main Content Centralizado -->
-  <main class="layout-main" aria-live="polite"
-        :class="{ 'layout-main--catalog': $store.app.showCatalog, 'layout-main--admin': $store.app.showAdminPanelContent }">
-    
-    <!-- 1. VISÃO DO CATÁLOGO (Mostrada por padrão) -->
-    <!-- Aplicando o Flexbox para Largura Fixa e Alinhamento -->
-    <div x-show="$store.app.showCatalog"
-         class="catalog-container">
-
-        <!-- ÚNICO ITEM: Painel Administrativo -->
-        <article class="app-tag">
-          
-          <!-- Informações Básicas do Mini-App (USANDO grow) -->
-          <div class="flex items-center gap-4 min-w-0 grow">
-            <img :src="$store.app.currentAppDetails.iconUrl" 
-                 alt="Ícone do Mini‑App Administrativo"
-                 class="shadow-sm">
-            
-            <!-- CONTAINER DE TEXTO AJUSTADO: Alinhamento e Proximidade -->
-            <div class="flex flex-col min-w-0 text-left space-y-0.5">
-                <h3 class="text-base text-gray-800 truncate" x-text="$store.app.currentAppDetails.title">Painel Administrativo</h3>
-                <p class="text-xs text-gray-500 app-description">Gerenciamento e configurações centrais da plataforma.</p>
+    <div class="app-shell bg-gray-800">
+        
+        <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center rounded-b-xl border-b border-gray-700">
+            <div class="flex items-center space-x-2">
+                <!-- ÍCONE DE LOGO - Material Icons: flash_on -->
+                <span class="material-icons-sharp text-orange-500 text-2xl">flash_on</span>
+                <h1 class="text-xl font-extrabold text-white">MiniApp 5Horas</h1>
             </div>
-          </div>
-
-          <!-- Ações - Botões (Mantidos alinhados à direita e no fundo) -->
-          <div class="actions flex gap-2 flex-shrink-0 mt-3 self-end">
             
-            <!-- Botão Mais Detalhes (Secundário - Ícone) -->
-            <a class="btn icon-only text-gray-700"
-               href="#" 
-               title="Detalhes"
-               @click.prevent="$store.app.showDetails($store.app.currentAppDetails)">
-              <!-- Ícone de Informação/Detalhes (Material Symbol) -->
-              <i class="material-icons">info</i>
-            </a>
-
-            <!-- Botão Abrir (Primário - Ícone) - Usa a função JS para simular o carregamento no Base -->
-            <a class="btn icon-only text-blue-600"
-               href="#" 
-               title="Abrir"
-               @click.prevent="loadAdminPanel()"
-               x-show="$store.user.isLoggedIn && ($store.user.can('admin') || $store.user.can('write'))">
-              <!-- Ícone de Abrir/Lançar (Material Symbol) -->
-              <i class="material-icons">launch</i>
-            </a>
-            
-            <!-- Status de Acesso Restrito -->
-            <span class="text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600 self-center" 
-                  x-show="!($store.user.isLoggedIn && ($store.user.can('admin') || $store.user.can('write')))">
-              Acesso Restrito
-            </span>
-          </div>
-        </article>
-
-    </div>
-
-    <!-- 2. SIMULAÇÃO DO PAINEL ADMINISTRATIVO (Conteúdo Carregado) -->
-    <!-- CRUCIAL: Contêiner de largura total com PADDING ZERO. -->
-    <div x-show="$store.app.showAdminPanelContent"
-         class="admin-shell">
-
-        <!-- Conteúdo Principal do Painel Administrativo -->
-        <!-- O fundo branco (bg-white) foi removido daqui para usar o fundo do body (f7f9fb) -->
-        <div class="admin-panel">
-            
-            <!-- Navegação por Abas (Mantendo o design plano e a largura total) -->
-            <div class="admin-tabs"> <!-- CRUCIAL: Fundo alterado para bg-gray-50 -->
-                <!-- Aba Catálogo -->
-                <button @click="$store.app.activeAdminTab = 'catalogo'"
-                        type="button"
-                        :class="{ 'active': $store.app.activeAdminTab === 'catalogo' }">
-                    Catálogo MiniApps
+            <div class="flex space-x-2 items-center">
+                <!-- ÍCONE DE BUSCA - Material Icons: search -->
+                <button id="searchToggle" class="text-gray-400 hover:text-orange-500 p-2 rounded-full transition duration-150">
+                    <span class="material-icons-sharp text-2xl">search</span>
                 </button>
-                <!-- Aba Dados do Sistema -->
-                <button @click="$store.app.activeAdminTab = 'sistema'"
-                        type="button"
-                        :class="{ 'active': $store.app.activeAdminTab === 'sistema' }">
-                    Dados do Sistema
-                </button>
-                <!-- Aba Cadastro de Usuários -->
-                <button @click="$store.app.activeAdminTab = 'usuarios'"
-                        type="button"
-                        :class="{ 'active': $store.app.activeAdminTab === 'usuarios' }">
-                    Cadastro de Usuários
-                </button>
-            </div>
-
-            <!-- Conteúdo das Abas (Secções Individuais) -->
-            <div class="admin-content"> <!-- CRUCIAL: Padding do conteúdo interno -->
                 
-                <!-- Conteúdo da Aba 1: Catálogo de MiniApps (Tabela Simples) -->
-                <div x-show="$store.app.activeAdminTab === 'catalogo'">
-                    <h3 class="text-xl font-semibold mb-3">Gerenciamento do Catálogo (Tabela)</h3>
-                    <div class="overflow-x-auto">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <!-- ID -->
-                                    <th class="w-16" @click="$store.app.sortBy('id')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            ID
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKey === 'id'"
-                                               x-text="$store.app.sortAsc ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- TÍTULO (AUTO WIDTH) -->
-                                    <th @click="$store.app.sortBy('title')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Título
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKey === 'title'"
-                                               x-text="$store.app.sortAsc ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- VERSÃO -->
-                                    <th class="w-20" @click="$store.app.sortBy('version')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Versão
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKey === 'version'"
-                                               x-text="$store.app.sortAsc ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- AUTOR -->
-                                    <th @click="$store.app.sortBy('author')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Autor
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKey === 'author'"
-                                               x-text="$store.app.sortAsc ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- STATUS -->
-                                    <th class="w-20" @click="$store.app.sortBy('status')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Status
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKey === 'status'"
-                                               x-text="$store.app.sortAsc ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <th class="w-16 text-center">Excluir</th> <!-- Ação de edição removida -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Iteração sobre o array sortedCatalogItems -->
-                                <template x-for="(app, index) in $store.app.sortedCatalogItems" :key="app.id">
-                                    <tr>
-                                        <!-- ID (Não Editável) -->
-                                        <td class="font-medium" x-text="app.id"></td>
-                                        
-                                        <!-- TÍTULO (Editável) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(app.id, 'title')" 
-                                                 @click="$store.app.startEditing(app.id, 'title')">
-                                                <span x-text="app.title"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(app.id, 'title')">
-                                                <input type="text" 
-                                                       :id="'edit-' + app.id + '-title'"
-                                                       class="editable-input"
-                                                       x-model="app.title"
-                                                       @blur="$store.app.saveInlineEdit(app.id, 'title')"
-                                                       @keydown.enter.prevent="$store.app.saveInlineEdit(app.id, 'title')"
-                                                       @keydown.escape.prevent="$store.app.saveInlineEdit(app.id, 'title')">
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- VERSÃO (Editável) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(app.id, 'version')" 
-                                                 @click="$store.app.startEditing(app.id, 'version')">
-                                                <span x-text="app.version"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(app.id, 'version')">
-                                                <input type="text" 
-                                                       :id="'edit-' + app.id + '-version'"
-                                                       class="editable-input"
-                                                       x-model="app.version"
-                                                       @blur="$store.app.saveInlineEdit(app.id, 'version')"
-                                                       @keydown.enter.prevent="$store.app.saveInlineEdit(app.id, 'version')"
-                                                       @keydown.escape.prevent="$store.app.saveInlineEdit(app.id, 'version')">
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- AUTOR (Editável) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(app.id, 'author')" 
-                                                 @click="$store.app.startEditing(app.id, 'author')">
-                                                <span x-text="app.author"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(app.id, 'author')">
-                                                <input type="text" 
-                                                       :id="'edit-' + app.id + '-author'"
-                                                       class="editable-input"
-                                                       x-model="app.author"
-                                                       @blur="$store.app.saveInlineEdit(app.id, 'author')"
-                                                       @keydown.enter.prevent="$store.app.saveInlineEdit(app.id, 'author')"
-                                                       @keydown.escape.prevent="$store.app.saveInlineEdit(app.id, 'author')">
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- STATUS (Editável via Select) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(app.id, 'status')" 
-                                                 @click="$store.app.startEditing(app.id, 'status')">
-                                                <!-- Pill de Status Dinâmico -->
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                      :class="app.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                                      x-text="app.status">
-                                                </span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(app.id, 'status')">
-                                                <select :id="'edit-' + app.id + '-status'"
-                                                        class="status-select"
-                                                        x-model="app.status"
-                                                        @blur="$store.app.saveInlineEdit(app.id, 'status')"
-                                                        @change="$store.app.saveInlineEdit(app.id, 'status')"
-                                                        @keydown.escape.prevent="$store.app.saveInlineEdit(app.id, 'status')">
-                                                    <option value="Ativo">Ativo</option>
-                                                    <option value="Inativo">Inativo</option>
-                                                </select>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- AÇÕES (Somente Excluir) -->
-                                        <td class="text-center">
-                                            <!-- Botão Remover -->
-                                            <button class="btn icon-only text-red-600"
-                                                    @click.prevent="removeApp(app.id)" 
-                                                    title="Remover">
-                                                <i class="material-icons">delete</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
+                <button id="installButton" class="bg-orange-600 text-white font-semibold py-1 px-3 rounded-full hidden hover:bg-orange-700 transition duration-150 text-sm shadow-md">
+                    Instalar
+                </button>
+            </div>
+        </header>
+
+        <main class="p-4 flex-grow overflow-y-auto">
+            
+            <!-- CAMPO DE BUSCA INICIALMENTE OCULTO -->
+            <div id="searchContainer" class="relative mb-6 hidden">
+                <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full bg-gray-700 text-white placeholder-gray-400 p-3 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-150 shadow-md">
+                <!-- ÍCONE DE BUSCA DENTRO DO INPUT - Material Icons: search -->
+                <span class="material-icons-sharp text-gray-400 text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
+            </div>
+            <!-- FIM CAMPO DE BUSCA -->
+
+            <div class="grid gap-6">
+            
+                <div class="miniapp-card"
+                     data-title="MiniApp de Produtividade Diária"
+                     data-description="Ferramenta essencial para gestão de tarefas, cronometragem e foco. Projetado para otimizar suas primeiras 5 horas de trabalho, eliminando distrações."
+                     data-price="R$ 199,90"
+                     data-image="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+1"
+                     data-category="Produtividade"
+                     data-contract="Mensal">
+                    
+                    <img src="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+1" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
+                         class="miniapp-image">
+                    
+                    <!-- BOTÃO FAVORITO - Material Icons: favorite_border / favorite -->
+                    <button class="favorite-button">
+                        <span class="material-icons-sharp text-base">favorite_border</span>
+                    </button>
+
+                    <!-- BOTÃO DETALHES - Material Icons: info -->
+                    <button class="details-button">
+                        <span class="material-icons-sharp text-base">info</span>
+                    </button>
+
+                    <div class="category-tag">Produtividade</div>
+                    <div class="contract-tag">Mensal</div>
                 </div>
 
-                <!-- Conteúdo da Aba 2: Dados do Sistema -->
-                <div x-show="$store.app.activeAdminTab === 'sistema'" class="bg-gray-50 p-4">
-                    <h3 class="text-xl font-semibold mb-3">Informações e Dados do Sistema</h3>
-                    <ul class="space-y-2 text-gray-700">
-                        <li><span class="font-medium">Driver Ativo:</span> <span x-text="$store.app.storageDriver" class="font-mono text-blue-600"></span></li>
-                        <li><span class="font-medium">Status do DB:</span> <span :class="$store.app.isReady ? 'text-green-600' : 'text-yellow-600'">Pronto para Operação</span></li>
-                        <li><span class="font-medium">Versão da Plataforma:</span> v2.0.0 Alpha</li>
-                        <li><span class="font-medium">Região de Serviço:</span> Santos, SP</li>
-                    </ul>
+                <div class="miniapp-card"
+                     data-title="MiniApp de Análise de Dados Rápida"
+                     data-description="Processa grandes volumes de dados em menos de 5 segundos. Ideal para decisões rápidas e estratégicas sem a necessidade de softwares complexos."
+                     data-price="R$ 449,00"
+                     data-image="https://placehold.co/400x300/ef4444/fee2e2?text=MiniApp+2"
+                     data-category="Analytics"
+                     data-contract="Pontual">
+                    
+                    <img src="https://placehold.co/400x300/ef4444/fee2e2?text=MiniApp+2" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
+                         class="miniapp-image">
+                    
+                    <button class="favorite-button">
+                        <span class="material-icons-sharp text-base">favorite_border</span>
+                    </button>
+
+                    <button class="details-button">
+                        <span class="material-icons-sharp text-base">info</span>
+                    </button>
+                    
+                    <div class="category-tag">Analytics</div>
+                    <div class="contract-tag">Pontual</div>
                 </div>
 
-                <!-- Conteúdo da Aba 3: Cadastro de Usuários (Tabela Simples) -->
-                <div x-show="$store.app.activeAdminTab === 'usuarios'">
-                    <h3 class="text-xl font-semibold mb-3">Gerenciamento de Usuários (Tabela)</h3>
-                    <div class="overflow-x-auto">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <!-- ID -->
-                                    <th class="w-16" @click="$store.app.sortByUser('id')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            ID
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKeyUser === 'id'"
-                                               x-text="$store.app.sortAscUser ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- NOME (AUTO WIDTH) -->
-                                    <th @click="$store.app.sortByUser('name')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Nome
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKeyUser === 'name'"
-                                               x-text="$store.app.sortAscUser ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- EMAIL -->
-                                    <th @click="$store.app.sortByUser('email')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Email
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKeyUser === 'email'"
-                                               x-text="$store.app.sortAscUser ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <!-- NÍVEL -->
-                                    <th class="w-20" @click="$store.app.sortByUser('role')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Nível
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKeyUser === 'role'"
-                                               x-text="$store.app.sortAscUser ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </div>
-                                    </th>
-                                    <!-- STATUS -->
-                                    <th class="w-20" @click="$store.app.sortByUser('status')">
-                                        <div class="flex items-center gap-1 justify-between">
-                                            Status
-                                            <i class="material-icons text-sm" 
-                                               x-show="$store.app.sortKeyUser === 'status'"
-                                               x-text="$store.app.sortAscUser ? 'arrow_upward' : 'arrow_downward'"></i>
-                                        </div>
-                                    </th>
-                                    <th class="w-16 text-center">Excluir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Iteração sobre o array sortedUsers -->
-                                <template x-for="(user, index) in $store.app.sortedUsers" :key="user.id">
-                                    <tr>
-                                        <!-- ID (Não Editável) -->
-                                        <td class="font-medium" x-text="user.id"></td>
-                                        
-                                        <!-- NOME (Editável) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(user.id, 'name')" 
-                                                 @click="$store.app.startEditing(user.id, 'name')">
-                                                <span x-text="user.name"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(user.id, 'name')">
-                                                <input type="text" 
-                                                       :id="'edit-' + user.id + '-name'"
-                                                       class="editable-input"
-                                                       x-model="user.name"
-                                                       @blur="$store.app.saveUserInlineEdit(user.id, 'name')"
-                                                       @keydown.enter.prevent="$store.app.saveUserInlineEdit(user.id, 'name')"
-                                                       @keydown.escape.prevent="$store.app.saveUserInlineEdit(user.id, 'name')">
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- EMAIL (Editável) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(user.id, 'email')" 
-                                                 @click="$store.app.startEditing(user.id, 'email')">
-                                                <span x-text="user.email"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(user.id, 'email')">
-                                                <input type="text" 
-                                                       :id="'edit-' + user.id + '-email'"
-                                                       class="editable-input"
-                                                       x-model="user.email"
-                                                       @blur="$store.app.saveUserInlineEdit(user.id, 'email')"
-                                                       @keydown.enter.prevent="$store.app.saveUserInlineEdit(user.id, 'email')"
-                                                       @keydown.escape.prevent="$store.app.saveUserInlineEdit(user.id, 'email')">
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- NÍVEL (Editável via Select) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(user.id, 'role')" 
-                                                 @click="$store.app.startEditing(user.id, 'role')">
-                                                <span x-text="user.role"></span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(user.id, 'role')">
-                                                <select :id="'edit-' + user.id + '-role'"
-                                                        class="status-select"
-                                                        x-model="user.role"
-                                                        @blur="$store.app.saveUserInlineEdit(user.id, 'role')"
-                                                        @change="$store.app.saveUserInlineEdit(user.id, 'role')"
-                                                        @keydown.escape.prevent="$store.app.saveUserInlineEdit(user.id, 'role')">
-                                                    <option value="Admin">Admin</option>
-                                                    <option value="Write">Write</option>
-                                                    <option value="Read">Read</option>
-                                                </select>
-                                            </div>
-                                        </td>
+                <div class="miniapp-card"
+                     data-title="MiniApp de Geração de Conteúdo AI"
+                     data-description="Cria rascunhos de e-mails, posts e relatórios em tempo real. Economize horas e garanta que sua comunicação seja sempre eficaz e polida."
+                     data-price="R$ 99,99/mês"
+                     data-image="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+3"
+                     data-category="IA & Criação"
+                     data-contract="Grátis">
+                    
+                    <img src="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+3" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
+                         class="miniapp-image">
+                    
+                    <button class="favorite-button">
+                        <span class="material-icons-sharp text-base">favorite_border</span>
+                    </button>
 
-                                        <!-- STATUS (Editável via Select) -->
-                                        <td class="editable-cell">
-                                            <div x-show="!$store.app.isEditing(user.id, 'status')" 
-                                                 @click="$store.app.startEditing(user.id, 'status')">
-                                                <!-- Pill de Status Dinâmico -->
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                      :class="user.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                                      x-text="user.status">
-                                                </span>
-                                            </div>
-                                            <div x-show="$store.app.isEditing(user.id, 'status')">
-                                                <select :id="'edit-' + user.id + '-status'"
-                                                        class="status-select"
-                                                        x-model="user.status"
-                                                        @blur="$store.app.saveUserInlineEdit(user.id, 'status')"
-                                                        @change="$store.app.saveUserInlineEdit(user.id, 'status')"
-                                                        @keydown.escape.prevent="$store.app.saveUserInlineEdit(user.id, 'status')">
-                                                    <option value="Ativo">Ativo</option>
-                                                    <option value="Inativo">Inativo</option>
-                                                </select>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- AÇÕES (Somente Excluir) -->
-                                        <td class="text-center">
-                                            <!-- Botão Remover -->
-                                            <button class="btn icon-only text-red-600"
-                                                    @click.prevent="removeUser(user.id)" 
-                                                    title="Remover">
-                                                <i class="material-icons">delete</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
+                    <button class="details-button">
+                        <span class="material-icons-sharp text-base">info</span>
+                    </button>
+
+                    <div class="category-tag">IA & Criação</div>
+                    <div class="contract-tag">Grátis</div>
                 </div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-900 border-t border-gray-700 p-3 flex flex-col justify-center rounded-t-xl text-gray-400">
+            <div class="flex justify-around mb-2">
+                <!-- ÍCONE HOME - Material Icons: home -->
+                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                    <span class="material-icons-sharp text-3xl">home</span>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
                 
+                <!-- ÍCONE CATÁLOGO (ATIVO) - Material Icons: grid_view -->
+                <a href="#" class="flex flex-col items-center text-orange-500">
+                    <span class="material-icons-sharp text-3xl">grid_view</span>
+                    <span class="text-xs mt-1">Catálogo</span>
+                </a>
+                
+                <!-- ÍCONE CONFIGURAÇÕES - Material Icons: settings -->
+                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                    <span class="material-icons-sharp text-3xl">settings</span>
+                    <span class="text-xs mt-1">Configurações</span>
+                </a>
+                
+                <!-- ÍCONE CONTA - Material Icons: person -->
+                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                    <span class="material-icons-sharp text-3xl">person</span>
+                    <span class="text-xs mt-1">Conta</span>
+                </a>
             </div>
-        </div>
-        
-    </div>
-
-  </main>
-
-  <!-- Rodapé -->
-  <footer class="layout-footer text-sm">
-    <div class="text-gray-500 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-        <span>
-          MiniApps Base <span class="font-semibold text-gray-600">v2.0.0</span>
-        </span>
-        <span x-show="$store.user.isLoggedIn" class="footer-greeting">
-          Olá, <span x-text="$store.user.username"></span>!
-        </span>
-    </div>
-    
-    <!-- Pill Indicador de Status de Memória (IndexedDB/localForage) e Status de Salvamento -->
-    <div class="flex items-center space-x-2">
-        <span class="text-gray-600 font-medium hidden sm:inline">Status:</span>
-        <span class="px-3 py-1 text-xs font-semibold rounded-full shadow-sm transition-colors duration-200"
-              :class="{
-                  // Status de Salvamento
-                  'bg-yellow-100 text-yellow-800': $store.app.saveStatus === 'Desatualizado',
-                  'bg-blue-100 text-blue-800 animate-pulse': $store.app.saveStatus === 'Salvando',
-                  'bg-green-100 text-green-800': $store.app.saveStatus === 'Salvo',
-                  'bg-gray-100 text-gray-600': $store.app.saveStatus === 'Atualizado',
-              }"
-              x-text="
-                  $store.app.saveStatus === 'Desatualizado' ? 'Alterações Pendentes' :
-                  $store.app.saveStatus === 'Salvando' ? 'Salvando...' :
-                  $store.app.saveStatus === 'Salvo' ? 'Salvo!' :
-                  $store.app.saveStatus === 'Atualizado' ? 'Atualizado' : 'Carregando...'
-              ">
-              Carregando...
-        </span>
-        
-        <!-- Separador -->
-        <span class="text-gray-300 hidden sm:inline">|</span>
-
-        <!-- Pill Indicador do Driver de Memória (Original) -->
-        <span class="px-3 py-1 text-xs font-semibold rounded-full shadow-sm bg-gray-100 text-gray-600"
-              x-text="'Driver: ' + $store.app.storageDriver"
-              title="Driver de Armazenamento">
-              Driver: ...
-        </span>
-    </div>
-  </footer>
-
-  </div>
-
-  <!-- MODAL DE DETALHES DO MINI-APP -->
-  <div x-show="$store.app.showDetailsModal" 
-       x-transition:enter="transition ease-out duration-300"
-       x-transition:enter-start="opacity-0"
-       x-transition:enter-end="opacity-100"
-       x-transition:leave="transition ease-in duration-200"
-       x-transition:leave-start="opacity-100"
-       x-transition:leave-end="opacity-0"
-       class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4"
-       @click.self="$store.app.showDetailsModal = false"
-       @keydown.escape.window="$store.app.showDetailsModal = false">
-    
-    <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden" 
-         @click.outside="$store.app.showDetailsModal = false">
-      
-      <!-- Cabeçalho do Modal -->
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-gray-800" x-text="$store.app.currentAppDetails.title"></h2>
-        <button class="text-gray-400 hover:text-gray-600" 
-                @click="$store.app.showDetailsModal = false" 
-                title="Fechar">
-            <!-- Icone X (cross) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-      </div>
-
-      <!-- Corpo do Modal -->
-      <div class="p-6 space-y-4">
-        
-        <!-- Detalhes Principais -->
-        <div class="flex items-center gap-4">
-            <img :src="$store.app.currentAppDetails.iconUrl" alt="Ícone" class="w-12 h-12 rounded-lg border shadow-sm">
-            <div>
-                <p class="text-sm text-gray-600 font-medium">Versão: <span class="font-normal" x-text="$store.app.currentAppDetails.version"></span></p>
-                <p class="text-sm text-gray-600 font-medium">Desenvolvedor: <span class="font-normal" x-text="$store.app.currentAppDetails.author"></span></p>
+            
+            <div class="text-center text-xs text-gray-500 pt-1 border-t border-gray-700 mx-auto w-11/12">
+                &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
             </div>
-        </div>
+        </footer>
         
-        <!-- Descrição -->
-        <div>
-            <h3 class="font-semibold text-gray-700 mb-2">Descrição:</h3>
-            <p class="text-sm text-gray-600" x-text="$store.app.currentAppDetails.description"></p>
+        <div id="messageContainer" class="message-box p-3 bg-orange-600 text-white rounded-lg shadow-xl hidden">
         </div>
 
-        <!-- Recursos -->
-        <div>
-            <h3 class="font-semibold text-gray-700 mb-2">Recursos Principais:</h3>
-            <ul class="space-y-1 list-disc list-inside text-sm text-gray-600">
-                <template x-for="feature in $store.app.currentAppDetails.features" :key="feature">
-                    <li x-text="feature"></li>
-                </template>
-            </ul>
-        </div>
-      </div>
-
-      <!-- Rodapé do Modal -->
-      <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-        <button class="btn primary text-sm" @click="$store.app.showDetailsModal = false">
-            OK, Entendi
-        </button>
-      </div>
-      
     </div>
-  </div>
-  <!-- FIM DO MODAL DE DETALHES -->
-  
-  
-  <!-- NOVO MODAL DE GESTÃO DA CONTA -->
-  <div x-show="$store.app.showAccountModal" 
-       x-transition:enter="transition ease-out duration-300"
-       x-transition:enter-start="opacity-0"
-       x-transition:enter-end="opacity-100"
-       x-transition:leave="transition ease-in duration-200"
-       x-transition:leave-start="opacity-100"
-       x-transition:leave-end="opacity-0"
-       class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4"
-       @click.self="$store.app.showAccountModal = false"
-       @keydown.escape.window="$store.app.showAccountModal = false">
-    
-    <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden" 
-         @click.outside="$store.app.showAccountModal = false">
-      
-      <!-- Cabeçalho do Modal -->
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-gray-800">Gestão da Conta</h2>
-        <button class="text-gray-400 hover:text-gray-600" 
-                @click="$store.app.showAccountModal = false" 
-                title="Fechar">
-            <!-- Icone X (cross) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-      </div>
 
-      <!-- Corpo do Modal -->
-      <div class="p-6 space-y-6">
-        
-        <div class="flex items-center gap-4">
-            <i class="material-icons text-5xl text-blue-500">account_circle</i>
-            <div>
-                <p class="text-sm text-gray-500">Utilizador Logado:</p>
-                <p class="text-lg font-semibold text-gray-800" x-text="$store.user.username"></p>
-                <p class="text-xs text-gray-400">Nível: <span x-text="$store.user.permissions.join(', ')"></span></p>
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content text-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="text-2xl font-bold text-orange-500"></h3>
+                <button id="closeModal" class="text-gray-400 hover:text-white transition duration-200">
+                    <!-- ÍCONE FECHAR - Material Icons: close -->
+                    <span class="material-icons-sharp text-3xl">close</span>
+                </button>
             </div>
-        </div>
-        
-        <!-- Opções da Conta (Simulação) -->
-        <div class="space-y-2">
-            <button class="w-full text-left p-3 flex items-center gap-3 rounded-lg hover:bg-gray-100 text-gray-700">
-                <i class="material-icons text-xl">settings</i>
-                <span>Configurações do Perfil</span>
-            </button>
-             <button class="w-full text-left p-3 flex items-center gap-3 rounded-lg hover:bg-gray-100 text-gray-700">
-                <i class="material-icons text-xl">security</i>
-                <span>Segurança e Senha</span>
+            <img id="modalImage" src="" alt="Imagem do Produto" class="w-full h-auto rounded-lg mb-4 object-cover aspect-video">
+            <p id="modalDescription" class="text-gray-300 mb-4"></p>
+            <p id="modalPrice" class="text-2xl font-extrabold text-orange-500 mb-6"></p>
+            <button id="addToCartButton" class="bg-orange-600 text-white py-2 px-6 rounded-full text-lg font-semibold w-full hover:bg-orange-700 transition duration-300">
+                Adicionar ao Carrinho
             </button>
         </div>
-
-      </div>
-
-      <!-- Rodapé do Modal com Botão Sair -->
-      <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-        <button class="btn text-red-600 p-2 hover:bg-red-50 rounded-lg flex items-center gap-2" 
-                @click="$store.user.logout()"
-                title="Sair da Conta">
-            <i class="material-icons text-xl">logout</i>
-            Sair da Conta
-        </button>
-      </div>
-      
     </div>
-  </div>
-  <!-- FIM DO NOVO MODAL -->
 
+    <script>
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        const searchToggle = document.getElementById('searchToggle');
+        const searchContainer = document.getElementById('searchContainer');
+        const messageContainer = document.getElementById('messageContainer');
+
+        const productModal = document.getElementById('productModal');
+        const closeModalButton = document.getElementById('closeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalImage = document.getElementById('modalImage');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalPrice = document.getElementById('modalPrice');
+        const addToCartButton = document.getElementById('addToCartButton');
+        let currentMiniAppTitle = '';
+
+        function showMessage(text, isError = false) {
+            messageContainer.textContent = text;
+            messageContainer.className = 'message-box p-3 rounded-lg shadow-xl transition-all duration-300 ' + 
+                                        (isError ? 'bg-orange-800' : 'bg-green-600') + ' block';
+            setTimeout(() => {
+                messageContainer.classList.add('hidden');
+            }, 5000);
+        }
+
+        function openProductModal(title, description, price, image) {
+            modalTitle.textContent = title;
+            modalDescription.textContent = description;
+            modalPrice.textContent = price;
+            modalImage.src = image;
+            currentMiniAppTitle = title;
+            productModal.classList.add('active');
+        }
+
+        function closeProductModal() {
+            productModal.classList.remove('active');
+            currentMiniAppTitle = '';
+        }
+
+        function addToCart() {
+            if (currentMiniAppTitle) {
+                showMessage(`✅ MiniApp "${currentMiniAppTitle}" adicionado ao carrinho!`, false);
+                closeProductModal();
+            } else {
+                showMessage('❌ Erro ao adicionar. Tente novamente.', true);
+            }
+        }
+        
+        addToCartButton.addEventListener('click', addToCart);
+
+        document.querySelectorAll('.miniapp-card').forEach(card => {
+            const title = card.dataset.title;
+            const description = card.dataset.description;
+            const price = card.dataset.price;
+            const image = card.dataset.image;
+
+            card.querySelector('img').addEventListener('click', (event) => {
+                openProductModal(title, description, price, image);
+            });
+
+            card.querySelector('.details-button').addEventListener('click', (event) => {
+                event.stopPropagation();
+                openProductModal(title, description, price, image);
+            });
+        });
+
+        // Lógica do Botão de Favoritar (Atualizada para Material Icons)
+        document.querySelectorAll('.favorite-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const card = button.closest('.miniapp-card');
+                const title = card.dataset.title;
+                const iconSpan = button.querySelector('.material-icons-sharp');
+                
+                button.classList.toggle('favorited');
+                
+                if (button.classList.contains('favorited')) {
+                    iconSpan.textContent = 'favorite'; // Coração preenchido
+                    iconSpan.classList.add('text-orange-500');
+                    iconSpan.classList.remove('text-white');
+                    showMessage(`⭐ MiniApp "${title}" adicionado aos Favoritos!`, false);
+                } else {
+                    iconSpan.textContent = 'favorite_border'; // Coração vazado
+                    iconSpan.classList.add('text-white');
+                    iconSpan.classList.remove('text-orange-500');
+                    showMessage(`MiniApp "${title}" removido dos Favoritos.`, true);
+                }
+            });
+        });
+
+        searchToggle.addEventListener('click', () => {
+            searchContainer.classList.toggle('hidden');
+            if (!searchContainer.classList.contains('hidden')) {
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+
+        closeModalButton.addEventListener('click', closeProductModal);
+
+        productModal.addEventListener('click', (event) => {
+            if (event.target === productModal) {
+                closeProductModal();
+            }
+        });
+
+        const swCode = `
+            const CACHE_NAME = 'miniapp-5horas-v1';
+            const urlsToCache = [
+              '/',
+              '/index.html',
+              '/manifest.json',
+              'https://cdn.tailwindcss.com' 
+            ];
+
+            self.addEventListener('install', event => {
+              event.waitUntil(
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    return cache.addAll(urlsToCache);
+                  })
+              );
+            });
+
+            self.addEventListener('fetch', event => {
+              if (event.request.method !== 'GET') {
+                return;
+              }
+
+              event.respondWith(
+                caches.match(event.request)
+                  .then(response => {
+                    if (response) {
+                      return response;
+                    }
+                    
+                    return fetch(event.request);
+                  })
+              );
+            });
+
+            self.addEventListener('activate', event => {
+              const cacheWhitelist = [CACHE_NAME];
+              event.waitUntil(
+                caches.keys().then(cacheNames => {
+                  return Promise.all(
+                    cacheNames.map(cacheName => {
+                      if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
+                      }
+                    })
+                  );
+                })
+              );
+            });
+        `;
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        showMessage("✅ Service Worker registrado! PWA pronto para o offline.", false);
+                    })
+                    .catch(error => {
+                        showMessage("❌ Erro ao registrar Service Worker. Modo Offline indisponível.", true);
+                    });
+            });
+        } else {
+            showMessage("Seu navegador não suporta Service Workers.", true);
+        }
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.classList.remove('hidden');
+
+            installButton.addEventListener('click', (event) => {
+                installButton.classList.add('hidden');
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showMessage("PWA instalado! Verifique sua tela inicial.", false);
+                    } else {
+                        showMessage("Instalação do PWA recusada.", true);
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+        
+        window.addEventListener('appinstalled', (e) => {
+            installButton.classList.add('hidden');
+        });
+        
+    </script>
 </body>
 </html>
