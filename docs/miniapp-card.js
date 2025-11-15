@@ -11,6 +11,13 @@ function getShowMessageFn() {
     return null;
 }
 
+function getOpenMiniAppFn() {
+    if (typeof globalThis !== 'undefined' && typeof globalThis.openMiniAppPanel === 'function') {
+        return globalThis.openMiniAppPanel;
+    }
+    return null;
+}
+
 async function loadFavoritesCache() {
     if (!favoritesLoaded) {
         try {
@@ -110,6 +117,7 @@ function createMiniAppCardHTML(app) {
  */
 async function attachCardListeners(data) {
     const showMessageFn = getShowMessageFn();
+    const openMiniAppFn = getOpenMiniAppFn();
     const favorites = await loadFavoritesCache();
 
     document.querySelectorAll('.miniapp-card').forEach((card) => {
@@ -129,16 +137,36 @@ async function attachCardListeners(data) {
             updateFavoriteButtonState(favoriteButton, initiallyFavorited);
         }
 
-        // Listener para abrir modal
-        const openModalHandler = (e) => {
-             e.stopPropagation();
-             if (typeof openProductModal === 'function') {
-                 openProductModal(app);
-             }
-        };
+        const detailsButton = card.querySelector('.details-button');
 
-        card.querySelector('.miniapp-image').addEventListener('click', openModalHandler);
-        card.querySelector('.details-button').addEventListener('click', openModalHandler);
+        // Listener para abrir modal de detalhes (restrito ao botão Info)
+        if (detailsButton) {
+            detailsButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (typeof openProductModal === 'function') {
+                    openProductModal(app);
+                }
+            });
+        }
+
+        // Listener principal para abrir o MiniApp
+        card.addEventListener('click', (event) => {
+            if (event.target.closest('.favorite-button')) {
+                return;
+            }
+            if (event.target.closest('.details-button')) {
+                return;
+            }
+
+            if (typeof openMiniAppFn === 'function') {
+                openMiniAppFn(app);
+            } else {
+                console.warn('Função global openMiniAppPanel não encontrada.');
+                if (typeof showMessageFn === 'function') {
+                    showMessageFn('❌ Não foi possível abrir o MiniApp. Função não configurada.', true);
+                }
+            }
+        });
 
         // Listener para Favoritar
         if (!favoriteButton) {
