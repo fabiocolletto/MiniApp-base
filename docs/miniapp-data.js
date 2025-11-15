@@ -14,53 +14,63 @@ export const miniAppsData = [
         image: 'https://placehold.co/400x300/f97316/ffffff?text=CATALOGO'
     },
     {
+        id: 'miniapp-gestao-catalogo',
+        title: 'Gestão de Catálogo',
+        description: 'Crie, edite e publique MiniApps diretamente do catálogo principal com fluxo guiado.',
+        price: 'Grátis',
+        category: 'Administração',
+        contract: 'Incluso',
+        url: './miniapps/gestao-de-catalogo/index.html',
+        image: 'https://placehold.co/400x300/2563eb/ffffff?text=Gestao+Catalogo'
+    },
+    {
         id: 'miniapp-produtividade-01',
-        title: 'MiniApp Produtividadeee',
-        description: 'Design ergonômico com foco na longevidade e materiais recicláveis. Eleve sua eficiência.',
-        price: 'R$ 199,90',
+        title: 'Produtividade Essencial',
+        description: 'Colete insights rápidos sobre foco, tarefas e prioridades diárias da equipe.',
+        price: 'R$ 19,90/mês',
         category: 'Produtividade',
         contract: 'Mensal',
         url: '#',
-        image: 'https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+1'
+        image: 'https://placehold.co/400x300/374151/f3f4f6?text=Produtividade'
     },
     {
         id: 'miniapp-analytics-01',
-        title: 'MiniApp Analytics',
-        description: 'Conectividade avançada em um formato compacto e discreto. Expanda conforme suas necessidades.',
-        price: 'R$ 449,00',
+        title: 'Analytics Compacto',
+        description: 'Dashboards responsivos para monitorar KPIs em tempo real no ambiente 5Horas.',
+        price: 'R$ 49,00/mês',
         category: 'Analytics',
-        contract: 'Pontual',
+        contract: 'Mensal',
         url: '#',
-        image: 'https://placehold.co/400x300/ef4444/fee2e2?text=MiniApp+2'
+        image: 'https://placehold.co/400x300/ef4444/fee2e2?text=Analytics'
     },
     {
         id: 'miniapp-ia-premium-01',
-        title: 'MiniApp IA Premium',
-        description: 'Acesso total às ferramentas de IA mais recentes para otimização de tarefas e análise de dados complexos.',
+        title: 'IA Premium',
+        description: 'Ferramentas avançadas de copiloto para otimizar processos e sugerir automações.',
         price: 'R$ 99,99/mês',
         category: 'Inteligência Artificial',
         contract: 'Mensal',
         url: '#',
-        image: 'https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+3'
+        image: 'https://placehold.co/400x300/0f172a/f8fafc?text=IA+Premium'
     },
     {
         id: 'miniapp-financas-01',
-        title: 'MiniApp Finanças',
-        description: 'Gestão de fluxo de caixa e relatórios financeiros em tempo real. Controle orçamentário.',
+        title: 'Finanças Ágil',
+        description: 'Fluxo de caixa em tempo real, acompanhamento de despesas e previsões automatizadas.',
         price: 'R$ 29,99/mês',
         category: 'Finanças',
         contract: 'Mensal',
         url: '#',
-        image: 'https://placehold.co/400x300/10b981/d1fae5?text=MiniApp+4'
+        image: 'https://placehold.co/400x300/10b981/d1fae5?text=Financas'
     },
     {
         id: 'miniapp-bem-estar-01',
-        title: 'MiniApp Bem-estar',
-        description: 'Acompanhamento de métricas de sono, exercícios e hidratação. Crie hábitos saudáveis.',
+        title: 'Bem-estar Corporativo',
+        description: 'Programas de pausas ativas, respiração guiada e trilhas de foco para squads.',
         price: 'Grátis',
         category: 'Bem-estar',
         contract: 'Grátis',
         url: '#',
-        image: 'https://placehold.co/400x300/3b82f6/dbeafe?text=MiniApp+5'
+        image: 'https://placehold.co/400x300/3b82f6/dbeafe?text=Bem-Estar'
     }
 ];
