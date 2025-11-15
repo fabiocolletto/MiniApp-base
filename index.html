@@ -9,145 +9,8 @@
     <!-- Google Material Icons (Sharp Style for Solid Look) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     
-    <style>
-        /* ------------------------------------------------ */
-        /* ESTRUTURA GLOBAL (PWA Shell - Largura Fixa Mobile) */
-        /* ------------------------------------------------ */
-        body { font-family: 'Inter', sans-serif; }
-        .app-shell {
-            max-width: 420px;
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        .message-box {
-            position: fixed;
-            bottom: 6rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        
-        /* ------------------------------------------------ */
-        /* ESTILOS DA MODAL (Pop-up de Detalhes) */
-        /* ------------------------------------------------ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-content {
-            background-color: #1f2937;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-        
-        /* ------------------------------------------------ */
-        /* MODELO DE CARD DE MINAPP (Estilo Netflix) */
-        /* ------------------------------------------------ */
-        .miniapp-card {
-            position: relative;
-            background-color: #374151;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s, transform 0.3s;
-            cursor: pointer;
-        }
-        .miniapp-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .miniapp-image {
-            width: 100%;
-            height: auto;
-            border-radius: 0.75rem;
-            object-fit: cover;
-            aspect-ratio: 4/3;
-        }
-        
-        /* Botões Flutuantes */
-        .favorite-button, .details-button {
-            position: absolute;
-            top: 0.5rem;
-            background-color: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
-            color: white;
-            padding: 0.4rem;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            transition: background-color 0.2s, border-color 0.2s;
-            z-index: 10;
-        }
-        .details-button {
-            right: 0.5rem;
-        }
-        .favorite-button {
-            right: 3rem;
-        }
-        .favorite-button:hover, .details-button:hover {
-            background-color: rgba(249, 115, 22, 0.4); 
-            border-color: rgba(249, 115, 22, 0.8);
-        }
-
-        /* Etiqueta de Categoria */
-        .category-tag {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            background-color: rgba(31, 41, 55, 0.8);
-            color: #d1d5db;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.3rem 0.75rem;
-            border-top-right-radius: 0.75rem;
-            border-bottom-left-radius: 0.75rem;
-            z-index: 9;
-        }
-
-        /* Etiqueta de Contratação */
-        .contract-tag {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background-color: rgba(249, 115, 22, 0.8);
-            color: #1f2937;
-            font-size: 0.75rem; 
-            font-weight: 700;
-            padding: 0.3rem 0.75rem;
-            border-top-left-radius: 0.75rem;
-            border-bottom-right-radius: 0.75rem;
-            z-index: 9;
-        }
-    </style>
+    <link rel="stylesheet" href="./docs/miniapp-global.css">
+    <link rel="stylesheet" href="./docs/miniapp-card.css">
     
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1f2937">
@@ -185,82 +48,7 @@
             </div>
             <!-- FIM CAMPO DE BUSCA -->
 
-            <div class="grid gap-6">
-            
-                <div class="miniapp-card"
-                     data-title="MiniApp de Produtividade Diária"
-                     data-description="Ferramenta essencial para gestão de tarefas, cronometragem e foco. Projetado para otimizar suas primeiras 5 horas de trabalho, eliminando distrações."
-                     data-price="R$ 199,90"
-                     data-image="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+1"
-                     data-category="Produtividade"
-                     data-contract="Mensal">
-                    
-                    <img src="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+1" 
-                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
-                         class="miniapp-image">
-                    
-                    <!-- BOTÃO FAVORITO - Material Icons: favorite_border / favorite -->
-                    <button class="favorite-button">
-                        <span class="material-icons-sharp text-base">favorite_border</span>
-                    </button>
-
-                    <!-- BOTÃO DETALHES - Material Icons: info -->
-                    <button class="details-button">
-                        <span class="material-icons-sharp text-base">info</span>
-                    </button>
-
-                    <div class="category-tag">Produtividade</div>
-                    <div class="contract-tag">Mensal</div>
-                </div>
-
-                <div class="miniapp-card"
-                     data-title="MiniApp de Análise de Dados Rápida"
-                     data-description="Processa grandes volumes de dados em menos de 5 segundos. Ideal para decisões rápidas e estratégicas sem a necessidade de softwares complexos."
-                     data-price="R$ 449,00"
-                     data-image="https://placehold.co/400x300/ef4444/fee2e2?text=MiniApp+2"
-                     data-category="Analytics"
-                     data-contract="Pontual">
-                    
-                    <img src="https://placehold.co/400x300/ef4444/fee2e2?text=MiniApp+2" 
-                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
-                         class="miniapp-image">
-                    
-                    <button class="favorite-button">
-                        <span class="material-icons-sharp text-base">favorite_border</span>
-                    </button>
-
-                    <button class="details-button">
-                        <span class="material-icons-sharp text-base">info</span>
-                    </button>
-                    
-                    <div class="category-tag">Analytics</div>
-                    <div class="contract-tag">Pontual</div>
-                </div>
-
-                <div class="miniapp-card"
-                     data-title="MiniApp de Geração de Conteúdo AI"
-                     data-description="Cria rascunhos de e-mails, posts e relatórios em tempo real. Economize horas e garanta que sua comunicação seja sempre eficaz e polida."
-                     data-price="R$ 99,99/mês"
-                     data-image="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+3"
-                     data-category="IA & Criação"
-                     data-contract="Grátis">
-                    
-                    <img src="https://placehold.co/400x300/374151/f3f4f6?text=MiniApp+3" 
-                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/f3f4f6?text=Image+Error';"
-                         class="miniapp-image">
-                    
-                    <button class="favorite-button">
-                        <span class="material-icons-sharp text-base">favorite_border</span>
-                    </button>
-
-                    <button class="details-button">
-                        <span class="material-icons-sharp text-base">info</span>
-                    </button>
-
-                    <div class="category-tag">IA & Criação</div>
-                    <div class="contract-tag">Grátis</div>
-                </div>
-            </div>
+            <div id="miniappGrid" class="grid gap-6"></div>
         </main>
 
         <footer class="bg-gray-900 border-t border-gray-700 p-3 flex flex-col justify-center rounded-t-xl text-gray-400">
@@ -318,12 +106,18 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { miniAppsData } from './docs/miniapp-data.js';
+        import { renderMiniApps } from './docs/miniapp-card.js';
+
         let deferredPrompt;
+        let messageTimeout;
+
         const installButton = document.getElementById('installButton');
         const searchToggle = document.getElementById('searchToggle');
         const searchContainer = document.getElementById('searchContainer');
         const messageContainer = document.getElementById('messageContainer');
+        const miniappGrid = document.getElementById('miniappGrid');
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -332,81 +126,51 @@
         const modalDescription = document.getElementById('modalDescription');
         const modalPrice = document.getElementById('modalPrice');
         const addToCartButton = document.getElementById('addToCartButton');
-        let currentMiniAppTitle = '';
+        let currentMiniApp = null;
 
         function showMessage(text, isError = false) {
+            if (messageTimeout) {
+                clearTimeout(messageTimeout);
+            }
+
             messageContainer.textContent = text;
-            messageContainer.className = 'message-box p-3 rounded-lg shadow-xl transition-all duration-300 ' + 
-                                        (isError ? 'bg-orange-800' : 'bg-green-600') + ' block';
-            setTimeout(() => {
+            messageContainer.classList.remove('hidden', 'bg-green-600', 'bg-orange-800', 'bg-orange-600');
+            messageContainer.classList.add(isError ? 'bg-orange-800' : 'bg-green-600');
+
+            messageTimeout = setTimeout(() => {
                 messageContainer.classList.add('hidden');
             }, 5000);
         }
 
-        function openProductModal(title, description, price, image) {
-            modalTitle.textContent = title;
-            modalDescription.textContent = description;
-            modalPrice.textContent = price;
-            modalImage.src = image;
-            currentMiniAppTitle = title;
+        function openProductModal(app) {
+            if (!app) return;
+
+            currentMiniApp = app;
+            modalTitle.textContent = app.title;
+            modalDescription.textContent = app.description;
+            modalPrice.textContent = app.price;
+            modalImage.src = app.image;
             productModal.classList.add('active');
         }
 
         function closeProductModal() {
             productModal.classList.remove('active');
-            currentMiniAppTitle = '';
+            currentMiniApp = null;
         }
 
         function addToCart() {
-            if (currentMiniAppTitle) {
-                showMessage(`✅ MiniApp "${currentMiniAppTitle}" adicionado ao carrinho!`, false);
+            if (currentMiniApp) {
+                showMessage(`✅ MiniApp "${currentMiniApp.title}" adicionado ao carrinho!`, false);
                 closeProductModal();
             } else {
                 showMessage('❌ Erro ao adicionar. Tente novamente.', true);
             }
         }
-        
+
+        window.showMessage = showMessage;
+        window.openProductModal = openProductModal;
+
         addToCartButton.addEventListener('click', addToCart);
-
-        document.querySelectorAll('.miniapp-card').forEach(card => {
-            const title = card.dataset.title;
-            const description = card.dataset.description;
-            const price = card.dataset.price;
-            const image = card.dataset.image;
-
-            card.querySelector('img').addEventListener('click', (event) => {
-                openProductModal(title, description, price, image);
-            });
-
-            card.querySelector('.details-button').addEventListener('click', (event) => {
-                event.stopPropagation();
-                openProductModal(title, description, price, image);
-            });
-        });
-
-        // Lógica do Botão de Favoritar (Atualizada para Material Icons)
-        document.querySelectorAll('.favorite-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const card = button.closest('.miniapp-card');
-                const title = card.dataset.title;
-                const iconSpan = button.querySelector('.material-icons-sharp');
-                
-                button.classList.toggle('favorited');
-                
-                if (button.classList.contains('favorited')) {
-                    iconSpan.textContent = 'favorite'; // Coração preenchido
-                    iconSpan.classList.add('text-orange-500');
-                    iconSpan.classList.remove('text-white');
-                    showMessage(`⭐ MiniApp "${title}" adicionado aos Favoritos!`, false);
-                } else {
-                    iconSpan.textContent = 'favorite_border'; // Coração vazado
-                    iconSpan.classList.add('text-white');
-                    iconSpan.classList.remove('text-orange-500');
-                    showMessage(`MiniApp "${title}" removido dos Favoritos.`, true);
-                }
-            });
-        });
 
         searchToggle.addEventListener('click', () => {
             searchContainer.classList.toggle('hidden');
@@ -415,7 +179,6 @@
             }
         });
 
-
         closeModalButton.addEventListener('click', closeProductModal);
 
         productModal.addEventListener('click', (event) => {
@@ -423,6 +186,8 @@
                 closeProductModal();
             }
         });
+
+        renderMiniApps(miniAppsData, miniappGrid);
 
         const swCode = `
             const CACHE_NAME = 'miniapp-5horas-v1';
