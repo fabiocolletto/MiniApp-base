@@ -59,12 +59,13 @@ body { font-family: 'Inter', sans-serif; }
 /* MODELO DE CARD DE MINAPP (Estilo Netflix) */
 /* ------------------------------------------------ */
 .miniapp-card {
-    position: relative;
+    position: relative; /* ESSENCIAL: Permite posicionar elementos internos de forma absoluta */
     background-color: #374151;
     border-radius: 0.75rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s, transform 0.3s;
     cursor: pointer;
+    overflow: hidden; /* Garante que elementos filhos não escapem dos cantos arredondados */
 }
 .miniapp-card:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
@@ -74,9 +75,10 @@ body { font-family: 'Inter', sans-serif; }
 .miniapp-image {
     width: 100%;
     height: auto;
-    border-radius: 0.75rem;
+    border-radius: 0.75rem; /* Isso pode ser ajustado para 0 se o overflow: hidden do card for o suficiente */
     object-fit: cover;
     aspect-ratio: 4/3;
+    display: block; /* Remove espaço extra abaixo da imagem */
 }
 
 /* Botões Flutuantes (Círculos) */
@@ -86,20 +88,20 @@ body { font-family: 'Inter', sans-serif; }
     background-color: transparent; 
     border: 1px solid rgba(255, 255, 255, 0.5); 
     color: white;
-    padding: 0.5rem; /* Aumentado para melhor círculo */
-    border-radius: 9999px;
+    padding: 0.5rem; 
+    border-radius: 9999px; /* Perfeitamente redondo */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.75rem; /* Ajuste se necessário para o tamanho do ícone */
     transition: background-color 0.2s, border-color 0.2s;
     z-index: 10;
 }
 .details-button {
-    right: 0.5rem;
+    right: 0.5rem; /* Posiciona no canto superior direito */
 }
 .favorite-button {
-    right: 3.25rem;
+    right: 3.25rem; /* Posiciona à esquerda do botão de Detalhes */
 }
 .favorite-button:hover, .details-button:hover {
     background-color: rgba(249, 115, 22, 0.4); 
@@ -111,13 +113,13 @@ body { font-family: 'Inter', sans-serif; }
     position: absolute;
     bottom: 0;
     left: 0;
-    background-color: rgba(31, 41, 55, 0.8);
-    color: #d1d5db;
+    background-color: rgba(31, 41, 55, 0.8); /* Fundo escuro semi-transparente */
+    color: #d1d5db; /* Cor do texto */
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.3rem 0.75rem;
-    border-top-right-radius: 0.75rem;
-    border-bottom-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem; /* Apenas o canto superior direito arredondado */
+    border-bottom-left-radius: 0.75rem; /* Apenas o canto inferior esquerdo arredondado */
     z-index: 9;
 }
 
@@ -126,12 +128,12 @@ body { font-family: 'Inter', sans-serif; }
     position: absolute;
     bottom: 0;
     right: 0;
-    background-color: rgba(249, 115, 22, 0.8);
-    color: #1f2937;
+    background-color: rgba(249, 115, 22, 0.8); /* Laranja 5Horas semi-transparente */
+    color: #1f2937; /* Cor do texto escuro para contraste */
     font-size: 0.75rem; 
     font-weight: 700;
     padding: 0.3rem 0.75rem;
-    border-top-left-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
+    border-top-left-radius: 0.75rem; /* Apenas o canto superior esquerdo arredondado */
+    border-bottom-right-radius: 0.75rem; /* Apenas o canto inferior direito arredondado */
     z-index: 9;
 }
