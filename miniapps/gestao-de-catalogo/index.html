@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Gestão de Catálogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <meta name="theme-color" content="#f3f4f6">
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-10 space-y-8">
+        <header class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="material-icons-sharp text-3xl text-indigo-500">dashboard_customize</span>
+                <h1 class="text-3xl font-bold title-text">Gestão de Catálogo</h1>
+            </div>
+            <a href="../../index.html" class="inline-flex items-center px-4 py-2 rounded-full button-outline text-sm font-semibold">
+                <span class="material-icons-sharp text-base mr-1">arrow_back</span>
+                Voltar ao Catálogo
+            </a>
+        </header>
+
+        <section class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+            <h2 class="text-xl font-semibold accent-text">MiniApps publicados</h2>
+            <p class="muted-text">
+                Visualize rapidamente o status de publicação dos MiniApps e realize ações administrativas
+                sem sair do ambiente 5Horas. Esta tela é um ponto de partida simples para evoluções futuras.
+            </p>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">MiniApp</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Categoria</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Última atualização</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-700">Catálogo 5Horas</td>
+                            <td class="px-4 py-3 text-slate-500">Sistema</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs">
+                                    Publicado
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-500">02/2024</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-700">Gestão de Catálogo</td>
+                            <td class="px-4 py-3 text-slate-500">Administração</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold text-xs">
+                                    Em revisão
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-500">03/2024</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-700">Produtividade Essencial</td>
+                            <td class="px-4 py-3 text-slate-500">Produtividade</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-200 text-slate-600 font-semibold text-xs">
+                                    Rascunho
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-500">03/2024</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="grid gap-6 md:grid-cols-2">
+            <article class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+                <h3 class="text-lg font-semibold text-slate-800">Fluxo rápido</h3>
+                <ol class="list-decimal list-inside space-y-2 text-slate-600">
+                    <li>Selecione um MiniApp existente ou crie um novo rascunho.</li>
+                    <li>Defina categoria, preço, contrato e ícone representativo.</li>
+                    <li>Publique para disponibilizar o MiniApp no catálogo principal.</li>
+                </ol>
+            </article>
+            <article class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+                <h3 class="text-lg font-semibold text-slate-800">Próximos passos</h3>
+                <ul class="list-disc list-inside space-y-2 text-slate-600">
+                    <li>Integração com o IndexedDB para persistir rascunhos.</li>
+                    <li>Sincronização com Google Drive quando disponível.</li>
+                    <li>Publicação assistida com revisão automática de metadados.</li>
+                </ul>
+            </article>
+        </section>
+    </div>
+</body>
+</html>
