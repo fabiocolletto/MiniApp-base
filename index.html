@@ -13,74 +13,74 @@
     <link rel="stylesheet" href="./docs/miniapp-card.css">
     
     <link rel="manifest" href="./manifest.webmanifest">
-    <meta name="theme-color" content="#1f2937">
+    <meta name="theme-color" content="#f3f4f6">
 </head>
-<body class="bg-gray-900">
+<body>
 
-    <div class="app-shell bg-gray-800">
-        
-        <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center rounded-b-xl border-b border-gray-700">
+    <div class="app-shell">
+
+        <header class="app-header p-4 shadow-lg flex justify-between items-center rounded-b-xl">
             <div class="flex items-center space-x-2">
                 <!-- ÍCONE DE LOGO - Material Icons: flash_on -->
-                <span class="material-icons-sharp text-orange-500 text-2xl">flash_on</span>
-                <h1 class="text-xl font-extrabold text-white">MiniApp 5Horas</h1>
+                <span class="material-icons-sharp icon-accent text-2xl">flash_on</span>
+                <h1 class="text-xl font-extrabold title-text">MiniApp 5Horas</h1>
             </div>
-            
+
             <div class="flex space-x-2 items-center">
                 <!-- ÍCONE DE BUSCA - Material Icons: search -->
-                <button id="searchToggle" class="text-gray-400 hover:text-orange-500 p-2 rounded-full transition duration-150">
+                <button id="searchToggle" class="icon-button p-2 rounded-full transition duration-150">
                     <span class="material-icons-sharp text-2xl">search</span>
                 </button>
-                
-                <button id="installButton" class="bg-orange-600 text-white font-semibold py-1 px-3 rounded-full hidden hover:bg-orange-700 transition duration-150 text-sm shadow-md">
+
+                <button id="installButton" class="button-primary hidden font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md">
                     Instalar
                 </button>
             </div>
         </header>
 
-        <main class="p-4 flex-grow overflow-y-auto">
-            
+        <main class="app-main p-4 flex-grow overflow-y-auto">
+
             <!-- CAMPO DE BUSCA INICIALMENTE OCULTO -->
             <div id="searchContainer" class="relative mb-6 hidden">
-                <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full bg-gray-700 text-white placeholder-gray-400 p-3 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-150 shadow-md">
+                <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
                 <!-- ÍCONE DE BUSCA DENTRO DO INPUT - Material Icons: search -->
-                <span class="material-icons-sharp text-gray-400 text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
+                <span class="material-icons-sharp icon-muted text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
             </div>
             <!-- FIM CAMPO DE BUSCA -->
 
             <div id="miniappGrid" class="grid gap-6"></div>
         </main>
 
-        <footer class="bg-gray-900 border-t border-gray-700 p-3 flex flex-col justify-center rounded-t-xl text-gray-400">
+        <footer class="app-footer p-3 flex flex-col justify-center rounded-t-xl">
             <div class="flex justify-around mb-2">
                 <!-- ÍCONE HOME - Material Icons: home -->
-                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
                     <span class="material-icons-sharp text-3xl">home</span>
                     <span class="text-xs mt-1">Home</span>
                 </a>
-                
+
                 <!-- ÍCONE CATÁLOGO (ATIVO) - Material Icons: grid_view -->
-                <a href="#" class="flex flex-col items-center text-orange-500">
+                <a href="#" class="nav-link active flex flex-col items-center">
                     <span class="material-icons-sharp text-3xl">grid_view</span>
                     <span class="text-xs mt-1">Catálogo</span>
                 </a>
-                
+
                 <!-- ÍCONE CONFIGURAÇÕES - Material Icons: settings -->
-                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
                     <span class="material-icons-sharp text-3xl">settings</span>
                     <span class="text-xs mt-1">Configurações</span>
                 </a>
-                
+
                 <!-- ÍCONE CONTA - Material Icons: person -->
-                <a href="#" class="flex flex-col items-center hover:text-orange-500 transition duration-150">
+                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
                     <span class="material-icons-sharp text-3xl">person</span>
                     <span class="text-xs mt-1">Conta</span>
                 </a>
             </div>
 
-            <div class="flex items-center justify-between text-xs text-gray-400 mb-2" id="statusIndicators">
+            <div class="status-indicators flex items-center justify-between text-xs mb-2" id="statusIndicators">
                 <div class="flex items-center space-x-2">
-                    <span id="connectionDot" class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                    <span id="connectionDot" class="status-dot status-offline inline-block"></span>
                     <span id="connectionLabel">Offline</span>
                 </div>
                 <div class="text-right">
@@ -89,40 +89,40 @@
             </div>
 
             <div class="flex justify-center space-x-2 mb-2 text-xs">
-                <button id="googleSignInButton" class="bg-orange-600 text-white px-3 py-1 rounded-full shadow hover:bg-orange-700 transition duration-150">
+                <button id="googleSignInButton" class="button-primary text-sm px-3 py-1 rounded-full shadow transition duration-150">
                     Conectar Google
                 </button>
-                <button id="googleSignOutButton" class="bg-gray-700 text-gray-200 px-3 py-1 rounded-full shadow hover:bg-gray-600 transition duration-150 hidden">
+                <button id="googleSignOutButton" class="button-muted text-sm px-3 py-1 rounded-full shadow transition duration-150 hidden">
                     Sair
                 </button>
-                <button id="manualSyncButton" class="bg-gray-800 text-gray-200 px-3 py-1 rounded-full border border-gray-600 hover:border-orange-500 transition duration-150">
+                <button id="manualSyncButton" class="button-outline px-3 py-1 rounded-full transition duration-150">
                     Sincronizar agora
                 </button>
             </div>
 
-            <div class="text-center text-xs text-gray-500 pt-1 border-t border-gray-700 mx-auto w-11/12">
+            <div class="divider text-center text-xs muted-text pt-1 mx-auto w-11/12">
                 &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
             </div>
         </footer>
-        
-        <div id="messageContainer" class="message-box p-3 bg-orange-600 text-white rounded-lg shadow-xl hidden">
+
+        <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden">
         </div>
 
     </div>
 
     <div id="productModal" class="modal-overlay">
-        <div class="modal-content text-white">
+        <div class="modal-content">
             <div class="flex justify-between items-center mb-4">
-                <h3 id="modalTitle" class="text-2xl font-bold text-orange-500"></h3>
-                <button id="closeModal" class="text-gray-400 hover:text-white transition duration-200">
+                <h3 id="modalTitle" class="text-2xl font-bold accent-text"></h3>
+                <button id="closeModal" class="icon-button transition duration-200">
                     <!-- ÍCONE FECHAR - Material Icons: close -->
                     <span class="material-icons-sharp text-3xl">close</span>
                 </button>
             </div>
             <img id="modalImage" src="" alt="Imagem do Produto" class="w-full h-auto rounded-lg mb-4 object-cover aspect-video">
-            <p id="modalDescription" class="text-gray-300 mb-4"></p>
-            <p id="modalPrice" class="text-2xl font-extrabold text-orange-500 mb-6"></p>
-            <button id="addToCartButton" class="bg-orange-600 text-white py-2 px-6 rounded-full text-lg font-semibold w-full hover:bg-orange-700 transition duration-300">
+            <p id="modalDescription" class="muted-text mb-4"></p>
+            <p id="modalPrice" class="text-2xl font-extrabold accent-text mb-6"></p>
+            <button id="addToCartButton" class="button-primary text-lg font-semibold py-2 px-6 rounded-full transition duration-300">
                 Adicionar ao Carrinho
             </button>
         </div>
@@ -168,14 +168,79 @@
         const addToCartButton = document.getElementById('addToCartButton');
         let currentMiniApp = null;
 
+        const rootElement = document.documentElement;
+        const themeMetaTag = document.querySelector('meta[name="theme-color"]');
+        const prefersDarkQuery = typeof window.matchMedia === 'function'
+            ? window.matchMedia('(prefers-color-scheme: dark)')
+            : { matches: false };
+        let userThemePreference = null;
+
+        function updateMetaThemeColor() {
+            if (!themeMetaTag) {
+                return;
+            }
+            const computed = getComputedStyle(rootElement).getPropertyValue('--color-meta-theme').trim();
+            if (computed) {
+                themeMetaTag.setAttribute('content', computed);
+            }
+        }
+
+        function applyTheme(theme) {
+            if (!theme) {
+                return;
+            }
+            const normalized = theme === 'dark' ? 'dark' : 'light';
+            rootElement.setAttribute('data-theme', normalized);
+            updateMetaThemeColor();
+        }
+
+        function handleSystemThemeChange(event) {
+            if (userThemePreference) {
+                return;
+            }
+            applyTheme(event.matches ? 'dark' : 'light');
+        }
+
+        async function initializeTheme() {
+            try {
+                const storedPreference = await getUserSetting('themePreference');
+                const storedValue = typeof storedPreference?.value === 'string'
+                    ? storedPreference.value.toLowerCase()
+                    : null;
+
+                if (storedValue === 'light' || storedValue === 'dark') {
+                    userThemePreference = storedValue;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar preferências de tema', error);
+            }
+
+            if (userThemePreference) {
+                applyTheme(userThemePreference);
+            } else {
+                applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
+            }
+
+            if (typeof prefersDarkQuery.addEventListener === 'function') {
+                prefersDarkQuery.addEventListener('change', handleSystemThemeChange);
+            } else if (typeof prefersDarkQuery.addListener === 'function') {
+                prefersDarkQuery.addListener(handleSystemThemeChange);
+            }
+        }
+
+        initializeTheme().catch((error) => {
+            console.error('Erro ao inicializar tema', error);
+            applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
+        });
+
         function showMessage(text, isError = false) {
             if (messageTimeout) {
                 clearTimeout(messageTimeout);
             }
 
             messageContainer.textContent = text;
-            messageContainer.classList.remove('hidden', 'bg-green-600', 'bg-orange-800', 'bg-orange-600');
-            messageContainer.classList.add(isError ? 'bg-orange-800' : 'bg-green-600');
+            messageContainer.classList.remove('hidden', 'message-success', 'message-error');
+            messageContainer.classList.add(isError ? 'message-error' : 'message-success');
 
             messageTimeout = setTimeout(() => {
                 messageContainer.classList.add('hidden');
@@ -264,17 +329,17 @@
         }
 
         registerStatusListener((status) => {
-            connectionDot.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500', 'bg-orange-600', 'bg-blue-500');
+            connectionDot.classList.remove('status-online', 'status-offline', 'status-syncing', 'status-error', 'status-auth');
 
-            let indicatorClass = status.online ? 'bg-green-500' : 'bg-red-500';
+            let indicatorClass = status.online ? 'status-online' : 'status-offline';
             if (status.syncState === 'syncing') {
-                indicatorClass = 'bg-yellow-500';
+                indicatorClass = 'status-syncing';
             } else if (status.syncState === 'error') {
-                indicatorClass = 'bg-orange-600';
+                indicatorClass = 'status-error';
             } else if (status.syncState === 'auth-required') {
-                indicatorClass = 'bg-blue-500';
+                indicatorClass = 'status-auth';
             } else if (!status.online) {
-                indicatorClass = 'bg-red-500';
+                indicatorClass = 'status-offline';
             }
 
             connectionDot.classList.add(indicatorClass);

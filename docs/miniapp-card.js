@@ -40,12 +40,8 @@ function updateFavoriteButtonState(favoriteButton, isFavorited) {
 
     if (isFavorited) {
         iconSpan.textContent = 'favorite';
-        iconSpan.classList.add('text-orange-500');
-        iconSpan.classList.remove('text-white');
     } else {
         iconSpan.textContent = 'favorite_border';
-        iconSpan.classList.add('text-white');
-        iconSpan.classList.remove('text-orange-500');
     }
 }
 
