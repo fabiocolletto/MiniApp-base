@@ -271,6 +271,61 @@
             return normalized || null;
         }
 
+        function getLaunchUrl(app) {
+            if (!app || typeof app !== 'object') {
+                return null;
+            }
+
+            if (typeof app.url !== 'string') {
+                return null;
+            }
+
+            const trimmed = app.url.trim();
+            if (!trimmed || trimmed === '#') {
+                return null;
+            }
+
+            try {
+                const base = new URL(window.location.href);
+                const resolved = new URL(trimmed, base);
+                return resolved.href;
+            } catch (error) {
+                console.error('URL inválida para MiniApp:', app.url, error);
+                return null;
+            }
+        }
+
+        function openMiniAppPanel(app) {
+            if (!app) {
+                showMessage('❌ MiniApp inválido. Tente novamente.', true);
+                return;
+            }
+
+            const openEvent = new CustomEvent('miniapp:open', {
+                detail: { app },
+                cancelable: true
+            });
+
+            const eventNotCancelled = document.dispatchEvent(openEvent);
+            if (!eventNotCancelled) {
+                return;
+            }
+
+            const launchUrl = getLaunchUrl(app);
+            if (!launchUrl) {
+                showMessage('🚧 Este MiniApp ainda não possui painel principal disponível.', true);
+                return;
+            }
+
+            const currentUrl = window.location.href;
+            if (launchUrl === currentUrl) {
+                showMessage('ℹ️ Você já está visualizando o painel principal deste MiniApp.', false);
+                return;
+            }
+
+            window.location.href = launchUrl;
+        }
+
         function openProductModal(app) {
             if (!app) return;
 
@@ -325,6 +380,7 @@
 
         window.showMessage = showMessage;
         window.openProductModal = openProductModal;
+        window.openMiniAppPanel = openMiniAppPanel;
 
         addToCartButton.addEventListener('click', addToCart);
 
