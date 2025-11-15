@@ -1,8 +1,9 @@
 const DB_NAME = 'miniapp-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORES = {
   userSettings: { keyPath: 'key' },
-  pendingSync: { keyPath: 'id', autoIncrement: true }
+  pendingSync: { keyPath: 'id', autoIncrement: true },
+  favorites: { keyPath: 'miniAppTitle' }
 };
 
 let dbPromise;
