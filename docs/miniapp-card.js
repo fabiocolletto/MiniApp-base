@@ -76,6 +76,7 @@ function createMiniAppCardHTML(app) {
     // Note: O template HTML permanece o mesmo, usando os dados passados em 'app'.
     return `
         <div class="miniapp-card"
+             data-id="${app.id ?? ''}"
              data-title="${app.title}"
              data-description="${app.description}"
              data-price="${app.price}"
@@ -113,7 +114,12 @@ async function attachCardListeners(data) {
 
     document.querySelectorAll('.miniapp-card').forEach((card) => {
         // Encontra o objeto de dados correspondente pelo título (mais seguro que índice)
-        const app = data.find(item => item.title === card.dataset.title);
+        const app = data.find((item) => {
+            if (card.dataset.id) {
+                return item.id === card.dataset.id;
+            }
+            return item.title === card.dataset.title;
+        });
 
         if (!app) return;
 
