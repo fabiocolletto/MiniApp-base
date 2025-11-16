@@ -68,6 +68,12 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 - Observe o guia do agente (`AGENTE.md`) para decisões sobre fluxo, segurança e documentação.
 - Sempre prefira soluções gratuitas e escaláveis, alinhadas ao objetivo zero custo do ecossistema.
 
+## Processo de QA para quem executa os testes
+- **Guias rápidos**: os planos com termos de aceitação estão em `docs/qa/gestao-conta-auto-save.md` (gestão de conta) e `docs/qa/gestao-catalogo-auto-save.md` (gestão de catálogo). Cada arquivo detalha ambiente, comando e passos validados.
+- **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente.
+- **Registro obrigatório**: anexe a saída dos comandos ao PR/commit como evidência dos termos de aceitação. Caso um cenário falhe, corrija o fluxo e repita até todos os termos serem atendidos.
+- **Ajustes de dependência**: na primeira execução (ou após reinstalar o ambiente), rode `npm install`, `npx playwright install-deps chromium` e `npx playwright install chromium` para habilitar o navegador de teste.
+
 ## Layout do grid e largura dos cards
 - O contêiner principal (`.app-shell`/`.app-main`) usa largura total com limite de **1280px** centralizado e `padding` de `1rem` para manter respiro lateral.
 - O grid de cards (`.responsive-panel-grid` em `docs/miniapp-global.css`) usa colunas fixas de `300px` (`repeat(auto-fit, minmax(300px, 300px))`), `gap` de `1.2rem` e largura máxima de **1280px**, garantindo que cada card mantenha sempre **300px** de largura e que o conjunto fique centralizado.

@@ -308,7 +308,7 @@ export async function signOutFromGoogle() {
 }
 
 export async function saveUserSetting(key, value) {
-  return saveRecord('userSettings', { key, value, updatedAt: new Date().toISOString() }, key);
+  return saveRecord('userSettings', { key, value, updatedAt: new Date().toISOString() });
 }
 
 export async function getUserSetting(key) {
