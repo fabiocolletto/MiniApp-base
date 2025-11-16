@@ -625,7 +625,7 @@
     </div>
 
     <script type="module">
-        import { saveUserSetting, getUserSetting } from '../../js/googleSync.js';
+        import { saveUserSetting, getUserSetting, queueForSync, registerStatusListener } from '../../js/googleSync.js';
 
         const accountProfiles = [
             {
@@ -698,6 +698,7 @@
         const themeToggle = document.querySelector('[data-role="themeToggle"]');
         const htmlElement = document.documentElement;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const syncStatusField = document.querySelector('[data-field="syncNote"]');
 
         const PREFERENCE_STORAGE_KEY = 'miniapp:minha-conta:preferences';
         let currentAccountId = null;
@@ -721,6 +722,20 @@
                 await saveUserSetting(PREFERENCE_STORAGE_KEY, data);
             } catch (error) {
                 console.warn('Não foi possível salvar as preferências.', error);
+            }
+        };
+
+        const queuePreferenceSync = async (accountId, type, preferencePayload) => {
+            try {
+                await queueForSync({
+                    type,
+                    accountId,
+                    timestamp: new Date().toISOString(),
+                    source: 'miniapp:gestao-conta-usuario',
+                    payload: preferencePayload
+                });
+            } catch (error) {
+                console.warn('Não foi possível enfileirar a sincronização.', error);
             }
         };
 
@@ -757,6 +772,7 @@
                 }
             };
             await persistPreferences(userPreferences);
+            await queuePreferenceSync(accountId, 'theme-preference', preference);
         };
 
         const updateField = (field, value) => {
@@ -888,6 +904,14 @@
             if (accountProfiles.length) {
                 updateAccount(accountProfiles[0].id);
             }
+
+            registerStatusListener((status) => {
+                if (!syncStatusField) {
+                    return;
+                }
+                syncStatusField.textContent = status.message;
+                syncStatusField.dataset.syncState = status.syncState;
+            });
         };
 
         initializeMiniApp();
