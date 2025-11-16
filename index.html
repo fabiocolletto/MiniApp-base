@@ -312,6 +312,30 @@
             }, 5000);
         }
 
+        function isIosDevice() {
+            if (typeof navigator === 'undefined' || typeof navigator.userAgent !== 'string') {
+                return false;
+            }
+            return /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+        }
+
+        function isStandaloneMode() {
+            return (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                || (typeof navigator !== 'undefined' && navigator.standalone);
+        }
+
+        function setupIosInstallPrompt() {
+            if (!installButton || !isIosDevice() || isStandaloneMode()) {
+                return;
+            }
+
+            installButton.textContent = 'Adicionar à Tela de Início';
+            installButton.classList.remove('hidden');
+            installButton.addEventListener('click', () => {
+                showMessage('No Safari, toque em Compartilhar e escolha "Adicionar à Tela de Início".', false);
+            }, { once: true });
+        }
+
         function resolveMiniAppId(app) {
             if (!app || typeof app !== 'object') {
                 return null;
@@ -631,7 +655,9 @@
         window.addEventListener('appinstalled', (e) => {
             installButton.classList.add('hidden');
         });
-        
+
+        setupIosInstallPrompt();
+
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="window.handleGapiLoad && window.handleGapiLoad()"></script>
 </body>
