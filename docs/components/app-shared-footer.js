@@ -54,12 +54,57 @@ class AppSharedFooter extends HTMLElement {
         ? ""
         : `<span class="nav-link-label text-xs mt-1">${item.label}</span>`;
       return `
-        <a href="#" class="${baseClasses.join(" ")}" aria-label="${item.label}">
+        <a href="#" class="${baseClasses.join(" ")}" aria-label="${item.label}" data-nav-key="${item.key}">
             <span class="material-icons-sharp text-3xl" aria-hidden="true">${item.icon}</span>
             ${label}
         </a>
       `;
     }).join("");
+  }
+
+  getBasePath() {
+    const path = window.location.pathname;
+    const miniappsIndex = path.indexOf("/miniapps/");
+
+    if (miniappsIndex !== -1) {
+      return path.slice(0, miniappsIndex + 1);
+    }
+
+    if (path.endsWith("/index.html")) {
+      return path.slice(0, -"index.html".length);
+    }
+
+    return path.endsWith("/")
+      ? path
+      : path.slice(0, path.lastIndexOf("/") + 1);
+  }
+
+  navigateTo(key) {
+    const basePath = this.getBasePath();
+    const navigationMap = {
+      home: `${basePath}`,
+      catalog: `${basePath}`,
+      settings: `${basePath}miniapps/gestao-de-catalogo/`,
+      account: `${basePath}miniapps/gestao-de-conta-do-usuario/`,
+    };
+
+    const destination = navigationMap[key];
+    if (destination) {
+      window.location.href = destination;
+    }
+  }
+
+  setupNavigation() {
+    const navLinks = this.querySelectorAll(".nav-link[data-nav-key]");
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const key = link.getAttribute("data-nav-key");
+        if (key) {
+          this.navigateTo(key);
+        }
+      });
+    });
   }
 
   renderCollapsedMeta({ isCompact }) {
@@ -133,6 +178,8 @@ class AppSharedFooter extends HTMLElement {
           ${details}
       </footer>
     `;
+
+    this.setupNavigation();
   }
 }
 
