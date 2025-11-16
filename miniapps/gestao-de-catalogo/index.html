@@ -4,94 +4,320 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniApp - Gestão de Catálogo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
     <meta name="theme-color" content="#f3f4f6">
-</head>
-<body class="bg-slate-100 min-h-screen">
-    <div class="max-w-4xl mx-auto px-4 py-10 space-y-8">
-        <header class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <span class="material-icons-sharp text-3xl text-indigo-500">dashboard_customize</span>
-                <h1 class="text-3xl font-bold title-text">Gestão de Catálogo</h1>
-            </div>
-            <a href="../../index.html" class="inline-flex items-center px-4 py-2 rounded-full button-outline text-sm font-semibold">
-                <span class="material-icons-sharp text-base mr-1">arrow_back</span>
-                Voltar ao Catálogo
-            </a>
-        </header>
+    <style>
+        :root {
+            color-scheme: light;
+        }
 
-        <section class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-            <h2 class="text-xl font-semibold accent-text">MiniApps publicados</h2>
-            <p class="muted-text">
-                Visualize rapidamente o status de publicação dos MiniApps e realize ações administrativas
-                sem sair do ambiente 5Horas. Esta tela é um ponto de partida simples para evoluções futuras.
-            </p>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
+        body {
+            margin: 0;
+            background-color: var(--color-app-bg);
+        }
+
+        .miniapp-container {
+            width: min(100%, 880px);
+            margin: 0 auto;
+            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+        }
+
+        .miniapp-panel {
+            background-color: var(--color-card-bg);
+            border: 1px solid var(--color-card-border);
+            border-radius: 1.5rem;
+            padding: clamp(1.25rem, 3vw, 2rem);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel-heading h1 {
+            margin: 0;
+            font-size: clamp(1.35rem, 4vw, 1.85rem);
+        }
+
+        .panel-heading p {
+            margin: 0.35rem 0 0;
+            max-width: 65ch;
+        }
+
+        .status-table {
+            width: 100%;
+        }
+
+        .status-table table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+
+        .status-table caption {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            text-align: left;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-table th,
+        .status-table td {
+            padding: 0.65rem 0.4rem;
+            border-bottom: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .status-table th {
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            color: var(--color-text-secondary);
+        }
+
+        .status-table td {
+            font-size: 0.95rem;
+        }
+
+        .status-table th.actions-col,
+        .status-table td.actions-col {
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .status-badge .material-icons-sharp {
+            font-size: 1rem;
+        }
+
+        .status-badge.published {
+            background-color: rgba(34, 197, 94, 0.18);
+            color: var(--color-status-online);
+        }
+
+        .status-badge.review {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: var(--color-status-syncing);
+        }
+
+        .status-badge.draft {
+            background-color: rgba(148, 163, 184, 0.2);
+            color: var(--color-text-secondary);
+        }
+
+        .crud-actions {
+            display: inline-flex;
+            gap: 0.3rem;
+            justify-content: center;
+        }
+
+        .crud-actions .action-btn {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 50%;
+            border: 1px solid var(--color-border);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-surface-muted);
+            color: var(--color-text-primary);
+        }
+
+        .crud-actions .action-btn.primary {
+            background-color: rgba(249, 115, 22, 0.15);
+            color: var(--color-accent);
+            border-color: rgba(249, 115, 22, 0.5);
+        }
+
+        .crud-actions .action-btn.danger {
+            background-color: rgba(248, 113, 113, 0.15);
+            color: var(--color-status-offline);
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        .crud-actions .action-btn:focus-visible,
+        .crud-actions .action-btn:hover {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 2px var(--color-border-strong);
+        }
+
+        @media (max-width: 720px) {
+            .miniapp-container {
+                padding-inline: 1rem;
+            }
+
+            .status-table table {
+                border: 0;
+            }
+
+            .status-table thead {
+                border: 0;
+                clip: rect(0 0 0 0);
+                height: 1px;
+                margin: -1px;
+                overflow: hidden;
+                padding: 0;
+                position: absolute;
+                width: 1px;
+            }
+
+            .status-table tbody,
+            .status-table tr,
+            .status-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .status-table tr {
+                margin-bottom: 1rem;
+                border: 1px solid var(--color-card-border);
+                border-radius: 1.25rem;
+                padding: 0.85rem 1rem;
+                background-color: var(--color-shell-bg);
+                box-shadow: var(--shadow-card);
+            }
+
+            .status-table td {
+                border-bottom: 0;
+                padding: 0.35rem 0;
+            }
+
+            .status-table td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--color-text-secondary);
+                margin-bottom: 0.1rem;
+            }
+
+            .status-table td.actions-col {
+                margin-top: 0.45rem;
+                display: flex;
+                justify-content: flex-start;
+            }
+
+            .crud-actions {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="miniapp-container">
+        <section class="miniapp-panel" aria-labelledby="painel-publicacao">
+            <div class="panel-heading">
+                <h1 id="painel-publicacao" class="accent-text">MiniApps publicados</h1>
+                <p class="muted-text">Painel compacto com status e ações CRUD para cada MiniApp do catálogo.</p>
+            </div>
+            <div class="status-table" role="region" aria-live="polite">
+                <table>
+                    <caption>Lista de MiniApps publicados com status, data e controles CRUD.</caption>
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">MiniApp</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Categoria</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Última atualização</th>
+                            <th scope="col">MiniApp</th>
+                            <th scope="col">Categoria</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Última atualização</th>
+                            <th scope="col" class="actions-col">Ações</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-slate-100 text-sm">
+                    <tbody>
                         <tr>
-                            <td class="px-4 py-3 font-medium text-slate-700">Catálogo 5Horas</td>
-                            <td class="px-4 py-3 text-slate-500">Sistema</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs">
+                            <td data-label="MiniApp">Catálogo 5Horas</td>
+                            <td data-label="Categoria">Sistema</td>
+                            <td data-label="Status">
+                                <span class="status-badge published">
+                                    <span class="material-icons-sharp" aria-hidden="true">check_circle</span>
                                     Publicado
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-500">02/2024</td>
+                            <td data-label="Última atualização">02/2024</td>
+                            <td class="actions-col" data-label="Ações">
+                                <div class="crud-actions" role="group" aria-label="Ações para Catálogo 5Horas">
+                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Catálogo 5Horas">
+                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Catálogo 5Horas">
+                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Catálogo 5Horas">
+                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
+                                    </button>
+                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Catálogo 5Horas">
+                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
-                            <td class="px-4 py-3 font-medium text-slate-700">Gestão de Catálogo</td>
-                            <td class="px-4 py-3 text-slate-500">Administração</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold text-xs">
+                            <td data-label="MiniApp">Gestão de Catálogo</td>
+                            <td data-label="Categoria">Administração</td>
+                            <td data-label="Status">
+                                <span class="status-badge review">
+                                    <span class="material-icons-sharp" aria-hidden="true">autorenew</span>
                                     Em revisão
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-500">03/2024</td>
+                            <td data-label="Última atualização">03/2024</td>
+                            <td class="actions-col" data-label="Ações">
+                                <div class="crud-actions" role="group" aria-label="Ações para Gestão de Catálogo">
+                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Gestão de Catálogo">
+                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Gestão de Catálogo">
+                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Gestão de Catálogo">
+                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
+                                    </button>
+                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Gestão de Catálogo">
+                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
-                            <td class="px-4 py-3 font-medium text-slate-700">Produtividade Essencial</td>
-                            <td class="px-4 py-3 text-slate-500">Produtividade</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-200 text-slate-600 font-semibold text-xs">
+                            <td data-label="MiniApp">Produtividade Essencial</td>
+                            <td data-label="Categoria">Produtividade</td>
+                            <td data-label="Status">
+                                <span class="status-badge draft">
+                                    <span class="material-icons-sharp" aria-hidden="true">pending</span>
                                     Rascunho
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-500">03/2024</td>
+                            <td data-label="Última atualização">03/2024</td>
+                            <td class="actions-col" data-label="Ações">
+                                <div class="crud-actions" role="group" aria-label="Ações para Produtividade Essencial">
+                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Produtividade Essencial">
+                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Produtividade Essencial">
+                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
+                                    </button>
+                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Produtividade Essencial">
+                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
+                                    </button>
+                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Produtividade Essencial">
+                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
-
-        <section class="grid gap-6 md:grid-cols-2">
-            <article class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-                <h3 class="text-lg font-semibold text-slate-800">Fluxo rápido</h3>
-                <ol class="list-decimal list-inside space-y-2 text-slate-600">
-                    <li>Selecione um MiniApp existente ou crie um novo rascunho.</li>
-                    <li>Defina categoria, preço, contrato e ícone representativo.</li>
-                    <li>Publique para disponibilizar o MiniApp no catálogo principal.</li>
-                </ol>
-            </article>
-            <article class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-                <h3 class="text-lg font-semibold text-slate-800">Próximos passos</h3>
-                <ul class="list-disc list-inside space-y-2 text-slate-600">
-                    <li>Integração com o IndexedDB para persistir rascunhos.</li>
-                    <li>Sincronização com Google Drive quando disponível.</li>
-                    <li>Publicação assistida com revisão automática de metadados.</li>
-                </ul>
-            </article>
-        </section>
-    </div>
+    </main>
 </body>
 </html>
