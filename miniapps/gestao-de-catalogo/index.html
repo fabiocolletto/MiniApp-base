@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
     <script type="module" src="../../docs/components/app-shared-header.js"></script>
+    <script type="module" src="../../docs/components/app-shared-footer.js"></script>
     <meta name="theme-color" content="#f3f4f6">
     <style>
         :root {
@@ -400,24 +401,7 @@
         </section>
             </div>
         </main>
-        <footer class="app-footer p-3 rounded-t-xl" data-footer-state="collapsed">
-            <div class="footer-top w-full">
-                <div class="footer-quick-nav flex justify-around w-full">
-                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Home">
-                        <span class="material-icons-sharp text-3xl" aria-hidden="true">home</span>
-                    </a>
-                    <a href="#" class="nav-link active flex flex-col items-center" aria-label="Catálogo">
-                        <span class="material-icons-sharp text-3xl" aria-hidden="true">grid_view</span>
-                    </a>
-                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Configurações">
-                        <span class="material-icons-sharp text-3xl" aria-hidden="true">settings</span>
-                    </a>
-                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Conta">
-                        <span class="material-icons-sharp text-3xl" aria-hidden="true">person</span>
-                    </a>
-                </div>
-            </div>
-        </footer>
+        <app-shared-footer variant="compact" active-tab="catalog"></app-shared-footer>
     </div>
 
     <template id="row-template">
