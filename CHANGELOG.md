@@ -4,12 +4,15 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 
 ## [Unreleased]
 ### Adicionado
+- Biblioteca CSS [Open Props](https://open-props.style) incorporada ao shell e MiniApps para destravar tokens fluidos reutilizáveis nas larguras e espaçamentos.
 - Estrutura de pastas para templates de MiniApps (`templates/`) e para o futuro Design System (`docs/design-system/`).
 - READMEs iniciais orientando o uso dessas novas pastas.
 - MiniApp **Gestão de Catálogo** agora integra diretamente com `js/googleSync.js`, salva o catálogo revisado no IndexedDB e dispara a sincronização automática via Apps Script/Google APIs, sem necessidade de exportar arquivos manualmente.
 - Suporte ao campo opcional `updatedAt` no `miniapp-data.js` para rastrear revisões diretamente na interface administrativa.
 
 ### Alterado
+- Shell principal agora usa largura fluida, grade responsiva e otimizações de espaçamento que aproveitam telas maiores sem perder a base mobile-first.
+- Painéis do MiniApp **Gestão de Conta do Usuário** abrem diretamente ao clique em cada linha interativa, mantendo acessibilidade via teclado.
 - Catálogo configurado para listar apenas o MiniApp **Gestão de Catálogo**, mantendo o foco no fluxo de publicação principal.
 
 ### Documentação
