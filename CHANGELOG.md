@@ -15,7 +15,8 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 ### Alterado
 - `index.html` e o MiniApp **Gestão de Catálogo** agora consomem os dados via loader com fallback, evitando falhas quando os documentos do repositório não podem ser lidos localmente.
 - Shell principal agora usa largura fluida, grade responsiva e otimizações de espaçamento que aproveitam telas maiores sem perder a base mobile-first.
-- Grade do catálogo recalibrada para permitir que o shell ocupe 100% da viewport e encaixe mais cartões por linha conforme a largura aumenta, mantendo cartões em tamanho padrão.
+- Shell principal passa a respeitar altura fixa de `100vh`, mantendo header e footer sempre visíveis e delegando a rolagem para o painel central com barra oculta.
+- Grade do catálogo recalibrada para permitir que o shell ocupe 100% da viewport e encaixe mais cartões por linha conforme a largura aumenta, agora com cartões sempre fixos em **300px**.
 - Painéis do MiniApp **Gestão de Conta do Usuário** abrem diretamente ao clique em cada linha interativa, mantendo acessibilidade via teclado.
 - Catálogo configurado para listar apenas o MiniApp **Gestão de Catálogo**, mantendo o foco no fluxo de publicação principal.
 
@@ -24,6 +25,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `AGENTE.md` atualizado com a descrição da estrutura auxiliar e o playbook para processar templates de MiniApps.
 - `README.md` mencionando a nova pasta de templates.
 - `README.md` agora inclui instruções atualizadas do fluxo guiado com botão **Salvar no sistema** e sincronização automática.
+- `docs/responsiveness-report.md` registra capturas e comportamento do grid em diferentes larguras, mantendo shell em 100vh com rolagem central.
 
 ## [0.1.0] - 2024-04-XX
 ### Adicionado
