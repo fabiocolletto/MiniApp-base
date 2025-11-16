@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Gestão de Conta do Usuário</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <meta name="theme-color" content="#f3f4f6">
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--color-app-bg);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .miniapp-container {
+            width: min(100%, 1080px);
+            margin: 0 auto;
+            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .miniapp-panel {
+            background-color: var(--color-card-bg);
+            border: 1px solid var(--color-card-border);
+            border-radius: 1.5rem;
+            padding: clamp(1.25rem, 3vw, 2rem);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .account-header {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(14, 165, 233, 0.15));
+            border: 1px solid rgba(37, 99, 235, 0.25);
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            gap: 1.5rem;
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .panel-heading .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+        }
+
+        .panel-heading h1,
+        .panel-heading h2,
+        .panel-heading h3 {
+            margin: 0;
+            font-size: clamp(1.35rem, 4vw, 1.85rem);
+        }
+
+        .panel-heading p {
+            margin: 0;
+            max-width: 65ch;
+        }
+
+        .user-switcher {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .user-switcher label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-text-secondary);
+        }
+
+        .select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-wrapper select {
+            appearance: none;
+            width: 100%;
+            border-radius: 0.9rem;
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            font-weight: 600;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .select-wrapper .material-icons-sharp {
+            position: absolute;
+            right: 0.85rem;
+            pointer-events: none;
+            color: var(--color-text-secondary);
+        }
+
+        .account-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .account-meta strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        .meta-label {
+            margin: 0;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--color-border);
+            border-radius: 1.25rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .stat-card span {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-text-secondary);
+        }
+
+        .stat-card strong {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: clamp(1.1rem, 3vw, 1.45rem);
+        }
+
+        .section-heading p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--color-border);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            background-color: var(--color-shell-bg);
+        }
+
+        .setting-row {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            align-items: center;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-card-bg);
+        }
+
+        .setting-info h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .setting-info p {
+            margin: 0.25rem 0 0;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .setting-action {
+            margin-left: auto;
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background-color: var(--color-border);
+            border-radius: 999px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--color-card-bg);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch[data-active="true"] {
+            background-color: rgba(249, 115, 22, 0.75);
+        }
+
+        .toggle-switch[data-active="true"]::after {
+            transform: translateX(20px);
+        }
+
+        .preference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .preference-card {
+            border: 1px solid var(--color-border);
+            border-radius: 1.25rem;
+            padding: 1rem;
+            background-color: var(--color-shell-bg);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .preference-card header {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-weight: 600;
+        }
+
+        .preference-card p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+
+        .action-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .ghost-button {
+            padding: 0.85rem 1.25rem;
+            border-radius: 999px;
+            border: 1px solid var(--color-border);
+            background-color: transparent;
+            font-weight: 600;
+        }
+
+        .primary-button {
+            padding: 0.85rem 1.5rem;
+            border-radius: 999px;
+            border: none;
+            background-color: var(--color-accent);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 12px 24px rgba(249, 115, 22, 0.35);
+        }
+
+        .footer-panel {
+            background-color: var(--color-shell-bg);
+            border: 1px dashed var(--color-border);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            text-align: center;
+            color: var(--color-text-secondary);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background-color: rgba(15, 23, 42, 0.08);
+            color: var(--color-text-primary);
+        }
+
+        .badge.is-positive {
+            background-color: rgba(34, 197, 94, 0.18);
+            color: #15803d;
+        }
+
+        .device-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--color-border);
+            border-radius: 1.25rem;
+            overflow: hidden;
+        }
+
+        .device-list li {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .device-list li:last-child {
+            border-bottom: none;
+        }
+
+        .device-list strong {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <main class="miniapp-container">
+        <header class="miniapp-panel account-header">
+            <div class="panel-heading">
+                <span class="eyebrow">Minha conta</span>
+                <h1 data-field="userGreeting">Olá, Fábio!</h1>
+                <p>Gerencie preferências, segurança e dispositivos vinculados exclusivamente à sua conta pessoal.</p>
+            </div>
+            <form class="user-switcher" id="accountSwitcher">
+                <label for="accountSelect">Operar como</label>
+                <div class="select-wrapper">
+                    <select id="accountSelect" aria-label="Selecionar conta ativa"></select>
+                    <span class="material-icons-sharp" aria-hidden="true">expand_more</span>
+                </div>
+            </form>
+            <div class="account-meta">
+                <div>
+                    <p class="meta-label">Email principal</p>
+                    <strong data-field="userEmail">fabio@5horas.com</strong>
+                    <p data-field="userRole">Head de Operações</p>
+                </div>
+                <div>
+                    <p class="meta-label">Fuso horário</p>
+                    <strong data-field="userTimezone">GMT-3 (Brasília)</strong>
+                    <p>Preferências sincronizadas automaticamente.</p>
+                </div>
+                <div>
+                    <p class="meta-label">Status</p>
+                    <strong data-field="accountStatus">Ativa</strong>
+                    <p data-field="securitySummary">Sem alertas críticos.</p>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <article class="stat-card">
+                    <span>Plano ativo</span>
+                    <strong data-field="plan">Enterprise</strong>
+                    <p data-field="planMeta">Renova em 12/02/2025</p>
+                </article>
+                <article class="stat-card">
+                    <span>Último acesso</span>
+                    <strong data-field="lastAccess">Hoje, 08:12</strong>
+                    <p data-field="lastAccessContext">via iPhone 15 Pro</p>
+                </article>
+                <article class="stat-card">
+                    <span>Dispositivos confiáveis</span>
+                    <strong data-field="trustedDevices">3</strong>
+                    <p data-field="deviceNote">com MFA validada</p>
+                </article>
+                <article class="stat-card">
+                    <span>Alertas pessoais</span>
+                    <strong class="badge is-positive" data-field="alerts">0</strong>
+                    <p data-field="alertNote">Nenhuma ação obrigatória</p>
+                </article>
+            </div>
+        </header>
+
+        <section class="miniapp-panel">
+            <div class="section-heading">
+                <h2>Perfil e Segurança</h2>
+                <p data-field="profileSummary">Nome social e dados fiscais atualizados.</p>
+            </div>
+            <div class="settings-list">
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(37, 99, 235, 0.2); color: #1d4ed8;">
+                        <span class="material-icons-sharp">person_outline</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>Dados do Perfil</h3>
+                        <p>Editar assinatura, telefone e avatar de <strong data-field="userName">Fábio Andrade</strong>.</p>
+                    </div>
+                    <div class="setting-action">
+                        <span class="material-icons-sharp">chevron_right</span>
+                        Atualizar
+                    </div>
+                </article>
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(248, 113, 113, 0.25); color: #b91c1c;">
+                        <span class="material-icons-sharp">lock_open</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>Segurança e Acesso</h3>
+                        <p data-field="securityDetail">Senha atualizada há 42 dias.</p>
+                        <p><strong>MFA:</strong> <span data-field="mfa">Microsoft Authenticator</span></p>
+                    </div>
+                    <div class="setting-action">
+                        <span class="material-icons-sharp">chevron_right</span>
+                        Configurar
+                    </div>
+                </article>
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(249, 115, 22, 0.25); color: #ea580c;">
+                        <span class="material-icons-sharp">devices</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>Sessões recentes</h3>
+                        <p data-field="sessionLabel">3 sessões ativas com verificação biométrica.</p>
+                    </div>
+                    <div class="setting-action">
+                        <span class="material-icons-sharp">north_east</span>
+                        Ver todas
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="miniapp-panel">
+            <div class="section-heading">
+                <h2>Preferências do MiniApp</h2>
+                <p>Configure tema, favoritos e notificações que impactam somente você.</p>
+            </div>
+            <div class="settings-list">
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(250, 204, 21, 0.25); color: #a16207;">
+                        <span class="material-icons-sharp">light_mode</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>Tema do Painel</h3>
+                        <p>Preferência atual: <strong data-field="theme">Automático</strong>.</p>
+                    </div>
+                    <div class="setting-action" aria-label="Tema do painel">
+                        <div class="toggle-switch" data-role="themeToggle" role="switch" aria-checked="true" data-active="true"></div>
+                    </div>
+                </article>
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(236, 72, 153, 0.2); color: #be185d;">
+                        <span class="material-icons-sharp">favorite</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>MiniApps Favoritos</h3>
+                        <p data-field="favoritesDetail">7 itens fixados no topo da grade.</p>
+                    </div>
+                    <div class="setting-action">
+                        <span class="material-icons-sharp">chevron_right</span>
+                        Editar
+                    </div>
+                </article>
+                <article class="setting-row">
+                    <div class="setting-icon" style="background-color: rgba(168, 85, 247, 0.2); color: #6d28d9;">
+                        <span class="material-icons-sharp">notifications</span>
+                    </div>
+                    <div class="setting-info">
+                        <h3>Alertas e Notificações</h3>
+                        <p data-field="notificationDetail">Push + Email para alertas financeiros.</p>
+                    </div>
+                    <div class="setting-action">
+                        <span class="material-icons-sharp">chevron_right</span>
+                        Ajustar
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="miniapp-panel">
+            <div class="section-heading">
+                <h2>Dispositivos conectados</h2>
+                <p>Monitore as sessões vinculadas diretamente à sua conta.</p>
+            </div>
+            <ul class="device-list" id="deviceList">
+                <li>
+                    <div>
+                        <strong>iPhone 15 Pro</strong>
+                        <p>São Paulo, Brasil</p>
+                    </div>
+                    <span class="badge">Hoje, 08:12</span>
+                </li>
+                <li>
+                    <div>
+                        <strong>MacBook Air M2</strong>
+                        <p>Escritório - Rede segura</p>
+                    </div>
+                    <span class="badge">Ontem, 22:48</span>
+                </li>
+            </ul>
+        </section>
+
+        <section class="miniapp-panel">
+            <div class="section-heading">
+                <h2>Configurações rápidas</h2>
+                <p>Automatize ações específicas da sua conta.</p>
+            </div>
+            <div class="preference-grid">
+                <article class="preference-card">
+                    <header>
+                        <span class="material-icons-sharp" aria-hidden="true">password</span>
+                        Atualizar senha pessoal
+                    </header>
+                    <p>Defina uma nova senha e atualize tokens conectados.</p>
+                    <div class="action-footer">
+                        <button class="ghost-button" type="button">Simular requisitos</button>
+                        <button class="primary-button" type="button">Criar nova senha</button>
+                    </div>
+                </article>
+                <article class="preference-card">
+                    <header>
+                        <span class="material-icons-sharp" aria-hidden="true">phishing</span>
+                        Revisar dispositivos
+                    </header>
+                    <p>Execute uma varredura de risco apenas na sua conta.</p>
+                    <div class="action-footer">
+                        <button class="ghost-button" type="button">Ver checklist</button>
+                        <button class="primary-button" type="button">Rodar verificação</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <footer class="footer-panel">
+            <span data-field="syncNote">Última sincronização realizada há 2 minutos.</span>
+        </footer>
+    </main>
+
+    <script>
+        const accountProfiles = [
+            {
+                id: 'fabio',
+                shortName: 'Fábio',
+                name: 'Fábio Andrade',
+                email: 'fabio@5horas.com',
+                role: 'Head de Operações',
+                timezone: 'GMT-3 (Brasília)',
+                status: 'Ativa',
+                securitySummary: 'Sem alertas críticos.',
+                plan: 'Enterprise',
+                planMeta: 'Renova em 12/02/2025',
+                lastAccess: 'Hoje, 08:12',
+                lastAccessContext: 'via iPhone 15 Pro',
+                trustedDevices: 3,
+                deviceNote: 'com MFA validada',
+                alerts: 0,
+                alertNote: 'Nenhuma ação obrigatória',
+                profileSummary: 'Nome social e dados fiscais atualizados.',
+                securityDetail: 'Senha atualizada há 42 dias.',
+                mfa: 'Microsoft Authenticator',
+                sessionLabel: '3 sessões ativas com verificação biométrica.',
+                theme: 'Automático',
+                themeActive: true,
+                favoritesDetail: '7 itens fixados no topo da grade.',
+                notificationDetail: 'Push + Email para alertas financeiros.',
+                syncNote: 'Última sincronização realizada há 2 minutos.',
+                devices: [
+                    { device: 'iPhone 15 Pro', location: 'São Paulo, Brasil', lastSeen: 'Hoje, 08:12' },
+                    { device: 'MacBook Air M2', location: 'Rede corporativa', lastSeen: 'Ontem, 22:48' },
+                    { device: 'iPad Mini', location: 'Home office', lastSeen: 'Ontem, 18:10' }
+                ]
+            },
+            {
+                id: 'aline',
+                shortName: 'Aline',
+                name: 'Aline Torres',
+                email: 'aline.torres@5horas.com',
+                role: 'Finance Controller',
+                timezone: 'GMT-3 (Brasília)',
+                status: 'Ativa',
+                securitySummary: 'Monitorando tentativas de login por SMS.',
+                plan: 'Business',
+                planMeta: 'Renova em 28/11/2024',
+                lastAccess: 'Hoje, 09:45',
+                lastAccessContext: 'via Galaxy S23',
+                trustedDevices: 2,
+                deviceNote: 'todos aprovados com MFA.',
+                alerts: 1,
+                alertNote: '1 dispositivo aguardando confirmação.',
+                profileSummary: 'Dados fiscais sincronizados com o ERP.',
+                securityDetail: 'Senha expira em 9 dias.',
+                mfa: 'Authenticator + SMS backup',
+                sessionLabel: '2 sessões ativas com alerta.',
+                theme: 'Claro',
+                themeActive: false,
+                favoritesDetail: '4 miniapps favoritos priorizados.',
+                notificationDetail: 'Emails diários e push crítico.',
+                syncNote: 'Atualizado há 5 minutos.',
+                devices: [
+                    { device: 'Galaxy S23', location: 'Rio de Janeiro, Brasil', lastSeen: 'Hoje, 09:45' },
+                    { device: 'Desktop Financeiro', location: 'Escritório RJ', lastSeen: 'Hoje, 07:58' }
+                ]
+            }
+        ];
+
+        const accountSelect = document.getElementById('accountSelect');
+        const deviceList = document.getElementById('deviceList');
+
+        const updateField = (field, value) => {
+            document.querySelectorAll(`[data-field="${field}"]`).forEach((el) => {
+                if (typeof value === 'string' || typeof value === 'number') {
+                    el.textContent = value;
+                }
+            });
+        };
+
+        const renderDevices = (devices) => {
+            if (!deviceList) return;
+            deviceList.innerHTML = '';
+            devices.forEach((device) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>
+                        <strong>${device.device}</strong>
+                        <p>${device.location}</p>
+                    </div>
+                    <span class="badge">${device.lastSeen}</span>
+                `;
+                deviceList.appendChild(li);
+            });
+        };
+
+        const updateAccount = (accountId) => {
+            const data = accountProfiles.find((profile) => profile.id === accountId);
+            if (!data) return;
+
+            updateField('userGreeting', `Olá, ${data.shortName}!`);
+            updateField('userEmail', data.email);
+            updateField('userRole', data.role);
+            updateField('userTimezone', data.timezone);
+            updateField('accountStatus', data.status);
+            updateField('securitySummary', data.securitySummary);
+            updateField('plan', data.plan);
+            updateField('planMeta', data.planMeta);
+            updateField('lastAccess', data.lastAccess);
+            updateField('lastAccessContext', data.lastAccessContext);
+            updateField('trustedDevices', data.trustedDevices);
+            updateField('deviceNote', data.deviceNote);
+            updateField('alerts', data.alerts);
+            updateField('alertNote', data.alertNote);
+            updateField('profileSummary', data.profileSummary);
+            updateField('userName', data.name);
+            updateField('securityDetail', data.securityDetail);
+            updateField('mfa', data.mfa);
+            updateField('sessionLabel', data.sessionLabel);
+            updateField('theme', data.theme);
+            updateField('favoritesDetail', data.favoritesDetail);
+            updateField('notificationDetail', data.notificationDetail);
+            updateField('syncNote', data.syncNote);
+
+            const alertBadges = document.querySelectorAll('[data-field="alerts"]');
+            alertBadges.forEach((badge) => {
+                if (data.alerts === 0) {
+                    badge.classList.add('is-positive');
+                } else {
+                    badge.classList.remove('is-positive');
+                }
+            });
+
+            const themeToggle = document.querySelector('[data-role="themeToggle"]');
+            if (themeToggle) {
+                themeToggle.setAttribute('data-active', data.themeActive ? 'true' : 'false');
+                themeToggle.setAttribute('aria-checked', data.themeActive ? 'true' : 'false');
+            }
+
+            renderDevices(data.devices);
+        };
+
+        accountProfiles.forEach((profile, index) => {
+            const option = document.createElement('option');
+            option.value = profile.id;
+            option.textContent = `${profile.name} (${profile.email})`;
+            if (index === 0) option.selected = true;
+            if (accountSelect) {
+                accountSelect.appendChild(option);
+            }
+        });
+
+        if (accountSelect) {
+            accountSelect.addEventListener('change', (event) => {
+                updateAccount(event.target.value);
+            });
+        }
+
+        updateAccount(accountProfiles[0].id);
+    </script>
+</body>
+</html>
