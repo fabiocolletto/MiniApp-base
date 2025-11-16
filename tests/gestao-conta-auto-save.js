@@ -120,9 +120,12 @@ const waitForSyncMessage = async (page) => {
         try {
             await page.click('[data-panel-action="favorites"]');
             await page.waitForSelector('#favoritesModal.active');
-            const favoriteSelector = 'input[type="checkbox"][data-favorite="aprovacao-despesas"]';
-            const initialState = await page.isChecked(favoriteSelector);
-            await page.click(favoriteSelector);
+            const favoriteSelector = '#favoritesModal input[type="checkbox"][data-favorite]';
+            const firstFavorite = await page.waitForSelector(favoriteSelector);
+            const favoriteKey = await firstFavorite.getAttribute('data-favorite');
+
+            const initialState = await firstFavorite.isChecked();
+            await firstFavorite.click();
             await page.waitForTimeout(600);
             await waitForSyncMessage(page);
             const expectedFavorites = !initialState;
@@ -131,9 +134,9 @@ const waitForSyncMessage = async (page) => {
             await page.waitForSelector('[data-panel-action="favorites"]');
             await page.click('[data-panel-action="favorites"]');
             await page.waitForSelector('#favoritesModal.active');
-            const persistedFavorites = await page.isChecked(favoriteSelector);
+            const persistedFavorites = await page.isChecked(`input[type="checkbox"][data-favorite="${favoriteKey}"]`);
             assert.strictEqual(persistedFavorites, expectedFavorites, 'Favorito não persistiu após reload.');
-            record('Favoritos: auto-save de seleção', true, `Checkbox persistido como ${persistedFavorites}.`);
+            record('Favoritos: auto-save de seleção', true, `Checkbox ${favoriteKey} persistido como ${persistedFavorites}.`);
             await page.click('[data-modal-close="favoritesModal"]');
         } catch (error) {
             record('Favoritos: auto-save de seleção', false, error.message);
