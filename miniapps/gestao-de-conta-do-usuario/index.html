@@ -663,7 +663,7 @@
                 <div class="form-group">
                     <label>Autenticação de Múltiplos Fatores (MFA)</label>
                     <p class="text-sm text-gray-500 mb-2">Selecione o método de MFA preferido.</p>
-                    <select class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                    <select id="mfaSelect" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
                         <option>Microsoft Authenticator (App)</option>
                         <option>SMS (Backup)</option>
                         <option>Chave de Segurança Física</option>
@@ -736,15 +736,15 @@
             
             <div class="space-y-3">
                 <label class="flex items-center space-x-3">
-                    <input type="checkbox" checked class="form-checkbox text-blue-600 rounded">
+                    <input type="checkbox" data-favorite="relatorios" checked class="form-checkbox text-blue-600 rounded">
                     <span>Relatórios de Vendas</span>
                 </label>
                 <label class="flex items-center space-x-3">
-                    <input type="checkbox" checked class="form-checkbox text-blue-600 rounded">
+                    <input type="checkbox" data-favorite="gestao-projetos" checked class="form-checkbox text-blue-600 rounded">
                     <span>Gestão de Projetos</span>
                 </label>
                 <label class="flex items-center space-x-3">
-                    <input type="checkbox" class="form-checkbox text-blue-600 rounded">
+                    <input type="checkbox" data-favorite="aprovacao-despesas" class="form-checkbox text-blue-600 rounded">
                     <span>Aprovação de Despesas</span>
                 </label>
                 <label class="flex items-center space-x-3">
@@ -781,7 +781,7 @@
                         <h3>Alertas Críticos</h3>
                         <p>Notificações sobre segurança ou interrupção de serviço.</p>
                     </div>
-                    <button class="toggle-switch" data-active="true" type="button" role="switch" aria-checked="true" style="margin-left: auto;">
+                    <button class="toggle-switch" data-setting="criticalAlerts" data-active="true" type="button" role="switch" aria-checked="true" style="margin-left: auto;">
                         <span class="sr-only">Toggle alertas críticos</span>
                     </button>
                 </div>
@@ -790,7 +790,7 @@
                         <h3>Novidades e Recursos</h3>
                         <p>Atualizações sobre novos MiniApps ou funcionalidades.</p>
                     </div>
-                    <button class="toggle-switch" data-active="false" type="button" role="switch" aria-checked="false" style="margin-left: auto;">
+                    <button class="toggle-switch" data-setting="productNews" data-active="false" type="button" role="switch" aria-checked="false" style="margin-left: auto;">
                         <span class="sr-only">Toggle novidades</span>
                     </button>
                 </div>
@@ -896,6 +896,9 @@
         const endSessionsButton = document.querySelector('[data-action="end-other-sessions"]');
         const saveFavoritesButton = document.querySelector('[data-action="save-favorites"]');
         const saveNotificationsButton = document.querySelector('[data-action="save-notifications"]');
+        const mfaSelect = document.getElementById('mfaSelect');
+        const notificationToggles = document.querySelectorAll('.toggle-switch[data-setting]');
+        const favoriteCheckboxes = document.querySelectorAll('#favoritesModal input[type="checkbox"][data-favorite]');
 
 
         const accountSelect = document.getElementById('accountSelect');
@@ -914,7 +917,47 @@
         let userPreferences = {};
 
         // Variável global para armazenar o perfil ativo
-        let activeProfile = accountProfiles[0]; 
+        let activeProfile = accountProfiles[0];
+
+        // Funções utilitárias
+        const debounce = (fn, delay = 400) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => fn(...args), delay);
+            };
+        };
+
+        const setToggleState = (toggle, isActive) => {
+            if (!toggle) return;
+            toggle.setAttribute('data-active', isActive ? 'true' : 'false');
+            toggle.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        };
+
+        const getAccountPreferences = (accountId) => userPreferences[accountId] || {};
+
+        const persistAccountPreferences = async (accountId, partialPreferences) => {
+            userPreferences = {
+                ...userPreferences,
+                [accountId]: {
+                    ...getAccountPreferences(accountId),
+                    ...partialPreferences
+                }
+            };
+            await persistPreferences(userPreferences);
+        };
+
+        const hydrateProfilesFromPreferences = () => {
+            accountProfiles.forEach((profile, index) => {
+                const savedPrefs = getAccountPreferences(profile.id);
+                const mergedProfile = {
+                    ...profile,
+                    ...(savedPrefs.profile || {}),
+                    ...(savedPrefs.security?.mfa ? { mfa: savedPrefs.security.mfa } : {})
+                };
+                accountProfiles[index] = mergedProfile;
+            });
+        };
 
         // [FUNÇÕES DE LÓGICA GERAL]
 
@@ -924,6 +967,36 @@
                     el.textContent = value;
                 }
             });
+        };
+
+        const applyNotificationPreferences = (accountId) => {
+            const savedNotifications = getAccountPreferences(accountId).notifications;
+            if (!savedNotifications) return;
+
+            notificationToggles.forEach((toggle) => {
+                const key = toggle.getAttribute('data-setting');
+                if (!key || !(key in savedNotifications)) return;
+                setToggleState(toggle, Boolean(savedNotifications[key]));
+            });
+        };
+
+        const applyFavoritePreferences = (accountId) => {
+            const savedFavorites = getAccountPreferences(accountId).favorites;
+            if (!Array.isArray(savedFavorites)) return;
+
+            favoriteCheckboxes.forEach((checkbox) => {
+                const key = checkbox.getAttribute('data-favorite');
+                checkbox.checked = savedFavorites.includes(key);
+            });
+        };
+
+        const applySecurityPreference = (accountId) => {
+            const profile = accountProfiles.find((p) => p.id === accountId);
+            if (!profile?.mfa) return;
+
+            if (mfaSelect) {
+                mfaSelect.value = profile.mfa;
+            }
         };
 
         const updateAccount = (accountId) => {
@@ -956,6 +1029,10 @@
             updateField('favoritesDetail', data.favoritesDetail);
             updateField('notificationDetail', data.notificationDetail);
             updateField('syncNote', data.syncNote);
+
+            applyNotificationPreferences(accountId);
+            applyFavoritePreferences(accountId);
+            applySecurityPreference(accountId);
 
             const alertBadges = document.querySelectorAll('[data-field="alerts"]');
             alertBadges.forEach((badge) => {
@@ -1090,6 +1167,101 @@
         };
 
 
+        const saveProfilePreferences = async () => {
+            if (!activeProfile) return;
+
+            const updatedProfile = {
+                name: inputName.value.trim(),
+                email: inputEmail.value.trim(),
+                phone: inputPhone.value.trim()
+            };
+
+            try {
+                const profileIndex = accountProfiles.findIndex((p) => p.id === activeProfile.id);
+                if (profileIndex !== -1) {
+                    accountProfiles[profileIndex] = { ...accountProfiles[profileIndex], ...updatedProfile };
+                    activeProfile = accountProfiles[profileIndex];
+                }
+
+                await persistAccountPreferences(activeProfile.id, { profile: updatedProfile });
+                await queuePreferenceSync(activeProfile.id, 'profile-update', updatedProfile);
+
+                updateAccount(activeProfile.id);
+                showSyncStatus({ syncState: 'syncing', message: 'Alterações de perfil salvas automaticamente.' });
+            } catch (error) {
+                console.warn('Não foi possível salvar o perfil.', error);
+            }
+        };
+
+        const debouncedProfileSave = debounce(() => {
+            saveProfilePreferences();
+        }, 500);
+
+        const saveSecurityPreferences = async (mfaValue) => {
+            if (!activeProfile) return;
+
+            const profileIndex = accountProfiles.findIndex((p) => p.id === activeProfile.id);
+            if (profileIndex !== -1) {
+                accountProfiles[profileIndex] = { ...accountProfiles[profileIndex], mfa: mfaValue };
+                activeProfile = accountProfiles[profileIndex];
+            }
+
+            try {
+                const existingSecurity = getAccountPreferences(activeProfile.id).security || {};
+                const nextSecurity = { ...existingSecurity, mfa: mfaValue };
+                await persistAccountPreferences(activeProfile.id, { security: nextSecurity });
+                await queuePreferenceSync(activeProfile.id, 'security-preferences', nextSecurity);
+                updateField('mfa', mfaValue);
+                showSyncStatus({ syncState: 'syncing', message: 'Preferências de segurança salvas automaticamente.' });
+            } catch (error) {
+                console.warn('Não foi possível salvar preferências de segurança.', error);
+            }
+        };
+
+        const saveNotificationToggle = async (key, isActive) => {
+            if (!activeProfile) return;
+
+            try {
+                const existingNotifications = getAccountPreferences(activeProfile.id).notifications || {};
+                const nextNotifications = { ...existingNotifications, [key]: isActive };
+                await persistAccountPreferences(activeProfile.id, { notifications: nextNotifications });
+                await queuePreferenceSync(activeProfile.id, 'notification-preferences', nextNotifications);
+                showSyncStatus({ syncState: 'syncing', message: 'Preferências de notificação salvas automaticamente.' });
+            } catch (error) {
+                console.warn('Não foi possível salvar notificações.', error);
+            }
+        };
+
+        const getFavoriteSelection = () => Array.from(favoriteCheckboxes)
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.getAttribute('data-favorite'));
+
+        const saveFavoritesPreferences = async () => {
+            if (!activeProfile) return;
+
+            const selectedFavorites = getFavoriteSelection();
+            try {
+                const profileIndex = accountProfiles.findIndex((p) => p.id === activeProfile.id);
+                if (profileIndex !== -1) {
+                    accountProfiles[profileIndex] = {
+                        ...accountProfiles[profileIndex],
+                        favorites: selectedFavorites
+                    };
+                }
+
+                await persistAccountPreferences(activeProfile.id, { favorites: selectedFavorites });
+                await queuePreferenceSync(activeProfile.id, 'favorites-update', selectedFavorites);
+                showSyncStatus({ syncState: 'syncing', message: 'Favoritos salvos automaticamente.' });
+            } catch (error) {
+                console.warn('Não foi possível salvar favoritos.', error);
+            }
+        };
+
+        const debouncedFavoritesSave = debounce(() => {
+            saveFavoritesPreferences();
+        }, 400);
+
+
         // [FUNÇÕES DE MODAL]
 
         /**
@@ -1163,26 +1335,53 @@
             });
         };
 
-        // Função genérica de manipulação de submissão do formulário de perfil
-        const handleProfileSubmit = (event) => {
-            event.preventDefault();
-            
-            console.log('Dados do Perfil Salvos (Simulação):', {
-                name: inputName.value,
-                email: inputEmail.value,
-                phone: inputPhone.value,
-                accountId: activeProfile.id
+        const attachAutoSaveListeners = () => {
+            [inputName, inputEmail, inputPhone].forEach((input) => {
+                if (input) {
+                    input.addEventListener('input', () => debouncedProfileSave());
+                }
             });
-            
-            const profileIndex = accountProfiles.findIndex(p => p.id === activeProfile.id);
-            if (profileIndex !== -1) {
-                accountProfiles[profileIndex].name = inputName.value;
-                accountProfiles[profileIndex].email = inputEmail.value;
-                updateAccount(activeProfile.id); 
+
+            if (mfaSelect) {
+                mfaSelect.addEventListener('change', () => {
+                    saveSecurityPreferences(mfaSelect.value);
+                });
             }
 
+            notificationToggles.forEach((toggle) => {
+                const handleToggle = () => {
+                    const isActive = toggle.getAttribute('data-active') === 'true';
+                    const nextState = !isActive;
+                    const key = toggle.getAttribute('data-setting');
+
+                    setToggleState(toggle, nextState);
+                    if (key) {
+                        saveNotificationToggle(key, nextState);
+                    }
+                };
+
+                toggle.addEventListener('click', handleToggle);
+                toggle.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleToggle();
+                    }
+                });
+            });
+
+            favoriteCheckboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    debouncedFavoritesSave();
+                });
+            });
+        };
+
+        // Função genérica de manipulação de submissão do formulário de perfil
+        const handleProfileSubmit = async (event) => {
+            event.preventDefault();
+
+            await saveProfilePreferences();
             closeModal(profileEditModal);
-            showSyncStatus({ syncState: 'syncing', message: 'Dados de perfil salvos. Sincronizando...' });
         };
 
 
@@ -1220,6 +1419,7 @@
 
             if (saveFavoritesButton) {
                 saveFavoritesButton.addEventListener('click', () => {
+                    saveFavoritesPreferences();
                     closeModal(favoritesModal);
                     showSyncStatus({ syncState: 'syncing', message: 'Favoritos salvos. Sincronizando...' });
                 });
@@ -1266,6 +1466,7 @@
 
         const initializeMiniApp = async () => {
             userPreferences = await loadPreferences();
+            hydrateProfilesFromPreferences();
 
             accountProfiles.forEach((profile, index) => {
                 const option = document.createElement('option');
@@ -1287,8 +1488,9 @@
                 updateAccount(accountProfiles[0].id);
             }
 
-            registerStatusListener(showSyncStatus); 
+            registerStatusListener(showSyncStatus);
             attachModalListeners();
+            attachAutoSaveListeners();
         };
 
         initializeMiniApp();

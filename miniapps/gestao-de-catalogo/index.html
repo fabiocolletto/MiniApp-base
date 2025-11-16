@@ -636,7 +636,7 @@
             submitBtn.textContent = 'Salvar alterações';
             cancelEditBtn.hidden = false;
             form.elements.id.value = entry.id;
-            form.elements.id.disabled = true;
+            form.elements.id.readOnly = true;
             form.elements.title.value = entry.title;
             form.elements.category.value = entry.category;
             form.elements.price.value = entry.price || '';
@@ -654,6 +654,7 @@
             formTitle.textContent = 'Cadastrar novo MiniApp';
             submitBtn.textContent = 'Salvar MiniApp';
             cancelEditBtn.hidden = true;
+            form.elements.id.readOnly = false;
         }
 
         function duplicateMiniApp(id) {
