@@ -15,11 +15,15 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 │   ├── miniapp-data.js      # Lista oficial de MiniApps disponíveis
 │   ├── miniapp-card.js      # Template e listeners dos cards
 │   └── miniapp-card.css     # Estilos dos cards exibidos no grid
+├── docs/design-system/      # Estrutura inicial para o futuro Design System
 ├── js/
 │   ├── googleSync.js        # Fila offline + integração com Google
 │   └── indexeddb-store.js   # Acesso ao IndexedDB e helpers
+├── templates/               # Modelos temporários para novos MiniApps
 └── index.html               # Shell principal do catálogo
 ```
+
+A pasta `templates/` concentra HTMLs temporários usados como referência na criação de novos MiniApps. Os arquivos são processados pelo Codex e não fazem parte da PWA final.
 
 ## Como adicionar ou atualizar um MiniApp
 1. **Cadastrar dados no `miniapp-data.js`**
