@@ -12,6 +12,7 @@ export const miniAppsData = [
         contract: 'Incluso',
         active: true,
         url: './miniapps/gestao-de-catalogo/index.html',
-        image: 'https://placehold.co/400x300/2563eb/ffffff?text=Gestao+Catalogo'
+        image: 'https://placehold.co/400x300/2563eb/ffffff?text=Gestao+Catalogo',
+        updatedAt: '2024-05-01T00:00:00.000Z'
     }
 ];

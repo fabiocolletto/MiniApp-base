@@ -30,6 +30,7 @@ A pasta `templates/` concentra HTMLs temporários usados como referência na cri
    - Inclua um objeto com propriedades `id`, `title`, `description`, `price`, `category`, `contract`, `url` e `image`.
    - Garanta que `id` seja único e estável. Utilize o padrão `miniapp-nome-versao` ou um slug claro.
    - Revise o `title` para que seja exclusivo; ele ainda é usado como fallback para favoritos e buscas.
+   - Campo opcional `updatedAt` (ISO 8601) permite rastrear quando o registro foi revisado pela última vez e já é utilizado pelo MiniApp **Gestão de Catálogo**.
 
 2. **Validar a renderização**
    - Abra `index.html` localmente (via servidor estático ou live server) e confirme que o card aparece com imagem, tags e botões corretos.
@@ -44,6 +45,17 @@ A pasta `templates/` concentra HTMLs temporários usados como referência na cri
    - Executar os testes manuais acima e registrar no PR o que foi validado.
    - Atualizar este `README.md` e o `CHANGELOG.md` caso novas regras ou estruturas tenham sido introduzidas.
    - Garantir que imagens tenham fallback ou dimensões proporcionais para evitar layout shift.
+
+## Fluxo guiado com o MiniApp Gestão de Catálogo
+
+Para evitar edições manuais diretas no arquivo, é possível abrir `miniapps/gestao-de-catalogo/index.html` em um servidor estático local e usar o CRUD guiado para gerar e sincronizar o `miniapp-data.js` atualizado. O fluxo é o seguinte:
+
+1. A tela importa automaticamente `docs/miniapp-data.js`, mostra todos os itens oficiais e salva rascunhos em `localStorage`.
+2. Cada linha pode ser editada, duplicada ou removida. O formulário garante que os campos obrigatórios estejam preenchidos e atualiza o campo `updatedAt` em cada alteração.
+3. Ao finalizar, clique em **Salvar no sistema**. A interface envia o catálogo revisado para a fila do IndexedDB e dispara a sincronização automática via Apps Script/Google APIs configuradas.
+4. Caso deseje descartar o rascunho local e voltar aos dados oficiais, use o atalho **Descartar rascunho local** dentro do próprio MiniApp.
+
+Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arquivo `docs/miniapp-data.js`, pois ele continua sendo a única fonte de verdade carregada pelo shell (`index.html`).
 
 ## Boas Práticas
 - Mantenha as alterações auditáveis: descreva no PR motivação, impacto e passos de teste.
