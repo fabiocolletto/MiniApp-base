@@ -734,24 +734,7 @@
             </div>
             <p class="text-gray-600 mb-4">Selecione quais MiniApps devem aparecer no topo da sua lista.</p>
             
-            <div class="space-y-3">
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" data-favorite="relatorios" checked class="form-checkbox text-blue-600 rounded">
-                    <span>Relatórios de Vendas</span>
-                </label>
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" data-favorite="gestao-projetos" checked class="form-checkbox text-blue-600 rounded">
-                    <span>Gestão de Projetos</span>
-                </label>
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" data-favorite="aprovacao-despesas" class="form-checkbox text-blue-600 rounded">
-                    <span>Aprovação de Despesas</span>
-                </label>
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" checked class="form-checkbox text-blue-600 rounded">
-                    <span>Dashboard Executivo</span>
-                </label>
-            </div>
+            <div id="favoritesList" class="space-y-3" aria-live="polite"></div>
             
             <div class="flex justify-end space-x-3 mt-6">
                 <button type="button" data-modal-close="favoritesModal" class="ghost-button">
@@ -810,6 +793,8 @@
 
     <script type="module">
         import { saveUserSetting, getUserSetting, queueForSync, registerStatusListener } from '../../js/googleSync.js';
+        import { getAll as getAllFromIndexedDB, saveRecord, deleteRecord } from '../../js/indexeddb-store.js';
+        import { miniAppsData } from '../../docs/miniapp-data.js';
 
 
         const accountProfiles = [
@@ -892,29 +877,33 @@
         const sessionsModal = document.getElementById('sessionsModal');
         const favoritesModal = document.getElementById('favoritesModal');
         const notificationsModal = document.getElementById('notificationsModal');
+        const favoritesListContainer = document.getElementById('favoritesList');
 
         const endSessionsButton = document.querySelector('[data-action="end-other-sessions"]');
         const saveFavoritesButton = document.querySelector('[data-action="save-favorites"]');
         const saveNotificationsButton = document.querySelector('[data-action="save-notifications"]');
         const mfaSelect = document.getElementById('mfaSelect');
         const notificationToggles = document.querySelectorAll('.toggle-switch[data-setting]');
-        const favoriteCheckboxes = document.querySelectorAll('#favoritesModal input[type="checkbox"][data-favorite]');
+        let favoriteCheckboxes = [];
 
 
         const accountSelect = document.getElementById('accountSelect');
         const themeToggle = document.querySelector('[data-role="themeToggle"]');
         const htmlElement = document.documentElement;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        
+
         // Seletores para o status de sincronização
         const syncStatusDisplay = document.getElementById('syncStatusDisplay');
         const syncStatusMessage = document.getElementById('syncStatusMessage');
         const syncStatusSpinner = document.getElementById('syncStatusSpinner');
-        
+
         const PREFERENCE_STORAGE_KEY = 'miniapp:minha-conta:preferences';
+        const FAVORITES_STORE_NAME = 'favorites';
+        const availableMiniApps = Array.isArray(miniAppsData) ? miniAppsData : [];
         let currentAccountId = null;
         let syncStatusTimeout = null; // Timeout para ocultar a mensagem
         let userPreferences = {};
+        let realFavorites = new Set();
 
         // Variável global para armazenar o perfil ativo
         let activeProfile = accountProfiles[0];
@@ -926,6 +915,65 @@
                 clearTimeout(timeoutId);
                 timeoutId = setTimeout(() => fn(...args), delay);
             };
+        };
+
+        const loadRealFavoritesFromStore = async () => {
+            try {
+                const favoritesFromStore = await getAllFromIndexedDB(FAVORITES_STORE_NAME);
+
+                return new Set(
+                    favoritesFromStore
+                        .filter((item) => item?.miniAppTitle)
+                        .map((item) => item.miniAppTitle)
+                );
+            } catch (error) {
+                console.warn('Não foi possível carregar favoritos reais do catálogo.', error);
+                return new Set();
+            }
+        };
+
+        const renderFavoriteCheckboxes = (favoritesSet = new Set()) => {
+            if (!favoritesListContainer) return;
+
+            favoritesListContainer.innerHTML = '';
+
+            availableMiniApps.forEach((app) => {
+                const checkboxId = `favorite-${app.id}`;
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-3';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = checkboxId;
+                checkbox.setAttribute('data-favorite', app.title);
+                checkbox.className = 'form-checkbox text-blue-600 rounded';
+                checkbox.checked = favoritesSet.has(app.title);
+
+                const span = document.createElement('span');
+                span.textContent = app.title;
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                favoritesListContainer.appendChild(label);
+            });
+
+            favoriteCheckboxes = favoritesListContainer.querySelectorAll('input[type="checkbox"][data-favorite]');
+        };
+
+        const updateFavoritesDetail = (favoritesSelection = []) => {
+            const count = Array.isArray(favoritesSelection) ? favoritesSelection.length : 0;
+
+            if (count === 0) {
+                updateField('favoritesDetail', 'Nenhum miniapp favoritado no catálogo.');
+                return;
+            }
+
+            if (count === 1) {
+                updateField('favoritesDetail', '1 miniapp favorito priorizado.');
+                return;
+            }
+
+            updateField('favoritesDetail', `${count} miniapps favoritos priorizados.`);
         };
 
         const setToggleState = (toggle, isActive) => {
@@ -982,12 +1030,20 @@
 
         const applyFavoritePreferences = (accountId) => {
             const savedFavorites = getAccountPreferences(accountId).favorites;
-            if (!Array.isArray(savedFavorites)) return;
+            const favoritesSelection = Array.isArray(savedFavorites)
+                ? savedFavorites
+                : Array.from(realFavorites);
+
+            if (!favoriteCheckboxes || !favoriteCheckboxes.length) {
+                return favoritesSelection;
+            }
 
             favoriteCheckboxes.forEach((checkbox) => {
                 const key = checkbox.getAttribute('data-favorite');
-                checkbox.checked = savedFavorites.includes(key);
+                checkbox.checked = favoritesSelection.includes(key);
             });
+
+            return favoritesSelection;
         };
 
         const applySecurityPreference = (accountId) => {
@@ -1026,12 +1082,12 @@
             updateField('securityDetail', data.securityDetail);
             updateField('mfa', data.mfa);
             updateField('sessionLabel', data.sessionLabel);
-            updateField('favoritesDetail', data.favoritesDetail);
             updateField('notificationDetail', data.notificationDetail);
             updateField('syncNote', data.syncNote);
 
             applyNotificationPreferences(accountId);
-            applyFavoritePreferences(accountId);
+            const appliedFavorites = applyFavoritePreferences(accountId);
+            updateFavoritesDetail(appliedFavorites);
             applySecurityPreference(accountId);
 
             const alertBadges = document.querySelectorAll('[data-field="alerts"]');
@@ -1232,15 +1288,41 @@
             }
         };
 
-        const getFavoriteSelection = () => Array.from(favoriteCheckboxes)
+        const getFavoriteSelection = () => Array.from(favoriteCheckboxes || [])
             .filter((checkbox) => checkbox.checked)
             .map((checkbox) => checkbox.getAttribute('data-favorite'));
+
+        const persistFavoritesToStore = async (selectedFavorites) => {
+            const existingFavorites = new Set(realFavorites);
+            const operations = [];
+
+            selectedFavorites.forEach((title) => {
+                if (!existingFavorites.has(title)) {
+                    const miniApp = availableMiniApps.find((app) => app.title === title) || { title };
+                    operations.push(saveRecord(FAVORITES_STORE_NAME, {
+                        miniAppTitle: title,
+                        savedAt: new Date().toISOString(),
+                        data: miniApp
+                    }));
+                }
+            });
+
+            existingFavorites.forEach((title) => {
+                if (!selectedFavorites.includes(title)) {
+                    operations.push(deleteRecord(FAVORITES_STORE_NAME, title));
+                }
+            });
+
+            await Promise.all(operations);
+            realFavorites = new Set(selectedFavorites);
+        };
 
         const saveFavoritesPreferences = async () => {
             if (!activeProfile) return;
 
             const selectedFavorites = getFavoriteSelection();
             try {
+                await persistFavoritesToStore(selectedFavorites);
                 const profileIndex = accountProfiles.findIndex((p) => p.id === activeProfile.id);
                 if (profileIndex !== -1) {
                     accountProfiles[profileIndex] = {
@@ -1251,6 +1333,7 @@
 
                 await persistAccountPreferences(activeProfile.id, { favorites: selectedFavorites });
                 await queuePreferenceSync(activeProfile.id, 'favorites-update', selectedFavorites);
+                updateFavoritesDetail(selectedFavorites);
                 showSyncStatus({ syncState: 'syncing', message: 'Favoritos salvos automaticamente.' });
             } catch (error) {
                 console.warn('Não foi possível salvar favoritos.', error);
@@ -1467,6 +1550,9 @@
         const initializeMiniApp = async () => {
             userPreferences = await loadPreferences();
             hydrateProfilesFromPreferences();
+
+            realFavorites = await loadRealFavoritesFromStore();
+            renderFavoriteCheckboxes(realFavorites);
 
             accountProfiles.forEach((profile, index) => {
                 const option = document.createElement('option');
