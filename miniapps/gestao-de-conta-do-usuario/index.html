@@ -225,6 +225,14 @@
             background-color: var(--color-border);
             border-radius: 999px;
             transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .toggle-switch:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 3px;
         }
 
         .toggle-switch::after {
@@ -239,6 +247,17 @@
             box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
             transform: translateX(0);
             transition: transform 0.3s ease;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
 
         .toggle-switch[data-active="true"] {
@@ -476,7 +495,9 @@
                         <p>Preferência atual: <strong data-field="theme">Automático</strong>.</p>
                     </div>
                     <div class="setting-action" aria-label="Tema do painel">
-                        <div class="toggle-switch" data-role="themeToggle" role="switch" aria-checked="true" data-active="true"></div>
+                        <button class="toggle-switch" data-role="themeToggle" type="button" role="switch" aria-checked="true" data-active="true">
+                            <span class="sr-only">Alternar tema do painel</span>
+                        </button>
                     </div>
                 </article>
                 <article class="setting-row">
@@ -636,6 +657,70 @@
 
         const accountSelect = document.getElementById('accountSelect');
         const deviceList = document.getElementById('deviceList');
+        const themeToggle = document.querySelector('[data-role="themeToggle"]');
+        const htmlElement = document.documentElement;
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+
+        const PREFERENCE_STORAGE_KEY = 'miniapp:minha-conta:preferences';
+        let currentAccountId = null;
+
+        const loadPreferences = () => {
+            if (typeof localStorage === 'undefined') {
+                return {};
+            }
+            try {
+                const stored = localStorage.getItem(PREFERENCE_STORAGE_KEY);
+                return stored ? JSON.parse(stored) : {};
+            } catch (error) {
+                console.warn('Não foi possível carregar preferências salvas.', error);
+                return {};
+            }
+        };
+
+        const persistPreferences = (data) => {
+            if (typeof localStorage === 'undefined') {
+                return;
+            }
+            try {
+                localStorage.setItem(PREFERENCE_STORAGE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.warn('Não foi possível salvar as preferências.', error);
+            }
+        };
+
+        const userPreferences = loadPreferences();
+
+        const getLabelForThemeState = (isDarkMode) => (isDarkMode ? 'Escuro' : 'Claro');
+
+        const applyThemeMode = (isDarkMode) => {
+            const themeName = isDarkMode ? 'dark' : 'light';
+            if (htmlElement) {
+                htmlElement.setAttribute('data-theme', themeName);
+            }
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', isDarkMode ? '#0f172a' : '#f3f4f6');
+            }
+        };
+
+        const getThemePreference = (accountId, profileDefaults) => {
+            const savedPreference = userPreferences[accountId]?.theme;
+            if (savedPreference) {
+                return savedPreference;
+            }
+            const fallbackActive = Boolean(profileDefaults.themeActive);
+            return {
+                active: fallbackActive,
+                label: profileDefaults.theme || getLabelForThemeState(fallbackActive)
+            };
+        };
+
+        const saveThemePreference = (accountId, preference) => {
+            userPreferences[accountId] = {
+                ...(userPreferences[accountId] || {}),
+                theme: preference
+            };
+            persistPreferences(userPreferences);
+        };
 
         const updateField = (field, value) => {
             document.querySelectorAll(`[data-field="${field}"]`).forEach((el) => {
@@ -665,6 +750,8 @@
             const data = accountProfiles.find((profile) => profile.id === accountId);
             if (!data) return;
 
+            currentAccountId = accountId;
+
             updateField('userGreeting', `Olá, ${data.shortName}!`);
             updateField('userEmail', data.email);
             updateField('userRole', data.role);
@@ -684,7 +771,6 @@
             updateField('securityDetail', data.securityDetail);
             updateField('mfa', data.mfa);
             updateField('sessionLabel', data.sessionLabel);
-            updateField('theme', data.theme);
             updateField('favoritesDetail', data.favoritesDetail);
             updateField('notificationDetail', data.notificationDetail);
             updateField('syncNote', data.syncNote);
@@ -698,14 +784,44 @@
                 }
             });
 
-            const themeToggle = document.querySelector('[data-role="themeToggle"]');
+            const themePreference = getThemePreference(accountId, data);
+            updateField('theme', themePreference.label);
             if (themeToggle) {
-                themeToggle.setAttribute('data-active', data.themeActive ? 'true' : 'false');
-                themeToggle.setAttribute('aria-checked', data.themeActive ? 'true' : 'false');
+                themeToggle.setAttribute('data-active', themePreference.active ? 'true' : 'false');
+                themeToggle.setAttribute('aria-checked', themePreference.active ? 'true' : 'false');
             }
+            applyThemeMode(themePreference.active);
 
             renderDevices(data.devices);
         };
+
+        const handleThemeToggle = () => {
+            if (!themeToggle || !currentAccountId) return;
+
+            const isActive = themeToggle.getAttribute('data-active') === 'true';
+            const nextState = !isActive;
+            const nextLabel = getLabelForThemeState(nextState);
+
+            themeToggle.setAttribute('data-active', nextState ? 'true' : 'false');
+            themeToggle.setAttribute('aria-checked', nextState ? 'true' : 'false');
+
+            updateField('theme', nextLabel);
+            applyThemeMode(nextState);
+            saveThemePreference(currentAccountId, {
+                active: nextState,
+                label: nextLabel
+            });
+        };
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', handleThemeToggle);
+            themeToggle.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleThemeToggle();
+                }
+            });
+        }
 
         accountProfiles.forEach((profile, index) => {
             const option = document.createElement('option');
