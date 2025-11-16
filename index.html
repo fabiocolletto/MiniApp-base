@@ -51,59 +51,73 @@
             <div id="miniappGrid" class="grid gap-6"></div>
         </main>
 
-        <footer class="app-footer p-3 flex flex-col justify-center rounded-t-xl">
-            <div class="flex justify-around mb-2">
-                <!-- ÍCONE HOME - Material Icons: home -->
-                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
-                    <span class="material-icons-sharp text-3xl">home</span>
-                    <span class="text-xs mt-1">Home</span>
-                </a>
+        <footer class="app-footer p-3 flex flex-col justify-center rounded-t-xl" data-footer-state="expanded">
+            <div class="footer-top w-full">
+                <div class="footer-quick-nav flex justify-around w-full">
+                    <!-- ÍCONE HOME - Material Icons: home -->
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150">
+                        <span class="material-icons-sharp text-3xl">home</span>
+                        <span class="nav-link-label text-xs mt-1">Home</span>
+                    </a>
 
-                <!-- ÍCONE CATÁLOGO (ATIVO) - Material Icons: grid_view -->
-                <a href="#" class="nav-link active flex flex-col items-center">
-                    <span class="material-icons-sharp text-3xl">grid_view</span>
-                    <span class="text-xs mt-1">Catálogo</span>
-                </a>
+                    <!-- ÍCONE CATÁLOGO (ATIVO) - Material Icons: grid_view -->
+                    <a href="#" class="nav-link active flex flex-col items-center">
+                        <span class="material-icons-sharp text-3xl">grid_view</span>
+                        <span class="nav-link-label text-xs mt-1">Catálogo</span>
+                    </a>
 
-                <!-- ÍCONE CONFIGURAÇÕES - Material Icons: settings -->
-                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
-                    <span class="material-icons-sharp text-3xl">settings</span>
-                    <span class="text-xs mt-1">Configurações</span>
-                </a>
+                    <!-- ÍCONE CONFIGURAÇÕES - Material Icons: settings -->
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150">
+                        <span class="material-icons-sharp text-3xl">settings</span>
+                        <span class="nav-link-label text-xs mt-1">Configurações</span>
+                    </a>
 
-                <!-- ÍCONE CONTA - Material Icons: person -->
-                <a href="#" class="nav-link flex flex-col items-center transition duration-150">
-                    <span class="material-icons-sharp text-3xl">person</span>
-                    <span class="text-xs mt-1">Conta</span>
-                </a>
-            </div>
-
-            <div class="status-indicators flex items-center justify-between text-xs mb-2" id="statusIndicators">
-                <div class="flex items-center space-x-2">
-                    <span id="connectionDot" class="status-dot status-offline inline-block"></span>
-                    <span id="connectionLabel">Offline</span>
+                    <!-- ÍCONE CONTA - Material Icons: person -->
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150">
+                        <span class="material-icons-sharp text-3xl">person</span>
+                        <span class="nav-link-label text-xs mt-1">Conta</span>
+                    </a>
                 </div>
-                <div class="text-right">
-                    <span id="syncStatusLabel">Sincronização não iniciada</span>
+
+                <div class="footer-collapsed-meta flex items-center justify-between gap-2 w-full">
+                    <div class="footer-legal text-xs muted-text">
+                        &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
+                    </div>
+                    <button id="footerToggleButton" class="footer-toggle icon-button" type="button" aria-expanded="true" aria-controls="footerDetails">
+                        <span class="material-icons-sharp footer-toggle-icon text-2xl">unfold_less</span>
+                        <span class="sr-only">Recolher rodapé</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="flex justify-center space-x-2 mb-2 text-xs">
-                <button id="googleSignInButton" class="button-primary text-sm px-3 py-1 rounded-full shadow transition duration-150">
-                    Conectar Google
-                </button>
-                <button id="googleSignOutButton" class="button-muted text-sm px-3 py-1 rounded-full shadow transition duration-150 hidden">
-                    Sair
-                </button>
-                <button id="manualSyncButton" class="button-outline px-3 py-1 rounded-full transition duration-150">
-                    Sincronizar agora
-                </button>
-            </div>
+            <div id="footerDetails" class="footer-details w-full mt-3">
+                <div class="status-indicators flex items-center justify-between text-xs" id="statusIndicators">
+                    <div class="flex items-center space-x-2">
+                        <span id="connectionDot" class="status-dot status-offline inline-block"></span>
+                        <span id="connectionLabel">Offline</span>
+                    </div>
+                    <div class="text-right">
+                        <span id="syncStatusLabel">Sincronização não iniciada</span>
+                    </div>
+                </div>
 
-            <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
+                <div class="footer-actions flex justify-center space-x-2 mb-2 text-xs">
+                    <button id="googleSignInButton" class="button-primary text-sm px-3 py-1 rounded-full shadow transition duration-150">
+                        Conectar Google
+                    </button>
+                    <button id="googleSignOutButton" class="button-muted text-sm px-3 py-1 rounded-full shadow transition duration-150 hidden">
+                        Sair
+                    </button>
+                    <button id="manualSyncButton" class="button-outline px-3 py-1 rounded-full transition duration-150">
+                        Sincronizar agora
+                    </button>
+                </div>
 
-            <div class="divider text-center text-xs muted-text pt-1 mx-auto w-11/12">
-                &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
+                <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
+
+                <div class="divider text-center text-xs muted-text pt-1 mx-auto w-11/12">
+                    &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
+                </div>
             </div>
         </footer>
 
@@ -157,6 +171,9 @@
         const googleSignOutButton = document.getElementById('googleSignOutButton');
         const manualSyncButton = document.getElementById('manualSyncButton');
         const searchInput = document.getElementById('searchInput');
+        const appFooter = document.querySelector('.app-footer');
+        const footerToggleButton = document.getElementById('footerToggleButton');
+        const footerToggleIcon = footerToggleButton ? footerToggleButton.querySelector('.footer-toggle-icon') : null;
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -173,6 +190,8 @@
             ? window.matchMedia('(prefers-color-scheme: dark)')
             : { matches: false };
         let userThemePreference = null;
+        const FOOTER_STATE_KEY = 'footerState';
+        const DEFAULT_FOOTER_STATE = 'collapsed';
 
         function updateMetaThemeColor() {
             if (!themeMetaTag) {
@@ -231,6 +250,54 @@
             console.error('Erro ao inicializar tema', error);
             applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
         });
+
+        function applyFooterState(state) {
+            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
+                return;
+            }
+            const normalized = state === 'expanded' ? 'expanded' : 'collapsed';
+            appFooter.setAttribute('data-footer-state', normalized);
+            const isExpanded = normalized === 'expanded';
+            footerToggleButton.setAttribute('aria-expanded', isExpanded.toString());
+            footerToggleButton.setAttribute('aria-label', isExpanded ? 'Recolher rodapé' : 'Expandir rodapé');
+            footerToggleIcon.textContent = isExpanded ? 'unfold_less' : 'unfold_more';
+        }
+
+        async function initializeFooterPreferences() {
+            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
+                return;
+            }
+            try {
+                const storedPreference = await getUserSetting(FOOTER_STATE_KEY);
+                const storedValue = typeof storedPreference?.value === 'string'
+                    ? storedPreference.value.toLowerCase()
+                    : null;
+                if (storedValue === 'expanded' || storedValue === 'collapsed') {
+                    applyFooterState(storedValue);
+                    return;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar preferências do rodapé', error);
+            }
+            applyFooterState(DEFAULT_FOOTER_STATE);
+        }
+
+        function setupFooterToggle() {
+            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
+                return;
+            }
+            footerToggleButton.addEventListener('click', () => {
+                const current = appFooter.getAttribute('data-footer-state') === 'expanded' ? 'expanded' : 'collapsed';
+                const nextState = current === 'expanded' ? 'collapsed' : 'expanded';
+                applyFooterState(nextState);
+                saveUserSetting(FOOTER_STATE_KEY, nextState).catch((error) => {
+                    console.error('Erro ao salvar preferência do rodapé', error);
+                });
+            });
+            initializeFooterPreferences();
+        }
+
+        setupFooterToggle();
 
         function showMessage(text, isError = false) {
             if (messageTimeout) {
