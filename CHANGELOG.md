@@ -7,6 +7,9 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Estrutura de pastas para templates de MiniApps (`templates/`) e para o futuro Design System (`docs/design-system/`).
 - READMEs iniciais orientando o uso dessas novas pastas.
 
+### Alterado
+- Catálogo configurado para listar apenas o MiniApp **Gestão de Catálogo**, mantendo o foco no fluxo de publicação principal.
+
 ### Documentação
 - `AGENTE.md` atualizado com a descrição da estrutura auxiliar e o playbook para processar templates de MiniApps.
 - `README.md` mencionando a nova pasta de templates.
