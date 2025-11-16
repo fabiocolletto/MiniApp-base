@@ -300,11 +300,9 @@ body {
 }
 
 .message-box {
-    position: fixed;
-    bottom: 6rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
+    width: 100%;
+    margin-top: 0.75rem;
+    text-align: center;
     transition: opacity 0.3s ease, transform 0.3s ease;
     background-color: var(--color-accent);
     color: var(--color-text-inverse);
