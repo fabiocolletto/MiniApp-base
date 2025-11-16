@@ -2,6 +2,15 @@
 
 Todas as mudanças relevantes deste repositório serão documentadas neste arquivo.
 
+## [Unreleased]
+### Adicionado
+- Estrutura de pastas para templates de MiniApps (`templates/`) e para o futuro Design System (`docs/design-system/`).
+- READMEs iniciais orientando o uso dessas novas pastas.
+
+### Documentação
+- `AGENTE.md` atualizado com a descrição da estrutura auxiliar e o playbook para processar templates de MiniApps.
+- `README.md` mencionando a nova pasta de templates.
+
 ## [0.1.0] - 2024-04-XX
 ### Adicionado
 - Cadastro do MiniApp **Catálogo 5Horas** com identificador único (`catalogo-5horas`) e imagem placeholder dedicada.

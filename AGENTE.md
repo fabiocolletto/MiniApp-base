@@ -49,6 +49,16 @@ Ações estruturais, como:
 
 Nunca utilizar os três ao mesmo tempo.
 
+### 2.5 Estrutura de pastas auxiliares (templates e design system)
+
+Além dos arquivos principais, o projeto conta com pastas auxiliares:
+
+- `templates/`
+  - `templates/miniapps-inbox/`: recebe arquivos HTML temporários que servem como modelos de novos MiniApps. São usados pelo Codex para gerar MiniApps definitivos e não fazem parte da PWA em produção.
+  - `templates/miniapps-archive/`: opcionalmente armazena templates já processados, caso seja desejado manter histórico.
+- `docs/design-system/`
+  - Pasta destinada ao futuro Design System (CSS e documentação de componentes). Nesta fase, serve apenas como estrutura inicial; o Codex não deve criar estilos novos aqui sem diretriz explícita.
+
 
 ## 3. Regras de Comportamento
 ### 3.1. Contexto Sempre Atual
@@ -129,13 +139,55 @@ O agente deve garantir consistência no armazenamento:
 - backward compatibility sempre que possível
 
 
-## 8. Sincronização Offline
-O sistema suporta operação offline.  
-O agente deve:
-- salvar todas as mudanças localmente
-- registrar uma fila de sincronização
-- sincronizar automaticamente ao detectar conexão
-- resolver conflitos com regra de "última versão válida vence" (LWW)
+## 8. Playbooks para tarefas repetitivas
+
+### 8.1 Operar offline e sincronizar dados
+O sistema suporta operação offline. Sempre que trabalhar nesse modo:
+
+1. Salve as mudanças localmente (IndexedDB ou armazenamento definido).
+2. Registre uma fila de sincronização com operações pendentes.
+3. Ao detectar conexão, sincronize automaticamente e verifique conflitos.
+4. Resolva conflitos seguindo a regra "última versão válida vence" (LWW) e registre logs.
+
+### 8.2 Sincronização manual de dados
+Quando o usuário solicitar sincronização manual:
+
+1. Valide se há conexão ativa.
+2. Leia o estado da fila local e confirme quais itens precisam ser enviados.
+3. Execute a sincronização e informe o status ao usuário (sucesso, pendências, erros).
+4. Mantenha os registros para auditoria.
+
+### 8.3 Desativar MiniApp
+Para desativar temporariamente um MiniApp sem removê-lo do histórico:
+
+1. Identifique o slug do MiniApp em `docs/miniapp-data.js`.
+2. Altere o campo apropriado (por exemplo, `active: false` ou `disabled: true`, conforme schema vigente) e registre o motivo em comentário.
+3. Atualize o catálogo (`index.html`) para que o item não apareça na grid ou exiba indicação de indisponibilidade.
+4. Documente a ação no `CHANGELOG.md` ou no PR correspondente.
+
+### 8.4 Processar template de MiniApp em `templates/miniapps-inbox/`
+
+> Este playbook define como o Codex deve agir quando for instruído a converter um template HTML em um novo MiniApp oficial do sistema.
+
+1. Localizar arquivos HTML na pasta `templates/miniapps-inbox/`.
+2. Para cada template indicado pela instrução do usuário:
+   - ler o arquivo HTML;
+   - identificar um `slug` canônico para o MiniApp (ex.: `miniapp-minha-ideia-template.html` → `minha-ideia`);
+   - criar uma pasta definitiva para o MiniApp em:
+     - `apps/<slug>/index.html` (mantendo a estrutura do projeto);
+   - preparar o `index.html` do MiniApp de forma compatível com a PWA e com o design padrão da plataforma (sem criar novo design system neste momento).
+3. Criar ou atualizar a entrada correspondente em `docs/miniapp-data.js`, seguindo a estrutura canônica definida na seção 4 deste documento.
+4. Testar localmente o catálogo (`index.html`) para garantir que:
+   - o novo MiniApp aparece na grid;
+   - o modal abre corretamente;
+   - o link `url` aponta para o novo MiniApp.
+5. Após sucesso nos testes:
+   - remover o template da pasta `templates/miniapps-inbox/`; ou
+   - movê-lo para `templates/miniapps-archive/`, conforme orientação específica do usuário.
+6. Registrar as mudanças em commit, referenciando este playbook na mensagem de commit ou na descrição do PR.
+
+Este playbook **não deve ser executado automaticamente**.
+O Codex só deve seguir este fluxo quando houver instrução explícita do usuário para processar determinado(s) template(s).
 
 
 ## 9. Evolução Contínua
