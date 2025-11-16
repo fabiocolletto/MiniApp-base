@@ -14,7 +14,7 @@
 
         body {
             margin: 0;
-            background-color: var(--color-app-bg);
+            background-color: var(--color-body-bg);
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--color-text-primary);
         }
@@ -290,7 +290,23 @@
     </style>
 </head>
 <body>
-    <main class="miniapp-container">
+    <div class="app-shell">
+        <header class="app-header p-4 shadow-lg flex justify-between items-center rounded-b-xl">
+            <div class="flex items-center space-x-2">
+                <span class="material-icons-sharp icon-accent text-2xl" aria-hidden="true">flash_on</span>
+                <h1 class="text-xl font-extrabold title-text">MiniApp 5Horas</h1>
+            </div>
+            <div class="flex space-x-2 items-center">
+                <button class="icon-button p-2 rounded-full transition duration-150" type="button" aria-label="Abrir busca">
+                    <span class="material-icons-sharp text-2xl" aria-hidden="true">search</span>
+                </button>
+                <button class="button-primary hidden font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md" type="button">
+                    Instalar
+                </button>
+            </div>
+        </header>
+        <main class="app-main p-4">
+            <div class="miniapp-container">
         <section class="miniapp-panel" aria-labelledby="intro-panel">
             <div class="panel-heading">
                 <h1 id="intro-panel" class="accent-text">Gestão de Catálogo</h1>
@@ -394,7 +410,27 @@
                 </div>
             </div>
         </section>
-    </main>
+            </div>
+        </main>
+        <footer class="app-footer p-3 rounded-t-xl" data-footer-state="collapsed">
+            <div class="footer-top w-full">
+                <div class="footer-quick-nav flex justify-around w-full">
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Home">
+                        <span class="material-icons-sharp text-3xl" aria-hidden="true">home</span>
+                    </a>
+                    <a href="#" class="nav-link active flex flex-col items-center" aria-label="Catálogo">
+                        <span class="material-icons-sharp text-3xl" aria-hidden="true">grid_view</span>
+                    </a>
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Configurações">
+                        <span class="material-icons-sharp text-3xl" aria-hidden="true">settings</span>
+                    </a>
+                    <a href="#" class="nav-link flex flex-col items-center transition duration-150" aria-label="Conta">
+                        <span class="material-icons-sharp text-3xl" aria-hidden="true">person</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <template id="row-template">
         <tr>
