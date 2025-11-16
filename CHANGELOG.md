@@ -12,6 +12,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 
 ### Alterado
 - Shell principal agora usa largura fluida, grade responsiva e otimizações de espaçamento que aproveitam telas maiores sem perder a base mobile-first.
+- Grade do catálogo recalibrada para permitir que o shell ocupe 100% da viewport e encaixe mais cartões por linha conforme a largura aumenta, mantendo cartões em tamanho padrão.
 - Painéis do MiniApp **Gestão de Conta do Usuário** abrem diretamente ao clique em cada linha interativa, mantendo acessibilidade via teclado.
 - Catálogo configurado para listar apenas o MiniApp **Gestão de Catálogo**, mantendo o foco no fluxo de publicação principal.
 
