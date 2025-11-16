@@ -58,8 +58,10 @@ O Codex **não deve alterar a estrutura fundamental do shell** sem ordem explíc
 ## 2.2 Dados e componentes
 
 * `docs/miniapp-data.js` → lista oficial de MiniApps.
+* `js/miniapp-data-loader.js` → módulo que carrega `miniapp-data.js` com fallback remoto (GitHub Raw configurável) e cache local automático para ambientes sem o arquivo físico.
 * `docs/miniapp-card.js` → renderização de cards e modais.
 * `docs/miniapp-card.css` + `docs/miniapp-global.css` → estilos globais.
+* `docs/components/app-shared-header.js` → web component oficial do header que deve ser usado pelo shell e por todos os MiniApps.
 
 ## 2.3 Persistência e sincronização
 
