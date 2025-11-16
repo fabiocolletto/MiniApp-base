@@ -131,7 +131,7 @@
                     <span class="material-icons-sharp text-3xl">close</span>
                 </button>
             </div>
-            <img id="modalImage" src="" alt="Imagem do Produto" class="w-full h-auto rounded-lg mb-4 object-cover aspect-video">
+            <img id="modalImage" src="./assets/icons/icon-192.svg" alt="Imagem do Produto" class="w-full h-auto rounded-lg mb-4 object-cover aspect-video">
             <p id="modalDescription" class="muted-text mb-4"></p>
             <p id="modalPrice" class="text-2xl font-extrabold accent-text mb-6"></p>
             <button id="addToCartButton" class="button-primary text-lg font-semibold py-2 px-6 rounded-full transition duration-300">
@@ -157,6 +157,7 @@
         let deferredPrompt;
         let messageTimeout;
         let searchPersistTimeout;
+        const IOS_INSTALL_INTENT_KEY = 'iosInstallIntent';
 
         const installButton = document.getElementById('installButton');
         const searchToggle = document.getElementById('searchToggle');
@@ -324,16 +325,67 @@
                 || (typeof navigator !== 'undefined' && navigator.standalone);
         }
 
+        async function markIosInstallPending() {
+            try {
+                await saveUserSetting(IOS_INSTALL_INTENT_KEY, {
+                    status: 'pending',
+                    requestedAt: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Erro ao salvar intenção de instalação no iOS', error);
+            }
+        }
+
+        async function confirmPendingIosInstall() {
+            if (!isStandaloneMode()) {
+                return;
+            }
+
+            try {
+                const intent = await getUserSetting(IOS_INSTALL_INTENT_KEY);
+                if (intent?.value?.status === 'pending') {
+                    await saveUserSetting(IOS_INSTALL_INTENT_KEY, {
+                        ...intent.value,
+                        status: 'completed',
+                        confirmedAt: new Date().toISOString()
+                    });
+                    showMessage('✅ MiniApp 5Horas instalado na Tela de Início. Aproveite o modo app!', false);
+                }
+            } catch (error) {
+                console.error('Erro ao confirmar instalação iOS', error);
+            }
+        }
+
         function setupIosInstallPrompt() {
             if (!installButton || !isIosDevice() || isStandaloneMode()) {
                 return;
             }
 
             installButton.textContent = 'Adicionar à Tela de Início';
+            installButton.dataset.installStep = 'instructions';
             installButton.classList.remove('hidden');
-            installButton.addEventListener('click', () => {
-                showMessage('No Safari, toque em Compartilhar e escolha "Adicionar à Tela de Início".', false);
-            }, { once: true });
+            installButton.addEventListener('click', async () => {
+                const currentStep = installButton.dataset.installStep || 'instructions';
+                if (currentStep === 'instructions') {
+                    const instructions = [
+                        '1. Toque em Compartilhar (ícone com seta).',
+                        '2. Role e escolha "Adicionar à Tela de Início".',
+                        '3. Confirme tocando em "Adicionar".'
+                    ].join(' ');
+                    showMessage(`${instructions} Depois, abra o app pelo novo ícone para finalizar.`, false);
+                    installButton.dataset.installStep = 'verify';
+                    installButton.textContent = 'Já adicionei';
+                    await markIosInstallPending();
+                } else if (currentStep === 'verify') {
+                    if (isStandaloneMode()) {
+                        showMessage('✅ MiniApp 5Horas já está instalado.', false);
+                        installButton.classList.add('hidden');
+                        installButton.dataset.installStep = 'done';
+                    } else {
+                        showMessage('Abra o app pelo ícone criado na tela inicial para concluir a instalação.', false);
+                    }
+                }
+            });
         }
 
         function resolveMiniAppId(app) {
@@ -652,10 +704,12 @@
             });
         });
         
-        window.addEventListener('appinstalled', (e) => {
+        window.addEventListener('appinstalled', () => {
             installButton.classList.add('hidden');
+            showMessage('✅ MiniApp 5Horas instalado! Abra-o pela tela inicial.', false);
         });
 
+        confirmPendingIosInstall();
         setupIosInstallPrompt();
 
     </script>
