@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
 
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
@@ -181,7 +182,21 @@
             padding: 1rem 1.25rem;
             align-items: center;
             border-bottom: 1px solid var(--color-border);
-            cursor: pointer; /* Adicionado cursor pointer para indicar interatividade */
+            cursor: pointer;
+            position: relative;
+        }
+
+        .setting-row[data-panel-action] {
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .setting-row[data-panel-action]:hover {
+            background-color: rgba(15, 23, 42, 0.035);
+        }
+
+        .setting-row[data-panel-action]:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
         }
 
         .setting-row:last-child {
@@ -224,6 +239,16 @@
             cursor: pointer;
             padding: 0;
             text-align: right;
+        }
+
+        .setting-chevron {
+            margin-left: auto;
+            color: var(--color-text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            pointer-events: none;
         }
 
         .toggle-switch {
@@ -507,7 +532,7 @@
             <p data-field="profileSummary">Nome social e dados fiscais atualizados.</p>
         </div>
         <div class="settings-list">
-            <article class="setting-row">
+            <article class="setting-row" data-panel-action="profile" role="button" tabindex="0" aria-label="Editar dados do perfil" aria-controls="profileEditModal">
                 <div class="setting-icon" style="background-color: rgba(37, 99, 235, 0.2); color: #1d4ed8;">
                     <span class="material-icons-sharp">person_outline</span>
                 </div>
@@ -515,13 +540,9 @@
                     <h3>Dados do Perfil</h3>
                     <p>Editar assinatura, telefone e avatar de <strong data-field="userName">Fábio Andrade</strong>.</p>
                 </div>
-                <!-- ADICIONADO ID: openProfileEditButton -->
-                <button class="setting-action" id="openProfileEditButton" type="button">
-                    <span class="material-icons-sharp">chevron_right</span>
-                    Atualizar
-                </button>
+                <span class="material-icons-sharp setting-chevron" aria-hidden="true">chevron_right</span>
             </article>
-            <article class="setting-row">
+            <article class="setting-row" data-panel-action="security" role="button" tabindex="0" aria-label="Abrir painel de segurança" aria-controls="securityModal">
                 <div class="setting-icon" style="background-color: rgba(248, 113, 113, 0.25); color: #b91c1c;">
                     <span class="material-icons-sharp">lock_open</span>
                 </div>
@@ -530,13 +551,9 @@
                     <p data-field="securityDetail">Senha atualizada há 42 dias.</p>
                     <p><strong>MFA:</strong> <span data-field="mfa">Microsoft Authenticator</span></p>
                 </div>
-                <!-- ADICIONADO ID: openSecurityButton -->
-                <button class="setting-action" id="openSecurityButton" type="button">
-                    <span class="material-icons-sharp">chevron_right</span>
-                    Configurar
-                </button>
+                <span class="material-icons-sharp setting-chevron" aria-hidden="true">chevron_right</span>
             </article>
-            <article class="setting-row">
+            <article class="setting-row" data-panel-action="sessions" role="button" tabindex="0" aria-label="Ver sessões recentes" aria-controls="sessionsModal">
                 <div class="setting-icon" style="background-color: rgba(249, 115, 22, 0.25); color: #ea580c;">
                     <span class="material-icons-sharp">devices</span>
                 </div>
@@ -544,11 +561,7 @@
                     <h3>Sessões recentes</h3>
                     <p data-field="sessionLabel">3 sessões ativas com verificação biométrica.</p>
                 </div>
-                <!-- ADICIONADO ID: openSessionsButton -->
-                <button class="setting-action" id="openSessionsButton" type="button">
-                    <span class="material-icons-sharp">north_east</span>
-                    Ver todas
-                </button>
+                <span class="material-icons-sharp setting-chevron" aria-hidden="true">north_east</span>
             </article>
         </div>
     </section>
@@ -573,7 +586,7 @@
                     </button>
                 </div>
             </article>
-            <article class="setting-row">
+            <article class="setting-row" data-panel-action="favorites" role="button" tabindex="0" aria-label="Editar miniapps favoritos" aria-controls="favoritesModal">
                 <div class="setting-icon" style="background-color: rgba(236, 72, 153, 0.2); color: #be185d;">
                     <span class="material-icons-sharp">favorite</span>
                 </div>
@@ -581,13 +594,9 @@
                     <h3>MiniApps Favoritos</h3>
                     <p data-field="favoritesDetail">7 itens fixados no topo da grade.</p>
                 </div>
-                <!-- ADICIONADO ID: openFavoritesButton -->
-                <button class="setting-action" id="openFavoritesButton" type="button">
-                    <span class="material-icons-sharp">chevron_right</span>
-                    Editar
-                </button>
+                <span class="material-icons-sharp setting-chevron" aria-hidden="true">chevron_right</span>
             </article>
-            <article class="setting-row">
+            <article class="setting-row" data-panel-action="notifications" role="button" tabindex="0" aria-label="Ajustar alertas" aria-controls="notificationsModal">
                 <div class="setting-icon" style="background-color: rgba(168, 85, 247, 0.2); color: #6d28d9;">
                     <span class="material-icons-sharp">notifications</span>
                 </div>
@@ -595,11 +604,7 @@
                     <h3>Alertas e Notificações</h3>
                     <p data-field="notificationDetail">Push + Email para alertas financeiros.</p>
                 </div>
-                <!-- ADICIONADO ID: openNotificationsButton -->
-                <button class="setting-action" id="openNotificationsButton" type="button">
-                    <span class="material-icons-sharp">chevron_right</span>
-                    Ajustar
-                </button>
+                <span class="material-icons-sharp setting-chevron" aria-hidden="true">chevron_right</span>
             </article>
         </div>
     </section>
@@ -916,12 +921,6 @@
         const favoritesModal = document.getElementById('favoritesModal');
         const notificationsModal = document.getElementById('notificationsModal');
 
-        // Seletores de Botões
-        const openProfileEditButton = document.getElementById('openProfileEditButton');
-        const openSecurityButton = document.getElementById('openSecurityButton');
-        const openSessionsButton = document.getElementById('openSessionsButton');
-        const openFavoritesButton = document.getElementById('openFavoritesButton');
-        const openNotificationsButton = document.getElementById('openNotificationsButton');
         const endSessionsButton = document.querySelector('[data-action="end-other-sessions"]');
         const saveFavoritesButton = document.querySelector('[data-action="save-favorites"]');
         const saveNotificationsButton = document.querySelector('[data-action="save-notifications"]');
@@ -1156,6 +1155,42 @@
             openModal(profileEditModal, () => inputName.focus());
         };
 
+        const panelActionHandlers = {
+            profile: () => openProfileModal(),
+            security: () => openModal(securityModal),
+            sessions: () => openModal(sessionsModal),
+            favorites: () => openModal(favoritesModal),
+            notifications: () => openModal(notificationsModal)
+        };
+
+        const attachPanelActionListeners = () => {
+            const interactiveRows = document.querySelectorAll('[data-panel-action]');
+
+            interactiveRows.forEach((row) => {
+                const triggerAction = () => {
+                    const action = row.getAttribute('data-panel-action');
+                    const handler = panelActionHandlers[action];
+                    if (typeof handler === 'function') {
+                        handler();
+                    }
+                };
+
+                row.addEventListener('click', (event) => {
+                    if (event.target.closest('.toggle-switch')) {
+                        return;
+                    }
+                    triggerAction();
+                });
+
+                row.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        triggerAction();
+                    }
+                });
+            });
+        };
+
         // Função genérica de manipulação de submissão do formulário de perfil
         const handleProfileSubmit = (event) => {
             event.preventDefault();
@@ -1202,23 +1237,7 @@
                 });
             });
 
-            // Conecta botões de ação às funções openModal
-            if (openProfileEditButton) {
-                openProfileEditButton.addEventListener('click', openProfileModal);
-            }
-
-            if (openSecurityButton) {
-                openSecurityButton.addEventListener('click', () => openModal(securityModal));
-            }
-            if (openSessionsButton) {
-                openSessionsButton.addEventListener('click', () => openModal(sessionsModal));
-            }
-            if (openFavoritesButton) {
-                openFavoritesButton.addEventListener('click', () => openModal(favoritesModal));
-            }
-            if (openNotificationsButton) {
-                openNotificationsButton.addEventListener('click', () => openModal(notificationsModal));
-            }
+            attachPanelActionListeners();
 
             if (endSessionsButton) {
                 endSessionsButton.addEventListener('click', () => {
