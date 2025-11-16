@@ -68,6 +68,12 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 - Observe o guia do agente (`AGENTE.md`) para decisões sobre fluxo, segurança e documentação.
 - Sempre prefira soluções gratuitas e escaláveis, alinhadas ao objetivo zero custo do ecossistema.
 
+## Layout do grid e largura dos cards
+- O contêiner principal (`.app-shell`/`.app-main`) usa largura total com limite de **1280px** centralizado e `padding` de `1rem` para manter respiro lateral.
+- O grid de cards (`.responsive-panel-grid` em `docs/miniapp-global.css`) usa colunas fixas de `300px` (`repeat(auto-fit, minmax(300px, 300px))`), `gap` de `1.2rem` e largura máxima de **1280px**, garantindo que cada card mantenha sempre **300px** de largura e que o conjunto fique centralizado.
+- A altura do shell é travada em `100vh`: header e footer permanecem sempre visíveis, enquanto o painel central (`.app-main`) ganha rolagem própria com barra oculta para não poluir o layout.
+- Relatório de capturas e observações de responsividade está documentado em `docs/responsiveness-report.md`.
+
 ## MiniApp Catálogo 5Horas
 O primeiro MiniApp implantado é o **Catálogo 5Horas**, registrado em `docs/miniapp-data.js` com `id: catalogo-5horas`. Ele funciona como hub inicial para descoberta, favoritos e fila offline, servindo como referência para contribuições futuras.
 
