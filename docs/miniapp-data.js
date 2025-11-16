@@ -10,6 +10,7 @@ export const miniAppsData = [
         price: 'Grátis',
         category: 'Administração',
         contract: 'Incluso',
+        active: true,
         url: './miniapps/gestao-de-catalogo/index.html',
         image: 'https://placehold.co/400x300/2563eb/ffffff?text=Gestao+Catalogo'
     }
