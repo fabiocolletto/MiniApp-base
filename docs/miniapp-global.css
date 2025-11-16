@@ -45,11 +45,11 @@
     --shadow-card: 0 4px 6px -1px rgba(15, 23, 42, 0.15), 0 2px 4px -2px rgba(15, 23, 42, 0.1);
     --shadow-card-hover: 0 12px 20px -4px rgba(15, 23, 42, 0.2), 0 4px 6px -4px rgba(15, 23, 42, 0.15);
     --shadow-modal: 0 20px 40px rgba(15, 23, 42, 0.25);
-    --shell-max-width: clamp(420px, var(--size-fluid-8, 100vw), 1200px);
+    --shell-max-width: min(100vw, 1920px);
     --shell-padding-inline: clamp(var(--size-4, 1rem), 4vw, var(--size-9, 2.5rem));
     --shell-padding-block: clamp(var(--size-4, 1rem), 3vw, var(--size-8, 2rem));
     --grid-gap: clamp(var(--size-4, 1rem), 3vw, var(--size-8, 2rem));
-    --panel-min-column: clamp(240px, 30vw, 360px);
+    --panel-min-column: 300px;
 }
 
 :root[data-theme="light"] {
@@ -160,6 +160,7 @@ body {
 
 .app-shell {
     width: min(100%, var(--shell-max-width));
+    max-width: none;
     margin-inline: auto;
     padding-inline: var(--shell-padding-inline);
     padding-block: var(--shell-padding-block);
@@ -181,6 +182,7 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(var(--panel-min-column), 1fr));
     gap: var(--grid-gap);
     align-items: stretch;
+    justify-items: stretch;
 }
 
 .responsive-panel-grid > * {
@@ -194,6 +196,7 @@ body {
     }
     .responsive-panel-grid {
         grid-template-columns: minmax(0, 1fr);
+        justify-items: stretch;
     }
 }
 
