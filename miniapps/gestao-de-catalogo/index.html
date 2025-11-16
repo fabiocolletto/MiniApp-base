@@ -15,12 +15,17 @@
         body {
             margin: 0;
             background-color: var(--color-app-bg);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text-primary);
         }
 
         .miniapp-container {
-            width: min(100%, 880px);
+            width: min(100%, 1080px);
             margin: 0 auto;
             padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
         }
 
         .miniapp-panel {
@@ -34,55 +39,58 @@
             gap: 1rem;
         }
 
-        .panel-heading h1 {
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .panel-heading h1,
+        .panel-heading h2,
+        .panel-heading h3 {
             margin: 0;
             font-size: clamp(1.35rem, 4vw, 1.85rem);
         }
 
         .panel-heading p {
-            margin: 0.35rem 0 0;
+            margin: 0;
             max-width: 65ch;
         }
 
-        .status-table {
-            width: 100%;
+        .table-wrapper {
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: var(--color-shell-bg);
         }
 
-        .status-table table {
+        table {
             width: 100%;
             border-collapse: collapse;
             border-spacing: 0;
-            table-layout: auto;
         }
 
-        .status-table caption {
-            font-size: 0.9rem;
-            color: var(--color-text-secondary);
-            text-align: left;
-            margin-bottom: 0.5rem;
-        }
-
-        .status-table th,
-        .status-table td {
-            padding: 0.65rem 0.4rem;
+        th,
+        td {
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--color-border);
             text-align: left;
         }
 
-        .status-table th {
+        th {
+            font-size: 0.78rem;
             text-transform: uppercase;
-            font-size: 0.7rem;
             letter-spacing: 0.08em;
             color: var(--color-text-secondary);
+            background-color: var(--color-card-bg);
         }
 
-        .status-table td {
+        td {
             font-size: 0.95rem;
         }
 
-        .status-table th.actions-col,
-        .status-table td.actions-col {
-            text-align: center;
+        tbody tr:last-child td {
+            border-bottom: 0;
         }
 
         .status-badge {
@@ -93,61 +101,172 @@
             border-radius: 999px;
             font-size: 0.78rem;
             font-weight: 600;
+            text-transform: capitalize;
         }
 
-        .status-badge .material-icons-sharp {
-            font-size: 1rem;
-        }
-
-        .status-badge.published {
+        .status-badge[data-variant="published"] {
             background-color: rgba(34, 197, 94, 0.18);
             color: var(--color-status-online);
         }
 
-        .status-badge.review {
-            background-color: rgba(245, 158, 11, 0.2);
-            color: var(--color-status-syncing);
-        }
-
-        .status-badge.draft {
-            background-color: rgba(148, 163, 184, 0.2);
+        .status-badge[data-variant="draft"] {
+            background-color: rgba(148, 163, 184, 0.25);
             color: var(--color-text-secondary);
         }
 
         .crud-actions {
             display: inline-flex;
-            gap: 0.3rem;
-            justify-content: center;
+            gap: 0.35rem;
+            justify-content: flex-end;
         }
 
         .crud-actions .action-btn {
-            width: 2.4rem;
-            height: 2.4rem;
-            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 999px;
             border: 1px solid var(--color-border);
+            background-color: var(--color-surface-muted);
+            color: var(--color-text-primary);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--color-surface-muted);
-            color: var(--color-text-primary);
+            transition: transform 0.2s ease;
         }
 
         .crud-actions .action-btn.primary {
-            background-color: rgba(249, 115, 22, 0.15);
+            background-color: rgba(249, 115, 22, 0.18);
             color: var(--color-accent);
             border-color: rgba(249, 115, 22, 0.5);
         }
 
         .crud-actions .action-btn.danger {
-            background-color: rgba(248, 113, 113, 0.15);
+            background-color: rgba(248, 113, 113, 0.18);
             color: var(--color-status-offline);
             border-color: rgba(248, 113, 113, 0.4);
         }
 
         .crud-actions .action-btn:focus-visible,
         .crud-actions .action-btn:hover {
-            outline: 2px solid transparent;
+            transform: translateY(-2px);
             box-shadow: 0 0 0 2px var(--color-border-strong);
+        }
+
+        .empty-state {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--color-text-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-control label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        .form-control input,
+        .form-control textarea,
+        .form-control select {
+            border: 1px solid var(--color-border);
+            border-radius: 0.9rem;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.95rem;
+            background-color: var(--color-shell-bg);
+            color: inherit;
+        }
+
+        .form-control textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: 1px solid transparent;
+            padding: 0.75rem 1.35rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn.primary {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+            color: #fff;
+        }
+
+        .btn.ghost {
+            background-color: transparent;
+            border-color: var(--color-border);
+            color: var(--color-text-primary);
+        }
+
+        .btn.text {
+            border: none;
+            background: none;
+            color: var(--color-accent);
+        }
+
+        .btn:focus-visible,
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
+        }
+
+        .form-feedback {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            min-height: 1.5rem;
+        }
+
+        .form-feedback[data-variant="error"] {
+            color: var(--color-status-offline);
+        }
+
+        .form-feedback[data-variant="success"] {
+            color: var(--color-status-online);
+        }
+
+        .sync-card {
+            border: 1px dashed var(--color-border-strong);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            background-color: rgba(15, 23, 42, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .draft-indicator {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
         }
 
         @media (max-width: 720px) {
@@ -155,59 +274,16 @@
                 padding-inline: 1rem;
             }
 
-            .status-table table {
-                border: 0;
-            }
-
-            .status-table thead {
-                border: 0;
-                clip: rect(0 0 0 0);
-                height: 1px;
-                margin: -1px;
-                overflow: hidden;
-                padding: 0;
-                position: absolute;
-                width: 1px;
-            }
-
-            .status-table tbody,
-            .status-table tr,
-            .status-table td {
-                display: block;
-                width: 100%;
-            }
-
-            .status-table tr {
-                margin-bottom: 1rem;
-                border: 1px solid var(--color-card-border);
-                border-radius: 1.25rem;
-                padding: 0.85rem 1rem;
-                background-color: var(--color-shell-bg);
-                box-shadow: var(--shadow-card);
-            }
-
-            .status-table td {
-                border-bottom: 0;
-                padding: 0.35rem 0;
-            }
-
-            .status-table td::before {
-                content: attr(data-label);
-                display: block;
-                font-size: 0.7rem;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                color: var(--color-text-secondary);
-                margin-bottom: 0.1rem;
-            }
-
-            .status-table td.actions-col {
-                margin-top: 0.45rem;
-                display: flex;
-                justify-content: flex-start;
+            th,
+            td {
+                padding: 0.65rem 0.75rem;
             }
 
             .crud-actions {
+                justify-content: flex-start;
+            }
+
+            .form-actions {
                 justify-content: flex-start;
             }
         }
@@ -215,109 +291,471 @@
 </head>
 <body>
     <main class="miniapp-container">
-        <section class="miniapp-panel" aria-labelledby="painel-publicacao">
+        <section class="miniapp-panel" aria-labelledby="intro-panel">
             <div class="panel-heading">
-                <h1 id="painel-publicacao" class="accent-text">MiniApps publicados</h1>
-                <p class="muted-text">Painel compacto com status e ações CRUD para cada MiniApp do catálogo.</p>
+                <h1 id="intro-panel" class="accent-text">Gestão de Catálogo</h1>
+                <p class="muted-text">Administre o arquivo oficial <code>docs/miniapp-data.js</code>, gere versões atualizadas e sincronize com o shell principal do ecossistema.</p>
             </div>
-            <div class="status-table" role="region" aria-live="polite">
+        </section>
+
+        <section class="miniapp-panel" aria-labelledby="catalogo-panel">
+            <div class="panel-heading">
+                <h2 id="catalogo-panel">MiniApps oficiais</h2>
+                <p>Todos os cards publicados na PWA são renderizados a partir desta lista. Use os controles para revisar, duplicar ou arquivar um item antes de exportar a nova versão do arquivo.</p>
+            </div>
+            <div class="table-wrapper" role="region" aria-live="polite">
                 <table>
-                    <caption>Lista de MiniApps publicados com status, data e controles CRUD.</caption>
                     <thead>
                         <tr>
                             <th scope="col">MiniApp</th>
                             <th scope="col">Categoria</th>
+                            <th scope="col">Contrato</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Última atualização</th>
+                            <th scope="col">Atualizado em</th>
                             <th scope="col" class="actions-col">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td data-label="MiniApp">Catálogo 5Horas</td>
-                            <td data-label="Categoria">Sistema</td>
-                            <td data-label="Status">
-                                <span class="status-badge published">
-                                    <span class="material-icons-sharp" aria-hidden="true">check_circle</span>
-                                    Publicado
-                                </span>
-                            </td>
-                            <td data-label="Última atualização">02/2024</td>
-                            <td class="actions-col" data-label="Ações">
-                                <div class="crud-actions" role="group" aria-label="Ações para Catálogo 5Horas">
-                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Catálogo 5Horas">
-                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Catálogo 5Horas">
-                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Catálogo 5Horas">
-                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
-                                    </button>
-                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Catálogo 5Horas">
-                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="MiniApp">Gestão de Catálogo</td>
-                            <td data-label="Categoria">Administração</td>
-                            <td data-label="Status">
-                                <span class="status-badge review">
-                                    <span class="material-icons-sharp" aria-hidden="true">autorenew</span>
-                                    Em revisão
-                                </span>
-                            </td>
-                            <td data-label="Última atualização">03/2024</td>
-                            <td class="actions-col" data-label="Ações">
-                                <div class="crud-actions" role="group" aria-label="Ações para Gestão de Catálogo">
-                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Gestão de Catálogo">
-                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Gestão de Catálogo">
-                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Gestão de Catálogo">
-                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
-                                    </button>
-                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Gestão de Catálogo">
-                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="MiniApp">Produtividade Essencial</td>
-                            <td data-label="Categoria">Produtividade</td>
-                            <td data-label="Status">
-                                <span class="status-badge draft">
-                                    <span class="material-icons-sharp" aria-hidden="true">pending</span>
-                                    Rascunho
-                                </span>
-                            </td>
-                            <td data-label="Última atualização">03/2024</td>
-                            <td class="actions-col" data-label="Ações">
-                                <div class="crud-actions" role="group" aria-label="Ações para Produtividade Essencial">
-                                    <button type="button" class="action-btn primary" title="Criar derivação" aria-label="Criar derivação do Produtividade Essencial">
-                                        <span class="material-icons-sharp" aria-hidden="true">add</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Visualizar registro" aria-label="Visualizar registro do Produtividade Essencial">
-                                        <span class="material-icons-sharp" aria-hidden="true">visibility</span>
-                                    </button>
-                                    <button type="button" class="action-btn" title="Atualizar registro" aria-label="Atualizar registro do Produtividade Essencial">
-                                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
-                                    </button>
-                                    <button type="button" class="action-btn danger" title="Remover registro" aria-label="Remover registro do Produtividade Essencial">
-                                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
-                                    </button>
-                                </div>
-                            </td>
+                    <tbody data-table-body>
+                        <tr class="empty-state" data-empty-state>
+                            <td colspan="6">Nenhum MiniApp cadastrado. Utilize o formulário abaixo para iniciar um novo registro.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
+
+        <section class="miniapp-panel" aria-labelledby="form-panel">
+            <div class="panel-heading">
+                <h2 id="form-panel" data-form-title>Cadastrar novo MiniApp</h2>
+                <p>Preencha os campos e clique em “Salvar” para atualizar o rascunho local. Os dados são validados antes de gerar o arquivo oficial.</p>
+            </div>
+            <form id="miniapp-form" novalidate>
+                <div class="form-grid">
+                    <div class="form-control">
+                        <label for="id">Identificador único *</label>
+                        <input type="text" id="id" name="id" placeholder="ex.: miniapp-financeiro-v1" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="title">Nome *</label>
+                        <input type="text" id="title" name="title" placeholder="Nome do MiniApp" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="category">Categoria *</label>
+                        <input type="text" id="category" name="category" placeholder="Administração, Vendas..." required>
+                    </div>
+                    <div class="form-control">
+                        <label for="price">Preço</label>
+                        <input type="text" id="price" name="price" placeholder="Grátis, sob demanda" value="Grátis">
+                    </div>
+                    <div class="form-control">
+                        <label for="contract">Contrato</label>
+                        <input type="text" id="contract" name="contract" placeholder="Incluso, Sob consulta" value="Incluso">
+                    </div>
+                    <div class="form-control">
+                        <label for="url">URL *</label>
+                        <input type="url" id="url" name="url" placeholder="./miniapps/.../index.html" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="image">Imagem *</label>
+                        <input type="url" id="image" name="image" placeholder="https://placehold.co/400x300" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="active">Status de publicação</label>
+                        <select id="active" name="active">
+                            <option value="true" selected>Publicado</option>
+                            <option value="false">Rascunho / oculto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="description">Descrição *</label>
+                    <textarea id="description" name="description" placeholder="Resumo curto exibido no card" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <span class="form-feedback" data-feedback aria-live="polite"></span>
+                    <button type="button" class="btn ghost" data-cancel-edit hidden>Cancelar edição</button>
+                    <button type="button" class="btn text" data-new-entry>Limpar formulário</button>
+                    <button type="submit" class="btn primary" data-submit-btn>Salvar MiniApp</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="miniapp-panel" aria-labelledby="sync-panel">
+            <div class="panel-heading">
+                <h2 id="sync-panel">Sincronização automática</h2>
+                <p>As alterações são persistidas no IndexedDB e sincronizadas via Apps Script ou Google APIs assim que possível. Clique em “Salvar no sistema” para enfileirar uma nova versão.</p>
+            </div>
+            <div class="sync-card">
+                <p class="muted-text" data-sync-status>Verificando status de sincronização...</p>
+                <div class="export-actions">
+                    <button type="button" class="btn primary" data-save-btn disabled>Salvar no sistema</button>
+                    <button type="button" class="btn ghost" data-reset-draft>Descartar rascunho local</button>
+                    <span class="draft-indicator" data-draft-indicator>Carregando dados oficiais...</span>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <template id="row-template">
+        <tr>
+            <td data-col-title></td>
+            <td data-col-category></td>
+            <td data-col-contract></td>
+            <td>
+                <span class="status-badge" data-col-status></span>
+            </td>
+            <td data-col-updated></td>
+            <td class="actions-col">
+                <div class="crud-actions" role="group" aria-label="Ações do MiniApp">
+                    <button type="button" class="action-btn" data-edit-btn title="Editar MiniApp">
+                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
+                    </button>
+                    <button type="button" class="action-btn primary" data-duplicate-btn title="Duplicar MiniApp">
+                        <span class="material-icons-sharp" aria-hidden="true">content_copy</span>
+                    </button>
+                    <button type="button" class="action-btn danger" data-delete-btn title="Remover MiniApp">
+                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script type="module">
+        import { miniAppsData } from '../../docs/miniapp-data.js';
+        import {
+            registerStatusListener,
+            queueForSync,
+            syncPendingChanges,
+            configureGoogleSync
+        } from '../../js/googleSync.js';
+
+        const STORAGE_KEY = 'gestaoCatalogoDraft';
+        const tableBody = document.querySelector('[data-table-body]');
+        const emptyStateRow = document.querySelector('[data-empty-state]');
+        const template = document.getElementById('row-template');
+        const form = document.getElementById('miniapp-form');
+        const formTitle = document.querySelector('[data-form-title]');
+        const submitBtn = document.querySelector('[data-submit-btn]');
+        const cancelEditBtn = document.querySelector('[data-cancel-edit]');
+        const newEntryBtn = document.querySelector('[data-new-entry]');
+        const feedback = document.querySelector('[data-feedback]');
+        const draftIndicator = document.querySelector('[data-draft-indicator]');
+        const resetDraftBtn = document.querySelector('[data-reset-draft]');
+        const saveBtn = document.querySelector('[data-save-btn]');
+        const syncStatus = document.querySelector('[data-sync-status]');
+
+        let editingId = null;
+        let catalog = loadCatalog();
+
+        configureGoogleSync({ syncTarget: 'appsScript' });
+
+        renderCatalog();
+        attachEventListeners();
+        setupSyncStatus();
+
+        function loadCatalog() {
+            const stored = window.localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                } catch (error) {
+                    console.warn('Não foi possível carregar o rascunho salvo.', error);
+                }
+            }
+            return miniAppsData.map((item) => ({
+                ...item,
+                updatedAt: item.updatedAt || new Date().toISOString()
+            }));
+        }
+
+        function persistCatalog() {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(catalog));
+            updateDraftIndicator();
+        }
+
+        function renderCatalog() {
+            tableBody.innerHTML = '';
+            if (!catalog.length) {
+                emptyStateRow.hidden = false;
+                tableBody.appendChild(emptyStateRow);
+            } else {
+                emptyStateRow.hidden = true;
+                catalog.forEach((item) => {
+                    const row = template.content.cloneNode(true);
+                    row.querySelector('[data-col-title]').textContent = item.title;
+                    row.querySelector('[data-col-category]').textContent = item.category;
+                    row.querySelector('[data-col-contract]').textContent = item.contract || 'Sob consulta';
+                    const statusBadge = row.querySelector('[data-col-status]');
+                    statusBadge.dataset.variant = item.active ? 'published' : 'draft';
+                    statusBadge.textContent = item.active ? 'Publicado' : 'Rascunho';
+                    row.querySelector('[data-col-updated]').textContent = formatDate(item.updatedAt);
+
+                    row.querySelector('[data-edit-btn]').dataset.id = item.id;
+                    row.querySelector('[data-duplicate-btn]').dataset.id = item.id;
+                    row.querySelector('[data-delete-btn]').dataset.id = item.id;
+                    tableBody.appendChild(row);
+                });
+            }
+            updateDraftIndicator();
+            toggleSaveButton();
+        }
+
+        function attachEventListeners() {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const formData = new FormData(form);
+                const payload = normalizePayload(formData);
+                if (!payload) {
+                    return;
+                }
+
+                if (editingId) {
+                    const index = catalog.findIndex((item) => item.id === editingId);
+                    catalog[index] = { ...catalog[index], ...payload, id: editingId };
+                    showFeedback('MiniApp atualizado com sucesso.', 'success');
+                } else {
+                    const hasDuplicate = catalog.some((item) => item.id === payload.id);
+                    if (hasDuplicate) {
+                        showFeedback('Já existe um MiniApp com esse identificador.', 'error');
+                        return;
+                    }
+                    catalog.push(payload);
+                    showFeedback('MiniApp cadastrado.', 'success');
+                }
+
+                persistCatalog();
+                renderCatalog();
+                resetForm();
+            });
+
+            saveBtn.addEventListener('click', handleSaveToSystem);
+
+            tableBody.addEventListener('click', (event) => {
+                const editBtn = event.target.closest('[data-edit-btn]');
+                const duplicateBtn = event.target.closest('[data-duplicate-btn]');
+                const deleteBtn = event.target.closest('[data-delete-btn]');
+
+                if (editBtn) {
+                    startEditing(editBtn.dataset.id);
+                } else if (duplicateBtn) {
+                    duplicateMiniApp(duplicateBtn.dataset.id);
+                } else if (deleteBtn) {
+                    deleteMiniApp(deleteBtn.dataset.id);
+                }
+            });
+
+            newEntryBtn.addEventListener('click', () => {
+                resetForm();
+                showFeedback('Formulário limpo.', 'info');
+            });
+
+            cancelEditBtn.addEventListener('click', () => {
+                resetForm();
+                showFeedback('Edição cancelada.', 'info');
+            });
+
+            resetDraftBtn.addEventListener('click', () => {
+                if (!window.localStorage.getItem(STORAGE_KEY)) {
+                    showFeedback('Não há rascunhos locais para descartar.', 'info');
+                    return;
+                }
+                const shouldReset = window.confirm('Descartar o rascunho local e recarregar os dados oficiais?');
+                if (!shouldReset) {
+                    return;
+                }
+                window.localStorage.removeItem(STORAGE_KEY);
+                catalog = loadCatalog();
+                renderCatalog();
+                resetForm();
+                showFeedback('Rascunho descartado. Dados oficiais restaurados.', 'success');
+            });
+        }
+
+        function normalizePayload(formData) {
+            const id = (formData.get('id') || '').trim();
+            const title = (formData.get('title') || '').trim();
+            const category = (formData.get('category') || '').trim();
+            const description = (formData.get('description') || '').trim();
+            const url = (formData.get('url') || '').trim();
+            const image = (formData.get('image') || '').trim();
+
+            if (!id || !title || !category || !description || !url || !image) {
+                showFeedback('Preencha todos os campos obrigatórios indicados com *.', 'error');
+                return null;
+            }
+
+            return {
+                id,
+                title,
+                category,
+                description,
+                price: (formData.get('price') || 'Grátis').trim() || 'Grátis',
+                contract: (formData.get('contract') || 'Sob consulta').trim() || 'Sob consulta',
+                url,
+                image,
+                active: formData.get('active') !== 'false',
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        function startEditing(id) {
+            const entry = catalog.find((item) => item.id === id);
+            if (!entry) {
+                return;
+            }
+            editingId = entry.id;
+            formTitle.textContent = `Editando: ${entry.title}`;
+            submitBtn.textContent = 'Salvar alterações';
+            cancelEditBtn.hidden = false;
+            form.elements.id.value = entry.id;
+            form.elements.id.disabled = true;
+            form.elements.title.value = entry.title;
+            form.elements.category.value = entry.category;
+            form.elements.price.value = entry.price || '';
+            form.elements.contract.value = entry.contract || '';
+            form.elements.url.value = entry.url;
+            form.elements.image.value = entry.image;
+            form.elements.description.value = entry.description;
+            form.elements.active.value = entry.active ? 'true' : 'false';
+        }
+
+        function resetForm() {
+            editingId = null;
+            form.reset();
+            form.elements.id.disabled = false;
+            formTitle.textContent = 'Cadastrar novo MiniApp';
+            submitBtn.textContent = 'Salvar MiniApp';
+            cancelEditBtn.hidden = true;
+        }
+
+        function duplicateMiniApp(id) {
+            const entry = catalog.find((item) => item.id === id);
+            if (!entry) {
+                return;
+            }
+            const nextId = generateCopyId(entry.id);
+            const duplicated = {
+                ...entry,
+                id: nextId,
+                title: `${entry.title} (cópia)`,
+                updatedAt: new Date().toISOString()
+            };
+            catalog.push(duplicated);
+            persistCatalog();
+            renderCatalog();
+            showFeedback('Cópia criada. Atualize os campos antes de exportar.', 'success');
+        }
+
+        function generateCopyId(baseId) {
+            let suffix = 1;
+            let candidate = `${baseId}-copy`;
+            while (catalog.some((item) => item.id === candidate)) {
+                suffix += 1;
+                candidate = `${baseId}-copy-${suffix}`;
+            }
+            return candidate;
+        }
+
+        function deleteMiniApp(id) {
+            const entry = catalog.find((item) => item.id === id);
+            if (!entry) {
+                return;
+            }
+            const confirmed = window.confirm(`Remover o MiniApp "${entry.title}" do rascunho local?`);
+            if (!confirmed) {
+                return;
+            }
+            catalog = catalog.filter((item) => item.id !== id);
+            persistCatalog();
+            renderCatalog();
+            if (editingId === id) {
+                resetForm();
+            }
+            showFeedback('MiniApp removido do rascunho.', 'success');
+        }
+
+        function toggleSaveButton() {
+            saveBtn.disabled = !catalog.length;
+        }
+
+        function updateDraftIndicator() {
+            const hasDraft = Boolean(window.localStorage.getItem(STORAGE_KEY));
+            draftIndicator.textContent = hasDraft
+                ? 'Rascunho local em uso. Clique em “Salvar no sistema” para sincronizar.'
+                : 'Usando dados oficiais do repositório.';
+        }
+
+        function setupSyncStatus() {
+            registerStatusListener(({ message, syncState }) => {
+                if (!syncStatus) {
+                    return;
+                }
+                const readableState = {
+                    syncing: 'Sincronizando alterações...',
+                    synced: 'Sincronização concluída.',
+                    offline: 'Modo offline. Alterações serão enviadas quando possível.',
+                    error: 'Erro ao sincronizar. Tente novamente.',
+                    'auth-required': 'Conecte sua conta para sincronizar.',
+                    online: 'Conectado. Nenhuma alteração pendente.'
+                };
+                syncStatus.textContent = readableState[syncState] || message || 'Status desconhecido.';
+            });
+        }
+
+        async function handleSaveToSystem() {
+            if (!catalog.length) {
+                showFeedback('Adicione pelo menos um MiniApp antes de salvar.', 'error');
+                return;
+            }
+            saveBtn.disabled = true;
+            const previousLabel = saveBtn.textContent;
+            saveBtn.textContent = 'Salvando...';
+            try {
+                await queueForSync({
+                    id: `catalog-${Date.now()}`,
+                    type: 'miniapp-catalog',
+                    source: 'gestao-de-catalogo',
+                    entries: catalog,
+                    updatedAt: new Date().toISOString()
+                });
+                await syncPendingChanges();
+                showFeedback('Alterações enfileiradas para sincronização.', 'success');
+            } catch (error) {
+                console.error('Falha ao salvar no sistema', error);
+                showFeedback('Não foi possível salvar. Tente novamente.', 'error');
+            } finally {
+                saveBtn.textContent = previousLabel;
+                toggleSaveButton();
+            }
+        }
+
+        function formatDate(value) {
+            if (!value) {
+                return '—';
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return '—';
+            }
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function showFeedback(message, variant = 'info') {
+            if (!feedback) {
+                return;
+            }
+            feedback.textContent = message;
+            feedback.dataset.variant = variant;
+            setTimeout(() => {
+                if (feedback.dataset.variant === variant) {
+                    feedback.textContent = '';
+                }
+            }, 4000);
+        }
+    </script>
 </body>
 </html>
