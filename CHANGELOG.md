@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 
 ## [Unreleased]
 ### Adicionado
+- Módulo `js/miniapp-data-loader.js` com fallback remoto (GitHub Raw) e cache local para carregar `miniapp-data.js` mesmo quando o arquivo não está disponível no ambiente atual.
+- Web Component `<app-shared-header>` em `docs/components/` garantindo que o header global seja injetado de forma idêntica no shell e em todos os MiniApps.
 - Biblioteca CSS [Open Props](https://open-props.style) incorporada ao shell e MiniApps para destravar tokens fluidos reutilizáveis nas larguras e espaçamentos.
 - Estrutura de pastas para templates de MiniApps (`templates/`) e para o futuro Design System (`docs/design-system/`).
 - READMEs iniciais orientando o uso dessas novas pastas.
@@ -11,12 +13,14 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Suporte ao campo opcional `updatedAt` no `miniapp-data.js` para rastrear revisões diretamente na interface administrativa.
 
 ### Alterado
+- `index.html` e o MiniApp **Gestão de Catálogo** agora consomem os dados via loader com fallback, evitando falhas quando os documentos do repositório não podem ser lidos localmente.
 - Shell principal agora usa largura fluida, grade responsiva e otimizações de espaçamento que aproveitam telas maiores sem perder a base mobile-first.
 - Grade do catálogo recalibrada para permitir que o shell ocupe 100% da viewport e encaixe mais cartões por linha conforme a largura aumenta, mantendo cartões em tamanho padrão.
 - Painéis do MiniApp **Gestão de Conta do Usuário** abrem diretamente ao clique em cada linha interativa, mantendo acessibilidade via teclado.
 - Catálogo configurado para listar apenas o MiniApp **Gestão de Catálogo**, mantendo o foco no fluxo de publicação principal.
 
 ### Documentação
+- `AGENTE.md` e `README.md` descrevem o novo loader e o fallback remoto configurável para `miniapp-data.js`.
 - `AGENTE.md` atualizado com a descrição da estrutura auxiliar e o playbook para processar templates de MiniApps.
 - `README.md` mencionando a nova pasta de templates.
 - `README.md` agora inclui instruções atualizadas do fluxo guiado com botão **Salvar no sistema** e sincronização automática.

@@ -6,6 +6,7 @@
     <title>MiniApp - Gestão de Catálogo</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <script type="module" src="../../docs/components/app-shared-header.js"></script>
     <meta name="theme-color" content="#f3f4f6">
     <style>
         :root {
@@ -291,20 +292,7 @@
 </head>
 <body>
     <div class="app-shell">
-        <header class="app-header p-4 shadow-lg flex justify-between items-center rounded-b-xl">
-            <div class="flex items-center space-x-2">
-                <span class="material-icons-sharp icon-accent text-2xl" aria-hidden="true">flash_on</span>
-                <h1 class="text-xl font-extrabold title-text">MiniApp 5Horas</h1>
-            </div>
-            <div class="flex space-x-2 items-center">
-                <button class="icon-button p-2 rounded-full transition duration-150" type="button" aria-label="Abrir busca">
-                    <span class="material-icons-sharp text-2xl" aria-hidden="true">search</span>
-                </button>
-                <button class="button-primary hidden font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md" type="button">
-                    Instalar
-                </button>
-            </div>
-        </header>
+        <app-shared-header></app-shared-header>
         <main class="app-main p-4">
             <div class="miniapp-container">
         <section class="miniapp-panel" aria-labelledby="intro-panel">
@@ -458,7 +446,7 @@
     </template>
 
     <script type="module">
-        import { miniAppsData } from '../../docs/miniapp-data.js';
+        import { loadMiniAppData } from '../../js/miniapp-data-loader.js';
         import {
             registerStatusListener,
             queueForSync,
@@ -482,13 +470,25 @@
         const syncStatus = document.querySelector('[data-sync-status]');
 
         let editingId = null;
-        let catalog = loadCatalog();
+        let catalog = [];
+        let officialMiniApps = [];
 
-        configureGoogleSync({ syncTarget: 'appsScript' });
+        async function initializeCatalogApp() {
+            try {
+                officialMiniApps = await loadMiniAppData();
+            } catch (error) {
+                console.error('Não foi possível carregar os dados oficiais do repositório.', error);
+                showFeedback('Falha ao carregar os dados oficiais. Continue usando o rascunho local.', 'error');
+                officialMiniApps = [];
+            }
 
-        renderCatalog();
-        attachEventListeners();
-        setupSyncStatus();
+            configureGoogleSync({ syncTarget: 'appsScript' });
+
+            catalog = loadCatalog();
+            renderCatalog();
+            attachEventListeners();
+            setupSyncStatus();
+        }
 
         function loadCatalog() {
             const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -502,7 +502,10 @@
                     console.warn('Não foi possível carregar o rascunho salvo.', error);
                 }
             }
-            return miniAppsData.map((item) => ({
+            if (!officialMiniApps.length) {
+                return [];
+            }
+            return officialMiniApps.map((item) => ({
                 ...item,
                 updatedAt: item.updatedAt || new Date().toISOString()
             }));
@@ -722,7 +725,9 @@
             const hasDraft = Boolean(window.localStorage.getItem(STORAGE_KEY));
             draftIndicator.textContent = hasDraft
                 ? 'Rascunho local em uso. Clique em “Salvar no sistema” para sincronizar.'
-                : 'Usando dados oficiais do repositório.';
+                : officialMiniApps.length
+                    ? 'Usando dados oficiais carregados automaticamente.'
+                    : 'Dados oficiais indisponíveis. Trabalhando apenas com o rascunho local.';
         }
 
         function setupSyncStatus() {
@@ -792,6 +797,11 @@
                 }
             }, 4000);
         }
+
+        initializeCatalogApp().catch((error) => {
+            console.error('Falha geral ao inicializar o painel de Gestão de Catálogo.', error);
+            showFeedback('Não foi possível inicializar o painel. Recarregue a página e tente novamente.', 'error');
+        });
     </script>
 </body>
 </html>
