@@ -13,6 +13,7 @@
     
     <link rel="stylesheet" href="./docs/miniapp-global.css">
     <link rel="stylesheet" href="./docs/miniapp-card.css">
+    <script type="module" src="./docs/components/app-shared-header.js"></script>
     
     <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
@@ -21,24 +22,7 @@
 
     <div class="app-shell">
 
-        <header class="app-header p-4 shadow-lg flex justify-between items-center rounded-b-xl">
-            <div class="flex items-center space-x-2">
-                <!-- ÍCONE DE LOGO - Material Icons: flash_on -->
-                <span class="material-icons-sharp icon-accent text-2xl">flash_on</span>
-                <h1 class="text-xl font-extrabold title-text">MiniApp 5Horas</h1>
-            </div>
-
-            <div class="flex space-x-2 items-center">
-                <!-- ÍCONE DE BUSCA - Material Icons: search -->
-                <button id="searchToggle" class="icon-button p-2 rounded-full transition duration-150">
-                    <span class="material-icons-sharp text-2xl">search</span>
-                </button>
-
-                <button id="installButton" class="button-primary hidden font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md">
-                    Instalar
-                </button>
-            </div>
-        </header>
+        <app-shared-header></app-shared-header>
 
         <main class="app-main p-4 flex-grow overflow-y-auto">
 
@@ -143,7 +127,7 @@
     </div>
 
     <script type="module">
-        import { miniAppsData } from './docs/miniapp-data.js';
+        import { loadMiniAppData } from './js/miniapp-data-loader.js';
         import { renderMiniApps } from './docs/miniapp-card.js';
         import {
             registerStatusListener,
@@ -185,6 +169,19 @@
         const modalPrice = document.getElementById('modalPrice');
         const addToCartButton = document.getElementById('addToCartButton');
         let currentMiniApp = null;
+        let miniAppsData = [];
+        let dataLoadError = null;
+        let pendingSearchTerm = '';
+        const miniAppsDataPromise = loadMiniAppData()
+            .then((data) => {
+                miniAppsData = Array.isArray(data) ? data : [];
+                return miniAppsData;
+            })
+            .catch((error) => {
+                dataLoadError = error;
+                miniAppsData = [];
+                throw error;
+            });
 
         const rootElement = document.documentElement;
         const themeMetaTag = document.querySelector('meta[name="theme-color"]');
@@ -542,7 +539,22 @@
             }
         });
 
-        renderMiniApps(miniAppsData, miniappGrid);
+        async function initializeMiniAppGrid() {
+            try {
+                await miniAppsDataPromise;
+                renderMiniApps(miniAppsData, miniappGrid);
+                if (pendingSearchTerm && pendingSearchTerm.trim().length) {
+                    applySearch(pendingSearchTerm);
+                }
+            } catch (error) {
+                console.error('Falha ao carregar os MiniApps oficiais.', error);
+                showMessage('❌ Não foi possível carregar os MiniApps do repositório.', true);
+                miniappGrid.innerHTML =
+                    '<div class="miniapp-card empty-state">Não foi possível carregar os MiniApps agora.</div>';
+            }
+        }
+
+        initializeMiniAppGrid();
 
         function filterMiniApps(term) {
             const normalized = term.trim().toLowerCase();
@@ -639,6 +651,10 @@
 
         searchInput.addEventListener('input', () => {
             const term = searchInput.value;
+            pendingSearchTerm = term;
+            if (!miniAppsData.length && !dataLoadError) {
+                return;
+            }
             applySearch(term);
             clearTimeout(searchPersistTimeout);
             searchPersistTimeout = setTimeout(() => {
@@ -670,7 +686,13 @@
                 const savedSearch = await getUserSetting('searchQuery');
                 if (savedSearch && typeof savedSearch.value === 'string') {
                     searchInput.value = savedSearch.value;
-                    applySearch(savedSearch.value);
+                    pendingSearchTerm = savedSearch.value;
+                    try {
+                        await miniAppsDataPromise;
+                        applySearch(savedSearch.value);
+                    } catch (error) {
+                        console.warn('Busca salva não aplicada porque os dados não carregaram.', error);
+                    }
                 }
 
                 const lastMiniApp = await getUserSetting('lastMiniApp');
