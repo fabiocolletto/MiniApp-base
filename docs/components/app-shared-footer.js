@@ -209,7 +209,7 @@ class AppSharedFooter extends HTMLElement {
       return "";
     }
     const legalText =
-      "&copy; 2024 5 Horas Pesquisa e Análise Ltda. CNPJ: 50.455.262/0001-19 | Curitiba, PR.";
+      "&copy; 2024 5 Horas Pesquisa e Análise Ltda. CNPJ: 50.455.262/0001-19 | Brasil.";
 
     return `
       <div id="footerDetails" class="footer-details w-full mt-3">
