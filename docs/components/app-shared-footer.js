@@ -226,9 +226,11 @@ class AppSharedFooter extends HTMLElement {
               <div class="footer-actions flex items-center space-x-2">
                   <button
                     id="footer-config-icon"
-                    class="icon-button p-2 rounded-full transition duration-150"
+                    class="icon-button p-2 rounded-full transition duration-150 hidden"
                     type="button"
                     aria-label="Abrir painel de controles do admin"
+                    aria-hidden="true"
+                    tabindex="-1"
                   >
                     <span class="material-icons-sharp text-2xl" aria-hidden="true">settings</span>
                   </button>

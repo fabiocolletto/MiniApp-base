@@ -1,9 +1,12 @@
 import { openDatabase, saveRecord, getByKey, deleteRecord } from './indexeddb-store.js';
 
-const ADMIN_VERIFY_URL = "https://script.google.com/macros/s/AKfycbwcm49CbeSuT-f8r-RvzhntPz6RRVWz3l0sNv-e_mM4ADB_CQXRvsmyWSsdWGT8qCQ6jw/exec";
+const DEFAULT_ADMIN_VERIFY_URL = "https://script.google.com/macros/s/AKfycbwcm49CbeSuT-f8r-RvzhntPz6RRVWz3l0sNv-e_mM4ADB_CQXRvsmyWSsdWGT8qCQ6jw/exec";
+const globalScope = typeof window !== 'undefined' ? window : undefined;
+const ADMIN_VERIFY_URL = globalScope?.MINIAPP_ADMIN_VERIFY_URL || DEFAULT_ADMIN_VERIFY_URL;
 const ADMIN_CONFIG_KEY = 'adm_sheet_config';
 const ADMIN_PANEL_ID = 'adminControlPanel';
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const ADMIN_READY_EVENT = 'admin:ready';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -61,6 +64,17 @@ async function deleteAdminConfig() {
 function extractSheetId(input) {
   const match = (input || '').match(/[-\w]{25,}/);
   return match ? match[0] : null;
+}
+
+function revealAdminIcon() {
+  const adminConfigIcon = document.getElementById('footer-config-icon');
+  if (!adminConfigIcon) {
+    return;
+  }
+
+  adminConfigIcon.classList.remove('hidden');
+  adminConfigIcon.setAttribute('aria-hidden', 'false');
+  adminConfigIcon.tabIndex = 0;
 }
 
 async function postAdminAction(payload) {
@@ -122,6 +136,68 @@ function buildErrorContent() {
   `;
 }
 
+function buildUnauthorizedContent() {
+  return `
+    <h3>Painel de Controles</h3>
+    <p class="admin-panel-status admin-panel-error">Sua conta Google não está autorizada ou o ID da planilha é inválido.</p>
+  `;
+}
+
+async function getValidSavedSheetConfig(now = Date.now()) {
+  let savedConfig = null;
+  try {
+    savedConfig = await loadAdminConfig();
+  } catch (error) {
+    console.error('Erro ao tentar ler configuração admin salva.', error);
+  }
+
+  if (savedConfig?.expiresAt && savedConfig.expiresAt <= now) {
+    await deleteAdminConfig();
+    return null;
+  }
+
+  return savedConfig || null;
+}
+
+async function verifyAdminAccess(sheetId) {
+  if (!sheetId) {
+    return { ok: false, message: 'Sheet ID ausente' };
+  }
+
+  try {
+    const verification = await postAdminAction({ action: 'verifyAdmin', sheetId });
+    if (verification?.ok) {
+      revealAdminIcon();
+      document.dispatchEvent(new CustomEvent(ADMIN_READY_EVENT, { detail: { sheetId } }));
+      return { ok: true };
+    }
+
+    return { ok: false, message: verification?.message || 'Não autorizado' };
+  } catch (error) {
+    console.error('Erro ao verificar administrador.', error);
+    return { ok: false, message: 'Falha ao validar com Apps Script' };
+  }
+}
+
+function requestSheetIdFromUser() {
+  const input = window.prompt('Cole o ID ou link da planilha de administração do MiniApp.');
+  const normalizedInput = (input || '').trim();
+  if (!normalizedInput) {
+    return null;
+  }
+  const sheetId = extractSheetId(normalizedInput);
+  if (!sheetId) {
+    window.alert('ID de planilha não reconhecido.');
+    return null;
+  }
+  return sheetId;
+}
+
+async function persistSheetId(sheetId, now = Date.now()) {
+  const expiresAt = now + THIRTY_DAYS_MS;
+  await saveAdminConfig({ sheetId, expiresAt });
+}
+
 async function enableAdminMode(sheetId) {
   setAdminPanelContent(buildLoadingState());
 
@@ -140,73 +216,53 @@ async function enableAdminMode(sheetId) {
   }
 }
 
-async function onAdminIconClick() {
+async function startAdminFlow({ triggeredByClick = false, allowPrompt = true } = {}) {
+  if (!navigator.onLine) {
+    if (triggeredByClick) {
+      window.alert('Conecte-se à internet e ao Google para validar o painel.');
+    }
+    return false;
+  }
+
   const now = Date.now();
-  let sheetId = null;
-  let savedConfig = null;
-  let usingValidSavedId = false;
+  const savedConfig = await getValidSavedSheetConfig(now);
+  let sheetId = savedConfig?.sheetId || null;
 
-  try {
-    savedConfig = await loadAdminConfig();
-  } catch (error) {
-    console.error('Erro ao tentar ler configuração admin salva.', error);
-  }
+  if (sheetId) {
+    const verification = await verifyAdminAccess(sheetId);
+    if (verification.ok) {
+      await persistSheetId(sheetId, now);
+      await enableAdminMode(sheetId);
+      return true;
+    }
 
-  if (savedConfig?.expiresAt && savedConfig.expiresAt <= now) {
     await deleteAdminConfig();
-    savedConfig = null;
+    sheetId = null;
   }
 
-  if (savedConfig?.sheetId && savedConfig.expiresAt > now) {
-    const shouldUseSaved = window.confirm('Usar o ID salvo para acessar o Painel de Controles?');
-    if (shouldUseSaved) {
-      sheetId = savedConfig.sheetId;
-      usingValidSavedId = true;
-    }
+  if (!allowPrompt) {
+    return false;
   }
 
-  if (!sheetId) {
-    const input = window.prompt('Cole o ID ou link da planilha de administração do MiniApp.');
-    const normalizedInput = (input || '').trim();
-    if (!normalizedInput) {
-      return;
-    }
-    sheetId = extractSheetId(normalizedInput);
-    if (!sheetId) {
-      window.alert('ID de planilha não reconhecido.');
-      if (savedConfig?.sheetId && savedConfig.sheetId === normalizedInput) {
-        await deleteAdminConfig();
-      }
-      return;
-    }
+  const requestedSheetId = requestSheetIdFromUser();
+  if (!requestedSheetId) {
+    return false;
   }
 
-  let verification;
-  try {
-    verification = await postAdminAction({ action: 'verifyAdmin', sheetId });
-  } catch (error) {
-    console.error('Erro ao verificar administrador.', error);
-    window.alert('Não foi possível validar o administrador. Tente novamente.');
-    return;
+  const verification = await verifyAdminAccess(requestedSheetId);
+  if (!verification.ok) {
+    window.alert('ID inválido ou usuário não autorizado. Confira a conta Google ativa.');
+    setAdminPanelContent(buildUnauthorizedContent());
+    return false;
   }
 
-  if (!verification?.ok) {
-    window.alert('ID inválido ou não autorizado.');
-    if (savedConfig?.sheetId === sheetId) {
-      await deleteAdminConfig();
-    }
-    return;
-  }
+  await persistSheetId(requestedSheetId, now);
+  await enableAdminMode(requestedSheetId);
+  return true;
+}
 
-  if (!usingValidSavedId) {
-    const shouldPersist = window.confirm('Salvar este dispositivo por 30 dias?');
-    if (shouldPersist) {
-      const expiresAt = now + THIRTY_DAYS_MS;
-      await saveAdminConfig({ sheetId, expiresAt });
-    }
-  }
-
-  enableAdminMode(sheetId);
+async function onAdminIconClick() {
+  await startAdminFlow({ triggeredByClick: true, allowPrompt: true });
 }
 
 function setupAdminAccess() {
@@ -223,5 +279,8 @@ function setupAdminAccess() {
 
 if (typeof window !== 'undefined') {
   window.enableAdminMode = enableAdminMode;
-  window.addEventListener('DOMContentLoaded', setupAdminAccess);
+  window.addEventListener('DOMContentLoaded', () => {
+    setupAdminAccess();
+    startAdminFlow({ allowPrompt: true });
+  });
 }

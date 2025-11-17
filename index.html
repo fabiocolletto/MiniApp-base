@@ -806,6 +806,7 @@
             const googleSignInButton = getFooterElement('googleSignInButton');
             const googleSignOutButton = getFooterElement('googleSignOutButton');
             const manualSyncButton = getFooterElement('manualSyncButton');
+            const adminConfigIcon = document.getElementById('footer-config-icon');
 
             if (!connectionDot || !connectionLabel || !syncStatusLabel) {
                 return;
@@ -840,6 +841,13 @@
             if (manualSyncButton) {
                 manualSyncButton.disabled =
                     status.syncState === 'syncing' || !status.online || (status.needsAuth && !status.authenticated);
+            }
+
+            if (adminConfigIcon) {
+                const shouldShowAdminIcon = Boolean(status.authenticated);
+                adminConfigIcon.classList.toggle('hidden', !shouldShowAdminIcon);
+                adminConfigIcon.setAttribute('aria-hidden', shouldShowAdminIcon ? 'false' : 'true');
+                adminConfigIcon.tabIndex = shouldShowAdminIcon ? 0 : -1;
             }
 
             if (status.syncState === 'error') {
