@@ -29,7 +29,7 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 A pasta `templates/` concentra HTMLs temporários usados como referência na criação de novos MiniApps. Os arquivos são processados pelo Codex e não fazem parte da PWA final.
 
 ### Componentes compartilhados
-- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto e deve ser mantido em todos os MiniApps.
+- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto e deve ser mantido em todos os MiniApps. A aba **Configurações** está oculta por padrão; para exibi-la, defina `show-settings="true"` no componente.
 - `<app-shared-header>` (em `docs/components/app-shared-header.js`) permanece disponível como componente **legado** para MiniApps que exigirem barra superior interna, mas não é mais renderizado pelo shell principal.
 
 ### Navegação via rodapé (RodaPack)
