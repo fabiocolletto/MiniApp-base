@@ -4,6 +4,8 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 
 ## [Unreleased]
 ### Adicionado
+- Detecção de sessão Google com `userId` exposto via `miniappSync.getCurrentUserId()` e `window.currentUserId`, permitindo
+  reutilizar o estado de autenticação em qualquer script.
 - Placeholders controlados pelo rodapé para cada ícone do RodaPack, exibindo o título do MiniApp correspondente.
 - `miniapps/README.md` documentando a estrutura definitiva de MiniApps na revisão 3.0.
 - Módulo `js/miniapp-data-loader.js` com fallback remoto (GitHub Raw) e cache local para carregar `miniapp-data.js` mesmo quando o arquivo não está disponível no ambiente atual.
@@ -15,6 +17,8 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Suporte ao campo opcional `updatedAt` no `miniapp-data.js` para rastrear revisões diretamente na interface administrativa.
 
 ### Alterado
+- Shell principal passa a redirecionar usuários autenticados para o stage Home e exibe o botão de configurações do rodapé
+  somente quando uma sessão Google válida é identificada.
 - Shell principal agora opera sem header e mantém o rodapé em estado compacto por padrão, controlando o stage entre catálogo e placeholders hidratados diretamente do `miniapp-data.js`.
 - `index.html` e o MiniApp **Gestão de Catálogo** agora consomem os dados via loader com fallback, evitando falhas quando os documentos do repositório não podem ser lidos localmente.
 - Shell principal agora usa largura fluida, grade responsiva e otimizações de espaçamento que aproveitam telas maiores sem perder a base mobile-first.

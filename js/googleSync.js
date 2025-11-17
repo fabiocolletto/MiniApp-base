@@ -46,6 +46,7 @@ let currentStatus = {
   message: initialOnline ? 'Aguardando sincronização' : 'Modo offline',
   authenticated: false,
   needsAuth: syncTarget === 'gapi',
+  userId: null,
   syncTarget,
   pending: 0
 };
@@ -59,6 +60,11 @@ function notifyStatus(partialUpdate = {}) {
       console.error('Erro ao notificar listener de status', error);
     }
   });
+
+  if (globalScope) {
+    globalScope.currentUserId = currentStatus.userId || null;
+    globalScope.miniappAuthStatus = currentStatus;
+  }
 }
 
 export function registerStatusListener(listener) {
@@ -115,6 +121,38 @@ function ensureGapiLoaded() {
   return true;
 }
 
+function resolveCurrentUserId() {
+  if (!googleAuthInstance || syncTarget !== 'gapi') {
+    return null;
+  }
+
+  const currentUser = typeof googleAuthInstance.currentUser?.get === 'function'
+    ? googleAuthInstance.currentUser.get()
+    : null;
+
+  if (!currentUser) {
+    return null;
+  }
+
+  const profile = typeof currentUser.getBasicProfile === 'function'
+    ? currentUser.getBasicProfile()
+    : null;
+
+  if (profile) {
+    return (
+      (typeof profile.getId === 'function' && profile.getId()) ||
+      (typeof profile.getEmail === 'function' && profile.getEmail()) ||
+      null
+    );
+  }
+
+  if (typeof currentUser.getId === 'function') {
+    return currentUser.getId();
+  }
+
+  return null;
+}
+
 async function initClient() {
   if (syncTarget !== 'gapi' || !globalScope || !globalScope.gapi) {
     return;
@@ -129,10 +167,12 @@ async function initClient() {
     googleAuthInstance = globalScope.gapi.auth2.getAuthInstance();
 
     googleAuthInstance.isSignedIn.listen((isSignedIn) => {
+      const userId = isSignedIn ? resolveCurrentUserId() : null;
       notifyStatus({
         message: isSignedIn ? 'Conectado à Google' : 'Conecte sua conta Google para sincronizar.',
         syncState: isSignedIn ? 'online' : 'auth-required',
-        authenticated: isSignedIn
+        authenticated: isSignedIn,
+        userId
       });
       if (isSignedIn) {
         syncPendingChanges();
@@ -140,10 +180,12 @@ async function initClient() {
     });
 
     const isSignedIn = googleAuthInstance.isSignedIn.get();
+    const userId = isSignedIn ? resolveCurrentUserId() : null;
     notifyStatus({
       message: isSignedIn ? 'Conectado à Google' : 'Conecte sua conta Google para sincronizar.',
       syncState: isSignedIn ? 'online' : 'auth-required',
-      authenticated: isSignedIn
+      authenticated: isSignedIn,
+      userId
     });
     if (isSignedIn) {
       syncPendingChanges();
@@ -304,7 +346,19 @@ export async function signOutFromGoogle() {
     return;
   }
   await googleAuthInstance.signOut();
-  notifyStatus({ message: 'Sessão Google encerrada', syncState: 'auth-required', authenticated: false });
+  notifyStatus({ message: 'Sessão Google encerrada', syncState: 'auth-required', authenticated: false, userId: null });
+}
+
+export function getCurrentUserId() {
+  return currentStatus.userId || null;
+}
+
+export function isUserAuthenticated() {
+  return Boolean(currentStatus.authenticated && currentStatus.userId);
+}
+
+export function getAuthStatus() {
+  return { ...currentStatus };
 }
 
 export async function saveUserSetting(key, value) {
@@ -387,7 +441,10 @@ export const miniappSync = {
   saveUserSetting,
   getUserSetting,
   setSyncTarget,
-  configureGoogleSync
+  configureGoogleSync,
+  getCurrentUserId,
+  isUserAuthenticated,
+  getAuthStatus
 };
 
 if (globalScope) {

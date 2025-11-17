@@ -153,6 +153,7 @@
             enableSearch: true,
             enableFilter: false
         };
+        let hasRedirectedToHome = false;
 
         const footerComponent = document.getElementById('globalFooter');
         const catalogStage = document.getElementById('catalogStage');
@@ -807,6 +808,8 @@
             const googleSignOutButton = getFooterElement('googleSignOutButton');
             const manualSyncButton = getFooterElement('manualSyncButton');
             const adminConfigIcon = document.getElementById('footer-config-icon');
+            const hasAuthenticatedSession = Boolean(status.authenticated && status.userId);
+            const requiresAuth = Boolean(status.needsAuth);
 
             if (!connectionDot || !connectionLabel || !syncStatusLabel) {
                 return;
@@ -832,19 +835,20 @@
             syncStatusLabel.textContent = `${status.message}${pendingText}`;
 
             if (googleSignInButton && googleSignOutButton) {
-                googleSignInButton.classList.toggle('hidden', status.authenticated || !status.needsAuth);
-                googleSignOutButton.classList.toggle('hidden', !status.authenticated || !status.needsAuth);
+                googleSignInButton.classList.toggle('hidden', hasAuthenticatedSession || !requiresAuth);
+                googleSignOutButton.classList.toggle('hidden', !hasAuthenticatedSession || !requiresAuth);
                 googleSignInButton.disabled = !status.online || status.syncState === 'syncing';
                 googleSignOutButton.disabled = status.syncState === 'syncing';
             }
 
             if (manualSyncButton) {
                 manualSyncButton.disabled =
-                    status.syncState === 'syncing' || !status.online || (status.needsAuth && !status.authenticated);
+                    status.syncState === 'syncing' || !status.online || (requiresAuth && !hasAuthenticatedSession);
+                manualSyncButton.classList.toggle('hidden', !hasAuthenticatedSession);
             }
 
             if (adminConfigIcon) {
-                const shouldShowAdminIcon = Boolean(status.authenticated);
+                const shouldShowAdminIcon = hasAuthenticatedSession;
                 adminConfigIcon.classList.toggle('hidden', !shouldShowAdminIcon);
                 adminConfigIcon.setAttribute('aria-hidden', shouldShowAdminIcon ? 'false' : 'true');
                 adminConfigIcon.tabIndex = shouldShowAdminIcon ? 0 : -1;
@@ -852,6 +856,11 @@
 
             if (status.syncState === 'error') {
                 showMessage(`❌ ${status.message}`, true);
+            }
+
+            if (hasAuthenticatedSession && !hasRedirectedToHome) {
+                hasRedirectedToHome = true;
+                setActiveStage('home');
             }
         });
 

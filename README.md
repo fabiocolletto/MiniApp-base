@@ -8,6 +8,15 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 - **Persistência local**: `js/indexeddb-store.js` centraliza acesso ao IndexedDB.
 - **Sincronização**: `js/googleSync.js` coordena fila offline, Google Sign-In e atualização dos indicadores de status.
 
+### Autenticação, redirecionamento e controles condicionais
+- `js/googleSync.js` passa a expor helpers como `miniappSync.getCurrentUserId()` e `miniappSync.isUserAuthenticated()`, além de
+  publicar `window.currentUserId` sempre que o status é atualizado.
+- Quando o shell identifica uma sessão Google válida (usuário autenticado com `userId` disponível), ele alterna automaticamente
+  o stage para **Home** e exibe o botão de configurações do rodapé (`#footer-config-icon`).
+- Caso não haja sessão ativa, o catálogo permanece em destaque e o botão permanece oculto.
+- Teste manual sugerido: autenticar com Google e confirmar redirecionamento para o stage Home + botão visível; encerrar sessão e
+  validar que a aplicação permanece no catálogo e esconde o botão.
+
 ## Estrutura Relevante
 ```
 .
