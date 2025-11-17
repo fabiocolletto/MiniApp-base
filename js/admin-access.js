@@ -8,6 +8,15 @@ const ADMIN_PANEL_ID = 'adminControlPanel';
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const ADMIN_READY_EVENT = 'admin:ready';
 
+function openControlPanelStage(sheetId) {
+  document.dispatchEvent(
+    new CustomEvent('admin:open-control-panel', {
+      detail: { sheetId },
+      bubbles: true
+    })
+  );
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -244,6 +253,7 @@ async function startAdminFlow({ triggeredByClick = false, allowPrompt = true } =
   const now = Date.now();
   const savedConfig = await getValidSavedSheetConfig(now);
   let sheetId = savedConfig?.sheetId || null;
+  let shouldOpenControlPanel = !sheetId;
 
   if (sheetId) {
     const verification = await verifyAdminAccess(sheetId);
@@ -255,6 +265,7 @@ async function startAdminFlow({ triggeredByClick = false, allowPrompt = true } =
 
     await deleteAdminConfig();
     sheetId = null;
+    shouldOpenControlPanel = true;
   }
 
   if (!allowPrompt) {
@@ -275,6 +286,9 @@ async function startAdminFlow({ triggeredByClick = false, allowPrompt = true } =
 
   await persistSheetId(requestedSheetId, now);
   await enableAdminMode(requestedSheetId);
+  if (shouldOpenControlPanel) {
+    openControlPanelStage(requestedSheetId);
+  }
   return true;
 }
 
