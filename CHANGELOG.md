@@ -27,6 +27,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `README.md` agora inclui instruções atualizadas do fluxo guiado com botão **Salvar no sistema** e sincronização automática.
 - `docs/responsiveness-report.md` registra capturas e comportamento do grid em diferentes larguras, mantendo shell em 100vh com rolagem central.
 - `AGENTE.md` e `README.md` documentam o playbook e os comandos oficiais de QA para gestão de conta e catálogo, com termos de aceitação e registro obrigatório da saída dos testes.
+- `README.md` e `docs/qa/runs/2025-11-17.md` registram a política de arquivamento das execuções de QA e o histórico da rodada realizada em 2025-11-17.
 
 ## [0.1.0] - 2024-04-XX
 ### Adicionado

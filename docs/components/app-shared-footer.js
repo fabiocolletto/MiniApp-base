@@ -6,7 +6,7 @@ const NAV_ITEMS = [
 ];
 
 const DEFAULT_ACTIVE_TAB = "catalog";
-const DEFAULT_STATE = "expanded";
+const DEFAULT_STATE = "collapsed";
 
 class AppSharedFooter extends HTMLElement {
   static get observedAttributes() {
@@ -33,11 +33,14 @@ class AppSharedFooter extends HTMLElement {
 
   get footerState() {
     const state = (this.getAttribute("state") || "").toLowerCase();
+    if (this.variant === "compact") {
+      return "collapsed";
+    }
     return state === "collapsed" ? "collapsed" : DEFAULT_STATE;
   }
 
   renderNavLinks({ isCompact }) {
-    return NAV_ITEMS.map((item) => {
+    const navLinks = NAV_ITEMS.map((item) => {
       const isActive = item.key === this.activeTab;
       const baseClasses = [
         "nav-link",
@@ -60,6 +63,29 @@ class AppSharedFooter extends HTMLElement {
         </a>
       `;
     }).join("");
+
+    if (isCompact) {
+      return navLinks;
+    }
+
+    const toggleIcon = this.footerState === "expanded" ? "unfold_less" : "unfold_more";
+    const toggleLabel = this.footerState === "expanded" ? "Recolher" : "Expandir";
+    const ariaExpanded = this.footerState === "expanded" ? "true" : "false";
+
+    return `
+      ${navLinks}
+      <button
+        id="footerToggleButton"
+        class="footer-toggle-nav-item flex flex-col items-center transition duration-150"
+        type="button"
+        aria-expanded="${ariaExpanded}"
+        aria-controls="footerDetails"
+      >
+        <span class="material-icons-sharp text-3xl footer-toggle-icon" aria-hidden="true">${toggleIcon}</span>
+        <span id="footerToggleLabel" class="nav-link-label text-xs mt-1">${toggleLabel}</span>
+        <span class="sr-only">${toggleLabel} rodapé</span>
+      </button>
+    `;
   }
 
   getBasePath() {
@@ -107,39 +133,19 @@ class AppSharedFooter extends HTMLElement {
     });
   }
 
-  renderCollapsedMeta({ isCompact }) {
-    if (isCompact) {
-      return "";
-    }
-    return `
-      <div class="footer-collapsed-meta flex items-center justify-between gap-2 w-full">
-          <div class="footer-legal footer-legal-collapsed text-xs muted-text">
-              &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
-          </div>
-          <button id="footerToggleButton" class="footer-toggle icon-button" type="button" aria-expanded="true" aria-controls="footerDetails">
-              <span class="material-icons-sharp footer-toggle-icon text-2xl">unfold_less</span>
-              <span class="sr-only">Recolher rodapé</span>
-          </button>
-      </div>
-    `;
+  renderCollapsedMeta() {
+    return "";
   }
 
   renderDetails({ isCompact }) {
     if (isCompact) {
       return "";
     }
+    const legalText =
+      "&copy; 2024 5 Horas Pesquisa e Análise Ltda. CNPJ: 50.455.262/0001-19 | Curitiba, PR.";
+
     return `
       <div id="footerDetails" class="footer-details w-full mt-3">
-          <div class="status-indicators flex items-center justify-between text-xs" id="statusIndicators">
-              <div class="flex items-center space-x-2">
-                  <span id="connectionDot" class="status-dot status-offline inline-block"></span>
-                  <span id="connectionLabel">Offline</span>
-              </div>
-              <div class="text-right">
-                  <span id="syncStatusLabel">Sincronização não iniciada</span>
-              </div>
-          </div>
-
           <div class="footer-actions flex justify-center space-x-2 mb-2 text-xs">
               <button id="googleSignInButton" class="button-primary text-sm px-3 py-1 rounded-full shadow transition duration-150">
                   Conectar Google
@@ -153,8 +159,22 @@ class AppSharedFooter extends HTMLElement {
           </div>
 
           <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
-          <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto">
-              &copy; 2024 MiniApp 5Horas. Seu PWA de Produtividade.
+
+          <div class="footer-meta-bottom flex items-center justify-between text-xs muted-text mt-2 px-1">
+              <div class="status-indicators-group flex items-center space-x-4">
+                  <div class="flex items-center space-x-2">
+                      <span id="connectionDot" class="status-dot status-offline inline-block"></span>
+                      <span id="connectionLabel">Offline</span>
+                  </div>
+                  <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
+              </div>
+              <div class="footer-legal footer-legal-expanded text-right hidden sm:block">
+                  ${legalText}
+              </div>
+          </div>
+
+          <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1 sm:hidden">
+              ${legalText}
           </div>
       </div>
     `;
@@ -164,7 +184,7 @@ class AppSharedFooter extends HTMLElement {
     const isCompact = this.variant === "compact";
     const footerState = isCompact ? "collapsed" : this.footerState;
     const navLinks = this.renderNavLinks({ isCompact });
-    const collapsedMeta = this.renderCollapsedMeta({ isCompact });
+    const collapsedMeta = this.renderCollapsedMeta();
     const details = this.renderDetails({ isCompact });
 
     this.innerHTML = `

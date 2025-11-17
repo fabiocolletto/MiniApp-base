@@ -74,6 +74,7 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 - **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente e apontam para os testes localizados dentro de cada MiniApp.
 - **Registro obrigatório**: anexe a saída dos comandos ao PR/commit como evidência dos termos de aceitação. Caso um cenário falhe, corrija o fluxo e repita até todos os termos serem atendidos.
 - **Ajustes de dependência**: na primeira execução (ou após reinstalar o ambiente), rode `npm install`, `npx playwright install-deps chromium` e `npx playwright install chromium` para habilitar o navegador de teste.
+- **Histórico de execuções**: cada rodada de QA deve ser registrada em `docs/qa/runs/<AAAA-MM-DD>.md` com ambiente preparado, comandos disparados, resultado e observações de rede. Consulte `docs/qa/runs/2025-11-17.md` como referência inicial.
 
 ## Layout do grid e largura dos cards
 - O contêiner principal (`.app-shell`/`.app-main`) usa largura total com limite de **1280px** centralizado e `padding` de `1rem` para manter respiro lateral.

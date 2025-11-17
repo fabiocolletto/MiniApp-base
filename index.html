@@ -38,7 +38,7 @@
             <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
         </main>
 
-        <app-shared-footer active-tab="catalog" state="expanded"></app-shared-footer>
+        <app-shared-footer active-tab="catalog" state="collapsed"></app-shared-footer>
 
     </div>
 
@@ -94,6 +94,7 @@
         const appFooter = document.querySelector('.app-footer');
         const footerToggleButton = document.getElementById('footerToggleButton');
         const footerToggleIcon = footerToggleButton ? footerToggleButton.querySelector('.footer-toggle-icon') : null;
+        const footerToggleLabel = document.getElementById('footerToggleLabel');
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -194,6 +195,9 @@
             footerToggleButton.setAttribute('aria-expanded', isExpanded.toString());
             footerToggleButton.setAttribute('aria-label', isExpanded ? 'Recolher rodapé' : 'Expandir rodapé');
             footerToggleIcon.textContent = isExpanded ? 'unfold_less' : 'unfold_more';
+            if (footerToggleLabel) {
+                footerToggleLabel.textContent = isExpanded ? 'Recolher' : 'Expandir';
+            }
         }
 
         async function initializeFooterPreferences() {
@@ -205,8 +209,8 @@
                 const storedValue = typeof storedPreference?.value === 'string'
                     ? storedPreference.value.toLowerCase()
                     : null;
-                if (storedValue === 'expanded' || storedValue === 'collapsed') {
-                    applyFooterState(storedValue);
+                if (storedValue === 'collapsed') {
+                    applyFooterState('collapsed');
                     return;
                 }
             } catch (error) {
