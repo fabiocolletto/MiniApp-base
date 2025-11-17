@@ -49,11 +49,12 @@ O MiniApp 5Horas é uma **PWA estática**, baseada em HTML + CSS + ES Modules + 
 
 ## 2.1 Shell principal (`index.html`)
 
-* Carrega UI base: header, footer, tema, grid, modal.
-* Renderiza MiniApps a partir de `miniapp-data.js`.
+* Shell 3.0 (RodaPack) opera **sem header** para maximizar área útil.
+* O rodapé controla o stage principal (catálogo + placeholders dos MiniApps).
+* Renderiza MiniApps a partir de `miniapp-data.js` e exibe placeholders compactos até cada MiniApp ser homologado.
 * Gerencia busca, tema, card modal e sincronização visual.
 
-O Codex **não deve alterar a estrutura fundamental do shell** sem ordem explícita.
+O Codex **não deve reintroduzir header no shell** nem alterar a navegação por rodapé sem ordem explícita.
 
 ## 2.2 Dados e componentes
 
@@ -61,7 +62,8 @@ O Codex **não deve alterar a estrutura fundamental do shell** sem ordem explíc
 * `js/miniapp-data-loader.js` → módulo que carrega `miniapp-data.js` com fallback remoto (GitHub Raw configurável) e cache local automático para ambientes sem o arquivo físico.
 * `docs/miniapp-card.js` → renderização de cards e modais.
 * `docs/miniapp-card.css` + `docs/miniapp-global.css` → estilos globais.
-* `docs/components/app-shared-header.js` → web component oficial do header que deve ser usado pelo shell e por todos os MiniApps.
+* `docs/components/app-shared-footer.js` → componente oficial do rodapé que controla o stage.
+* `docs/components/app-shared-header.js` → componente de header **legado** para MiniApps que ainda precisam de barra superior; o shell não o utiliza.
 
 ## 2.3 Persistência e sincronização
 
@@ -103,6 +105,7 @@ O Codex **não deve alterar a estrutura fundamental do shell** sem ordem explíc
 * criar lógica paralela de sync ou persistência;
 * criar novos estilos ad-hoc fora do design system;
 * criar headers, footers ou cards personalizados que não sigam o padrão;
+* reativar header no shell 3.0 ou alterar o estado padrão compacto do rodapé;
 * renomear MiniApps sem ordem explícita;
 * remover arquivos essenciais;
 * mexer no service worker sem autorização explícita.
@@ -149,14 +152,11 @@ Todo MiniApp deve seguir **exatamente** este formato:
 
 Esta seção define os elementos visuais que **toda a plataforma deve compartilhar**.
 
-## 5.1 Header e footer
+## 5.1 Footer global e header legado
 
-São **constantes** e parte da identidade da plataforma.
-Todos os MiniApps devem:
-
-* manter o header da plataforma;
-* manter o footer padrão;
-* podem ter **barra interna secundária**, mas nunca remover o header principal.
+* O **rodapé** é o controle principal do stage e deve permanecer padrão (estado inicial compacto, variações apenas via atributo `state`).
+* O shell 3.0 **não** possui header. MiniApps podem usar `app-shared-header` apenas quando precisarem de barra superior interna, sem alterar o rodapé global.
+* Barras secundárias são permitidas **dentro** de MiniApps, mas não substituem o footer.
 
 ## 5.2 Card padrão
 
@@ -270,8 +270,8 @@ Este fluxo deve ser seguido quando o usuário enviar um template para:
 
 4. Converter o template para a estrutura da plataforma:
 
-   * aplicar header padrão;
    * aplicar footer padrão;
+   * usar `app-shared-header` **apenas** se o MiniApp exigir barra superior interna;
    * aplicar design mobile-first;
    * incluir classes do design system quando existirem.
 

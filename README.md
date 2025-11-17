@@ -3,7 +3,7 @@
 Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O objetivo é listar, testar e validar MiniApps dentro de uma arquitetura PWA totalmente gratuita, apoiada por sincronização local via IndexedDB e integração opcional com Google.
 
 ## Visão Geral
-- **Frontend**: HTML estático com Tailwind CDN e componentes próprios.
+- **Frontend**: HTML estático com Tailwind CDN e componentes próprios. A revisão 3.0 (RodaPack) elimina o header do shell principal e concentra o controle do stage no rodapé compacto.
 - **Dados**: `docs/miniapp-data.js` é a fonte única de verdade para todos os MiniApps. O carregamento é orquestrado por `js/miniapp-data-loader.js`, que tenta importar o módulo localmente, faz fallback automático para a cópia oficial hospedada no GitHub Raw (`https://raw.githubusercontent.com/5horas/miniapp/main/docs/miniapp-data.js`) e, em último caso, reutiliza o cache salvo no `localStorage`. É possível apontar o fallback para outro endpoint definindo `window.MINIAPP_DATA_REMOTE_URL` antes de carregar o módulo.
 - **Persistência local**: `js/indexeddb-store.js` centraliza acesso ao IndexedDB.
 - **Sincronização**: `js/googleSync.js` coordena fila offline, Google Sign-In e atualização dos indicadores de status.
@@ -12,8 +12,9 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 ```
 .
 ├── docs/
-│   ├── components/
-│   │   └── app-shared-header.js # Web Component oficial do header
+│   ├── components/             # Web Components compartilhados
+│   │   ├── app-shared-footer.js # Footer oficial que controla o stage
+│   │   └── app-shared-header.js # Header legado para MiniApps que ainda precisam de barra superior
 │   ├── miniapp-data.js      # Lista oficial de MiniApps disponíveis
 │   ├── miniapp-card.js      # Template e listeners dos cards
 │   └── miniapp-card.css     # Estilos dos cards exibidos no grid
@@ -28,7 +29,13 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 A pasta `templates/` concentra HTMLs temporários usados como referência na criação de novos MiniApps. Os arquivos são processados pelo Codex e não fazem parte da PWA final.
 
 ### Componentes compartilhados
-- `<app-shared-header>` é definido em `docs/components/app-shared-header.js` e precisa ser incluído no shell principal e em todos os MiniApps para garantir que o header seja idêntico em toda a experiência. O componente expõe atributos opcionais (`title`, `icon`, `hide-search`, `install-visible`, `search-label` e `install-label`) para personalizações pontuais sem quebrar o padrão.
+- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto e deve ser mantido em todos os MiniApps.
+- `<app-shared-header>` (em `docs/components/app-shared-header.js`) permanece disponível como componente **legado** para MiniApps que exigirem barra superior interna, mas não é mais renderizado pelo shell principal.
+
+### Navegação via rodapé (RodaPack)
+- O shell principal alterna entre o catálogo e placeholders compactos ao clicar nos ícones do rodapé.
+- Cada placeholder exibe o título do MiniApp correspondente (ex.: Conta do Usuário) até que a versão homologada seja publicada, hidratando título e descrição diretamente do `miniapp-data.js`.
+- O rodapé mantém estado persistido (`collapsed`/`expanded`) no IndexedDB e continua controlando mensagens, status de sync e tema.
 
 ## Como adicionar ou atualizar um MiniApp
 1. **Cadastrar dados no `miniapp-data.js`**

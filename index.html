@@ -13,7 +13,6 @@
     
     <link rel="stylesheet" href="./docs/miniapp-global.css">
     <link rel="stylesheet" href="./docs/miniapp-card.css">
-    <script type="module" src="./docs/components/app-shared-header.js"></script>
     <script type="module" src="./docs/components/app-shared-footer.js"></script>
     
     <link rel="manifest" href="./manifest.webmanifest">
@@ -38,10 +37,23 @@
                 <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
             </section>
 
-            <iframe id="contentIframe" class="stage-panel hidden" title="MiniApp ativo"></iframe>
+            <section id="placeholderStage" class="stage-panel hidden">
+                <div class="placeholder-card">
+                    <div class="placeholder-icon" aria-hidden="true">
+                        <span class="material-icons-sharp" id="placeholderIcon">hub</span>
+                    </div>
+                    <div class="placeholder-content">
+                        <p class="placeholder-label">Stage</p>
+                        <h2 class="placeholder-title" id="placeholderTitle">RodaPack</h2>
+                        <p class="placeholder-description" id="placeholderDescription">
+                            Os MiniApps serão carregados aqui em modo compacto pelo rodapé.
+                        </p>
+                    </div>
+                </div>
+            </section>
         </main>
 
-        <app-shared-footer id="globalFooter" active-tab="catalog" variant="full" state="expanded"></app-shared-footer>
+        <app-shared-footer id="globalFooter" active-tab="catalog" variant="full" state="collapsed"></app-shared-footer>
 
     </div>
 
@@ -77,12 +89,42 @@
         } from './js/googleSync.js';
         import { openDatabase } from './js/indexeddb-store.js';
 
-        const NAV_STAGE_SOURCES = {
-            home: './miniapps/gestao-de-catalogo/index.html',
-            alerts: './miniapps/gestao-de-conta-do-usuario/index.html',
-            catalog: null,
-            settings: './miniapps/gestao-de-catalogo/index.html',
-            account: './miniapps/gestao-de-conta-do-usuario/index.html'
+        const NAV_STAGE_DEFINITIONS = {
+            home: {
+                key: 'home',
+                title: 'RodaPack',
+                description: 'Hub compacto do RodaPack. Aqui listaremos os blocos globais.',
+                icon: 'home',
+                sourceId: null
+            },
+            alerts: {
+                key: 'alerts',
+                title: 'Alertas do RodaPack',
+                description: 'Área dedicada para notificações e avisos transversais dos MiniApps.',
+                icon: 'notifications',
+                sourceId: null
+            },
+            catalog: {
+                key: 'catalog',
+                title: 'Catálogo de MiniApps',
+                description: 'Lista oficial dos MiniApps disponíveis para o RodaPack.',
+                icon: 'grid_view',
+                sourceId: null
+            },
+            settings: {
+                key: 'settings',
+                title: 'Configurações do RodaPack',
+                description: 'Preferências unificadas para tema, idioma e integrações.',
+                icon: 'settings',
+                sourceId: 'miniapp-gestao-catalogo'
+            },
+            account: {
+                key: 'account',
+                title: 'Conta do Usuário',
+                description: 'MiniApp prioritário para concluir revisão 3.0.',
+                icon: 'person',
+                sourceId: 'miniapp-gestao-conta-usuario'
+            }
         };
 
         let deferredPrompt;
@@ -92,7 +134,10 @@
 
         const footerComponent = document.getElementById('globalFooter');
         const catalogStage = document.getElementById('catalogStage');
-        const contentIframe = document.getElementById('contentIframe');
+        const placeholderStage = document.getElementById('placeholderStage');
+        const placeholderTitle = document.getElementById('placeholderTitle');
+        const placeholderDescription = document.getElementById('placeholderDescription');
+        const placeholderIcon = document.getElementById('placeholderIcon');
         const installButton = document.getElementById('installButton');
         const searchContainer = document.getElementById('searchContainer');
         const miniappGrid = document.getElementById('miniappGrid');
@@ -112,6 +157,7 @@
         const miniAppsDataPromise = loadMiniAppData()
             .then((data) => {
                 miniAppsData = Array.isArray(data) ? data : [];
+                hydrateNavigationStages(miniAppsData);
                 return miniAppsData;
             })
             .catch((error) => {
@@ -215,34 +261,99 @@
             }
         }
 
-        function resolveStageSource(key) {
+        function resolveStageDefinition(key) {
             const normalizedKey = (key || '').toLowerCase();
-            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_SOURCES, normalizedKey)) {
-                return { key: normalizedKey, source: NAV_STAGE_SOURCES[normalizedKey] };
+            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_DEFINITIONS, normalizedKey)) {
+                return NAV_STAGE_DEFINITIONS[normalizedKey];
             }
-            return { key: 'catalog', source: NAV_STAGE_SOURCES.catalog };
+            return NAV_STAGE_DEFINITIONS.catalog;
+        }
+
+        function hydrateNavigationStages(apps) {
+            if (!Array.isArray(apps) || !apps.length) {
+                return;
+            }
+
+            const appMap = new Map();
+
+            apps.forEach((app) => {
+                if (!app || typeof app !== 'object') {
+                    return;
+                }
+
+                const resolvedId = resolveMiniAppId(app);
+                const normalizedId = typeof resolvedId === 'string' ? resolvedId.toLowerCase() : null;
+                if (normalizedId) {
+                    appMap.set(normalizedId, app);
+                }
+
+                if (typeof app.id === 'string') {
+                    appMap.set(app.id.toLowerCase(), app);
+                }
+            });
+
+            Object.values(NAV_STAGE_DEFINITIONS).forEach((stage) => {
+                if (!stage || !stage.sourceId) {
+                    return;
+                }
+
+                const sourceKey = stage.sourceId.toLowerCase();
+                const matchedApp = appMap.get(sourceKey);
+
+                if (!matchedApp) {
+                    return;
+                }
+
+                if (matchedApp.title) {
+                    stage.title = matchedApp.title;
+                }
+                if (matchedApp.description) {
+                    stage.description = matchedApp.description;
+                }
+            });
+
+            if (activeStageKey) {
+                setActiveStage(activeStageKey);
+            }
+        }
+
+        function renderPlaceholderStage(stageDefinition) {
+            if (!placeholderStage || !placeholderTitle || !placeholderDescription || !placeholderIcon) {
+                return;
+            }
+
+            placeholderTitle.textContent = stageDefinition.title;
+            placeholderDescription.textContent = stageDefinition.description;
+            placeholderIcon.textContent = stageDefinition.icon || 'hub';
+        }
+
+        function toggleStageVisibility({ showCatalog }) {
+            if (showCatalog) {
+                catalogStage?.classList.remove('hidden');
+                placeholderStage?.classList.add('hidden');
+                return;
+            }
+
+            catalogStage?.classList.add('hidden');
+            placeholderStage?.classList.remove('hidden');
         }
 
         function setActiveStage(key) {
-            const { key: normalizedKey, source } = resolveStageSource(key);
+            const stageDefinition = resolveStageDefinition(key);
+            const normalizedKey = stageDefinition.key;
+            activeStageKey = normalizedKey;
 
             if (footerComponent && footerComponent.getAttribute('active-tab') !== normalizedKey) {
                 footerComponent.setAttribute('active-tab', normalizedKey);
             }
 
-            if (source) {
-                catalogStage?.classList.add('hidden');
-                contentIframe?.classList.remove('hidden');
-                if (contentIframe && contentIframe.src !== source) {
-                    contentIframe.src = source;
-                }
-            } else {
-                contentIframe?.classList.add('hidden');
-                if (contentIframe) {
-                    contentIframe.removeAttribute('src');
-                }
-                catalogStage?.classList.remove('hidden');
+            if (stageDefinition.key === 'catalog') {
+                toggleStageVisibility({ showCatalog: true });
+                return;
             }
+
+            renderPlaceholderStage(stageDefinition);
+            toggleStageVisibility({ showCatalog: false });
         }
 
         initializeFooterPreferences();
@@ -264,7 +375,8 @@
             });
         }
 
-        setActiveStage(footerComponent?.getAttribute('active-tab') || 'catalog');
+        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'catalog';
+        setActiveStage(activeStageKey);
 
         function showMessage(text, isError = false) {
             const messageContainer = getFooterElement('messageContainer');
