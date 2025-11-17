@@ -226,9 +226,9 @@ class AppSharedFooter extends HTMLElement {
     const details = this.renderDetails({ isCompact });
 
     this.innerHTML = `
-      <footer class="app-footer p-3 ${isCompact ? "rounded-t-xl" : "flex flex-col justify-center rounded-t-xl"}" data-footer-state="${footerState}">
+          <footer class="app-footer p-3 ${isCompact ? "rounded-t-xl" : "flex flex-col justify-center rounded-t-xl"}" data-footer-state="${footerState}">
           <div class="footer-top w-full">
-              <div class="footer-quick-nav flex justify-around w-full">
+              <div class="footer-quick-nav w-full">
                   ${navLinks}
               </div>
               ${collapsedMeta}
