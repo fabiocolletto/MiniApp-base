@@ -24,14 +24,31 @@
 
         <main class="app-main app-stage">
             <section id="catalogStage" class="stage-panel">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 gap-3">
                     <h2 class="text-xl font-semibold accent-text">Catálogo de MiniApps</h2>
-                    <button id="installButton" class="button-primary text-sm px-4 py-2 rounded-full shadow hidden">Instalar</button>
+                    <div class="flex items-center gap-2">
+                        <button id="searchToggleButton" class="icon-button p-2 rounded-full transition duration-150" aria-label="Ativar campo de busca" aria-pressed="false">
+                            <span class="material-icons-sharp text-2xl" aria-hidden="true">search</span>
+                        </button>
+                        <button id="filterToggleButton" class="icon-button p-2 rounded-full transition duration-150 hidden" aria-label="Ativar filtros do catálogo" aria-pressed="false">
+                            <span class="material-icons-sharp text-2xl" aria-hidden="true">tune</span>
+                        </button>
+                        <button id="installButton" class="button-primary text-sm px-4 py-2 rounded-full shadow hidden">Instalar</button>
+                    </div>
                 </div>
 
-                <div id="searchContainer" class="relative mb-6">
-                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
+                <div id="searchContainer" class="relative mb-6 hidden">
+                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." aria-label="Buscar MiniApps" class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
                     <span class="material-icons-sharp icon-muted text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
+                </div>
+
+                <div id="filterContainer" class="relative mb-6 hidden">
+                    <div class="flex items-center gap-2">
+                        <span class="material-icons-sharp icon-muted text-xl" aria-hidden="true">tune</span>
+                        <select id="filterSelect" aria-label="Filtrar MiniApps por categoria" class="w-full themed-input p-3 rounded-lg transition duration-150 shadow-md">
+                            <option value="all">Todas as categorias</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
@@ -130,7 +147,12 @@
         let deferredPrompt;
         let messageTimeout;
         let searchPersistTimeout;
+        let filterPersistTimeout;
         const IOS_INSTALL_INTENT_KEY = 'iosInstallIntent';
+        const catalogControlState = {
+            enableSearch: true,
+            enableFilter: false
+        };
 
         const footerComponent = document.getElementById('globalFooter');
         const catalogStage = document.getElementById('catalogStage');
@@ -139,9 +161,13 @@
         const placeholderDescription = document.getElementById('placeholderDescription');
         const placeholderIcon = document.getElementById('placeholderIcon');
         const installButton = document.getElementById('installButton');
+        const searchToggleButton = document.getElementById('searchToggleButton');
+        const filterToggleButton = document.getElementById('filterToggleButton');
         const searchContainer = document.getElementById('searchContainer');
+        const filterContainer = document.getElementById('filterContainer');
         const miniappGrid = document.getElementById('miniappGrid');
         const searchInput = document.getElementById('searchInput');
+        const filterSelect = document.getElementById('filterSelect');
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -154,6 +180,7 @@
         let miniAppsData = [];
         let dataLoadError = null;
         let pendingSearchTerm = '';
+        let activeCategoryFilter = 'all';
         const miniAppsDataPromise = loadMiniAppData()
             .then((data) => {
                 miniAppsData = Array.isArray(data) ? data : [];
@@ -617,12 +644,115 @@
             }
         });
 
+        function setIconButtonState(button, isActive) {
+            if (!button) {
+                return;
+            }
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            button.classList.toggle('is-active', isActive);
+        }
+
+        function setSearchVisibility(shouldShow) {
+            if (!searchContainer) {
+                return;
+            }
+            const nextState = Boolean(shouldShow) && catalogControlState.enableSearch;
+            searchContainer.classList.toggle('hidden', !nextState);
+            setIconButtonState(searchToggleButton, nextState);
+            if (nextState) {
+                searchInput?.focus();
+            } else {
+                searchInput?.blur();
+            }
+        }
+
+        function setFilterVisibility(shouldShow) {
+            if (!filterContainer) {
+                return;
+            }
+            const nextState = Boolean(shouldShow) && catalogControlState.enableFilter;
+            filterContainer.classList.toggle('hidden', !nextState);
+            setIconButtonState(filterToggleButton, nextState);
+        }
+
+        function configureCatalogStageControls(options = {}) {
+            const nextSearch = typeof options.enableSearch === 'boolean'
+                ? options.enableSearch
+                : catalogControlState.enableSearch;
+
+            const nextFilter = typeof options.enableFilter === 'boolean'
+                ? options.enableFilter
+                : catalogControlState.enableFilter;
+
+            catalogControlState.enableSearch = nextSearch;
+            catalogControlState.enableFilter = nextFilter;
+
+            searchToggleButton?.classList.toggle('hidden', !nextSearch);
+            filterToggleButton?.classList.toggle('hidden', !nextFilter);
+
+            if (!nextSearch) {
+                setSearchVisibility(false);
+            }
+
+            if (!nextFilter) {
+                setFilterVisibility(false);
+            }
+        }
+
+        window.configureCatalogStageControls = configureCatalogStageControls;
+
+        function populateCategoryFilterOptions(apps) {
+            if (!filterSelect) {
+                return;
+            }
+
+            const categories = Array.from(new Set((apps || [])
+                .map((app) => app.category)
+                .filter(Boolean)
+                .map((category) => category.trim())))
+                .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+            filterSelect.innerHTML = '<option value="all">Todas as categorias</option>';
+
+            categories.forEach((category) => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                filterSelect.appendChild(option);
+            });
+
+            if (categories.length && !catalogControlState.enableFilter) {
+                configureCatalogStageControls({ enableFilter: true });
+            }
+
+            syncFilterSelection();
+        }
+
+        function syncFilterSelection() {
+            if (!filterSelect) {
+                return;
+            }
+
+            const optionExists = Array.from(filterSelect.options)
+                .some((option) => option.value === activeCategoryFilter);
+
+            if (optionExists) {
+                filterSelect.value = activeCategoryFilter;
+            } else {
+                activeCategoryFilter = 'all';
+                filterSelect.value = 'all';
+            }
+        }
+
         async function initializeMiniAppGrid() {
             try {
                 await miniAppsDataPromise;
+                populateCategoryFilterOptions(miniAppsData);
                 renderMiniApps(miniAppsData, miniappGrid);
                 if (pendingSearchTerm && pendingSearchTerm.trim().length) {
                     applySearch(pendingSearchTerm);
+                } else if (activeCategoryFilter !== 'all') {
+                    applyCatalogFilters();
                 }
             } catch (error) {
                 console.error('Falha ao carregar os MiniApps oficiais.', error);
@@ -634,22 +764,40 @@
 
         initializeMiniAppGrid();
 
-        function filterMiniApps(term) {
-            const normalized = term.trim().toLowerCase();
-            if (!normalized) {
-                return miniAppsData;
-            }
+        function filterMiniApps(term, category) {
+            const normalized = typeof term === 'string' ? term.trim().toLowerCase() : '';
+            const normalizedCategory = category && category !== 'all' ? category.toLowerCase() : '';
+
             return miniAppsData.filter((app) => {
+                const matchesCategory = normalizedCategory
+                    ? (typeof app.category === 'string' && app.category.toLowerCase() === normalizedCategory)
+                    : true;
+
+                if (!matchesCategory) {
+                    return false;
+                }
+
+                if (!normalized) {
+                    return true;
+                }
+
                 return [app.title, app.description, app.category]
                     .filter(Boolean)
                     .some((value) => value.toLowerCase().includes(normalized));
             });
         }
 
-        function applySearch(term) {
-            const filtered = filterMiniApps(term);
+        function applyCatalogFilters() {
+            const filtered = filterMiniApps(pendingSearchTerm, activeCategoryFilter);
             renderMiniApps(filtered, miniappGrid);
         }
+
+        function applySearch(term) {
+            pendingSearchTerm = typeof term === 'string' ? term : pendingSearchTerm;
+            applyCatalogFilters();
+        }
+
+        configureCatalogStageControls();
 
         registerStatusListener((status) => {
             const connectionDot = getFooterElement('connectionDot');
@@ -748,6 +896,33 @@
             }
         });
 
+        searchToggleButton?.addEventListener('click', () => {
+            const shouldShow = searchContainer?.classList.contains('hidden');
+            setSearchVisibility(shouldShow);
+            if (shouldShow && pendingSearchTerm && miniAppsData.length) {
+                applyCatalogFilters();
+            }
+        });
+
+        filterToggleButton?.addEventListener('click', () => {
+            const shouldShow = filterContainer?.classList.contains('hidden');
+            setFilterVisibility(shouldShow);
+        });
+
+        filterSelect?.addEventListener('change', (event) => {
+            activeCategoryFilter = event.target.value || 'all';
+            if (!miniAppsData.length && !dataLoadError) {
+                return;
+            }
+            applyCatalogFilters();
+            clearTimeout(filterPersistTimeout);
+            filterPersistTimeout = setTimeout(() => {
+                saveUserSetting('catalogFilter', activeCategoryFilter).catch((error) => {
+                    console.error('Erro ao salvar filtro local', error);
+                });
+            }, 300);
+        });
+
         searchInput.addEventListener('input', () => {
             const term = searchInput.value;
             pendingSearchTerm = term;
@@ -782,6 +957,11 @@
         (async () => {
             try {
                 await openDatabase();
+                const savedFilter = await getUserSetting('catalogFilter');
+                if (savedFilter && typeof savedFilter.value === 'string' && savedFilter.value.trim()) {
+                    activeCategoryFilter = savedFilter.value;
+                    configureCatalogStageControls({ enableFilter: true });
+                }
                 const savedSearch = await getUserSetting('searchQuery');
                 if (savedSearch && typeof savedSearch.value === 'string') {
                     searchInput.value = savedSearch.value;
@@ -789,8 +969,24 @@
                     try {
                         await miniAppsDataPromise;
                         applySearch(savedSearch.value);
+                        if (activeCategoryFilter !== 'all') {
+                            setFilterVisibility(true);
+                        } else {
+                            setSearchVisibility(true);
+                        }
                     } catch (error) {
                         console.warn('Busca salva não aplicada porque os dados não carregaram.', error);
+                    }
+                }
+
+                if (!savedSearch && activeCategoryFilter !== 'all') {
+                    try {
+                        await miniAppsDataPromise;
+                        syncFilterSelection();
+                        setFilterVisibility(true);
+                        applyCatalogFilters();
+                    } catch (error) {
+                        console.warn('Filtro salvo não aplicado porque os dados não carregaram.', error);
                     }
                 }
 

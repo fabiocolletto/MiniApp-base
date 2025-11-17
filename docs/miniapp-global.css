@@ -340,6 +340,12 @@ body {
     transition: color 0.2s ease;
 }
 
+.icon-button.is-active {
+    color: var(--color-accent);
+    background-color: var(--color-surface-muted);
+    box-shadow: var(--shadow-card);
+}
+
 .icon-button:hover,
 .icon-button:focus-visible {
     color: var(--color-accent);
