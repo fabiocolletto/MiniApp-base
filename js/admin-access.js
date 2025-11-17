@@ -253,13 +253,16 @@ async function startAdminFlow({ triggeredByClick = false, allowPrompt = true } =
   const now = Date.now();
   const savedConfig = await getValidSavedSheetConfig(now);
   let sheetId = savedConfig?.sheetId || null;
-  let shouldOpenControlPanel = !sheetId;
+  let shouldOpenControlPanel = triggeredByClick || !sheetId;
 
   if (sheetId) {
     const verification = await verifyAdminAccess(sheetId);
     if (verification.ok) {
       await persistSheetId(sheetId, now);
       await enableAdminMode(sheetId);
+      if (shouldOpenControlPanel) {
+        openControlPanelStage(sheetId);
+      }
       return true;
     }
 

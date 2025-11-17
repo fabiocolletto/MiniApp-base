@@ -141,7 +141,7 @@ class AppSharedFooter extends HTMLElement {
       home: `${basePath}`,
       alerts: `${basePath}`,
       catalog: `${basePath}`,
-      settings: `${basePath}miniapps/gestao-de-catalogo/`,
+      settings: `${basePath}miniapps/configuracoes-do-sistema/`,
       account: `${basePath}miniapps/gestao-de-conta-do-usuario/`,
     };
 
