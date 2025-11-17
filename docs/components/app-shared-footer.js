@@ -11,7 +11,7 @@ const DEFAULT_STATE = "expanded";
 
 class AppSharedFooter extends HTMLElement {
   static get observedAttributes() {
-    return ["active-tab", "variant", "state"];
+    return ["active-tab", "variant", "state", "show-settings"];
   }
 
   connectedCallback() {
@@ -22,9 +22,38 @@ class AppSharedFooter extends HTMLElement {
     this.render();
   }
 
+  get showSettingsTab() {
+    const attributeValue = (this.getAttribute("show-settings") || "").toLowerCase();
+    if (attributeValue === "true") {
+      return true;
+    }
+    if (attributeValue === "false") {
+      return false;
+    }
+    return false;
+  }
+
+  get visibleNavItems() {
+    return NAV_ITEMS.filter((item) => {
+      if (item.key === "settings") {
+        return this.showSettingsTab;
+      }
+      return true;
+    });
+  }
+
   get activeTab() {
     const tab = (this.getAttribute("active-tab") || "").toLowerCase();
-    return NAV_ITEMS.some((item) => item.key === tab) ? tab : DEFAULT_ACTIVE_TAB;
+    const visibleItems = this.visibleNavItems;
+    if (visibleItems.some((item) => item.key === tab)) {
+      return tab;
+    }
+
+    if (visibleItems.some((item) => item.key === DEFAULT_ACTIVE_TAB)) {
+      return DEFAULT_ACTIVE_TAB;
+    }
+
+    return visibleItems[0]?.key || DEFAULT_ACTIVE_TAB;
   }
 
   get variant() {
@@ -41,7 +70,7 @@ class AppSharedFooter extends HTMLElement {
   }
 
   renderNavLinks({ isCompact }) {
-    const navLinks = NAV_ITEMS.map((item) => {
+    const navLinks = this.visibleNavItems.map((item) => {
       const isActive = item.key === this.activeTab;
       const baseClasses = [
         "nav-link",
