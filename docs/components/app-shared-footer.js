@@ -194,18 +194,10 @@ class AppSharedFooter extends HTMLElement {
                   </div>
                   <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
               </div>
-              <div class="footer-legal footer-legal-expanded text-right hidden sm:block">
-                  <img
-                    src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-                    alt="Ícone 5Horas"
-                    class="h-3 w-3 inline-block align-text-top mr-1"
-                    onerror="this.style.display='none';"
-                  >
-                  ${legalText}
-              </div>
+              <div class="footer-actions flex items-center space-x-2"></div>
           </div>
 
-          <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1 sm:hidden">
+          <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1">
               <img
                 src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
                 alt="Ícone 5Horas"
