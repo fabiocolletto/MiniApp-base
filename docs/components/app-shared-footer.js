@@ -213,8 +213,6 @@ class AppSharedFooter extends HTMLElement {
 
     return `
       <div id="footerDetails" class="footer-details w-full mt-3">
-          <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
-
           <div class="footer-meta-bottom flex items-center justify-between text-xs muted-text mt-2 px-1">
               <div class="status-indicators-group flex items-center space-x-4">
                   <div class="flex items-center space-x-2">
@@ -262,6 +260,9 @@ class AppSharedFooter extends HTMLElement {
           <div class="footer-top w-full">
               <div class="footer-quick-nav w-full">
                   ${navLinks}
+              </div>
+              <div id="footerAlertRow" class="footer-alert-row hidden">
+                  <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
               </div>
               ${collapsedMeta}
           </div>

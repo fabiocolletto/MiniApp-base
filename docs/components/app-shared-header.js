@@ -1,8 +1,9 @@
 const BASE_CLASSES = {
   header:
-    "app-header p-4 shadow-lg flex justify-between items-center rounded-b-xl",
-  iconWrapper: "flex items-center space-x-2",
-  actionsWrapper: "flex space-x-2 items-center",
+    "app-header p-4 shadow-lg grid grid-cols-[1fr_auto_1fr] items-center rounded-b-xl gap-2",
+  iconWrapper: "flex items-center justify-center space-x-2 col-start-2 text-center",
+  actionsWrapper:
+    "flex space-x-2 items-center justify-self-end justify-end col-start-3 col-end-3",
   searchButton: "icon-button p-2 rounded-full transition duration-150",
   installButton:
     "button-primary font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md",
