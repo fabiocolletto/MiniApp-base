@@ -7,9 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node tests/gestao-conta-auto-save.js && node tests/gestao-catalogo-auto-save.js",
-    "qa:gestao-conta": "node tests/gestao-conta-auto-save.js",
-    "qa:gestao-catalogo": "node tests/gestao-catalogo-auto-save.js"
+    "test": "node miniapps/gestao-de-conta-do-usuario/tests/gestao-conta-auto-save.js && node miniapps/gestao-de-catalogo/tests/gestao-catalogo-auto-save.js",
+    "qa:gestao-conta": "node miniapps/gestao-de-conta-do-usuario/tests/gestao-conta-auto-save.js",
+    "qa:gestao-catalogo": "node miniapps/gestao-de-catalogo/tests/gestao-catalogo-auto-save.js"
   },
   "keywords": [],
   "author": "",

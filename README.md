@@ -70,7 +70,8 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 
 ## Processo de QA para quem executa os testes
 - **Guias rápidos**: os planos com termos de aceitação estão em `docs/qa/gestao-conta-auto-save.md` (gestão de conta) e `docs/qa/gestao-catalogo-auto-save.md` (gestão de catálogo). Cada arquivo detalha ambiente, comando e passos validados.
-- **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente.
+- **Organização das suítes**: testes globais da PWA ficam centralizados em `tests/` (junto aos utilitários compartilhados), enquanto os testes funcionais de cada MiniApp residem em `miniapps/<slug>/tests/` (ex.: `miniapps/gestao-de-conta-do-usuario/tests/gestao-conta-auto-save.js`).
+- **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente e apontam para os testes localizados dentro de cada MiniApp.
 - **Registro obrigatório**: anexe a saída dos comandos ao PR/commit como evidência dos termos de aceitação. Caso um cenário falhe, corrija o fluxo e repita até todos os termos serem atendidos.
 - **Ajustes de dependência**: na primeira execução (ou após reinstalar o ambiente), rode `npm install`, `npx playwright install-deps chromium` e `npx playwright install chromium` para habilitar o navegador de teste.
 
