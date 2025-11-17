@@ -384,6 +384,10 @@
             toggleStageVisibility({ showCatalog: false });
         }
 
+        document.addEventListener('admin:open-control-panel', () => {
+            setActiveStage('settings');
+        });
+
         initializeFooterPreferences();
 
         if (footerComponent) {
@@ -851,10 +855,9 @@
             }
 
             if (adminConfigIcon) {
-                const shouldShowAdminIcon = hasAuthenticatedSession;
-                adminConfigIcon.classList.toggle('hidden', !shouldShowAdminIcon);
-                adminConfigIcon.setAttribute('aria-hidden', shouldShowAdminIcon ? 'false' : 'true');
-                adminConfigIcon.tabIndex = shouldShowAdminIcon ? 0 : -1;
+                adminConfigIcon.classList.remove('hidden');
+                adminConfigIcon.setAttribute('aria-hidden', 'false');
+                adminConfigIcon.tabIndex = 0;
             }
 
             if (status.syncState === 'error') {
