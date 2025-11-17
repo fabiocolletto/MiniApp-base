@@ -1,12 +1,13 @@
 const NAV_ITEMS = [
   { key: "home", icon: "home", label: "Home" },
+  { key: "alerts", icon: "notifications", label: "Alertas" },
   { key: "catalog", icon: "grid_view", label: "Catálogo" },
   { key: "settings", icon: "settings", label: "Configurações" },
   { key: "account", icon: "person", label: "Conta" },
 ];
 
 const DEFAULT_ACTIVE_TAB = "catalog";
-const DEFAULT_STATE = "collapsed";
+const DEFAULT_STATE = "expanded";
 
 class AppSharedFooter extends HTMLElement {
   static get observedAttributes() {
@@ -109,6 +110,7 @@ class AppSharedFooter extends HTMLElement {
     const basePath = this.getBasePath();
     const navigationMap = {
       home: `${basePath}`,
+      alerts: `${basePath}`,
       catalog: `${basePath}`,
       settings: `${basePath}miniapps/gestao-de-catalogo/`,
       account: `${basePath}miniapps/gestao-de-conta-do-usuario/`,
@@ -126,10 +128,46 @@ class AppSharedFooter extends HTMLElement {
       link.addEventListener("click", (event) => {
         event.preventDefault();
         const key = link.getAttribute("data-nav-key");
-        if (key) {
+        if (!key) {
+          return;
+        }
+
+        const navigateEvent = new CustomEvent("footer:navigate", {
+          detail: { key },
+          bubbles: true,
+          cancelable: true,
+        });
+
+        const shouldNavigate = this.dispatchEvent(navigateEvent);
+        this.setAttribute("active-tab", key);
+
+        if (shouldNavigate) {
           this.navigateTo(key);
         }
       });
+    });
+  }
+
+  setupToggle() {
+    if (this.variant === "compact") {
+      return;
+    }
+
+    const toggleButton = this.querySelector("#footerToggleButton");
+    if (!toggleButton) {
+      return;
+    }
+
+    toggleButton.addEventListener("click", () => {
+      const nextState = this.footerState === "expanded" ? "collapsed" : "expanded";
+      this.setAttribute("state", nextState);
+
+      this.dispatchEvent(
+        new CustomEvent("footer:state-change", {
+          detail: { state: nextState },
+          bubbles: true,
+        })
+      );
     });
   }
 
@@ -146,18 +184,6 @@ class AppSharedFooter extends HTMLElement {
 
     return `
       <div id="footerDetails" class="footer-details w-full mt-3">
-          <div class="footer-actions flex justify-center space-x-2 mb-2 text-xs">
-              <button id="googleSignInButton" class="button-primary text-sm px-3 py-1 rounded-full shadow transition duration-150">
-                  Conectar Google
-              </button>
-              <button id="googleSignOutButton" class="button-muted text-sm px-3 py-1 rounded-full shadow transition duration-150 hidden">
-                  Sair
-              </button>
-              <button id="manualSyncButton" class="button-outline px-3 py-1 rounded-full transition duration-150">
-                  Sincronizar agora
-              </button>
-          </div>
-
           <div id="messageContainer" class="message-box p-3 rounded-lg shadow-xl hidden"></div>
 
           <div class="footer-meta-bottom flex items-center justify-between text-xs muted-text mt-2 px-1">
@@ -169,11 +195,23 @@ class AppSharedFooter extends HTMLElement {
                   <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
               </div>
               <div class="footer-legal footer-legal-expanded text-right hidden sm:block">
+                  <img
+                    src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
+                    alt="Ícone 5Horas"
+                    class="h-3 w-3 inline-block align-text-top mr-1"
+                    onerror="this.style.display='none';"
+                  >
                   ${legalText}
               </div>
           </div>
 
           <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1 sm:hidden">
+              <img
+                src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
+                alt="Ícone 5Horas"
+                class="h-3 w-3 inline-block align-text-top mr-1"
+                onerror="this.style.display='none';"
+              >
               ${legalText}
           </div>
       </div>
@@ -200,6 +238,7 @@ class AppSharedFooter extends HTMLElement {
     `;
 
     this.setupNavigation();
+    this.setupToggle();
   }
 }
 

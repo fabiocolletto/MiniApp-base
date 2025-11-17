@@ -19,26 +19,29 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
 </head>
-<body style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
+<body class="body-with-fixed-footer" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
 
     <div class="app-shell">
 
-        <app-shared-header></app-shared-header>
+        <main class="app-main app-stage">
+            <section id="catalogStage" class="stage-panel">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold accent-text">Catálogo de MiniApps</h2>
+                    <button id="installButton" class="button-primary text-sm px-4 py-2 rounded-full shadow hidden">Instalar</button>
+                </div>
 
-        <main class="app-main flex-grow overflow-y-auto">
+                <div id="searchContainer" class="relative mb-6">
+                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
+                    <span class="material-icons-sharp icon-muted text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
+                </div>
 
-            <!-- CAMPO DE BUSCA INICIALMENTE OCULTO -->
-            <div id="searchContainer" class="relative mb-6 hidden">
-                <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
-                <!-- ÍCONE DE BUSCA DENTRO DO INPUT - Material Icons: search -->
-                <span class="material-icons-sharp icon-muted text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
-            </div>
-            <!-- FIM CAMPO DE BUSCA -->
+                <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
+            </section>
 
-            <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
+            <iframe id="contentIframe" class="stage-panel hidden" title="MiniApp ativo"></iframe>
         </main>
 
-        <app-shared-footer active-tab="catalog" state="collapsed"></app-shared-footer>
+        <app-shared-footer id="globalFooter" active-tab="catalog" variant="full" state="expanded"></app-shared-footer>
 
     </div>
 
@@ -74,27 +77,26 @@
         } from './js/googleSync.js';
         import { openDatabase } from './js/indexeddb-store.js';
 
+        const NAV_STAGE_SOURCES = {
+            home: './miniapps/gestao-de-catalogo/index.html',
+            alerts: './miniapps/gestao-de-conta-do-usuario/index.html',
+            catalog: null,
+            settings: './miniapps/gestao-de-catalogo/index.html',
+            account: './miniapps/gestao-de-conta-do-usuario/index.html'
+        };
+
         let deferredPrompt;
         let messageTimeout;
         let searchPersistTimeout;
         const IOS_INSTALL_INTENT_KEY = 'iosInstallIntent';
 
+        const footerComponent = document.getElementById('globalFooter');
+        const catalogStage = document.getElementById('catalogStage');
+        const contentIframe = document.getElementById('contentIframe');
         const installButton = document.getElementById('installButton');
-        const searchToggle = document.getElementById('searchToggle');
         const searchContainer = document.getElementById('searchContainer');
-        const messageContainer = document.getElementById('messageContainer');
         const miniappGrid = document.getElementById('miniappGrid');
-        const connectionDot = document.getElementById('connectionDot');
-        const connectionLabel = document.getElementById('connectionLabel');
-        const syncStatusLabel = document.getElementById('syncStatusLabel');
-        const googleSignInButton = document.getElementById('googleSignInButton');
-        const googleSignOutButton = document.getElementById('googleSignOutButton');
-        const manualSyncButton = document.getElementById('manualSyncButton');
         const searchInput = document.getElementById('searchInput');
-        const appFooter = document.querySelector('.app-footer');
-        const footerToggleButton = document.getElementById('footerToggleButton');
-        const footerToggleIcon = footerToggleButton ? footerToggleButton.querySelector('.footer-toggle-icon') : null;
-        const footerToggleLabel = document.getElementById('footerToggleLabel');
 
         const productModal = document.getElementById('productModal');
         const closeModalButton = document.getElementById('closeModal');
@@ -185,23 +187,20 @@
             applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
         });
 
+        function getFooterElement(id) {
+            return document.getElementById(id);
+        }
+
         function applyFooterState(state) {
-            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
+            if (!footerComponent) {
                 return;
             }
-            const normalized = state === 'expanded' ? 'expanded' : 'collapsed';
-            appFooter.setAttribute('data-footer-state', normalized);
-            const isExpanded = normalized === 'expanded';
-            footerToggleButton.setAttribute('aria-expanded', isExpanded.toString());
-            footerToggleButton.setAttribute('aria-label', isExpanded ? 'Recolher rodapé' : 'Expandir rodapé');
-            footerToggleIcon.textContent = isExpanded ? 'unfold_less' : 'unfold_more';
-            if (footerToggleLabel) {
-                footerToggleLabel.textContent = isExpanded ? 'Recolher' : 'Expandir';
-            }
+            const normalized = state === 'collapsed' ? 'collapsed' : 'expanded';
+            footerComponent.setAttribute('state', normalized);
         }
 
         async function initializeFooterPreferences() {
-            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
+            if (!footerComponent) {
                 return;
             }
             try {
@@ -209,34 +208,70 @@
                 const storedValue = typeof storedPreference?.value === 'string'
                     ? storedPreference.value.toLowerCase()
                     : null;
-                if (storedValue === 'collapsed') {
-                    applyFooterState('collapsed');
-                    return;
-                }
+                applyFooterState(storedValue === 'collapsed' ? 'collapsed' : DEFAULT_FOOTER_STATE);
             } catch (error) {
                 console.error('Erro ao carregar preferências do rodapé', error);
+                applyFooterState(DEFAULT_FOOTER_STATE);
             }
-            applyFooterState(DEFAULT_FOOTER_STATE);
         }
 
-        function setupFooterToggle() {
-            if (!appFooter || !footerToggleButton || !footerToggleIcon) {
-                return;
+        function resolveStageSource(key) {
+            const normalizedKey = (key || '').toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_SOURCES, normalizedKey)) {
+                return { key: normalizedKey, source: NAV_STAGE_SOURCES[normalizedKey] };
             }
-            footerToggleButton.addEventListener('click', () => {
-                const current = appFooter.getAttribute('data-footer-state') === 'expanded' ? 'expanded' : 'collapsed';
-                const nextState = current === 'expanded' ? 'collapsed' : 'expanded';
-                applyFooterState(nextState);
+            return { key: 'catalog', source: NAV_STAGE_SOURCES.catalog };
+        }
+
+        function setActiveStage(key) {
+            const { key: normalizedKey, source } = resolveStageSource(key);
+
+            if (footerComponent && footerComponent.getAttribute('active-tab') !== normalizedKey) {
+                footerComponent.setAttribute('active-tab', normalizedKey);
+            }
+
+            if (source) {
+                catalogStage?.classList.add('hidden');
+                contentIframe?.classList.remove('hidden');
+                if (contentIframe && contentIframe.src !== source) {
+                    contentIframe.src = source;
+                }
+            } else {
+                contentIframe?.classList.add('hidden');
+                if (contentIframe) {
+                    contentIframe.removeAttribute('src');
+                }
+                catalogStage?.classList.remove('hidden');
+            }
+        }
+
+        initializeFooterPreferences();
+
+        if (footerComponent) {
+            footerComponent.addEventListener('footer:state-change', (event) => {
+                const nextState = event.detail?.state === 'collapsed' ? 'collapsed' : 'expanded';
                 saveUserSetting(FOOTER_STATE_KEY, nextState).catch((error) => {
                     console.error('Erro ao salvar preferência do rodapé', error);
                 });
             });
-            initializeFooterPreferences();
+
+            footerComponent.addEventListener('footer:navigate', (event) => {
+                if (!event.detail?.key) {
+                    return;
+                }
+                event.preventDefault();
+                setActiveStage(event.detail.key);
+            });
         }
 
-        setupFooterToggle();
+        setActiveStage(footerComponent?.getAttribute('active-tab') || 'catalog');
 
         function showMessage(text, isError = false) {
+            const messageContainer = getFooterElement('messageContainer');
+            if (!messageContainer) {
+                return;
+            }
+
             if (messageTimeout) {
                 clearTimeout(messageTimeout);
             }
@@ -462,13 +497,6 @@
 
         addToCartButton.addEventListener('click', addToCart);
 
-        searchToggle.addEventListener('click', () => {
-            searchContainer.classList.toggle('hidden');
-            if (!searchContainer.classList.contains('hidden')) {
-                searchInput.focus();
-            }
-        });
-
         closeModalButton.addEventListener('click', closeProductModal);
 
         productModal.addEventListener('click', (event) => {
@@ -512,6 +540,17 @@
         }
 
         registerStatusListener((status) => {
+            const connectionDot = getFooterElement('connectionDot');
+            const connectionLabel = getFooterElement('connectionLabel');
+            const syncStatusLabel = getFooterElement('syncStatusLabel');
+            const googleSignInButton = getFooterElement('googleSignInButton');
+            const googleSignOutButton = getFooterElement('googleSignOutButton');
+            const manualSyncButton = getFooterElement('manualSyncButton');
+
+            if (!connectionDot || !connectionLabel || !syncStatusLabel) {
+                return;
+            }
+
             connectionDot.classList.remove('status-online', 'status-offline', 'status-syncing', 'status-error', 'status-auth');
 
             let indicatorClass = status.online ? 'status-online' : 'status-offline';
@@ -531,59 +570,69 @@
             const pendingText = typeof status.pending === 'number' && status.pending > 0 ? ` (${status.pending} pendência(s))` : '';
             syncStatusLabel.textContent = `${status.message}${pendingText}`;
 
-            if (status.needsAuth) {
-                googleSignInButton.classList.toggle('hidden', status.authenticated);
-                googleSignOutButton.classList.toggle('hidden', !status.authenticated);
+            if (googleSignInButton && googleSignOutButton) {
+                googleSignInButton.classList.toggle('hidden', status.authenticated || !status.needsAuth);
+                googleSignOutButton.classList.toggle('hidden', !status.authenticated || !status.needsAuth);
                 googleSignInButton.disabled = !status.online || status.syncState === 'syncing';
                 googleSignOutButton.disabled = status.syncState === 'syncing';
-            } else {
-                googleSignInButton.classList.add('hidden');
-                googleSignOutButton.classList.add('hidden');
             }
 
-            manualSyncButton.disabled =
-                status.syncState === 'syncing' || !status.online || (status.needsAuth && !status.authenticated);
+            if (manualSyncButton) {
+                manualSyncButton.disabled =
+                    status.syncState === 'syncing' || !status.online || (status.needsAuth && !status.authenticated);
+            }
 
             if (status.syncState === 'error') {
                 showMessage(`❌ ${status.message}`, true);
             }
         });
 
-        googleSignInButton.addEventListener('click', async () => {
-            try {
-                await signInWithGoogle();
-                showMessage('✅ Conectado à conta Google.', false);
-            } catch (error) {
-                console.error('Erro ao autenticar com Google', error);
-                showMessage('❌ Erro ao conectar na conta Google.', true);
-            }
-        });
+        footerComponent?.addEventListener('click', async (event) => {
+            const signInButton = event.target.closest('#googleSignInButton');
+            const signOutButton = event.target.closest('#googleSignOutButton');
+            const manualSyncButton = event.target.closest('#manualSyncButton');
 
-        googleSignOutButton.addEventListener('click', async () => {
-            try {
-                await signOutFromGoogle();
-                showMessage('Sessão Google encerrada.', false);
-            } catch (error) {
-                console.error('Erro ao sair da conta Google', error);
-                showMessage('❌ Não foi possível encerrar a sessão Google.', true);
-            }
-        });
-
-        manualSyncButton.addEventListener('click', async () => {
-            if (!navigator.onLine) {
-                showMessage('Você está offline. Os dados serão enviados assim que a conexão voltar.', true);
+            if (signInButton) {
+                event.preventDefault();
+                try {
+                    await signInWithGoogle();
+                    showMessage('✅ Conectado à conta Google.', false);
+                } catch (error) {
+                    console.error('Erro ao autenticar com Google', error);
+                    showMessage('❌ Erro ao conectar na conta Google.', true);
+                }
                 return;
             }
-            try {
-                const result = await syncPendingChanges();
-                if (result.synced > 0) {
-                    showMessage(`✅ ${result.synced} item(ns) sincronizado(s).`, false);
-                } else {
-                    showMessage('Nenhuma pendência para sincronizar.', false);
+
+            if (signOutButton) {
+                event.preventDefault();
+                try {
+                    await signOutFromGoogle();
+                    showMessage('Sessão Google encerrada.', false);
+                } catch (error) {
+                    console.error('Erro ao sair da conta Google', error);
+                    showMessage('❌ Não foi possível encerrar a sessão Google.', true);
                 }
-            } catch (error) {
-                console.error('Erro ao sincronizar manualmente', error);
-                showMessage('❌ Erro ao sincronizar com a Google.', true);
+                return;
+            }
+
+            if (manualSyncButton) {
+                event.preventDefault();
+                if (!navigator.onLine) {
+                    showMessage('Você está offline. Os dados serão enviados assim que a conexão voltar.', true);
+                    return;
+                }
+                try {
+                    const result = await syncPendingChanges();
+                    if (result.synced > 0) {
+                        showMessage(`✅ ${result.synced} item(ns) sincronizado(s).`, false);
+                    } else {
+                        showMessage('Nenhuma pendência para sincronizar.', false);
+                    }
+                } catch (error) {
+                    console.error('Erro ao sincronizar manualmente', error);
+                    showMessage('❌ Erro ao sincronizar com a Google.', true);
+                }
             }
         });
 
