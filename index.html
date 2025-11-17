@@ -130,10 +130,10 @@
             },
             settings: {
                 key: 'settings',
-                title: 'Configurações do RodaPack',
-                description: 'Preferências unificadas para tema, idioma e integrações.',
+                title: 'Painel Administrativo',
+                description: 'Abre o painel administrativo e renderiza Catalogo!A1 da planilha.',
                 icon: 'settings',
-                sourceId: 'miniapp-gestao-catalogo'
+                sourceId: null
             },
             account: {
                 key: 'account',
@@ -265,6 +265,29 @@
             return document.getElementById(id);
         }
 
+        function resolveBasePath() {
+            const path = window.location.pathname;
+            const miniappsIndex = path.indexOf('/miniapps/');
+
+            if (miniappsIndex !== -1) {
+                return path.slice(0, miniappsIndex + 1);
+            }
+
+            if (path.endsWith('/index.html')) {
+                return path.slice(0, -'index.html'.length);
+            }
+
+            return path.endsWith('/')
+                ? path
+                : path.slice(0, path.lastIndexOf('/') + 1);
+        }
+
+        function openAdminPanelMiniApp() {
+            const basePath = resolveBasePath();
+            const destination = `${basePath}miniapps/configuracoes-do-sistema/`;
+            window.location.href = destination;
+        }
+
         function applyFooterState(state) {
             if (!footerComponent) {
                 return;
@@ -386,6 +409,7 @@
 
         document.addEventListener('admin:open-control-panel', () => {
             setActiveStage('settings');
+            openAdminPanelMiniApp();
         });
 
         initializeFooterPreferences();
