@@ -1,9 +1,9 @@
 const assert = require('assert');
 const { chromium } = require('playwright');
 const path = require('path');
-const { startStaticServer } = require('./helpers/server');
+const { startStaticServer } = require('../../../tests/helpers/server');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.resolve(__dirname, '../../..');
 
 const selectors = {
     tableRowById: (id) => `[data-edit-btn][data-id="${id}"]`,
