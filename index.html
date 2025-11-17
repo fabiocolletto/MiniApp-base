@@ -408,6 +408,7 @@
 
         function showMessage(text, isError = false) {
             const messageContainer = getFooterElement('messageContainer');
+            const footerAlertRow = getFooterElement('footerAlertRow');
             if (!messageContainer) {
                 return;
             }
@@ -419,9 +420,11 @@
             messageContainer.textContent = text;
             messageContainer.classList.remove('hidden', 'message-success', 'message-error');
             messageContainer.classList.add(isError ? 'message-error' : 'message-success');
+            footerAlertRow?.classList.remove('hidden');
 
             messageTimeout = setTimeout(() => {
                 messageContainer.classList.add('hidden');
+                footerAlertRow?.classList.add('hidden');
             }, 5000);
         }
 
