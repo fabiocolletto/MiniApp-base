@@ -662,3 +662,36 @@ body {
     width: 100%;
 }
 
+.admin-control-panel {
+    position: fixed;
+    right: 1rem;
+    bottom: 6rem;
+    width: min(360px, calc(100% - 2rem));
+    background-color: var(--color-card-bg);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-card-border);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-card);
+    padding: 1rem;
+    z-index: 1200;
+}
+
+.admin-control-panel h3 {
+    margin: 0 0 0.25rem;
+    color: var(--color-accent);
+}
+
+.admin-panel-status {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+}
+
+.admin-panel-value {
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+
+.admin-panel-error {
+    color: var(--color-error-bg);
+}
+

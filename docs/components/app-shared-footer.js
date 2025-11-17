@@ -223,7 +223,16 @@ class AppSharedFooter extends HTMLElement {
                   </div>
                   <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
               </div>
-              <div class="footer-actions flex items-center space-x-2"></div>
+              <div class="footer-actions flex items-center space-x-2">
+                  <button
+                    id="footer-config-icon"
+                    class="icon-button p-2 rounded-full transition duration-150"
+                    type="button"
+                    aria-label="Abrir painel de controles do admin"
+                  >
+                    <span class="material-icons-sharp text-2xl" aria-hidden="true">settings</span>
+                  </button>
+              </div>
           </div>
 
           <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1">
