@@ -67,14 +67,31 @@ function extractSheetId(input) {
 }
 
 function revealAdminIcon() {
-  const adminConfigIcon = document.getElementById('footer-config-icon');
-  if (!adminConfigIcon) {
+  const showIcon = () => {
+    const adminConfigIcon = document.getElementById('footer-config-icon');
+    if (!adminConfigIcon) {
+      return false;
+    }
+
+    adminConfigIcon.classList.remove('hidden');
+    adminConfigIcon.setAttribute('aria-hidden', 'false');
+    adminConfigIcon.tabIndex = 0;
+    return true;
+  };
+
+  if (showIcon()) {
     return;
   }
 
-  adminConfigIcon.classList.remove('hidden');
-  adminConfigIcon.setAttribute('aria-hidden', 'false');
-  adminConfigIcon.tabIndex = 0;
+  const observer = new MutationObserver(() => {
+    if (showIcon()) {
+      observer.disconnect();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  setTimeout(() => observer.disconnect(), 3000);
 }
 
 async function postAdminAction(payload) {

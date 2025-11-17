@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Configurações do Sistema</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+
+    <link rel="stylesheet" href="/docs/miniapp-global.css">
+    <link rel="stylesheet" href="/docs/miniapp-card.css">
+
+    <script type="module" src="/docs/components/app-shared-footer.js"></script>
+
+    <meta name="theme-color" content="#f3f4f6">
+</head>
+<body class="app-shell">
+    <main id="app-main" class="app-main">
+        <section class="responsive-panel-grid">
+            <article id="config-card" class="miniapp-card">
+                <header class="miniapp-card-header">
+                    <h2 class="miniapp-card-title">Configurações estéticas do sistema</h2>
+                    <p class="miniapp-card-subtitle">
+                        Protótipo administrativo: leitura da célula <strong>Catalogo!A1</strong> do Google Sheets para teste de conexão.
+                    </p>
+                </header>
+
+                <div id="settings-sheet-control" class="miniapp-card-body">
+                    <!-- Aqui será renderizada a tabela vinda do Google Sheets -->
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <app-shared-footer show-settings="true"></app-shared-footer>
+
+    <script type="module" src="./config-control.js"></script>
+</body>
+</html>
