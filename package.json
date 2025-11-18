@@ -1,22 +1,10 @@
 {
   "name": "miniapp",
   "version": "1.0.0",
-  "description": "Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O objetivo é listar, testar e validar MiniApps dentro de uma arquitetura PWA totalmente gratuita, apoiada por sincronização local via IndexedDB e integração opcional com Google.",
+  "description": "Catálogo PWA estático com MiniApps em desenvolvimento e componentes compartilhados.",
   "main": "service-worker.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "test": "node tests/miniapps/gestao-de-conta-do-usuario/gestao-conta-auto-save.js && node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js && node tests/miniapps/pwa-shell/footer-stage-navigation.js",
-    "qa:gestao-conta": "node tests/miniapps/gestao-de-conta-do-usuario/gestao-conta-auto-save.js",
-    "qa:gestao-catalogo": "node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js",
-    "qa:pwa-stage": "node tests/miniapps/pwa-shell/footer-stage-navigation.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "playwright": "^1.56.1"
+  "scripts": {
+    "test": "echo \"Nenhum teste automatizado ativo após a limpeza do repositório.\""
   }
 }
