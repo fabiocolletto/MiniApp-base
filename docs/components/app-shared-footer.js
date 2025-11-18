@@ -129,39 +129,6 @@ class AppSharedFooter extends HTMLElement {
     `;
   }
 
-  getBasePath() {
-    const path = window.location.pathname;
-    const miniappsIndex = path.indexOf("/miniapps/");
-
-    if (miniappsIndex !== -1) {
-      return path.slice(0, miniappsIndex + 1);
-    }
-
-    if (path.endsWith("/index.html")) {
-      return path.slice(0, -"index.html".length);
-    }
-
-    return path.endsWith("/")
-      ? path
-      : path.slice(0, path.lastIndexOf("/") + 1);
-  }
-
-  navigateTo(key) {
-    const basePath = this.getBasePath();
-    const navigationMap = {
-      home: `${basePath}`,
-      alerts: `${basePath}`,
-      catalog: `${basePath}`,
-      settings: `${basePath}miniapps/configuracoes-do-sistema/`,
-      account: `${basePath}miniapps/gestao-de-conta-do-usuario/`,
-    };
-
-    const destination = navigationMap[key];
-    if (destination) {
-      window.location.href = destination;
-    }
-  }
-
   setupNavigation() {
     const navLinks = this.querySelectorAll(".nav-link[data-nav-key]");
     navLinks.forEach((link) => {
@@ -172,18 +139,15 @@ class AppSharedFooter extends HTMLElement {
           return;
         }
 
+        this.setAttribute("active-tab", key);
+
         const navigateEvent = new CustomEvent("footer:navigate", {
           detail: { key },
           bubbles: true,
           cancelable: true,
         });
 
-        const shouldNavigate = this.dispatchEvent(navigateEvent);
-        this.setAttribute("active-tab", key);
-
-        if (shouldNavigate) {
-          this.navigateTo(key);
-        }
+        this.dispatchEvent(navigateEvent);
       });
     });
   }
