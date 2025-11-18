@@ -394,27 +394,28 @@
             box-shadow: 0 12px 24px rgba(249, 115, 22, 0.35);
         }
 
-        .footer-panel {
+        .status-panel {
             background-color: var(--color-shell-bg);
             border: 1px dashed var(--color-border);
             border-radius: 1.5rem;
             padding: 1rem;
-            text-align: center;
             color: var(--color-text-secondary);
+            display: grid;
+            gap: 0.5rem;
         }
 
-        .footer-note {
-            margin: 0.35rem 0 0;
+        .inline-feedback {
+            margin: 0;
             font-size: 0.95rem;
             color: var(--color-text-secondary);
             transition: color 0.2s ease, opacity 0.2s ease;
         }
 
-        .footer-note[data-state="syncing"] {
+        .inline-feedback[data-state="syncing"] {
             color: var(--color-text-primary);
         }
 
-        .footer-note[data-state="synced"] {
+        .inline-feedback[data-state="synced"] {
             color: #15803d;
         }
 
@@ -679,14 +680,13 @@
         </div>
     </section>
 
-    <footer class="footer-panel">
-        <!-- Contêiner para a mensagem de sincronização temporária -->
+    <section class="status-panel" aria-label="Status de sincronização e salvamento">
         <div id="syncStatusDisplay" class="sync-status-container" style="opacity:0; display:none;">
             <span id="syncStatusSpinner" class="sync-spinner"></span>
             <span id="syncStatusMessage">Sincronização iniciada...</span>
         </div>
-        <p id="inlineSaveFeedback" class="footer-note" data-state="idle">Edição rápida salva automaticamente.</p>
-    </footer>
+        <p id="inlineSaveFeedback" class="inline-feedback" data-state="idle">Edição rápida salva automaticamente.</p>
+    </section>
             </div>
         </main>
         <app-shared-footer variant="compact" active-tab="account"></app-shared-footer>
