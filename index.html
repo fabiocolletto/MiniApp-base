@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo MiniApp 5Horas</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Biblioteca utilitária de design responsivo -->
     <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
     <!-- Google Material Icons (Sharp Style for Solid Look) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="./docs/miniapp-global.css">
     <link rel="stylesheet" href="./docs/miniapp-card.css">
+    <!-- Carrega o Tailwind por último para priorizar as utilidades sobre o CSS local -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="./docs/components/app-shared-footer.js"></script>
     
     <link rel="manifest" href="./pwa/manifest.webmanifest">
@@ -24,34 +25,34 @@
 
         <main class="app-main app-stage">
             <section id="catalogStage" class="stage-panel">
-                <div class="flex items-center justify-between mb-4 gap-3">
-                    <h2 class="text-xl font-semibold accent-text">Catálogo de MiniApps</h2>
-                    <div class="flex items-center gap-2">
-                        <button id="searchToggleButton" class="icon-button p-2 rounded-full transition duration-150" aria-label="Ativar campo de busca" aria-pressed="false">
-                            <span class="material-icons-sharp text-2xl" aria-hidden="true">search</span>
+                <div class="u-flex u-align-center u-justify-between u-gap-md u-mb-md u-wrap">
+                    <h2 class="u-text-xl u-font-semibold u-text-accent">Catálogo de MiniApps</h2>
+                    <div class="u-flex u-align-center u-gap-sm u-wrap">
+                        <button id="searchToggleButton" class="icon-button u-padding-xs u-rounded-full u-transition" aria-label="Ativar campo de busca" aria-pressed="false">
+                            <span class="material-icons-sharp u-text-xl" aria-hidden="true">search</span>
                         </button>
-                        <button id="filterToggleButton" class="icon-button p-2 rounded-full transition duration-150 hidden" aria-label="Ativar filtros do catálogo" aria-pressed="false">
-                            <span class="material-icons-sharp text-2xl" aria-hidden="true">tune</span>
+                        <button id="filterToggleButton" class="icon-button u-padding-xs u-rounded-full u-transition hidden" aria-label="Ativar filtros do catálogo" aria-pressed="false">
+                            <span class="material-icons-sharp u-text-xl" aria-hidden="true">tune</span>
                         </button>
-                        <button id="installButton" class="button-primary text-sm px-4 py-2 rounded-full shadow hidden">Instalar</button>
+                        <button id="installButton" class="button-primary u-text-sm u-padding-sm u-rounded-full u-shadow-sm hidden">Instalar</button>
                     </div>
                 </div>
 
-                <div id="searchContainer" class="relative mb-6 hidden">
-                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." aria-label="Buscar MiniApps" class="w-full themed-input p-3 pl-10 rounded-lg transition duration-150 shadow-md">
-                    <span class="material-icons-sharp icon-muted text-xl absolute left-3 top-1/2 transform -translate-y-1/2">search</span>
+                <div id="searchContainer" class="u-relative u-mb-lg hidden">
+                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." aria-label="Buscar MiniApps" class="themed-input u-w-full u-padding-md u-padding-left-xl u-rounded-lg u-transition u-shadow-sm">
+                    <span class="material-icons-sharp icon-muted u-text-base" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">search</span>
                 </div>
 
-                <div id="filterContainer" class="relative mb-6 hidden">
-                    <div class="flex items-center gap-2">
-                        <span class="material-icons-sharp icon-muted text-xl" aria-hidden="true">tune</span>
-                        <select id="filterSelect" aria-label="Filtrar MiniApps por categoria" class="w-full themed-input p-3 rounded-lg transition duration-150 shadow-md">
+                <div id="filterContainer" class="u-relative u-mb-lg hidden">
+                    <div class="u-flex u-align-center u-gap-sm">
+                        <span class="material-icons-sharp icon-muted u-text-base" aria-hidden="true">tune</span>
+                        <select id="filterSelect" aria-label="Filtrar MiniApps por categoria" class="themed-input u-w-full u-padding-md u-rounded-lg u-transition u-shadow-sm">
                             <option value="all">Todas as categorias</option>
                         </select>
                     </div>
                 </div>
 
-                <div id="miniappGrid" class="grid gap-6 responsive-panel-grid"></div>
+                <div id="miniappGrid" class="responsive-panel-grid u-grid-responsive"></div>
             </section>
 
             <section id="placeholderStage" class="stage-panel hidden">
@@ -74,17 +75,17 @@
 
     <div id="productModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modalTitle" class="text-2xl font-bold accent-text"></h3>
-                <button id="closeModal" class="icon-button transition duration-200">
+            <div class="u-flex u-justify-between u-align-center u-mb-md">
+                <h3 id="modalTitle" class="u-text-xl u-font-bold u-text-accent"></h3>
+                <button id="closeModal" class="icon-button u-transition">
                     <!-- ÍCONE FECHAR - Material Icons: close -->
-                    <span class="material-icons-sharp text-3xl">close</span>
+                    <span class="material-icons-sharp u-text-xl">close</span>
                 </button>
             </div>
-            <img id="modalImage" src="./assets/icons/icon-192.svg" alt="Imagem do Produto" class="w-full h-auto rounded-lg mb-4 object-cover aspect-video">
-            <p id="modalDescription" class="muted-text mb-4"></p>
-            <p id="modalPrice" class="text-2xl font-extrabold accent-text mb-6"></p>
-            <button id="addToCartButton" class="button-primary text-lg font-semibold py-2 px-6 rounded-full transition duration-300">
+            <img id="modalImage" src="./assets/icons/icon-192.svg" alt="Imagem do Produto" class="u-w-full u-rounded-lg u-mb-md u-object-cover u-aspect-video">
+            <p id="modalDescription" class="muted-text u-mb-md"></p>
+            <p id="modalPrice" class="u-text-xl u-font-bold accent-text u-mb-lg"></p>
+            <button id="addToCartButton" class="button-primary u-text-lg u-font-semibold u-padding-sm u-rounded-full u-transition">
                 Adicionar ao Carrinho
             </button>
         </div>
