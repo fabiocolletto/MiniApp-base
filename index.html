@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="./docs/miniapp-card.css">
     <!-- Carrega o Tailwind por último para priorizar as utilidades sobre o CSS local -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="./docs/components/app-shared-header.js"></script>
     <script type="module" src="./docs/components/app-shared-footer.js"></script>
     
     <link rel="manifest" href="./pwa/manifest.webmanifest">
@@ -24,7 +25,21 @@
     <div class="app-shell">
 
         <main class="app-main app-stage">
-            <section id="catalogStage" class="stage-panel">
+            <section id="homeStage" class="stage-panel">
+                <app-shared-header id="homeHeader" title="MiniApp 5Horas" icon="flash_on" hide-search></app-shared-header>
+                <div class="u-flex u-direction-column u-align-center u-justify-center u-gap-md u-text-center u-padding-xl"
+                    style="min-height: min(70vh, 600px);">
+                    <div class="u-flex u-direction-column u-gap-2xs">
+                        <p class="u-text-sm muted-text">Seja bem-vindo(a)</p>
+                        <h1 class="u-text-2xl u-font-extrabold">MiniApp 5Horas</h1>
+                    </div>
+                    <p id="welcomeMessage" class="u-text-base muted-text" style="max-width: 320px;">
+                        Conecte-se com sua conta Google pelo rodapé para personalizar a experiência.
+                    </p>
+                </div>
+            </section>
+
+            <section id="catalogStage" class="stage-panel hidden">
                 <div class="u-flex u-align-center u-justify-between u-gap-md u-mb-md u-wrap">
                     <h2 class="u-text-xl u-font-semibold u-text-accent">Catálogo de MiniApps</h2>
                     <div class="u-flex u-align-center u-gap-sm u-wrap">
@@ -69,7 +84,7 @@
             </section>
         </main>
 
-        <app-shared-footer id="globalFooter" active-tab="catalog" variant="full" state="collapsed"></app-shared-footer>
+        <app-shared-footer id="globalFooter" active-tab="home" variant="full" state="collapsed"></app-shared-footer>
 
     </div>
 
@@ -136,10 +151,11 @@
             },
             account: {
                 key: 'account',
-                title: 'MiniApp em desenvolvimento',
-                description: 'MiniApp em desenvolvimento',
+                title: 'Gestão de Conta do Usuário',
+                description: 'Visualize e edite seus dados pessoais no painel dedicado.',
                 icon: 'person',
-                sourceId: null
+                sourceId: 'gestao-de-conta-do-usuario',
+                launchUrl: './miniapps/gestao-de-conta-do-usuario/index.html'
             }
         };
 
@@ -154,11 +170,13 @@
         let hasRedirectedToHome = false;
 
         const footerComponent = document.getElementById('globalFooter');
+        const homeStage = document.getElementById('homeStage');
         const catalogStage = document.getElementById('catalogStage');
         const placeholderStage = document.getElementById('placeholderStage');
         const placeholderTitle = document.getElementById('placeholderTitle');
         const placeholderDescription = document.getElementById('placeholderDescription');
         const placeholderIcon = document.getElementById('placeholderIcon');
+        const welcomeMessage = document.getElementById('welcomeMessage');
         const installButton = document.getElementById('installButton');
         const searchToggleButton = document.getElementById('searchToggleButton');
         const filterToggleButton = document.getElementById('filterToggleButton');
@@ -181,8 +199,8 @@
         let pendingSearchTerm = '';
         let activeCategoryFilter = 'all';
 
-        if (footerComponent && footerComponent.getAttribute('active-tab') !== 'catalog') {
-            footerComponent.setAttribute('active-tab', 'catalog');
+        if (footerComponent && !footerComponent.getAttribute('active-tab')) {
+            footerComponent.setAttribute('active-tab', 'home');
         }
         const miniAppsDataPromise = loadMiniAppData()
             .then((data) => {
@@ -303,6 +321,21 @@
             return NAV_STAGE_DEFINITIONS.catalog;
         }
 
+        function launchStageMiniApp(stageDefinition) {
+            if (!stageDefinition?.launchUrl) {
+                return false;
+            }
+
+            openMiniAppPanel({
+                id: stageDefinition.sourceId || stageDefinition.key,
+                title: stageDefinition.title,
+                description: stageDefinition.description,
+                url: stageDefinition.launchUrl
+            });
+
+            return true;
+        }
+
         function hydrateNavigationStages(apps) {
             if (!Array.isArray(apps) || !apps.length) {
                 return;
@@ -344,6 +377,9 @@
                 if (matchedApp.description) {
                     stage.description = matchedApp.description;
                 }
+                if (matchedApp.url) {
+                    stage.launchUrl = matchedApp.url;
+                }
             });
 
             if (activeStageKey) {
@@ -370,15 +406,14 @@
             });
         }
 
-        function toggleStageVisibility({ showCatalog }) {
-            if (showCatalog) {
-                catalogStage?.classList.remove('hidden');
-                placeholderStage?.classList.add('hidden');
-                return;
-            }
+        function toggleStageVisibility({ showCatalog = false, showPlaceholder = false, showHome = false }) {
+            const shouldShowCatalog = Boolean(showCatalog);
+            const shouldShowPlaceholder = Boolean(showPlaceholder);
+            const shouldShowHome = Boolean(showHome);
 
-            catalogStage?.classList.add('hidden');
-            placeholderStage?.classList.remove('hidden');
+            catalogStage?.classList.toggle('hidden', !shouldShowCatalog);
+            placeholderStage?.classList.toggle('hidden', !shouldShowPlaceholder);
+            homeStage?.classList.toggle('hidden', !shouldShowHome);
         }
 
         function setActiveStage(key) {
@@ -390,18 +425,27 @@
                 footerComponent.setAttribute('active-tab', normalizedKey);
             }
 
+            if (launchStageMiniApp(stageDefinition)) {
+                return;
+            }
+
+            if (stageDefinition.key === 'home') {
+                toggleStageVisibility({ showHome: true });
+                return;
+            }
+
             if (stageDefinition.key === 'catalog') {
                 if (isCatalogReady()) {
                     toggleStageVisibility({ showCatalog: true });
                 } else {
                     renderCatalogPlaceholder();
-                    toggleStageVisibility({ showCatalog: false });
+                    toggleStageVisibility({ showPlaceholder: true });
                 }
                 return;
             }
 
             renderPlaceholderStage(stageDefinition);
-            toggleStageVisibility({ showCatalog: false });
+            toggleStageVisibility({ showPlaceholder: true });
         }
 
         initializeFooterPreferences();
@@ -425,7 +469,7 @@
             });
         }
 
-        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'catalog';
+        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'home';
         setActiveStage(activeStageKey);
 
         function showMessage(text, isError = false) {
@@ -712,6 +756,19 @@
 
         window.configureCatalogStageControls = configureCatalogStageControls;
 
+        function updateWelcomeMessage(status) {
+            if (!welcomeMessage) {
+                return;
+            }
+
+            if (status?.authenticated && status?.userId) {
+                welcomeMessage.textContent = `Bem-vindo(a), ${status.userId}! Sua conta está conectada.`;
+                return;
+            }
+
+            welcomeMessage.textContent = 'Conecte-se com sua conta Google pelo rodapé para personalizar a experiência.';
+        }
+
         function populateCategoryFilterOptions(apps) {
             if (!filterSelect) {
                 return;
@@ -822,6 +879,8 @@
             const manualSyncButton = getFooterElement('manualSyncButton');
             const hasAuthenticatedSession = Boolean(status.authenticated && status.userId);
             const requiresAuth = Boolean(status.needsAuth);
+
+            updateWelcomeMessage(status);
 
             if (!connectionDot || !connectionLabel || !syncStatusLabel) {
                 return;
