@@ -215,6 +215,18 @@ async function attachCardListeners(data) {
  * @param {HTMLElement} targetElement - O elemento onde os cards serão injetados.
  */
 export async function renderMiniApps(data, targetElement) {
+    if (!Array.isArray(data) || data.length === 0) {
+        targetElement.innerHTML = `
+            <div class="miniapp-card empty-state">
+                <div class="placeholder-content">
+                    <p class="placeholder-label">Catálogo em criação</p>
+                    <p class="placeholder-description">Os MiniApps oficiais estão em desenvolvimento.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
     targetElement.innerHTML = data.map(createMiniAppCardHTML).join('');
 
     // Anexa listeners, passando os dados necessários.
