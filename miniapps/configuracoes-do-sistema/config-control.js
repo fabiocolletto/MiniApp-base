@@ -4,16 +4,23 @@ const DEFAULT_ADMIN_VERIFY_URL = 'https://script.google.com/macros/s/AKfycbwcm49
 const ADMIN_VERIFY_URL = typeof window !== 'undefined' && window.MINIAPP_ADMIN_VERIFY_URL
     ? window.MINIAPP_ADMIN_VERIFY_URL
     : DEFAULT_ADMIN_VERIFY_URL;
+const CATALOG_TAB_NAME = 'catalogo';
+const CATALOG_CELL = 'A1';
 
 async function fetchCatalogHeader(sheetId) {
     const response = await fetch(ADMIN_VERIFY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getCatalogHeader', sheetId }),
+        body: JSON.stringify({
+            action: 'getCatalogHeader',
+            sheetId,
+            tab: CATALOG_TAB_NAME,
+            cell: CATALOG_CELL,
+        }),
     });
 
     if (!response.ok) {
-        throw new Error(`Falha ao ler Catalogo!A1 (${response.status})`);
+        throw new Error(`Falha ao ler ${CATALOG_TAB_NAME}!${CATALOG_CELL} (${response.status})`);
     }
 
     const data = await response.json();
@@ -36,8 +43,8 @@ function renderTable(container, value) {
       </thead>
       <tbody>
         <tr>
-          <td class="px-3 py-2 border-t">Catalogo</td>
-          <td class="px-3 py-2 border-t">A1</td>
+          <td class="px-3 py-2 border-t">${CATALOG_TAB_NAME}</td>
+          <td class="px-3 py-2 border-t">${CATALOG_CELL}</td>
           <td class="px-3 py-2 border-t font-mono">${value ?? '(vazio)'}</td>
         </tr>
       </tbody>
@@ -53,11 +60,11 @@ async function loadControlTableFromSheet() {
     const container = document.getElementById('settings-sheet-control');
     if (!container) return;
 
-    renderStatus(container, 'Carregando cabeçalho do catálogo (A1)...');
+    renderStatus(container, `Carregando cabeçalho do catálogo (${CATALOG_CELL})...`);
 
     const savedSheetId = await getSavedSheetId();
     if (!savedSheetId) {
-        renderStatus(container, 'Salve o ID do Apps Script pelo catálogo para carregar Catalogo!A1.');
+        renderStatus(container, `Salve o ID do Apps Script pelo catálogo para carregar ${CATALOG_TAB_NAME}!${CATALOG_CELL}.`);
         return;
     }
 
@@ -65,8 +72,8 @@ async function loadControlTableFromSheet() {
         const value = await fetchCatalogHeader(savedSheetId);
         renderTable(container, value);
     } catch (error) {
-        console.error('Erro ao buscar Catalogo!A1', error);
-        renderStatus(container, 'Não foi possível carregar a célula A1 da aba Catalogo.');
+        console.error(`Erro ao buscar ${CATALOG_TAB_NAME}!${CATALOG_CELL}`, error);
+        renderStatus(container, `Não foi possível carregar a célula ${CATALOG_CELL} da aba ${CATALOG_TAB_NAME}.`);
     }
 }
 

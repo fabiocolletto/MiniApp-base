@@ -14,10 +14,8 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
   publicar `window.currentUserId` sempre que o status é atualizado.
 - Quando o shell identifica uma sessão Google válida (usuário autenticado com `userId` disponível), ele alterna automaticamente
   o stage para **Home** para dar prioridade aos blocos globais.
-- A aba **Configurações** permanece sempre visível na primeira linha do rodapé; ao ser acionada, solicita o ID da planilha se
-  ele ainda não estiver salvo no IndexedDB e abre o MiniApp de configurações.
-- Teste manual sugerido: autenticar com Google e confirmar redirecionamento para o stage Home; acionar Configurações e validar o
-  prompt de ID da planilha somente quando o valor ainda não estiver salvo localmente.
+- A aba **Configurações** permanece sempre visível na primeira linha do rodapé, mas o fluxo de acesso administrativo foi removido. O MiniApp continua servindo como área de configurações geral sem exigir ID externo.
+- Teste manual sugerido: autenticar com Google e confirmar redirecionamento para o stage Home; acionar Configurações apenas para validar navegação e tema, sem prompts de planilha.
 
 ## Estrutura Relevante
 ```
@@ -45,7 +43,7 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 A pasta `templates/` concentra HTMLs temporários usados como referência na criação de novos MiniApps. Os arquivos são processados pelo Codex e não fazem parte da PWA final.
 
 ### Componentes compartilhados
-- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto, mantém a aba **Configurações** sempre visível (o atributo `show-settings="false"` pode escondê-la quando necessário) e centraliza os alertas na segunda linha do rodapé.
+- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto, mantém a aba **Configurações** sempre visível (o atributo `show-settings="false"` pode escondê-la quando necessário) e centraliza os alertas na segunda linha do rodapé. O fluxo administrativo anterior foi desativado; o botão permanece para configurações gerais.
 - `<app-shared-header>` (em `docs/components/app-shared-header.js`) permanece disponível como componente **legado** para MiniApps que exigirem barra superior interna, mas não é mais renderizado pelo shell principal.
 
 ### Navegação via rodapé (RodaPack)
@@ -106,9 +104,9 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 - **Checklist de PR**: confirmar formatação consistente, ausência de dependências externas novas não aprovadas e execução dos testes automatizados relevantes.
 
 ## Processo de QA para quem executa os testes
-- **Guias rápidos**: os planos com termos de aceitação estão em `docs/qa/gestao-conta-auto-save.md` (gestão de conta) e `docs/qa/gestao-catalogo-auto-save.md` (gestão de catálogo). Cada arquivo detalha ambiente, comando e passos validados.
+- **Guias rápidos**: os planos com termos de aceitação estão em `docs/qa/gestao-conta-auto-save.md` (gestão de conta) e `docs/qa/gestao-catalogo-auto-save.md` (gestão de catálogo). O plano legado de acesso admin foi descontinuado.
 - **Organização das suítes**: todas as suítes Playwright residem em `tests/miniapps/<slug>/`, reutilizando os utilitários de `tests/helpers/` para subir o servidor estático.
-- **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente e apontam para os testes localizados dentro de cada MiniApp.
+- **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. O comando legado `npm run qa:admin-access` foi removido porque o acesso administrativo não existe mais no sistema.
 - **Registro obrigatório**: anexe a saída dos comandos ao PR/commit como evidência dos termos de aceitação. Caso um cenário falhe, corrija o fluxo e repita até todos os termos serem atendidos.
 - **Ajustes de dependência**: na primeira execução (ou após reinstalar o ambiente), rode `npm install`, `npx playwright install-deps chromium` e `npx playwright install chromium` para habilitar o navegador de teste.
 - **Histórico de execuções**: cada rodada de QA deve ser registrada em `docs/qa/runs/<AAAA-MM-DD>.md` com ambiente preparado, comandos disparados, resultado e observações de rede. Consulte `docs/qa/runs/2025-11-17.md` como referência inicial.

@@ -1,5 +1,7 @@
 # Como usar o endpoint de verificação administrativa
 
+> **Status**: fluxo legado descontinuado. O sistema não utiliza mais validação administrativa; mantenha este documento apenas como histórico de implementação.
+
 Este guia mostra como utilizar o endpoint Apps Script publicado em:
 
 ```
