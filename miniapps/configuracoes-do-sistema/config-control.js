@@ -1,26 +1,9 @@
-import { openDatabase, getByKey } from '../../js/indexeddb-store.js';
+import { getSavedSheetId } from '../../js/admin-access.js';
 
 const DEFAULT_ADMIN_VERIFY_URL = 'https://script.google.com/macros/s/AKfycbwcm49CbeSuT-f8r-RvzhntPz6RRVWz3l0sNv-e_mM4ADB_CQXRvsmyWSsdWGT8qCQ6jw/exec';
 const ADMIN_VERIFY_URL = typeof window !== 'undefined' && window.MINIAPP_ADMIN_VERIFY_URL
     ? window.MINIAPP_ADMIN_VERIFY_URL
     : DEFAULT_ADMIN_VERIFY_URL;
-const ADMIN_CONFIG_KEY = 'adm_sheet_config';
-
-async function getSavedSheetId() {
-    try {
-        await openDatabase();
-        const record = await getByKey('userSettings', ADMIN_CONFIG_KEY);
-        if (record?.value?.sheetId) {
-            return record.value.sheetId;
-        }
-        if (record?.sheetId) {
-            return record.sheetId;
-        }
-    } catch (error) {
-        console.error('Erro ao recuperar configuração admin salva.', error);
-    }
-    return null;
-}
 
 async function fetchCatalogHeader(sheetId) {
     const response = await fetch(ADMIN_VERIFY_URL, {

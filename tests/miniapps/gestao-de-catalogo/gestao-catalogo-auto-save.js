@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { chromium } = require('playwright');
 const path = require('path');
-const { startStaticServer } = require('../../../tests/helpers/server');
+const { startStaticServer } = require('../../helpers/server');
 
 const ROOT = path.resolve(__dirname, '../../..');
 

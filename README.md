@@ -7,15 +7,17 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 - **Dados**: `docs/miniapp-data.js` é a fonte única de verdade para todos os MiniApps. O carregamento é orquestrado por `js/miniapp-data-loader.js`, que tenta importar o módulo localmente, faz fallback automático para a cópia oficial hospedada no GitHub Raw (`https://raw.githubusercontent.com/5horas/miniapp/main/docs/miniapp-data.js`) e, em último caso, reutiliza o cache salvo no `localStorage`. É possível apontar o fallback para outro endpoint definindo `window.MINIAPP_DATA_REMOTE_URL` antes de carregar o módulo.
 - **Persistência local**: `js/indexeddb-store.js` centraliza acesso ao IndexedDB.
 - **Sincronização**: `js/googleSync.js` coordena fila offline, Google Sign-In e atualização dos indicadores de status.
+- **PWA**: manifestos vivem em `pwa/` e o `service-worker.js` na raiz continua responsável pelo precache e pelas rotas offline.
 
 ### Autenticação, redirecionamento e controles condicionais
 - `js/googleSync.js` passa a expor helpers como `miniappSync.getCurrentUserId()` e `miniappSync.isUserAuthenticated()`, além de
   publicar `window.currentUserId` sempre que o status é atualizado.
 - Quando o shell identifica uma sessão Google válida (usuário autenticado com `userId` disponível), ele alterna automaticamente
-  o stage para **Home** e exibe o botão de configurações do rodapé (`#footer-config-icon`).
-- Caso não haja sessão ativa, o catálogo permanece em destaque e o botão permanece oculto.
-- Teste manual sugerido: autenticar com Google e confirmar redirecionamento para o stage Home + botão visível; encerrar sessão e
-  validar que a aplicação permanece no catálogo e esconde o botão.
+  o stage para **Home** para dar prioridade aos blocos globais.
+- A aba **Configurações** permanece sempre visível na primeira linha do rodapé; ao ser acionada, solicita o ID da planilha se
+  ele ainda não estiver salvo no IndexedDB e abre o MiniApp de configurações.
+- Teste manual sugerido: autenticar com Google e confirmar redirecionamento para o stage Home; acionar Configurações e validar o
+  prompt de ID da planilha somente quando o valor ainda não estiver salvo localmente.
 
 ## Estrutura Relevante
 ```
@@ -28,17 +30,22 @@ Este repositório contém o catálogo principal do ecossistema MiniApp 5Horas. O
 │   ├── miniapp-card.js      # Template e listeners dos cards
 │   └── miniapp-card.css     # Estilos dos cards exibidos no grid
 ├── docs/design-system/      # Estrutura inicial para o futuro Design System
+├── pwa/                     # Manifestos do PWA centralizados
 ├── js/
 │   ├── googleSync.js        # Fila offline + integração com Google
 │   └── indexeddb-store.js   # Acesso ao IndexedDB e helpers
+├── tests/
+│   ├── helpers/             # Servidor estático e utilidades de teste
+│   └── miniapps/            # Suítes Playwright segmentadas por MiniApp
 ├── templates/               # Modelos temporários para novos MiniApps
+├── miniapps/                # MiniApps homologados ou em desenvolvimento
 └── index.html               # Shell principal do catálogo
 ```
 
 A pasta `templates/` concentra HTMLs temporários usados como referência na criação de novos MiniApps. Os arquivos são processados pelo Codex e não fazem parte da PWA final.
 
 ### Componentes compartilhados
-- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto e deve ser mantido em todos os MiniApps. A aba **Configurações** está oculta por padrão; para exibi-la, defina `show-settings="true"` no componente.
+- `<app-shared-footer>` é definido em `docs/components/app-shared-footer.js` e passa a ser o **controle principal do stage**. Ele inicia em modo compacto, mantém a aba **Configurações** sempre visível (o atributo `show-settings="false"` pode escondê-la quando necessário) e centraliza os alertas na segunda linha do rodapé.
 - `<app-shared-header>` (em `docs/components/app-shared-header.js`) permanece disponível como componente **legado** para MiniApps que exigirem barra superior interna, mas não é mais renderizado pelo shell principal.
 
 ### Navegação via rodapé (RodaPack)
@@ -84,9 +91,23 @@ Mesmo utilizando o fluxo guiado, o commit final sempre envolve atualizar o arqui
 - Observe o guia do agente (`AGENTE.md`) para decisões sobre fluxo, segurança e documentação.
 - Sempre prefira soluções gratuitas e escaláveis, alinhadas ao objetivo zero custo do ecossistema.
 
+## Rotina de limpeza do repositório
+- **Mapeie referências antes de remover**: use `rg` para confirmar se um arquivo, função ou constante ainda é importado. Itens sem uso devem ser apagados junto com os imports associados.
+- **Higienize artefatos antigos do PWA**: manifeste, ícones e listas de precache ficam em `pwa/` e `service-worker.js`. Ao remover ou renomear ativos, atualize o precache e valide caminhos absolutos.
+- **Excluir páginas ou MiniApps descontinuados**: remova o diretório do MiniApp, a entrada correspondente no `docs/miniapp-data.js` e quaisquer imagens exclusivas da pasta `assets/`.
+- **Limpeza de templates**: arquivos processados em `templates/miniapps-inbox/` devem ser movidos para `templates/miniapps-archive/` ou excluídos após a publicação.
+- **Revisar testes órfãos**: suítes em `tests/miniapps/` que apontarem para rotas removidas devem ser apagadas ou atualizadas para o fluxo vigente.
+
+## Protocolo de manutenção e organização
+- **Documentar cada mudança estrutural**: ajustes em pastas (ex.: mover manifestos para `pwa/` ou realocar testes) exigem atualização deste `README.md` e do `CHANGELOG.md`.
+- **Seguir mobile-first e design system**: novos estilos devem reutilizar tokens já definidos em `docs/miniapp-global.css` e evoluir o design system dentro de `docs/design-system/` quando necessário.
+- **Centralizar alertas**: mensagens devem ser disparadas via evento `app:notify` para ocupar a linha de alertas do rodapé, garantindo consistência visual.
+- **Organização de testes**: manter as suítes Playwright em `tests/miniapps/<slug>/`, com utilidades compartilhadas em `tests/helpers/`. Scripts `npm run qa:*` devem continuar refletindo essa estrutura.
+- **Checklist de PR**: confirmar formatação consistente, ausência de dependências externas novas não aprovadas e execução dos testes automatizados relevantes.
+
 ## Processo de QA para quem executa os testes
 - **Guias rápidos**: os planos com termos de aceitação estão em `docs/qa/gestao-conta-auto-save.md` (gestão de conta) e `docs/qa/gestao-catalogo-auto-save.md` (gestão de catálogo). Cada arquivo detalha ambiente, comando e passos validados.
-- **Organização das suítes**: testes globais da PWA ficam centralizados em `tests/` (junto aos utilitários compartilhados), enquanto os testes funcionais de cada MiniApp residem em `miniapps/<slug>/tests/` (ex.: `miniapps/gestao-de-conta-do-usuario/tests/gestao-conta-auto-save.js`).
+- **Organização das suítes**: todas as suítes Playwright residem em `tests/miniapps/<slug>/`, reutilizando os utilitários de `tests/helpers/` para subir o servidor estático.
 - **Comandos únicos**: use `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para rodar todas as suítes Playwright. Os scripts já sobem o servidor estático local automaticamente e apontam para os testes localizados dentro de cada MiniApp.
 - **Registro obrigatório**: anexe a saída dos comandos ao PR/commit como evidência dos termos de aceitação. Caso um cenário falhe, corrija o fluxo e repita até todos os termos serem atendidos.
 - **Ajustes de dependência**: na primeira execução (ou após reinstalar o ambiente), rode `npm install`, `npx playwright install-deps chromium` e `npx playwright install chromium` para habilitar o navegador de teste.

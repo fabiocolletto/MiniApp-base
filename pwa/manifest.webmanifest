@@ -2,19 +2,19 @@
   "name": "MiniApp Base",
   "short_name": "MiniApp",
   "description": "Catálogo de MiniApps com suporte offline e sincronização Google.",
-  "start_url": "./index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#1f2937",
   "theme_color": "#ef4444",
   "icons": [
     {
-      "src": "./assets/icons/icon-192.svg",
+      "src": "/assets/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./assets/icons/icon-512.svg",
+      "src": "/assets/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"

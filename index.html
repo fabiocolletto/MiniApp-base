@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="./docs/miniapp-card.css">
     <script type="module" src="./docs/components/app-shared-footer.js"></script>
     
-    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="manifest" href="./pwa/manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
 </head>
 <body class="body-with-fixed-footer" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
@@ -105,6 +105,7 @@
             getUserSetting
         } from './js/googleSync.js';
         import { openDatabase } from './js/indexeddb-store.js';
+        import { ensureAdminSheetId } from './js/admin-access.js';
 
         const NAV_STAGE_DEFINITIONS = {
             home: {
@@ -145,7 +146,6 @@
         };
 
         let deferredPrompt;
-        let messageTimeout;
         let searchPersistTimeout;
         let filterPersistTimeout;
         const IOS_INSTALL_INTENT_KEY = 'iosInstallIntent';
@@ -407,11 +407,6 @@
             toggleStageVisibility({ showCatalog: false });
         }
 
-        document.addEventListener('admin:open-control-panel', () => {
-            setActiveStage('settings');
-            openAdminPanelMiniApp();
-        });
-
         initializeFooterPreferences();
 
         if (footerComponent) {
@@ -422,12 +417,25 @@
                 });
             });
 
-            footerComponent.addEventListener('footer:navigate', (event) => {
+            footerComponent.addEventListener('footer:navigate', async (event) => {
                 if (!event.detail?.key) {
                     return;
                 }
                 event.preventDefault();
-                setActiveStage(event.detail.key);
+
+                const key = event.detail.key;
+                if (key === 'settings') {
+                    setActiveStage(key);
+                    const sheetId = await ensureAdminSheetId({ promptIfMissing: true });
+                    if (!sheetId) {
+                        showMessage('Informe o ID da planilha para acessar Configurações.', true);
+                        return;
+                    }
+                    openAdminPanelMiniApp();
+                    return;
+                }
+
+                setActiveStage(key);
             });
         }
 
@@ -435,26 +443,11 @@
         setActiveStage(activeStageKey);
 
         function showMessage(text, isError = false) {
-            const messageContainer = getFooterElement('messageContainer');
-            const footerAlertRow = getFooterElement('footerAlertRow');
-            if (!messageContainer) {
-                return;
+            if (footerComponent && typeof footerComponent.showFooterMessage === 'function') {
+                footerComponent.showFooterMessage(text, isError);
             }
-
-            if (messageTimeout) {
-                clearTimeout(messageTimeout);
-            }
-
-            messageContainer.textContent = text;
-            messageContainer.classList.remove('hidden', 'message-success', 'message-error');
-            messageContainer.classList.add(isError ? 'message-error' : 'message-success');
-            footerAlertRow?.classList.remove('hidden');
-
-            messageTimeout = setTimeout(() => {
-                messageContainer.classList.add('hidden');
-                footerAlertRow?.classList.add('hidden');
-            }, 5000);
         }
+
 
         function isIosDevice() {
             if (typeof navigator === 'undefined' || typeof navigator.userAgent !== 'string') {
@@ -838,7 +831,6 @@
             const googleSignInButton = getFooterElement('googleSignInButton');
             const googleSignOutButton = getFooterElement('googleSignOutButton');
             const manualSyncButton = getFooterElement('manualSyncButton');
-            const adminConfigIcon = document.getElementById('footer-config-icon');
             const hasAuthenticatedSession = Boolean(status.authenticated && status.userId);
             const requiresAuth = Boolean(status.needsAuth);
 
@@ -876,12 +868,6 @@
                 manualSyncButton.disabled =
                     status.syncState === 'syncing' || !status.online || (requiresAuth && !hasAuthenticatedSession);
                 manualSyncButton.classList.toggle('hidden', !hasAuthenticatedSession);
-            }
-
-            if (adminConfigIcon) {
-                adminConfigIcon.classList.remove('hidden');
-                adminConfigIcon.setAttribute('aria-hidden', 'false');
-                adminConfigIcon.tabIndex = 0;
             }
 
             if (status.syncState === 'error') {
@@ -1079,7 +1065,6 @@
         setupIosInstallPrompt();
 
     </script>
-    <script type="module" src="./js/admin-access.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="window.handleGapiLoad && window.handleGapiLoad()"></script>
 </body>
 </html>

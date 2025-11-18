@@ -10,27 +10,35 @@ const DEFAULT_ACTIVE_TAB = "catalog";
 const DEFAULT_STATE = "expanded";
 
 class AppSharedFooter extends HTMLElement {
+  constructor() {
+    super();
+    this.messageTimeout = null;
+    this.handleGlobalAlert = this.handleGlobalAlert.bind(this);
+  }
+
   static get observedAttributes() {
     return ["active-tab", "variant", "state", "show-settings"];
   }
 
   connectedCallback() {
     this.render();
+    window.addEventListener("app:notify", this.handleGlobalAlert);
   }
 
   attributeChangedCallback() {
     this.render();
   }
 
+  disconnectedCallback() {
+    window.removeEventListener("app:notify", this.handleGlobalAlert);
+  }
+
   get showSettingsTab() {
-    const attributeValue = (this.getAttribute("show-settings") || "").toLowerCase();
-    if (attributeValue === "true") {
-      return true;
-    }
+    const attributeValue = (this.getAttribute("show-settings") || "true").toLowerCase();
     if (attributeValue === "false") {
       return false;
     }
-    return false;
+    return true;
   }
 
   get visibleNavItems() {
@@ -106,7 +114,7 @@ class AppSharedFooter extends HTMLElement {
       ${navLinks}
       <button
         id="footerToggleButton"
-        class="footer-toggle-nav-item flex flex-col items-center transition duration-150"
+        class="nav-link footer-toggle-nav-item flex flex-col items-center transition duration-150"
         type="button"
         aria-expanded="${ariaExpanded}"
         aria-controls="footerDetails"
@@ -200,6 +208,37 @@ class AppSharedFooter extends HTMLElement {
     });
   }
 
+  handleGlobalAlert(event) {
+    const message = event.detail?.message;
+    const isError = Boolean(event.detail?.isError);
+    if (message) {
+      this.showFooterMessage(message, isError);
+    }
+  }
+
+  showFooterMessage(message, isError = false) {
+    const messageContainer = this.querySelector("#messageContainer");
+    const footerAlertRow = this.querySelector("#footerAlertRow");
+
+    if (!messageContainer || !footerAlertRow) {
+      return;
+    }
+
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
+    }
+
+    messageContainer.textContent = message;
+    messageContainer.classList.remove("hidden", "message-success", "message-error");
+    messageContainer.classList.add(isError ? "message-error" : "message-success");
+    footerAlertRow.classList.remove("hidden");
+
+    this.messageTimeout = setTimeout(() => {
+      messageContainer.classList.add("hidden");
+      footerAlertRow.classList.add("hidden");
+    }, 5000);
+  }
+
   renderCollapsedMeta() {
     return "";
   }
@@ -213,25 +252,13 @@ class AppSharedFooter extends HTMLElement {
 
     return `
       <div id="footerDetails" class="footer-details w-full mt-3">
-          <div class="footer-meta-bottom flex items-center justify-between text-xs muted-text mt-2 px-1">
+          <div class="footer-meta-bottom flex items-center justify-center text-xs muted-text mt-2 px-1">
               <div class="status-indicators-group flex items-center space-x-4">
                   <div class="flex items-center space-x-2">
                       <span id="connectionDot" class="status-dot status-offline inline-block"></span>
                       <span id="connectionLabel">Offline</span>
                   </div>
                   <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
-              </div>
-                  <div class="footer-actions flex items-center space-x-2">
-                  <button
-                    id="footer-config-icon"
-                    class="icon-button p-2 rounded-full transition duration-150"
-                    type="button"
-                    aria-label="Abrir painel de controles do admin"
-                    aria-hidden="false"
-                    tabindex="0"
-                  >
-                    <span class="material-icons-sharp text-2xl" aria-hidden="true">settings</span>
-                  </button>
               </div>
           </div>
 
@@ -249,6 +276,10 @@ class AppSharedFooter extends HTMLElement {
   }
 
   render() {
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
+      this.messageTimeout = null;
+    }
     const isCompact = this.variant === "compact";
     const footerState = isCompact ? "collapsed" : this.footerState;
     const navLinks = this.renderNavLinks({ isCompact });
