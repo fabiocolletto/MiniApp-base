@@ -178,6 +178,45 @@
             background-color: var(--color-shell-bg);
         }
 
+        .inline-profile-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 1.25rem;
+            padding: 1rem;
+            background-color: var(--color-shell-bg);
+        }
+
+        .inline-field {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .inline-field label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-text-secondary);
+            font-weight: 700;
+        }
+
+        .inline-input {
+            width: 100%;
+            border-radius: 0.9rem;
+            border: 1px solid var(--color-border);
+            padding: 0.85rem 1rem;
+            font-weight: 600;
+            background-color: var(--color-card-bg);
+            color: var(--color-text-primary);
+        }
+
+        .inline-hint {
+            margin: 0;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
         .setting-row {
             display: flex;
             gap: 1rem;
@@ -362,6 +401,21 @@
             padding: 1rem;
             text-align: center;
             color: var(--color-text-secondary);
+        }
+
+        .footer-note {
+            margin: 0.35rem 0 0;
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .footer-note[data-state="syncing"] {
+            color: var(--color-text-primary);
+        }
+
+        .footer-note[data-state="synced"] {
+            color: #15803d;
         }
 
         .badge {
@@ -557,6 +611,33 @@
 
     <section class="miniapp-panel">
         <div class="section-heading">
+            <h2>Dados do Usuário</h2>
+            <p>Edite os campos direto no card; salvamos automaticamente para você.</p>
+        </div>
+
+        <form id="inlineProfileForm" class="inline-profile-card" autocomplete="on">
+            <div class="inline-field">
+                <label for="inlineName">Nome completo</label>
+                <input id="inlineName" class="inline-input" type="text" name="inlineName" data-inline-field="name" placeholder="Ex.: Maria Fernanda" />
+                <p class="inline-hint">Salvamento automático ao digitar.</p>
+            </div>
+
+            <div class="inline-field">
+                <label for="inlineEmail">Email principal</label>
+                <input id="inlineEmail" class="inline-input" type="email" name="inlineEmail" data-inline-field="email" placeholder="email@dominio.com" inputmode="email" />
+                <p class="inline-hint">Usado para login e alertas críticos.</p>
+            </div>
+
+            <div class="inline-field">
+                <label for="inlinePhone">Telefone</label>
+                <input id="inlinePhone" class="inline-input" type="tel" name="inlinePhone" data-inline-field="phone" placeholder="(11) 99999-0000" inputmode="tel" />
+                <p class="inline-hint">Atualize para validação em dois fatores.</p>
+            </div>
+        </form>
+    </section>
+
+    <section class="miniapp-panel">
+        <div class="section-heading">
             <h2>Preferências do MiniApp</h2>
             <p>Configure tema, favoritos e notificações que impactam somente você.</p>
         </div>
@@ -604,6 +685,7 @@
             <span id="syncStatusSpinner" class="sync-spinner"></span>
             <span id="syncStatusMessage">Sincronização iniciada...</span>
         </div>
+        <p id="inlineSaveFeedback" class="footer-note" data-state="idle">Edição rápida salva automaticamente.</p>
     </footer>
             </div>
         </main>
@@ -896,6 +978,13 @@
         const syncStatusDisplay = document.getElementById('syncStatusDisplay');
         const syncStatusMessage = document.getElementById('syncStatusMessage');
         const syncStatusSpinner = document.getElementById('syncStatusSpinner');
+        const inlineProfileForm = document.getElementById('inlineProfileForm');
+        const inlineFieldElements = {
+            name: document.querySelector('[data-inline-field="name"]'),
+            email: document.querySelector('[data-inline-field="email"]'),
+            phone: document.querySelector('[data-inline-field="phone"]')
+        };
+        const inlineSaveFeedback = document.getElementById('inlineSaveFeedback');
 
         const PREFERENCE_STORAGE_KEY = 'miniapp:minha-conta:preferences';
         const FAVORITES_STORE_NAME = 'favorites';
@@ -904,9 +993,18 @@
         let syncStatusTimeout = null; // Timeout para ocultar a mensagem
         let userPreferences = {};
         let realFavorites = new Set();
+        let inlineSaveTimeout = null;
+        const inlineDebouncedHandlers = {};
 
         // Variável global para armazenar o perfil ativo
         let activeProfile = accountProfiles[0];
+
+        const inlineFieldLabels = {
+            name: 'Nome completo',
+            email: 'Email principal',
+            phone: 'Telefone'
+        };
+        const inlineSaveDefaultMessage = 'Edição rápida salva automaticamente.';
 
         // Funções utilitárias
         const debounce = (fn, delay = 400) => {
@@ -976,6 +1074,35 @@
             updateField('favoritesDetail', `${count} miniapps favoritos priorizados.`);
         };
 
+        const applyInlineProfileData = (profile) => {
+            if (!profile) return;
+
+            Object.entries(inlineFieldElements).forEach(([field, input]) => {
+                if (input) {
+                    input.value = profile[field] || '';
+                }
+            });
+        };
+
+        const setInlineSaveState = (message, state = 'idle') => {
+            if (!inlineSaveFeedback) return;
+
+            inlineSaveFeedback.textContent = message || inlineSaveDefaultMessage;
+            inlineSaveFeedback.setAttribute('data-state', state);
+
+            if (inlineSaveTimeout) {
+                clearTimeout(inlineSaveTimeout);
+                inlineSaveTimeout = null;
+            }
+
+            if (state === 'synced') {
+                inlineSaveTimeout = setTimeout(() => {
+                    inlineSaveFeedback.textContent = inlineSaveDefaultMessage;
+                    inlineSaveFeedback.setAttribute('data-state', 'idle');
+                }, 4000);
+            }
+        };
+
         const setToggleState = (toggle, isActive) => {
             if (!toggle) return;
             toggle.setAttribute('data-active', isActive ? 'true' : 'false');
@@ -993,6 +1120,47 @@
                 }
             };
             await persistPreferences(userPreferences);
+        };
+
+        const saveInlineProfileField = async (field, value) => {
+            if (!activeProfile || !field) return;
+
+            try {
+                const profileIndex = accountProfiles.findIndex((p) => p.id === activeProfile.id);
+                if (profileIndex !== -1) {
+                    accountProfiles[profileIndex] = { ...accountProfiles[profileIndex], [field]: value };
+                    activeProfile = accountProfiles[profileIndex];
+                }
+
+                const existingProfile = getAccountPreferences(activeProfile.id).profile || {};
+                const nextProfile = { ...existingProfile, [field]: value };
+
+                await persistAccountPreferences(activeProfile.id, { profile: nextProfile });
+                await queuePreferenceSync(activeProfile.id, 'profile-inline-update', { field, value });
+                updateAccount(activeProfile.id);
+
+                const label = inlineFieldLabels[field] || 'Campo';
+                setInlineSaveState(`${label} salvo automaticamente às ${new Date().toLocaleTimeString('pt-BR')}.`, 'synced');
+            } catch (error) {
+                console.warn('Não foi possível salvar as informações do usuário.', error);
+            }
+        };
+
+        const attachInlineFormListeners = () => {
+            if (!inlineProfileForm) return;
+
+            Object.entries(inlineFieldElements).forEach(([field, input]) => {
+                if (!input) return;
+
+                inlineDebouncedHandlers[field] = debounce((value) => {
+                    saveInlineProfileField(field, value);
+                }, 500);
+
+                input.addEventListener('input', (event) => {
+                    setInlineSaveState('Salvando alterações...', 'syncing');
+                    inlineDebouncedHandlers[field](event.target.value.trim());
+                });
+            });
         };
 
         const hydrateProfilesFromPreferences = () => {
@@ -1084,6 +1252,8 @@
             updateField('sessionLabel', data.sessionLabel);
             updateField('notificationDetail', data.notificationDetail);
             updateField('syncNote', data.syncNote);
+            applyInlineProfileData(data);
+            setInlineSaveState(inlineSaveDefaultMessage, 'idle');
 
             applyNotificationPreferences(accountId);
             const appliedFavorites = applyFavoritePreferences(accountId);
@@ -1457,6 +1627,8 @@
                     debouncedFavoritesSave();
                 });
             });
+
+            attachInlineFormListeners();
         };
 
         // Função genérica de manipulação de submissão do formulário de perfil
