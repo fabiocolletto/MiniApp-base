@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Alertas</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <script type="module" src="../../docs/components/app-shared-footer.js"></script>
+    <meta name="theme-color" content="#f3f4f6">
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--color-body-bg);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .miniapp-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100vh;
+        }
+
+        .miniapp-panel {
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
+            padding: clamp(1.25rem, 3vw, 2rem);
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .panel-heading .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+        }
+
+        .panel-heading h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 4vw, 1.85rem);
+        }
+
+        .panel-heading p {
+            margin: 0;
+            max-width: 70ch;
+        }
+
+        .placeholder-card {
+            border: 1px solid var(--color-border-strong);
+            border-radius: 1rem;
+            background-color: var(--color-card-bg);
+            padding: clamp(1.25rem, 3vw, 1.75rem);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .placeholder-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(249, 115, 22, 0.24));
+            color: var(--color-warning);
+        }
+
+        .placeholder-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .placeholder-copy h2 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .placeholder-copy p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <main class="miniapp-container">
+        <section class="miniapp-panel" aria-labelledby="miniapp-title">
+            <header class="panel-heading">
+                <p class="eyebrow">Alertas</p>
+                <h1 id="miniapp-title">Central de Alertas</h1>
+                <p>Status: em criação. Este painel vai consolidar notificações transversais, banners de risco e comunicados críticos.</p>
+            </header>
+
+            <div class="placeholder-card" role="status" aria-live="polite">
+                <span class="placeholder-icon" aria-hidden="true">
+                    <span class="material-icons-sharp">notifications</span>
+                </span>
+                <div class="placeholder-copy">
+                    <h2>MiniApp em criação</h2>
+                    <p>Estamos preparando a Central de Alertas. Assim que os fluxos forem aprovados, eles aparecerão aqui automaticamente.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <app-shared-footer active-tab="alerts"></app-shared-footer>
+</body>
+</html>
