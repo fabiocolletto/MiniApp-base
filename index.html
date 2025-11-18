@@ -62,7 +62,8 @@
                 title: 'MiniApp Home',
                 description: 'MiniApp Home carregado via Iframe.',
                 icon: 'home',
-                sourceId: null,
+                sourceId: 'home',
+                isCore: true,
                 launchUrl: 'about:blank'
             },
             alerts: {
@@ -70,28 +71,32 @@
                 title: 'Notificações',
                 description: 'Painel de alertas e avisos.',
                 icon: 'notifications',
-                sourceId: null
+                sourceId: 'alerts',
+                isCore: true
             },
             catalog: {
                 key: 'catalog',
                 title: 'Catálogo (Placeholder)',
                 description: 'Painel do catálogo sem carregamento de dados.',
                 icon: 'grid_view',
-                sourceId: null
+                sourceId: 'catalog',
+                isCore: true
             },
             settings: {
                 key: 'settings',
                 title: 'Configurações',
                 description: 'Painel de ajustes do usuário.',
                 icon: 'settings',
-                sourceId: null
+                sourceId: 'settings',
+                isCore: true
             },
             account: {
                 key: 'account',
                 title: 'Conta do Usuário',
                 description: 'Painel externo carregado via Iframe.',
                 icon: 'person',
-                sourceId: 'gestao-de-conta-do-usuario',
+                sourceId: 'account',
+                isCore: true,
                 launchUrl: 'about:blank'
             }
         };

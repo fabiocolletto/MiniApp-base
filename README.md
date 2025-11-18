@@ -3,7 +3,7 @@
 O repositório foi higienizado para manter apenas o que é necessário para os cinco MiniApps em criação, o header legado e o footer principal. O shell continua sendo uma PWA estática com HTML, CSS e módulos ES simples.
 
 ## Itens preservados
-- **5 MiniApps em criação**: `home`, `alertas`, `gestao-de-catalogo`, `gestao-de-conta-do-usuario` e `configuracoes-do-sistema`, todos apenas com aviso de desenvolvimento.
+- **5 MiniApps base (obrigatórios)**: `home`, `alerts`, `catalog`, `settings` e `account`, todos apenas com aviso de desenvolvimento. Os nomes das pastas acompanham os ícones do rodapé para manter rastreabilidade direta.
 - **Footer oficial** (`docs/components/app-shared-footer.js`), responsável por controlar o stage do shell.
 - **Header legado** (`docs/components/app-shared-header.js`) para MiniApps que precisarem de barra superior interna.
 - **Shell do catálogo** (`index.html`), com cartões renderizados por `docs/miniapp-card.js` e estilos em `docs/miniapp-global.css` e `docs/miniapp-card.css`.
@@ -29,7 +29,7 @@ O repositório foi higienizado para manter apenas o que é necessário para os c
 ```
 
 ## Status dos MiniApps
-Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado.
+Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e poderão ser personalizados individualmente apenas dentro de suas respectivas pastas.
 
 ## Desenvolvimento local
 Nenhuma dependência Node é necessária além do precache do service worker. Use qualquer servidor HTTP simples (ex.: `python -m http.server`) para navegar pelo shell e verificar os placeholders.
