@@ -3,1116 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo MiniApp 5Horas</title>
-    
-    <!-- Biblioteca utilitária de design responsivo -->
+    <title>MiniApp - Somente Navegação</title>
     <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
-    <!-- Google Material Icons (Sharp Style for Solid Look) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
-
-    <link rel="stylesheet" href="./docs/miniapp-global.css">
-    <link rel="stylesheet" href="./docs/miniapp-card.css">
-    <!-- Carrega o Tailwind por último para priorizar as utilidades sobre o CSS local -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-global.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-card.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="./docs/components/app-shared-header.js"></script>
-    <script type="module" src="./docs/components/app-shared-footer.js"></script>
-    
+    <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-header.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-footer.js"></script>
     <link rel="manifest" href="./pwa/manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
+    <style>
+        .hidden {
+            display: none !important;
+        }
+        app-shared-footer .icon-button:hover,
+        app-shared-footer .icon-button:focus-visible {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+    </style>
 </head>
 <body class="body-with-fixed-footer" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
-
     <div class="app-shell">
-
         <main class="app-main app-stage">
             <section id="homeStage" class="stage-panel">
                 <app-shared-header id="homeHeader" title="MiniApp 5Horas" icon="flash_on" hide-search></app-shared-header>
                 <div class="u-flex u-direction-column u-align-center u-justify-center u-gap-md u-text-center u-padding-xl"
                     style="min-height: min(70vh, 600px);">
                     <div class="u-flex u-direction-column u-gap-2xs">
-                        <p class="u-text-sm muted-text">Seja bem-vindo(a)</p>
-                        <h1 class="u-text-2xl u-font-extrabold">MiniApp 5Horas</h1>
+                        <p class="u-text-sm muted-text">Aplicação de Base</p>
+                        <h1 class="u-text-2xl u-font-extrabold">Navegação Ativa</h1>
                     </div>
                     <p id="welcomeMessage" class="u-text-base muted-text" style="max-width: 320px;">
-                        Conecte-se com sua conta Google pelo rodapé para personalizar a experiência.
+                        Este código contém apenas as funções de navegação entre os ícones do rodapé.
                     </p>
                 </div>
             </section>
-
-            <section id="catalogStage" class="stage-panel hidden">
-                <div class="u-flex u-align-center u-justify-between u-gap-md u-mb-md u-wrap">
-                    <h2 class="u-text-xl u-font-semibold u-text-accent">Catálogo de MiniApps</h2>
-                    <div class="u-flex u-align-center u-gap-sm u-wrap">
-                        <button id="searchToggleButton" class="icon-button u-padding-xs u-rounded-full u-transition" aria-label="Ativar campo de busca" aria-pressed="false">
-                            <span class="material-icons-sharp u-text-xl" aria-hidden="true">search</span>
-                        </button>
-                        <button id="filterToggleButton" class="icon-button u-padding-xs u-rounded-full u-transition hidden" aria-label="Ativar filtros do catálogo" aria-pressed="false">
-                            <span class="material-icons-sharp u-text-xl" aria-hidden="true">tune</span>
-                        </button>
-                        <button id="installButton" class="button-primary u-text-sm u-padding-sm u-rounded-full u-shadow-sm hidden">Instalar</button>
-                    </div>
-                </div>
-
-                <div id="searchContainer" class="u-relative u-mb-lg hidden">
-                    <input type="text" id="searchInput" placeholder="Pesquisar MiniApps..." aria-label="Buscar MiniApps" class="themed-input u-w-full u-padding-md u-padding-left-xl u-rounded-lg u-transition u-shadow-sm">
-                    <span class="material-icons-sharp icon-muted u-text-base" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">search</span>
-                </div>
-
-                <div id="filterContainer" class="u-relative u-mb-lg hidden">
-                    <div class="u-flex u-align-center u-gap-sm">
-                        <span class="material-icons-sharp icon-muted u-text-base" aria-hidden="true">tune</span>
-                        <select id="filterSelect" aria-label="Filtrar MiniApps por categoria" class="themed-input u-w-full u-padding-md u-rounded-lg u-transition u-shadow-sm">
-                            <option value="all">Todas as categorias</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="miniappGrid" class="responsive-panel-grid u-grid-responsive"></div>
-            </section>
-
             <section id="placeholderStage" class="stage-panel hidden">
                 <div class="placeholder-card">
                     <div class="placeholder-icon" aria-hidden="true">
                         <span class="material-icons-sharp" id="placeholderIcon">hub</span>
                     </div>
                     <div class="placeholder-content">
-                        <p class="placeholder-label">Stage</p>
-                        <h2 class="placeholder-title" id="placeholderTitle">MiniApp em desenvolvimento</h2>
-                        <p class="placeholder-description" id="placeholderDescription">Catálogo em criação</p>
+                        <p class="placeholder-label">Etapa</p>
+                        <h2 class="placeholder-title" id="placeholderTitle">Título da Etapa</h2>
+                        <p class="placeholder-description" id="placeholderDescription">Descrição da Etapa</p>
                     </div>
                 </div>
             </section>
         </main>
-
         <app-shared-footer id="globalFooter" active-tab="home" variant="full" state="collapsed"></app-shared-footer>
-
     </div>
-
-    <div id="productModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="u-flex u-justify-between u-align-center u-mb-md">
-                <h3 id="modalTitle" class="u-text-xl u-font-bold u-text-accent"></h3>
-                <button id="closeModal" class="icon-button u-transition">
-                    <!-- ÍCONE FECHAR - Material Icons: close -->
-                    <span class="material-icons-sharp u-text-xl">close</span>
-                </button>
-            </div>
-            <img id="modalImage" src="./assets/icons/icon-192.svg" alt="Imagem do Produto" class="u-w-full u-rounded-lg u-mb-md u-object-cover u-aspect-video">
-            <p id="modalDescription" class="muted-text u-mb-md"></p>
-            <p id="modalPrice" class="u-text-xl u-font-bold accent-text u-mb-lg"></p>
-            <button id="addToCartButton" class="button-primary u-text-lg u-font-semibold u-padding-sm u-rounded-full u-transition">
-                Adicionar ao Carrinho
-            </button>
-        </div>
-    </div>
-
     <script type="module">
-        import { loadMiniAppData } from './js/miniapp-data-loader.js';
-        import { renderMiniApps } from './docs/miniapp-card.js';
-        import {
-            registerStatusListener,
-            queueForSync,
-            syncPendingChanges,
-            signInWithGoogle,
-            signOutFromGoogle,
-            saveUserSetting,
-            getUserSetting
-        } from './js/googleSync.js';
-        import { openDatabase } from './js/indexeddb-store.js';
-
         const NAV_STAGE_DEFINITIONS = {
             home: {
                 key: 'home',
-                title: 'MiniApp em desenvolvimento',
-                description: 'MiniApp em desenvolvimento',
+                title: 'MiniApp Home',
+                description: 'MiniApp Home carregado via Iframe.',
                 icon: 'home',
-                sourceId: null
+                sourceId: null,
+                launchUrl: 'about:blank'
             },
             alerts: {
                 key: 'alerts',
-                title: 'MiniApp em desenvolvimento',
-                description: 'MiniApp em desenvolvimento',
+                title: 'Notificações',
+                description: 'Painel de alertas e avisos.',
                 icon: 'notifications',
                 sourceId: null
             },
             catalog: {
                 key: 'catalog',
-                title: 'MiniApp em desenvolvimento',
-                description: 'Catálogo em criação',
+                title: 'Catálogo (Placeholder)',
+                description: 'Painel do catálogo sem carregamento de dados.',
                 icon: 'grid_view',
                 sourceId: null
             },
             settings: {
                 key: 'settings',
-                title: 'MiniApp em desenvolvimento',
-                description: 'MiniApp em desenvolvimento',
+                title: 'Configurações',
+                description: 'Painel de ajustes do usuário.',
                 icon: 'settings',
                 sourceId: null
             },
             account: {
                 key: 'account',
-                title: 'Gestão de Conta do Usuário',
-                description: 'Visualize e edite seus dados pessoais no painel dedicado.',
+                title: 'Conta do Usuário',
+                description: 'Painel externo carregado via Iframe.',
                 icon: 'person',
                 sourceId: 'gestao-de-conta-do-usuario',
-                launchUrl: './miniapps/gestao-de-conta-do-usuario/index.html'
+                launchUrl: 'about:blank'
             }
         };
-
-        let deferredPrompt;
-        let searchPersistTimeout;
-        let filterPersistTimeout;
-        const IOS_INSTALL_INTENT_KEY = 'iosInstallIntent';
-        const catalogControlState = {
-            enableSearch: true,
-            enableFilter: false
-        };
-        let hasRedirectedToHome = false;
-
         const footerComponent = document.getElementById('globalFooter');
         const homeStage = document.getElementById('homeStage');
-        const catalogStage = document.getElementById('catalogStage');
         const placeholderStage = document.getElementById('placeholderStage');
         const placeholderTitle = document.getElementById('placeholderTitle');
         const placeholderDescription = document.getElementById('placeholderDescription');
         const placeholderIcon = document.getElementById('placeholderIcon');
-        const welcomeMessage = document.getElementById('welcomeMessage');
-        const installButton = document.getElementById('installButton');
-        const searchToggleButton = document.getElementById('searchToggleButton');
-        const filterToggleButton = document.getElementById('filterToggleButton');
-        const searchContainer = document.getElementById('searchContainer');
-        const filterContainer = document.getElementById('filterContainer');
-        const miniappGrid = document.getElementById('miniappGrid');
-        const searchInput = document.getElementById('searchInput');
-        const filterSelect = document.getElementById('filterSelect');
-
-        const productModal = document.getElementById('productModal');
-        const closeModalButton = document.getElementById('closeModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalImage = document.getElementById('modalImage');
-        const modalDescription = document.getElementById('modalDescription');
-        const modalPrice = document.getElementById('modalPrice');
-        const addToCartButton = document.getElementById('addToCartButton');
-        let currentMiniApp = null;
-        let miniAppsData = [];
-        let dataLoadError = null;
-        let pendingSearchTerm = '';
-        let activeCategoryFilter = 'all';
-
+        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'home';
         if (footerComponent && !footerComponent.getAttribute('active-tab')) {
             footerComponent.setAttribute('active-tab', 'home');
         }
-        const miniAppsDataPromise = loadMiniAppData()
-            .then((data) => {
-                miniAppsData = Array.isArray(data) ? data : [];
-                hydrateNavigationStages(miniAppsData);
-                return miniAppsData;
-            })
-            .catch((error) => {
-                dataLoadError = error;
-                miniAppsData = [];
-                throw error;
-            });
-
-        const rootElement = document.documentElement;
-        const themeMetaTag = document.querySelector('meta[name="theme-color"]');
-        const prefersDarkQuery = typeof window.matchMedia === 'function'
-            ? window.matchMedia('(prefers-color-scheme: dark)')
-            : { matches: false };
-        let userThemePreference = null;
-        const FOOTER_STATE_KEY = 'footerState';
-        const DEFAULT_FOOTER_STATE = 'collapsed';
-
-        function isCatalogReady() {
-            return Array.isArray(miniAppsData) && miniAppsData.length > 0;
-        }
-
-        function updateMetaThemeColor() {
-            if (!themeMetaTag) {
-                return;
-            }
-            const computed = getComputedStyle(rootElement).getPropertyValue('--color-meta-theme').trim();
-            if (computed) {
-                themeMetaTag.setAttribute('content', computed);
-            }
-        }
-
-        function applyTheme(theme) {
-            if (!theme) {
-                return;
-            }
-            const normalized = theme === 'dark' ? 'dark' : 'light';
-            rootElement.setAttribute('data-theme', normalized);
-            updateMetaThemeColor();
-        }
-
-        function handleSystemThemeChange(event) {
-            if (userThemePreference) {
-                return;
-            }
-            applyTheme(event.matches ? 'dark' : 'light');
-        }
-
-        async function initializeTheme() {
-            try {
-                const storedPreference = await getUserSetting('themePreference');
-                const storedValue = typeof storedPreference?.value === 'string'
-                    ? storedPreference.value.toLowerCase()
-                    : null;
-
-                if (storedValue === 'light' || storedValue === 'dark') {
-                    userThemePreference = storedValue;
-                }
-            } catch (error) {
-                console.error('Erro ao carregar preferências de tema', error);
-            }
-
-            if (userThemePreference) {
-                applyTheme(userThemePreference);
-            } else {
-                applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
-            }
-
-            if (typeof prefersDarkQuery.addEventListener === 'function') {
-                prefersDarkQuery.addEventListener('change', handleSystemThemeChange);
-            } else if (typeof prefersDarkQuery.addListener === 'function') {
-                prefersDarkQuery.addListener(handleSystemThemeChange);
-            }
-        }
-
-        initializeTheme().catch((error) => {
-            console.error('Erro ao inicializar tema', error);
-            applyTheme(prefersDarkQuery.matches ? 'dark' : 'light');
-        });
-
-        function getFooterElement(id) {
-            return document.getElementById(id);
-        }
-
-        function applyFooterState(state) {
-            if (!footerComponent) {
-                return;
-            }
-            const normalized = state === 'collapsed' ? 'collapsed' : 'expanded';
-            footerComponent.setAttribute('state', normalized);
-        }
-
-        async function initializeFooterPreferences() {
-            if (!footerComponent) {
-                return;
-            }
-            try {
-                const storedPreference = await getUserSetting(FOOTER_STATE_KEY);
-                const storedValue = typeof storedPreference?.value === 'string'
-                    ? storedPreference.value.toLowerCase()
-                    : null;
-                applyFooterState(storedValue === 'collapsed' ? 'collapsed' : DEFAULT_FOOTER_STATE);
-            } catch (error) {
-                console.error('Erro ao carregar preferências do rodapé', error);
-                applyFooterState(DEFAULT_FOOTER_STATE);
-            }
-        }
-
-        function resolveStageDefinition(key) {
-            const normalizedKey = (key || '').toLowerCase();
-            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_DEFINITIONS, normalizedKey)) {
-                return NAV_STAGE_DEFINITIONS[normalizedKey];
-            }
-            return NAV_STAGE_DEFINITIONS.catalog;
-        }
-
-        function launchStageMiniApp(stageDefinition) {
-            if (!stageDefinition?.launchUrl) {
-                return false;
-            }
-
-            openMiniAppPanel({
-                id: stageDefinition.sourceId || stageDefinition.key,
-                title: stageDefinition.title,
-                description: stageDefinition.description,
-                url: stageDefinition.launchUrl
-            });
-
-            return true;
-        }
-
-        function hydrateNavigationStages(apps) {
-            if (!Array.isArray(apps) || !apps.length) {
-                return;
-            }
-
-            const appMap = new Map();
-
-            apps.forEach((app) => {
-                if (!app || typeof app !== 'object') {
-                    return;
-                }
-
-                const resolvedId = resolveMiniAppId(app);
-                const normalizedId = typeof resolvedId === 'string' ? resolvedId.toLowerCase() : null;
-                if (normalizedId) {
-                    appMap.set(normalizedId, app);
-                }
-
-                if (typeof app.id === 'string') {
-                    appMap.set(app.id.toLowerCase(), app);
-                }
-            });
-
-            Object.values(NAV_STAGE_DEFINITIONS).forEach((stage) => {
-                if (!stage || !stage.sourceId) {
-                    return;
-                }
-
-                const sourceKey = stage.sourceId.toLowerCase();
-                const matchedApp = appMap.get(sourceKey);
-
-                if (!matchedApp) {
-                    return;
-                }
-
-                if (matchedApp.title) {
-                    stage.title = matchedApp.title;
-                }
-                if (matchedApp.description) {
-                    stage.description = matchedApp.description;
-                }
-                if (matchedApp.url) {
-                    stage.launchUrl = matchedApp.url;
-                }
-            });
-
-            if (activeStageKey) {
-                setActiveStage(activeStageKey);
-            }
-        }
-
-        function renderPlaceholderStage(stageDefinition) {
-            if (!placeholderStage || !placeholderTitle || !placeholderDescription || !placeholderIcon) {
-                return;
-            }
-
-            placeholderTitle.textContent = stageDefinition.title;
-            placeholderDescription.textContent = stageDefinition.description;
-            placeholderIcon.textContent = stageDefinition.icon || 'hub';
-        }
-
-        function renderCatalogPlaceholder() {
-            renderPlaceholderStage({
-                ...NAV_STAGE_DEFINITIONS.catalog,
-                title: NAV_STAGE_DEFINITIONS.catalog.title || 'MiniApp em desenvolvimento',
-                description: NAV_STAGE_DEFINITIONS.catalog.description || 'Catálogo em criação',
-                icon: NAV_STAGE_DEFINITIONS.catalog.icon || 'grid_view'
-            });
-        }
-
-        function toggleStageVisibility({ showCatalog = false, showPlaceholder = false, showHome = false }) {
-            const shouldShowCatalog = Boolean(showCatalog);
-            const shouldShowPlaceholder = Boolean(showPlaceholder);
-            const shouldShowHome = Boolean(showHome);
-
-            catalogStage?.classList.toggle('hidden', !shouldShowCatalog);
-            placeholderStage?.classList.toggle('hidden', !shouldShowPlaceholder);
-            homeStage?.classList.toggle('hidden', !shouldShowHome);
-        }
-
-        function setActiveStage(key) {
-            const stageDefinition = resolveStageDefinition(key);
-            const normalizedKey = stageDefinition.key;
-            activeStageKey = normalizedKey;
-
-            if (footerComponent && footerComponent.getAttribute('active-tab') !== normalizedKey) {
-                footerComponent.setAttribute('active-tab', normalizedKey);
-            }
-
-            if (launchStageMiniApp(stageDefinition)) {
-                return;
-            }
-
-            if (stageDefinition.key === 'home') {
-                toggleStageVisibility({ showHome: true });
-                return;
-            }
-
-            if (stageDefinition.key === 'catalog') {
-                if (isCatalogReady()) {
-                    toggleStageVisibility({ showCatalog: true });
-                } else {
-                    renderCatalogPlaceholder();
-                    toggleStageVisibility({ showPlaceholder: true });
-                }
-                return;
-            }
-
-            renderPlaceholderStage(stageDefinition);
-            toggleStageVisibility({ showPlaceholder: true });
-        }
-
-        initializeFooterPreferences();
-
-        if (footerComponent) {
-            footerComponent.addEventListener('footer:state-change', (event) => {
-                const nextState = event.detail?.state === 'collapsed' ? 'collapsed' : 'expanded';
-                saveUserSetting(FOOTER_STATE_KEY, nextState).catch((error) => {
-                    console.error('Erro ao salvar preferência do rodapé', error);
-                });
-            });
-
-            footerComponent.addEventListener('footer:navigate', (event) => {
-                if (!event.detail?.key) {
-                    return;
-                }
-                event.preventDefault();
-
-                const key = event.detail.key;
-                setActiveStage(key);
-            });
-        }
-
-        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'home';
-        setActiveStage(activeStageKey);
-
         function showMessage(text, isError = false) {
             if (footerComponent && typeof footerComponent.showFooterMessage === 'function') {
                 footerComponent.showFooterMessage(text, isError);
             }
         }
-
-
-        function isIosDevice() {
-            if (typeof navigator === 'undefined' || typeof navigator.userAgent !== 'string') {
-                return false;
+        function resolveStageDefinition(key) {
+            const normalizedKey = (key || '').toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_DEFINITIONS, normalizedKey)) {
+                return NAV_STAGE_DEFINITIONS[normalizedKey];
             }
-            return /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+            return NAV_STAGE_DEFINITIONS.home;
         }
-
-        function isStandaloneMode() {
-            return (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-                || (typeof navigator !== 'undefined' && navigator.standalone);
+        function toggleStageVisibility({ showPlaceholder = false, showHome = false }) {
+            const shouldShowPlaceholder = Boolean(showPlaceholder);
+            const shouldShowHome = Boolean(showHome);
+            placeholderStage?.classList.toggle('hidden', !shouldShowPlaceholder);
+            homeStage?.classList.toggle('hidden', !shouldShowHome);
         }
-
-        async function markIosInstallPending() {
-            try {
-                await saveUserSetting(IOS_INSTALL_INTENT_KEY, {
-                    status: 'pending',
-                    requestedAt: new Date().toISOString()
-                });
-            } catch (error) {
-                console.error('Erro ao salvar intenção de instalação no iOS', error);
+        const IFRAME_CONTAINER_ID_PREFIX = 'iframe-stage-';
+        function handleIframeStage(stageDefinition) {
+            const containerId = IFRAME_CONTAINER_ID_PREFIX + stageDefinition.key;
+            let container = document.getElementById(containerId);
+            if (!container) {
+                container = document.createElement('section');
+                container.id = containerId;
+                container.className = 'stage-panel iframe-stage';
+                container.style.padding = '0';
+                const iframe = document.createElement('iframe');
+                iframe.src = stageDefinition.launchUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.setAttribute('title', stageDefinition.title);
+                container.appendChild(iframe);
+                document.querySelector('.app-main').appendChild(container);
             }
-        }
-
-        async function confirmPendingIosInstall() {
-            if (!isStandaloneMode()) {
-                return;
-            }
-
-            try {
-                const intent = await getUserSetting(IOS_INSTALL_INTENT_KEY);
-                if (intent?.value?.status === 'pending') {
-                    await saveUserSetting(IOS_INSTALL_INTENT_KEY, {
-                        ...intent.value,
-                        status: 'completed',
-                        confirmedAt: new Date().toISOString()
-                    });
-                    showMessage('✅ MiniApp 5Horas instalado na Tela de Início. Aproveite o modo app!', false);
-                }
-            } catch (error) {
-                console.error('Erro ao confirmar instalação iOS', error);
-            }
-        }
-
-        function setupIosInstallPrompt() {
-            if (!installButton || !isIosDevice() || isStandaloneMode()) {
-                return;
-            }
-
-            installButton.textContent = 'Adicionar à Tela de Início';
-            installButton.dataset.installStep = 'instructions';
-            installButton.classList.remove('hidden');
-            installButton.addEventListener('click', async () => {
-                const currentStep = installButton.dataset.installStep || 'instructions';
-                if (currentStep === 'instructions') {
-                    const instructions = [
-                        '1. Toque em Compartilhar (ícone com seta).',
-                        '2. Role e escolha "Adicionar à Tela de Início".',
-                        '3. Confirme tocando em "Adicionar".'
-                    ].join(' ');
-                    showMessage(`${instructions} Depois, abra o app pelo novo ícone para finalizar.`, false);
-                    installButton.dataset.installStep = 'verify';
-                    installButton.textContent = 'Já adicionei';
-                    await markIosInstallPending();
-                } else if (currentStep === 'verify') {
-                    if (isStandaloneMode()) {
-                        showMessage('✅ MiniApp 5Horas já está instalado.', false);
-                        installButton.classList.add('hidden');
-                        installButton.dataset.installStep = 'done';
-                    } else {
-                        showMessage('Abra o app pelo ícone criado na tela inicial para concluir a instalação.', false);
-                    }
-                }
+            document.querySelectorAll('.iframe-stage').forEach(el => {
+                 if (el.id !== containerId) {
+                    el.classList.add('hidden');
+                 }
             });
+            container.classList.remove('hidden');
         }
-
-        function resolveMiniAppId(app) {
-            if (!app || typeof app !== 'object') {
-                return null;
+        function setActiveStage(key) {
+            const stageDefinition = resolveStageDefinition(key);
+            const normalizedKey = stageDefinition.key;
+            activeStageKey = normalizedKey;
+            if (footerComponent && footerComponent.getAttribute('active-tab') !== normalizedKey) {
+                footerComponent.setAttribute('active-tab', normalizedKey);
             }
-
-            const directId = typeof app.id === 'string' ? app.id.trim() : '';
-            if (directId) {
-                return directId;
-            }
-
-            if (typeof app.title !== 'string') {
-                return null;
-            }
-
-            const normalized = app.title
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-
-            return normalized || null;
-        }
-
-        function getLaunchUrl(app) {
-            if (!app || typeof app !== 'object') {
-                return null;
-            }
-
-            if (typeof app.url !== 'string') {
-                return null;
-            }
-
-            const trimmed = app.url.trim();
-            if (!trimmed || trimmed === '#') {
-                return null;
-            }
-
-            try {
-                const base = new URL(window.location.href);
-                const resolved = new URL(trimmed, base);
-                return resolved.href;
-            } catch (error) {
-                console.error('URL inválida para MiniApp:', app.url, error);
-                return null;
-            }
-        }
-
-        function openMiniAppPanel(app) {
-            if (!app) {
-                showMessage('❌ MiniApp inválido. Tente novamente.', true);
+            toggleStageVisibility({ showHome: false, showPlaceholder: false });
+            document.querySelectorAll('.iframe-stage').forEach(el => el.classList.add('hidden'));
+            if (stageDefinition.launchUrl) {
+                handleIframeStage(stageDefinition);
+                showMessage(`Navegando para Iframe: ${stageDefinition.title}`, false);
                 return;
             }
-
-            const openEvent = new CustomEvent('miniapp:open', {
-                detail: { app },
-                cancelable: true
-            });
-
-            const eventNotCancelled = document.dispatchEvent(openEvent);
-            if (!eventNotCancelled) {
+            renderPlaceholderStage(stageDefinition);
+            toggleStageVisibility({ showPlaceholder: true });
+        }
+        function renderPlaceholderStage(stageDefinition) {
+            if (!placeholderStage || !placeholderTitle || !placeholderDescription || !placeholderIcon) {
                 return;
             }
-
-            const launchUrl = getLaunchUrl(app);
-            if (!launchUrl) {
-                showMessage('🚧 Este MiniApp ainda não possui painel principal disponível.', true);
-                return;
-            }
-
-            const currentUrl = window.location.href;
-            if (launchUrl === currentUrl) {
-                showMessage('ℹ️ Você já está visualizando o painel principal deste MiniApp.', false);
-                return;
-            }
-
-            window.location.href = launchUrl;
+            placeholderTitle.textContent = stageDefinition.title;
+            placeholderDescription.textContent = stageDefinition.description;
+            placeholderIcon.textContent = stageDefinition.icon || 'hub';
         }
-
-        function openProductModal(app) {
-            if (!app) return;
-
-            currentMiniApp = {
-                ...app,
-                id: resolveMiniAppId(app)
-            };
-            modalTitle.textContent = app.title;
-            modalDescription.textContent = app.description;
-            modalPrice.textContent = app.price;
-            modalImage.src = app.image;
-            productModal.classList.add('active');
-        }
-
-        function closeProductModal() {
-            productModal.classList.remove('active');
-            currentMiniApp = null;
-        }
-
-        async function addToCart() {
-            if (!currentMiniApp) {
-                showMessage('❌ Erro ao adicionar. Tente novamente.', true);
-                return;
-            }
-
-            const miniAppId = resolveMiniAppId(currentMiniApp);
-            if (!miniAppId) {
-                console.warn('MiniApp sem identificador ao tentar adicionar ao carrinho.', currentMiniApp);
-                showMessage('❌ MiniApp sem identificador válido. Atualize o cadastro antes de prosseguir.', true);
-                return;
-            }
-
-            try {
-                await queueForSync({
-                    type: 'cart-entry',
-                    miniAppId,
-                    title: currentMiniApp.title,
-                    queuedAt: new Date().toISOString()
-                });
-                await saveUserSetting('lastMiniApp', {
-                    id: miniAppId,
-                    title: currentMiniApp.title,
-                    queuedAt: new Date().toISOString()
-                });
-                showMessage(`✅ MiniApp "${currentMiniApp.title}" adicionado ao carrinho!`, false);
-                closeProductModal();
-            } catch (error) {
-                console.error('Erro ao salvar no IndexedDB', error);
-                showMessage('❌ Não foi possível salvar localmente. Tente novamente.', true);
-            }
-        }
-
-        window.showMessage = showMessage;
-        window.openProductModal = openProductModal;
-        window.openMiniAppPanel = openMiniAppPanel;
-
-        addToCartButton.addEventListener('click', addToCart);
-
-        closeModalButton.addEventListener('click', closeProductModal);
-
-        productModal.addEventListener('click', (event) => {
-            if (event.target === productModal) {
-                closeProductModal();
-            }
-        });
-
-        function setIconButtonState(button, isActive) {
-            if (!button) {
-                return;
-            }
-            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            button.classList.toggle('is-active', isActive);
-        }
-
-        function setSearchVisibility(shouldShow) {
-            if (!searchContainer) {
-                return;
-            }
-            const nextState = Boolean(shouldShow) && catalogControlState.enableSearch;
-            searchContainer.classList.toggle('hidden', !nextState);
-            setIconButtonState(searchToggleButton, nextState);
-            if (nextState) {
-                searchInput?.focus();
-            } else {
-                searchInput?.blur();
-            }
-        }
-
-        function setFilterVisibility(shouldShow) {
-            if (!filterContainer) {
-                return;
-            }
-            const nextState = Boolean(shouldShow) && catalogControlState.enableFilter;
-            filterContainer.classList.toggle('hidden', !nextState);
-            setIconButtonState(filterToggleButton, nextState);
-        }
-
-        function configureCatalogStageControls(options = {}) {
-            const nextSearch = typeof options.enableSearch === 'boolean'
-                ? options.enableSearch
-                : catalogControlState.enableSearch;
-
-            const nextFilter = typeof options.enableFilter === 'boolean'
-                ? options.enableFilter
-                : catalogControlState.enableFilter;
-
-            catalogControlState.enableSearch = nextSearch;
-            catalogControlState.enableFilter = nextFilter;
-
-            searchToggleButton?.classList.toggle('hidden', !nextSearch);
-            filterToggleButton?.classList.toggle('hidden', !nextFilter);
-
-            if (!nextSearch) {
-                setSearchVisibility(false);
-            }
-
-            if (!nextFilter) {
-                setFilterVisibility(false);
-            }
-        }
-
-        window.configureCatalogStageControls = configureCatalogStageControls;
-
-        function updateWelcomeMessage(status) {
-            if (!welcomeMessage) {
-                return;
-            }
-
-            if (status?.authenticated && status?.userId) {
-                welcomeMessage.textContent = `Bem-vindo(a), ${status.userId}! Sua conta está conectada.`;
-                return;
-            }
-
-            welcomeMessage.textContent = 'Conecte-se com sua conta Google pelo rodapé para personalizar a experiência.';
-        }
-
-        function populateCategoryFilterOptions(apps) {
-            if (!filterSelect) {
-                return;
-            }
-
-            const categories = Array.from(new Set((apps || [])
-                .map((app) => app.category)
-                .filter(Boolean)
-                .map((category) => category.trim())))
-                .sort((a, b) => a.localeCompare(b, 'pt-BR'));
-
-            filterSelect.innerHTML = '<option value="all">Todas as categorias</option>';
-
-            categories.forEach((category) => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                filterSelect.appendChild(option);
-            });
-
-            if (categories.length && !catalogControlState.enableFilter) {
-                configureCatalogStageControls({ enableFilter: true });
-            }
-
-            syncFilterSelection();
-        }
-
-        function syncFilterSelection() {
-            if (!filterSelect) {
-                return;
-            }
-
-            const optionExists = Array.from(filterSelect.options)
-                .some((option) => option.value === activeCategoryFilter);
-
-            if (optionExists) {
-                filterSelect.value = activeCategoryFilter;
-            } else {
-                activeCategoryFilter = 'all';
-                filterSelect.value = 'all';
-            }
-        }
-
-        async function initializeMiniAppGrid() {
-            try {
-                await miniAppsDataPromise;
-                populateCategoryFilterOptions(miniAppsData);
-                renderMiniApps(miniAppsData, miniappGrid);
-                if (pendingSearchTerm && pendingSearchTerm.trim().length) {
-                    applySearch(pendingSearchTerm);
-                } else if (activeCategoryFilter !== 'all') {
-                    applyCatalogFilters();
-                }
-                if (activeStageKey === 'catalog') {
-                    setActiveStage(activeStageKey);
-                }
-            } catch (error) {
-                console.error('Falha ao carregar os MiniApps oficiais.', error);
-                showMessage('❌ Não foi possível carregar os MiniApps do repositório.', true);
-                miniappGrid.innerHTML =
-                    '<div class="miniapp-card empty-state">Não foi possível carregar os MiniApps agora.</div>';
-            }
-        }
-
-        initializeMiniAppGrid();
-
-        function filterMiniApps(term, category) {
-            const normalized = typeof term === 'string' ? term.trim().toLowerCase() : '';
-            const normalizedCategory = category && category !== 'all' ? category.toLowerCase() : '';
-
-            return miniAppsData.filter((app) => {
-                const matchesCategory = normalizedCategory
-                    ? (typeof app.category === 'string' && app.category.toLowerCase() === normalizedCategory)
-                    : true;
-
-                if (!matchesCategory) {
-                    return false;
-                }
-
-                if (!normalized) {
-                    return true;
-                }
-
-                return [app.title, app.description, app.category]
-                    .filter(Boolean)
-                    .some((value) => value.toLowerCase().includes(normalized));
-            });
-        }
-
-        function applyCatalogFilters() {
-            const filtered = filterMiniApps(pendingSearchTerm, activeCategoryFilter);
-            renderMiniApps(filtered, miniappGrid);
-        }
-
-        function applySearch(term) {
-            pendingSearchTerm = typeof term === 'string' ? term : pendingSearchTerm;
-            applyCatalogFilters();
-        }
-
-        configureCatalogStageControls();
-
-        registerStatusListener((status) => {
-            const connectionDot = getFooterElement('connectionDot');
-            const connectionLabel = getFooterElement('connectionLabel');
-            const syncStatusLabel = getFooterElement('syncStatusLabel');
-            const googleSignInButton = getFooterElement('googleSignInButton');
-            const googleSignOutButton = getFooterElement('googleSignOutButton');
-            const manualSyncButton = getFooterElement('manualSyncButton');
-            const hasAuthenticatedSession = Boolean(status.authenticated && status.userId);
-            const requiresAuth = Boolean(status.needsAuth);
-
-            updateWelcomeMessage(status);
-
-            if (!connectionDot || !connectionLabel || !syncStatusLabel) {
-                return;
-            }
-
-            connectionDot.classList.remove('status-online', 'status-offline', 'status-syncing', 'status-error', 'status-auth');
-
-            let indicatorClass = status.online ? 'status-online' : 'status-offline';
-            if (status.syncState === 'syncing') {
-                indicatorClass = 'status-syncing';
-            } else if (status.syncState === 'error') {
-                indicatorClass = 'status-error';
-            } else if (status.syncState === 'auth-required') {
-                indicatorClass = 'status-auth';
-            } else if (!status.online) {
-                indicatorClass = 'status-offline';
-            }
-
-            connectionDot.classList.add(indicatorClass);
-            connectionLabel.textContent = status.online ? 'Online' : 'Offline';
-
-            const pendingText = typeof status.pending === 'number' && status.pending > 0 ? ` (${status.pending} pendência(s))` : '';
-            syncStatusLabel.textContent = `${status.message}${pendingText}`;
-
-            if (googleSignInButton && googleSignOutButton) {
-                googleSignInButton.classList.toggle('hidden', hasAuthenticatedSession || !requiresAuth);
-                googleSignOutButton.classList.toggle('hidden', !hasAuthenticatedSession || !requiresAuth);
-                googleSignInButton.disabled = !status.online || status.syncState === 'syncing';
-                googleSignOutButton.disabled = status.syncState === 'syncing';
-            }
-
-            if (manualSyncButton) {
-                manualSyncButton.disabled =
-                    status.syncState === 'syncing' || !status.online || (requiresAuth && !hasAuthenticatedSession);
-                manualSyncButton.classList.toggle('hidden', !hasAuthenticatedSession);
-            }
-
-            if (status.syncState === 'error') {
-                showMessage(`❌ ${status.message}`, true);
-            }
-
-            if (hasAuthenticatedSession && !hasRedirectedToHome) {
-                hasRedirectedToHome = true;
-                setActiveStage('home');
-            }
-        });
-
-        footerComponent?.addEventListener('click', async (event) => {
-            const signInButton = event.target.closest('#googleSignInButton');
-            const signOutButton = event.target.closest('#googleSignOutButton');
-            const manualSyncButton = event.target.closest('#manualSyncButton');
-
-            if (signInButton) {
-                event.preventDefault();
-                try {
-                    await signInWithGoogle();
-                    showMessage('✅ Conectado à conta Google.', false);
-                } catch (error) {
-                    console.error('Erro ao autenticar com Google', error);
-                    showMessage('❌ Erro ao conectar na conta Google.', true);
-                }
-                return;
-            }
-
-            if (signOutButton) {
-                event.preventDefault();
-                try {
-                    await signOutFromGoogle();
-                    showMessage('Sessão Google encerrada.', false);
-                } catch (error) {
-                    console.error('Erro ao sair da conta Google', error);
-                    showMessage('❌ Não foi possível encerrar a sessão Google.', true);
-                }
-                return;
-            }
-
-            if (manualSyncButton) {
-                event.preventDefault();
-                if (!navigator.onLine) {
-                    showMessage('Você está offline. Os dados serão enviados assim que a conexão voltar.', true);
+        if (footerComponent) {
+            footerComponent.addEventListener('footer:navigate', (event) => {
+                if (!event.detail?.key) {
                     return;
                 }
-                try {
-                    const result = await syncPendingChanges();
-                    if (result.synced > 0) {
-                        showMessage(`✅ ${result.synced} item(ns) sincronizado(s).`, false);
-                    } else {
-                        showMessage('Nenhuma pendência para sincronizar.', false);
-                    }
-                } catch (error) {
-                    console.error('Erro ao sincronizar manualmente', error);
-                    showMessage('❌ Erro ao sincronizar com a Google.', true);
-                }
-            }
-        });
-
-        searchToggleButton?.addEventListener('click', () => {
-            const shouldShow = searchContainer?.classList.contains('hidden');
-            setSearchVisibility(shouldShow);
-            if (shouldShow && pendingSearchTerm && miniAppsData.length) {
-                applyCatalogFilters();
-            }
-        });
-
-        filterToggleButton?.addEventListener('click', () => {
-            const shouldShow = filterContainer?.classList.contains('hidden');
-            setFilterVisibility(shouldShow);
-        });
-
-        filterSelect?.addEventListener('change', (event) => {
-            activeCategoryFilter = event.target.value || 'all';
-            if (!miniAppsData.length && !dataLoadError) {
-                return;
-            }
-            applyCatalogFilters();
-            clearTimeout(filterPersistTimeout);
-            filterPersistTimeout = setTimeout(() => {
-                saveUserSetting('catalogFilter', activeCategoryFilter).catch((error) => {
-                    console.error('Erro ao salvar filtro local', error);
-                });
-            }, 300);
-        });
-
-        searchInput.addEventListener('input', () => {
-            const term = searchInput.value;
-            pendingSearchTerm = term;
-            if (!miniAppsData.length && !dataLoadError) {
-                return;
-            }
-            applySearch(term);
-            clearTimeout(searchPersistTimeout);
-            searchPersistTimeout = setTimeout(() => {
-                saveUserSetting('searchQuery', term).catch((error) => {
-                    console.error('Erro ao salvar busca local', error);
-                });
-            }, 500);
-        });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(() => {
-                        showMessage('✅ Service Worker registrado! PWA pronto para o offline.', false);
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao registrar Service Worker', error);
-                        showMessage('❌ Erro ao registrar Service Worker. Modo Offline indisponível.', true);
-                    });
+                event.preventDefault();
+                const key = event.detail.key;
+                setActiveStage(key);
             });
-        } else {
-            showMessage('Seu navegador não suporta Service Workers.', true);
+            footerComponent.addEventListener('footer:state-change', (event) => {
+                const nextState = event.detail?.state === 'collapsed' ? 'collapsed' : 'expanded';
+                footerComponent.setAttribute('state', nextState);
+            });
         }
-
-
-        (async () => {
-            try {
-                await openDatabase();
-                const savedFilter = await getUserSetting('catalogFilter');
-                if (savedFilter && typeof savedFilter.value === 'string' && savedFilter.value.trim()) {
-                    activeCategoryFilter = savedFilter.value;
-                    configureCatalogStageControls({ enableFilter: true });
-                }
-                const savedSearch = await getUserSetting('searchQuery');
-                if (savedSearch && typeof savedSearch.value === 'string') {
-                    searchInput.value = savedSearch.value;
-                    pendingSearchTerm = savedSearch.value;
-                    try {
-                        await miniAppsDataPromise;
-                        applySearch(savedSearch.value);
-                        if (activeCategoryFilter !== 'all') {
-                            setFilterVisibility(true);
-                        } else {
-                            setSearchVisibility(true);
-                        }
-                    } catch (error) {
-                        console.warn('Busca salva não aplicada porque os dados não carregaram.', error);
-                    }
-                }
-
-                if (!savedSearch && activeCategoryFilter !== 'all') {
-                    try {
-                        await miniAppsDataPromise;
-                        syncFilterSelection();
-                        setFilterVisibility(true);
-                        applyCatalogFilters();
-                    } catch (error) {
-                        console.warn('Filtro salvo não aplicado porque os dados não carregaram.', error);
-                    }
-                }
-
-                const lastMiniApp = await getUserSetting('lastMiniApp');
-                if (lastMiniApp && lastMiniApp.value && lastMiniApp.value.title) {
-                    syncStatusLabel.textContent = `Último miniapp enfileirado: ${lastMiniApp.value.title}`;
-                }
-
-                if (navigator.onLine) {
-                    await syncPendingChanges();
-                }
-            } catch (error) {
-                console.error('Falha ao inicializar dados locais', error);
-            }
-        })();
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.classList.remove('hidden');
-
-            installButton.addEventListener('click', (event) => {
-                installButton.classList.add('hidden');
-                deferredPrompt.prompt();
-                
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        showMessage("PWA instalado! Verifique sua tela inicial.", false);
-                    } else {
-                        showMessage("Instalação do PWA recusada.", true);
-                    }
-                    deferredPrompt = null;
-                });
-            });
-        });
-        
-        window.addEventListener('appinstalled', () => {
-            installButton.classList.add('hidden');
-            showMessage('✅ MiniApp 5Horas instalado! Abra-o pela tela inicial.', false);
-        });
-
-        confirmPendingIosInstall();
-        setupIosInstallPrompt();
-
+        setActiveStage(activeStageKey);
     </script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="window.handleGapiLoad && window.handleGapiLoad()"></script>
 </body>
 </html>
