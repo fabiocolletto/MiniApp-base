@@ -1,35 +1,37 @@
-# MiniApp 5Horas – núcleo reduzido
+# MiniApp React Shell
 
-O repositório foi higienizado para manter apenas o que é necessário para os cinco MiniApps em criação, o header legado e o footer principal. O shell continua sendo uma PWA estática com HTML, CSS e módulos ES simples.
+A aplicação foi reescrita para React usando Vite, mantendo os cinco stages principais (home, alerts, catalog, settings e account)
+ e adicionando placeholders e um iframe externo controlados por estado.
 
-## Itens preservados
-- **5 MiniApps base (obrigatórios)**: `home`, `alerts`, `catalog`, `settings` e `account`, todos apenas com aviso de desenvolvimento. Os nomes das pastas acompanham os ícones do rodapé para manter rastreabilidade direta.
-- **Footer oficial** (`docs/components/app-shared-footer.js`), responsável por controlar o stage do shell.
-- **Header legado** (`docs/components/app-shared-header.js`) para MiniApps que precisarem de barra superior interna.
-- **Shell do catálogo** (`index.html`), com cartões renderizados por `docs/miniapp-card.js` e estilos em `docs/miniapp-global.css` e `docs/miniapp-card.css`.
-
-## Estrutura atual
+## Estrutura
 ```
 .
-├── assets/                # Ícones e imagens usados pelo shell
-├── docs/
-│   ├── components/        # Header e footer compartilhados
-│   ├── miniapp-card.css   # Estilos dos cartões do catálogo
-│   ├── miniapp-card.js    # Renderização e listeners dos cartões
-│   ├── miniapp-data.js    # Fonte de dados do catálogo (pode ficar vazia durante a criação)
-│   └── miniapp-global.css # Estilos globais do shell
-├── js/
-│   ├── googleSync.js      # Integração opcional com Google e fila offline
-│   ├── indexeddb-store.js # Acesso ao IndexedDB
-│   └── miniapp-data-loader.js # Loader com fallback remoto para miniapp-data.js
-├── miniapps/              # MiniApps em desenvolvimento
-├── pwa/                   # Manifesto do PWA
-├── service-worker.js      # Service worker usado pelo shell
-└── index.html             # Shell principal sem header
+├── index.html            # Entrada Vite com root React
+├── src/
+│   ├── App.jsx           # Orquestra navegação e estágios
+│   ├── main.jsx          # Bootstrap React
+│   ├── components/
+│   │   ├── IframeStage.jsx
+│   │   ├── PlaceholderStage.jsx
+│   │   └── StageFooter.jsx
+│   └── styles/
+│       ├── app.css
+│       └── index.css
+├── pwa/                  # Manifesto PWA preservado
+├── service-worker.js     # Arquivo legado (não registrado pelo shell React)
+├── package.json          # Scripts de build/dev com Vite
+└── vite.config.js
 ```
 
-## Status dos MiniApps
-Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e poderão ser personalizados individualmente apenas dentro de suas respectivas pastas.
+## Scripts
+- `npm install` – instala React, Vite e dependências.
+- `npm run dev` – inicia o shell React em modo desenvolvimento.
+- `npm run build` – gera o bundle para produção.
+- `npm run preview` – serve o bundle gerado para revisão.
 
-## Desenvolvimento local
-Nenhuma dependência Node é necessária além do precache do service worker. Use qualquer servidor HTTP simples (ex.: `python -m http.server`) para navegar pelo shell e verificar os placeholders.
+## Notas
+- O antigo shell estático em HTML/JS foi substituído por componentes React, mas o visual permanece próximo ao layout clássico
+ (stage centralizado, rodapé com ícones).
+- O stage `account` abre um iframe externo como exemplo; ajuste `launchUrl` em `src/App.jsx` conforme necessário.
+- O manifesto PWA e o service worker antigo permanecem na raiz para compatibilidade, mas a aplicação React não registra o servic
+ e worker automaticamente.
