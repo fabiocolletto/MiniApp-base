@@ -61,10 +61,8 @@
                     </div>
                     <div class="placeholder-content">
                         <p class="placeholder-label">Stage</p>
-                        <h2 class="placeholder-title" id="placeholderTitle">RodaPack</h2>
-                        <p class="placeholder-description" id="placeholderDescription">
-                            Os MiniApps serão carregados aqui em modo compacto pelo rodapé.
-                        </p>
+                        <h2 class="placeholder-title" id="placeholderTitle">MiniApp em desenvolvimento</h2>
+                        <p class="placeholder-description" id="placeholderDescription">Catálogo em criação</p>
                     </div>
                 </div>
             </section>
@@ -124,7 +122,7 @@
             catalog: {
                 key: 'catalog',
                 title: 'MiniApp em desenvolvimento',
-                description: 'MiniApp em desenvolvimento',
+                description: 'Catálogo em criação',
                 icon: 'grid_view',
                 sourceId: null
             },
@@ -181,6 +179,10 @@
         let dataLoadError = null;
         let pendingSearchTerm = '';
         let activeCategoryFilter = 'all';
+
+        if (footerComponent && footerComponent.getAttribute('active-tab') !== 'catalog') {
+            footerComponent.setAttribute('active-tab', 'catalog');
+        }
         const miniAppsDataPromise = loadMiniAppData()
             .then((data) => {
                 miniAppsData = Array.isArray(data) ? data : [];
@@ -201,6 +203,10 @@
         let userThemePreference = null;
         const FOOTER_STATE_KEY = 'footerState';
         const DEFAULT_FOOTER_STATE = 'collapsed';
+
+        function isCatalogReady() {
+            return Array.isArray(miniAppsData) && miniAppsData.length > 0;
+        }
 
         function updateMetaThemeColor() {
             if (!themeMetaTag) {
@@ -354,6 +360,15 @@
             placeholderIcon.textContent = stageDefinition.icon || 'hub';
         }
 
+        function renderCatalogPlaceholder() {
+            renderPlaceholderStage({
+                ...NAV_STAGE_DEFINITIONS.catalog,
+                title: NAV_STAGE_DEFINITIONS.catalog.title || 'MiniApp em desenvolvimento',
+                description: NAV_STAGE_DEFINITIONS.catalog.description || 'Catálogo em criação',
+                icon: NAV_STAGE_DEFINITIONS.catalog.icon || 'grid_view'
+            });
+        }
+
         function toggleStageVisibility({ showCatalog }) {
             if (showCatalog) {
                 catalogStage?.classList.remove('hidden');
@@ -375,7 +390,12 @@
             }
 
             if (stageDefinition.key === 'catalog') {
-                toggleStageVisibility({ showCatalog: true });
+                if (isCatalogReady()) {
+                    toggleStageVisibility({ showCatalog: true });
+                } else {
+                    renderCatalogPlaceholder();
+                    toggleStageVisibility({ showCatalog: false });
+                }
                 return;
             }
 
@@ -743,6 +763,9 @@
                     applySearch(pendingSearchTerm);
                 } else if (activeCategoryFilter !== 'all') {
                     applyCatalogFilters();
+                }
+                if (activeStageKey === 'catalog') {
+                    setActiveStage(activeStageKey);
                 }
             } catch (error) {
                 console.error('Falha ao carregar os MiniApps oficiais.', error);
