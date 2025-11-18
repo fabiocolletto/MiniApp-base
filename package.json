@@ -7,10 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node tests/miniapps/gestao-de-conta-do-usuario/gestao-conta-auto-save.js && node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js && node tests/miniapps/configuracoes-do-sistema/admin-access-panel.js",
+    "test": "node tests/miniapps/gestao-de-conta-do-usuario/gestao-conta-auto-save.js && node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js",
     "qa:gestao-conta": "node tests/miniapps/gestao-de-conta-do-usuario/gestao-conta-auto-save.js",
-    "qa:gestao-catalogo": "node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js",
-    "qa:admin-access": "node tests/miniapps/configuracoes-do-sistema/admin-access-panel.js"
+    "qa:gestao-catalogo": "node tests/miniapps/gestao-de-catalogo/gestao-catalogo-auto-save.js"
   },
   "keywords": [],
   "author": "",

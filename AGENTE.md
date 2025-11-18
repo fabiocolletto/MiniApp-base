@@ -248,7 +248,7 @@ Adicionar `active: false` e validar.
 
 1. Consulte os planos oficiais em `docs/qa/` antes de qualquer alteração. Termos de aceitação e passos validados estão descritos nos arquivos `gestao-conta-auto-save.md` (gestão de conta) e `gestao-catalogo-auto-save.md` (gestão de catálogo).
 2. Prepare o ambiente apenas na primeira execução (ou após reinstalação): `npm install`, `npx playwright install-deps chromium`, `npx playwright install chromium`.
-3. Execute a suíte apropriada: `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para todas as suítes. Os scripts já iniciam o servidor estático local.
+3. Execute a suíte apropriada: `npm run qa:gestao-conta`, `npm run qa:gestao-catalogo` ou `npm test` para todas as suítes. Os scripts já iniciam o servidor estático local. O comando legado `npm run qa:admin-access` foi removido porque não existe mais acesso administrativo no sistema.
 4. Registre a saída completa do comando no PR/commit como evidência dos termos de aceitação. Se algum cenário falhar, corrija o fluxo, repita o teste e só finalize após todos os termos serem aprovados.
 
 ---

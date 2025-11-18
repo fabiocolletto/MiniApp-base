@@ -78,10 +78,11 @@ class AppSharedFooter extends HTMLElement {
   }
 
   renderNavLinks({ isCompact }) {
-    const navLinks = this.visibleNavItems.map((item) => {
+    const navLinkEntries = this.visibleNavItems.map((item) => {
       const isActive = item.key === this.activeTab;
       const baseClasses = [
         "nav-link",
+        `nav-link-${item.key}`,
         "flex",
         "flex-col",
         "items-center",
@@ -93,14 +94,30 @@ class AppSharedFooter extends HTMLElement {
       }
       const label = isCompact
         ? ""
-        : `<span class="nav-link-label text-xs mt-1">${item.label}</span>`;
-      return `
-        <a href="#" class="${baseClasses.join(" ")}" aria-label="${item.label}" data-nav-key="${item.key}">
-            <span class="material-icons-sharp text-3xl" aria-hidden="true">${item.icon}</span>
-            ${label}
-        </a>
-      `;
-    }).join("");
+        : `<span class=\"nav-link-label text-xs mt-1\">${item.label}</span>`;
+      return {
+        key: item.key,
+        markup: `
+        <a href=\"#\" class=\"${baseClasses.join(" ")}\" aria-label=\"${item.label}\" data-nav-key=\"${item.key}\">\n          <span class=\"material-icons-sharp text-3xl\" aria-hidden=\"true\">${item.icon}</span>\n          ${label}\n        </a>
+      `,
+      };
+    });
+
+    const shouldInsertBreak = !isCompact && navLinkEntries.some(({ key }) => key === "settings");
+
+    const navLinks = shouldInsertBreak
+      ? navLinkEntries
+          .flatMap((entry) =>
+            entry.key === "settings"
+              ? [
+                  { key: "nav-break", markup: "<span class=\"nav-break\" aria-hidden=\"true\"></span>" },
+                  entry,
+                ]
+              : [entry]
+          )
+          .map(({ markup }) => markup)
+          .join("")
+      : navLinkEntries.map(({ markup }) => markup).join("");
 
     if (isCompact) {
       return navLinks;
