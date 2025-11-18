@@ -4,7 +4,7 @@ const BASE_CLASSES = {
   iconWrapper:
     "flex items-center justify-center space-x-2 col-start-2 col-end-3 text-center w-full justify-self-center",
   actionsWrapper:
-    "flex space-x-2 items-center justify-self-end justify-end col-start-3 col-end-3",
+    "flex space-x-2 items-center justify-self-end justify-end col-start-3 col-end-4",
   searchButton: "icon-button p-2 rounded-full transition duration-150",
   installButton:
     "button-primary font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md",
@@ -72,6 +72,20 @@ class AppSharedHeader extends HTMLElement {
 
     this.innerHTML = `
             <header class="${BASE_CLASSES.header}">
+                <div class="${BASE_CLASSES.actionsWrapper} header-actions-placeholder col-start-1 col-end-2" aria-hidden="true">
+                    <button
+                        class="${searchButtonClass}"
+                        type="button"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    ></button>
+                    <button
+                        class="${installButtonClass}"
+                        type="button"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    ></button>
+                </div>
                 <div class="${BASE_CLASSES.iconWrapper}">
                     <span class="material-icons-sharp icon-accent text-2xl" aria-hidden="true">${this.iconName}</span>
                     <h1 class="text-xl font-extrabold title-text w-full text-center">${this.titleText}</h1>

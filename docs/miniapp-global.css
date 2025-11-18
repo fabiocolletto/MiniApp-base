@@ -317,6 +317,11 @@ body {
     text-align: center;
 }
 
+.header-actions-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .title-text {
     color: var(--color-text-primary);
 }
@@ -399,15 +404,16 @@ body {
 
 .footer-quick-nav {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
     max-width: min(520px, 100%);
     margin-inline: auto;
     gap: clamp(0.35rem, 2vw, 0.75rem);
     margin-bottom: 0.25rem;
     flex-shrink: 0;
+    overflow-x: auto;
 }
 
 .footer-quick-nav .nav-link,
@@ -514,11 +520,6 @@ body {
 .nav-link-label {
     white-space: nowrap;
     font-size: clamp(0.65rem, 2vw, 0.8rem);
-}
-
-.footer-quick-nav .nav-break {
-    flex-basis: 100%;
-    height: 0;
 }
 
 .footer-quick-nav .material-icons-sharp,

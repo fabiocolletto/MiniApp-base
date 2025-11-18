@@ -103,21 +103,7 @@ class AppSharedFooter extends HTMLElement {
       };
     });
 
-    const shouldInsertBreak = !isCompact && navLinkEntries.some(({ key }) => key === "settings");
-
-    const navLinks = shouldInsertBreak
-      ? navLinkEntries
-          .flatMap((entry) =>
-            entry.key === "settings"
-              ? [
-                  { key: "nav-break", markup: "<span class=\"nav-break\" aria-hidden=\"true\"></span>" },
-                  entry,
-                ]
-              : [entry]
-          )
-          .map(({ markup }) => markup)
-          .join("")
-      : navLinkEntries.map(({ markup }) => markup).join("");
+    const navLinks = navLinkEntries.map(({ markup }) => markup).join("");
 
     if (isCompact) {
       return navLinks;
