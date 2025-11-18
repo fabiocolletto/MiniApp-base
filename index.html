@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniApp - Somente Navegação</title>
+    <title>MiniApp - Shell React</title>
     <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-global.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-card.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-header.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-footer.js"></script>
     <link rel="manifest" href="./pwa/manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
     <style>
-        .hidden {
-            display: none !important;
-        }
         app-shared-footer .icon-button:hover,
         app-shared-footer .icon-button:focus-visible {
             background-color: transparent !important;
@@ -25,37 +24,11 @@
     </style>
 </head>
 <body class="body-with-fixed-footer" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
-    <div class="app-shell">
-        <main class="app-main app-stage">
-            <section id="homeStage" class="stage-panel">
-                <app-shared-header id="homeHeader" title="MiniApp 5Horas" icon="flash_on" hide-search></app-shared-header>
-                <div class="u-flex u-direction-column u-align-center u-justify-center u-gap-md u-text-center u-padding-xl"
-                    style="min-height: min(70vh, 600px);">
-                    <div class="u-flex u-direction-column u-gap-2xs">
-                        <p class="u-text-sm muted-text">Aplicação de Base</p>
-                        <h1 class="u-text-2xl u-font-extrabold">Navegação Ativa</h1>
-                    </div>
-                    <p id="welcomeMessage" class="u-text-base muted-text" style="max-width: 320px;">
-                        Este código contém apenas as funções de navegação entre os ícones do rodapé.
-                    </p>
-                </div>
-            </section>
-            <section id="placeholderStage" class="stage-panel hidden">
-                <div class="placeholder-card">
-                    <div class="placeholder-icon" aria-hidden="true">
-                        <span class="material-icons-sharp" id="placeholderIcon">hub</span>
-                    </div>
-                    <div class="placeholder-content">
-                        <p class="placeholder-label">Etapa</p>
-                        <h2 class="placeholder-title" id="placeholderTitle">Título da Etapa</h2>
-                        <p class="placeholder-description" id="placeholderDescription">Descrição da Etapa</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <app-shared-footer id="globalFooter" active-tab="home" variant="full" state="collapsed"></app-shared-footer>
-    </div>
-    <script type="module">
+    <div id="root"></div>
+    <script>
+        const h = React.createElement;
+        const { useCallback, useEffect, useMemo, useRef, useState } = React;
+
         const NAV_STAGE_DEFINITIONS = {
             home: {
                 key: 'home',
@@ -100,99 +73,185 @@
                 launchUrl: 'about:blank'
             }
         };
-        const footerComponent = document.getElementById('globalFooter');
-        const homeStage = document.getElementById('homeStage');
-        const placeholderStage = document.getElementById('placeholderStage');
-        const placeholderTitle = document.getElementById('placeholderTitle');
-        const placeholderDescription = document.getElementById('placeholderDescription');
-        const placeholderIcon = document.getElementById('placeholderIcon');
-        let activeStageKey = footerComponent?.getAttribute('active-tab') || 'home';
-        if (footerComponent && !footerComponent.getAttribute('active-tab')) {
-            footerComponent.setAttribute('active-tab', 'home');
+
+        function HomeStage() {
+            return h(
+                'section',
+                { id: 'homeStage', className: 'stage-panel' },
+                h('app-shared-header', {
+                    id: 'homeHeader',
+                    title: 'MiniApp 5Horas',
+                    icon: 'flash_on',
+                    'hide-search': true
+                }),
+                h(
+                    'div',
+                    {
+                        className: 'u-flex u-direction-column u-align-center u-justify-center u-gap-md u-text-center u-padding-xl',
+                        style: { minHeight: 'min(70vh, 600px)' }
+                    },
+                    h(
+                        'div',
+                        { className: 'u-flex u-direction-column u-gap-2xs' },
+                        h('p', { className: 'u-text-sm muted-text' }, 'Aplicação de Base'),
+                        h('h1', { className: 'u-text-2xl u-font-extrabold' }, 'Navegação Ativa')
+                    ),
+                    h(
+                        'p',
+                        { id: 'welcomeMessage', className: 'u-text-base muted-text', style: { maxWidth: '320px' } },
+                        'Este código contém apenas as funções de navegação entre os ícones do rodapé.'
+                    )
+                )
+            );
         }
-        function showMessage(text, isError = false) {
-            if (footerComponent && typeof footerComponent.showFooterMessage === 'function') {
-                footerComponent.showFooterMessage(text, isError);
-            }
+
+        function PlaceholderStage({ stageDefinition }) {
+            return h(
+                'section',
+                { id: 'placeholderStage', className: 'stage-panel' },
+                h(
+                    'div',
+                    { className: 'placeholder-card' },
+                    h(
+                        'div',
+                        { className: 'placeholder-icon', 'aria-hidden': 'true' },
+                        h('span', { className: 'material-icons-sharp', id: 'placeholderIcon' }, stageDefinition.icon || 'hub')
+                    ),
+                    h(
+                        'div',
+                        { className: 'placeholder-content' },
+                        h('p', { className: 'placeholder-label' }, 'Etapa'),
+                        h('h2', { className: 'placeholder-title', id: 'placeholderTitle' }, stageDefinition.title),
+                        h(
+                            'p',
+                            { className: 'placeholder-description', id: 'placeholderDescription' },
+                            stageDefinition.description
+                        )
+                    )
+                )
+            );
         }
-        function resolveStageDefinition(key) {
-            const normalizedKey = (key || '').toLowerCase();
-            if (Object.prototype.hasOwnProperty.call(NAV_STAGE_DEFINITIONS, normalizedKey)) {
-                return NAV_STAGE_DEFINITIONS[normalizedKey];
-            }
-            return NAV_STAGE_DEFINITIONS.home;
+
+        function IframeStage({ stageDefinition }) {
+            return h(
+                'section',
+                { id: `iframe-stage-${stageDefinition.key}`, className: 'stage-panel iframe-stage', style: { padding: '0' } },
+                h('iframe', {
+                    src: stageDefinition.launchUrl,
+                    title: stageDefinition.title,
+                    style: { width: '100%', height: '100%', border: 'none' }
+                })
+            );
         }
-        function toggleStageVisibility({ showPlaceholder = false, showHome = false }) {
-            const shouldShowPlaceholder = Boolean(showPlaceholder);
-            const shouldShowHome = Boolean(showHome);
-            placeholderStage?.classList.toggle('hidden', !shouldShowPlaceholder);
-            homeStage?.classList.toggle('hidden', !shouldShowHome);
-        }
-        const IFRAME_CONTAINER_ID_PREFIX = 'iframe-stage-';
-        function handleIframeStage(stageDefinition) {
-            const containerId = IFRAME_CONTAINER_ID_PREFIX + stageDefinition.key;
-            let container = document.getElementById(containerId);
-            if (!container) {
-                container = document.createElement('section');
-                container.id = containerId;
-                container.className = 'stage-panel iframe-stage';
-                container.style.padding = '0';
-                const iframe = document.createElement('iframe');
-                iframe.src = stageDefinition.launchUrl;
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
-                iframe.style.border = 'none';
-                iframe.setAttribute('title', stageDefinition.title);
-                container.appendChild(iframe);
-                document.querySelector('.app-main').appendChild(container);
-            }
-            document.querySelectorAll('.iframe-stage').forEach(el => {
-                 if (el.id !== containerId) {
-                    el.classList.add('hidden');
-                 }
-            });
-            container.classList.remove('hidden');
-        }
-        function setActiveStage(key) {
-            const stageDefinition = resolveStageDefinition(key);
-            const normalizedKey = stageDefinition.key;
-            activeStageKey = normalizedKey;
-            if (footerComponent && footerComponent.getAttribute('active-tab') !== normalizedKey) {
-                footerComponent.setAttribute('active-tab', normalizedKey);
-            }
-            toggleStageVisibility({ showHome: false, showPlaceholder: false });
-            document.querySelectorAll('.iframe-stage').forEach(el => el.classList.add('hidden'));
-            if (stageDefinition.launchUrl) {
-                handleIframeStage(stageDefinition);
-                showMessage(`Navegando para Iframe: ${stageDefinition.title}`, false);
-                return;
-            }
-            renderPlaceholderStage(stageDefinition);
-            toggleStageVisibility({ showPlaceholder: true });
-        }
-        function renderPlaceholderStage(stageDefinition) {
-            if (!placeholderStage || !placeholderTitle || !placeholderDescription || !placeholderIcon) {
-                return;
-            }
-            placeholderTitle.textContent = stageDefinition.title;
-            placeholderDescription.textContent = stageDefinition.description;
-            placeholderIcon.textContent = stageDefinition.icon || 'hub';
-        }
-        if (footerComponent) {
-            footerComponent.addEventListener('footer:navigate', (event) => {
-                if (!event.detail?.key) {
-                    return;
+
+        function App() {
+            const footerRef = useRef(null);
+            const navDefinitions = useMemo(() => NAV_STAGE_DEFINITIONS, []);
+            const resolveStageDefinition = useCallback(
+                (key) => {
+                    const normalizedKey = (key || '').toLowerCase();
+                    if (Object.prototype.hasOwnProperty.call(navDefinitions, normalizedKey)) {
+                        return navDefinitions[normalizedKey];
+                    }
+                    return navDefinitions.home;
+                },
+                [navDefinitions]
+            );
+            const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('home').key);
+            const [footerState, setFooterState] = useState('collapsed');
+
+            useEffect(() => {
+                const footer = footerRef.current;
+                if (!footer) return undefined;
+                const initialActive = resolveStageDefinition(footer.getAttribute('active-tab') || 'home');
+                setActiveStageKey(initialActive.key);
+                const initialState = footer.getAttribute('state') === 'collapsed' ? 'collapsed' : 'expanded';
+                setFooterState(initialState);
+
+                const syncFooterState = () => {
+                    const nextState = footer.getAttribute('state') === 'collapsed' ? 'collapsed' : 'expanded';
+                    setFooterState(nextState);
+                };
+
+                const handleNavigate = (event) => {
+                    const key = event.detail?.target || event.detail?.key;
+                    if (!key) return;
+                    event.preventDefault();
+                    setActiveStageKey(resolveStageDefinition(key).key);
+                };
+
+                footer.addEventListener('app:navigate', handleNavigate);
+
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'state') {
+                            syncFooterState();
+                        }
+                    });
+                });
+
+                observer.observe(footer, { attributes: true, attributeFilter: ['state'] });
+
+                return () => {
+                    footer.removeEventListener('app:navigate', handleNavigate);
+                    observer.disconnect();
+                };
+            }, [resolveStageDefinition]);
+
+            useEffect(() => {
+                const footer = footerRef.current;
+                if (!footer) return;
+                const currentActive = footer.getAttribute('active-tab');
+                if (!currentActive) {
+                    footer.setAttribute('active-tab', 'home');
                 }
-                event.preventDefault();
-                const key = event.detail.key;
-                setActiveStage(key);
-            });
-            footerComponent.addEventListener('footer:state-change', (event) => {
-                const nextState = event.detail?.state === 'collapsed' ? 'collapsed' : 'expanded';
-                footerComponent.setAttribute('state', nextState);
-            });
+                if (currentActive !== activeStageKey) {
+                    footer.setAttribute('active-tab', activeStageKey);
+                }
+            }, [activeStageKey]);
+
+            useEffect(() => {
+                const footer = footerRef.current;
+                if (footer) {
+                    footer.setAttribute('state', footerState);
+                }
+            }, [footerState]);
+
+            useEffect(() => {
+                const footer = footerRef.current;
+                const stageDefinition = resolveStageDefinition(activeStageKey);
+                if (stageDefinition.launchUrl && footer?.showFooterMessage) {
+                    footer.showFooterMessage(`Navegando para Iframe: ${stageDefinition.title}`, false);
+                }
+            }, [activeStageKey, resolveStageDefinition]);
+
+            const activeStageDefinition = resolveStageDefinition(activeStageKey);
+            let mainContent = null;
+
+            if (activeStageDefinition.key === 'home') {
+                mainContent = h(HomeStage);
+            } else if (activeStageDefinition.launchUrl) {
+                mainContent = h(IframeStage, { stageDefinition: activeStageDefinition });
+            } else {
+                mainContent = h(PlaceholderStage, { stageDefinition: activeStageDefinition });
+            }
+
+            return h(
+                'div',
+                { className: 'app-shell' },
+                h('main', { className: 'app-main app-stage' }, mainContent),
+                h('app-shared-footer', {
+                    ref: footerRef,
+                    id: 'globalFooter',
+                    'active-tab': activeStageKey,
+                    variant: 'full',
+                    state: footerState
+                })
+            );
         }
-        setActiveStage(activeStageKey);
+
+        const rootElement = document.getElementById('root');
+        ReactDOM.createRoot(rootElement).render(h(App));
     </script>
 </body>
 </html>
