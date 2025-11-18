@@ -51,193 +51,127 @@ class AppSharedFooter extends HTMLElement {
   }
 
   get activeTab() {
-    const tab = (this.getAttribute("active-tab") || "").toLowerCase();
-    const visibleItems = this.visibleNavItems;
-    if (visibleItems.some((item) => item.key === tab)) {
-      return tab;
-    }
-
-    if (visibleItems.some((item) => item.key === DEFAULT_ACTIVE_TAB)) {
-      return DEFAULT_ACTIVE_TAB;
-    }
-
-    return visibleItems[0]?.key || DEFAULT_ACTIVE_TAB;
+    return this.getAttribute("active-tab") || DEFAULT_ACTIVE_TAB;
   }
 
   get variant() {
-    const variant = (this.getAttribute("variant") || "").toLowerCase();
-    return variant === "compact" ? "compact" : "full";
+    return (this.getAttribute("variant") || "default").toLowerCase();
   }
 
   get footerState() {
-    const state = (this.getAttribute("state") || "").toLowerCase();
-    if (this.variant === "compact") {
-      return "collapsed";
-    }
-    return state === "collapsed" ? "collapsed" : DEFAULT_STATE;
-  }
-
-  renderNavLinks({ isCompact }) {
-    const navLinkEntries = this.visibleNavItems.map((item) => {
-      const isActive = item.key === this.activeTab;
-      const baseClasses = [
-        "nav-link",
-        `nav-link-${item.key}`,
-        "flex",
-        "flex-col",
-        "items-center",
-        "transition",
-        "duration-150",
-      ];
-      if (isActive) {
-        baseClasses.push("active");
-      }
-      const label = isCompact
-        ? ""
-        : `<span class=\"nav-link-label text-xs mt-1\">${item.label}</span>`;
-      return {
-        key: item.key,
-        markup: `
-        <a href=\"#\" class=\"${baseClasses.join(" ")}\" aria-label=\"${item.label}\" data-nav-key=\"${item.key}\">\n          <span class=\"material-icons-sharp text-3xl\" aria-hidden=\"true\">${item.icon}</span>\n          ${label}\n        </a>
-      `,
-      };
-    });
-
-    const navLinks = navLinkEntries.map(({ markup }) => markup).join("");
-
-    if (isCompact) {
-      return navLinks;
-    }
-
-    const toggleIcon = this.footerState === "expanded" ? "unfold_less" : "unfold_more";
-    const toggleLabel = this.footerState === "expanded" ? "Recolher" : "Expandir";
-    const ariaExpanded = this.footerState === "expanded" ? "true" : "false";
-
-    return `
-      ${navLinks}
-      <button
-        id="footerToggleButton"
-        class="nav-link footer-toggle-nav-item flex flex-col items-center transition duration-150"
-        type="button"
-        aria-expanded="${ariaExpanded}"
-        aria-controls="footerDetails"
-      >
-        <span class="material-icons-sharp text-3xl footer-toggle-icon" aria-hidden="true">${toggleIcon}</span>
-        <span id="footerToggleLabel" class="nav-link-label text-xs mt-1">${toggleLabel}</span>
-        <span class="sr-only">${toggleLabel} rodapé</span>
-      </button>
-    `;
-  }
-
-  setupNavigation() {
-    const navLinks = this.querySelectorAll(".nav-link[data-nav-key]");
-    navLinks.forEach((link) => {
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        const key = link.getAttribute("data-nav-key");
-        if (!key) {
-          return;
-        }
-
-        this.setAttribute("active-tab", key);
-
-        const navigateEvent = new CustomEvent("footer:navigate", {
-          detail: { key },
-          bubbles: true,
-          cancelable: true,
-        });
-
-        this.dispatchEvent(navigateEvent);
-      });
-    });
-  }
-
-  setupToggle() {
-    if (this.variant === "compact") {
-      return;
-    }
-
-    const toggleButton = this.querySelector("#footerToggleButton");
-    if (!toggleButton) {
-      return;
-    }
-
-    toggleButton.addEventListener("click", () => {
-      const nextState = this.footerState === "expanded" ? "collapsed" : "expanded";
-      this.setAttribute("state", nextState);
-
-      this.dispatchEvent(
-        new CustomEvent("footer:state-change", {
-          detail: { state: nextState },
-          bubbles: true,
-        })
-      );
-    });
+    const state = (this.getAttribute("state") || DEFAULT_STATE).toLowerCase();
+    return state === "collapsed" ? "collapsed" : "expanded";
   }
 
   handleGlobalAlert(event) {
-    const message = event.detail?.message;
-    const isError = Boolean(event.detail?.isError);
-    if (message) {
-      this.showFooterMessage(message, isError);
-    }
+    const { type, message } = event.detail;
+    this.showAlert(message, type);
   }
 
-  showFooterMessage(message, isError = false) {
+  showAlert(message, type = "info") {
     const messageContainer = this.querySelector("#messageContainer");
-    const footerAlertRow = this.querySelector("#footerAlertRow");
+    const alertRow = this.querySelector("#footerAlertRow");
 
-    if (!messageContainer || !footerAlertRow) {
-      return;
+    if (!messageContainer || !alertRow) return;
+
+    messageContainer.className = `message-box p-3 rounded-lg shadow-xl`;
+    messageContainer.innerHTML = message;
+    
+    // Adiciona classes de cor
+    switch (type.toLowerCase()) {
+      case "error":
+        messageContainer.classList.add("bg-red-600", "text-white");
+        break;
+      case "success":
+        messageContainer.classList.add("bg-green-600", "text-white");
+        break;
+      case "warning":
+        messageContainer.classList.add("bg-yellow-500", "text-black");
+        break;
+      default:
+        messageContainer.classList.add("bg-indigo-600", "text-white");
+        break;
     }
+
+    alertRow.classList.remove("hidden");
+    messageContainer.classList.remove("hidden");
 
     if (this.messageTimeout) {
       clearTimeout(this.messageTimeout);
     }
-
-    messageContainer.textContent = message;
-    messageContainer.classList.remove("hidden", "message-success", "message-error");
-    messageContainer.classList.add(isError ? "message-error" : "message-success");
-    footerAlertRow.classList.remove("hidden");
-
     this.messageTimeout = setTimeout(() => {
       messageContainer.classList.add("hidden");
-      footerAlertRow.classList.add("hidden");
+      alertRow.classList.add("hidden");
     }, 5000);
   }
-
-  renderCollapsedMeta() {
-    return "";
-  }
-
-  renderDetails({ isCompact }) {
-    if (isCompact) {
-      return "";
-    }
-    const legalText =
-      "&copy; 2024 5 Horas Pesquisa e Análise Ltda. CNPJ: 50.455.262/0001-19 | Brasil.";
+  
+  // Renderiza os botões de navegação
+  renderNavLinks({ isCompact }) {
+    const activeTab = this.activeTab;
+    const compactClasses = isCompact ? "" : "justify-between";
+    const navItems = this.visibleNavItems;
 
     return `
-      <div id="footerDetails" class="footer-details w-full mt-3">
-          <div class="footer-meta-bottom flex items-center justify-center text-xs muted-text mt-2 px-1">
-              <div class="status-indicators-group flex items-center space-x-4">
-                  <div class="flex items-center space-x-2">
-                      <span id="connectionDot" class="status-dot status-offline inline-block"></span>
-                      <span id="connectionLabel">Offline</span>
-                  </div>
-                  <span id="syncStatusLabel" class="hidden sm:inline">Sincronização não iniciada</span>
-              </div>
-          </div>
+      <nav class="flex ${compactClasses} text-gray-400">
+        ${navItems
+          .map((item) => {
+            const isActive = item.key === activeTab;
+            const itemClasses = isActive
+              ? "text-indigo-400 font-bold"
+              : "hover:text-indigo-200";
+            
+            const iconClasses = isCompact ? "text-3xl" : "text-2xl";
+            const labelClasses = isCompact ? "text-xs" : "text-sm";
+            const wrapperClasses = isCompact 
+                ? "flex flex-col items-center justify-center p-1" 
+                : "flex flex-col items-center justify-center p-2";
 
-          <div class="footer-legal footer-legal-expanded text-center text-xs muted-text mx-auto mt-1">
-              <img
-                src="https://5horas.com.br/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
-                alt="Ícone 5Horas"
-                class="h-3 w-3 inline-block align-text-top mr-1"
-                onerror="this.style.display='none';"
-              >
-              ${legalText}
-          </div>
+            return `
+              <a href="#" class="nav-item ${wrapperClasses} ${itemClasses} transition duration-150 ease-in-out" data-key="${item.key}" aria-current="${isActive ? 'page' : 'false'}">
+                  <span class="material-icons-sharp ${iconClasses}" aria-hidden="true">${item.icon}</span>
+                  <span class="${labelClasses} mt-0.5">${item.label}</span>
+              </a>
+            `;
+          })
+          .join("")}
+      </nav>
+    `;
+  }
+
+  // Renderiza o metadado (visível apenas quando o footer está collapsed)
+  renderCollapsedMeta() {
+    const legalText = "© 2025 5 Horas Pesquisa e Análise Ltda.";
+    return `
+      <div id="collapsedMeta" class="collapsed-meta-row flex justify-center items-center text-xs text-gray-500 mt-2">
+          ${legalText}
+      </div>
+    `;
+  }
+
+  // Renderiza o bloco de detalhes (visível quando o footer está expanded)
+  renderDetails({ isCompact }) {
+    if (isCompact) return "";
+
+    const legalText = "© 2025 5 Horas Pesquisa e Análise Ltda. | CNPJ: 50.455.262/0001-19 | Brasil";
+
+    return `
+      <div id="footerDetails" class="footer-details-row p-3 w-full border-t border-gray-700 bg-gray-700 mt-3 text-sm text-gray-400">
+          <div class="flex justify-between items-center w-full">
+              <div class="flex space-x-4">
+                  <a href="#" class="hover:text-white transition duration-150">Termos de Uso</a>
+                  <a href="#" class="hover:text-white transition duration-150">Privacidade</a>
+                  <a href="#" class="hover:text-white transition duration-150">Contato</a>
+              </div>
+              <div class="text-xs text-gray-500">
+                <img
+                  src="https://fabiocolletto.github.io/miniapp/wp-content/uploads/2025/10/Icone-Light-Transparente-500x500px.webp"
+                  alt="Ícone 5Horas"
+                  class="h-3 w-3 inline-block align-text-top mr-1"
+                  onerror="this.style.display='none';"
+                >
+                ${legalText}
+            </div>
+        </div>
       </div>
     `;
   }
@@ -254,7 +188,7 @@ class AppSharedFooter extends HTMLElement {
     const details = this.renderDetails({ isCompact });
 
     this.innerHTML = `
-          <footer class="app-footer p-3 ${isCompact ? "rounded-t-xl" : "flex flex-col justify-center rounded-t-xl"}" data-footer-state="${footerState}">
+          <footer class="app-footer py-2 px-3 ${isCompact ? "rounded-t-xl" : "flex flex-col justify-center rounded-t-xl"}" data-footer-state="${footerState}">
           <div class="footer-top w-full">
               <div class="footer-quick-nav w-full">
                   ${navLinks}
@@ -269,10 +203,42 @@ class AppSharedFooter extends HTMLElement {
     `;
 
     this.setupNavigation();
-    this.setupToggle();
+    this.setupStateToggle();
+  }
+
+  setupNavigation() {
+    this.querySelectorAll(".nav-item").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        const key = item.getAttribute("data-key");
+        this.setAttribute("active-tab", key);
+        // Dispara evento global, se necessário, para a navegação da app
+        this.dispatchEvent(new CustomEvent("app:navigate", { detail: { target: key }, bubbles: true, composed: true }));
+      });
+    });
+  }
+
+  setupStateToggle() {
+    const collapsedMeta = this.querySelector("#collapsedMeta");
+    const details = this.querySelector("#footerDetails");
+    const isCompact = this.variant === "compact";
+
+    if (isCompact) return; // Não permite toggle no modo compact
+
+    if (collapsedMeta && details) {
+      const toggleState = () => {
+        const currentState = this.getAttribute("state") || DEFAULT_STATE;
+        const newState = currentState === "expanded" ? "collapsed" : "expanded";
+        this.setAttribute("state", newState);
+      };
+
+      // Adiciona listener ao metadado para expandir/colapsar
+      collapsedMeta.addEventListener("click", toggleState);
+      
+      // Adiciona listener aos detalhes para expandir/colapsar
+      // Isso permite que o usuário clique em qualquer lugar para fechar
+      details.addEventListener("click", toggleState);
+    }
   }
 }
-
-if (!customElements.get("app-shared-footer")) {
-  customElements.define("app-shared-footer", AppSharedFooter);
-}
+customElements.define("app-shared-footer", AppSharedFooter);
