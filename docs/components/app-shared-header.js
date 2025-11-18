@@ -1,7 +1,8 @@
 const BASE_CLASSES = {
   header:
-    "app-header p-4 shadow-lg grid grid-cols-[1fr_auto_1fr] items-center rounded-b-xl gap-2",
-  iconWrapper: "flex items-center justify-center space-x-2 col-start-2 text-center",
+    "app-header p-4 shadow-lg grid grid-cols-[auto_1fr_auto] items-center rounded-b-xl gap-2 justify-items-center",
+  iconWrapper:
+    "flex items-center justify-center space-x-2 col-start-2 col-end-3 text-center w-full justify-self-center",
   actionsWrapper:
     "flex space-x-2 items-center justify-self-end justify-end col-start-3 col-end-3",
   searchButton: "icon-button p-2 rounded-full transition duration-150",
@@ -73,7 +74,7 @@ class AppSharedHeader extends HTMLElement {
             <header class="${BASE_CLASSES.header}">
                 <div class="${BASE_CLASSES.iconWrapper}">
                     <span class="material-icons-sharp icon-accent text-2xl" aria-hidden="true">${this.iconName}</span>
-                    <h1 class="text-xl font-extrabold title-text">${this.titleText}</h1>
+                    <h1 class="text-xl font-extrabold title-text w-full text-center">${this.titleText}</h1>
                 </div>
                 <div class="${BASE_CLASSES.actionsWrapper}">
                     <button

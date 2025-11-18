@@ -3,7 +3,7 @@ const CACHE_NAME = 'miniapp-5horas-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
+  '/pwa/manifest.json',
   'https://cdn.tailwindcss.com' 
   // Nota: Imagens dos produtos (placeholders) não serão cacheadas,
   // apenas o shell principal.

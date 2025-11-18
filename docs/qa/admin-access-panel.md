@@ -1,10 +1,10 @@
 # Processo de QA – Painel administrativo via Apps Script
 
-Este plano valida o fluxo que exibe o ícone administrativo no rodapé após confirmar o ID salvo do Apps Script e garante que o painel de controle abra o valor de `Catalogo!A1` quando o usuário clica no botão.
+Este plano valida o fluxo simplificado que solicita o ID do Apps Script apenas quando o usuário abre a aba **Configurações** e garante que o MiniApp renderize o valor de `Catalogo!A1` na primeira carga e nas visitas seguintes.
 
 ## Escopo
 - Shell principal (`index.html`) com footer compartilhado.
-- Scripts `js/admin-access.js` e `docs/components/app-shared-footer.js` responsáveis por validar o ID e revelar o ícone.
+- Scripts `js/admin-access.js` e `docs/components/app-shared-footer.js` responsáveis por solicitar e salvar o ID da planilha.
 - MiniApp Configurações do Sistema, que usa a mesma fonte de dados para testar `Catalogo!A1`.
 
 ## Ambiente
@@ -24,10 +24,10 @@ npm run qa:admin-access
 ```
 
 ## Termos de aceitação
-1. O `prompt` pede o ID da planilha apenas na primeira carga (sem repetir após reload quando o ID estiver salvo no IndexedDB).
-2. O ícone `#footer-config-icon` perde a classe `hidden`, fica com `aria-hidden="false"` e `tabindex="0"` após a validação.
-3. Ao clicar no ícone, o painel `#adminControlPanel` é aberto e exibe o valor retornado para `Catalogo!A1`.
-4. Após recarregar a página, o painel abre novamente usando o ID salvo, sem novas solicitações de ID.
+1. O `prompt` pede o ID da planilha ao abrir a aba **Configurações** pela primeira vez (sem repetir após salvar no IndexedDB).
+2. A aba **Configurações** permanece visível no rodapé em todas as telas.
+3. Ao acessar o MiniApp de configurações, o painel exibe o valor retornado para `Catalogo!A1`.
+4. Após recarregar a página ou retornar ao catálogo, o painel volta a abrir usando o ID salvo, sem novas solicitações.
 
 ## Registro de resultados
 - A execução imprime uma tabela com os cenários validados no console.

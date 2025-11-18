@@ -429,6 +429,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
+    color: var(--color-footer-icon);
 }
 
 .footer-toggle-nav-item:hover,
@@ -439,12 +440,11 @@ body {
 
 .footer-toggle-icon {
     border-radius: 0.75rem;
-    padding: 0.35rem;
-    background-color: var(--color-footer-hover);
+    padding: 0;
+    background-color: transparent;
 }
 
 .app-footer[data-footer-state="expanded"] .footer-toggle-icon {
-    background-color: transparent;
     color: var(--color-footer-accent);
 }
 

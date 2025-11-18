@@ -7,7 +7,7 @@ const APP_VERSION = 'v3';
 const PRECACHE_RESOURCES = [
   { url: './', revision: APP_VERSION },
   { url: './index.html', revision: APP_VERSION },
-  { url: './manifest.webmanifest', revision: APP_VERSION },
+  { url: './pwa/manifest.webmanifest', revision: APP_VERSION },
   { url: './docs/miniapp-global.css', revision: APP_VERSION },
   { url: './docs/miniapp-card.css', revision: APP_VERSION },
   { url: './docs/miniapp-card.js', revision: APP_VERSION },
