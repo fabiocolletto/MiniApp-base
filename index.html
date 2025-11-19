@@ -11,8 +11,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-header.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-footer.js"></script>
+    <script src="./docs/components/app-shared-header.js"></script>
+    <script src="./docs/components/app-shared-footer.js"></script>
     <link rel="manifest" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/pwa/manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
     <style>
@@ -27,7 +27,13 @@
     <div id="root"></div>
     <script>
         const h = React.createElement;
-        const { useCallback, useEffect, useMemo, useRef, useState } = React;
+        const { useCallback, useEffect, useMemo, useState } = React;
+        const HeaderComponent = window.AppSharedHeader;
+        const FooterComponent = window.AppSharedFooter;
+
+        if (!HeaderComponent || !FooterComponent) {
+            throw new Error('Componentes compartilhados não foram carregados para o shell React.');
+        }
 
         const NAV_STAGE_DEFINITIONS = {
             home: {
@@ -78,12 +84,6 @@
             return h(
                 'section',
                 { id: 'homeStage', className: 'stage-panel' },
-                h('app-shared-header', {
-                    id: 'homeHeader',
-                    title: 'MiniApp 5Horas',
-                    icon: 'flash_on',
-                    'hide-search': true
-                }),
                 h(
                     'div',
                     {
@@ -145,7 +145,6 @@
         }
 
         function App() {
-            const footerRef = useRef(null);
             const navDefinitions = useMemo(() => NAV_STAGE_DEFINITIONS, []);
             const resolveStageDefinition = useCallback(
                 (key) => {
@@ -158,70 +157,30 @@
                 [navDefinitions]
             );
             const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('home').key);
-            const [footerState, setFooterState] = useState('collapsed');
+            const [footerState, setFooterState] = useState('expanded');
 
-            useEffect(() => {
-                const footer = footerRef.current;
-                if (!footer) return undefined;
-                const initialActive = resolveStageDefinition(footer.getAttribute('active-tab') || 'home');
-                setActiveStageKey(initialActive.key);
-                const initialState = footer.getAttribute('state') === 'collapsed' ? 'collapsed' : 'expanded';
-                setFooterState(initialState);
-
-                const syncFooterState = () => {
-                    const nextState = footer.getAttribute('state') === 'collapsed' ? 'collapsed' : 'expanded';
-                    setFooterState(nextState);
-                };
-
-                const handleNavigate = (event) => {
-                    const key = event.detail?.target || event.detail?.key;
-                    if (!key) return;
-                    event.preventDefault();
+            const handleNavigate = useCallback(
+                (key) => {
                     setActiveStageKey(resolveStageDefinition(key).key);
-                };
+                },
+                [resolveStageDefinition]
+            );
 
-                footer.addEventListener('app:navigate', handleNavigate);
-
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'state') {
-                            syncFooterState();
-                        }
-                    });
-                });
-
-                observer.observe(footer, { attributes: true, attributeFilter: ['state'] });
-
-                return () => {
-                    footer.removeEventListener('app:navigate', handleNavigate);
-                    observer.disconnect();
-                };
-            }, [resolveStageDefinition]);
+            const handleFooterStateChange = useCallback((nextState) => {
+                setFooterState(nextState);
+            }, []);
 
             useEffect(() => {
-                const footer = footerRef.current;
-                if (!footer) return;
-                const currentActive = footer.getAttribute('active-tab');
-                if (!currentActive) {
-                    footer.setAttribute('active-tab', 'home');
-                }
-                if (currentActive !== activeStageKey) {
-                    footer.setAttribute('active-tab', activeStageKey);
-                }
-            }, [activeStageKey]);
-
-            useEffect(() => {
-                const footer = footerRef.current;
-                if (footer) {
-                    footer.setAttribute('state', footerState);
-                }
-            }, [footerState]);
-
-            useEffect(() => {
-                const footer = footerRef.current;
                 const stageDefinition = resolveStageDefinition(activeStageKey);
-                if (stageDefinition.launchUrl && footer?.showFooterMessage) {
-                    footer.showFooterMessage(`Navegando para Iframe: ${stageDefinition.title}`, false);
+                if (stageDefinition.launchUrl) {
+                    window.dispatchEvent(
+                        new CustomEvent('app:notify', {
+                            detail: {
+                                message: `Navegando para Iframe: ${stageDefinition.title}`,
+                                type: 'info'
+                            }
+                        })
+                    );
                 }
             }, [activeStageKey, resolveStageDefinition]);
 
@@ -238,14 +197,24 @@
 
             return h(
                 'div',
-                { className: 'app-shell' },
-                h('main', { className: 'app-main app-stage' }, mainContent),
-                h('app-shared-footer', {
-                    ref: footerRef,
-                    id: 'globalFooter',
-                    'active-tab': activeStageKey,
+                { className: 'app-shell min-h-screen bg-slate-50 pb-32 flex flex-col' },
+                h(HeaderComponent, {
+                    title: activeStageDefinition.title,
+                    icon: activeStageDefinition.icon,
+                    hideSearch: true
+                }),
+                h('main', {
+                    className: 'app-main app-stage flex-1 w-full',
+                    style: { paddingBottom: '140px' }
+                }, mainContent),
+                h(FooterComponent, {
+                    activeTab: activeStageKey,
                     variant: 'full',
-                    state: footerState
+                    state: footerState,
+                    onNavigate: handleNavigate,
+                    onStateChange: handleFooterStateChange,
+                    showSettings: true,
+                    showMeta: true
                 })
             );
         }
