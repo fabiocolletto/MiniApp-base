@@ -7,11 +7,10 @@
   const h = global.React.createElement;
 
   const NAV_ITEMS = [
-    { key: "home", icon: "home", label: "Home" },
-    { key: "alerts", icon: "notifications", label: "Alertas" },
     { key: "catalog", icon: "grid_view", label: "Catálogo" },
+    { key: "favorites", icon: "star", label: "Favoritos" },
+    { key: "recents", icon: "history", label: "Recentes" },
     { key: "settings", icon: "settings", label: "Configurações" },
-    { key: "account", icon: "person", label: "Conta" },
   ];
 
   const ALERT_CLASS_MAP = {

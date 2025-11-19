@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Recentes</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <script type="module" src="../../docs/components/app-shared-header.js"></script>
+    <script type="module" src="../../docs/components/app-shared-footer.js"></script>
+    <meta name="theme-color" content="#f3f4f6">
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--color-body-bg);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .miniapp-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100vh;
+        }
+
+        .miniapp-panel {
+            background-color: transparent;
+            border: 1px dashed var(--color-border-strong);
+            border-radius: 1.25rem;
+            padding: clamp(1.5rem, 4vw, 2rem);
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: var(--color-shell-bg);
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .panel-heading .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+        }
+
+        .panel-heading h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 4vw, 1.85rem);
+        }
+
+        .panel-heading p {
+            margin: 0;
+            max-width: 70ch;
+        }
+
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .placeholder-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.35));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <main class="miniapp-container">
+        <section class="miniapp-panel" aria-labelledby="recents-title">
+            <header class="panel-heading">
+                <p class="eyebrow">MiniApps principais</p>
+                <h1 id="recents-title">Recentes</h1>
+                <p>Status: em criação. Este painel mostrará o histórico dos miniapps mais acessados e suas ações rápidas.</p>
+            </header>
+            <div class="placeholder-content" role="status" aria-live="polite">
+                <span class="placeholder-icon" aria-hidden="true">
+                    <span class="material-icons-sharp">history</span>
+                </span>
+                <p>Em breve você terá aqui uma trilha inteligente das últimas atividades. Use o rodapé para alternar entre os MiniApps enquanto os times finalizam o layout definitivo deste histórico.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

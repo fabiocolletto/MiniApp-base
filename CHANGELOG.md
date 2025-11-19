@@ -3,14 +3,15 @@
 Todas as mudanças relevantes deste repositório serão documentadas neste arquivo.
 
 ## [Unreleased]
+### Adicionado
+- Pastas `miniapps/favorites/` e `miniapps/recents/` com documentação e placeholders dedicados para suportar o novo padrão do rodapé.
+
 ### Alterado
-- `README.md` atualizado para refletir o repositório enxuto e os itens preservados (5 MiniApps em criação, header e footer compartilhados).
-- Slugs dos MiniApps base renomeados para `home`, `alerts`, `catalog`, `settings` e `account`, alinhando os ícones do rodapé e marcando-os como obrigatórios na documentação.
-- `service-worker.js` atualizado para precache das novas rotas dos MiniApps base e versão `v3.1` para forçar atualização do cache.
-- Diretrizes atualizadas para refletir a base React do shell (README e AGENTE).
-- `index.html` reescrito em React, mantendo o footer como controlador de navegação e renderizando os stages via `ReactDOM.createRoot`.
-- Navegação do shell sincronizada com o `app-shared-footer` via evento `app:navigate` e observação do atributo `state`.
-- `docs/components/app-shared-header.js` e `docs/components/app-shared-footer.js` reescritos como componentes React e consumidos diretamente pelo `index.html`, com o footer agora fixo no shell.
+- Footer compartilhado atualizado para exibir os quatro ícones principais (Catálogo, Favoritos, Recentes e Configurações) e alinhar a navegação ao novo padrão.
+- `index.html` agora monta apenas os MiniApps do rodapé fixo e abre cada item diretamente em iframes apontando para `miniapps/<slug>/index.html`.
+- Documentação (`README.md` e `miniapps/README.md`) revisada para refletir a nova navegação permanente e os MiniApps legados preservados.
+- `service-worker.js` incrementado para `v3.2` e com precache das rotas `miniapps/favorites/index.html` e `miniapps/recents/index.html`.
+- Diretrizes existentes mantidas para preservar o shell React e os componentes compartilhados.
 
 ### Removido
 - Pastas de QA, validação, design system e templates que não eram necessárias para manter os MiniApps e componentes principais.

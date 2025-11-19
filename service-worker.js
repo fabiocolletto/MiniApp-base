@@ -3,7 +3,7 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 
 workbox.setConfig({ debug: false });
 
-const APP_VERSION = 'v3.1';
+const APP_VERSION = 'v3.2';
 const PRECACHE_RESOURCES = [
   { url: './', revision: APP_VERSION },
   { url: './index.html', revision: APP_VERSION },
@@ -15,9 +15,11 @@ const PRECACHE_RESOURCES = [
   { url: './docs/card-model.html', revision: APP_VERSION },
   { url: './miniapps/home/index.html', revision: APP_VERSION },
   { url: './miniapps/alerts/index.html', revision: APP_VERSION },
-  { url: './miniapps/catalog/index.html', revision: APP_VERSION },
-  { url: './miniapps/settings/index.html', revision: APP_VERSION },
   { url: './miniapps/account/index.html', revision: APP_VERSION },
+  { url: './miniapps/catalog/index.html', revision: APP_VERSION },
+  { url: './miniapps/favorites/index.html', revision: APP_VERSION },
+  { url: './miniapps/recents/index.html', revision: APP_VERSION },
+  { url: './miniapps/settings/index.html', revision: APP_VERSION },
   { url: './js/indexeddb-store.js', revision: APP_VERSION },
   { url: './js/googleSync.js', revision: APP_VERSION },
   { url: './assets/icons/icon-192.svg', revision: APP_VERSION },

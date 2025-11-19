@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp - Favoritos</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <script type="module" src="../../docs/components/app-shared-header.js"></script>
+    <script type="module" src="../../docs/components/app-shared-footer.js"></script>
+    <meta name="theme-color" content="#f3f4f6">
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--color-body-bg);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .miniapp-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100vh;
+        }
+
+        .miniapp-panel {
+            background-color: transparent;
+            border: 1px solid var(--color-border-strong);
+            border-radius: 1.25rem;
+            padding: clamp(1.5rem, 4vw, 2.25rem);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            background-color: var(--color-card-bg);
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .panel-heading .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+        }
+
+        .panel-heading h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 4vw, 1.85rem);
+        }
+
+        .panel-heading p {
+            margin: 0;
+            max-width: 70ch;
+        }
+
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .placeholder-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(251, 191, 36, 0.35));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #b45309;
+        }
+    </style>
+</head>
+<body>
+    <main class="miniapp-container">
+        <section class="miniapp-panel" aria-labelledby="favorites-title">
+            <header class="panel-heading">
+                <p class="eyebrow">MiniApps principais</p>
+                <h1 id="favorites-title">Favoritos</h1>
+                <p>Status: em criação. Aqui você controlará os atalhos fixos do rodapé e do hub principal.</p>
+            </header>
+            <div class="placeholder-content" role="status" aria-live="polite">
+                <span class="placeholder-icon" aria-hidden="true">
+                    <span class="material-icons-sharp">star</span>
+                </span>
+                <p>Estamos montando o painel definitivo para organizar os MiniApps favoritos. Assim que os fluxos forem homologados, os componentes serão carregados automaticamente neste espaço.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
