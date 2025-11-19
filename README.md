@@ -3,7 +3,7 @@
 O repositório foi higienizado para manter apenas o que é necessário para os MiniApps em criação, o header legado e o footer principal. O shell agora é uma PWA estática servida por bundles React, preservando a entrega via arquivos estáticos e exibindo quatro ícones fixos no rodapé (Catálogo, Favoritos, Recentes e Configurações). Como parte da conclusão da implantação, os miniapps legados que não impactam o fluxo atual foram removidos do bundle para manter somente o que o sistema utiliza.
 
 ## Itens preservados
-- **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos apenas com aviso de desenvolvimento e acionados diretamente pelos ícones fixos do rodapé.
+- **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos acionados diretamente pelos ícones fixos do rodapé. Catálogo, Favoritos e Recentes agora compartilham o mesmo template React, com cards compactos, modal de detalhes e abertura em tela cheia pelo ícone no canto superior direito.
 - **Footer oficial** (`docs/components/app-shared-footer.js`), agora publicado como componente React funcional fixo no shell.
 - **Header compartilhado** (`docs/components/app-shared-header.js`) exportado como componente React modular para uso nos MiniApps.
 - **Componentes base** (`docs/components/app-shared-ui.js`) com AppCard/AppButton/AppSection desenhados sobre Material UI.
@@ -25,6 +25,7 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 │   ├── indexeddb-store.js # Acesso ao IndexedDB
 │   └── miniapp-data-loader.js # Loader com fallback remoto para miniapp-data.js (importável por React)
 ├── miniapps/              # MiniApps em desenvolvimento (apenas os quatro do rodapé + painéis complementares ativos)
+│   ├── catalog/app.js     # Template compartilhado para Catálogo/Favoritos/Recentes
 ├── pwa/                   # Manifesto do PWA
 ├── service-worker.js      # Service worker usado pelo shell
 └── index.html             # Shell principal sem header
@@ -48,10 +49,17 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 ## Fonte de dados do catálogo
 O arquivo `docs/miniapp-data.js` agora registra oficialmente os quatro MiniApps expostos pelo footer. Cada objeto inclui `id`, `title`, `description`, `category`, `contract`, `owner`, `status` e o `url` que leva diretamente ao painel correspondente. O MiniApp Catálogo consome essa lista via `loadMiniAppData`, permitindo testar o comportamento dos cards, o preenchimento do quadro e a sincronização de favoritos com o IndexedDB. Qualquer novo MiniApp precisa ser adicionado a essa fonte antes de ser divulgado para os usuários.
 
-## Status dos MiniApps
-Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
+## Template compartilhado para catálogo, favoritos e recentes
+- O arquivo `miniapps/catalog/app.js` concentra o grid React e é reutilizado pelos MiniApps `catalog`, `favorites` e `recents`, aplicando filtros automáticos para mostrar todos os apps, apenas os favoritos persistidos no IndexedDB ou o histórico local de aberturas.
+- O botão "Abrir MiniApp" foi substituído por um ícone de expansão no canto superior direito do card, que abre o painel em tela cheia e alterna para o ícone de fechamento quando ativo.
+- As informações de contrato foram movidas do card para o modal de detalhes, que agora inclui um botão de favorito para alimentar o MiniApp Favoritos.
+- O link de detalhes divide a mesma linha do indicador de status, deixando a face inicial do card mais compacta.
 
-- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard`/`AppButton` com Material UI, incluindo Dialog para detalhes rápidos de cada item. O grid consome `docs/miniapp-data.js` via `loadMiniAppData`, mostra placeholders durante o carregamento, reaproveita o empty state "Catálogo em criação" e emite o `postMessage` `catalog:height` para que o shell ajuste o iframe conforme o conteúdo.
+## Status dos MiniApps
+Cada pasta em `miniapps/` expõe um `index.html` dedicado. Catálogo, Favoritos e Recentes já usam o template React compartilhado descrito acima; Configurações segue com o painel em React + MUI; os demais permanecem placeholders simples enquanto os fluxos não são finalizados. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
+
+- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard` com ícone de expansão para abrir o MiniApp em tela cheia, status e link de detalhes na mesma linha e modal enriquecido com contrato + botão de favorito. O grid consome `docs/miniapp-data.js` via `loadMiniAppData`, mostra placeholders durante o carregamento e reaproveita o empty state "Catálogo em criação".
+- **MiniApps Favoritos e Recentes**: passaram a usar o mesmo grid do catálogo. Favoritos filtra os itens persistidos no IndexedDB (via botão do modal), enquanto Recentes exibe o histórico local gerado ao abrir um MiniApp pelo ícone de expansão.
 - **MiniApp Configurações**: remodelado em React + MUI com quatro cards (Perfil, Pagamentos, MiniSystems e Memória). Os fluxos de usuário/memória usam `Dialog` do contexto global, persistem tema/idioma, aplicam o tema diretamente nos AppCards e traduzem os textos principais de acordo com o idioma escolhido, além de espelharem as leituras do IndexedDB em tempo real.
 
 ## Desenvolvimento local

@@ -3,7 +3,7 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 
 workbox.setConfig({ debug: false });
 
-const APP_VERSION = 'v3.3';
+const APP_VERSION = 'v3.4';
 const PRECACHE_RESOURCES = [
   { url: './', revision: APP_VERSION },
   { url: './index.html', revision: APP_VERSION },
@@ -13,6 +13,7 @@ const PRECACHE_RESOURCES = [
   { url: './docs/miniapp-card.js', revision: APP_VERSION },
   { url: './docs/miniapp-data.js', revision: APP_VERSION },
   { url: './miniapps/catalog/index.html', revision: APP_VERSION },
+  { url: './miniapps/catalog/app.js', revision: APP_VERSION },
   { url: './miniapps/favorites/index.html', revision: APP_VERSION },
   { url: './miniapps/recents/index.html', revision: APP_VERSION },
   { url: './miniapps/settings/index.html', revision: APP_VERSION },

@@ -7,8 +7,9 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `docs/components/app-shared-ui.js` com AppCard/AppButton/AppSection padronizados sobre Material UI.
 - `docs/components/app-modal-context.js` expondo `AppModalProvider`/`useAppModal` para Dialog/Drawer/Snackbar.
 - Grid React do MiniApp Catálogo utilizando AppCards e Dialog de detalhes.
+- Template compartilhado `miniapps/catalog/app.js` reutilizado por Catálogo/Favoritos/Recentes, aplicando filtros por favoritos do IndexedDB e histórico local de aberturas.
 - Fluxos de Perfil e Memória no MiniApp Configurações com Dialogs acessíveis e Snackbar de confirmação.
-- Pastas `miniapps/favorites/` e `miniapps/recents/` com documentação e placeholders dedicados para suportar o novo padrão do rodapé.
+- Pastas `miniapps/favorites/` e `miniapps/recents/` alimentadas pelo mesmo template do catálogo, mantendo documentação e filtros específicos do rodapé.
 - Script `tests/ensure-screen-capture.js` rodado via `npm test` para garantir que nenhum arquivo inclua flags que bloqueiem prints em Android/iOS.
 - Seção no `README.md` documentando a política de captura de tela e o procedimento de validação.
 - MiniApp complementar `miniapps/payments/` com card compacto/expandido dedicado à assinatura brasileira via Mercado Pago.
@@ -22,7 +23,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `index.html` passou a usar `ThemeProvider`, `Container` e `Box` do Material UI para controlar o Stage responsivo.
 - `docs/miniapp-global.css` foi reduzido a tokens/layout base, delegando a responsividade para o Material UI.
 - MiniApp Configurações reescrito em React + MUI com quatro cards (Perfil, Pagamentos, MiniSystems, Memória) e utilitários isolados em `config-control.js`.
-- MiniApp Catálogo deixou a tabela fixa e agora renderiza os cards em `Grid` com AppCard/AppButton.
+- MiniApp Catálogo deixou a tabela fixa e agora renderiza os cards em `Grid` com AppCard, ícone de expansão para abrir o MiniApp em tela cheia, status + link de detalhes na mesma linha e dados de contrato movidos para o modal (com botão de favorito integrado).
 - Footer compartilhado atualizado para exibir os quatro ícones principais (Catálogo, Favoritos, Recentes e Configurações) e alinhar a navegação ao novo padrão.
 - `index.html` agora monta apenas os MiniApps do rodapé fixo e abre cada item diretamente em iframes apontando para `miniapps/<slug>/index.html`.
 - Documentação (`README.md` e `miniapps/README.md`) revisada para refletir a nova navegação permanente e os MiniApps legados preservados.
@@ -34,7 +35,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `docs/components/app-shared-ui.js` passou a consumir o palette do tema atual para ajustar borda, sombra e fundo dos AppCards independentemente do modo claro/escuro.
 - `miniapps/settings/index.html` agora utiliza o mapa de cópias e os helpers `resolveThemeLabel`/`resolveLanguageLabel` para refletir tema e idioma nos cards de Perfil, Pagamentos, MiniSystems e Memória.
 - MiniApp Catálogo passou a consumir `loadMiniAppData`/`docs/miniapp-data.js`, exibir skeletons enquanto carrega, reaproveitar o empty state "Catálogo em criação" e disparar Snackbar em erros ao buscar dados.
-- `service-worker.js` atualizado para `v3.3`, removendo o precache de páginas que não fazem mais parte do bundle.
+- `service-worker.js` atualizado para `v3.4`, incluindo o precache do template compartilhado do catálogo.
 - `README.md` e `miniapps/README.md` atualizados para refletir a limpeza final da implantação.
 
 ### Removido
