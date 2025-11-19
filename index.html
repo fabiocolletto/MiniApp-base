@@ -111,41 +111,86 @@
         const NAV_STAGE_DEFINITIONS = {
             catalog: {
                 key: 'catalog',
-                title: 'MiniApp de Catálogo',
-                description: 'Lista oficial de miniapps em preparo.',
                 icon: 'grid_view',
+                titles: {
+                    'pt-BR': 'MiniApp de Catálogo',
+                    'en-US': 'Catalog MiniApp',
+                    'es-ES': 'MiniApp de Catálogo'
+                },
+                descriptions: {
+                    'pt-BR': 'Lista oficial de miniapps em preparo.',
+                    'en-US': 'Official list of MiniApps in preparation.',
+                    'es-ES': 'Lista oficial de MiniApps en preparación.'
+                },
                 sourceId: 'catalog',
                 isCore: true,
                 launchUrl: './miniapps/catalog/index.html'
             },
             favorites: {
                 key: 'favorites',
-                title: 'MiniApp de Favoritos',
-                description: 'Painel para organizar atalhos favoritos.',
                 icon: 'star',
+                titles: {
+                    'pt-BR': 'MiniApp de Favoritos',
+                    'en-US': 'Favorites MiniApp',
+                    'es-ES': 'MiniApp de Favoritos'
+                },
+                descriptions: {
+                    'pt-BR': 'Painel para organizar atalhos favoritos.',
+                    'en-US': 'Dashboard to organize favorite shortcuts.',
+                    'es-ES': 'Panel para organizar accesos favoritos.'
+                },
                 sourceId: 'favorites',
                 isCore: true,
                 launchUrl: './miniapps/favorites/index.html'
             },
             recents: {
                 key: 'recents',
-                title: 'MiniApp de Recentes',
-                description: 'Histórico de miniapps acessados recentemente.',
                 icon: 'history',
+                titles: {
+                    'pt-BR': 'MiniApp de Recentes',
+                    'en-US': 'Recents MiniApp',
+                    'es-ES': 'MiniApp de Recientes'
+                },
+                descriptions: {
+                    'pt-BR': 'Histórico de miniapps acessados recentemente.',
+                    'en-US': 'History of recently accessed MiniApps.',
+                    'es-ES': 'Historial de MiniApps accedidos recientemente.'
+                },
                 sourceId: 'recents',
                 isCore: true,
                 launchUrl: './miniapps/recents/index.html'
             },
             settings: {
                 key: 'settings',
-                title: 'MiniApp de Configurações',
-                description: 'Preferências globais do usuário.',
                 icon: 'settings',
+                titles: {
+                    'pt-BR': 'MiniApp de Configurações',
+                    'en-US': 'Settings MiniApp',
+                    'es-ES': 'MiniApp de Configuraciones'
+                },
+                descriptions: {
+                    'pt-BR': 'Preferências globais do usuário.',
+                    'en-US': 'Global user preferences.',
+                    'es-ES': 'Preferencias globales del usuario.'
+                },
                 sourceId: 'settings',
                 isCore: true,
                 launchUrl: './miniapps/settings/index.html'
             }
         };
+
+        function resolveStageCopy(definition, language) {
+            const fallbackLanguage = 'pt-BR';
+            const title = definition.titles?.[language]
+                || definition.titles?.[fallbackLanguage]
+                || definition.title
+                || definition.key;
+            const description = definition.descriptions?.[language]
+                || definition.descriptions?.[fallbackLanguage]
+                || definition.description
+                || '';
+            return { title, description };
+        }
 
         function getLanguageCopy(language) {
             return LANGUAGE_COPY[language] || LANGUAGE_COPY['pt-BR'];
@@ -298,7 +343,7 @@
             return normalizeViewportFloor(Math.max(available, seventyFivePercent));
         }
 
-        function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode }) {
+        function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode, globalPreferences }) {
             const hasPreferredHeight = typeof preferredHeight === 'number' && preferredHeight > 0;
             const normalizedFloor = normalizeViewportFloor(viewportFloor);
             const resolvedHeight = hasPreferredHeight
@@ -308,6 +353,23 @@
             const stageShadow = resolvedTheme === 'dark'
                 ? '0 30px 60px rgba(2, 6, 23, 0.65)'
                 : '0 30px 60px rgba(15, 23, 42, 0.2)';
+            const iframeRef = React.useRef(null);
+
+            React.useEffect(() => {
+                const iframeEl = iframeRef.current;
+                if (!iframeEl || !iframeEl.contentWindow || !globalPreferences) {
+                    return undefined;
+                }
+                try {
+                    iframeEl.contentWindow.postMessage(
+                        { type: GLOBAL_PREFERENCES_MESSAGE_TYPE, preferences: globalPreferences },
+                        '*'
+                    );
+                } catch (error) {
+                    console.warn('Não foi possível enviar preferências para o iframe ativo.', error);
+                }
+                return undefined;
+            }, [globalPreferences, stageDefinition.launchUrl]);
 
             return h(
                 Box,
@@ -318,7 +380,7 @@
                         flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
-                        borderRadius: 4,
+                        borderRadius: 0,
                         overflow: 'hidden',
                         boxShadow: stageShadow,
                         minHeight: resolvedHeight,
@@ -334,7 +396,8 @@
                         border: 'none',
                         display: 'block',
                         flex: 1,
-                    }
+                    },
+                    ref: iframeRef
                 })
             );
         }
@@ -370,10 +433,11 @@
                 [globalPreferences.language]
             );
 
-            const activeStageDefinition = useMemo(
-                () => resolveStageDefinition(activeStageKey),
-                [activeStageKey, resolveStageDefinition]
-            );
+            const activeStageDefinition = useMemo(() => {
+                const definition = resolveStageDefinition(activeStageKey);
+                const copy = resolveStageCopy(definition, globalPreferences.language);
+                return { ...definition, ...copy };
+            }, [activeStageKey, globalPreferences.language, resolveStageDefinition]);
 
             const handleNavigate = useCallback(
                 (key) => {
@@ -548,6 +612,7 @@
                     preferredHeight: activeFrameHeight,
                     viewportFloor: stageViewportFloor,
                     themeMode: effectiveTheme,
+                    globalPreferences,
                 })
                 : h(
                     Paper,
