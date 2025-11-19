@@ -38,3 +38,8 @@ Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que
 
 ## Desenvolvimento local
 Nenhuma dependência Node é necessária além do precache do service worker para servir os arquivos resultantes do build. Use qualquer servidor HTTP simples (ex.: `python -m http.server`) para navegar pelo shell e verificar os placeholders gerados pelo React.
+
+## Garantia de captura de tela
+- O shell e os MiniApps não incluem flags nativos nem listeners que escondam ou apaguem o conteúdo durante capturas de tela; o layout HTML/CSS permanece sempre renderizado.
+- O script `npm test` executa `tests/ensure-screen-capture.js`, que verifica automaticamente se algum arquivo introduziu referências conhecidas por bloquear screenshots em Android (`FLAG_SECURE`, `setFlags`/`setSecure`) ou iOS (`isScreenCaptureDisabled`). Caso um bloqueio seja encontrado, o comando falhará orientando a limpeza.
+- Para validar em qualquer dispositivo, rode `npm test` antes da publicação e utilize a própria navegação do shell em um navegador móvel ou WebView. Se o teste passar e o container nativo não definir flags restritivos, o print screen permanecerá liberado.
