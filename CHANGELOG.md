@@ -10,6 +10,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Diretrizes atualizadas para refletir a base React do shell (README e AGENTE).
 - `index.html` reescrito em React, mantendo o footer como controlador de navegação e renderizando os stages via `ReactDOM.createRoot`.
 - Navegação do shell sincronizada com o `app-shared-footer` via evento `app:navigate` e observação do atributo `state`.
+- `docs/components/app-shared-header.js` e `docs/components/app-shared-footer.js` reescritos como componentes React e consumidos diretamente pelo `index.html`, com o footer agora fixo no shell.
 
 ### Removido
 - Pastas de QA, validação, design system e templates que não eram necessárias para manter os MiniApps e componentes principais.
