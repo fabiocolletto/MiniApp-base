@@ -692,29 +692,37 @@
                     null,
                     e(
                         Box,
-                        { className: 'miniapp-stage', sx: { flex: 1 } },
+                        { className: 'miniapp-stage', sx: { flex: 1, display: 'flex' } },
                         e(
                             Container,
-                            { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            {
+                                maxWidth: 'lg',
+                                disableGutters: true,
+                                sx: { flex: 1, display: 'flex', flexDirection: 'column' },
+                            },
                             e(
                                 Stack,
-                                { spacing: 1.25 },
-                                e(Typography, { variant: 'overline', color: 'text.secondary' }, localeCopy.hero.overline),
-                                e(Typography, { variant: 'h4', component: 'h1' }, localeCopy.hero.title),
-                                e(Typography, { color: 'text.secondary' }, localeCopy.hero.description)
-                            ),
-                            e(
-                                Grid,
-                                { container: true, spacing: 2 },
-                                e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(UserProfileCard, { copy: localeCopy.userCard, language: preferences.language })),
-                                e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PaymentsCard, { copy: localeCopy.paymentsCard, language: preferences.language })),
-                                e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PreferencesCard, { preferences, onChange: handlePreferenceChange, lastSync: lastSyncedAt, copy: localeCopy.preferencesCard, language: preferences.language }))
-                            ),
-                            e(
-                                AppSection,
-                                { title: localeCopy.memory.sectionTitle, description: localeCopy.memory.sectionDescription },
-                                e(Grid, { container: true, spacing: 2 },
-                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
+                                { spacing: 4, sx: { flex: 1 } },
+                                e(
+                                    Stack,
+                                    { spacing: 1.25 },
+                                    e(Typography, { variant: 'overline', color: 'text.secondary' }, localeCopy.hero.overline),
+                                    e(Typography, { variant: 'h4', component: 'h1' }, localeCopy.hero.title),
+                                    e(Typography, { color: 'text.secondary' }, localeCopy.hero.description)
+                                ),
+                                e(
+                                    Grid,
+                                    { container: true, spacing: 2 },
+                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(UserProfileCard, { copy: localeCopy.userCard, language: preferences.language })),
+                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PaymentsCard, { copy: localeCopy.paymentsCard, language: preferences.language })),
+                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PreferencesCard, { preferences, onChange: handlePreferenceChange, lastSync: lastSyncedAt, copy: localeCopy.preferencesCard, language: preferences.language }))
+                                ),
+                                e(
+                                    AppSection,
+                                    { title: localeCopy.memory.sectionTitle, description: localeCopy.memory.sectionDescription },
+                                    e(Grid, { container: true, spacing: 2 },
+                                        e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
+                                    )
                                 )
                             )
                         )
