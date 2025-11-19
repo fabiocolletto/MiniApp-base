@@ -41,10 +41,14 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 - **Sistema de modais**: `docs/components/app-modal-context.js` fornece `AppModalProvider`/`useAppModal` para abrir `Dialog`, `Drawer` e `Snackbar` padronizados (com fechamento por ESC/click externo).
 - **CSS global enxuto**: `docs/miniapp-global.css` mantém apenas tokens, reset e layout do Stage/Footer. A responsividade passa a ser responsabilidade do Material UI.
 
+## Comunicação entre shell e MiniApps
+- O shell React escuta mensagens `postMessage` do tipo `catalog:height` vindas dos miniapps carregados em iframe. Quando o evento chega de uma origem confiável e corresponde ao miniapp ativo, o iframe tem a altura atualizada para coincidir com o conteúdo interno, eliminando a rolagem dupla.
+- O MiniApp Catálogo utiliza `ResizeObserver` para detectar mudanças de layout, calcula o `scrollHeight` da `miniapp-stage` e envia o valor ao shell junto com o `sourceId`. O fallback mantém o mínimo de 70–75 vh para miniapps que ainda não publicam a mensagem.
+
 ## Status dos MiniApps
 Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
 
-- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard`/`AppButton` com Material UI, incluindo Dialog para detalhes rápidos de cada item.
+- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard`/`AppButton` com Material UI, incluindo Dialog para detalhes rápidos de cada item. O grid consome `docs/miniapp-data.js` via `loadMiniAppData`, mostra placeholders durante o carregamento, reaproveita o empty state "Catálogo em criação" e emite o `postMessage` `catalog:height` para que o shell ajuste o iframe conforme o conteúdo.
 - **MiniApp Configurações**: remodelado em React + MUI com quatro cards (Perfil, Pagamentos, MiniSystems e Memória). Os fluxos de usuário/memória usam `Dialog` do contexto global, persistem tema/idioma, aplicam o tema diretamente nos AppCards e traduzem os textos principais de acordo com o idioma escolhido, além de espelharem as leituras do IndexedDB em tempo real.
 
 ## Desenvolvimento local

@@ -15,6 +15,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Card MiniSystems dentro de `miniapps/settings/` para gerenciar preferências globais (tema claro/escuro e idiomas PT/EN/ES) com persistência local e broadcast via `postMessage`.
 - Pasta `miniapps/minisystems/` com placeholder dedicado às preferências globais e links diretos para o painel de Configurações.
 - Mapa de cópias multilíngues no MiniApp Configurações garantindo tradução imediata dos cards quando o idioma global é alterado.
+- Handshake `catalog:height` entre o shell React e miniapps em iframe para sincronizar automaticamente a altura do Stage quando o conteúdo interno cresce.
 
 ### Alterado
 - `index.html` passou a usar `ThemeProvider`, `Container` e `Box` do Material UI para controlar o Stage responsivo.
@@ -31,6 +32,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `README.md` e `miniapps/README.md` atualizados para citar o novo MiniSystems e deixar claro o vínculo entre os cards de Configurações e seus respectivos MiniApps (`account`, `payments` e `minisystems`).
 - `docs/components/app-shared-ui.js` passou a consumir o palette do tema atual para ajustar borda, sombra e fundo dos AppCards independentemente do modo claro/escuro.
 - `miniapps/settings/index.html` agora utiliza o mapa de cópias e os helpers `resolveThemeLabel`/`resolveLanguageLabel` para refletir tema e idioma nos cards de Perfil, Pagamentos, MiniSystems e Memória.
+- MiniApp Catálogo passou a consumir `loadMiniAppData`/`docs/miniapp-data.js`, exibir skeletons enquanto carrega, reaproveitar o empty state "Catálogo em criação" e disparar Snackbar em erros ao buscar dados.
 
 ### Removido
 - Pastas de QA, validação, design system e templates que não eram necessárias para manter os MiniApps e componentes principais.

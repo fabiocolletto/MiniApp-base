@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
+    <link rel="stylesheet" href="../../docs/miniapp-card.css">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -24,6 +25,8 @@
     <main id="catalog-root" class="miniapp-stage"></main>
 
     <script type="module">
+        import { loadMiniAppData } from '../../js/miniapp-data-loader.js';
+
         const ReactLib = window.React;
         const ReactDOMLib = window.ReactDOM;
         const Material = window.MaterialUI;
@@ -37,6 +40,8 @@
         const {
             useMemo,
             Fragment,
+            useEffect,
+            useState,
         } = ReactLib;
         const {
             ThemeProvider,
@@ -54,72 +59,12 @@
             List,
             ListItem,
             ListItemText,
+            Snackbar,
+            Alert,
+            Skeleton,
         } = Material;
 
         const e = ReactLib.createElement;
-
-        const CATALOG_ITEMS = [
-            {
-                id: 'catalogo-5horas',
-                title: 'Catálogo 5Horas',
-                description: 'Card principal do shell, expõe o grid oficial de MiniApps e integra com favoritos.',
-                category: 'Core',
-                contract: 'RodaPack',
-                status: 'published',
-                url: './index.html',
-                owner: 'Equipe 5Horas',
-            },
-            {
-                id: 'settings-bridge',
-                title: 'Configurações do Sistema',
-                description: 'Card replicado dentro deste painel para navegação rápida com preferências globais.',
-                category: 'MiniSystems',
-                contract: 'Interno',
-                status: 'draft',
-                url: '../settings/index.html',
-                owner: 'Equipe 5Horas',
-            },
-            {
-                id: 'payments-pro',
-                title: 'Pagamentos e Assinaturas',
-                description: 'Experiência dedicada a recorrências financeiras e integrações com Mercado Pago.',
-                category: 'Financeiro',
-                contract: 'BR-MercadoPago',
-                status: 'draft',
-                url: '../payments/index.html',
-                owner: 'MiniApp Payments',
-            },
-            {
-                id: 'favorites-panel',
-                title: 'Painel de Favoritos',
-                description: 'Permite fixar atalhos críticos do catálogo com persistência no IndexedDB.',
-                category: 'Produtividade',
-                contract: 'RodaPack',
-                status: 'em revisão',
-                url: '../favorites/index.html',
-                owner: 'Equipe Shell',
-            },
-            {
-                id: 'recents-tracker',
-                title: 'Histórico de Acessos',
-                description: 'Mostra os últimos MiniApps abertos e sugere retornos rápidos.',
-                category: 'Produtividade',
-                contract: 'RodaPack',
-                status: 'em revisão',
-                url: '../recents/index.html',
-                owner: 'Equipe Shell',
-            },
-            {
-                id: 'alerts-hub',
-                title: 'Central de Alertas',
-                description: 'MiniApp legado preservado para notificar o time sobre incidentes críticos.',
-                category: 'Legado',
-                contract: 'Especial',
-                status: 'manutenção',
-                url: '../alerts/index.html',
-                owner: 'Equipe Legada',
-            },
-        ];
 
         const STATUS_PROPS = {
             published: { label: 'Publicado', color: 'success' },
@@ -187,6 +132,109 @@
             );
         }
 
+        function useCatalogData() {
+            const [items, setItems] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [errorMessage, setErrorMessage] = useState('');
+
+            useEffect(() => {
+                let isMounted = true;
+
+                async function fetchData() {
+                    setIsLoading(true);
+                    try {
+                        const data = await loadMiniAppData();
+                        if (!isMounted) {
+                            return;
+                        }
+                        if (Array.isArray(data)) {
+                            setItems(data);
+                        } else {
+                            setItems([]);
+                        }
+                        setErrorMessage('');
+                    } catch (error) {
+                        console.error('Falha ao carregar miniapp-data.js', error);
+                        if (!isMounted) {
+                            return;
+                        }
+                        setItems([]);
+                        setErrorMessage(error?.message || 'Não foi possível carregar o catálogo.');
+                    } finally {
+                        if (isMounted) {
+                            setIsLoading(false);
+                        }
+                    }
+                }
+
+                fetchData();
+
+                return () => {
+                    isMounted = false;
+                };
+            }, []);
+
+            return { items, isLoading, errorMessage, setErrorMessage };
+        }
+
+        function useIframeHeightBridge() {
+            useEffect(() => {
+                if (typeof window === 'undefined' || window.parent === window) {
+                    return undefined;
+                }
+
+                const target = document.querySelector('.miniapp-stage');
+                if (!target) {
+                    return undefined;
+                }
+
+                let lastHeight = 0;
+                let rafId = null;
+
+                const postHeight = () => {
+                    rafId = null;
+                    const height = Math.ceil(target.scrollHeight);
+                    if (!height || height === lastHeight) {
+                        return;
+                    }
+                    lastHeight = height;
+                    window.parent.postMessage({
+                        type: 'catalog:height',
+                        sourceId: 'catalog',
+                        height,
+                    }, '*');
+                };
+
+                const schedulePost = () => {
+                    if (rafId !== null) {
+                        return;
+                    }
+                    rafId = window.requestAnimationFrame(postHeight);
+                };
+
+                const observer = typeof ResizeObserver !== 'undefined'
+                    ? new ResizeObserver(() => schedulePost())
+                    : null;
+
+                if (observer) {
+                    observer.observe(target);
+                }
+
+                schedulePost();
+                window.addEventListener('load', schedulePost);
+
+                return () => {
+                    window.removeEventListener('load', schedulePost);
+                    if (observer) {
+                        observer.disconnect();
+                    }
+                    if (rafId !== null) {
+                        window.cancelAnimationFrame(rafId);
+                    }
+                };
+            }, []);
+        }
+
         function CatalogApp() {
             const theme = useMemo(() => createTheme({
                 palette: {
@@ -203,6 +251,63 @@
                 },
                 shape: { borderRadius: 24 },
             }), []);
+
+            const { items, isLoading, errorMessage, setErrorMessage } = useCatalogData();
+            useIframeHeightBridge();
+
+            const loadingPlaceholders = useMemo(() => Array.from({ length: 6 }, (_, index) => index), []);
+
+            let sectionContent;
+            if (isLoading) {
+                sectionContent = e(
+                    Grid,
+                    { container: true, spacing: 2 },
+                    loadingPlaceholders.map((placeholder) => e(
+                        Grid,
+                        { item: true, xs: 12, sm: 6, md: 4, key: `placeholder-${placeholder}` },
+                        e(
+                            AppCard,
+                            { title: '', subtitle: '', helper: '', sx: { minHeight: 320 } },
+                            e(
+                                Stack,
+                                { spacing: 2 },
+                                e(Skeleton, { variant: 'text', height: 32, width: '70%' }),
+                                e(Skeleton, { variant: 'text', height: 20, width: '100%' }),
+                                e(Skeleton, { variant: 'rectangular', height: 120, width: '100%', sx: { borderRadius: 3 } }),
+                                e(Skeleton, { variant: 'rectangular', height: 48, width: '100%', sx: { borderRadius: 3 } })
+                            )
+                        )
+                    ))
+                );
+            } else if (items.length === 0) {
+                sectionContent = e(
+                    Box,
+                    { sx: { width: '100%', display: 'flex', justifyContent: 'center', py: 4 } },
+                    e(
+                        'div',
+                        { className: 'miniapp-card empty-state', style: { maxWidth: 420, width: '100%' } },
+                        e(
+                            'div',
+                            { className: 'placeholder-content' },
+                            e('p', { className: 'placeholder-label' }, 'Catálogo em criação'),
+                            e('p', { className: 'placeholder-description' }, 'Os MiniApps oficiais estão em desenvolvimento.')
+                        )
+                    )
+                );
+            } else {
+                sectionContent = e(
+                    Grid,
+                    { container: true, spacing: 2 },
+                    items.map((app) => e(Grid, { item: true, xs: 12, sm: 6, md: 4, key: app.id || app.title }, e(CatalogCard, { app })))
+                );
+            }
+
+            const handleCloseError = (_, reason) => {
+                if (reason === 'clickaway') {
+                    return;
+                }
+                setErrorMessage('');
+            };
 
             return e(
                 ThemeProvider,
@@ -227,14 +332,22 @@
                             e(
                                 AppSection,
                                 { title: 'MiniApps ativos', description: 'A lista reflete o estado atual do RodaPack.' },
-                                e(
-                                    Grid,
-                                    { container: true, spacing: 2 },
-                                    CATALOG_ITEMS.map((app) => e(Grid, { item: true, xs: 12, sm: 6, md: 4, key: app.id }, e(CatalogCard, { app })))
-                                )
+                                sectionContent
                             )
                         )
                     )
+                ),
+                e(
+                    Snackbar,
+                    {
+                        open: Boolean(errorMessage),
+                        autoHideDuration: 6000,
+                        onClose: handleCloseError,
+                        anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                    },
+                    errorMessage
+                        ? e(Alert, { severity: 'error', variant: 'filled', onClose: handleCloseError }, errorMessage)
+                        : null
                 )
             );
         }
