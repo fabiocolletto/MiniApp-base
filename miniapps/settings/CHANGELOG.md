@@ -1,5 +1,9 @@
 # Changelog - MiniApp Configurações do Sistema
 
+## [0.3.0] - 2025-02-14
+### Alterado
+- Painel focado exclusivamente no monitoramento do IndexedDB, com o fluxo de pagamentos migrado para o novo MiniApp dedicado.
+
 ## [0.2.0] - 2025-02-14
 ### Adicionado
 - Card compacto de 300px com resumo do uso do IndexedDB e indicador visual de expansão.
