@@ -40,6 +40,73 @@
             throw new Error('Componentes compartilhados não foram carregados para o shell React.');
         }
 
+        const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
+        const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
+        const GLOBAL_PREFERENCES_STORAGE_KEY = 'miniapp:settings:global-preferences';
+        const GLOBAL_PREFERENCES_MESSAGE_TYPE = 'miniapp:global-preferences';
+        const LANGUAGE_COPY = Object.freeze({
+            'pt-BR': Object.freeze({
+                header: Object.freeze({
+                    searchLabel: 'Pesquisar MiniApps',
+                    installLabel: 'Instalar'
+                }),
+                footer: Object.freeze({
+                    nav: Object.freeze({
+                        catalog: 'Catálogo',
+                        favorites: 'Favoritos',
+                        recents: 'Recentes',
+                        settings: 'Configurações'
+                    }),
+                    meta: Object.freeze({
+                        heading: 'Explorar MiniApps',
+                        collapsedLabel: 'Navegação rápida',
+                        collapse: 'Recolher',
+                        expand: 'Expandir o rodapé'
+                    })
+                })
+            }),
+            'en-US': Object.freeze({
+                header: Object.freeze({
+                    searchLabel: 'Search MiniApps',
+                    installLabel: 'Install'
+                }),
+                footer: Object.freeze({
+                    nav: Object.freeze({
+                        catalog: 'Catalog',
+                        favorites: 'Favorites',
+                        recents: 'Recents',
+                        settings: 'Settings'
+                    }),
+                    meta: Object.freeze({
+                        heading: 'Explore MiniApps',
+                        collapsedLabel: 'Quick navigation',
+                        collapse: 'Collapse',
+                        expand: 'Expand footer'
+                    })
+                })
+            }),
+            'es-ES': Object.freeze({
+                header: Object.freeze({
+                    searchLabel: 'Buscar MiniApps',
+                    installLabel: 'Instalar'
+                }),
+                footer: Object.freeze({
+                    nav: Object.freeze({
+                        catalog: 'Catálogo',
+                        favorites: 'Favoritos',
+                        recents: 'Recientes',
+                        settings: 'Configuraciones'
+                    }),
+                    meta: Object.freeze({
+                        heading: 'Explorar MiniApps',
+                        collapsedLabel: 'Navegación rápida',
+                        collapse: 'Replegar',
+                        expand: 'Expandir el pie'
+                    })
+                })
+            })
+        });
+
         const NAV_STAGE_DEFINITIONS = {
             catalog: {
                 key: 'catalog',
@@ -79,52 +146,136 @@
             }
         };
 
-        const IFRAME_RESIZE_MESSAGE_TYPE = 'catalog:height';
-        const ALLOWED_IFRAME_ORIGINS = new Set(['null', window.location.origin]);
+        function getLanguageCopy(language) {
+            return LANGUAGE_COPY[language] || LANGUAGE_COPY['pt-BR'];
+        }
 
-        const appTheme = createTheme({
-            palette: {
-                mode: 'light',
-                primary: { main: '#f97316' },
-                secondary: { main: '#0ea5e9' },
-                background: {
-                    default: '#f3f4f6',
-                    paper: '#ffffff',
+        function normalizeTheme(theme) {
+            return theme === 'dark' ? 'dark' : 'light';
+        }
+
+        function normalizeLanguage(language) {
+            return SUPPORTED_LANGUAGES.includes(language) ? language : DEFAULT_GLOBAL_PREFERENCES.language;
+        }
+
+        function normalizePreferences(preferences) {
+            if (!preferences) {
+                return { ...DEFAULT_GLOBAL_PREFERENCES };
+            }
+            return {
+                theme: normalizeTheme(preferences.theme),
+                language: normalizeLanguage(preferences.language)
+            };
+        }
+
+        function safeParsePreferences(rawValue) {
+            if (!rawValue) {
+                return null;
+            }
+            try {
+                return JSON.parse(rawValue);
+            } catch (error) {
+                console.warn('Preferências globais inválidas foram ignoradas.', error);
+                return null;
+            }
+        }
+
+        function readStoredPreferences() {
+            if (typeof window === 'undefined') {
+                return { ...DEFAULT_GLOBAL_PREFERENCES };
+            }
+            try {
+                const rawValue = window.localStorage?.getItem(GLOBAL_PREFERENCES_STORAGE_KEY);
+                const parsed = safeParsePreferences(rawValue);
+                return normalizePreferences(parsed);
+            } catch (error) {
+                console.warn('Não foi possível ler preferências globais do armazenamento.', error);
+                return { ...DEFAULT_GLOBAL_PREFERENCES };
+            }
+        }
+
+        function createAppTheme(mode) {
+            const paletteMode = normalizeTheme(mode);
+            const isDark = paletteMode === 'dark';
+            const borderColor = isDark ? 'rgba(148, 163, 184, 0.25)' : 'rgba(15,23,42,0.08)';
+            const surfaceShadow = isDark ? '0 30px 60px rgba(2, 6, 23, 0.5)' : '0 30px 60px rgba(15, 23, 42, 0.15)';
+            return createTheme({
+                palette: {
+                    mode: paletteMode,
+                    primary: { main: '#f97316' },
+                    secondary: { main: '#0ea5e9' },
+                    background: {
+                        default: isDark ? '#020617' : '#f3f4f6',
+                        paper: isDark ? '#0f172a' : '#ffffff',
+                    },
+                    text: {
+                        primary: isDark ? '#f8fafc' : '#0f172a',
+                        secondary: isDark ? '#94a3b8' : '#475569',
+                    },
                 },
-                text: {
-                    primary: '#0f172a',
-                    secondary: '#475569',
+                typography: {
+                    fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                    h4: { fontWeight: 600 },
+                    button: { textTransform: 'none', fontWeight: 600 },
                 },
-            },
-            typography: {
-                fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                h4: { fontWeight: 600 },
-                button: { textTransform: 'none', fontWeight: 600 },
-            },
-            shape: {
-                borderRadius: 24,
-            },
-            components: {
-                MuiPaper: {
-                    styleOverrides: {
-                        root: {
-                            borderRadius: 32,
-                            border: '1px solid rgba(15,23,42,0.08)',
-                            boxShadow: '0 30px 60px rgba(15,23,42,0.15)',
+                shape: {
+                    borderRadius: 24,
+                },
+                components: {
+                    MuiPaper: {
+                        styleOverrides: {
+                            root: {
+                                borderRadius: 32,
+                                border: `1px solid ${borderColor}`,
+                                boxShadow: surfaceShadow,
+                            },
+                        },
+                    },
+                    MuiContainer: {
+                        defaultProps: {
+                            maxWidth: 'lg',
                         },
                     },
                 },
-                MuiContainer: {
-                    defaultProps: {
-                        maxWidth: 'lg',
-                    },
-                },
-            },
-        });
+            });
+        }
 
-        function IframeStage({ stageDefinition, preferredHeight }) {
+        const IFRAME_RESIZE_MESSAGE_TYPE = 'catalog:height';
+        const ALLOWED_IFRAME_ORIGINS = new Set(['null', window.location.origin]);
+
+        const MIN_STAGE_HEIGHT = 640;
+
+        function normalizeViewportFloor(value) {
+            if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+                return Math.max(Math.round(value), MIN_STAGE_HEIGHT);
+            }
+            return MIN_STAGE_HEIGHT;
+        }
+
+        function computeStageViewportFloor() {
+            if (typeof window === 'undefined') {
+                return MIN_STAGE_HEIGHT;
+            }
+            const viewport = window.innerHeight || document.documentElement?.clientHeight || MIN_STAGE_HEIGHT;
+            const headerEl = document.querySelector('.app-header');
+            const footerEl = document.querySelector('app-shared-footer');
+            const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+            const footerHeight = footerEl ? footerEl.getBoundingClientRect().height : 0;
+            const available = viewport - headerHeight - footerHeight;
+            const seventyFivePercent = Math.round(viewport * 0.75);
+            return normalizeViewportFloor(Math.max(available, seventyFivePercent));
+        }
+
+        function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode }) {
             const hasPreferredHeight = typeof preferredHeight === 'number' && preferredHeight > 0;
-            const resolvedHeight = hasPreferredHeight ? `${Math.round(preferredHeight)}px` : null;
+            const normalizedFloor = normalizeViewportFloor(viewportFloor);
+            const resolvedHeight = hasPreferredHeight
+                ? Math.max(Math.round(preferredHeight), normalizedFloor)
+                : normalizedFloor;
+            const resolvedTheme = normalizeTheme(themeMode);
+            const stageShadow = resolvedTheme === 'dark'
+                ? '0 30px 60px rgba(2, 6, 23, 0.65)'
+                : '0 30px 60px rgba(15, 23, 42, 0.2)';
 
             return h(
                 Box,
@@ -132,14 +283,13 @@
                     component: 'section',
                     id: `iframe-stage-${stageDefinition.key}`,
                     sx: {
-                        flex: hasPreferredHeight ? '0 0 auto' : 1,
+                        flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 4,
-                        overflow: hasPreferredHeight ? 'visible' : 'hidden',
-                        boxShadow: '0 30px 60px rgba(15, 23, 42, 0.2)',
-                        minHeight: hasPreferredHeight ? resolvedHeight : { xs: '70vh', md: '75vh' },
-                        height: resolvedHeight || undefined,
+                        overflow: 'hidden',
+                        boxShadow: stageShadow,
+                        minHeight: resolvedHeight,
                     },
                 },
                 h('iframe', {
@@ -147,9 +297,11 @@
                     title: stageDefinition.title,
                     style: {
                         width: '100%',
-                        height: resolvedHeight || '100%',
+                        height: '100%',
+                        minHeight: resolvedHeight,
                         border: 'none',
                         display: 'block',
+                        flex: 1,
                     }
                 })
             );
@@ -167,9 +319,19 @@
                 },
                 [navDefinitions]
             );
+            const [globalPreferences, setGlobalPreferences] = useState(() => readStoredPreferences());
             const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('catalog').key);
             const [footerState, setFooterState] = useState('expanded');
             const [activeFrameHeight, setActiveFrameHeight] = useState(null);
+            const [stageViewportFloor, setStageViewportFloor] = useState(() => computeStageViewportFloor());
+            const appTheme = useMemo(
+                () => createAppTheme(globalPreferences.theme),
+                [globalPreferences.theme]
+            );
+            const languageCopy = useMemo(
+                () => getLanguageCopy(globalPreferences.language),
+                [globalPreferences.language]
+            );
 
             const activeStageDefinition = useMemo(
                 () => resolveStageDefinition(activeStageKey),
@@ -185,6 +347,91 @@
 
             const handleFooterStateChange = useCallback((nextState) => {
                 setFooterState(nextState);
+            }, []);
+
+            const handleIncomingPreferences = useCallback((nextValue) => {
+                const normalized = normalizePreferences(nextValue);
+                setGlobalPreferences((current) => {
+                    if (
+                        current.theme === normalized.theme &&
+                        current.language === normalized.language
+                    ) {
+                        return current;
+                    }
+                    return normalized;
+                });
+            }, []);
+
+            useEffect(() => {
+                const html = document.documentElement;
+                if (html) {
+                    html.setAttribute('data-theme', globalPreferences.theme);
+                    html.setAttribute('lang', globalPreferences.language);
+                }
+                const metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (metaTheme) {
+                    metaTheme.setAttribute('content', globalPreferences.theme === 'dark' ? '#020617' : '#f3f4f6');
+                }
+            }, [globalPreferences]);
+
+            useEffect(() => {
+                setStageViewportFloor(computeStageViewportFloor());
+            }, [footerState]);
+
+            useEffect(() => {
+                if (typeof window === 'undefined') {
+                    return undefined;
+                }
+                function handleStorage(event) {
+                    if (event.key !== GLOBAL_PREFERENCES_STORAGE_KEY) {
+                        return;
+                    }
+                    const parsed = safeParsePreferences(event.newValue);
+                    handleIncomingPreferences(parsed);
+                }
+                window.addEventListener('storage', handleStorage);
+                return () => window.removeEventListener('storage', handleStorage);
+            }, [handleIncomingPreferences]);
+
+            useEffect(() => {
+                if (typeof window === 'undefined') {
+                    return undefined;
+                }
+                function handlePreferenceEvent(event) {
+                    const detail = event.detail || {};
+                    handleIncomingPreferences(detail.preferences || detail);
+                }
+                window.addEventListener(GLOBAL_PREFERENCES_MESSAGE_TYPE, handlePreferenceEvent);
+                return () => window.removeEventListener(GLOBAL_PREFERENCES_MESSAGE_TYPE, handlePreferenceEvent);
+            }, [handleIncomingPreferences]);
+
+            useEffect(() => {
+                if (typeof window === 'undefined') {
+                    return undefined;
+                }
+                function handleResize() {
+                    setStageViewportFloor(computeStageViewportFloor());
+                }
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            useEffect(() => {
+                if (typeof window === 'undefined' || typeof window.ResizeObserver !== 'function') {
+                    return undefined;
+                }
+                const observer = new window.ResizeObserver(() => {
+                    setStageViewportFloor(computeStageViewportFloor());
+                });
+                const headerEl = document.querySelector('.app-header');
+                const footerEl = document.querySelector('app-shared-footer');
+                if (headerEl) {
+                    observer.observe(headerEl);
+                }
+                if (footerEl) {
+                    observer.observe(footerEl);
+                }
+                return () => observer.disconnect();
             }, []);
 
             useEffect(() => {
@@ -206,35 +453,47 @@
 
             useEffect(() => {
                 const normalizedSource = (activeStageDefinition.sourceId || activeStageDefinition.key || '').toLowerCase();
-                if (!normalizedSource) {
-                    return undefined;
-                }
 
                 function handleMessage(event) {
                     if (!ALLOWED_IFRAME_ORIGINS.has(event.origin)) {
                         return;
                     }
                     const payload = event.data;
-                    if (!payload || payload.type !== IFRAME_RESIZE_MESSAGE_TYPE) {
+                    if (!payload || typeof payload !== 'object') {
                         return;
                     }
-                    const payloadSource = (payload.sourceId || '').toLowerCase();
-                    if (payloadSource !== normalizedSource) {
+                    if (payload.type === IFRAME_RESIZE_MESSAGE_TYPE) {
+                        if (!normalizedSource) {
+                            return;
+                        }
+                        const payloadSource = (payload.sourceId || '').toLowerCase();
+                        if (payloadSource !== normalizedSource) {
+                            return;
+                        }
+                        const nextHeight = Number(payload.height);
+                        if (!Number.isFinite(nextHeight) || nextHeight <= 0) {
+                            return;
+                        }
+                        const rounded = Math.ceil(nextHeight);
+                        setActiveFrameHeight((current) => (current === rounded ? current : rounded));
                         return;
                     }
-                    const nextHeight = Number(payload.height);
-                    if (!Number.isFinite(nextHeight) || nextHeight <= 0) {
-                        return;
+                    if (payload.type === GLOBAL_PREFERENCES_MESSAGE_TYPE) {
+                        const nextPreferences = payload.detail?.preferences || payload.preferences;
+                        handleIncomingPreferences(nextPreferences);
                     }
-                    const rounded = Math.ceil(nextHeight);
-                    setActiveFrameHeight((current) => (current === rounded ? current : rounded));
                 }
 
                 window.addEventListener('message', handleMessage);
                 return () => window.removeEventListener('message', handleMessage);
-            }, [activeStageDefinition.key, activeStageDefinition.sourceId]);
+            }, [activeStageDefinition.key, activeStageDefinition.sourceId, handleIncomingPreferences]);
             const mainContent = activeStageDefinition.launchUrl
-                ? h(IframeStage, { stageDefinition: activeStageDefinition, preferredHeight: activeFrameHeight })
+                ? h(IframeStage, {
+                    stageDefinition: activeStageDefinition,
+                    preferredHeight: activeFrameHeight,
+                    viewportFloor: stageViewportFloor,
+                    themeMode: globalPreferences.theme,
+                })
                 : h(
                     Paper,
                     { elevation: 0, sx: { padding: 4, marginX: 'auto', maxWidth: 720 } },
@@ -262,14 +521,21 @@
                     h(HeaderComponent, {
                         title: activeStageDefinition.title,
                         icon: activeStageDefinition.icon,
-                        hideSearch: true
+                        hideSearch: false,
+                        installVisible: true,
+                        searchLabel: languageCopy.header.searchLabel,
+                        installLabel: languageCopy.header.installLabel
                     }),
                     h(
                         Box,
                         { component: 'main', className: 'miniapp-stage', sx: { flex: 1, display: 'flex', flexDirection: 'column' } },
                         h(
                             Container,
-                            { sx: { flex: 1, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            {
+                                disableGutters: true,
+                                maxWidth: false,
+                                sx: { flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }
+                            },
                             mainContent
                         )
                     ),
@@ -280,7 +546,8 @@
                         onNavigate: handleNavigate,
                         onStateChange: handleFooterStateChange,
                         showSettings: true,
-                        showMeta: true
+                        showMeta: true,
+                        copy: languageCopy.footer
                     })
                 )
             );

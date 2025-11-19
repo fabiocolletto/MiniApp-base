@@ -14,11 +14,33 @@
   ];
 
   const ALERT_CLASS_MAP = {
-    error: "bg-red-600 text-white",
-    success: "bg-green-600 text-white",
-    warning: "bg-yellow-500 text-black",
-    info: "bg-indigo-600 text-white",
+    error: "app-footer-alert--error",
+    success: "app-footer-alert--success",
+    warning: "app-footer-alert--warning",
+    info: "app-footer-alert--info",
   };
+
+  const DEFAULT_COPY = Object.freeze({
+    nav: Object.freeze({
+      catalog: "Catálogo",
+      favorites: "Favoritos",
+      recents: "Recentes",
+      settings: "Configurações",
+    }),
+    meta: Object.freeze({
+      heading: "Explorar MiniApps",
+      collapsedLabel: "Navegação rápida",
+      collapse: "Recolher",
+      expand: "Expandir o rodapé",
+    }),
+  });
+
+  function mergeCopy(copy = {}) {
+    return {
+      nav: { ...DEFAULT_COPY.nav, ...(copy.nav || {}) },
+      meta: { ...DEFAULT_COPY.meta, ...(copy.meta || {}) },
+    };
+  }
 
   function normalizeState(value) {
     return value === "collapsed" ? "collapsed" : "expanded";
@@ -30,6 +52,7 @@
     state = "expanded",
     showSettings = true,
     showMeta = true,
+    copy,
     onNavigate,
     onStateChange,
   }) {
@@ -37,6 +60,7 @@
     const [alertMessage, setAlertMessage] = useState(null);
     const [alertType, setAlertType] = useState("info");
     const alertTimeoutRef = useRef(null);
+    const mergedCopy = useMemo(() => mergeCopy(copy), [copy]);
 
     useEffect(() => {
       setFooterState(normalizeState(state));
@@ -91,7 +115,8 @@
       }
     }, [footerState, onStateChange]);
 
-    const isCompact = footerState === "collapsed" || variant === "compact";
+    const isCollapsed = footerState === "collapsed";
+    const isCompact = isCollapsed || variant === "compact";
     const navJustifyClass = isCompact ? "justify-around" : "justify-between";
 
     const footerClasses = [
@@ -100,8 +125,6 @@
       "bottom-0",
       "left-0",
       "w-full",
-      "bg-gray-900",
-      "text-white",
       "shadow-2xl",
       "rounded-t-3xl",
       "px-4",
@@ -111,11 +134,24 @@
     ].join(" ");
 
     const metaRowClasses = showMeta
-      ? "flex items-center justify-between text-xs text-gray-300 mb-3"
+      ? [
+          "flex",
+          "text-xs",
+          "mb-3",
+          isCollapsed ? "justify-end" : "items-center justify-between",
+        ].join(" ")
       : "sr-only";
+
+    const toggleButtonClasses = [
+      "transition",
+      "duration-150",
+      isCollapsed ? "opacity-70" : "opacity-100",
+      isCollapsed ? "p-2 rounded-full" : "flex items-center gap-1",
+    ].join(" ");
 
     const alertClasses = [
       "message-box",
+      "app-footer-alert",
       "p-3",
       "rounded-lg",
       "shadow-xl",
@@ -123,40 +159,52 @@
       ALERT_CLASS_MAP[alertType] || ALERT_CLASS_MAP.info,
     ].join(" ");
 
+    const canShowAlert = Boolean(alertMessage) && showMeta && !isCollapsed;
+
     return h(
       "footer",
       { className: footerClasses, role: "contentinfo" },
-      alertMessage && showMeta
+      canShowAlert
         ? h("div", { className: `${alertClasses} mb-3`, id: "messageContainer" }, alertMessage)
         : null,
       showMeta
         ? h(
             "div",
             { className: metaRowClasses, id: "footerMetaRow" },
-            h(
-              "p",
-              { className: "font-semibold" },
-              footerState === "collapsed" ? "Navegação rápida" : "Explorar MiniApps"
-            ),
+            isCollapsed
+              ? h(
+                  "span",
+                  { className: "sr-only", id: "footerMetaLabel" },
+                  mergedCopy.meta.collapsedLabel
+                )
+              : h(
+                  "p",
+                  { className: "font-semibold" },
+                  mergedCopy.meta.heading
+                ),
             h(
               "button",
               {
                 type: "button",
-                className: "text-indigo-200 hover:text-white flex items-center gap-1",
+                className: toggleButtonClasses,
                 onClick: handleToggleState,
+                "aria-pressed": isCollapsed ? "false" : "true",
+                "aria-label": isCollapsed
+                  ? mergedCopy.meta.expand
+                  : mergedCopy.meta.collapse,
               },
               h(
                 "span",
                 { className: "material-icons-sharp", "aria-hidden": "true" },
-                footerState === "collapsed" ? "expand_less" : "expand_more"
+                isCollapsed ? "expand_less" : "expand_more"
               ),
-              footerState === "collapsed" ? "Expandir" : "Recolher"
+              isCollapsed ? null : mergedCopy.meta.collapse
             )
           )
         : null,
       h(
         "nav",
-        { className: `flex ${navJustifyClass} text-gray-400`, role: "navigation" },
+        { className: `flex ${navJustifyClass}`, role: "navigation" },
         visibleNavItems.map((item) => {
           const isActive = item.key === activeTab;
           const buttonClasses = [
@@ -165,36 +213,42 @@
             "flex-col",
             "items-center",
             "justify-center",
-            isCompact ? "p-1" : "p-2",
+            isCompact ? "nav-item--compact" : "p-2",
             "transition",
             "duration-150",
-            isActive ? "text-indigo-400 font-bold" : "hover:text-indigo-200",
+            isActive ? "font-bold" : "font-medium",
           ].join(" ");
 
-          return h(
-            "button",
-            {
-              key: item.key,
-              type: "button",
+            return h(
+              "button",
+              {
+                key: item.key,
+                type: "button",
               className: buttonClasses,
               "data-key": item.key,
               "aria-current": isActive ? "page" : undefined,
-              onClick: () => handleNavigate(item.key),
-            },
-            h(
-              "span",
-              {
-                className: `material-icons-sharp ${isCompact ? "text-3xl" : "text-2xl"}`,
-                "aria-hidden": "true",
+                onClick: () => handleNavigate(item.key),
               },
-              item.icon
-            ),
-            h(
-              "span",
-              { className: `${isCompact ? "text-xs" : "text-sm"} mt-0.5` },
-              item.label
-            )
-          );
+              h(
+                "span",
+                {
+                  className: `material-icons-sharp ${isCompact ? "text-3xl" : "text-2xl"}`,
+                  "aria-hidden": "true",
+                },
+                item.icon
+              ),
+              isCompact
+              ? h(
+                  "span",
+                  { className: "sr-only" },
+                  mergedCopy.nav[item.key] || item.label
+                )
+              : h(
+                  "span",
+                  { className: `${isCompact ? "text-xs" : "text-sm"} mt-0.5` },
+                  mergedCopy.nav[item.key] || item.label
+                )
+            );
         })
       )
     );
