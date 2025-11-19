@@ -573,7 +573,7 @@
                             e(Typography, { variant: 'h5' }, PAYMENT_SNAPSHOT.monthlyValue)
                         )
                     ),
-                    e(Box, { sx: { p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider' } },
+                    e(Box, { sx: { p: 2.5, borderRadius: 0, border: '1px solid', borderColor: 'divider' } },
                         e(Typography, { variant: 'overline', color: 'text.secondary' }, paymentsCopy.highlightLabel),
                         e(Typography, { variant: 'h6', sx: { mt: 0.5 } }, PAYMENT_SNAPSHOT.highlight),
                         e(Typography, { variant: 'body2', color: 'text.secondary', sx: { mt: 0.5 } }, PAYMENT_SNAPSHOT.note[language] || PAYMENT_SNAPSHOT.note['pt-BR'])
@@ -680,7 +680,7 @@
                 typography: {
                     fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                 },
-                shape: { borderRadius: 24 },
+                shape: { borderRadius: 0 },
             }), [themeMode]);
 
             return e(
