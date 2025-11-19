@@ -1,9 +1,9 @@
 # MiniApp 5Horas – núcleo reduzido (base React)
 
-O repositório foi higienizado para manter apenas o que é necessário para os cinco MiniApps em criação, o header legado e o footer principal. O shell agora é uma PWA estática servida por bundles React, preservando a entrega via arquivos estáticos.
+O repositório foi higienizado para manter apenas o que é necessário para os MiniApps em criação, o header legado e o footer principal. O shell agora é uma PWA estática servida por bundles React, preservando a entrega via arquivos estáticos e exibindo quatro ícones fixos no rodapé (Catálogo, Favoritos, Recentes e Configurações).
 
 ## Itens preservados
-- **5 MiniApps base (obrigatórios)**: `home`, `alerts`, `catalog`, `settings` e `account`, todos apenas com aviso de desenvolvimento. Os nomes das pastas acompanham os ícones do rodapé para manter rastreabilidade direta.
+- **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos apenas com aviso de desenvolvimento e acionados diretamente pelos ícones fixos do rodapé. Os MiniApps legados `home`, `alerts` e `account` permanecem publicados para referência histórica.
 - **Footer oficial** (`docs/components/app-shared-footer.js`), agora publicado como componente React funcional fixo no shell.
 - **Header compartilhado** (`docs/components/app-shared-header.js`) exportado como componente React modular para uso nos MiniApps.
 - **Shell do catálogo** (`index.html`), agora montado por um app React que controla os stages via `app-shared-footer` e mantém os cartões renderizados por `docs/miniapp-card.js` e estilos em `docs/miniapp-global.css` e `docs/miniapp-card.css`.

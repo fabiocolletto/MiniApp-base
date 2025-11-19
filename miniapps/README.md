@@ -8,13 +8,14 @@ O diretório `miniapps/` concentra os painéis que serão carregados pelo RodaPa
 - Estilos customizados precisam seguir `docs/miniapp-global.css` e o design system. Evite criar tokens ad-hoc.
 - Cada pasta já contém `README.md` e `CHANGELOG.md` iniciados com o status **“Em criação”**.
 
-## Ícones atuais do rodapé (MiniApps obrigatórios)
-Estes cinco MiniApps são a base do shell e devem existir para o rodapé funcionar. Os slugs espelham as chaves/ícones usados pelo componente `app-shared-footer`.
+## Ícones fixos do rodapé (MiniApps obrigatórios)
+O shell React agora utiliza um rodapé com quatro ícones permanentes, e cada item aponta para um MiniApp dedicado:
 
-- **Home (RodaPack)** → `miniapps/home/`
-- **Alertas** → `miniapps/alerts/`
 - **Catálogo** → `miniapps/catalog/`
+- **Favoritos** → `miniapps/favorites/`
+- **Recentes** → `miniapps/recents/`
 - **Configurações** → `miniapps/settings/`
-- **Conta do Usuário** → `miniapps/account/`
+
+Os MiniApps `home`, `alerts` e `account` permanecem no repositório para garantir continuidade histórica e poderão voltar ao rodapé caso novas instruções sejam publicadas.
 
 Quando um MiniApp estiver pronto para ir ao ar, atualize `docs/miniapp-data.js` e substitua o placeholder pelo iframe ou painel embutido correspondente. Até lá, mantenha o placeholder para garantir consistência visual e de navegação.

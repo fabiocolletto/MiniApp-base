@@ -36,101 +36,43 @@
         }
 
         const NAV_STAGE_DEFINITIONS = {
-            home: {
-                key: 'home',
-                title: 'MiniApp Home',
-                description: 'MiniApp Home carregado via Iframe.',
-                icon: 'home',
-                sourceId: 'home',
-                isCore: true,
-                launchUrl: 'about:blank'
-            },
-            alerts: {
-                key: 'alerts',
-                title: 'Notificações',
-                description: 'Painel de alertas e avisos.',
-                icon: 'notifications',
-                sourceId: 'alerts',
-                isCore: true
-            },
             catalog: {
                 key: 'catalog',
-                title: 'Catálogo (Placeholder)',
-                description: 'Painel do catálogo sem carregamento de dados.',
+                title: 'MiniApp de Catálogo',
+                description: 'Lista oficial de miniapps em preparo.',
                 icon: 'grid_view',
                 sourceId: 'catalog',
-                isCore: true
+                isCore: true,
+                launchUrl: './miniapps/catalog/index.html'
+            },
+            favorites: {
+                key: 'favorites',
+                title: 'MiniApp de Favoritos',
+                description: 'Painel para organizar atalhos favoritos.',
+                icon: 'star',
+                sourceId: 'favorites',
+                isCore: true,
+                launchUrl: './miniapps/favorites/index.html'
+            },
+            recents: {
+                key: 'recents',
+                title: 'MiniApp de Recentes',
+                description: 'Histórico de miniapps acessados recentemente.',
+                icon: 'history',
+                sourceId: 'recents',
+                isCore: true,
+                launchUrl: './miniapps/recents/index.html'
             },
             settings: {
                 key: 'settings',
-                title: 'Configurações',
-                description: 'Painel de ajustes do usuário.',
+                title: 'MiniApp de Configurações',
+                description: 'Preferências globais do usuário.',
                 icon: 'settings',
                 sourceId: 'settings',
-                isCore: true
-            },
-            account: {
-                key: 'account',
-                title: 'Conta do Usuário',
-                description: 'Painel externo carregado via Iframe.',
-                icon: 'person',
-                sourceId: 'account',
                 isCore: true,
-                launchUrl: 'about:blank'
+                launchUrl: './miniapps/settings/index.html'
             }
         };
-
-        function HomeStage() {
-            return h(
-                'section',
-                { id: 'homeStage', className: 'stage-panel' },
-                h(
-                    'div',
-                    {
-                        className: 'u-flex u-direction-column u-align-center u-justify-center u-gap-md u-text-center u-padding-xl',
-                        style: { minHeight: 'min(70vh, 600px)' }
-                    },
-                    h(
-                        'div',
-                        { className: 'u-flex u-direction-column u-gap-2xs' },
-                        h('p', { className: 'u-text-sm muted-text' }, 'Aplicação de Base'),
-                        h('h1', { className: 'u-text-2xl u-font-extrabold' }, 'Navegação Ativa')
-                    ),
-                    h(
-                        'p',
-                        { id: 'welcomeMessage', className: 'u-text-base muted-text', style: { maxWidth: '320px' } },
-                        'Este código contém apenas as funções de navegação entre os ícones do rodapé.'
-                    )
-                )
-            );
-        }
-
-        function PlaceholderStage({ stageDefinition }) {
-            return h(
-                'section',
-                { id: 'placeholderStage', className: 'stage-panel' },
-                h(
-                    'div',
-                    { className: 'placeholder-card' },
-                    h(
-                        'div',
-                        { className: 'placeholder-icon', 'aria-hidden': 'true' },
-                        h('span', { className: 'material-icons-sharp', id: 'placeholderIcon' }, stageDefinition.icon || 'hub')
-                    ),
-                    h(
-                        'div',
-                        { className: 'placeholder-content' },
-                        h('p', { className: 'placeholder-label' }, 'Etapa'),
-                        h('h2', { className: 'placeholder-title', id: 'placeholderTitle' }, stageDefinition.title),
-                        h(
-                            'p',
-                            { className: 'placeholder-description', id: 'placeholderDescription' },
-                            stageDefinition.description
-                        )
-                    )
-                )
-            );
-        }
 
         function IframeStage({ stageDefinition }) {
             return h(
@@ -152,11 +94,11 @@
                     if (Object.prototype.hasOwnProperty.call(navDefinitions, normalizedKey)) {
                         return navDefinitions[normalizedKey];
                     }
-                    return navDefinitions.home;
+                    return navDefinitions.catalog;
                 },
                 [navDefinitions]
             );
-            const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('home').key);
+            const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('catalog').key);
             const [footerState, setFooterState] = useState('expanded');
 
             const handleNavigate = useCallback(
@@ -185,15 +127,20 @@
             }, [activeStageKey, resolveStageDefinition]);
 
             const activeStageDefinition = resolveStageDefinition(activeStageKey);
-            let mainContent = null;
-
-            if (activeStageDefinition.key === 'home') {
-                mainContent = h(HomeStage);
-            } else if (activeStageDefinition.launchUrl) {
-                mainContent = h(IframeStage, { stageDefinition: activeStageDefinition });
-            } else {
-                mainContent = h(PlaceholderStage, { stageDefinition: activeStageDefinition });
-            }
+            const mainContent = activeStageDefinition.launchUrl
+                ? h(IframeStage, { stageDefinition: activeStageDefinition })
+                : h('section', { className: 'stage-panel' },
+                    h('div', { className: 'placeholder-card' },
+                        h('div', { className: 'placeholder-icon', 'aria-hidden': 'true' },
+                            h('span', { className: 'material-icons-sharp' }, activeStageDefinition.icon || 'hub')
+                        ),
+                        h('div', { className: 'placeholder-content' },
+                            h('p', { className: 'placeholder-label' }, 'MiniApp'),
+                            h('h2', { className: 'placeholder-title' }, activeStageDefinition.title),
+                            h('p', { className: 'placeholder-description' }, activeStageDefinition.description)
+                        )
+                    )
+                );
 
             return h(
                 'div',
