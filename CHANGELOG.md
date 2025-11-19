@@ -16,6 +16,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Pasta `miniapps/minisystems/` com placeholder dedicado às preferências globais e links diretos para o painel de Configurações.
 - Mapa de cópias multilíngues no MiniApp Configurações garantindo tradução imediata dos cards quando o idioma global é alterado.
 - Handshake `catalog:height` entre o shell React e miniapps em iframe para sincronizar automaticamente a altura do Stage quando o conteúdo interno cresce.
+- Registros oficiais dos quatro MiniApps ativos dentro de `docs/miniapp-data.js`, permitindo validar o grid, favoritos e os quadros do catálogo.
 
 ### Alterado
 - `index.html` passou a usar `ThemeProvider`, `Container` e `Box` do Material UI para controlar o Stage responsivo.
@@ -33,11 +34,14 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - `docs/components/app-shared-ui.js` passou a consumir o palette do tema atual para ajustar borda, sombra e fundo dos AppCards independentemente do modo claro/escuro.
 - `miniapps/settings/index.html` agora utiliza o mapa de cópias e os helpers `resolveThemeLabel`/`resolveLanguageLabel` para refletir tema e idioma nos cards de Perfil, Pagamentos, MiniSystems e Memória.
 - MiniApp Catálogo passou a consumir `loadMiniAppData`/`docs/miniapp-data.js`, exibir skeletons enquanto carrega, reaproveitar o empty state "Catálogo em criação" e disparar Snackbar em erros ao buscar dados.
+- `service-worker.js` atualizado para `v3.3`, removendo o precache de páginas que não fazem mais parte do bundle.
+- `README.md` e `miniapps/README.md` atualizados para refletir a limpeza final da implantação.
 
 ### Removido
 - Pastas de QA, validação, design system e templates que não eram necessárias para manter os MiniApps e componentes principais.
 - Documentação legada (`docs/admin-endpoint-usage.md`, `docs/apps-script-backend.md`, `docs/card-model.html`, `docs/responsiveness-report.md` e `docs/sw.js`).
 - Suítes Playwright, diretório `node_modules/` e scripts de QA anteriores; `package.json` agora contém apenas um comando de teste informativo.
+- Pastas `miniapps/home/`, `miniapps/alerts/` e `miniapps/account/`, além da referência obsoleta a `docs/card-model.html`.
 
 ## [0.1.0] - 2024-04-XX
 ### Adicionado

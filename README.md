@@ -1,9 +1,9 @@
 # MiniApp 5Horas – núcleo reduzido (base React)
 
-O repositório foi higienizado para manter apenas o que é necessário para os MiniApps em criação, o header legado e o footer principal. O shell agora é uma PWA estática servida por bundles React, preservando a entrega via arquivos estáticos e exibindo quatro ícones fixos no rodapé (Catálogo, Favoritos, Recentes e Configurações).
+O repositório foi higienizado para manter apenas o que é necessário para os MiniApps em criação, o header legado e o footer principal. O shell agora é uma PWA estática servida por bundles React, preservando a entrega via arquivos estáticos e exibindo quatro ícones fixos no rodapé (Catálogo, Favoritos, Recentes e Configurações). Como parte da conclusão da implantação, os miniapps legados que não impactam o fluxo atual foram removidos do bundle para manter somente o que o sistema utiliza.
 
 ## Itens preservados
-- **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos apenas com aviso de desenvolvimento e acionados diretamente pelos ícones fixos do rodapé. Os MiniApps legados `home`, `alerts` e `account` permanecem publicados para referência histórica.
+- **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos apenas com aviso de desenvolvimento e acionados diretamente pelos ícones fixos do rodapé.
 - **Footer oficial** (`docs/components/app-shared-footer.js`), agora publicado como componente React funcional fixo no shell.
 - **Header compartilhado** (`docs/components/app-shared-header.js`) exportado como componente React modular para uso nos MiniApps.
 - **Componentes base** (`docs/components/app-shared-ui.js`) com AppCard/AppButton/AppSection desenhados sobre Material UI.
@@ -18,13 +18,13 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 │   ├── components/        # Header/footer + AppCard/AppModal compartilhados
 │   ├── miniapp-card.css   # Estilos dos cartões do catálogo
 │   ├── miniapp-card.js    # Renderização e listeners dos cartões
-│   ├── miniapp-data.js    # Fonte de dados do catálogo (pode ficar vazia durante a criação)
+│   ├── miniapp-data.js    # Fonte de dados do catálogo com os MiniApps publicados
 │   └── miniapp-global.css # Tokens + layout base do shell
 ├── js/
 │   ├── googleSync.js      # Integração opcional com Google e fila offline
 │   ├── indexeddb-store.js # Acesso ao IndexedDB
 │   └── miniapp-data-loader.js # Loader com fallback remoto para miniapp-data.js (importável por React)
-├── miniapps/              # MiniApps em desenvolvimento
+├── miniapps/              # MiniApps em desenvolvimento (apenas os quatro do rodapé + painéis complementares ativos)
 ├── pwa/                   # Manifesto do PWA
 ├── service-worker.js      # Service worker usado pelo shell
 └── index.html             # Shell principal sem header
@@ -44,6 +44,9 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 ## Comunicação entre shell e MiniApps
 - O shell React escuta mensagens `postMessage` do tipo `catalog:height` vindas dos miniapps carregados em iframe. Quando o evento chega de uma origem confiável e corresponde ao miniapp ativo, o iframe tem a altura atualizada para coincidir com o conteúdo interno, eliminando a rolagem dupla.
 - O MiniApp Catálogo utiliza `ResizeObserver` para detectar mudanças de layout, calcula o `scrollHeight` da `miniapp-stage` e envia o valor ao shell junto com o `sourceId`. O fallback mantém o mínimo de 70–75 vh para miniapps que ainda não publicam a mensagem.
+
+## Fonte de dados do catálogo
+O arquivo `docs/miniapp-data.js` agora registra oficialmente os quatro MiniApps expostos pelo footer. Cada objeto inclui `id`, `title`, `description`, `category`, `contract`, `owner`, `status` e o `url` que leva diretamente ao painel correspondente. O MiniApp Catálogo consome essa lista via `loadMiniAppData`, permitindo testar o comportamento dos cards, o preenchimento do quadro e a sincronização de favoritos com o IndexedDB. Qualquer novo MiniApp precisa ser adicionado a essa fonte antes de ser divulgado para os usuários.
 
 ## Status dos MiniApps
 Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
