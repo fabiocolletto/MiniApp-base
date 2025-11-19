@@ -123,10 +123,10 @@ function setupAutoRefresh() {
     });
 }
 
-function setupToggleBehavior() {
-    const card = document.getElementById('indexeddb-card');
-    const detailPanel = document.getElementById('memory-detail-panel');
-    if (!card || !detailPanel) return;
+function setupExpandableCard({ triggerId, panelId }) {
+    const trigger = document.getElementById(triggerId);
+    const detailPanel = document.getElementById(panelId);
+    if (!trigger || !detailPanel) return;
 
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
     let expanded = mediaQuery.matches;
@@ -135,13 +135,13 @@ function setupToggleBehavior() {
         const nextState = typeof forceValue === 'boolean' ? forceValue : !expanded;
         expanded = nextState;
         detailPanel.hidden = !expanded;
-        card.dataset.expanded = expanded ? 'true' : 'false';
-        card.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        trigger.dataset.expanded = expanded ? 'true' : 'false';
+        trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     }
 
     updateExpandedState(mediaQuery.matches);
 
-    card.addEventListener('click', () => {
+    trigger.addEventListener('click', () => {
         if (mediaQuery.matches) {
             updateExpandedState(true);
             return;
@@ -155,6 +155,6 @@ function setupToggleBehavior() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    setupToggleBehavior();
+    setupExpandableCard({ triggerId: 'indexeddb-card', panelId: 'memory-detail-panel' });
     setupAutoRefresh();
 });

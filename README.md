@@ -34,7 +34,7 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 - **Montagem do shell**: `index.html` injeta React/ReactDOM via CDN, renderiza o shell em `#root` e monta os componentes `AppSharedHeader` e `AppSharedFooter` dentro do React. O footer permanece como controlador de navegação e expõe o estado (`expanded`/`collapsed`) via props e callbacks.
 
 ## Status dos MiniApps
-Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas.
+Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
 
 ## Desenvolvimento local
 Nenhuma dependência Node é necessária além do precache do service worker para servir os arquivos resultantes do build. Use qualquer servidor HTTP simples (ex.: `python -m http.server`) para navegar pelo shell e verificar os placeholders gerados pelo React.
