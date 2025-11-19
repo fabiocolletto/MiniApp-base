@@ -6,15 +6,11 @@
   const h = global.React.createElement;
 
   const BASE_CLASSES = {
-    header:
-      "app-header p-4 shadow-lg grid grid-cols-[auto_1fr_auto] items-center rounded-b-xl gap-2 justify-items-center sticky top-0 z-20",
-    iconWrapper:
-      "flex items-center justify-center space-x-2 col-start-2 col-end-3 text-center w-full justify-self-center",
-    actionsWrapper:
-      "flex space-x-2 items-center justify-self-end justify-end col-start-3 col-end-4",
-    searchButton: "icon-button p-2 rounded-full transition duration-150",
-    installButton:
-      "button-primary font-semibold py-1 px-3 rounded-full transition duration-150 text-sm shadow-md",
+    header: "app-header",
+    iconWrapper: "app-header__title-group",
+    actionsWrapper: "app-header__actions",
+    searchButton: "app-header__icon-button",
+    installButton: "app-header__install-button",
   };
 
   const DEFAULT_PROPS = {
@@ -53,8 +49,7 @@
         "div",
         {
           className:
-            BASE_CLASSES.actionsWrapper +
-            " header-actions-placeholder col-start-1 col-end-2",
+            `${BASE_CLASSES.actionsWrapper} header-actions-placeholder`,
           "aria-hidden": "true",
         },
         h("button", {
