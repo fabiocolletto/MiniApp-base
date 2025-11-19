@@ -21,12 +21,13 @@
   };
 
   const DEFAULT_COPY = Object.freeze({
-    nav: Object.freeze({
-      catalog: "Catálogo",
-      favorites: "Favoritos",
-      recents: "Recentes",
-      settings: "Configurações",
-    }),
+      nav: Object.freeze({
+        catalog: "Catálogo",
+        favorites: "Favoritos",
+        recents: "Recentes",
+        search: "Buscar",
+        settings: "Configurações",
+      }),
     meta: Object.freeze({
       heading: "Explorar MiniApps",
       collapsedLabel: "Navegação rápida",
@@ -52,8 +53,10 @@
     state = "expanded",
     showSettings = true,
     showMeta = true,
+    showSearch = false,
     copy,
     onNavigate,
+    onSearch,
     onStateChange,
   }) {
     const [footerState, setFooterState] = useState(normalizeState(state));
@@ -97,6 +100,12 @@
       }
       return NAV_ITEMS.filter((item) => item.key !== "settings");
     }, [showSettings]);
+
+    const handleSearch = useCallback(() => {
+      if (typeof onSearch === "function") {
+        onSearch();
+      }
+    }, [onSearch]);
 
     const handleNavigate = useCallback(
       (key) => {
@@ -225,6 +234,33 @@
         "nav",
         { className: `flex ${navJustifyClass}`, role: "navigation" },
         [
+          showSearch
+            ? h(
+                "button",
+                {
+                  key: "search",
+                  type: "button",
+                  className: `${navButtonClasses} nav-item--search`,
+                  "aria-label": mergedCopy.nav.search,
+                  onClick: handleSearch,
+                },
+                h(
+                  "span",
+                  {
+                    className: `material-icons-sharp ${isCompact ? "text-3xl" : "text-2xl"}`,
+                    "aria-hidden": "true",
+                  },
+                  "search"
+                ),
+                isCompact
+                  ? h("span", { className: "sr-only" }, mergedCopy.nav.search)
+                  : h(
+                      "span",
+                      { className: `${isCompact ? "text-xs" : "text-sm"} mt-0.5` },
+                      mergedCopy.nav.search
+                    )
+              )
+            : null,
           ...visibleNavItems.map((item) => {
             const isActive = item.key === activeTab;
             const buttonClasses = [

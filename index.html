@@ -56,6 +56,7 @@
                         catalog: 'Catálogo',
                         favorites: 'Favoritos',
                         recents: 'Recentes',
+                        search: 'Buscar',
                         settings: 'Configurações'
                     }),
                     meta: Object.freeze({
@@ -76,6 +77,7 @@
                         catalog: 'Catalog',
                         favorites: 'Favorites',
                         recents: 'Recents',
+                        search: 'Search',
                         settings: 'Settings'
                     }),
                     meta: Object.freeze({
@@ -96,6 +98,7 @@
                         catalog: 'Catálogo',
                         favorites: 'Favoritos',
                         recents: 'Recientes',
+                        search: 'Buscar',
                         settings: 'Configuraciones'
                     }),
                     meta: Object.freeze({
@@ -418,6 +421,7 @@
             const [systemTheme, setSystemTheme] = useState(() => getSystemTheme());
             const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('catalog').key);
             const [footerState, setFooterState] = useState('expanded');
+            const [installVisible, setInstallVisible] = useState(true);
             const [activeFrameHeight, setActiveFrameHeight] = useState(null);
             const [stageViewportFloor, setStageViewportFloor] = useState(() => computeStageViewportFloor());
             const effectiveTheme = useMemo(
@@ -449,6 +453,15 @@
             const handleFooterStateChange = useCallback((nextState) => {
                 setFooterState(nextState);
             }, []);
+
+            const handleSearch = useCallback(() => {
+                const searchLabel = languageCopy.footer.nav.search || 'Buscar';
+                window.dispatchEvent(
+                    new CustomEvent('app:notify', {
+                        detail: { message: `${searchLabel} em breve.`, type: 'info' },
+                    })
+                );
+            }, [languageCopy.footer.nav.search]);
 
             const handleIncomingPreferences = useCallback((nextValue) => {
                 const normalized = normalizePreferences(nextValue);
@@ -567,6 +580,33 @@
             }, [activeStageDefinition]);
 
             useEffect(() => {
+                const timer = setTimeout(() => setInstallVisible(false), 3000);
+                const handleScrollHideInstall = () => setInstallVisible(false);
+
+                window.addEventListener('scroll', handleScrollHideInstall, { passive: true, once: true });
+                return () => {
+                    clearTimeout(timer);
+                    window.removeEventListener('scroll', handleScrollHideInstall);
+                };
+            }, []);
+
+            useEffect(() => {
+                function handleDocumentClick(event) {
+                    if (footerState !== 'expanded') {
+                        return;
+                    }
+                    const footerEl = document.querySelector('footer.app-shared-footer');
+                    if (footerEl && footerEl.contains(event.target)) {
+                        return;
+                    }
+                    setFooterState('collapsed');
+                }
+
+                document.addEventListener('click', handleDocumentClick);
+                return () => document.removeEventListener('click', handleDocumentClick);
+            }, [footerState]);
+
+            useEffect(() => {
                 setActiveFrameHeight(null);
             }, [activeStageDefinition.key]);
 
@@ -641,8 +681,8 @@
                     h(HeaderComponent, {
                         title: activeStageDefinition.title,
                         icon: activeStageDefinition.icon,
-                        hideSearch: false,
-                        installVisible: true,
+                        hideSearch: true,
+                        installVisible,
                         searchLabel: languageCopy.header.searchLabel,
                         installLabel: languageCopy.header.installLabel
                     }),
@@ -665,6 +705,8 @@
                         state: footerState,
                         onNavigate: handleNavigate,
                         onStateChange: handleFooterStateChange,
+                        showSearch: true,
+                        onSearch: handleSearch,
                         showSettings: true,
                         showMeta: true,
                         copy: languageCopy.footer

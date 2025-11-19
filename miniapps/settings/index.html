@@ -44,7 +44,7 @@
         const ReactLib = window.React;
         const ReactDOMLib = window.ReactDOM;
         const Material = window.MaterialUI;
-        const { AppCard, AppButton, AppSection } = window.AppUI;
+        const { AppCard, AppButton } = window.AppUI;
         const { AppModalProvider, useAppModal } = window.AppModalContext;
 
         if (!ReactLib || !ReactDOMLib || !Material || !AppCard || !AppModalProvider) {
@@ -706,18 +706,11 @@
                             {
                                 maxWidth: 'lg',
                                 disableGutters: true,
-                                sx: { flex: 1, display: 'flex', flexDirection: 'column' },
+                                sx: { flex: 1, display: 'flex', flexDirection: 'column', gap: 3, py: { xs: 2, md: 3 } },
                             },
                             e(
                                 Stack,
                                 { spacing: 4, sx: { flex: 1 } },
-                                e(
-                                    Stack,
-                                    { spacing: 1.25 },
-                                    e(Typography, { variant: 'overline', color: 'text.secondary' }, localeCopy.hero.overline),
-                                    e(Typography, { variant: 'h4', component: 'h1' }, localeCopy.hero.title),
-                                    e(Typography, { color: 'text.secondary' }, localeCopy.hero.description)
-                                ),
                                 e(
                                     Box,
                                     { sx: RESPONSIVE_GRID_SX },
@@ -725,12 +718,8 @@
                                     e(Box, { sx: { minWidth: 0 } }, e(PaymentsCard, { copy: localeCopy.paymentsCard, language: preferences.language })),
                                     e(Box, { sx: { minWidth: 0 } }, e(PreferencesCard, { preferences, onChange: handlePreferenceChange, lastSync: lastSyncedAt, copy: localeCopy.preferencesCard, language: preferences.language }))
                                 ),
-                                e(
-                                    AppSection,
-                                    { title: localeCopy.memory.sectionTitle, description: localeCopy.memory.sectionDescription },
-                                    e(Box, { sx: RESPONSIVE_GRID_SX },
-                                        e(Box, { sx: { minWidth: 0 } }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
-                                    )
+                                e(Box, { sx: RESPONSIVE_GRID_SX },
+                                    e(Box, { sx: { minWidth: 0 } }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
                                 )
                             )
                         )
