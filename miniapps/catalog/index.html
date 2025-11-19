@@ -72,6 +72,7 @@
         const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
         const PREFERRED_COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
         const MINIAPP_SOURCE_ID = 'catalog';
+        const FALLBACK_LANGUAGE = 'pt-BR';
 
         const CATALOG_COPY = Object.freeze({
             'pt-BR': Object.freeze({
@@ -258,6 +259,28 @@
             return CATALOG_COPY[language] || CATALOG_COPY['pt-BR'];
         }
 
+        function getLocalizedValue(value, language, fallbackLanguage = FALLBACK_LANGUAGE) {
+            if (value && typeof value === 'object') {
+                return value[language] || value[fallbackLanguage] || '';
+            }
+            return value || '';
+        }
+
+        function resolveLocalizedApp(app, language) {
+            if (!app) {
+                return app;
+            }
+            const resolvedLanguage = normalizeLanguage(language);
+            return {
+                ...app,
+                title: getLocalizedValue(app.titles || app.title, resolvedLanguage),
+                description: getLocalizedValue(app.descriptions || app.description, resolvedLanguage),
+                category: getLocalizedValue(app.categories || app.category, resolvedLanguage),
+                status: getLocalizedValue(app.statuses || app.status, resolvedLanguage),
+                owner: getLocalizedValue(app.owners || app.owner, resolvedLanguage),
+            };
+        }
+
         function normalizeStatusText(status) {
             return (status || '')
                 .toString()
@@ -323,7 +346,7 @@
                     title: app.title,
                     subtitle: app.category,
                     helper: app.description,
-                    sx: { minHeight: 320 },
+                    sx: { minHeight: 360 },
                     actions: e(Chip, { label: statusProps.label, color: statusProps.color === 'default' ? undefined : statusProps.color, variant: 'outlined' }),
                 },
                 e(
@@ -497,6 +520,10 @@
             }, [effectiveTheme]);
 
             const { items, isLoading, errorMessage, setErrorMessage } = useCatalogData(catalogCopy.errors.load);
+            const localizedItems = useMemo(
+                () => items.map((item) => resolveLocalizedApp(item, preferences.language)),
+                [items, preferences.language]
+            );
             useIframeHeightBridge();
 
             useEffect(() => {
@@ -604,7 +631,7 @@
                         )
                     ))
                 );
-            } else if (items.length === 0) {
+            } else if (localizedItems.length === 0) {
                 sectionContent = e(
                     Box,
                     { sx: { width: '100%', display: 'flex', justifyContent: 'center', py: 4 } },
@@ -623,7 +650,7 @@
                 sectionContent = e(
                     Grid,
                     { container: true, spacing: 2 },
-                    items.map((app) => e(Grid, { item: true, xs: 12, sm: 6, md: 4, key: app.id || app.title }, e(CatalogCard, { app, copy: catalogCopy })))
+                    localizedItems.map((app) => e(Grid, { item: true, xs: 12, sm: 6, md: 4, key: app.id || app.title }, e(CatalogCard, { app, copy: catalogCopy })))
                 );
             }
 
@@ -646,7 +673,7 @@
                         { className: 'miniapp-stage', sx: { flex: 1 } },
                         e(
                             Container,
-                            { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 4 } },
                         e(
                             Stack,
                             { spacing: 1.25 },

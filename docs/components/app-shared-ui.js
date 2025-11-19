@@ -19,6 +19,9 @@
         const palette = theme.palette || {};
         const isDark = palette.mode === 'dark';
         return {
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
             borderRadius: 0,
             border: `1px solid ${palette.divider || 'rgba(15, 23, 42, 0.12)'}`,
             boxShadow: isDark
@@ -99,6 +102,7 @@
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 1.5,
+                            flexGrow: 1,
                         },
                         ...contentProps,
                     },

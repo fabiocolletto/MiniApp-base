@@ -119,34 +119,40 @@
     const isCompact = isCollapsed || variant === "compact";
     const navJustifyClass = isCompact ? "justify-around" : "justify-between";
 
-    const footerClasses = [
-      "app-shared-footer",
-      "fixed",
-      "bottom-0",
-      "left-0",
-      "w-full",
-      "shadow-2xl",
-      "rounded-t-3xl",
-      "px-4",
-      "pt-3",
-      footerState === "collapsed" ? "pb-3" : "pb-6",
-      "z-30",
+    const navButtonClasses = [
+      "nav-item",
+      "flex",
+      "flex-col",
+      "items-center",
+      "justify-center",
+      isCompact ? "nav-item--compact" : "p-2",
+      "transition",
+      "duration-150",
     ].join(" ");
 
-    const metaRowClasses = showMeta
+    const footerClasses = [
+      "app-shared-footer",
+      footerState === "collapsed" ? "footer-collapsed" : "footer-expanded",
+    ].join(" ");
+
+    const shouldShowMetaRow = showMeta && !isCollapsed;
+
+    const metaRowClasses = shouldShowMetaRow
       ? [
           "flex",
           "text-xs",
           "mb-3",
-          isCollapsed ? "justify-end" : "items-center justify-between",
+          "items-center justify-between",
         ].join(" ")
       : "sr-only";
 
     const toggleButtonClasses = [
       "transition",
       "duration-150",
-      isCollapsed ? "opacity-70" : "opacity-100",
-      isCollapsed ? "p-2 rounded-full" : "flex items-center gap-1",
+      "opacity-100",
+      "flex",
+      "items-center",
+      "gap-1",
     ].join(" ");
 
     const alertClasses = [
@@ -159,97 +165,106 @@
       ALERT_CLASS_MAP[alertType] || ALERT_CLASS_MAP.info,
     ].join(" ");
 
-    const canShowAlert = Boolean(alertMessage) && showMeta && !isCollapsed;
+    const canShowAlert = Boolean(alertMessage) && shouldShowMetaRow;
+
+    const toggleButtonProps = {
+      type: "button",
+      onClick: handleToggleState,
+      "aria-pressed": isCollapsed ? "false" : "true",
+    };
+
+    const collapsedToggleButton = showMeta && isCollapsed
+      ? h(
+          "button",
+          {
+            ...toggleButtonProps,
+            className: `${navButtonClasses} nav-item--toggle`,
+            "aria-label": mergedCopy.meta.expand,
+          },
+          h(
+            "span",
+            { className: "material-icons-sharp", "aria-hidden": "true" },
+            "expand_less"
+          ),
+          h("span", { className: "sr-only" }, mergedCopy.meta.expand)
+        )
+      : null;
 
     return h(
       "footer",
-      { className: footerClasses, role: "contentinfo" },
+      { className: footerClasses, role: "contentinfo", "data-state": footerState },
       canShowAlert
         ? h("div", { className: `${alertClasses} mb-3`, id: "messageContainer" }, alertMessage)
         : null,
-      showMeta
+      shouldShowMetaRow
         ? h(
             "div",
             { className: metaRowClasses, id: "footerMetaRow" },
-            isCollapsed
-              ? h(
-                  "span",
-                  { className: "sr-only", id: "footerMetaLabel" },
-                  mergedCopy.meta.collapsedLabel
-                )
-              : h(
-                  "p",
-                  { className: "font-semibold" },
-                  mergedCopy.meta.heading
-                ),
+            h(
+              "p",
+              { className: "font-semibold" },
+              mergedCopy.meta.heading
+            ),
             h(
               "button",
               {
-                type: "button",
+                ...toggleButtonProps,
                 className: toggleButtonClasses,
-                onClick: handleToggleState,
-                "aria-pressed": isCollapsed ? "false" : "true",
-                "aria-label": isCollapsed
-                  ? mergedCopy.meta.expand
-                  : mergedCopy.meta.collapse,
+                "aria-label": mergedCopy.meta.collapse,
               },
               h(
                 "span",
                 { className: "material-icons-sharp", "aria-hidden": "true" },
-                isCollapsed ? "expand_less" : "expand_more"
+                "expand_more"
               ),
-              isCollapsed ? null : mergedCopy.meta.collapse
+              mergedCopy.meta.collapse
             )
           )
         : null,
       h(
         "nav",
         { className: `flex ${navJustifyClass}`, role: "navigation" },
-        visibleNavItems.map((item) => {
-          const isActive = item.key === activeTab;
-          const buttonClasses = [
-            "nav-item",
-            "flex",
-            "flex-col",
-            "items-center",
-            "justify-center",
-            isCompact ? "nav-item--compact" : "p-2",
-            "transition",
-            "duration-150",
-            isActive ? "font-bold" : "font-medium",
-          ].join(" ");
+        [
+          ...visibleNavItems.map((item) => {
+            const isActive = item.key === activeTab;
+            const buttonClasses = [
+              navButtonClasses,
+              isActive ? "font-bold" : "font-medium",
+            ].join(" ");
 
-            return h(
-              "button",
-              {
-                key: item.key,
-                type: "button",
-              className: buttonClasses,
-              "data-key": item.key,
-              "aria-current": isActive ? "page" : undefined,
-                onClick: () => handleNavigate(item.key),
-              },
-              h(
-                "span",
+              return h(
+                "button",
                 {
-                  className: `material-icons-sharp ${isCompact ? "text-3xl" : "text-2xl"}`,
-                  "aria-hidden": "true",
+                  key: item.key,
+                  type: "button",
+                className: buttonClasses,
+                "data-key": item.key,
+                "aria-current": isActive ? "page" : undefined,
+                  onClick: () => handleNavigate(item.key),
                 },
-                item.icon
-              ),
-              isCompact
-              ? h(
+                h(
                   "span",
-                  { className: "sr-only" },
-                  mergedCopy.nav[item.key] || item.label
-                )
-              : h(
-                  "span",
-                  { className: `${isCompact ? "text-xs" : "text-sm"} mt-0.5` },
-                  mergedCopy.nav[item.key] || item.label
-                )
-            );
-        })
+                  {
+                    className: `material-icons-sharp ${isCompact ? "text-3xl" : "text-2xl"}`,
+                    "aria-hidden": "true",
+                  },
+                  item.icon
+                ),
+                isCompact
+                ? h(
+                    "span",
+                    { className: "sr-only" },
+                    mergedCopy.nav[item.key] || item.label
+                  )
+                : h(
+                    "span",
+                    { className: `${isCompact ? "text-xs" : "text-sm"} mt-0.5` },
+                    mergedCopy.nav[item.key] || item.label
+                  )
+              );
+          }),
+          collapsedToggleButton,
+        ].filter(Boolean)
       )
     );
   }
