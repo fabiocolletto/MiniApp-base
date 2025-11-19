@@ -356,7 +356,7 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
     const ReactLib = window.React;
     const ReactDOMLib = window.ReactDOM;
     const Material = window.MaterialUI;
-    const { AppCard, AppButton, AppSection } = window.AppUI;
+    const { AppCard, AppButton } = window.AppUI;
     const { AppModalProvider, useAppModal } = window.AppModalContext;
 
     if (!ReactLib || !ReactDOMLib || !Material || !AppCard || !AppModalProvider) {
@@ -857,19 +857,8 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
                     { className: 'miniapp-stage', sx: { flex: 1 } },
                     e(
                         Container,
-                        { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 4 } },
-                        e(
-                            Stack,
-                            { spacing: 1.25 },
-                            e(Typography, { variant: 'overline', color: 'text.secondary' }, copy.hero.overline),
-                            e(Typography, { variant: 'h4', component: 'h1' }, copy.hero.title),
-                            e(Typography, { color: 'text.secondary' }, copy.hero.description)
-                        ),
-                        e(
-                            AppSection,
-                            { title: copy.sections.activeTitle, description: copy.sections.activeDescription },
-                            sectionContent
-                        )
+                        { maxWidth: 'lg', sx: { py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 } },
+                        sectionContent
                     )
                 ),
                 fullScreenDialog
