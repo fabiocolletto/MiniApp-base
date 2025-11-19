@@ -44,6 +44,7 @@
         const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
         const GLOBAL_PREFERENCES_STORAGE_KEY = 'miniapp:settings:global-preferences';
         const GLOBAL_PREFERENCES_MESSAGE_TYPE = 'miniapp:global-preferences';
+        const PREFERRED_COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
         const LANGUAGE_COPY = Object.freeze({
             'pt-BR': Object.freeze({
                 header: Object.freeze({
@@ -150,8 +151,39 @@
             return LANGUAGE_COPY[language] || LANGUAGE_COPY['pt-BR'];
         }
 
-        function normalizeTheme(theme) {
+        function normalizeThemePreference(theme) {
+            if (theme === 'dark') {
+                return 'dark';
+            }
+            if (theme === 'system') {
+                return 'system';
+            }
+            return 'light';
+        }
+
+        function normalizeResolvedTheme(theme) {
             return theme === 'dark' ? 'dark' : 'light';
+        }
+
+        function resolveEffectiveTheme(themePreference, systemTheme) {
+            const normalizedPreference = normalizeThemePreference(themePreference);
+            if (normalizedPreference === 'system') {
+                return normalizeResolvedTheme(systemTheme);
+            }
+            return normalizeResolvedTheme(normalizedPreference);
+        }
+
+        function getSystemTheme() {
+            if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+                return 'light';
+            }
+            try {
+                const mediaQuery = window.matchMedia(PREFERRED_COLOR_SCHEME_QUERY);
+                return mediaQuery.matches ? 'dark' : 'light';
+            } catch (error) {
+                console.warn('Não foi possível detectar o tema do sistema. Aplicando tema claro por padrão.', error);
+                return 'light';
+            }
         }
 
         function normalizeLanguage(language) {
@@ -163,7 +195,7 @@
                 return { ...DEFAULT_GLOBAL_PREFERENCES };
             }
             return {
-                theme: normalizeTheme(preferences.theme),
+                theme: normalizeThemePreference(preferences.theme),
                 language: normalizeLanguage(preferences.language)
             };
         }
@@ -195,7 +227,7 @@
         }
 
         function createAppTheme(mode) {
-            const paletteMode = normalizeTheme(mode);
+            const paletteMode = normalizeResolvedTheme(mode);
             const isDark = paletteMode === 'dark';
             const borderColor = isDark ? 'rgba(148, 163, 184, 0.25)' : 'rgba(15,23,42,0.08)';
             const surfaceShadow = isDark ? '0 30px 60px rgba(2, 6, 23, 0.5)' : '0 30px 60px rgba(15, 23, 42, 0.15)';
@@ -272,7 +304,7 @@
             const resolvedHeight = hasPreferredHeight
                 ? Math.max(Math.round(preferredHeight), normalizedFloor)
                 : normalizedFloor;
-            const resolvedTheme = normalizeTheme(themeMode);
+            const resolvedTheme = normalizeResolvedTheme(themeMode);
             const stageShadow = resolvedTheme === 'dark'
                 ? '0 30px 60px rgba(2, 6, 23, 0.65)'
                 : '0 30px 60px rgba(15, 23, 42, 0.2)';
@@ -320,13 +352,18 @@
                 [navDefinitions]
             );
             const [globalPreferences, setGlobalPreferences] = useState(() => readStoredPreferences());
+            const [systemTheme, setSystemTheme] = useState(() => getSystemTheme());
             const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('catalog').key);
             const [footerState, setFooterState] = useState('expanded');
             const [activeFrameHeight, setActiveFrameHeight] = useState(null);
             const [stageViewportFloor, setStageViewportFloor] = useState(() => computeStageViewportFloor());
+            const effectiveTheme = useMemo(
+                () => resolveEffectiveTheme(globalPreferences.theme, systemTheme),
+                [globalPreferences.theme, systemTheme]
+            );
             const appTheme = useMemo(
-                () => createAppTheme(globalPreferences.theme),
-                [globalPreferences.theme]
+                () => createAppTheme(effectiveTheme),
+                [effectiveTheme]
             );
             const languageCopy = useMemo(
                 () => getLanguageCopy(globalPreferences.language),
@@ -365,18 +402,36 @@
             useEffect(() => {
                 const html = document.documentElement;
                 if (html) {
-                    html.setAttribute('data-theme', globalPreferences.theme);
+                    html.setAttribute('data-theme', effectiveTheme);
                     html.setAttribute('lang', globalPreferences.language);
                 }
                 const metaTheme = document.querySelector('meta[name="theme-color"]');
                 if (metaTheme) {
-                    metaTheme.setAttribute('content', globalPreferences.theme === 'dark' ? '#020617' : '#f3f4f6');
+                    metaTheme.setAttribute('content', effectiveTheme === 'dark' ? '#020617' : '#f3f4f6');
                 }
-            }, [globalPreferences]);
+            }, [effectiveTheme, globalPreferences.language]);
 
             useEffect(() => {
                 setStageViewportFloor(computeStageViewportFloor());
             }, [footerState]);
+
+            useEffect(() => {
+                if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+                    return undefined;
+                }
+                const mediaQuery = window.matchMedia(PREFERRED_COLOR_SCHEME_QUERY);
+                const updateSystemTheme = (event) => {
+                    const isDark = typeof event?.matches === 'boolean' ? event.matches : mediaQuery.matches;
+                    setSystemTheme(isDark ? 'dark' : 'light');
+                };
+                updateSystemTheme(mediaQuery);
+                if (typeof mediaQuery.addEventListener === 'function') {
+                    mediaQuery.addEventListener('change', updateSystemTheme);
+                    return () => mediaQuery.removeEventListener('change', updateSystemTheme);
+                }
+                mediaQuery.addListener(updateSystemTheme);
+                return () => mediaQuery.removeListener(updateSystemTheme);
+            }, []);
 
             useEffect(() => {
                 if (typeof window === 'undefined') {
@@ -492,7 +547,7 @@
                     stageDefinition: activeStageDefinition,
                     preferredHeight: activeFrameHeight,
                     viewportFloor: stageViewportFloor,
-                    themeMode: globalPreferences.theme,
+                    themeMode: effectiveTheme,
                 })
                 : h(
                     Paper,
