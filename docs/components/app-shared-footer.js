@@ -17,7 +17,7 @@ class AppSharedFooter extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["active-tab", "variant", "state", "show-settings"];
+    return ["active-tab", "variant", "state", "show-settings", "show-meta"];
   }
 
   connectedCallback() {
@@ -48,6 +48,14 @@ class AppSharedFooter extends HTMLElement {
       }
       return true;
     });
+  }
+
+  get showMeta() {
+    const attributeValue = (this.getAttribute("show-meta") || "true").toLowerCase();
+    if (attributeValue === "false") {
+      return false;
+    }
+    return true;
   }
 
   get activeTab() {
@@ -106,10 +114,11 @@ class AppSharedFooter extends HTMLElement {
   }
   
   // Renderiza os botões de navegação
-  renderNavLinks({ isCompact }) {
+  renderNavLinks({ isCompact, footerState }) {
     const activeTab = this.activeTab;
     const compactClasses = isCompact ? "" : "justify-between";
     const navItems = this.visibleNavItems;
+    const expandToggle = this.renderExpandToggle({ isCompact, footerState });
 
     return `
       <nav class="flex ${compactClasses} text-gray-400">
@@ -126,7 +135,7 @@ class AppSharedFooter extends HTMLElement {
                 ? "flex flex-col items-center justify-center p-1" 
                 : "flex flex-col items-center justify-center p-2";
 
-            return `
+              return `
               <a href="#" class="nav-item ${wrapperClasses} ${itemClasses} transition duration-150 ease-in-out" data-key="${item.key}" aria-current="${isActive ? 'page' : 'false'}">
                   <span class="material-icons-sharp ${iconClasses}" aria-hidden="true">${item.icon}</span>
                   <span class="${labelClasses} mt-0.5">${item.label}</span>
@@ -134,12 +143,37 @@ class AppSharedFooter extends HTMLElement {
             `;
           })
           .join("")}
+        ${expandToggle}
       </nav>
+    `;
+  }
+
+  renderExpandToggle({ isCompact, footerState }) {
+    if (isCompact || !this.showMeta) return "";
+
+    const isExpanded = footerState === "expanded";
+    const icon = isExpanded ? "expand_less" : "expand_more";
+    const label = isExpanded ? "Recolher" : "Expandir";
+    const wrapperClasses = "flex flex-col items-center justify-center p-2";
+
+    return `
+      <button
+        type="button"
+        class="nav-item ${wrapperClasses} hover:text-indigo-200 transition duration-150 ease-in-out"
+        data-role="toggle-footer"
+        aria-expanded="${isExpanded}"
+        aria-label="${label} footer"
+      >
+        <span class="material-icons-sharp text-2xl" aria-hidden="true">${icon}</span>
+        <span class="text-sm mt-0.5">${label}</span>
+      </button>
     `;
   }
 
   // Renderiza o metadado (visível apenas quando o footer está collapsed)
   renderCollapsedMeta() {
+    if (!this.showMeta) return "";
+
     const legalText = "© 2025 5 Horas Pesquisa e Análise Ltda.";
     return `
       <div id="collapsedMeta" class="collapsed-meta-row flex justify-center items-center text-xs text-gray-500 mt-2">
@@ -150,7 +184,7 @@ class AppSharedFooter extends HTMLElement {
 
   // Renderiza o bloco de detalhes (visível quando o footer está expanded)
   renderDetails({ isCompact }) {
-    if (isCompact) return "";
+    if (isCompact || !this.showMeta) return "";
 
     const legalText = "© 2025 5 Horas Pesquisa e Análise Ltda. | CNPJ: 50.455.262/0001-19 | Brasil";
 
@@ -183,7 +217,7 @@ class AppSharedFooter extends HTMLElement {
     }
     const isCompact = this.variant === "compact";
     const footerState = isCompact ? "collapsed" : this.footerState;
-    const navLinks = this.renderNavLinks({ isCompact });
+    const navLinks = this.renderNavLinks({ isCompact, footerState });
     const collapsedMeta = this.renderCollapsedMeta();
     const details = this.renderDetails({ isCompact });
 
@@ -203,11 +237,12 @@ class AppSharedFooter extends HTMLElement {
     `;
 
     this.setupNavigation();
+    this.setupExpandToggle();
     this.setupStateToggle();
   }
 
   setupNavigation() {
-    this.querySelectorAll(".nav-item").forEach((item) => {
+    this.querySelectorAll(".nav-item[data-key]").forEach((item) => {
       item.addEventListener("click", (e) => {
         e.preventDefault();
         const key = item.getAttribute("data-key");
@@ -218,10 +253,24 @@ class AppSharedFooter extends HTMLElement {
     });
   }
 
+  setupExpandToggle() {
+    const expandButton = this.querySelector('[data-role="toggle-footer"]');
+    if (!expandButton) return;
+
+    expandButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      const currentState = this.getAttribute("state") || DEFAULT_STATE;
+      const newState = currentState === "expanded" ? "collapsed" : "expanded";
+      this.setAttribute("state", newState);
+    });
+  }
+
   setupStateToggle() {
     const collapsedMeta = this.querySelector("#collapsedMeta");
     const details = this.querySelector("#footerDetails");
     const isCompact = this.variant === "compact";
+
+    if (!this.showMeta) return;
 
     if (isCompact) return; // Não permite toggle no modo compact
 
