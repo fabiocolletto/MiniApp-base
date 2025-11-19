@@ -15,16 +15,18 @@
 
     <style>
         .settings-memory-grid {
-            display: flex;
-            flex-direction: column;
+            display: grid;
             gap: 1.5rem;
-            align-items: center;
+            align-items: stretch;
+            justify-items: stretch;
         }
 
         .memory-summary-card {
-            width: 300px;
+            width: 100%;
+            max-width: 320px;
             cursor: pointer;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
+            justify-self: center;
         }
 
         .memory-summary-card:focus-visible {
@@ -49,14 +51,20 @@
             display: none;
         }
 
+        @media (min-width: 768px) {
+            .memory-summary-card {
+                justify-self: start;
+            }
+        }
+
         @media (min-width: 1024px) {
             .settings-memory-grid {
-                flex-direction: row;
-                align-items: flex-start;
+                grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+                align-items: start;
             }
 
             .memory-summary-card {
-                flex-shrink: 0;
+                max-width: none;
             }
 
             .memory-detail-panel {
