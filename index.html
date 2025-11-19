@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniApp - Shell React</title>
-    <link rel="stylesheet" href="https://unpkg.com/open-props@1.6.18/open-props.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-global.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-card.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@mui/material@5.15.14/umd/material-ui.production.min.js"></script>
     <script src="./docs/components/app-shared-header.js"></script>
     <script src="./docs/components/app-shared-footer.js"></script>
     <link rel="manifest" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/pwa/manifest.webmanifest">
@@ -28,6 +32,7 @@
     <script>
         const h = React.createElement;
         const { useCallback, useEffect, useMemo, useState } = React;
+        const { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Stack, Typography } = MaterialUI;
         const HeaderComponent = window.AppSharedHeader;
         const FooterComponent = window.AppSharedFooter;
 
@@ -74,10 +79,62 @@
             }
         };
 
+        const appTheme = createTheme({
+            palette: {
+                mode: 'light',
+                primary: { main: '#f97316' },
+                secondary: { main: '#0ea5e9' },
+                background: {
+                    default: '#f3f4f6',
+                    paper: '#ffffff',
+                },
+                text: {
+                    primary: '#0f172a',
+                    secondary: '#475569',
+                },
+            },
+            typography: {
+                fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                h4: { fontWeight: 600 },
+                button: { textTransform: 'none', fontWeight: 600 },
+            },
+            shape: {
+                borderRadius: 24,
+            },
+            components: {
+                MuiPaper: {
+                    styleOverrides: {
+                        root: {
+                            borderRadius: 32,
+                            border: '1px solid rgba(15,23,42,0.08)',
+                            boxShadow: '0 30px 60px rgba(15,23,42,0.15)',
+                        },
+                    },
+                },
+                MuiContainer: {
+                    defaultProps: {
+                        maxWidth: 'lg',
+                    },
+                },
+            },
+        });
+
         function IframeStage({ stageDefinition }) {
             return h(
-                'section',
-                { id: `iframe-stage-${stageDefinition.key}`, className: 'stage-panel iframe-stage', style: { padding: '0' } },
+                Box,
+                {
+                    component: 'section',
+                    id: `iframe-stage-${stageDefinition.key}`,
+                    sx: {
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        boxShadow: '0 30px 60px rgba(15, 23, 42, 0.2)',
+                        minHeight: { xs: '70vh', md: '75vh' },
+                    },
+                },
                 h('iframe', {
                     src: stageDefinition.launchUrl,
                     title: stageDefinition.title,
@@ -129,40 +186,54 @@
             const activeStageDefinition = resolveStageDefinition(activeStageKey);
             const mainContent = activeStageDefinition.launchUrl
                 ? h(IframeStage, { stageDefinition: activeStageDefinition })
-                : h('section', { className: 'stage-panel' },
-                    h('div', { className: 'placeholder-card' },
-                        h('div', { className: 'placeholder-icon', 'aria-hidden': 'true' },
-                            h('span', { className: 'material-icons-sharp' }, activeStageDefinition.icon || 'hub')
-                        ),
-                        h('div', { className: 'placeholder-content' },
-                            h('p', { className: 'placeholder-label' }, 'MiniApp'),
-                            h('h2', { className: 'placeholder-title' }, activeStageDefinition.title),
-                            h('p', { className: 'placeholder-description' }, activeStageDefinition.description)
+                : h(
+                    Paper,
+                    { elevation: 0, sx: { padding: 4, marginX: 'auto', maxWidth: 720 } },
+                    h(
+                        Stack,
+                        { direction: 'row', spacing: 3, alignItems: 'center' },
+                        h('span', { className: 'material-icons-sharp', style: { fontSize: '3rem', color: '#f97316' } }, activeStageDefinition.icon || 'hub'),
+                        h(
+                            Stack,
+                            { spacing: 1 },
+                            h(Typography, { component: 'p', variant: 'overline' }, 'MiniApp'),
+                            h(Typography, { component: 'h2', variant: 'h4' }, activeStageDefinition.title),
+                            h(Typography, { component: 'p', color: 'text.secondary' }, activeStageDefinition.description)
                         )
                     )
                 );
 
             return h(
-                'div',
-                { className: 'app-shell min-h-screen bg-slate-50 pb-32 flex flex-col' },
-                h(HeaderComponent, {
-                    title: activeStageDefinition.title,
-                    icon: activeStageDefinition.icon,
-                    hideSearch: true
-                }),
-                h('main', {
-                    className: 'app-main app-stage flex-1 w-full',
-                    style: { paddingBottom: '140px' }
-                }, mainContent),
-                h(FooterComponent, {
-                    activeTab: activeStageKey,
-                    variant: 'full',
-                    state: footerState,
-                    onNavigate: handleNavigate,
-                    onStateChange: handleFooterStateChange,
-                    showSettings: true,
-                    showMeta: true
-                })
+                ThemeProvider,
+                { theme: appTheme },
+                h(CssBaseline, null),
+                h(
+                    'div',
+                    { className: 'miniapp-shell', style: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
+                    h(HeaderComponent, {
+                        title: activeStageDefinition.title,
+                        icon: activeStageDefinition.icon,
+                        hideSearch: true
+                    }),
+                    h(
+                        Box,
+                        { component: 'main', className: 'miniapp-stage', sx: { flex: 1, display: 'flex', flexDirection: 'column' } },
+                        h(
+                            Container,
+                            { sx: { flex: 1, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            mainContent
+                        )
+                    ),
+                    h(FooterComponent, {
+                        activeTab: activeStageKey,
+                        variant: 'full',
+                        state: footerState,
+                        onNavigate: handleNavigate,
+                        onStateChange: handleFooterStateChange,
+                        showSettings: true,
+                        showMeta: true
+                    })
+                )
             );
         }
 

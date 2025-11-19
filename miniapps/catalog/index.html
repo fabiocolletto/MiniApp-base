@@ -4,790 +4,242 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniApp - Gestão de Catálogo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="../../docs/miniapp-global.css">
-    <script type="module" src="../../docs/components/app-shared-header.js"></script>
-    <script type="module" src="../../docs/components/app-shared-footer.js"></script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@mui/material@5.15.14/umd/material-ui.production.min.js"></script>
+    <script src="../../docs/components/app-shared-ui.js"></script>
+    <script src="../../docs/components/app-modal-context.js"></script>
+
     <meta name="theme-color" content="#f3f4f6">
-    <style>
-        :root {
-            color-scheme: light;
-        }
-
-        body {
-            margin: 0;
-            background-color: var(--color-body-bg);
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--color-text-primary);
-        }
-
-        .miniapp-container {
-            width: 100%;
-            margin: 0 auto;
-            padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            min-height: 100vh;
-        }
-
-        .miniapp-panel {
-            background-color: transparent;
-            border: none;
-            border-radius: 0;
-            padding: clamp(1.25rem, 3vw, 2rem);
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .panel-heading {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .panel-heading h1,
-        .panel-heading h2,
-        .panel-heading h3 {
-            margin: 0;
-            font-size: clamp(1.35rem, 4vw, 1.85rem);
-        }
-
-        .panel-heading p {
-            margin: 0;
-            max-width: 65ch;
-        }
-
-        .table-wrapper {
-            border: 1px solid var(--color-border-strong);
-            border-radius: 1rem;
-            overflow: hidden;
-            background-color: var(--color-shell-bg);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border-spacing: 0;
-        }
-
-        th,
-        td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--color-border-strong);
-            text-align: left;
-        }
-
-        th {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--color-text-secondary);
-            background-color: var(--color-card-bg);
-        }
-
-        td {
-            font-size: 0.95rem;
-        }
-
-        tbody tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.2rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-
-        .status-badge[data-variant="published"] {
-            background-color: rgba(34, 197, 94, 0.18);
-            color: var(--color-status-online);
-        }
-
-        .status-badge[data-variant="draft"] {
-            background-color: rgba(148, 163, 184, 0.25);
-            color: var(--color-text-secondary);
-        }
-
-        .crud-actions {
-            display: inline-flex;
-            gap: 0.35rem;
-            justify-content: flex-end;
-        }
-
-        .crud-actions .action-btn {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 999px;
-            border: 1px solid var(--color-border);
-            background-color: var(--color-surface-muted);
-            color: var(--color-text-primary);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease;
-        }
-
-        .crud-actions .action-btn.primary {
-            background-color: rgba(249, 115, 22, 0.18);
-            color: var(--color-accent);
-            border-color: rgba(249, 115, 22, 0.5);
-        }
-
-        .crud-actions .action-btn.danger {
-            background-color: rgba(248, 113, 113, 0.18);
-            color: var(--color-status-offline);
-            border-color: rgba(248, 113, 113, 0.4);
-        }
-
-        .crud-actions .action-btn:focus-visible,
-        .crud-actions .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 0 2px var(--color-border-strong);
-        }
-
-        .empty-state {
-            padding: 1.5rem;
-            text-align: center;
-            color: var(--color-text-secondary);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-        }
-
-        .form-control {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-
-        .form-control label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--color-text-secondary);
-        }
-
-        .form-control input,
-        .form-control textarea,
-        .form-control select {
-            border: 1px solid var(--color-border);
-            border-radius: 0.9rem;
-            padding: 0.65rem 0.85rem;
-            font-size: 0.95rem;
-            background-color: var(--color-shell-bg);
-            color: inherit;
-        }
-
-        .form-control textarea {
-            min-height: 110px;
-            resize: vertical;
-        }
-
-        .form-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            justify-content: flex-end;
-            margin-top: 0.5rem;
-        }
-
-        .btn {
-            border-radius: 999px;
-            border: 1px solid transparent;
-            padding: 0.75rem 1.35rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .btn.primary {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
-            color: #fff;
-        }
-
-        .btn.ghost {
-            background-color: transparent;
-            border-color: var(--color-border);
-            color: var(--color-text-primary);
-        }
-
-        .btn.text {
-            border: none;
-            background: none;
-            color: var(--color-accent);
-        }
-
-        .btn:focus-visible,
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
-        }
-
-        .form-feedback {
-            font-size: 0.9rem;
-            color: var(--color-text-secondary);
-            min-height: 1.5rem;
-        }
-
-        .form-feedback[data-variant="error"] {
-            color: var(--color-status-offline);
-        }
-
-        .form-feedback[data-variant="success"] {
-            color: var(--color-status-online);
-        }
-
-        .sync-card {
-            border: 1px dashed var(--color-border-strong);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            background-color: rgba(15, 23, 42, 0.02);
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .export-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .draft-indicator {
-            font-size: 0.85rem;
-            color: var(--color-text-secondary);
-        }
-
-        @media (max-width: 720px) {
-            .miniapp-container {
-                padding-inline: 1rem;
-            }
-
-            th,
-            td {
-                padding: 0.65rem 0.75rem;
-            }
-
-            .crud-actions {
-                justify-content: flex-start;
-            }
-
-            .form-actions {
-                justify-content: flex-start;
-            }
-        }
-    </style>
 </head>
-<body>
-    <div class="app-shell">
-        <app-shared-header></app-shared-header>
-        <main class="app-main p-4">
-            <div class="miniapp-container">
-        <section class="miniapp-panel" aria-labelledby="intro-panel">
-            <div class="panel-heading">
-                <h1 id="intro-panel" class="accent-text">Gestão de Catálogo</h1>
-                <p class="muted-text">Administre o arquivo oficial <code>docs/miniapp-data.js</code>, gere versões atualizadas e sincronize com o shell principal do ecossistema.</p>
-            </div>
-        </section>
-
-        <section class="miniapp-panel" aria-labelledby="catalogo-panel">
-            <div class="panel-heading">
-                <h2 id="catalogo-panel">MiniApps oficiais</h2>
-                <p>Todos os cards publicados na PWA são renderizados a partir desta lista. Use os controles para revisar, duplicar ou arquivar um item antes de exportar a nova versão do arquivo.</p>
-            </div>
-            <div class="table-wrapper" role="region" aria-live="polite">
-                <table>
-                    <thead>
-                        <tr>
-                            <th scope="col">MiniApp</th>
-                            <th scope="col">Categoria</th>
-                            <th scope="col">Contrato</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Atualizado em</th>
-                            <th scope="col" class="actions-col">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody data-table-body>
-                        <tr class="empty-state" data-empty-state>
-                            <td colspan="6">Nenhum MiniApp cadastrado. Utilize o formulário abaixo para iniciar um novo registro.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="miniapp-panel" aria-labelledby="form-panel">
-            <div class="panel-heading">
-                <h2 id="form-panel" data-form-title>Cadastrar novo MiniApp</h2>
-                <p>Preencha os campos e clique em “Salvar” para atualizar o rascunho local. Os dados são validados antes de gerar o arquivo oficial.</p>
-            </div>
-            <form id="miniapp-form" novalidate>
-                <div class="form-grid">
-                    <div class="form-control">
-                        <label for="id">Identificador único *</label>
-                        <input type="text" id="id" name="id" placeholder="ex.: miniapp-financeiro-v1" required>
-                    </div>
-                    <div class="form-control">
-                        <label for="title">Nome *</label>
-                        <input type="text" id="title" name="title" placeholder="Nome do MiniApp" required>
-                    </div>
-                    <div class="form-control">
-                        <label for="category">Categoria *</label>
-                        <input type="text" id="category" name="category" placeholder="Administração, Vendas..." required>
-                    </div>
-                    <div class="form-control">
-                        <label for="price">Preço</label>
-                        <input type="text" id="price" name="price" placeholder="Grátis, sob demanda" value="Grátis">
-                    </div>
-                    <div class="form-control">
-                        <label for="contract">Contrato</label>
-                        <input type="text" id="contract" name="contract" placeholder="Incluso, Sob consulta" value="Incluso">
-                    </div>
-                    <div class="form-control">
-                        <label for="url">URL *</label>
-                        <input type="url" id="url" name="url" placeholder="./miniapps/.../index.html" required>
-                    </div>
-                    <div class="form-control">
-                        <label for="image">Imagem *</label>
-                        <input type="url" id="image" name="image" placeholder="https://placehold.co/400x300" required>
-                    </div>
-                    <div class="form-control">
-                        <label for="active">Status de publicação</label>
-                        <select id="active" name="active">
-                            <option value="true" selected>Publicado</option>
-                            <option value="false">Rascunho / oculto</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-control">
-                    <label for="description">Descrição *</label>
-                    <textarea id="description" name="description" placeholder="Resumo curto exibido no card" required></textarea>
-                </div>
-                <div class="form-actions">
-                    <span class="form-feedback" data-feedback aria-live="polite"></span>
-                    <button type="button" class="btn ghost" data-cancel-edit hidden>Cancelar edição</button>
-                    <button type="button" class="btn text" data-new-entry>Limpar formulário</button>
-                    <button type="submit" class="btn primary" data-submit-btn>Salvar MiniApp</button>
-                </div>
-            </form>
-        </section>
-
-        <section class="miniapp-panel" aria-labelledby="sync-panel">
-            <div class="panel-heading">
-                <h2 id="sync-panel">Sincronização automática</h2>
-                <p>As alterações são persistidas no IndexedDB e sincronizadas via Apps Script ou Google APIs assim que possível. Clique em “Salvar no sistema” para enfileirar uma nova versão.</p>
-            </div>
-            <div class="sync-card">
-                <p class="muted-text" data-sync-status>Verificando status de sincronização...</p>
-                <div class="export-actions">
-                    <button type="button" class="btn primary" data-save-btn disabled>Salvar no sistema</button>
-                    <button type="button" class="btn ghost" data-reset-draft>Descartar rascunho local</button>
-                    <span class="draft-indicator" data-draft-indicator>Carregando dados oficiais...</span>
-                </div>
-            </div>
-        </section>
-            </div>
-        </main>
-        <app-shared-footer variant="compact" active-tab="catalog"></app-shared-footer>
-    </div>
-
-    <template id="row-template">
-        <tr>
-            <td data-col-title></td>
-            <td data-col-category></td>
-            <td data-col-contract></td>
-            <td>
-                <span class="status-badge" data-col-status></span>
-            </td>
-            <td data-col-updated></td>
-            <td class="actions-col">
-                <div class="crud-actions" role="group" aria-label="Ações do MiniApp">
-                    <button type="button" class="action-btn" data-edit-btn title="Editar MiniApp">
-                        <span class="material-icons-sharp" aria-hidden="true">edit</span>
-                    </button>
-                    <button type="button" class="action-btn primary" data-duplicate-btn title="Duplicar MiniApp">
-                        <span class="material-icons-sharp" aria-hidden="true">content_copy</span>
-                    </button>
-                    <button type="button" class="action-btn danger" data-delete-btn title="Remover MiniApp">
-                        <span class="material-icons-sharp" aria-hidden="true">delete</span>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    </template>
+<body class="miniapp-shell">
+    <main id="catalog-root" class="miniapp-stage"></main>
 
     <script type="module">
-        import { loadMiniAppData } from '../../js/miniapp-data-loader.js';
-        import {
-            registerStatusListener,
-            queueForSync,
-            syncPendingChanges,
-            configureGoogleSync
-        } from '../../js/googleSync.js';
+        const ReactLib = window.React;
+        const ReactDOMLib = window.ReactDOM;
+        const Material = window.MaterialUI;
+        const { AppCard, AppButton, AppSection } = window.AppUI;
+        const { AppModalProvider, useAppModal } = window.AppModalContext;
 
-        const STORAGE_KEY = 'gestaoCatalogoDraft';
-        const tableBody = document.querySelector('[data-table-body]');
-        const emptyStateRow = document.querySelector('[data-empty-state]');
-        const template = document.getElementById('row-template');
-        const form = document.getElementById('miniapp-form');
-        const formTitle = document.querySelector('[data-form-title]');
-        const submitBtn = document.querySelector('[data-submit-btn]');
-        const cancelEditBtn = document.querySelector('[data-cancel-edit]');
-        const newEntryBtn = document.querySelector('[data-new-entry]');
-        const feedback = document.querySelector('[data-feedback]');
-        const draftIndicator = document.querySelector('[data-draft-indicator]');
-        const resetDraftBtn = document.querySelector('[data-reset-draft]');
-        const saveBtn = document.querySelector('[data-save-btn]');
-        const syncStatus = document.querySelector('[data-sync-status]');
-
-        let editingId = null;
-        let catalog = [];
-        let officialMiniApps = [];
-
-        async function initializeCatalogApp() {
-            try {
-                officialMiniApps = await loadMiniAppData();
-            } catch (error) {
-                console.error('Não foi possível carregar os dados oficiais do repositório.', error);
-                showFeedback('Falha ao carregar os dados oficiais. Continue usando o rascunho local.', 'error');
-                officialMiniApps = [];
-            }
-
-            configureGoogleSync({ syncTarget: 'appsScript' });
-
-            catalog = loadCatalog();
-            renderCatalog();
-            attachEventListeners();
-            setupSyncStatus();
+        if (!ReactLib || !ReactDOMLib || !Material || !AppCard || !AppModalProvider) {
+            throw new Error('Dependências essenciais não foram carregadas para o MiniApp de Catálogo.');
         }
 
-        function loadCatalog() {
-            const stored = window.localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed)) {
-                        return parsed;
-                    }
-                } catch (error) {
-                    console.warn('Não foi possível carregar o rascunho salvo.', error);
-                }
-            }
-            if (!officialMiniApps.length) {
-                return [];
-            }
-            return officialMiniApps.map((item) => ({
-                ...item,
-                updatedAt: item.updatedAt || new Date().toISOString()
-            }));
-        }
+        const {
+            useMemo,
+            Fragment,
+        } = ReactLib;
+        const {
+            ThemeProvider,
+            createTheme,
+            CssBaseline,
+            Box,
+            Button,
+            Chip,
+            Container,
+            Grid,
+            Stack,
+            Typography,
+            Avatar,
+            Divider,
+            List,
+            ListItem,
+            ListItemText,
+        } = Material;
 
-        function persistCatalog() {
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(catalog));
-            updateDraftIndicator();
-        }
+        const e = ReactLib.createElement;
 
-        function renderCatalog() {
-            tableBody.innerHTML = '';
-            if (!catalog.length) {
-                emptyStateRow.hidden = false;
-                tableBody.appendChild(emptyStateRow);
-            } else {
-                emptyStateRow.hidden = true;
-                catalog.forEach((item) => {
-                    const row = template.content.cloneNode(true);
-                    row.querySelector('[data-col-title]').textContent = item.title;
-                    row.querySelector('[data-col-category]').textContent = item.category;
-                    row.querySelector('[data-col-contract]').textContent = item.contract || 'Sob consulta';
-                    const statusBadge = row.querySelector('[data-col-status]');
-                    statusBadge.dataset.variant = item.active ? 'published' : 'draft';
-                    statusBadge.textContent = item.active ? 'Publicado' : 'Rascunho';
-                    row.querySelector('[data-col-updated]').textContent = formatDate(item.updatedAt);
+        const CATALOG_ITEMS = [
+            {
+                id: 'catalogo-5horas',
+                title: 'Catálogo 5Horas',
+                description: 'Card principal do shell, expõe o grid oficial de MiniApps e integra com favoritos.',
+                category: 'Core',
+                contract: 'RodaPack',
+                status: 'published',
+                url: './index.html',
+                owner: 'Equipe 5Horas',
+            },
+            {
+                id: 'settings-bridge',
+                title: 'Configurações do Sistema',
+                description: 'Card replicado dentro deste painel para navegação rápida com preferências globais.',
+                category: 'MiniSystems',
+                contract: 'Interno',
+                status: 'draft',
+                url: '../settings/index.html',
+                owner: 'Equipe 5Horas',
+            },
+            {
+                id: 'payments-pro',
+                title: 'Pagamentos e Assinaturas',
+                description: 'Experiência dedicada a recorrências financeiras e integrações com Mercado Pago.',
+                category: 'Financeiro',
+                contract: 'BR-MercadoPago',
+                status: 'draft',
+                url: '../payments/index.html',
+                owner: 'MiniApp Payments',
+            },
+            {
+                id: 'favorites-panel',
+                title: 'Painel de Favoritos',
+                description: 'Permite fixar atalhos críticos do catálogo com persistência no IndexedDB.',
+                category: 'Produtividade',
+                contract: 'RodaPack',
+                status: 'em revisão',
+                url: '../favorites/index.html',
+                owner: 'Equipe Shell',
+            },
+            {
+                id: 'recents-tracker',
+                title: 'Histórico de Acessos',
+                description: 'Mostra os últimos MiniApps abertos e sugere retornos rápidos.',
+                category: 'Produtividade',
+                contract: 'RodaPack',
+                status: 'em revisão',
+                url: '../recents/index.html',
+                owner: 'Equipe Shell',
+            },
+            {
+                id: 'alerts-hub',
+                title: 'Central de Alertas',
+                description: 'MiniApp legado preservado para notificar o time sobre incidentes críticos.',
+                category: 'Legado',
+                contract: 'Especial',
+                status: 'manutenção',
+                url: '../alerts/index.html',
+                owner: 'Equipe Legada',
+            },
+        ];
 
-                    row.querySelector('[data-edit-btn]').dataset.id = item.id;
-                    row.querySelector('[data-duplicate-btn]').dataset.id = item.id;
-                    row.querySelector('[data-delete-btn]').dataset.id = item.id;
-                    tableBody.appendChild(row);
+        const STATUS_PROPS = {
+            published: { label: 'Publicado', color: 'success' },
+            draft: { label: 'Em rascunho', color: 'warning' },
+            'em revisão': { label: 'Em revisão', color: 'info' },
+            manutenção: { label: 'Manutenção', color: 'default' },
+        };
+
+        function CatalogCard({ app }) {
+            const modal = useAppModal();
+            const statusProps = STATUS_PROPS[app.status] || { label: app.status, color: 'default' };
+
+            const openDetails = () => {
+                modal.openDialog({
+                    title: app.title,
+                    maxWidth: 'sm',
+                    content: () => e(
+                        Stack,
+                        { spacing: 2, sx: { pt: 1 } },
+                        e(Typography, { variant: 'body2', color: 'text.secondary' }, app.description),
+                        e(Divider, null),
+                        e(List, { dense: true, disablePadding: true },
+                            e(ListItem, { disableGutters: true },
+                                e(ListItemText, { primary: 'Categoria', secondary: app.category })
+                            ),
+                            e(ListItem, { disableGutters: true },
+                                e(ListItemText, { primary: 'Contrato', secondary: app.contract })
+                            ),
+                            e(ListItem, { disableGutters: true },
+                                e(ListItemText, { primary: 'Responsável', secondary: app.owner })
+                            )
+                        )
+                    ),
+                    actions: ({ closeDialog }) => e(Fragment, null,
+                        e(Button, { onClick: closeDialog }, 'Fechar')
+                    ),
                 });
-            }
-            updateDraftIndicator();
-            toggleSaveButton();
-        }
-
-        function attachEventListeners() {
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const formData = new FormData(form);
-                const payload = normalizePayload(formData);
-                if (!payload) {
-                    return;
-                }
-
-                if (editingId) {
-                    const index = catalog.findIndex((item) => item.id === editingId);
-                    catalog[index] = { ...catalog[index], ...payload, id: editingId };
-                    showFeedback('MiniApp atualizado com sucesso.', 'success');
-                } else {
-                    const hasDuplicate = catalog.some((item) => item.id === payload.id);
-                    if (hasDuplicate) {
-                        showFeedback('Já existe um MiniApp com esse identificador.', 'error');
-                        return;
-                    }
-                    catalog.push(payload);
-                    showFeedback('MiniApp cadastrado.', 'success');
-                }
-
-                persistCatalog();
-                renderCatalog();
-                resetForm();
-            });
-
-            saveBtn.addEventListener('click', handleSaveToSystem);
-
-            tableBody.addEventListener('click', (event) => {
-                const editBtn = event.target.closest('[data-edit-btn]');
-                const duplicateBtn = event.target.closest('[data-duplicate-btn]');
-                const deleteBtn = event.target.closest('[data-delete-btn]');
-
-                if (editBtn) {
-                    startEditing(editBtn.dataset.id);
-                } else if (duplicateBtn) {
-                    duplicateMiniApp(duplicateBtn.dataset.id);
-                } else if (deleteBtn) {
-                    deleteMiniApp(deleteBtn.dataset.id);
-                }
-            });
-
-            newEntryBtn.addEventListener('click', () => {
-                resetForm();
-                showFeedback('Formulário limpo.', 'info');
-            });
-
-            cancelEditBtn.addEventListener('click', () => {
-                resetForm();
-                showFeedback('Edição cancelada.', 'info');
-            });
-
-            resetDraftBtn.addEventListener('click', () => {
-                if (!window.localStorage.getItem(STORAGE_KEY)) {
-                    showFeedback('Não há rascunhos locais para descartar.', 'info');
-                    return;
-                }
-                const shouldReset = window.confirm('Descartar o rascunho local e recarregar os dados oficiais?');
-                if (!shouldReset) {
-                    return;
-                }
-                window.localStorage.removeItem(STORAGE_KEY);
-                catalog = loadCatalog();
-                renderCatalog();
-                resetForm();
-                showFeedback('Rascunho descartado. Dados oficiais restaurados.', 'success');
-            });
-        }
-
-        function normalizePayload(formData) {
-            const id = (formData.get('id') || '').trim();
-            const title = (formData.get('title') || '').trim();
-            const category = (formData.get('category') || '').trim();
-            const description = (formData.get('description') || '').trim();
-            const url = (formData.get('url') || '').trim();
-            const image = (formData.get('image') || '').trim();
-
-            if (!id || !title || !category || !description || !url || !image) {
-                showFeedback('Preencha todos os campos obrigatórios indicados com *.', 'error');
-                return null;
-            }
-
-            return {
-                id,
-                title,
-                category,
-                description,
-                price: (formData.get('price') || 'Grátis').trim() || 'Grátis',
-                contract: (formData.get('contract') || 'Sob consulta').trim() || 'Sob consulta',
-                url,
-                image,
-                active: formData.get('active') !== 'false',
-                updatedAt: new Date().toISOString()
             };
+
+            return e(
+                AppCard,
+                {
+                    title: app.title,
+                    subtitle: app.category,
+                    helper: app.description,
+                    sx: { minHeight: 320 },
+                    actions: e(Chip, { label: statusProps.label, color: statusProps.color === 'default' ? undefined : statusProps.color, variant: 'outlined' }),
+                },
+                e(
+                    Stack,
+                    { spacing: 2 },
+                    e(Stack, { direction: 'row', spacing: 1.5, alignItems: 'center' },
+                        e(Avatar, { children: app.title.slice(0, 1) }),
+                        e('div', null,
+                            e(Typography, { variant: 'body2', color: 'text.secondary' }, 'Contrato'),
+                            e(Typography, { variant: 'h6' }, app.contract)
+                        )
+                    ),
+                    e(Divider, null),
+                    e(Stack, { direction: { xs: 'column', sm: 'row' }, spacing: 1.5 },
+                        e(AppButton, { tone: 'primary', component: 'a', href: app.url }, 'Abrir MiniApp'),
+                        e(AppButton, { tone: 'ghost', onClick: openDetails }, 'Detalhes')
+                    )
+                )
+            );
         }
 
-        function startEditing(id) {
-            const entry = catalog.find((item) => item.id === id);
-            if (!entry) {
-                return;
-            }
-            editingId = entry.id;
-            formTitle.textContent = `Editando: ${entry.title}`;
-            submitBtn.textContent = 'Salvar alterações';
-            cancelEditBtn.hidden = false;
-            form.elements.id.value = entry.id;
-            form.elements.id.readOnly = true;
-            form.elements.title.value = entry.title;
-            form.elements.category.value = entry.category;
-            form.elements.price.value = entry.price || '';
-            form.elements.contract.value = entry.contract || '';
-            form.elements.url.value = entry.url;
-            form.elements.image.value = entry.image;
-            form.elements.description.value = entry.description;
-            form.elements.active.value = entry.active ? 'true' : 'false';
+        function CatalogApp() {
+            const theme = useMemo(() => createTheme({
+                palette: {
+                    mode: 'light',
+                    primary: { main: '#f97316' },
+                    secondary: { main: '#0ea5e9' },
+                    background: {
+                        default: '#f3f4f6',
+                        paper: '#ffffff',
+                    },
+                },
+                typography: {
+                    fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                },
+                shape: { borderRadius: 24 },
+            }), []);
+
+            return e(
+                ThemeProvider,
+                { theme },
+                e(CssBaseline, null),
+                e(
+                    AppModalProvider,
+                    null,
+                    e(
+                        Box,
+                        { className: 'miniapp-stage', sx: { flex: 1 } },
+                        e(
+                            Container,
+                            { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            e(
+                                Stack,
+                                { spacing: 1.25 },
+                                e(Typography, { variant: 'overline', color: 'text.secondary' }, 'MiniApp Catálogo'),
+                                e(Typography, { variant: 'h4', component: 'h1' }, 'Gestão de MiniApps em desenvolvimento'),
+                                e(Typography, { color: 'text.secondary' }, 'Todos os cards abaixo utilizam o AppCard e seguem o grid responsivo do MUI.')
+                            ),
+                            e(
+                                AppSection,
+                                { title: 'MiniApps ativos', description: 'A lista reflete o estado atual do RodaPack.' },
+                                e(
+                                    Grid,
+                                    { container: true, spacing: 2 },
+                                    CATALOG_ITEMS.map((app) => e(Grid, { item: true, xs: 12, sm: 6, md: 4, key: app.id }, e(CatalogCard, { app })))
+                                )
+                            )
+                        )
+                    )
+                )
+            );
         }
 
-        function resetForm() {
-            editingId = null;
-            form.reset();
-            form.elements.id.disabled = false;
-            formTitle.textContent = 'Cadastrar novo MiniApp';
-            submitBtn.textContent = 'Salvar MiniApp';
-            cancelEditBtn.hidden = true;
-            form.elements.id.readOnly = false;
-        }
-
-        function duplicateMiniApp(id) {
-            const entry = catalog.find((item) => item.id === id);
-            if (!entry) {
-                return;
-            }
-            const nextId = generateCopyId(entry.id);
-            const duplicated = {
-                ...entry,
-                id: nextId,
-                title: `${entry.title} (cópia)`,
-                updatedAt: new Date().toISOString()
-            };
-            catalog.push(duplicated);
-            persistCatalog();
-            renderCatalog();
-            showFeedback('Cópia criada. Atualize os campos antes de exportar.', 'success');
-        }
-
-        function generateCopyId(baseId) {
-            let suffix = 1;
-            let candidate = `${baseId}-copy`;
-            while (catalog.some((item) => item.id === candidate)) {
-                suffix += 1;
-                candidate = `${baseId}-copy-${suffix}`;
-            }
-            return candidate;
-        }
-
-        function deleteMiniApp(id) {
-            const entry = catalog.find((item) => item.id === id);
-            if (!entry) {
-                return;
-            }
-            const confirmed = window.confirm(`Remover o MiniApp "${entry.title}" do rascunho local?`);
-            if (!confirmed) {
-                return;
-            }
-            catalog = catalog.filter((item) => item.id !== id);
-            persistCatalog();
-            renderCatalog();
-            if (editingId === id) {
-                resetForm();
-            }
-            showFeedback('MiniApp removido do rascunho.', 'success');
-        }
-
-        function toggleSaveButton() {
-            saveBtn.disabled = !catalog.length;
-        }
-
-        function updateDraftIndicator() {
-            const hasDraft = Boolean(window.localStorage.getItem(STORAGE_KEY));
-            draftIndicator.textContent = hasDraft
-                ? 'Rascunho local em uso. Clique em “Salvar no sistema” para sincronizar.'
-                : officialMiniApps.length
-                    ? 'Usando dados oficiais carregados automaticamente.'
-                    : 'Dados oficiais indisponíveis. Trabalhando apenas com o rascunho local.';
-        }
-
-        function setupSyncStatus() {
-            registerStatusListener(({ message, syncState }) => {
-                if (!syncStatus) {
-                    return;
-                }
-                const readableState = {
-                    syncing: 'Sincronizando alterações...',
-                    synced: 'Sincronização concluída.',
-                    offline: 'Modo offline. Alterações serão enviadas quando possível.',
-                    error: 'Erro ao sincronizar. Tente novamente.',
-                    'auth-required': 'Conecte sua conta para sincronizar.',
-                    online: 'Conectado. Nenhuma alteração pendente.'
-                };
-                syncStatus.textContent = readableState[syncState] || message || 'Status desconhecido.';
-            });
-        }
-
-        async function handleSaveToSystem() {
-            if (!catalog.length) {
-                showFeedback('Adicione pelo menos um MiniApp antes de salvar.', 'error');
-                return;
-            }
-            saveBtn.disabled = true;
-            const previousLabel = saveBtn.textContent;
-            saveBtn.textContent = 'Salvando...';
-            try {
-                await queueForSync({
-                    id: `catalog-${Date.now()}`,
-                    type: 'miniapp-catalog',
-                    source: 'catalog',
-                    entries: catalog,
-                    updatedAt: new Date().toISOString()
-                });
-                await syncPendingChanges();
-                showFeedback('Alterações enfileiradas para sincronização.', 'success');
-            } catch (error) {
-                console.error('Falha ao salvar no sistema', error);
-                showFeedback('Não foi possível salvar. Tente novamente.', 'error');
-            } finally {
-                saveBtn.textContent = previousLabel;
-                toggleSaveButton();
-            }
-        }
-
-        function formatDate(value) {
-            if (!value) {
-                return '—';
-            }
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) {
-                return '—';
-            }
-            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
-
-        function showFeedback(message, variant = 'info') {
-            if (!feedback) {
-                return;
-            }
-            feedback.textContent = message;
-            feedback.dataset.variant = variant;
-            setTimeout(() => {
-                if (feedback.dataset.variant === variant) {
-                    feedback.textContent = '';
-                }
-            }, 4000);
-        }
-
-        initializeCatalogApp().catch((error) => {
-            console.error('Falha geral ao inicializar o painel de Gestão de Catálogo.', error);
-            showFeedback('Não foi possível inicializar o painel. Recarregue a página e tente novamente.', 'error');
-        });
+        ReactDOMLib.createRoot(document.getElementById('catalog-root')).render(e(CatalogApp));
     </script>
 </body>
 </html>

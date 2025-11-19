@@ -5,7 +5,8 @@ O diretório `miniapps/` concentra os painéis que serão carregados pelo RodaPa
 ## Estrutura mínima
 - Cada MiniApp fica em `miniapps/<slug>/` com um `index.html` mobile-first.
 - Utilize `<app-shared-footer>` para manter o controle do stage. O header é opcional e apenas para fluxos que realmente precisem de barra superior interna.
-- Estilos customizados precisam seguir `docs/miniapp-global.css` e o design system. Evite criar tokens ad-hoc.
+- Estilos customizados devem ser implementados com Material UI; use `docs/components/app-shared-ui.js` (AppCard/AppButton/AppSection) e mantenha `docs/miniapp-global.css` apenas como base de tokens.
+- Modais, drawers e snackbars devem obrigatoriamente usar `docs/components/app-modal-context.js` (`AppModalProvider` + `useAppModal`).
 - Cada pasta já contém `README.md` e `CHANGELOG.md` iniciados com o status **“Em criação”**.
 
 ## Ícones fixos do rodapé (MiniApps obrigatórios)
@@ -16,7 +17,7 @@ O shell React agora utiliza um rodapé com quatro ícones permanentes, e cada it
 - **Recentes** → `miniapps/recents/`
 - **Configurações** → `miniapps/settings/`
 
-O repositório também passa a contar com o MiniApp complementar `miniapps/payments/`, responsável por centralizar as formas de pagamento (iniciando com o cenário brasileiro via Mercado Pago) sem interferir nos ícones fixos do rodapé.
+O repositório também passa a contar com o MiniApp complementar `miniapps/payments/`, responsável por centralizar as formas de pagamento (iniciando com o cenário brasileiro via Mercado Pago) sem interferir nos ícones fixos do rodapé. O cartão **MiniSystems** ganhou pasta própria em `miniapps/minisystems/` para documentar o gerenciamento de preferências globais que já aparece dentro de Configurações.
 
 Os MiniApps `home`, `alerts` e `account` permanecem no repositório para garantir continuidade histórica e poderão voltar ao rodapé caso novas instruções sejam publicadas.
 
