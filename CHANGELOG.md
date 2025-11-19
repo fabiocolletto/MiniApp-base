@@ -5,6 +5,8 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 ## [Unreleased]
 ### Adicionado
 - Pastas `miniapps/favorites/` e `miniapps/recents/` com documentação e placeholders dedicados para suportar o novo padrão do rodapé.
+- Script `tests/ensure-screen-capture.js` rodado via `npm test` para garantir que nenhum arquivo inclua flags que bloqueiem prints em Android/iOS.
+- Seção no `README.md` documentando a política de captura de tela e o procedimento de validação.
 
 ### Alterado
 - Footer compartilhado atualizado para exibir os quatro ícones principais (Catálogo, Favoritos, Recentes e Configurações) e alinhar a navegação ao novo padrão.

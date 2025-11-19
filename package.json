@@ -5,6 +5,6 @@
   "main": "service-worker.js",
   "type": "commonjs",
   "scripts": {
-    "test": "echo \"Nenhum teste automatizado ativo após a limpeza do repositório.\""
+    "test": "node ./tests/ensure-screen-capture.js"
   }
 }
