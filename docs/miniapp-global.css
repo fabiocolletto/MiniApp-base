@@ -199,8 +199,8 @@ app-shared-footer,
 }
 
 .app-header {
-    position: sticky;
-    top: 0;
+    position: relative;
+    top: auto;
     width: 100%;
     z-index: 20;
     display: grid;
@@ -325,11 +325,21 @@ app-shared-footer,
     gap: 1rem;
 }
 
+.app-shared-footer[data-state="collapsed"] {
+    padding-top: 0.75rem;
+    padding-bottom: 1rem;
+    gap: 0.5rem;
+}
+
 .app-shared-footer nav {
     display: flex;
     gap: 0.75rem;
     align-items: stretch;
     color: inherit;
+}
+
+.app-shared-footer[data-state="collapsed"] nav {
+    align-items: center;
 }
 
 .app-shared-footer .nav-item {
@@ -368,6 +378,20 @@ app-shared-footer,
 
 .app-shared-footer .nav-item--compact {
     padding: 0.5rem 0.35rem;
+}
+
+.app-shared-footer .nav-item--toggle {
+    min-width: auto;
+    padding: 0.5rem;
+}
+
+.app-shared-footer .nav-item--toggle .material-icons-sharp {
+    font-size: 1.5rem;
+}
+
+.app-shared-footer[data-state="collapsed"] .nav-item {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
 }
 
 .app-shared-footer button {
