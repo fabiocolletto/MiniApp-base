@@ -17,8 +17,6 @@ O shell React agora utiliza um rodapé com quatro ícones permanentes, e cada it
 - **Recentes** → `miniapps/recents/`
 - **Configurações** → `miniapps/settings/`
 
-O repositório também passa a contar com o MiniApp complementar `miniapps/payments/`, responsável por centralizar as formas de pagamento (iniciando com o cenário brasileiro via Mercado Pago) sem interferir nos ícones fixos do rodapé. O cartão **MiniSystems** ganhou pasta própria em `miniapps/minisystems/` para documentar o gerenciamento de preferências globais que já aparece dentro de Configurações.
-
-Os MiniApps `home`, `alerts` e `account` permanecem no repositório para garantir continuidade histórica e poderão voltar ao rodapé caso novas instruções sejam publicadas.
+O repositório também passa a contar com o MiniApp complementar `miniapps/payments/`, responsável por centralizar as formas de pagamento (iniciando com o cenário brasileiro via Mercado Pago) sem interferir nos ícones fixos do rodapé. O cartão **MiniSystems** ganhou pasta própria em `miniapps/minisystems/` para documentar o gerenciamento de preferências globais que já aparece dentro de Configurações. Os placeholders históricos `home`, `alerts` e `account` foram removidos após a implantação para que somente os painéis ativos permaneçam na base.
 
 Quando um MiniApp estiver pronto para ir ao ar, atualize `docs/miniapp-data.js` e substitua o placeholder pelo iframe ou painel embutido correspondente. Até lá, mantenha o placeholder para garantir consistência visual e de navegação.
