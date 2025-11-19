@@ -342,6 +342,14 @@
             },
         });
 
+        const IDEAL_CARD_WIDTH = 300;
+        const RESPONSIVE_GRID_SX = {
+            display: 'grid',
+            gridTemplateColumns: `repeat(auto-fit, minmax(${IDEAL_CARD_WIDTH}px, 1fr))`,
+            gap: { xs: 2, sm: 2.5 },
+            alignItems: 'stretch',
+        };
+
         function getLocaleCopy(language) {
             return LOCALE_COPY[language] || LOCALE_COPY['pt-BR'];
         }
@@ -439,7 +447,7 @@
                     subtitle: memoryCopy.cardSubtitle,
                     helper: memoryCopy.helper,
                     actions: e(AppButton, { tone: 'secondary', onClick: openDetails }, memoryCopy.detailButton),
-                    sx: { minHeight: 300 },
+                    sx: { minHeight: 300, height: '100%' },
                 },
                 e(
                     Stack,
@@ -521,7 +529,7 @@
                     subtitle: copy.subtitle,
                     helper: user.email,
                     actions: e(AppButton, { tone: 'secondary', onClick: openEditor }, copy.editAction),
-                    sx: { minHeight: 300 },
+                    sx: { minHeight: 300, height: '100%' },
                 },
                 e(
                     Stack,
@@ -554,7 +562,7 @@
                     title: paymentsCopy.title,
                     subtitle: paymentsCopy.subtitle,
                     helper: paymentsCopy.helper,
-                    sx: { minHeight: 300 },
+                    sx: { minHeight: 300, height: '100%' },
                 },
                 e(
                     Stack,
@@ -606,7 +614,7 @@
                     title: preferencesCopy.title,
                     subtitle: preferencesCopy.subtitle,
                     helper: preferencesCopy.helper,
-                    sx: { minHeight: 300 },
+                    sx: { minHeight: 300, height: '100%' },
                 },
                 e(
                     Stack,
@@ -711,17 +719,17 @@
                                     e(Typography, { color: 'text.secondary' }, localeCopy.hero.description)
                                 ),
                                 e(
-                                    Grid,
-                                    { container: true, spacing: 2 },
-                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(UserProfileCard, { copy: localeCopy.userCard, language: preferences.language })),
-                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PaymentsCard, { copy: localeCopy.paymentsCard, language: preferences.language })),
-                                    e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(PreferencesCard, { preferences, onChange: handlePreferenceChange, lastSync: lastSyncedAt, copy: localeCopy.preferencesCard, language: preferences.language }))
+                                    Box,
+                                    { sx: RESPONSIVE_GRID_SX },
+                                    e(Box, { sx: { minWidth: 0 } }, e(UserProfileCard, { copy: localeCopy.userCard, language: preferences.language })),
+                                    e(Box, { sx: { minWidth: 0 } }, e(PaymentsCard, { copy: localeCopy.paymentsCard, language: preferences.language })),
+                                    e(Box, { sx: { minWidth: 0 } }, e(PreferencesCard, { preferences, onChange: handlePreferenceChange, lastSync: lastSyncedAt, copy: localeCopy.preferencesCard, language: preferences.language }))
                                 ),
                                 e(
                                     AppSection,
                                     { title: localeCopy.memory.sectionTitle, description: localeCopy.memory.sectionDescription },
-                                    e(Grid, { container: true, spacing: 2 },
-                                        e(Grid, { item: true, xs: 12, sm: 6, md: 4 }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
+                                    e(Box, { sx: RESPONSIVE_GRID_SX },
+                                        e(Box, { sx: { minWidth: 0 } }, e(MemoryStatusCard, { copy: localeCopy.memory, language: preferences.language }))
                                     )
                                 )
                             )
