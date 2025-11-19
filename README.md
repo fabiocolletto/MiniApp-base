@@ -6,18 +6,20 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 - **MiniApps base controlados pelo footer**: `catalog`, `favorites`, `recents` e `settings`, todos apenas com aviso de desenvolvimento e acionados diretamente pelos ícones fixos do rodapé. Os MiniApps legados `home`, `alerts` e `account` permanecem publicados para referência histórica.
 - **Footer oficial** (`docs/components/app-shared-footer.js`), agora publicado como componente React funcional fixo no shell.
 - **Header compartilhado** (`docs/components/app-shared-header.js`) exportado como componente React modular para uso nos MiniApps.
-- **Shell do catálogo** (`index.html`), agora montado por um app React que controla os stages via `app-shared-footer` e mantém os cartões renderizados por `docs/miniapp-card.js` e estilos em `docs/miniapp-global.css` e `docs/miniapp-card.css`.
+- **Componentes base** (`docs/components/app-shared-ui.js`) com AppCard/AppButton/AppSection desenhados sobre Material UI.
+- **Contexto de modais** (`docs/components/app-modal-context.js`) que padroniza Dialog/Drawer/Snackbar para todos os MiniApps.
+- **Shell do catálogo** (`index.html`), agora montado por um app React que controla os stages via `app-shared-footer` e utiliza Material UI para distribuir os cards responsivos enquanto `docs/miniapp-global.css` cuida apenas de tokens e layout.
 
 ## Estrutura atual
 ```
 .
 ├── assets/                # Ícones e imagens usados pelo shell
 ├── docs/
-│   ├── components/        # Header e footer compartilhados
+│   ├── components/        # Header/footer + AppCard/AppModal compartilhados
 │   ├── miniapp-card.css   # Estilos dos cartões do catálogo
 │   ├── miniapp-card.js    # Renderização e listeners dos cartões
 │   ├── miniapp-data.js    # Fonte de dados do catálogo (pode ficar vazia durante a criação)
-│   └── miniapp-global.css # Estilos globais do shell
+│   └── miniapp-global.css # Tokens + layout base do shell
 ├── js/
 │   ├── googleSync.js      # Integração opcional com Google e fila offline
 │   ├── indexeddb-store.js # Acesso ao IndexedDB
@@ -33,8 +35,17 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 - **Compatibilidade com utilitários existentes**: `googleSync.js`, `indexeddb-store.js` e `miniapp-data-loader.js` podem ser consumidos pelos componentes React, mantendo caminhos e APIs atuais.
 - **Montagem do shell**: `index.html` injeta React/ReactDOM via CDN, renderiza o shell em `#root` e monta os componentes `AppSharedHeader` e `AppSharedFooter` dentro do React. O footer permanece como controlador de navegação e expõe o estado (`expanded`/`collapsed`) via props e callbacks.
 
+## Layout responsivo com Material UI
+- **Container/Box/ Grid oficiais**: o Stage do shell (`index.html`) foi reescrito com `MaterialUI.Container`, `Box` e `Grid` para garantir breakpoints consistentes (xs, sm, md, lg, xl) sem media queries manuais.
+- **Componentes reutilizáveis**: `docs/components/app-shared-ui.js` expõe `AppCard`, `AppButton` e `AppSection` com os tokens 5Horas; todos os novos cards de MiniApps devem utilizá-los.
+- **Sistema de modais**: `docs/components/app-modal-context.js` fornece `AppModalProvider`/`useAppModal` para abrir `Dialog`, `Drawer` e `Snackbar` padronizados (com fechamento por ESC/click externo).
+- **CSS global enxuto**: `docs/miniapp-global.css` mantém apenas tokens, reset e layout do Stage/Footer. A responsividade passa a ser responsabilidade do Material UI.
+
 ## Status dos MiniApps
 Cada pasta em `miniapps/` expõe um `index.html` simples apenas com aviso de que o conteúdo está em construção. Nenhum fluxo completo foi publicado. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
+
+- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard`/`AppButton` com Material UI, incluindo Dialog para detalhes rápidos de cada item.
+- **MiniApp Configurações**: remodelado em React + MUI com quatro cards (Perfil, Pagamentos, MiniSystems e Memória). Os fluxos de usuário/memória usam `Dialog` do contexto global, persistem tema/idioma, aplicam o tema diretamente nos AppCards e traduzem os textos principais de acordo com o idioma escolhido, além de espelharem as leituras do IndexedDB em tempo real.
 
 ## Desenvolvimento local
 Nenhuma dependência Node é necessária além do precache do service worker para servir os arquivos resultantes do build. Use qualquer servidor HTTP simples (ex.: `python -m http.server`) para navegar pelo shell e verificar os placeholders gerados pelo React.

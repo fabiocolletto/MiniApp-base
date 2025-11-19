@@ -2,7 +2,7 @@
 
 Status: **Em criação**, com foco inicial nas assinaturas brasileiras via Mercado Pago.
 
-MiniApp dedicado a concentrar o gerenciamento das formas de pagamento. Nesta fase inicial, o painel traz um card compacto e um painel expandido para a assinatura brasileira operada exclusivamente pelo Mercado Pago, replicando o padrão visual dos cards do catálogo.
+MiniApp dedicado a concentrar o gerenciamento das formas de pagamento. Nesta fase inicial, o painel traz um card compacto e um painel expandido para a assinatura brasileira operada exclusivamente pelo Mercado Pago, replicando o padrão visual dos cards do catálogo. O snapshot exibido no MiniApp Configurações reaproveita os mesmos dados mockados para dar contexto rápido antes de abrir este painel completo.
 
 ## Estrutura atual
 - `index.html`: painel com o card compacto/expandido e sessões detalhadas sobre o plano, histórico e ações rápidas.
