@@ -4,7 +4,7 @@
 .miniapp-card {
     position: relative;
     background-color: var(--color-card-bg);
-    border-radius: 0.75rem;
+    border-radius: 0;
     box-shadow: var(--shadow-card);
     transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
     cursor: pointer;
@@ -23,7 +23,7 @@
 .miniapp-image {
     width: 100%;
     height: auto;
-    border-radius: 0.75rem;
+    border-radius: 0;
     object-fit: cover;
     aspect-ratio: 4 / 3;
     transition: transform 0.3s ease;

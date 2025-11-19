@@ -17,10 +17,9 @@
 
     const baseCardSx = (theme = {}) => {
         const palette = theme.palette || {};
-        const shape = theme.shape || {};
         const isDark = palette.mode === 'dark';
         return {
-            borderRadius: typeof shape.borderRadius === 'number' ? shape.borderRadius : 4,
+            borderRadius: 0,
             border: `1px solid ${palette.divider || 'rgba(15, 23, 42, 0.12)'}`,
             boxShadow: isDark
                 ? '0 30px 55px rgba(2, 6, 23, 0.65)'
