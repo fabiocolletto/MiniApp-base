@@ -7,7 +7,7 @@
 
   const BASE_CLASSES = {
     header:
-      "app-header p-4 shadow-lg grid grid-cols-[auto_1fr_auto] items-center rounded-b-xl gap-2 justify-items-center bg-white sticky top-0 z-20",
+      "app-header p-4 shadow-lg grid grid-cols-[auto_1fr_auto] items-center rounded-b-xl gap-2 justify-items-center sticky top-0 z-20",
     iconWrapper:
       "flex items-center justify-center space-x-2 col-start-2 col-end-3 text-center w-full justify-self-center",
     actionsWrapper:
