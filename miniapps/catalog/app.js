@@ -827,10 +827,15 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
                 Box,
                 { className: 'miniapp-stage', sx: { flex: 1 } },
                 e(
-                    Container,
-                    { maxWidth: 'lg', sx: { py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 } },
-                    sectionContent
-                )
+                    Box,
+                    { className: 'miniapp-stage', sx: { flex: 1 } },
+                    e(
+                        Container,
+                        { maxWidth: 'lg', sx: { py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 } },
+                        sectionContent
+                    )
+                ),
+                fullScreenDialog
             ),
             fullScreenDialog,
             e(
