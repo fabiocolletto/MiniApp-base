@@ -356,7 +356,7 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
     const ReactLib = window.React;
     const ReactDOMLib = window.ReactDOM;
     const Material = window.MaterialUI;
-    const { AppCard, AppButton, AppSection } = window.AppUI;
+    const { AppCard, AppButton } = window.AppUI;
     const { AppModalProvider, useAppModal } = window.AppModalContext;
 
     if (!ReactLib || !ReactDOMLib || !Material || !AppCard || !AppModalProvider) {
@@ -678,8 +678,7 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
         );
     }
 
-    function CatalogApp() {
-        const { preferences, effectiveTheme } = usePreferences();
+    function CatalogAppContent({ preferences }) {
         const { favoritesMap, loadingFavorites, updateFavorite } = useFavorites();
         const { recentHistory, recordRecent } = useRecents();
         const { openDialog, showSnackbar } = useAppModal();
@@ -695,30 +694,6 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
             () => getModeCopy(mode, preferences.language),
             [mode, preferences.language]
         );
-
-        const theme = useMemo(() => {
-            const modeValue = effectiveTheme;
-            const isDark = modeValue === 'dark';
-            return createTheme({
-                palette: {
-                    mode: modeValue,
-                    primary: { main: '#f97316' },
-                    secondary: { main: '#0ea5e9' },
-                    background: {
-                        default: isDark ? '#020617' : '#f3f4f6',
-                        paper: isDark ? '#0f172a' : '#ffffff',
-                    },
-                    text: {
-                        primary: isDark ? '#f8fafc' : '#0f172a',
-                        secondary: isDark ? '#94a3b8' : '#475569',
-                    },
-                },
-                typography: {
-                    fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                },
-                shape: { borderRadius: 24 },
-            });
-        }, [effectiveTheme]);
 
         const resolvedItems = useMemo(
             () => resolveItemsForMode(mode, localizedItems, favoritesMap, recentHistory),
@@ -846,34 +821,18 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
         );
 
         return e(
-            ThemeProvider,
-            { theme },
-            e(CssBaseline, null),
+            Fragment,
+            null,
             e(
-                AppModalProvider,
-                null,
+                Box,
+                { className: 'miniapp-stage', sx: { flex: 1 } },
                 e(
-                    Box,
-                    { className: 'miniapp-stage', sx: { flex: 1 } },
-                    e(
-                        Container,
-                        { maxWidth: 'lg', sx: { py: { xs: 3, md: 5 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 4 } },
-                        e(
-                            Stack,
-                            { spacing: 1.25 },
-                            e(Typography, { variant: 'overline', color: 'text.secondary' }, copy.hero.overline),
-                            e(Typography, { variant: 'h4', component: 'h1' }, copy.hero.title),
-                            e(Typography, { color: 'text.secondary' }, copy.hero.description)
-                        ),
-                        e(
-                            AppSection,
-                            { title: copy.sections.activeTitle, description: copy.sections.activeDescription },
-                            sectionContent
-                        )
-                    )
-                ),
-                fullScreenDialog
+                    Container,
+                    { maxWidth: 'lg', sx: { py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 } },
+                    sectionContent
+                )
             ),
+            fullScreenDialog,
             e(
                 Snackbar,
                 {
@@ -885,6 +844,45 @@ function bootstrapMiniAppGrid({ rootId = 'catalog-root', mode = 'catalog' } = {}
                 errorMessage
                     ? e(Alert, { severity: 'error', variant: 'filled', onClose: handleCloseError }, errorMessage)
                     : null
+            )
+        );
+    }
+
+    function CatalogApp() {
+        const { preferences, effectiveTheme } = usePreferences();
+
+        const theme = useMemo(() => {
+            const modeValue = effectiveTheme;
+            const isDark = modeValue === 'dark';
+            return createTheme({
+                palette: {
+                    mode: modeValue,
+                    primary: { main: '#f97316' },
+                    secondary: { main: '#0ea5e9' },
+                    background: {
+                        default: isDark ? '#020617' : '#f3f4f6',
+                        paper: isDark ? '#0f172a' : '#ffffff',
+                    },
+                    text: {
+                        primary: isDark ? '#f8fafc' : '#0f172a',
+                        secondary: isDark ? '#94a3b8' : '#475569',
+                    },
+                },
+                typography: {
+                    fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                },
+                shape: { borderRadius: 24 },
+            });
+        }, [effectiveTheme]);
+
+        return e(
+            ThemeProvider,
+            { theme },
+            e(CssBaseline, null),
+            e(
+                AppModalProvider,
+                null,
+                e(CatalogAppContent, { preferences })
             )
         );
     }

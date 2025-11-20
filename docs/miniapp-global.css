@@ -122,6 +122,10 @@ body {
     flex-direction: column;
 }
 
+.hidden {
+    display: none !important;
+}
+
 body.body-with-fixed-footer {
     padding-bottom: var(--app-footer-height);
 }

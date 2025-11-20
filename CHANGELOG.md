@@ -18,6 +18,7 @@ Todas as mudanças relevantes deste repositório serão documentadas neste arqui
 - Mapa de cópias multilíngues no MiniApp Configurações garantindo tradução imediata dos cards quando o idioma global é alterado.
 - Handshake `catalog:height` entre o shell React e miniapps em iframe para sincronizar automaticamente a altura do Stage quando o conteúdo interno cresce.
 - Registros oficiais dos quatro MiniApps ativos dentro de `docs/miniapp-data.js`, permitindo validar o grid, favoritos e os quadros do catálogo.
+- Fonte `docs/miniapp-data.js` simplificada para manter apenas os quatro MiniApps do rodapé e garantir que o catálogo sempre renderize o conjunto atual.
 
 ### Alterado
 - `index.html` passou a usar `ThemeProvider`, `Container` e `Box` do Material UI para controlar o Stage responsivo.

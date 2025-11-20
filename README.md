@@ -24,7 +24,7 @@ O repositório foi higienizado para manter apenas o que é necessário para os M
 │   ├── googleSync.js      # Integração opcional com Google e fila offline
 │   ├── indexeddb-store.js # Acesso ao IndexedDB
 │   └── miniapp-data-loader.js # Loader com fallback remoto para miniapp-data.js (importável por React)
-├── miniapps/              # MiniApps em desenvolvimento (apenas os quatro do rodapé + painéis complementares ativos)
+├── miniapps/              # MiniApps em desenvolvimento (apenas os quatro do rodapé)
 │   ├── catalog/app.js     # Template compartilhado para Catálogo/Favoritos/Recentes
 ├── pwa/                   # Manifesto do PWA
 ├── service-worker.js      # Service worker usado pelo shell
@@ -56,9 +56,9 @@ O arquivo `docs/miniapp-data.js` agora registra oficialmente os quatro MiniApps 
 - O link de detalhes divide a mesma linha do indicador de status, deixando a face inicial do card mais compacta.
 
 ## Status dos MiniApps
-Cada pasta em `miniapps/` expõe um `index.html` dedicado. Catálogo, Favoritos e Recentes já usam o template React compartilhado descrito acima; Configurações segue com o painel em React + MUI; os demais permanecem placeholders simples enquanto os fluxos não são finalizados. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas. Além dos quatro miniapps acionados pelo rodapé, existe o painel complementar `miniapps/payments/`, dedicado a consolidar as formas de pagamento (iniciado com Mercado Pago no Brasil) dentro da mesma base estática.
+Cada pasta em `miniapps/` expõe um `index.html` dedicado. Catálogo, Favoritos e Recentes já usam o template React compartilhado descrito acima; Configurações segue com o painel em React + MUI; os demais permanecem placeholders simples enquanto os fluxos não são finalizados. Todos são obrigatórios para o shell funcionar e deverão ser preenchidos com componentes React conforme evoluírem, respeitando o isolamento dentro de suas respectivas pastas.
 
-- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard` com ícone de expansão para abrir o MiniApp em tela cheia, status e link de detalhes na mesma linha e modal enriquecido com contrato + botão de favorito. O grid consome `docs/miniapp-data.js` via `loadMiniAppData`, mostra placeholders durante o carregamento e reaproveita o empty state "Catálogo em criação".
+- **MiniApp Catálogo**: deixou a tabela estática e agora renderiza um grid de `AppCard` com ícone de expansão para abrir o MiniApp em tela cheia, status e link de detalhes na mesma linha e modal enriquecido com contrato + botão de favorito. O grid consome `docs/miniapp-data.js` via `loadMiniAppData`, mostra placeholders durante o carregamento e reaproveita o empty state "Catálogo em criação", exibindo os MiniApps do rodapé.
 - **MiniApps Favoritos e Recentes**: passaram a usar o mesmo grid do catálogo. Favoritos filtra os itens persistidos no IndexedDB (via botão do modal), enquanto Recentes exibe o histórico local gerado ao abrir um MiniApp pelo ícone de expansão.
 - **MiniApp Configurações**: remodelado em React + MUI com quatro cards (Perfil, Pagamentos, MiniSystems e Memória). Os fluxos de usuário/memória usam `Dialog` do contexto global, persistem tema/idioma, aplicam o tema diretamente nos AppCards e traduzem os textos principais de acordo com o idioma escolhido, além de espelharem as leituras do IndexedDB em tempo real.
 
