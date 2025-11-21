@@ -33,7 +33,6 @@
   <app-shared-footer show-settings="true" active-tab="settings" state="collapsed"></app-shared-footer>
 
   <script type="module">
-    // --- Início do Código JavaScript do Painel de Testes ---
     const ReactLib = window.React;
     const ReactDOMLib = window.ReactDOM;
     const Material = window.MaterialUI;
@@ -41,11 +40,10 @@
     const SyncManager = window.MiniAppSyncManager;
 
     if (!ReactLib || !ReactDOMLib || !Material || !AppCard || !SyncManager) {
-      console.error('Dependências essenciais não foram carregadas.');
       if (!SyncManager) {
-          throw new Error('MiniAppSyncManager não foi carregado. Verifique o caminho "./sync-manager.js".');
+          console.error('MiniAppSyncManager não foi carregado. Verifique o caminho "./sync-manager.js".');
       }
-      throw new Error('Dependências React/MUI não carregadas.');
+      throw new Error('Dependências essenciais não foram carregadas.');
     }
 
     const {
@@ -124,7 +122,6 @@
       }, [status.authenticated]);
       
       const authButtonDisabled = status.syncState === 'syncing';
-      
       const authButtonText = status.authenticated ? copy.disconnect : copy.connect;
       const authButtonTone = status.authenticated ? 'secondary' : 'primary';
 
@@ -176,7 +173,6 @@
             const current = (await SyncManager.getUserSetting(key))?.value === true;
             const next = !current;
             await SyncManager.saveUserSetting(key, next);
-            // Chama a sincronização para aplicar a nova regra
             SyncManager.syncPendingChanges();
         }, []);
         
@@ -187,7 +183,6 @@
                 payload: `Teste de fila ${Math.random().toFixed(4)}`
             };
             await SyncManager.queueForSync(item);
-            // Força a sincronização
             SyncManager.syncPendingChanges();
         }, []);
 
@@ -208,7 +203,7 @@
                     Stack,
                     { direction: 'row', spacing: 1.5, alignItems: 'center' },
                     e(AppButton, { 
-                        tone: backupEnabled ? 'success' : 'error', 
+                        tone: backupEnabled ? 'error' : 'success', 
                         onClick: () => handleToggle(SETTINGS_BACKUP_KEY),
                         disabled: controlsDisabled
                     }, backupEnabled ? `${copy.deactivate} ${copy.backup}` : `${copy.activate} ${copy.backup}`),
@@ -222,7 +217,7 @@
                     Stack,
                     { direction: 'row', spacing: 1.5, alignItems: 'center' },
                     e(AppButton, { 
-                        tone: syncEnabled ? 'success' : 'error', 
+                        tone: syncEnabled ? 'error' : 'success', 
                         onClick: () => handleToggle(SETTINGS_SYNC_KEY),
                         disabled: controlsDisabled
                     }, syncEnabled ? `${copy.deactivate} ${copy.sync}` : `${copy.activate} ${copy.sync}`),
@@ -280,12 +275,10 @@
           const unsubscribe = SyncManager.registerStatusListener((nextStatus) => {
               setStatus(nextStatus);
               
-              // Atualiza os estados dos toggles a partir das configurações salvas
               SyncManager.getUserSetting(SETTINGS_BACKUP_KEY).then(s => setBackupEnabled(s?.value === true));
               SyncManager.getUserSetting(SETTINGS_SYNC_KEY).then(s => setSyncEnabled(s?.value === true));
           });
           
-          // Carrega os estados iniciais no mount
           SyncManager.getUserSetting(SETTINGS_BACKUP_KEY).then(s => setBackupEnabled(s?.value === true));
           SyncManager.getUserSetting(SETTINGS_SYNC_KEY).then(s => setSyncEnabled(s?.value === true));
 
@@ -298,7 +291,7 @@
         { theme: appTheme },
         e(CssBaseline, null),
         e(
-          AppModalProvider,
+          window.AppModalContext.AppModalProvider,
           null,
           e(
             Box,
@@ -381,7 +374,6 @@
     ReactDOMLib.createRoot(document.getElementById('sync-test-root')).render(
       e(SyncManagerTestLayout)
     );
-    // --- Fim do Código JavaScript do Painel de Testes ---
   </script>
 </body>
 </html>
