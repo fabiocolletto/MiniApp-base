@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniApp - Admin MiniApps (Sistema)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-global.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-card.css" />
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@mui/material@5.15.14/umd/material-ui.production.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/idb@7.1.1/build/umd.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-modal-context.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/admin-shared.js"></script>
+
+  <meta name="theme-color" content="#020617" />
+</head>
+
+<body class="miniapp-shell" style="margin:0; padding:0; width:100%; height:100%; overflow-x:hidden;">
+  <main id="admin-miniapps-root" class="miniapp-stage"></main>
+
+  <script>
+    const ReactLib = window.React;
+    const Material = window.MaterialUI;
+    const AppUI = window.AppUI;
+    const AdminShared = window.AdminShared;
+
+    const e = ReactLib.createElement;
+    const { AppCard, AppButton } = AppUI;
+
+    const { assertDeps, bootstrapAdminStore, toSlug, makeLayout } = AdminShared;
+
+    assertDeps("admin-miniapps-root");
+    bootstrapAdminStore();
+    const AdminStore = window.AdminStore;
+
+    const { useCallback, useEffect, useMemo, useState } = ReactLib;
+    const {
+      Box, Stack, Typography, TextField,
+      FormControl, InputLabel, Select, MenuItem,
+      Divider, Chip
+    } = Material;
+
+    function AdminMiniappsCard({ status, outlinedSx }) {
+      const emptyMiniapp = {
+        id:"", title:"", slug:"", description:"", url:"",
+        icon:"apps", categoryId:"", order:0, active:true, visibility:"public"
+      };
+
+      const [items, setItems] = useState([]);
+      const [categories, setCategories] = useState([]);
+      const [form, setForm] = useState(emptyMiniapp);
+      const [editingId, setEditingId] = useState(null);
+      const [error, setError] = useState(null);
+      const [ok, setOk] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      const reload = useCallback(async () => {
+        setLoading(true);
+        const [list, cats] = await Promise.all([
+          AdminStore.list("miniapps"),
+          AdminStore.list("categories")
+        ]);
+        const safeList = Array.isArray(list) ? list : [];
+        const safeCats = Array.isArray(cats) ? cats : [];
+        safeList.sort((a,b)=> (a.order||0) - (b.order||0));
+        safeCats.sort((a,b)=> (a.order||0) - (b.order||0));
+        setItems(safeList);
+        setCategories(safeCats);
+        setLoading(false);
+      }, []);
+
+      useEffect(() => { reload(); }, [reload]);
+
+      const catLabelById = useMemo(() => {
+        const m = {};
+        categories.forEach(c => m[c.id] = c.name);
+        return m;
+      }, [categories]);
+
+      const onEdit = useCallback((it) => {
+        setEditingId(it.id);
+        setForm(it);
+        setError(null); setOk(null);
+      }, []);
+
+      const onNew = useCallback(() => {
+        setEditingId(null);
+        setForm(emptyMiniapp);
+        setError(null); setOk(null);
+      }, []);
+
+      const onDelete = useCallback(async (it) => {
+        setError(null); setOk(null);
+        await AdminStore.remove("miniapps", it.id);
+        await reload();
+        setOk("MiniApp excluído.");
+        if (editingId === it.id) onNew();
+      }, [editingId, onNew, reload]);
+
+      const validate = useCallback(() => {
+        if (!form.title) return "Título é obrigatório.";
+        if (!form.slug) return "Slug é obrigatório.";
+        if (!form.url) return "URL é obrigatória.";
+        return null;
+      }, [form]);
+
+      const onSave = useCallback(async () => {
+        setError(null); setOk(null);
+        const v = validate();
+        if (v) { setError(v); return; }
+
+        const patched = {
+          ...form,
+          slug: toSlug(form.slug || form.title),
+          order: Number(form.order || 0),
+          active: !!form.active,
+          visibility: form.visibility || "public"
+        };
+
+        const saved = await AdminStore.upsert("miniapps", patched);
+        await reload();
+        setOk(editingId ? "MiniApp atualizado." : "MiniApp criado.");
+
+        if (!editingId) {
+          setForm(emptyMiniapp);
+        } else {
+          setEditingId(saved.id);
+          setForm(saved);
+        }
+      }, [editingId, emptyMiniapp, form, reload, validate]);
+
+      return e(
+        AppCard,
+        {
+          title: "Admin • MiniApps",
+          subtitle: "Cadastro administrativo de MiniApps",
+          helper: "CRUD local. Usa categorias cadastradas."
+        },
+        e(Stack, { spacing: 2 },
+
+          e(Typography, { variant:"subtitle1", fontWeight:700 }, "MiniApps cadastrados"),
+
+          loading ? e(Typography, { variant:"caption", color:"text.secondary" }, "Carregando...") : null,
+          !loading && items.length === 0
+            ? e(Typography, { variant:"caption", color:"text.secondary" }, "Nenhum MiniApp ainda.")
+            : null,
+
+          !loading && items.length > 0
+            ? e(Stack, { spacing: 1 },
+                items.map(it =>
+                  e(Box, {
+                    key: it.id,
+                    sx: {
+                      display:"flex",
+                      alignItems:"center",
+                      justifyContent:"space-between",
+                      p:1,
+                      border:"1px solid rgba(255,255,255,0.12)",
+                      borderRadius:"10px",
+                      background:"rgba(255,255,255,0.02)"
+                    }
+                  },
+                    e(Stack, { spacing: 0.25 },
+                      e(Typography, { variant:"body2", fontWeight:600 }, it.title || "(sem título)"),
+                      e(Typography, { variant:"caption", color:"text.secondary" },
+                        "slug: " + (it.slug||"") +
+                        (it.categoryId ? (" · " + (catLabelById[it.categoryId] || "Categoria")) : "") +
+                        (it.visibility ? (" · " + it.visibility) : "")
+                      ),
+                      it.active === false
+                        ? e(Chip, { size:"small", label:"Inativo", color:"default", variant:"outlined" })
+                        : null
+                    ),
+                    e(Stack, { direction:"row", spacing:1 },
+                      e(AppButton, { tone:"secondary", variant:"outlined", onClick: ()=>onEdit(it) }, "Editar"),
+                      e(AppButton, { tone:"danger", variant:"outlined", onClick: ()=>onDelete(it) }, "Excluir")
+                    )
+                  )
+                )
+              )
+            : null,
+
+          e(Divider),
+
+          e(Stack, { direction:"row", spacing:1, alignItems:"center", justifyContent:"space-between" },
+            e(Typography, { variant:"subtitle2", fontWeight:700 }, editingId ? "Editar MiniApp" : "Novo MiniApp"),
+            e(AppButton, { tone:"ghost", variant:"text", onClick: onNew }, "Limpar / Novo")
+          ),
+
+          e(Stack, { spacing: 1.5 },
+            e(TextField, {
+              variant:"outlined", sx: outlinedSx,
+              label:"Título do MiniApp", size:"small",
+              value: form.title || "",
+              onChange: ev => setForm(f => ({
+                ...f,
+                title: ev.target.value,
+                slug: f.slug || toSlug(ev.target.value)
+              })),
+              fullWidth:true
+            }),
+            e(TextField, {
+              variant:"outlined", sx: outlinedSx,
+              label:"Slug", size:"small",
+              value: form.slug || "",
+              onChange: ev => setForm(f => ({ ...f, slug: toSlug(ev.target.value) })),
+              fullWidth:true
+            }),
+            e(TextField, {
+              variant:"outlined", sx: outlinedSx,
+              label:"Descrição curta", size:"small",
+              value: form.description || "",
+              onChange: ev => setForm(f => ({ ...f, description: ev.target.value })),
+              fullWidth:true, multiline:true, minRows:2
+            }),
+            e(TextField, {
+              variant:"outlined", sx: outlinedSx,
+              label:"URL (GitHub Pages / CDN)", size:"small",
+              value: form.url || "",
+              onChange: ev => setForm(f => ({ ...f, url: ev.target.value })),
+              fullWidth:true
+            }),
+            e(TextField, {
+              variant:"outlined", sx: outlinedSx,
+              label:"Ícone Material (nome)", size:"small",
+              value: form.icon || "apps",
+              onChange: ev => setForm(f => ({ ...f, icon: ev.target.value })),
+              fullWidth:true
+            }),
+
+            e(Stack, { direction:{ xs:"column", sm:"row" }, spacing:2 },
+              e(FormControl, { fullWidth:true, size:"small", sx: outlinedSx },
+                e(InputLabel, null, "Categoria"),
+                e(Select, {
+                  value: form.categoryId || "",
+                  label: "Categoria",
+                  onChange: ev => setForm(f => ({ ...f, categoryId: ev.target.value }))
+                },
+                  e(MenuItem, { value:"" }, "Sem categoria"),
+                  categories.map(c => e(MenuItem, { key:c.id, value:c.id }, c.name))
+                )
+              ),
+              e(TextField, {
+                variant:"outlined", sx: outlinedSx,
+                label:"Ordem", type:"number", size:"small",
+                value: form.order || 0,
+                onChange: ev => setForm(f => ({ ...f, order: ev.target.value })),
+                fullWidth:true
+              })
+            ),
+
+            e(Stack, { direction:{ xs:"column", sm:"row" }, spacing:2 },
+              e(FormControl, { fullWidth:true, size:"small", sx: outlinedSx },
+                e(InputLabel, null, "Visibilidade"),
+                e(Select, {
+                  value: form.visibility || "public",
+                  label: "Visibilidade",
+                  onChange: ev => setForm(f => ({ ...f, visibility: ev.target.value }))
+                },
+                  e(MenuItem, { value:"public" }, "Público"),
+                  e(MenuItem, { value:"private" }, "Privado"),
+                  e(MenuItem, { value:"beta" }, "Beta")
+                )
+              ),
+              e(FormControl, { fullWidth:true, size:"small", sx: outlinedSx },
+                e(InputLabel, null, "Status"),
+                e(Select, {
+                  value: form.active === false ? "inactive" : "active",
+                  label: "Status",
+                  onChange: ev => setForm(f => ({ ...f, active: ev.target.value === "active" }))
+                },
+                  e(MenuItem, { value:"active" }, "Ativo"),
+                  e(MenuItem, { value:"inactive" }, "Inativo")
+                )
+              )
+            )
+          ),
+
+          error ? e(Typography, { variant:"caption", color:"error.main" }, error) : null,
+          ok ? e(Typography, { variant:"caption", color:"success.main" }, ok) : null,
+
+          e(Stack, { direction:"row", spacing: 1.5, justifyContent:"flex-end", mt: 1 },
+            e(AppButton, { tone:"secondary", variant:"outlined", onClick: onSave }, editingId ? "Salvar alterações" : "Criar registro")
+          ),
+
+          e(Typography, { variant:"caption", color:"text.secondary" },
+            `Última ação: ${status.lastSaveTime || "Nenhuma"} · ${status.message}`
+          )
+        )
+      );
+    }
+
+    makeLayout(AdminMiniappsCard, "admin-miniapps-root");
+  </script>
+</body>
+</html>
