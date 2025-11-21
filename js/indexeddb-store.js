@@ -55,7 +55,7 @@ async function withStore(storeName, mode, callback) {
   });
 }
 
-export async function saveRecord(storeName, data, key) {
+async function saveRecord(storeName, data, key) {
   return withStore(storeName, 'readwrite', (store) => {
     if (typeof key !== 'undefined') {
       return store.put(data, key);
@@ -64,27 +64,27 @@ export async function saveRecord(storeName, data, key) {
   });
 }
 
-export async function addRecord(storeName, data) {
+async function addRecord(storeName, data) {
   return withStore(storeName, 'readwrite', (store) => store.add(data));
 }
 
-export async function getAll(storeName) {
+async function getAll(storeName) {
   return withStore(storeName, 'readonly', (store) => store.getAll());
 }
 
-export async function getByKey(storeName, key) {
+async function getByKey(storeName, key) {
   return withStore(storeName, 'readonly', (store) => store.get(key));
 }
 
-export async function deleteRecord(storeName, key) {
+async function deleteRecord(storeName, key) {
   return withStore(storeName, 'readwrite', (store) => store.delete(key));
 }
 
-export async function clearStore(storeName) {
+async function clearStore(storeName) {
   return withStore(storeName, 'readwrite', (store) => store.clear());
 }
 
-export async function addToPendingSync(payload) {
+async function addToPendingSync(payload) {
   const record = {
     payload,
     createdAt: new Date().toISOString(),
@@ -93,7 +93,7 @@ export async function addToPendingSync(payload) {
   return addRecord('pendingSync', record);
 }
 
-export async function markPendingAsSynced(id, extra = {}) {
+async function markPendingAsSynced(id, extra = {}) {
   const record = await getByKey('pendingSync', id);
   if (!record) {
     return false;
@@ -109,16 +109,40 @@ export async function markPendingAsSynced(id, extra = {}) {
   return true;
 }
 
-export async function markAsSynced(id, extra) {
+async function markAsSynced(id, extra) {
   return markPendingAsSynced(id, extra);
 }
 
-export async function removePending(id) {
+async function removePending(id) {
   return deleteRecord('pendingSync', id);
 }
 
-export async function getPendingItems() {
+async function getPendingItems() {
   return getAll('pendingSync');
 }
 
-export { openDatabase };
+// Início do bloco de Registro Global (Raw Connection)
+(function (global) {
+  if (global.MiniAppDB) {
+    console.warn('MiniAppDB já está definido. Ignorando a redefinição.');
+    return;
+  }
+
+  global.MiniAppDB = {
+    // Funções de CRUD
+    saveRecord,
+    addRecord,
+    getAll,
+    getByKey,
+    deleteRecord,
+    clearStore,
+    // Funções de Sync
+    addToPendingSync,
+    markPendingAsSynced,
+    markAsSynced,
+    removePending,
+    getPendingItems,
+    // Função principal
+    openDatabase
+  };
+})(window);
