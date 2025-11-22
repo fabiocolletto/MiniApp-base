@@ -1,474 +1,530 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MiniApp - Catálogo (Sistema)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de MiniApps - Gviz (React)</title>
+    <!-- Carregando Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando React e Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Importando Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        /* Fonte Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        .font-sans { font-family: 'Inter', sans-serif; }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-
-    <!-- CSS globais do sistema -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-global.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/miniapp-card.css" />
-
-    <!-- React + MUI (mesmo padrão do admin) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js"></script>
-    <script crossorigin src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js"></script>
-    <script crossorigin src="https://unpkg.com/@mui/material@5.15.14/umd/material-ui.production.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/idb@7.1.1/build/umd.js"></script>
-
-    <!-- Shared UI -->
-    <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-shared-ui.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/app-modal-context.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/docs/components/admin-shared.js"></script>
-
-    <meta name="theme-color" content="#020617" />
-</head>
-
-<body class="miniapp-shell" style="margin:0; padding:0; width:100%; height:100%; overflow-x:hidden;">
-    <main id="catalogo-root" class="miniapp-stage"></main>
-
-    <script>
-        const ReactLib = window.React;
-        const Material = window.MaterialUI;
-        const AppUI = window.AppUI;
-        const AdminShared = window.AdminShared;
-
-        const e = ReactLib.createElement;
-        const { AppCard, AppButton } = AppUI;
-        const { assertDeps, bootstrapAdminStore, makeLayout } = AdminShared;
-
-        assertDeps("catalogo-root");
-        bootstrapAdminStore();
-        const AdminStore = window.AdminStore;
-
-        const { useCallback, useEffect, useMemo, useState } = ReactLib;
-        const {
-            Stack, Typography, TextField, Divider, Chip,
-            Grid, Card, CardContent, CardActions
-        } = Material;
+        /* Estilos base do Card */
+        .miniapp-card {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
         
-        // ID da planilha fornecida pelo usuário, usado como fallback inicial.
-        const DEFAULT_SHEET_ID = "1aKPEGQcKRzYmiWzeqyi19jX7GB8RDOBkN_NbxxX5NKU"; 
+        .miniapp-card:active {
+            transform: scale(0.98); 
+        }
 
-        // -----------------------------
-        // Leitura de planilha (Google Sheets via gviz CSV)
-        // -----------------------------
-        function getSheetCsvUrl() {
-            const qs = new URLSearchParams(location.search);
-            
-            // Prioridade: URL > LocalStorage > AppConfig > DEFAULT_SHEET_ID
-            const sheetId = qs.get("sheetId") || 
-                            localStorage.getItem("sheetId") || 
-                            (window.AppConfig && window.AppConfig.sheetId) || 
-                            DEFAULT_SHEET_ID;
-            
-            const sheetName = qs.get("sheetName") || localStorage.getItem("sheetName") || (window.AppConfig && window.AppConfig.sheetName) || "miniapps";
-            
+        /* Animação do Coração */
+        @keyframes heart-beat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .animate-heart {
+            animation: heart-beat 0.4s ease-in-out;
+        }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #171717; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #404040; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ea580c; 
+        }
+    </style>
+</head>
+<body class="bg-neutral-900 font-sans text-white m-0">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+        const ReactDOM = window.ReactDOM;
+
+        // =========================================================
+        // 1. CONFIGURAÇÃO
+        // =========================================================
+        const DEFAULT_SHEET_ID = "1aKPEGQcKRzYmiWzeqyi19jX7GB8RDOBkN_NbxxX5NKU"; 
+        const DEFAULT_SHEET_NAME = "miniapps"; 
+
+        // =========================================================
+        // 2. UTILITÁRIOS (CSV & GVIZ)
+        // =========================================================
+
+        function getSheetCsvUrl(sheetId, sheetName) {
             if (!sheetId) return "";
             return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
         }
 
-        // CSV parser mais robusto: aceita vírgula/; e normaliza cabeçalho (lowercase)
+        function parseCsvLine(text) {
+            const result = [];
+            let cell = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) { result.push(cell); cell = ''; }
+                else cell += char;
+            }
+            result.push(cell);
+            return result.map(c => {
+                const trimmed = c.trim();
+                if (trimmed.startsWith('"') && trimmed.endsWith('"')) return trimmed.slice(1, -1).replace(/""/g, '"');
+                return trimmed;
+            });
+        }
+
         function parseCsv(text) {
-            const clean = (text || "").replace(/^\uFEFF/, ""); // remove BOM
+            const clean = (text || "").replace(/^\uFEFF/, "");
             const lines = clean.split(/\r?\n/).filter(l => l.trim() !== "");
             if (!lines.length) return [];
             
-            console.log("Raw Header Line (primeira linha do CSV):", lines[0]);
-
-            // Tenta detectar separador
-            const sep = (lines[0].includes(";") && !lines[0].includes(",")) ? ";" : ",";
-            
-            // Split e limpeza agressiva dos headers: trim, lowercase, remove aspas circundantes
-            const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/^"|"$/g, '').trim());
-            
+            const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
             const rows = [];
-
             for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(sep);
+                if (!lines[i].trim()) continue;
+                const values = parseCsvLine(lines[i]);
                 const obj = {};
-                headers.forEach((h, idx) => {
-                    obj[h] = (cols[idx] ?? "").trim();
-                });
-                // Garante que o ID existe, usando slug ou um UUID temporário se necessário
+                headers.forEach((h, idx) => { obj[h] = (values[idx] ?? "").trim(); });
+                
                 if (!obj.id) {
-                    obj.id = obj.slug || `temp-${Math.random().toString(36).substring(2, 9)}`;
+                    obj.id = obj.slug || obj.url || obj.title || `temp-${Math.random().toString(36).substring(2, 9)}`;
                 }
                 rows.push(obj);
             }
             return rows;
         }
 
-        async function loadFromSheet() {
-            const csvUrl = getSheetCsvUrl();
+        async function loadFromSheet(sheetId, sheetName) {
+            const cleanedSheetId = sheetId.trim();
+            const cleanedSheetName = sheetName.trim();
+            const csvUrl = getSheetCsvUrl(cleanedSheetId, cleanedSheetName);
             if (!csvUrl) return null;
 
-            // Lógica de Retries com backoff exponencial para robustez
-            const MAX_RETRIES = 3;
-            let lastError = null;
-            
-            for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            const MAX_RETRIES = 2;
+            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
                 try {
-                    if (attempt > 0) {
-                        const delay = Math.pow(2, attempt) * 100 + Math.random() * 100;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        console.log(`Tentando recarregar a planilha (Tentativa ${attempt + 1}/${MAX_RETRIES})...`);
-                    }
-                    
+                    if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * attempt));
                     const res = await fetch(csvUrl, { cache: "no-store" });
-                    
-                    if (!res.ok) {
-                        throw new Error(`Falha HTTP ${res.status} ao ler planilha (gviz).`);
-                    }
-
-                    const ct = (res.headers.get("content-type") || "").toLowerCase();
+                    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
                     const text = await res.text();
-
-                    // Se pegar HTML, geralmente é permissão/aba errada
-                    if (ct.includes("text/html") || /<!doctype html>/i.test(text) || text.includes("accounts.google.com")) {
-                        throw new Error("Planilha não pública para leitura ou aba inexistente. Ajuste o compartilhamento para 'qualquer pessoa com o link pode visualizar' e confirme o nome da aba.");
+                    if (text.includes("<!doctype html>") || text.includes("google.com/accounts")) {
+                        throw new Error("A resposta foi HTML em vez de CSV. Verifique se a planilha está pública.");
                     }
-
                     const rows = parseCsv(text);
-                    if (!rows.length) {
-                         // Pode ser um CSV válido, mas sem dados
-                        return []; 
-                    }
+                    if (!rows.length) return []; 
 
-                    // Validação: a primeira linha deve ter colunas essenciais (headers já são lowercase)
-                    const head = rows[0] || {};
-                    const headKeys = Object.keys(head);
-                    
-                    // --- LOG PARA DEBUGGING ---
-                    console.log("Planilha carregada. Cabeçalhos (keys normalizadas):", headKeys);
-                    // --------------------------
+                    const mapKeys = {
+                        "título": "title", "titulo": "title", "nome": "title",
+                        "link": "url", "endereco": "url", "endereço": "url", "site": "url",
+                        "descrição": "description", "descricao": "description", "detalhes": "details",
+                        "subtitulo": "subtitle", "subtítulo": "subtitle",
+                        "categoria": "category", "status": "status", 
+                        "cor": "color", "icone": "icon", "icon": "icon",
+                        "visibilidade": "visibility", "ativo": "active"
+                    };
 
-                    // Aliases de colunas
-                    const titleAliases = ["title", "titulo", "título", "nome"];
-                    const urlAliases = ["url", "link", "endereco", "endereço"];
-
-                    // Verifica se os cabeçalhos obrigatórios existem
-                    const foundTitle = titleAliases.some(alias => headKeys.includes(alias));
-                    const foundUrl = urlAliases.some(alias => headKeys.includes(alias));
-                    
-                    if (!foundTitle || !foundUrl) {
-                        const missingCols = [];
-                        if (!foundTitle) missingCols.push(`Título (${titleAliases.join(" / ")})`);
-                        if (!foundUrl) missingCols.push(`URL (${urlAliases.join(" / ")})`);
-
-                        // Mensagem de erro mais específica
-                        throw new Error(`CSV inválido. Colunas obrigatórias faltando: ${missingCols.join(' e ')}. Verifique os nomes das colunas na primeira linha.`);
-                    }
-
-                    // Normaliza aliases PT -> EN para que o resto do app possa usar 'it.title' e 'it.url'
-                    
-                    // Normaliza Título
-                    if (!Object.prototype.hasOwnProperty.call(head, "title")) {
-                         if (Object.prototype.hasOwnProperty.call(head, "título")) {
-                            rows.forEach(r => { r.title = r["título"]; delete r["título"]; });
-                        } else if (Object.prototype.hasOwnProperty.call(head, "titulo")) {
-                            rows.forEach(r => { r.title = r.titulo; delete r.titulo; });
-                        } else if (Object.prototype.hasOwnProperty.call(head, "nome")) {
-                            rows.forEach(r => { r.title = r.nome; delete r.nome; });
+                    return rows.map(r => {
+                        const newR = {};
+                        for (const key in r) {
+                            const lowerKey = key.toLowerCase();
+                            const mappedKey = mapKeys[lowerKey] || lowerKey;
+                            newR[mappedKey] = r[key];
                         }
-                    }
-
-                    // Normaliza URL
-                    if (!Object.prototype.hasOwnProperty.call(head, "url")) {
-                         if (Object.prototype.hasOwnProperty.call(head, "link")) {
-                            rows.forEach(r => { r.url = r.link; delete r.link; });
-                        } else if (Object.prototype.hasOwnProperty.call(head, "endereco")) {
-                            rows.forEach(r => { r.url = r.endereco; delete r.endereco; });
-                        } else if (Object.prototype.hasOwnProperty.call(head, "endereço")) {
-                            rows.forEach(r => { r.url = r["endereço"]; delete r["endereço"]; });
-                        }
-                    }
-                    
-                    return rows; // Sucesso
-                    
+                        return newR;
+                    });
                 } catch (err) {
-                    lastError = err;
-                    if (attempt === MAX_RETRIES - 1) {
-                         // Re-lança o erro após a última tentativa
-                        throw lastError; 
-                    }
+                    if (attempt === MAX_RETRIES) throw err;
                 }
             }
         }
 
-        // -----------------------------
-        // Card visual do catálogo
-        // -----------------------------
-        function MiniappTile({ it, onOpen }) {
-            const isActive = String(it.active).toLowerCase() !== "false";
-            const visibility = it.visibility || "public";
+        // =========================================================
+        // 3. COMPONENTES UI
+        // =========================================================
 
-            return e(Card, {
-                sx: {
-                    borderRadius: "14px",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    background: "rgba(255,255,255,0.02)",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    "&:hover": {
-                        transform: isActive ? "translateY(-2px)" : "none",
-                        boxShadow: isActive ? "0 4px 10px rgba(0,0,0,0.3)" : "none",
-                        cursor: isActive ? "pointer" : "default"
-                    }
-                },
-                onClick: isActive ? () => onOpen(it) : null // Permite abrir clicando no Card
-            },
-                e(CardContent, { sx: { flexGrow: 1 } }, // flexGrow para garantir que o conteúdo preencha o espaço
-                    e(Stack, { direction: "row", spacing: 1, alignItems: "center" },
-                        e("span", { className: "material-icons-sharp", style: { fontSize: 22, opacity: 0.9, color: isActive ? "#818cf8" : "text.secondary" } }, it.icon || "apps"),
-                        e(Typography, { variant: "subtitle1", fontWeight: 700, color: isActive ? "text.primary" : "text.secondary" }, it.title || "(sem título)")
-                    ),
-                    e(Typography, { variant: "body2", color: "text.secondary", sx: { mt: 0.5, minHeight: 40 } }, it.description || "Nenhuma descrição fornecida."),
-                    e(Stack, { direction: "row", spacing: 1, sx: { mt: 1, flexWrap: "wrap" } },
-                        visibility ? e(Chip, { size: "small", label: visibility, variant: "outlined" }) : null,
-                        !isActive ? e(Chip, { size: "small", label: "inativo", color: "error", variant: "outlined" }) : null
-                    )
-                ),
-                e(CardActions, { sx: { mt: "auto", px: 2, pb: 2 } },
-                    e(AppButton, {
-                        tone: "secondary",
-                        variant: isActive ? "contained" : "outlined",
-                        fullWidth: true,
-                        disabled: !isActive,
-                        onClick: (e) => { e.stopPropagation(); onOpen(it); } // Previne o clique do Card de disparar duas vezes
-                    }, isActive ? "Abrir" : "Indisponível")
-                )
+        // Modal Genérico (Texto ou Iframe)
+        const Modal = ({ isOpen, closeModal, title, content, iframeUrl }) => {
+          if (!isOpen) return null;
+          const isAppMode = !!iframeUrl;
+
+          return (
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
+              <div className={`bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-700 relative overflow-hidden ${isAppMode ? 'w-full h-[90vh] max-w-6xl' : 'max-w-lg w-full'}`}>
+                
+                <div className="flex justify-between items-center p-4 bg-gray-900/50 border-b border-gray-700">
+                  <h3 className="text-xl font-bold text-orange-500 truncate pr-4">{title}</h3>
+                  <div className="flex items-center gap-3">
+                      {isAppMode && (
+                          <a 
+                            href={iframeUrl} target="_blank" rel="noopener noreferrer"
+                            className="text-xs md:text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 bg-blue-900/30 px-3 py-1.5 rounded-full hover:bg-blue-900/50 transition border border-blue-800"
+                          >
+                              <span className="material-symbols-outlined text-base">open_in_new</span>
+                              <span className="hidden md:inline">Abrir Externo</span>
+                          </a>
+                      )}
+                      <button onClick={closeModal} className="text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full p-1.5 transition flex items-center justify-center">
+                        <span className="material-symbols-outlined text-2xl">close</span>
+                      </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-hidden relative bg-neutral-950">
+                    {isAppMode ? (
+                        <div className="w-full h-full relative">
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-600 z-0">
+                                <span className="material-symbols-outlined animate-spin text-3xl mr-2">cached</span>
+                                Carregando App...
+                            </div>
+                            <iframe 
+                                src={iframeUrl} 
+                                className="w-full h-full border-0 relative z-10" 
+                                title={title}
+                                allow="camera; microphone; fullscreen; geolocation"
+                            ></iframe>
+                        </div>
+                    ) : (
+                        <div className="p-6 overflow-y-auto max-h-[60vh] custom-scrollbar">
+                            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap text-sm md:text-base">{content}</p>
+                        </div>
+                    )}
+                </div>
+
+                {!isAppMode && (
+                    <div className="p-4 border-t border-gray-700 flex justify-end bg-gray-900/30">
+                        <button onClick={closeModal} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:shadow-orange-600/20 transition">
+                            Fechar
+                        </button>
+                    </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        // Modal de Configurações (Novo)
+        const SettingsModal = ({ isOpen, closeModal, sheetId, setSheetId, sheetName, setSheetName, onSave }) => {
+            if (!isOpen) return null;
+            
+            return (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+                    <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md border border-gray-700 p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-orange-500">settings</span>
+                                Configurações
+                            </h3>
+                            <button onClick={closeModal} className="text-gray-400 hover:text-white transition">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-4 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">ID da Planilha Google</label>
+                                <input 
+                                    type="text" 
+                                    value={sheetId} 
+                                    onChange={(e) => setSheetId(e.target.value)}
+                                    className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-3"
+                                    placeholder="Ex: 1aKPEGQc..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Nome da Aba (Sheet Name)</label>
+                                <input 
+                                    type="text" 
+                                    value={sheetName} 
+                                    onChange={(e) => setSheetName(e.target.value)}
+                                    className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-3"
+                                    placeholder="Ex: miniapps"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                             <button 
+                                onClick={closeModal}
+                                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={onSave}
+                                className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition flex items-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-sm">save</span>
+                                Salvar e Atualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             );
-        }
+        };
 
-        function CatalogoCard({ status, outlinedSx }) {
-            const [items, setItems] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [query, setQuery] = useState("");
+        // Componente Card
+        const MiniAppCard = ({ data, openModal, isFavorite, onToggleFavorite }) => {
+          const title = data.title || 'Sem Título';
+          const subtitle = data.subtitle || data.description || '...';
+          const category = data.category || 'App';
+          const status = data.status || 'Pago';
+          const iconName = data.icon || 'extension';
+          const gradient = data.gradient || 'linear-gradient(135deg, #1f2937 0%, #111827 100%)';
+          const url = data.url;
+          const [isHovered, setIsHovered] = useState(false);
+          const [animateHeart, setAnimateHeart] = useState(false);
 
-            // Config planilha: Inicializa com o ID fornecido pelo usuário se não houver LocalStorage
-            const [configOpen, setConfigOpen] = useState(false);
-            const [csvInput, setCsvInput] = useState(localStorage.getItem("sheetId") || DEFAULT_SHEET_ID);
-            const [sheetNameInput, setSheetNameInput] = useState(localStorage.getItem("sheetName") || "miniapps");
-            const [csvTouched, setCsvTouched] = useState(false);
+          const handleCardClick = () => {
+            if (url && url.trim() !== "") {
+              openModal(title, null, url);
+            } else {
+              alert("Este MiniApp ainda não possui um link configurado.");
+            }
+          };
 
-            const saveCsvUrl = useCallback(() => {
-                const id = (csvInput || "").trim();
-                const name = (sheetNameInput || "miniapps").trim() || "miniapps";
-                if (!id) return false;
-                localStorage.setItem("sheetId", id);
-                localStorage.setItem("sheetName", name);
-                setConfigOpen(false);
-                return true;
-            }, [csvInput, sheetNameInput]);
+          const handleFavoriteClick = (e) => {
+              e.stopPropagation();
+              onToggleFavorite(data.id);
+              setAnimateHeart(true);
+              setTimeout(() => setAnimateHeart(false), 400);
+          };
 
-            const clearCsvUrl = useCallback(() => {
-                localStorage.removeItem("sheetId");
-                localStorage.removeItem("sheetName");
-                setCsvInput(DEFAULT_SHEET_ID); // Volta para o default injetado
-                setSheetNameInput("miniapps");
-                setCsvTouched(false);
-            }, []);
+          return (
+            <div
+              className={`miniapp-card bg-[#1E1E1E] rounded-lg overflow-hidden flex flex-row shadow-md border border-transparent hover:border-orange-500/30 ${url ? 'cursor-pointer' : 'cursor-default'}`}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              onClick={handleCardClick}
+              title={url ? `Abrir ${title}` : "Indisponível"}
+            >
+              <div className="w-1/3 relative flex items-center justify-center overflow-hidden rounded-l-lg" style={{ background: gradient, minWidth: '100px' }}>
+                <span className={`material-symbols-outlined text-5xl text-white/50 transition-transform duration-500 ${isHovered ? 'scale-110' : ''}`}>{iconName}</span>
+              </div>
+              <div className="w-2/3 p-4 relative flex flex-col justify-between">
+                  <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
+                      <button onClick={handleFavoriteClick} className={`p-1.5 rounded-full transition-all hover:bg-white/10 ${isFavorite ? 'text-orange-500' : 'text-gray-600 hover:text-orange-400'}`}>
+                        <span className={`material-symbols-outlined text-xl ${animateHeart ? 'animate-heart' : ''}`} style={{ fontVariationSettings: isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); openModal(title, data.details || data.description || "Sem detalhes.", null); }} className="p-1.5 rounded-full text-gray-500 hover:text-orange-400 hover:bg-white/10 transition-all">
+                        <span className="material-symbols-outlined text-xl">info</span>
+                      </button>
+                  </div>
+                  <div className="pr-16"> 
+                    <h2 className="text-lg font-bold text-white mb-2 leading-tight">{title}</h2>
+                    <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem] leading-relaxed">{subtitle}</p>
+                  </div>
+                  <div className="flex justify-between items-end mt-4">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-gray-600 bg-gray-800 px-2 py-1 rounded">{category}</span>
+                    <button onClick={(e) => { e.stopPropagation(); handleCardClick(); }} className={`text-sm font-medium py-1.5 px-4 rounded-full transition-colors shadow-lg z-20 ${url ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}>
+                        {url ? 'Acessar' : 'Indisponível'}
+                    </button>
+                  </div>
+              </div>
+            </div>
+          );
+        };
 
-            const reload = useCallback(async () => {
-                setLoading(true);
-                setError(null);
+        // =========================================================
+        // 4. APP PRINCIPAL
+        // =========================================================
 
-                try {
-                    const fromSheet = await loadFromSheet();
-                    
-                    if (Array.isArray(fromSheet)) {
-                        // Ordena pelo campo 'order' se existir
-                        fromSheet.sort((a, b) => (Number(a.order || 0) - Number(b.order || 0)));
-                        setItems(fromSheet);
-                        return;
-                    }
+        const App = () => {
+          const [miniApps, setMiniApps] = useState([]);
+          const [filteredApps, setFilteredApps] = useState([]);
+          const [loading, setLoading] = useState(false);
+          const [error, setError] = useState(null);
+          const [favorites, setFavorites] = useState(() => {
+              const saved = localStorage.getItem('miniapp_favorites');
+              return saved ? JSON.parse(saved) : [];
+          });
+          const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+          
+          // Estado do Modal de Configurações
+          const [settingsOpen, setSettingsOpen] = useState(false);
+          // Estados de Configuração (Inputs)
+          const [sheetId, setSheetId] = useState(DEFAULT_SHEET_ID);
+          const [sheetName, setSheetName] = useState(DEFAULT_SHEET_NAME);
 
-                    // Fallback local (do AdminStore original, se for o caso)
-                    const local = await AdminStore.list("miniapps");
-                    const safe = Array.isArray(local) ? local : [];
-                    safe.sort((a,b) => (Number(a.order||0) - Number(b.order||0)));
-                    setItems(safe);
+          const [modalState, setModalState] = useState({ isOpen: false, title: '', content: '', iframeUrl: null });
 
-                } catch (err) {
-                    console.error("Erro no Catálogo:", err);
-                    const msg = err?.message || "Erro ao carregar catálogo.";
-                    setError(msg);
+          const toggleFavorite = (appId) => {
+              setFavorites(prev => {
+                  const newFavs = prev.includes(appId) ? prev.filter(id => id !== appId) : [...prev, appId];            
+                  localStorage.setItem('miniapp_favorites', JSON.stringify(newFavs));
+                  return newFavs;
+              });
+          };
 
-                    const shouldOpenConfig = (
-                        msg.includes("CSV inválido") ||
-                        msg.includes("Falha ao ler planilha") ||
-                        msg.includes("não pública") ||
-                        msg.includes("aba")
-                    );
-                    if (shouldOpenConfig) setConfigOpen(true);
-                } finally {
-                    setLoading(false);
-                }
-            }, []);
+          const fetchData = useCallback(async () => {
+            if (!sheetId) return;
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await loadFromSheet(sheetId, sheetName);
+                const validData = data.filter(d => {
+                    const isActive = String(d.active || "true").toLowerCase() !== "false";
+                    const isPublic = String(d.visibility || "public").toLowerCase() !== "private";
+                    return d.title && isActive && isPublic;
+                });
+                setMiniApps(validData);
+                // Fecha modal de settings se estiver aberto
+                setSettingsOpen(false);
+            } catch (e) {
+                console.error(e);
+                setError(e.message);
+            } finally {
+                setLoading(false);
+            }
+          }, [sheetId, sheetName]);
 
-            useEffect(() => { 
-                reload(); 
-                // Assina o listener de alteração do localStorage para reagir a mudanças externas
-                const handleStorageChange = (e) => {
-                    if (e.key === "sheetId" || e.key === "sheetName") {
-                        reload();
-                    }
-                };
-                window.addEventListener("storage", handleStorageChange);
-                return () => window.removeEventListener("storage", handleStorageChange);
-            }, [reload]);
+          useEffect(() => { fetchData(); }, []);
 
-            const filtered = useMemo(() => {
-                const q = query.trim().toLowerCase();
-                const list = Array.isArray(items) ? items : [];
-                return list
-                    .filter(it => String(it.active).toLowerCase() !== "false") // Filtra inativos
-                    .filter(it => {
-                        const vis = (it.visibility || "public").toLowerCase();
-                        // Assume que "private" é escondido do catálogo
-                        return vis !== "private"; 
-                    })
-                    .filter(it => !q ||
-                        (it.title||"").toLowerCase().includes(q) ||
-                        (it.description||"").toLowerCase().includes(q) ||
-                        (it.slug||"").toLowerCase().includes(q) ||
-                        (it.categoryid||"").toLowerCase().includes(q)
-                    );
-            }, [items, query]);
+          useEffect(() => {
+              if (showOnlyFavorites) setFilteredApps(miniApps.filter(app => favorites.includes(app.id)));
+              else setFilteredApps(miniApps);
+          }, [miniApps, showOnlyFavorites, favorites]);
 
-            const onOpen = useCallback((it) => {
-                if (!it?.url) return;
-                // Abre o link em uma nova janela para evitar problemas de navegação no iframe
-                window.open(it.url, '_blank');
-            }, []);
+          const openModal = (title, content, url = null) => setModalState({ isOpen: true, title, content, iframeUrl: url });
+          const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false, iframeUrl: null }));
 
-            const currentSheetId = localStorage.getItem("sheetId") || DEFAULT_SHEET_ID;
+          return (
+            <div className="min-h-screen bg-neutral-900 pb-20 relative">
+                
+              {/* Botão de Configurações (Canto Superior Direito) - SEM BORDA */}
+              <div className="absolute top-4 right-4 z-40">
+                  <button 
+                    onClick={() => setSettingsOpen(true)}
+                    className="text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700 p-2 rounded-full transition backdrop-blur-sm"
+                    title="Configurações da Planilha"
+                  >
+                      <span className="material-symbols-outlined text-2xl">settings</span>
+                  </button>
+              </div>
 
-            return e(AppCard, {
-                title: "Catálogo",
-                subtitle: "MiniApps disponíveis no sistema",
-                helper: "Leitura automática da planilha Google Sheets via gviz CSV."
-            },
-                e(Stack, { spacing: 2 },
-                    // Campo para visualizar/editar ID da planilha
-                    e(TextField, {
-                        variant: "outlined",
-                        label: "ID da planilha (Google Sheets)",
-                        size: "small",
-                        value: currentSheetId, // Exibe o valor salvo/padrão
-                        // A edição é feita no modal, mas mantemos este campo de leitura/visualização.
-                        InputProps: { readOnly: true },
-                        fullWidth: true,
-                        sx: { mb: 1, ".MuiInputBase-root": { background: "rgba(255,255,255,0.05)" } }
-                    }),
+              {/* Header Hero */}
+              <div className="bg-gradient-to-b from-gray-800 to-neutral-900 pb-8 pt-12 px-6 border-b border-gray-800">
+                  <div className="max-w-6xl mx-auto text-center">
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600 mb-4">
+                        Catálogo MiniApps
+                    </h1>
+                    <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-6">
+                        Explore nossa coleção. Clique no card para abrir o App.
+                    </p>
 
-                    e(Stack, { direction: "row", spacing: 1, alignItems: "center" },
-                        e(TextField, {
-                            variant: "outlined",
-                            sx: outlinedSx,
-                            label: `Buscar em ${filtered.length} MiniApps`,
-                            size: "small",
-                            value: query,
-                            onChange: ev => setQuery(ev.target.value),
-                            fullWidth: true
-                        }),
-                        e(AppButton, {
-                            tone: "secondary",
-                            variant: "outlined",
-                            onClick: () => {
-                                setCsvInput(localStorage.getItem("sheetId") || DEFAULT_SHEET_ID);
-                                setSheetNameInput(localStorage.getItem("sheetName") || "miniapps");
-                                setConfigOpen(true);
-                            }
-                        }, "Config")
-                    ),
+                    {/* Filtro de Favoritos (Agora centralizado e limpo) */}
+                    <div className="flex justify-center">
+                        <div className="flex items-center gap-2 bg-gray-800 p-1.5 rounded-full border border-gray-700">
+                            <button onClick={() => setShowOnlyFavorites(false)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${!showOnlyFavorites ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}>
+                                Todos
+                            </button>
+                            <button onClick={() => setShowOnlyFavorites(true)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${showOnlyFavorites ? 'bg-orange-900/50 text-orange-400 border border-orange-800 shadow-sm' : 'text-gray-400 hover:text-white'}`}>
+                                <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                                Favoritos ({favorites.length})
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+              </div>
 
-                    loading ? e(Typography, { variant: "caption", color: "text.secondary" }, "Carregando catálogo da planilha...") : null,
-                    error ? e(Typography, { variant: "caption", color: "error.main" }, error) : null,
+              {/* Conteúdo Principal */}
+              <div className="max-w-7xl mx-auto px-6 py-10">
+                  {loading && (
+                      <div className="flex flex-col items-center justify-center py-20 text-orange-500 animate-pulse">
+                          <span className="material-symbols-outlined text-5xl mb-4">cloud_sync</span>
+                          <p className="text-xl font-medium">Atualizando catálogo...</p>
+                      </div>
+                  )}
 
-                    !loading && !error && filtered.length === 0
-                        ? e(Typography, { variant: "caption", color: "text.secondary" }, `Nenhum MiniApp encontrado${query ? ` para a busca "${query}"` : ". Verifique o ID/aba da planilha."}`)
-                        : null,
+                  {error && (
+                      <div className="bg-red-900/20 border border-red-800 text-red-400 p-6 rounded-xl text-center max-w-2xl mx-auto mt-10">
+                          <span className="material-symbols-outlined text-4xl mb-2">error</span>
+                          <p className="font-bold text-lg">Erro ao carregar</p>
+                          <p className="text-sm mt-2 opacity-80">{error}</p>
+                      </div>
+                  )}
 
-                    !loading && !error && filtered.length > 0
-                        ? e(Grid, { container: true, spacing: 2 },
-                            filtered.map(it =>
-                                e(Grid, { item: true, key: it.id || it.slug || Math.random(), xs: 12, sm: 6, md: 4, lg: 3 },
-                                    e(MiniappTile, { it, onOpen })
-                                )
-                            )
-                          )
-                        : null,
+                  {!loading && !error && (
+                      <>
+                        {filteredApps.length === 0 ? (
+                            <div className="text-center py-20">
+                                <div className="bg-gray-800/50 inline-block p-8 rounded-full mb-4">
+                                    <span className="material-symbols-outlined text-6xl text-gray-600">
+                                        {showOnlyFavorites ? 'favorite_border' : 'search_off'}
+                                    </span>
+                                </div>
+                                <p className="text-xl text-gray-400">
+                                    {showOnlyFavorites ? 'Você ainda não tem favoritos.' : 'Nenhum aplicativo encontrado.'}
+                                </p>
+                                {showOnlyFavorites && (
+                                    <button onClick={() => setShowOnlyFavorites(false)} className="mt-4 text-orange-500 hover:underline">Ver todos</button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+                                {filteredApps.map((app, index) => (
+                                    <MiniAppCard 
+                                        key={app.id || index} 
+                                        data={app} 
+                                        isFavorite={favorites.includes(app.id)}
+                                        onToggleFavorite={toggleFavorite}
+                                        openModal={openModal} 
+                                    />
+                                ))}
+                            </div>
+                        )}
+                      </>
+                  )}
+              </div>
 
-                    e(Divider),
-                    e(Typography, { variant: "caption", color: "text.secondary" },
-                        `Fonte: Google Sheets (ID: ${currentSheetId}) · ${status.message}`
-                    ),
+              {/* Modais */}
+              <Modal 
+                isOpen={modalState.isOpen} 
+                title={modalState.title} 
+                content={modalState.content} 
+                iframeUrl={modalState.iframeUrl}
+                closeModal={closeModal} 
+              />
 
-                    e(Material.Dialog, { open: configOpen, onClose: () => setConfigOpen(false), fullWidth: true, maxWidth: "sm" },
-                        e(Material.DialogTitle, null, "Configurar Planilha do Catálogo"),
-                        e(Material.DialogContent, null,
-                            e(Stack, { spacing: 1.5, sx: { mt: 1 } },
-                                e(Typography, { variant: "body2", color: "text.secondary" },
-                                    "Informe o ID da planilha e o nome da aba. Lembre-se que a planilha deve estar pública (compartilhamento 'qualquer pessoa com o link pode visualizar')."
-                                ),
-                                e(TextField, {
-                                    autoFocus: true,
-                                    label: "ID da planilha",
-                                    variant: "outlined",
-                                    fullWidth: true,
-                                    value: csvInput,
-                                    onChange: (ev) => { setCsvInput(ev.target.value); setCsvTouched(true); },
-                                    error: csvTouched && !csvInput.trim(),
-                                    helperText: csvTouched && !csvInput.trim()
-                                        ? "Informe um ID válido."
-                                        : `Exemplo (ID padrão): ${DEFAULT_SHEET_ID}`
-                                }),
-                                e(TextField, {
-                                    label: "Nome da aba",
-                                    variant: "outlined",
-                                    fullWidth: true,
-                                    value: sheetNameInput,
-                                    onChange: (ev) => setSheetNameInput(ev.target.value),
-                                    helperText: "Padrão: miniapps"
-                                })
-                            )
-                        ),
-                        e(Material.DialogActions, null,
-                            e(AppButton, { variant: "text", onClick: () => { clearCsvUrl(); reload(); setConfigOpen(false); } }, "Resetar para o Padrão"),
-                            e(AppButton, { variant: "outlined", onClick: () => { setConfigOpen(false); } }, "Cancelar"),
-                            e(AppButton, {
-                                tone: "secondary",
-                                variant: "contained",
-                                disabled: !csvInput.trim(),
-                                onClick: () => { if (saveCsvUrl()) reload(); }
-                            }, "Salvar e Recarregar")
-                        )
-                    )
-                )
-            );
-        }
+              <SettingsModal 
+                isOpen={settingsOpen}
+                closeModal={() => setSettingsOpen(false)}
+                sheetId={sheetId}
+                setSheetId={setSheetId}
+                sheetName={sheetName}
+                setSheetName={setSheetName}
+                onSave={fetchData}
+              />
+            </div>
+          );
+        };
 
-        makeLayout(CatalogoCard, "catalogo-root");
-
-        // Testes rápidos (não falham a página; só logam)
-        try {
-            const t1 = parseCsv("id,title,url\n1,Teste,/x");
-            console.assert(t1[0].title === "teste" && t1[0].url === "/x", "CSV test vírgula");
-            const t2 = parseCsv("id;Title;Url\n1;Teste;/x");
-            console.assert(t2[0].title === "teste" && t2[0].url === "/x", "CSV test ponto-e-vírgula + header case");
-        } catch(_) {}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
