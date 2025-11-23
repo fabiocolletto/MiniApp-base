@@ -30,7 +30,7 @@
     <script>
         const h = React.createElement;
         const { useCallback, useEffect, useMemo, useState } = React;
-        const { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Stack, Typography } = MaterialUI;
+        const { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Stack, Typography, Tooltip, Fab } = MaterialUI;
 
         const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
         const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
@@ -57,6 +57,11 @@
                         collapse: 'Recolher',
                         expand: 'Expandir o rodapé'
                     })
+                }),
+                accessibility: Object.freeze({
+                    readLabel: 'Ler tela',
+                    stopLabel: 'Parar leitura',
+                    unsupported: 'Leitor de voz indisponível neste navegador.'
                 })
             }),
             'en-US': Object.freeze({
@@ -78,6 +83,11 @@
                         collapse: 'Collapse',
                         expand: 'Expand footer'
                     })
+                }),
+                accessibility: Object.freeze({
+                    readLabel: 'Read screen',
+                    stopLabel: 'Stop reading',
+                    unsupported: 'Voice reader unavailable in this browser.'
                 })
             }),
             'es-ES': Object.freeze({
@@ -99,6 +109,11 @@
                         collapse: 'Replegar',
                         expand: 'Expandir el pie'
                     })
+                }),
+                accessibility: Object.freeze({
+                    readLabel: 'Leer pantalla',
+                    stopLabel: 'Detener lectura',
+                    unsupported: 'Lector de voz no disponible en este navegador.'
                 })
             })
         });
@@ -331,6 +346,127 @@
             const viewport = window.innerHeight || document.documentElement?.clientHeight || MIN_STAGE_HEIGHT;
             const seventyFivePercent = Math.round(viewport * 0.75);
             return normalizeViewportFloor(Math.max(viewport, seventyFivePercent));
+        }
+
+        function ScreenReaderButton({ language, copy }) {
+            const [isSpeaking, setIsSpeaking] = React.useState(false);
+            const [voices, setVoices] = React.useState([]);
+            const [speechAvailable] = React.useState(() => (
+                typeof window !== 'undefined'
+                && 'speechSynthesis' in window
+                && typeof window.SpeechSynthesisUtterance === 'function'
+            ));
+            const synthRef = React.useRef(null);
+
+            const stopSpeech = React.useCallback(() => {
+                const synth = synthRef.current;
+                if (synth && (synth.speaking || synth.pending)) {
+                    synth.cancel();
+                }
+                setIsSpeaking(false);
+            }, []);
+
+            React.useEffect(() => {
+                if (!speechAvailable) {
+                    return undefined;
+                }
+                const synth = window.speechSynthesis;
+                synthRef.current = synth;
+
+                const updateVoices = () => {
+                    try {
+                        const availableVoices = synth?.getVoices?.() || [];
+                        setVoices(availableVoices);
+                    } catch (error) {
+                        console.warn('Não foi possível carregar vozes para leitura de tela.', error);
+                        setVoices([]);
+                    }
+                };
+
+                updateVoices();
+                synth.addEventListener('voiceschanged', updateVoices);
+
+                return () => {
+                    synth.removeEventListener('voiceschanged', updateVoices);
+                    stopSpeech();
+                };
+            }, [speechAvailable, stopSpeech]);
+
+            React.useEffect(() => {
+                stopSpeech();
+            }, [language, stopSpeech]);
+
+            const handleClick = React.useCallback(() => {
+                if (!speechAvailable) {
+                    return;
+                }
+                const synth = synthRef.current;
+                if (!synth) {
+                    return;
+                }
+                if (isSpeaking) {
+                    stopSpeech();
+                    return;
+                }
+                const target = document.querySelector('[data-screen-reader-target="true"]')
+                    || document.querySelector('.miniapp-stage')
+                    || document.body;
+                const textToRead = (target?.innerText || '').replace(/\s+/g, ' ').trim();
+                if (!textToRead) {
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = language || 'pt-BR';
+                const matchingVoice = voices.find((voice) => voice.lang?.toLowerCase().startsWith(utterance.lang.toLowerCase()));
+                if (matchingVoice) {
+                    utterance.voice = matchingVoice;
+                }
+                utterance.rate = 0.98;
+                utterance.onend = () => setIsSpeaking(false);
+                utterance.onerror = () => setIsSpeaking(false);
+
+                setIsSpeaking(true);
+                synth.cancel();
+                synth.speak(utterance);
+            }, [isSpeaking, language, speechAvailable, stopSpeech, voices]);
+
+            const tooltipLabel = speechAvailable
+                ? (isSpeaking ? copy?.stopLabel : copy?.readLabel)
+                : copy?.unsupported;
+
+            return h(
+                Box,
+                {
+                    sx: {
+                        position: 'fixed',
+                        top: 16,
+                        right: 16,
+                        zIndex: 1300,
+                    },
+                    role: 'complementary',
+                    'aria-label': tooltipLabel
+                },
+                h(
+                    Tooltip,
+                    { title: tooltipLabel, placement: 'left' },
+                    h(
+                        Fab,
+                        {
+                            color: 'secondary',
+                            size: 'medium',
+                            onClick: handleClick,
+                            disabled: !speechAvailable,
+                            'aria-pressed': isSpeaking,
+                            'aria-label': tooltipLabel,
+                            sx: {
+                                boxShadow: '0 20px 50px rgba(15, 23, 42, 0.25)',
+                            }
+                        },
+                        h('span', { className: 'material-icons-sharp', 'aria-hidden': true }, isSpeaking ? 'stop_circle' : 'volume_up')
+                    )
+                )
+            );
         }
 
         function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode, globalPreferences }) {
@@ -612,9 +748,17 @@
                                 display: 'flex',
                                 flexDirection: 'column',
                                 p: 0,
-                            }
+                            },
+                            'data-screen-reader-target': true,
                         },
                         mainContent
+                    ),
+                    h(
+                        ScreenReaderButton,
+                        {
+                            language: globalPreferences.language,
+                            copy: languageCopy.accessibility,
+                        }
                     )
                 )
             );
