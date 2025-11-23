@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">MiniApp Icon 512</title>
-  <desc id="desc">Simplified lightning bolt inside rounded square</desc>
-  <rect x="32" y="32" width="448" height="448" rx="96" fill="#1f2937" />
-  <path d="M304 64 176 296h112l-32 152 176-304H320z" fill="#f97316" />
-</svg>
