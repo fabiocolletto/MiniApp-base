@@ -990,11 +990,22 @@ const App = () => {
         
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' 
-            ? __initial_auth_token 
+        const rawFirebaseConfig = typeof __firebase_config !== 'undefined'
+            ? __firebase_config
+            : null;
+        let firebaseConfig = {};
+
+        if (rawFirebaseConfig) {
+            try {
+                firebaseConfig = JSON.parse(rawFirebaseConfig);
+            } catch (error) {
+                console.error("Firebase config is invalid JSON. Falling back to offline mode.", error);
+                setMessage('Configuração do Firebase inválida. Operando sem persistência.');
+                setTimeout(() => setMessage(null), 4000);
+            }
+        }
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined'
+            ? __initial_auth_token
             : null;
 
         if (Object.keys(firebaseConfig).length === 0) {
