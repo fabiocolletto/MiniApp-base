@@ -15,8 +15,6 @@
     <script crossorigin src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js"></script>
     <script crossorigin src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js"></script>
     <script crossorigin src="https://unpkg.com/@mui/material@5.15.14/umd/material-ui.production.min.js"></script>
-    <script src="./docs/components/app-shared-header.js"></script>
-    <script src="./docs/components/app-shared-footer.js"></script>
     <link rel="manifest" href="https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/pwa/manifest.webmanifest">
     <meta name="theme-color" content="#f3f4f6">
     <style>
@@ -27,18 +25,12 @@
         }
     </style>
 </head>
-<body class="body-with-fixed-footer" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
+<body style="margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;">
     <div id="root"></div>
     <script>
         const h = React.createElement;
         const { useCallback, useEffect, useMemo, useState } = React;
         const { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Stack, Typography } = MaterialUI;
-        const HeaderComponent = window.AppSharedHeader;
-        const FooterComponent = window.AppSharedFooter;
-
-        if (!HeaderComponent || !FooterComponent) {
-            throw new Error('Componentes compartilhados não foram carregados para o shell React.');
-        }
 
         const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
         const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
@@ -337,13 +329,8 @@
                 return MIN_STAGE_HEIGHT;
             }
             const viewport = window.innerHeight || document.documentElement?.clientHeight || MIN_STAGE_HEIGHT;
-            const headerEl = document.querySelector('.app-header');
-            const footerEl = document.querySelector('app-shared-footer');
-            const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
-            const footerHeight = footerEl ? footerEl.getBoundingClientRect().height : 0;
-            const available = viewport - headerHeight - footerHeight;
             const seventyFivePercent = Math.round(viewport * 0.75);
-            return normalizeViewportFloor(Math.max(available, seventyFivePercent));
+            return normalizeViewportFloor(Math.max(viewport, seventyFivePercent));
         }
 
         function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode, globalPreferences }) {
@@ -419,9 +406,6 @@
             );
             const [globalPreferences, setGlobalPreferences] = useState(() => readStoredPreferences());
             const [systemTheme, setSystemTheme] = useState(() => getSystemTheme());
-            const [activeStageKey, setActiveStageKey] = useState(() => resolveStageDefinition('catalog').key);
-            const [footerState, setFooterState] = useState('expanded');
-            const [installVisible, setInstallVisible] = useState(true);
             const [activeFrameHeight, setActiveFrameHeight] = useState(null);
             const [stageViewportFloor, setStageViewportFloor] = useState(() => computeStageViewportFloor());
             const effectiveTheme = useMemo(
@@ -438,30 +422,10 @@
             );
 
             const activeStageDefinition = useMemo(() => {
-                const definition = resolveStageDefinition(activeStageKey);
+                const definition = resolveStageDefinition('catalog');
                 const copy = resolveStageCopy(definition, globalPreferences.language);
                 return { ...definition, ...copy };
-            }, [activeStageKey, globalPreferences.language, resolveStageDefinition]);
-
-            const handleNavigate = useCallback(
-                (key) => {
-                    setActiveStageKey(resolveStageDefinition(key).key);
-                },
-                [resolveStageDefinition]
-            );
-
-            const handleFooterStateChange = useCallback((nextState) => {
-                setFooterState(nextState);
-            }, []);
-
-            const handleSearch = useCallback(() => {
-                const searchLabel = languageCopy.footer.nav.search || 'Buscar';
-                window.dispatchEvent(
-                    new CustomEvent('app:notify', {
-                        detail: { message: `${searchLabel} em breve.`, type: 'info' },
-                    })
-                );
-            }, [languageCopy.footer.nav.search]);
+            }, [globalPreferences.language, resolveStageDefinition]);
 
             const handleIncomingPreferences = useCallback((nextValue) => {
                 const normalized = normalizePreferences(nextValue);
@@ -487,10 +451,6 @@
                     metaTheme.setAttribute('content', effectiveTheme === 'dark' ? '#020617' : '#f3f4f6');
                 }
             }, [effectiveTheme, globalPreferences.language]);
-
-            useEffect(() => {
-                setStageViewportFloor(computeStageViewportFloor());
-            }, [footerState]);
 
             useEffect(() => {
                 if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -549,24 +509,6 @@
             }, []);
 
             useEffect(() => {
-                if (typeof window === 'undefined' || typeof window.ResizeObserver !== 'function') {
-                    return undefined;
-                }
-                const observer = new window.ResizeObserver(() => {
-                    setStageViewportFloor(computeStageViewportFloor());
-                });
-                const headerEl = document.querySelector('.app-header');
-                const footerEl = document.querySelector('app-shared-footer');
-                if (headerEl) {
-                    observer.observe(headerEl);
-                }
-                if (footerEl) {
-                    observer.observe(footerEl);
-                }
-                return () => observer.disconnect();
-            }, []);
-
-            useEffect(() => {
                 if (activeStageDefinition.launchUrl) {
                     window.dispatchEvent(
                         new CustomEvent('app:notify', {
@@ -578,33 +520,6 @@
                     );
                 }
             }, [activeStageDefinition]);
-
-            useEffect(() => {
-                const timer = setTimeout(() => setInstallVisible(false), 3000);
-                const handleScrollHideInstall = () => setInstallVisible(false);
-
-                window.addEventListener('scroll', handleScrollHideInstall, { passive: true, once: true });
-                return () => {
-                    clearTimeout(timer);
-                    window.removeEventListener('scroll', handleScrollHideInstall);
-                };
-            }, []);
-
-            useEffect(() => {
-                function handleDocumentClick(event) {
-                    if (footerState !== 'expanded') {
-                        return;
-                    }
-                    const footerEl = document.querySelector('footer.app-shared-footer');
-                    if (footerEl && footerEl.contains(event.target)) {
-                        return;
-                    }
-                    setFooterState('collapsed');
-                }
-
-                document.addEventListener('click', handleDocumentClick);
-                return () => document.removeEventListener('click', handleDocumentClick);
-            }, [footerState]);
 
             useEffect(() => {
                 setActiveFrameHeight(null);
@@ -678,14 +593,6 @@
                 h(
                     'div',
                     { className: 'miniapp-shell', style: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
-                    h(HeaderComponent, {
-                        title: activeStageDefinition.title,
-                        icon: activeStageDefinition.icon,
-                        hideSearch: true,
-                        installVisible,
-                        searchLabel: languageCopy.header.searchLabel,
-                        installLabel: languageCopy.header.installLabel
-                    }),
                     h(
                         Box,
                         { component: 'main', className: 'miniapp-stage', sx: { flex: 1, display: 'flex', flexDirection: 'column' } },
@@ -698,19 +605,7 @@
                             },
                             mainContent
                         )
-                    ),
-                    h(FooterComponent, {
-                        activeTab: activeStageKey,
-                        variant: 'full',
-                        state: footerState,
-                        onNavigate: handleNavigate,
-                        onStateChange: handleFooterStateChange,
-                        showSearch: true,
-                        onSearch: handleSearch,
-                        showSettings: true,
-                        showMeta: true,
-                        copy: languageCopy.footer
-                    })
+                    )
                 )
             );
         }
