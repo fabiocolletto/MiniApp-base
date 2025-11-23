@@ -30,7 +30,7 @@
     <script>
         const h = React.createElement;
         const { useCallback, useEffect, useMemo, useState } = React;
-        const { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Stack, Typography } = MaterialUI;
+        const { ThemeProvider, createTheme, CssBaseline, Box, Container, IconButton, Paper, Stack, Typography } = MaterialUI;
 
         const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
         const DEFAULT_GLOBAL_PREFERENCES = Object.freeze({ theme: 'light', language: 'pt-BR' });
@@ -333,6 +333,73 @@
             return normalizeViewportFloor(Math.max(viewport, seventyFivePercent));
         }
 
+        function StageActionBar() {
+            return h(
+                Box,
+                {
+                    component: 'header',
+                    sx: {
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        width: '100%',
+                        pointerEvents: 'none',
+                        zIndex: (theme) => (theme?.zIndex?.appBar || 1100) + 1,
+                        backgroundColor: 'transparent',
+                    },
+                },
+                h(
+                    Container,
+                    {
+                        disableGutters: false,
+                        maxWidth: false,
+                        sx: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            py: 1,
+                            px: { xs: 2, md: 3 },
+                            pointerEvents: 'auto',
+                        },
+                    },
+                    h(
+                        Stack,
+                        { direction: 'row', spacing: 1 },
+                        h(
+                            IconButton,
+                            {
+                                edge: 'start',
+                                'aria-label': 'Voltar',
+                                sx: { color: 'text.primary' },
+                            },
+                            h('span', { className: 'material-icons-sharp' }, 'arrow_back')
+                        )
+                    ),
+                    h(
+                        Stack,
+                        { direction: 'row', spacing: 1 },
+                        h(
+                            IconButton,
+                            {
+                                'aria-label': 'Menu',
+                                sx: { color: 'text.primary' },
+                            },
+                            h('span', { className: 'material-icons-sharp' }, 'menu')
+                        ),
+                        h(
+                            IconButton,
+                            {
+                                'aria-label': 'Acessibilidade',
+                                sx: { color: 'text.primary' },
+                            },
+                            h('span', { className: 'material-icons-sharp' }, 'accessibility')
+                        )
+                    )
+                )
+            );
+        }
+
         function IframeStage({ stageDefinition, preferredHeight, viewportFloor, themeMode, globalPreferences }) {
             const hasPreferredHeight = typeof preferredHeight === 'number' && preferredHeight > 0;
             const normalizedFloor = normalizeViewportFloor(viewportFloor);
@@ -590,6 +657,7 @@
                 ThemeProvider,
                 { theme: appTheme },
                 h(CssBaseline, null),
+                h(StageActionBar, null),
                 h(
                     'div',
                     { className: 'miniapp-shell', style: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
