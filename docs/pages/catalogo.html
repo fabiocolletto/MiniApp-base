@@ -292,15 +292,17 @@
           const title = data.title || 'Sem Título';
           const subtitle = data.subtitle || data.description || '...';
           const category = data.category || 'App';
-          const status = data.status || 'Pago';
+          const status = (data.status || '').toLowerCase();
           const iconName = data.icon || 'extension';
-          const gradient = data.gradient || 'linear-gradient(135deg, #1f2937 0%, #111827 100%)';
+          const gradient = data.gradient || 'linear-gradient(160deg, #0f172a 0%, #111827 100%)';
           const url = data.url;
+          const isActive = Boolean(url && url.trim() !== "");
+          const showComingSoon = !isActive || (status && status !== 'published');
           const [isHovered, setIsHovered] = useState(false);
           const [animateHeart, setAnimateHeart] = useState(false);
 
           const handleCardClick = () => {
-            if (url && url.trim() !== "") {
+            if (isActive) {
               openModal(title, null, url);
             } else {
               alert("Este MiniApp ainda não possui um link configurado.");
@@ -316,34 +318,64 @@
 
           return (
             <div
-              className={`miniapp-card bg-[#1E1E1E] rounded-lg overflow-hidden flex flex-row shadow-md border border-transparent hover:border-orange-500/30 ${url ? 'cursor-pointer' : 'cursor-default'}`}
+              className={`miniapp-card relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80 ${isActive ? 'cursor-pointer' : 'cursor-default opacity-80'} transition-all duration-300 hover:-translate-y-1 ${isHovered ? 'ring-4 ring-orange-500/40' : ''}`}
+              style={{ background: gradient, minWidth: '260px' }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
               onClick={handleCardClick}
-              title={url ? `Abrir ${title}` : "Indisponível"}
+              title={isActive ? `Abrir ${title}` : "Indisponível"}
+              aria-label={isActive ? `Abrir ${title}` : `${title} indisponível`}
             >
-              <div className="w-1/3 relative flex items-center justify-center overflow-hidden rounded-l-lg" style={{ background: gradient, minWidth: '100px' }}>
-                <span className={`material-symbols-outlined text-5xl text-white/50 transition-transform duration-500 ${isHovered ? 'scale-110' : ''}`}>{iconName}</span>
+              {showComingSoon && (
+                <div className="absolute top-3 right-3 bg-slate-700/80 text-xs font-bold text-gray-100 px-3 py-1 rounded-full border border-slate-500 uppercase tracking-wide">
+                  Em breve
+                </div>
+              )}
+
+              <div className="absolute top-3 left-3 flex items-center gap-2 z-20">
+                <button
+                  onClick={handleFavoriteClick}
+                  className={`p-2 rounded-full transition-all bg-black/20 backdrop-blur-sm border border-white/10 ${isFavorite ? 'text-orange-400 ring-2 ring-orange-500/40' : 'text-gray-300 hover:text-orange-200'}`}
+                  aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                >
+                  <span
+                    className={`material-symbols-outlined text-lg ${animateHeart ? 'animate-heart' : ''}`}
+                    style={{ fontVariationSettings: isFavorite ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    favorite
+                  </span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); openModal(title, data.details || data.description || "Sem detalhes.", null); }}
+                  className="p-2 rounded-full text-gray-200 hover:text-white bg-black/20 border border-white/10 backdrop-blur-sm"
+                  aria-label={`Detalhes de ${title}`}
+                >
+                  <span className="material-symbols-outlined text-lg">info</span>
+                </button>
               </div>
-              <div className="w-2/3 p-4 relative flex flex-col justify-between">
-                  <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
-                      <button onClick={handleFavoriteClick} className={`p-1.5 rounded-full transition-all hover:bg-white/10 ${isFavorite ? 'text-orange-500' : 'text-gray-600 hover:text-orange-400'}`}>
-                        <span className={`material-symbols-outlined text-xl ${animateHeart ? 'animate-heart' : ''}`} style={{ fontVariationSettings: isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); openModal(title, data.details || data.description || "Sem detalhes.", null); }} className="p-1.5 rounded-full text-gray-500 hover:text-orange-400 hover:bg-white/10 transition-all">
-                        <span className="material-symbols-outlined text-xl">info</span>
-                      </button>
-                  </div>
-                  <div className="pr-16"> 
-                    <h2 className="text-lg font-bold text-white mb-2 leading-tight">{title}</h2>
-                    <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem] leading-relaxed">{subtitle}</p>
-                  </div>
-                  <div className="flex justify-between items-end mt-4">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-gray-600 bg-gray-800 px-2 py-1 rounded">{category}</span>
-                    <button onClick={(e) => { e.stopPropagation(); handleCardClick(); }} className={`text-sm font-medium py-1.5 px-4 rounded-full transition-colors shadow-lg z-20 ${url ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}>
-                        {url ? 'Acessar' : 'Indisponível'}
-                    </button>
-                  </div>
+
+              <div className="flex flex-col items-center justify-center h-full px-6 py-8 text-center space-y-4" style={{ minHeight: '280px' }}>
+                <span
+                  className={`material-symbols-outlined text-[96px] text-white/80 transition-transform duration-500 ${isHovered ? 'scale-110' : ''}`}
+                  aria-hidden="true"
+                >
+                  {iconName}
+                </span>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-white leading-tight">{title}</h2>
+                  <p className="text-sm text-slate-300/90 leading-relaxed max-w-xs mx-auto">{subtitle}</p>
+                </div>
+
+                <div className="flex flex-col items-center gap-2 pt-2 w-full">
+                  <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-200/80">{category}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
+                    className={`text-sm font-semibold py-2 px-6 rounded-full transition-colors shadow-lg w-full max-w-[200px] ${isActive ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-slate-700 text-slate-300 cursor-not-allowed'}`}
+                    aria-disabled={!isActive}
+                  >
+                    {isActive ? 'Acessar' : 'Indisponível'}
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -413,7 +445,7 @@
           const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false, iframeUrl: null }));
 
           return (
-            <div className="min-h-screen bg-neutral-900 pb-20 relative">
+            <div className="min-h-screen bg-slate-950 pb-20 relative text-slate-100">
                 
               {/* Botão de Configurações (Canto Superior Direito) - SEM BORDA */}
               <div className="absolute top-4 right-4 z-40">
@@ -427,22 +459,22 @@
               </div>
 
               {/* Header Hero */}
-              <div className="bg-gradient-to-b from-gray-800 to-neutral-900 pb-8 pt-12 px-6 border-b border-gray-800">
+              <div className="bg-gradient-to-b from-slate-900 to-slate-950 pb-10 pt-14 px-6 border-b border-slate-800">
                   <div className="max-w-6xl mx-auto text-center">
-                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600 mb-4">
-                        Catálogo MiniApps
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-purple-300 to-orange-400 mb-3">
+                        Portfólio de Aplicações
                     </h1>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-6">
-                        Explore nossa coleção. Clique no card para abrir o App.
+                    <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-8">
+                        Selecione o sistema que deseja acessar:
                     </p>
 
                     {/* Filtro de Favoritos (Agora centralizado e limpo) */}
                     <div className="flex justify-center">
-                        <div className="flex items-center gap-2 bg-gray-800 p-1.5 rounded-full border border-gray-700">
-                            <button onClick={() => setShowOnlyFavorites(false)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${!showOnlyFavorites ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}>
+                        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-full border border-slate-800 shadow-lg shadow-slate-900/70">
+                            <button onClick={() => setShowOnlyFavorites(false)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${!showOnlyFavorites ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-300 hover:text-white'}`}>
                                 Todos
                             </button>
-                            <button onClick={() => setShowOnlyFavorites(true)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${showOnlyFavorites ? 'bg-orange-900/50 text-orange-400 border border-orange-800 shadow-sm' : 'text-gray-400 hover:text-white'}`}>
+                            <button onClick={() => setShowOnlyFavorites(true)} className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${showOnlyFavorites ? 'bg-orange-900/50 text-orange-300 border border-orange-800 shadow-sm' : 'text-slate-300 hover:text-white'}`}>
                                 <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
                                 Favoritos ({favorites.length})
                             </button>
@@ -485,7 +517,7 @@
                                 )}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-[60px] justify-center justify-items-center">
                                 {filteredApps.map((app, index) => (
                                     <MiniAppCard 
                                         key={app.id || index} 
