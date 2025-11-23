@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, setLogLevel } from 'firebase/firestore';
 
 // =========================================================
 // CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL (GOOGLE GEMINI)
@@ -686,16 +683,16 @@ const GlobalAppDashboard = ({ onNavigate, isDarkMode, toggleTheme, onUserInfo, i
 // =========================================================
 // 5. COMPONENTE: DASHBOARD DE INFORMAÇÕES DO USUÁRIO
 // =========================================================
-const UserInfoDashboard = ({ onBack, isDarkMode, toggleTheme, userId, isAuthReady, db, auth, appId, isAudioButtonHidden, toggleAudioButtonVisibility }) => {
+const UserInfoDashboard = ({ onBack, isDarkMode, toggleTheme, userId, isAuthReady, authStatus, dbStatus, appId, isAudioButtonHidden, toggleAudioButtonVisibility }) => {
     const [status, setStatus] = useState('idle');
     const [activeHighlight, setActiveHighlight] = useState(null);
     const isMounted = useRef(true);
     const isPlayingRef = useRef(false);
 
     const infoScript = [
-        { text: "Você está na área de Informações e Status da Sessão. Aqui você pode verificar seu ID de usuário, o status da autenticação e a conexão com o banco de dados Firebase.", highlight: null },
-        { text: "Seu ID de Usuário (UID) é exibido no topo da lista, seguido pelo status de Autenticação.", highlight: 'uid_status' },
-        { text: "No final, você pode conferir o status de conexão com o Firestore e o ID da Aplicação.", highlight: 'db_status' },
+        { text: "Você está na área de Informações e Status da Sessão. Aqui você pode verificar seu ID de usuário, o status local e a sincronização.", highlight: null },
+        { text: "Seu ID de Usuário (UID) é exibido no topo da lista, seguido pelo status de autenticação local.", highlight: 'uid_status' },
+        { text: "No final, você pode conferir o status de sincronização e o ID da Aplicação.", highlight: 'db_status' },
         { text: "Para voltar, use a seta no canto superior esquerdo.", highlight: 'back_btn' }
     ];
 
@@ -786,14 +783,6 @@ const UserInfoDashboard = ({ onBack, isDarkMode, toggleTheme, userId, isAuthRead
         };
     }, [applyHighlight]); // Executa apenas no unmount
     
-    // Determine Auth Status string
-    const authStatus = auth?.currentUser 
-        ? (auth.currentUser.isAnonymous ? 'Anônimo' : 'Autenticado (Token)')
-        : 'Não Conectado / Carregando';
-    
-    // Determine Firestore Status
-    const dbStatus = db ? 'Conectado' : 'Não Conectado';
-
     const cardClass = `p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-2xl transition-colors duration-500 ${isDarkMode ? 'bg-slate-800 text-slate-100' : 'bg-white text-slate-800'}`;
     const itemClass = `flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b ${isDarkMode ? 'border-slate-700' : 'border-gray-200'} highlight-item`;
     const valueClass = `font-mono font-bold text-sm sm:text-base break-all mt-1 sm:mt-0`;
@@ -848,12 +837,12 @@ const UserInfoDashboard = ({ onBack, isDarkMode, toggleTheme, userId, isAuthRead
                     </div>
 
                     <h2 className={`text-xl font-bold mt-8 mb-4 border-b pb-2 ${isDarkMode ? 'border-amber-600 text-amber-400' : 'border-amber-200 text-amber-700'}`} id="db_status">
-                        Status do Firebase
+                        Status de Sincronização
                     </h2>
-                    
-                    {/* Item 4: Firestore Status */}
+
+                    {/* Item 4: Sincronização */}
                     <div className={itemClass}>
-                        <span className={labelClass}>Firestore (DB)</span>
+                        <span className={labelClass}>Persistência Remota</span>
                         <span className={`${valueClass} ${dbStatus.includes('Conectado') ? 'text-green-500' : 'text-red-500'}`}>
                             {dbStatus}
                         </span>
@@ -869,7 +858,7 @@ const UserInfoDashboard = ({ onBack, isDarkMode, toggleTheme, userId, isAuthRead
                 </div>
                 
                 <p className={`mt-6 text-sm text-center ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Esta tela exibe dados de debugging. O ID do usuário (UID) é crucial para a persistência de dados.
+                    Esta tela exibe dados de debugging do ambiente local. O ID do usuário (UID) é mantido para rastreabilidade mesmo sem sincronização remota.
                 </p>
             </div>
         </div>
@@ -924,12 +913,12 @@ const App = () => {
     const [isAudioButtonHidden, setIsAudioButtonHidden] = useState(getInitialAudioButtonVisibility()); // NOVO ESTADO
     const [message, setMessage] = useState(null); 
     
-    // --- FIREBASE STATE ---
-    const [db, setDb] = useState(null);
-    const [auth, setAuth] = useState(null);
-    const [userId, setUserId] = useState(null);
-    const [isAuthReady, setIsAuthReady] = useState(false);
-    // ----------------------
+    // --- IDENTIFICAÇÃO LOCAL (SEM SINCRONIZAÇÃO) ---
+    const [userId] = useState(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `user-${Date.now()}`));
+    const [isAuthReady] = useState(true);
+    const authStatus = 'Sincronização desativada';
+    const dbStatus = 'Sincronização desativada';
+    // ------------------------------------------------
     
     // Ref para armazenar as funções de playback de cada tela
     const screenPlaybackRef = useRef({});
@@ -979,87 +968,6 @@ const App = () => {
     const registerPlayback = useCallback((viewName, playFunction) => {
         screenPlaybackRef.current[viewName] = playFunction;
     }, []);
-
-
-    // --- FIREBASE INITIALIZATION AND AUTH ---
-    // Usamos um ref para garantir que a mensagem de autenticação inicial só seja disparada uma vez
-    const authMessageSentRef = useRef(false);
-
-    useEffect(() => {
-        setLogLevel('Debug');
-        
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const rawFirebaseConfig = typeof __firebase_config !== 'undefined'
-            ? __firebase_config
-            : null;
-        let firebaseConfig = {};
-
-        if (rawFirebaseConfig) {
-            try {
-                firebaseConfig = JSON.parse(rawFirebaseConfig);
-            } catch (error) {
-                console.error("Firebase config is invalid JSON. Falling back to offline mode.", error);
-                setMessage('Configuração do Firebase inválida. Operando sem persistência.');
-                setTimeout(() => setMessage(null), 4000);
-            }
-        }
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined'
-            ? __initial_auth_token
-            : null;
-
-        if (Object.keys(firebaseConfig).length === 0) {
-            console.error("Firebase config is missing. Data persistence will not work.");
-            // Proceed with fallback state if config is missing
-            setIsAuthReady(true);
-            setUserId(crypto.randomUUID());
-            return;
-        }
-
-        const app = initializeApp(firebaseConfig);
-        const firestoreDb = getFirestore(app);
-        const firebaseAuth = getAuth(app);
-        
-        setDb(firestoreDb);
-        setAuth(firebaseAuth);
-
-        const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-            if (user) {
-                setUserId(user.uid);
-                if (!authMessageSentRef.current) {
-                    setMessage(`Autenticado como: ${user.uid.substring(0, 8)}...`);
-                    authMessageSentRef.current = true;
-                    setTimeout(() => setMessage(null), 3000); // Limpa a mensagem após 3s
-                }
-            } else {
-                setUserId(crypto.randomUUID()); // Anonymous/fallback ID
-                if (!authMessageSentRef.current) {
-                    setMessage('Sessão anônima iniciada.');
-                    authMessageSentRef.current = true;
-                    setTimeout(() => setMessage(null), 3000); // Limpa a mensagem após 3s
-                }
-            }
-            setIsAuthReady(true);
-        });
-        
-        // Sign in immediately using the provided token or anonymously
-        const authenticate = async () => {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(firebaseAuth, initialAuthToken);
-                } else {
-                    await signInAnonymously(firebaseAuth);
-                }
-            } catch (error) {
-                console.error("Firebase Auth failed:", error);
-                // Fallback handled by onAuthStateChanged if sign-in fails
-            }
-        };
-        
-        authenticate();
-        return () => unsubscribe();
-    }, []);
-    // ----------------------------------------
 
 
     const handleNavigate = (target) => {
@@ -1120,14 +1028,14 @@ const App = () => {
             )}
 
             {currentView === 'userInfo' && (
-                <UserInfoDashboard 
-                    onBack={() => setCurrentView('home')} 
+                <UserInfoDashboard
+                    onBack={() => setCurrentView('home')}
                     isDarkMode={isDarkMode}
                     toggleTheme={toggleTheme}
                     userId={userId}
                     isAuthReady={isAuthReady}
-                    db={db}
-                    auth={auth}
+                    authStatus={authStatus}
+                    dbStatus={dbStatus}
                     appId={appId}
                     isAudioButtonHidden={isAudioButtonHidden}
                     toggleAudioButtonVisibility={toggleAudioButtonVisibility}
