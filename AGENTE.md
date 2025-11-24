@@ -20,6 +20,14 @@ Este arquivo define **como o Codex deve operar neste repositório**:
 7. Excluir `TEMP_INBOX/` e qualquer artefato temporário.
 8. Criar commit com mensagem clara.
 
+## Diretrizes específicas — Painel do Aluno
+- Subpáginas obrigatórias: `/painel-aluno`, `/painel-aluno/aulas`, `/painel-aluno/atividades`, `/painel-aluno/notas` e `/painel-aluno/configuracoes`, com navegação sincronizada (breadcrumb/estado ativo).
+- Cards devem ser totalmente clicáveis e direcionar para a rota configurada; não use botões internos como único alvo de clique.
+- Botões de ação flutuantes devem ocultar ao rolar para baixo e reaparecer ao rolar para cima; evite sobrepor conteúdo textual.
+- Respeite os tokens/classes globais de tema claro/escuro; não introduza paletas locais.
+- Checklist visual obrigatório: alinhamento de grid, contraste WCAG AA, estados hover/focus, responsividade mobile/desktop e conferência de legibilidade nos dois temas.
+- Sempre que alterar fluxos/UX do painel do aluno, registre a mudança em `CHANGELOG.md`.
+
 ## Convenções de pastas
 - Hubs compartilhados: `src/core/<hub>/`
 - Funcionalidades de alto nível: `src/modules/<modulo>/`
