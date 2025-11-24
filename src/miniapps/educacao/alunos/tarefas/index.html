@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educação — Tarefas de Casa</title>
+
+  <!-- Google Fonts / Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tokens de tema (mesmo padrão) + ACCENT AMBER (Identidade Tarefas) -->
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: 0 0 0;
+      --page-bg-alpha: .92;
+      --page-fg: 248 250 252;
+      --page-fg-muted: 226 232 240;
+      --page-border: 255 255 255;
+      --disabled-opacity: .72;
+
+      /* Accent amber (dark) */
+      --accent: 251 191 36;        /* amber-500 */
+      --accent-weak: 251 191 36 / 0.12;
+      --accent-border: 251 191 36 / 0.45;
+      --accent-text: 255 251 235;  /* amber-50 */
+      
+      --input-bg: 255 255 255 / 0.05; 
+    }
+    html[data-theme="light"] {
+      --page-bg: 248 250 252;
+      --page-bg-alpha: .96;
+      --page-fg: 15 23 42;
+      --page-fg-muted: 51 65 85;
+      --page-border: 15 23 42;
+      --disabled-opacity: .85;
+
+      /* Accent amber (light) */
+      --accent: 217 119 6;         /* amber-600 */
+      --accent-weak: 217 119 6 / 0.10;
+      --accent-border: 217 119 6 / 0.40;
+      --accent-text: 120 45 20;    /* amber-900 */
+      
+      --input-bg: 15 23 42 / 0.03; 
+    }
+
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    
+    /* ===================================== */
+    /* ESTILOS DE PADRONIZAÇÃO */
+    /* ===================================== */
+    .btn-header-base {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border p-3 text-sm font-semibold whitespace-nowrap transition;
+        @apply border-[rgb(var(--page-border)/0.12)] bg-transparent hover:bg-[rgb(var(--page-border)/0.06)];
+    }
+    .btn-header-primary {
+        @apply btn-header-base w-full justify-start;
+        @apply border-[rgb(var(--accent-border))] bg-[rgb(var(--accent)/0.10)] text-[rgb(var(--accent))] hover:bg-[rgb(var(--accent)/0.20)] px-4 py-3;
+    }
+    .btn-header-secondary {
+        @apply btn-header-base w-full justify-start text-[rgb(var(--page-fg-muted))] px-4 py-3;
+    }
+    .btn-icon-sm {
+        @apply p-2 rounded-lg bg-transparent border border-transparent hover:bg-[rgb(var(--page-border)/0.08)] transition-colors duration-150;
+    }
+    .btn-primary {
+      @apply w-full px-4 py-3 rounded-xl font-semibold text-[rgb(var(--accent-text))] bg-[rgb(var(--accent))] hover:bg-[rgb(var(--accent)/0.9)] transition-colors duration-200;
+    }
+    .btn-secondary {
+        @apply w-full px-4 py-3 rounded-xl font-semibold border border-[rgb(var(--page-border)/0.2)] text-[rgb(var(--page-fg-muted))] bg-transparent hover:bg-[rgb(var(--page-border)/0.06)] transition-colors duration-200;
+    }
+    .section-card {
+      @apply bg-transparent border border-[rgb(var(--page-border)/0.25)] rounded-2xl shadow-none p-6 sm:p-8;
+    }
+    .status-badge {
+      @apply inline-flex rounded-full px-2 py-0.5 text-xs font-semibold;
+    }
+    .input-base {
+      @apply w-full p-3 rounded-xl border border-[rgb(var(--page-border)/0.2)] focus:ring-2 focus:ring-[rgb(var(--accent))] focus:border-[rgb(var(--accent)/0.5)] transition-colors duration-200;
+      background-color: rgb(var(--input-bg));
+    }
+    .modal-overlay {
+      @apply fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-300;
+    }
+    .modal-content {
+      @apply max-w-sm w-full mx-4 transform transition-transform duration-300 ease-out;
+      @apply border border-[rgb(var(--page-border)/0.25)] rounded-2xl shadow-2xl p-6 sm:p-8;
+      background-color: rgb(var(--page-bg));
+    }
+    .sort-btn {
+      @apply inline-flex items-center gap-1 hover:opacity-90;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors">
+
+  <!-- Header-bar FIXO no topo, com botão de voltar (esquerda) e tema/configurações (direita) -->
+  <div class="fixed top-0 inset-x-0 z-50 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 bg-transparent">
+    
+    <!-- Botão para retornar à tela anterior (canto superior esquerdo) -->
+    <a href="javascript:history.back()"
+      class="inline-flex items-center gap-1 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
+      aria-label="Voltar à tela anterior"
+    >
+      <span class="material-symbols-rounded text-base sm:text-lg" aria-hidden="true">arrow_back</span>
+      <span class="hidden sm:inline">Voltar</span>
+    </a>
+
+    <!-- Agrupamento de botões de Ações (Filtros) e Tema (canto superior direito) -->
+    <div class="flex items-center gap-2 relative">
+        
+        <!-- NOVO: Botão que abre o popover com TODOS os filtros (busca, status, datas) -->
+        <button id="filter-popover-toggle-btn" 
+                class="btn-header-base" 
+                onclick="toggleFilterPopover()" 
+                title="Filtros de Tarefas"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Alternar filtros">
+            <span class="material-symbols-rounded text-xl">filter_list</span>
+        </button>
+
+        <!-- Botão tema canto superior direito (existente) -->
+        <button
+          class="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
+          type="button"
+          data-theme-toggle
+          aria-label="Alternar tema"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+          <span class="sr-only" data-theme-label>Usar tema escuro</span>
+        </button>
+    </div>
+  </div>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20">
+
+    <!-- HERO centralizado, com destaque em Âmbar -->
+    <header class="mt-8 mb-12 text-center">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[rgb(var(--accent))]">Tarefas de Casa</h1>
+      <p class="mt-2 text-sm sm:text-base text-[rgb(var(--page-fg-muted))]">Acompanhe seus trabalhos, prazos e status de entrega.</p>
+    </header>
+
+    <!-- SEÇÃO 1: RESUMO DE PRAZOS -->
+    <h2 class="text-2xl font-semibold mb-4 flex items-center gap-2 text-[rgb(var(--page-fg))]">
+      <span class="material-symbols-rounded text-[rgb(var(--accent))] text-2xl">timer</span>
+      Resumo de Prazos
+    </h2>
+    <section class="mb-8 section-card">
+      <h3 class="text-xl font-semibold mb-6 text-[rgb(var(--page-fg-muted))]">Status Geral</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        
+        <!-- Total de Pendentes -->
+        <div class="p-4 rounded-xl border border-red-600/40 bg-red-500/10">
+          <p class="text-xs font-medium text-[rgb(var(--page-fg-muted))]">Pendentes (Próx. 7 dias)</p>
+          <p class="text-3xl font-bold mt-1 text-red-500">3</p>
+        </div>
+
+        <!-- Entregues no Prazo -->
+        <div class="p-4 rounded-xl border border-emerald-600/40 bg-emerald-500/10">
+          <p class="text-xs font-medium text-[rgb(var(--page-fg-muted))]">Entregues no Prazo</p>
+          <p class="text-3xl font-bold mt-1 text-emerald-500">8</p>
+        </div>
+
+        <!-- Próximo Prazo -->
+        <div class="p-4 rounded-xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent-weak))]">
+          <p class="text-xs font-medium text-[rgb(var(--page-fg-muted))]">Próxima Entrega</p>
+          <p class="text-3xl font-bold mt-1 text-[rgb(var(--page-fg))]">Amanhã</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- SEÇÃO 2: MINHAS TAREFAS (Tabela - SEM BARRA DE FILTROS AQUI) -->
+    <h2 class="text-2xl font-semibold mb-4 flex items-center gap-2 text-[rgb(var(--page-fg))]">
+      <span class="material-symbols-rounded text-[rgb(var(--accent))] text-2xl">assignment_turned_in</span>
+      Minhas Tarefas
+    </h2>
+
+    <!-- Tabela de Tarefas -->
+    <section id="content-completo" class="mb-10 rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent overflow-hidden">
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left bg-[rgb(var(--accent)/0.06)]">
+            <tr>
+              <!-- Título/Nome -->
+              <th class="px-4 py-3 font-semibold w-1/4">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="name" type="button">
+                  Título
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="name">unfold_more</span>
+                </button>
+              </th>
+              <!-- Prazo -->
+              <th class="px-4 py-3 font-semibold w-1/6">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="dueDate" type="button">
+                  Prazo
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="dueDate">unfold_more</span>
+                </button>
+              </th>
+              <!-- Nota/Feedback -->
+              <th class="px-4 py-3 font-semibold w-1/6 hidden sm:table-cell">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="grade" type="button">
+                  Nota
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="grade">unfold_more</span>
+                </button>
+              </th>
+              <!-- Status de Entrega -->
+              <th class="px-4 py-3 font-semibold w-1/6">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="status" type="button">
+                  Status
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="status">unfold_more</span>
+                </button>
+              </th>
+              <!-- Ações -->
+              <th class="px-4 py-3 font-semibold w-1/6 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tarefasTbody" class="divide-y divide-[rgb(var(--page-border)/0.08)]">
+            
+            <!-- Linha 1: Tarefa Pendente (Atrasada) -->
+            <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition">
+              <td class="px-4 py-3 font-semibold">Resumo do Capítulo 5</td>
+              <td class="px-4 py-3 text-red-400">Atrasada</td>
+              <td class="px-4 py-3 hidden sm:table-cell">N/A</td>
+              <td class="px-4 py-3">
+                <span class="status-badge bg-red-500/15 px-2 py-0.5 text-xs font-semibold text-red-300">PENDENTE</span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- UPLOAD (Primário) -->
+                  <button class="btn-icon-sm bg-[rgb(var(--accent)/0.10)] hover:bg-[rgb(var(--accent)/0.20)] text-[rgb(var(--accent))]" title="Fazer Upload">
+                    <span class="material-symbols-rounded text-base">upload</span>
+                  </button>
+                  <!-- DETALHES -->
+                  <button class="btn-icon-sm" title="Ver Detalhes">
+                    <span class="material-symbols-rounded text-base">info</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Linha 2: Tarefa Entregue (Aguardando Correção) -->
+            <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition opacity-90">
+              <td class="px-4 py-3 font-semibold">Exercícios de Eletricidade</td>
+              <td class="px-4 py-3">01/12/2025</td>
+              <td class="px-4 py-3 hidden sm:table-cell">Aguardando</td>
+              <td class="px-4 py-3">
+                <span class="status-badge bg-sky-500/15 px-2 py-0.5 text-xs font-semibold text-sky-300">ENTREGUE</span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- VER ENTREGA (Primário) -->
+                  <button class="btn-icon-sm bg-[rgb(var(--accent)/0.10)] hover:bg-[rgb(var(--accent)/0.20)] text-[rgb(var(--accent))]" title="Ver Entrega">
+                    <span class="material-symbols-rounded text-base">visibility</span>
+                  </button>
+                  <!-- DETALHES -->
+                  <button class="btn-icon-sm" title="Ver Detalhes">
+                    <span class="material-symbols-rounded text-base">info</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Linha 3: Tarefa Corrigida -->
+            <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition opacity-90">
+              <td class="px-4 py-3 font-semibold">Pesquisa sobre Revolução Industrial</td>
+              <td class="px-4 py-3">10/11/2025</td>
+              <td class="px-4 py-3 hidden sm:table-cell">9.5</td>
+              <td class="px-4 py-3">
+                <span class="status-badge bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">CORRIGIDA</span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- VER CORREÇÃO (Primário) -->
+                  <button class="btn-icon-sm bg-[rgb(var(--accent)/0.10)] hover:bg-[rgb(var(--accent)/0.20)] text-[rgb(var(--accent))]" title="Ver Correção">
+                    <span class="material-symbols-rounded text-base">check_box</span>
+                  </button>
+                  <!-- DETALHES -->
+                  <button class="btn-icon-sm" title="Ver Detalhes">
+                    <span class="material-symbols-rounded text-base">info</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="hidden p-8 text-center text-[rgb(var(--page-fg-muted))]">Nenhuma tarefa encontrada.</div>
+    </section>
+    
+    <!-- SEÇÃO 3: RASCUNHOS / TAREFAS PESSOAIS -->
+    <h2 class="text-2xl font-semibold mb-4 flex items-center gap-2 text-[rgb(var(--page-fg))]">
+      <span class="material-symbols-rounded text-[rgb(var(--accent))] text-2xl">edit_note</span>
+      Rascunhos e Prazos Pessoais
+    </h2>
+    <section class="mb-10 rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent overflow-hidden">
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="text-left bg-[rgb(var(--accent)/0.06)]">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold w-1/3">Título</th>
+                        <th class="px-4 py-3 font-semibold w-1/4 hidden sm:table-cell">Tipo</th>
+                        <th class="px-4 py-3 font-semibold w-1/6">Prazo</th>
+                        <th class="px-4 py-3 font-semibold w-1/6 text-right">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[rgb(var(--page-border)/0.08)]">
+                    <!-- Rascunho 1 -->
+                    <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition">
+                        <td class="px-4 py-3 font-semibold">Ficha de Resumo: TCC</td>
+                        <td class="px-4 py-3 hidden sm:table-cell">Rascunho</td>
+                        <td class="px-4 py-3">15/12/2025</td>
+                        <td class="px-4 py-3 text-right">
+                            <button class="btn-icon-sm bg-[rgb(var(--accent)/0.10)] hover:bg-[rgb(var(--accent)/0.20)] text-[rgb(var(--accent))]" title="Continuar Edição">
+                                <span class="material-symbols-rounded text-base">edit</span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+  </main>
+  
+  <!-- NOVO: Popover flutuante para TODOS os Filtros (Substitui a barra de filtros) -->
+  <div id="filter-popover" 
+       class="absolute top-14 right-4 z-40 hidden w-64 p-3 rounded-xl shadow-2xl backdrop-blur-sm 
+              border border-[rgb(var(--page-border)/0.25)] bg-[rgb(var(--page-bg)/0.9)] 
+              transform origin-top-right transition-opacity duration-200"
+       onclick="event.stopPropagation()">
+      
+      <h3 class="text-lg font-semibold mb-3">Filtrar Tarefas</h3>
+      <div class="space-y-4">
+        
+        <!-- Busca por Título/Matéria -->
+        <label class="relative flex-1">
+          <span class="sr-only">Buscar tarefa</span>
+          <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[rgb(var(--page-fg-muted))] text-lg">search</span>
+          <input id="popoverSearchInput" type="search" placeholder="Buscar por título" class="input-base pl-10 pr-3 py-2" />
+        </label>
+        
+        <!-- Filtro por Status -->
+        <select id="popoverStatusFilter" class="input-base appearance-none bg-right pr-10">
+          <option value="">Todos os status</option>
+          <option value="pendente">Pendente</option>
+          <option value="entregue">Entregue</option>
+          <option value="atrasada">Atrasada</option>
+          <option value="corrigida">Corrigida</option>
+        </select>
+        
+        <!-- Filtro por Matéria -->
+        <select id="popoverSubjectFilter" class="input-base appearance-none bg-right pr-10">
+          <option value="">Todas as matérias</option>
+          <option value="matematica">Matemática</option>
+          <option value="linguagens">Linguagens</option>
+          <option value="natureza">Natureza</option>
+          <option value="humanas">Humanas</option>
+        </select>
+
+        <hr class="border-[rgb(var(--page-border)/0.15)] mt-4 mb-3">
+        
+        <h4 class="text-sm font-medium mb-2 text-[rgb(var(--page-fg-muted))]">Intervalo de Datas</h4>
+        
+        <!-- Filtro por Data de Entrega -->
+        <div>
+          <label for="start_date_filter" class="block text-sm font-medium mb-1 text-[rgb(var(--page-fg-muted))]">De</label>
+          <input type="date" id="start_date_filter" class="input-base" />
+        </div>
+        <div>
+          <label for="end_date_filter" class="block text-sm font-medium mb-1 text-[rgb(var(--page-fg-muted))]">Até</label>
+          <input type="date" id="end_date_filter" class="input-base" />
+        </div>
+        
+        <!-- Botão Aplicar -->
+        <div class="pt-1">
+          <button id="apply-filters-btn" class="btn-primary">
+             <span class="material-symbols-rounded text-lg align-middle mr-1">done</span>
+             APLICAR FILTROS
+          </button>
+        </div>
+      </div>
+  </div>
+
+
+  <!-- Toast de tema (mantido) -->
+  <div id="theme-toast" class="fixed bottom-4 right-4 z-[60] pointer-events-none select-none opacity-0 translate-y-2 transition-all duration-300" role="status" aria-live="polite">
+    <div class="flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.18)] bg-[rgb(var(--page-bg)/0.9)] px-3 py-1.5 text-xs font-semibold shadow-lg">
+      <span id="theme-toast-icon" class="material-symbols-rounded text-base">dark_mode</span>
+      <span id="theme-toast-label">Tema escuro</span>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ============================
+        // Lógica de Tema
+        // ============================
+        const html = document.documentElement;
+        const toggleBtn = document.querySelector('[data-theme-toggle]');
+        const icon = document.querySelector('[data-theme-icon]');
+        const srLabel = document.querySelector('[data-theme-label]');
+        const toast = document.getElementById('theme-toast');
+        const toastIcon = document.getElementById('theme-toast-icon');
+        const toastLabel = document.getElementById('theme-toast-label');
+        let toastTimer = null;
+
+        if (!toggleBtn) return;
+
+        function showToast(theme) {
+            if (!toast) return;
+            const isDark = theme === 'dark';
+            toastIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+            toastLabel.textContent = isDark ? 'Tema escuro' : 'Tema claro';
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 1800);
+        }
+
+        function apply(theme, opts = { silent: false }) {
+            html.setAttribute('data-theme', theme);
+            const isDark = theme === 'dark';
+            icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            srLabel.textContent = isDark ? 'Usar tema claro' : 'Usar tema escuro';
+            if (!opts.silent) showToast(theme);
+        }
+
+        function getInitialTheme() {
+            const saved = localStorage.getItem('miniapp-theme');
+            if (saved === 'light' || saved === 'dark') return saved;
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        let theme = getInitialTheme();
+        apply(theme, { silent: true });
+        toggleBtn.addEventListener('click', () => {
+            theme = theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('miniapp-theme', theme);
+            apply(theme);
+        });
+
+        // ============================
+        // Lógica de Popover de Filtros (Substitui o Modal)
+        // ============================
+        const filterPopover = document.getElementById('filter-popover');
+        const filterToggleBtn = document.getElementById('filter-popover-toggle-btn');
+
+
+        function toggleFilterPopover(show) {
+            const isVisible = !filterPopover.classList.contains('hidden');
+            // SEGUNDA CORREÇÃO: A lógica deve alternar o estado, exceto se 'show' for definido.
+            // Se show for undefined, deve ser o inverso do isVisible (toggle)
+            const shouldShow = show !== undefined ? show : !isVisible; 
+
+            if (shouldShow) {
+                filterPopover.classList.remove('hidden');
+                filterToggleBtn.setAttribute('aria-expanded', 'true');
+            } else {
+                filterPopover.classList.add('hidden');
+                filterToggleBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
+        window.toggleFilterPopover = toggleFilterPopover;
+        
+        // Fechar o popover ao clicar fora
+        document.addEventListener('click', function(event) {
+            if (filterPopover && !filterPopover.classList.contains('hidden')) {
+                // Verifica se o clique não foi no popover nem no botão de toggle
+                if (!filterPopover.contains(event.target) && !filterToggleBtn.contains(event.target)) {
+                    toggleFilterPopover(false);
+                }
+            }
+        });
+
+        // Placeholder para aplicar filtros
+        document.getElementById('apply-filters-btn').addEventListener('click', function() {
+            console.log(`Aplicando filtros:
+                Busca: ${document.getElementById('popoverSearchInput').value}
+                Status: ${document.getElementById('popoverStatusFilter').value}
+                Matéria: ${document.getElementById('popoverSubjectFilter').value}
+                Data Início: ${document.getElementById('start_date_filter').value}
+                Data Fim: ${document.getElementById('end_date_filter').value}
+            `);
+            this.textContent = 'Aplicando...';
+            this.classList.remove('bg-[rgb(var(--accent))]');
+            this.classList.add('bg-gray-500/50');
+            
+            setTimeout(() => {
+                this.textContent = 'APLICAR FILTROS';
+                this.classList.add('bg-[rgb(var(--accent))]');
+                this.classList.remove('bg-gray-500/50');
+                toggleFilterPopover(false); // Fecha o popover após aplicar
+            }, 1500);
+        });
+
+        // ============================
+        // Lógica de Tabela (Placeholders)
+        // ============================
+
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            console.log(`Ordenando tabela de tarefas por: ${btn.getAttribute('data-sort')}`);
+          });
+        });
+    });
+  </script>
+</body>
+</html>
