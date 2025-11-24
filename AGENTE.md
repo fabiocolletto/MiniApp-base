@@ -32,3 +32,9 @@ Este arquivo define **como o Codex deve operar neste repositório**:
 ## Segurança
 - Nunca commitar `.env`, tokens, chaves.
 - Variáveis sensíveis devem ir para secrets no pipeline ou placeholders.
+
+## Fluxo de Backup — Google/OneDrive
+- Sempre usar OAuth disparado por interação do usuário (sem pré-autorização automática).
+- Tokens devem ser armazenados apenas em IndexedDB via `idb-keyval` e nunca em arquivos versionados.
+- Client IDs devem vir de variáveis globais injetadas em tempo de execução (`window.GOOGLE_CLIENT_ID`, `window.MS_CLIENT_ID` ou `window.__BACKUP_OAUTH__`).
+- Mantém o layout existente das telas; apenas conecte botões a fluxos reais de autenticação.
