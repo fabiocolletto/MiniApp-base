@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApp Educação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div class="header-bar">
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema">
+                <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+                <span class="sr-only" data-theme-label>Usar tema escuro</span>
+            </button>
+        </div>
+
+        <header class="hero">
+            <div class="status-chip" aria-label="módulo educacional em destaque">
+                <span class="material-symbols-rounded" aria-hidden="true">cast_for_education</span>
+                Educação ativa
+            </div>
+            <h1>Educação</h1>
+            <p>Escolha seu perfil de acesso para entrar nos painéis dedicados.</p>
+        </header>
+
+        <section class="grid" aria-label="Perfis do MiniApp Educação">
+            <div class="card card--pink" role="article">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">school</span>
+                    </span>
+                    <div>
+                        <h2>Professor</h2>
+                        <div class="badge">Disponível</div>
+                    </div>
+                </div>
+                <p>Planejamento de aulas, avaliações, diários e acompanhamento de turmas.</p>
+            </div>
+
+            <div class="card card--blue" role="article">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">backpack</span>
+                    </span>
+                    <div>
+                        <h2>Aluno</h2>
+                        <div class="badge">Disponível</div>
+                    </div>
+                </div>
+                <p>Trilhas de estudo, provas, atividades pendentes e bilhetes digitais.</p>
+            </div>
+
+            <div class="card card--green" role="article">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">family_restroom</span>
+                    </span>
+                    <div>
+                        <h2>Responsável</h2>
+                        <div class="badge">Disponível</div>
+                    </div>
+                </div>
+                <p>Frequência, mensagens com a escola e acompanhamento de desempenho.</p>
+            </div>
+
+            <div class="card card--slate" role="article">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">admin_panel_settings</span>
+                    </span>
+                    <div>
+                        <h2>Administração</h2>
+                        <div class="badge">Disponível</div>
+                    </div>
+                </div>
+                <p>Secretaria, cadastros, dashboards consolidados e comunicação institucional.</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/theme.js"></script>
+</body>
+</html>
