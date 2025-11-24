@@ -5,6 +5,7 @@
 - Pipeline GitHub Pages com `index.html` na raiz.
 - feat(backup): ativação Drive/OneDrive no perfil do aluno
 - fix(backup): inicialização resiliente de OAuth e pendências por provedor
+- fix(perfil aluno): persistência local dos dados e compatibilidade do painel com alternância de tema
 
 ## [2024-06-07]
 - Ingestão do pacote `cards-2000` para alimentar o novo index dinâmico.
