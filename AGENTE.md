@@ -26,6 +26,8 @@ Este arquivo define **como o Codex deve operar neste repositório**:
 - MiniApps plugáveis: `src/miniapps/<miniapp>/`
 - UI reutilizável: `src/ui/`
 - Assets públicos: `public/`
+- Home legada: `public/legacy/index-legacy.html` (não remover)
+- Novo index fonte: `src/app/index/` (raiz publica em `index.html`)
 
 ## Segurança
 - Nunca commitar `.env`, tokens, chaves.

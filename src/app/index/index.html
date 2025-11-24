@@ -85,7 +85,7 @@
             return cardEl;
         };
 
-        fetch('./src/modules/content/catalog/cards-2000.json')
+        fetch('../modules/content/catalog/cards-2000.json')
             .then((response) => {
                 if (!response.ok) throw new Error('Falha ao carregar catálogo.');
                 return response.json();

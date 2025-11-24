@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfólio de MiniApps</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div class="header-bar">
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema">
+                <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+                <span class="sr-only" data-theme-label>Usar tema escuro</span>
+            </button>
+        </div>
+
+        <header class="hero">
+            <div class="status-chip" aria-label="tema atual" data-theme-chip>
+                <span class="material-symbols-rounded" aria-hidden="true" data-theme-chip-icon>light_mode</span>
+                <span data-theme-chip-label>Tema claro</span>
+            </div>
+            <h1>Portfólio de Aplicações</h1>
+            <p>Selecione o sistema que deseja acessar:</p>
+        </header>
+
+        <section class="grid" aria-label="MiniApps disponíveis">
+            <a class="card card--pink" href="/public/miniapps/educacao/index.html">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">cast_for_education</span>
+                    </span>
+                    <div>
+                        <h2>Educação</h2>
+                        <div class="badge">Ativo</div>
+                    </div>
+                </div>
+                <p>Gestão acadêmica completa: provas, avaliações, dashboards e jornadas guiadas.</p>
+            </a>
+
+            <div class="card card--green disabled" role="article" aria-label="Financeiro em breve">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">account_balance</span>
+                    </span>
+                    <div>
+                        <h2>Financeiro</h2>
+                        <div class="badge">Em breve</div>
+                    </div>
+                </div>
+                <p>Fluxo de caixa, cobranças e relatórios com leitura rápida.</p>
+            </div>
+
+            <div class="card card--peach disabled" role="article" aria-label="Saúde em breve">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">health_and_safety</span>
+                    </span>
+                    <div>
+                        <h2>Saúde</h2>
+                        <div class="badge">Em breve</div>
+                    </div>
+                </div>
+                <p>Registro clínico, vacinação e comunicação entre responsáveis e enfermagem.</p>
+            </div>
+
+            <div class="card card--amber disabled" role="article" aria-label="Agenda em breve">
+                <div class="card-header">
+                    <span class="icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-rounded">calendar_month</span>
+                    </span>
+                    <div>
+                        <h2>Agenda</h2>
+                        <div class="badge">Em breve</div>
+                    </div>
+                </div>
+                <p>Calendário escolar com eventos, lembretes e notificações instantâneas.</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/theme.js"></script>
+</body>
+</html>
