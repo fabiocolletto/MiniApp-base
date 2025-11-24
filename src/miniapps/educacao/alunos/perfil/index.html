@@ -151,6 +151,7 @@
              <span class="material-symbols-rounded text-lg align-middle mr-1">save</span>
              Salvar Alterações
           </button>
+          <p id="save-feedback" class="mt-3 text-sm text-[rgb(var(--page-fg-muted))]" role="status" aria-live="polite"></p>
         </div>
       </form>
     </section>
@@ -228,12 +229,7 @@
     </div>
   </div>
 
-  <script type="module">
-    import { activateBackup, getBackupConfig } from '../../../core/backup/index.js';
-
-    // ============================
-    // Lógica de Tema
-    // ============================
+  <script>
     (function () {
       const html = document.documentElement;
       const toggleBtn = document.querySelector('[data-theme-toggle]');
@@ -249,8 +245,8 @@
       function showToast(theme) {
         if (!toast) return;
         const isDark = theme === 'dark';
-        toastIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
-        toastLabel.textContent = isDark ? 'Tema escuro' : 'Tema claro';
+        if (toastIcon) toastIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+        if (toastLabel) toastLabel.textContent = isDark ? 'Tema escuro' : 'Tema claro';
         toast.classList.remove('opacity-0', 'translate-y-2');
         toast.classList.add('opacity-100', 'translate-y-0');
         if (toastTimer) clearTimeout(toastTimer);
@@ -263,8 +259,8 @@
       function apply(theme, opts = { silent: false }) {
         html.setAttribute('data-theme', theme);
         const isDark = theme === 'dark';
-        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
-        srLabel.textContent = isDark ? 'Usar tema claro' : 'Usar tema escuro';
+        if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        if (srLabel) srLabel.textContent = isDark ? 'Usar tema claro' : 'Usar tema escuro';
         if (!opts.silent) showToast(theme);
       }
 
@@ -276,12 +272,26 @@
 
       let theme = getInitialTheme();
       apply(theme, { silent: true });
+
       toggleBtn.addEventListener('click', () => {
         theme = theme === 'dark' ? 'light' : 'dark';
         localStorage.setItem('miniapp-theme', theme);
         apply(theme);
       });
+
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+          const nextTheme = event.matches ? 'dark' : 'light';
+          theme = nextTheme;
+          localStorage.setItem('miniapp-theme', nextTheme);
+          apply(nextTheme);
+        });
+      }
     })();
+  </script>
+
+  <script type="module">
+    import { activateBackup, getBackupConfig } from '../../../core/backup/index.js';
     
     // ============================
     // Lógica do Toast de Sincronização (NOVO)
@@ -309,36 +319,93 @@
 
 
     // ============================
-    // Lógica de MÁSCARA de Telefone (DDD + 9 digitos)
+    // Formulário de perfil (persistência local + máscara de telefone)
     // ============================
-    document.addEventListener('DOMContentLoaded', () => {
-        const phoneInput = document.getElementById('phone');
+    const FORM_STORAGE_KEY = 'miniapp-educacao-aluno-perfil';
+    const profileForm = document.getElementById('profile-form');
+    const fullNameInput = document.getElementById('full_name');
+    const phoneInput = document.getElementById('phone');
+    const emailInput = document.getElementById('email');
+    const saveFeedback = document.getElementById('save-feedback');
 
-        if (phoneInput) {
-            phoneInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+    function applyPhoneMask(value) {
+      let sanitized = (value || '').replace(/\D/g, '').slice(0, 11);
 
-                if (value.length > 11) {
-                    value = value.substring(0, 11); // Limita a 11 dígitos (DDD + 9º)
-                }
+      if (!sanitized) return '';
 
-                if (value.length > 0) {
-                    value = '(' + value;
-                    if (value.length > 3) {
-                        value = value.substring(0, 3) + ') ' + value.substring(3);
-                    }
-                    if (value.length > 10) {
-                        value = value.substring(0, 10) + '-' + value.substring(10);
-                    }
-                    if (value.length > 15) {
-                        value = value.substring(0, 15);
-                    }
-                }
-                
-                e.target.value = value;
-            });
-        }
-    });
+      let formatted = '(' + sanitized;
+      if (formatted.length > 3) {
+        formatted = formatted.substring(0, 3) + ') ' + formatted.substring(3);
+      }
+      if (formatted.length > 10) {
+        formatted = formatted.substring(0, 10) + '-' + formatted.substring(10);
+      }
+      if (formatted.length > 15) {
+        formatted = formatted.substring(0, 15);
+      }
+      return formatted;
+    }
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', (event) => {
+        const masked = applyPhoneMask(event.target.value);
+        event.target.value = masked;
+      });
+    }
+
+    function setSaveFeedback(message, tone = 'muted') {
+      if (!saveFeedback) return;
+      saveFeedback.textContent = message;
+      saveFeedback.classList.remove('text-emerald-400', 'text-red-400');
+      if (!saveFeedback.classList.contains('text-[rgb(var(--page-fg-muted))]')) {
+        saveFeedback.classList.add('text-[rgb(var(--page-fg-muted))]');
+      }
+
+      if (tone === 'success') {
+        saveFeedback.classList.remove('text-[rgb(var(--page-fg-muted))]');
+        saveFeedback.classList.add('text-emerald-400');
+      }
+      if (tone === 'error') {
+        saveFeedback.classList.remove('text-[rgb(var(--page-fg-muted))]');
+        saveFeedback.classList.add('text-red-400');
+      }
+    }
+
+    function getFormData() {
+      return {
+        full_name: fullNameInput?.value?.trim() || '',
+        phone: phoneInput?.value?.trim() || '',
+        email: emailInput?.value?.trim() || '',
+      };
+    }
+
+    function hydrateFormFromStorage() {
+      try {
+        const stored = localStorage.getItem(FORM_STORAGE_KEY);
+        if (!stored) return;
+
+        const data = JSON.parse(stored);
+        if (fullNameInput && data.full_name) fullNameInput.value = data.full_name;
+        if (phoneInput && data.phone) phoneInput.value = applyPhoneMask(data.phone);
+        if (emailInput && data.email) emailInput.value = data.email;
+        setSaveFeedback('Dados carregados do dispositivo.', 'success');
+      } catch (error) {
+        console.error('Não foi possível carregar os dados locais do perfil.', error);
+        setSaveFeedback('Falha ao carregar os dados salvos localmente.', 'error');
+      }
+    }
+
+    function persistFormLocally() {
+      const payload = getFormData();
+      try {
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
+        setSaveFeedback('Dados salvos no dispositivo.', 'success');
+      } catch (error) {
+        console.error('Não foi possível salvar os dados do perfil.', error);
+        setSaveFeedback('Erro ao salvar os dados localmente.', 'error');
+      }
+      return payload;
+    }
 
     // ============================
     // Lógica de Botões (Fluxo real de backup)
@@ -369,7 +436,6 @@
     }
 
     function getOwnerIdFromForm() {
-      const emailInput = document.getElementById('email');
       return emailInput?.value?.trim() || '';
     }
 
@@ -425,10 +491,14 @@
       }
     }
 
-    document.getElementById('profile-form').addEventListener('submit', function(event) {
+    hydrateFormFromStorage();
+
+    if (profileForm) {
+      profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        console.log("Formulário de perfil submetido. Lógica de salvamento precisa ser implementada.");
-    });
+        persistFormLocally();
+      });
+    }
 
     if (gdriveButton) {
       gdriveButton.addEventListener('click', () => handleBackup('google'));
