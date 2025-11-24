@@ -1,7 +1,11 @@
-# Changelog
+# CHANGELOG
 
-## [2024-05-23]
-- Reestruturado o repositório para um shell totalmente estático, removendo bundles, dependências e service worker antigos.
-- Catalogo inicial simplificado em `index.html` com quatro cards HTML fixos.
-- Adicionado MiniApp Educação (`miniapps/educacao/index.html`) com quatro cards placeholder seguindo o mesmo layout.
-- Consolidado o estilo compartilhado em `styles.css` e atualizado a documentação para refletir a nova base enxuta.
+## [Unreleased]
+- Estrutura base do MiniApp-Base com Hubs e MiniApps plugáveis.
+- Pipeline GitHub Pages com `index.html` na raiz.
+
+## [2024-06-07]
+- Ingestão do pacote `cards-2000` para alimentar o novo index dinâmico.
+- Ativação do novo `index.html` com link para home legada preservada em `public/legacy/`.
+- Organização dos MiniApps e dados em `src/`, movendo o Educação para `src/miniapps/educacao/`.
+- Inclusão de manifest/service worker mínimos e remoção do `TEMP_INBOX/` temporário.
