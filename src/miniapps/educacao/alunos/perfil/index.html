@@ -111,7 +111,8 @@
         Dados Cadastrais
       </h2>
       
-      <form id="profile-form" class="space-y-5">
+      <div id="profile-form-container">
+        <form id="profile-form" class="space-y-5">
         
         <!-- Campo Nome Completo -->
         <div>
@@ -159,7 +160,24 @@
           </div>
           <p id="save-feedback" class="text-sm text-[rgb(var(--page-fg-muted))]" role="status" aria-live="polite"></p>
         </div>
-      </form>
+        </form>
+      </div>
+
+      <div id="saved-profile-card" class="hidden space-y-4 rounded-xl border border-[rgb(var(--page-border)/0.25)] bg-[rgb(var(--page-bg)/0.6)] p-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <p class="text-sm font-semibold text-[rgb(var(--accent))]">Dados salvos</p>
+            <p id="saved-full-name" class="text-lg font-semibold">—</p>
+            <div class="space-y-0.5 text-sm text-[rgb(var(--page-fg-muted))]">
+              <p><span class="font-semibold text-[rgb(var(--page-fg))]">Telefone:</span> <span id="saved-phone" class="ml-1">—</span></p>
+              <p><span class="font-semibold text-[rgb(var(--page-fg))]">E-mail:</span> <span id="saved-email" class="ml-1">—</span></p>
+            </div>
+          </div>
+          <button id="edit-profile-button" type="button" class="px-3 py-2 rounded-lg border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent-weak))] text-sm font-semibold text-[rgb(var(--accent-text))] hover:bg-[rgb(var(--accent-weak)/0.8)] transition">
+            Editar
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- Seção 2: Sincronização com Cloud Services -->
@@ -328,6 +346,7 @@
     // Formulário de perfil (persistência local + máscara de telefone)
     // ============================
     const FORM_STORAGE_KEY = 'miniapp-educacao-aluno-perfil';
+    const formContainer = document.getElementById('profile-form-container');
     const profileForm = document.getElementById('profile-form');
     const fullNameInput = document.getElementById('full_name');
     const phoneInput = document.getElementById('phone');
@@ -335,6 +354,11 @@
     const saveFeedback = document.getElementById('save-feedback');
     const saveBadge = document.getElementById('save-badge');
     const saveBadgeLabel = document.querySelector('#save-badge [data-badge-label]');
+    const savedProfileCard = document.getElementById('saved-profile-card');
+    const savedFullName = document.getElementById('saved-full-name');
+    const savedPhone = document.getElementById('saved-phone');
+    const savedEmail = document.getElementById('saved-email');
+    const editProfileButton = document.getElementById('edit-profile-button');
     let saveBadgeTimer = null;
 
     function applyPhoneMask(value) {
@@ -406,15 +430,41 @@
       };
     }
 
+    function showSavedCard(data) {
+      if (!savedProfileCard) return;
+
+      const name = data.full_name?.trim() || '—';
+      const phone = data.phone?.trim() ? applyPhoneMask(data.phone) : '—';
+      const email = data.email?.trim() || '—';
+
+      if (savedFullName) savedFullName.textContent = name;
+      if (savedPhone) savedPhone.textContent = phone;
+      if (savedEmail) savedEmail.textContent = email;
+
+      savedProfileCard.classList.remove('hidden');
+      if (formContainer) formContainer.classList.add('hidden');
+    }
+
+    function showForm() {
+      if (formContainer) formContainer.classList.remove('hidden');
+      if (savedProfileCard) savedProfileCard.classList.add('hidden');
+      if (fullNameInput) fullNameInput.focus();
+    }
+
     function hydrateFormFromStorage() {
       try {
         const stored = localStorage.getItem(FORM_STORAGE_KEY);
         if (!stored) return;
 
         const data = JSON.parse(stored);
+        const hasData = Boolean(data.full_name || data.phone || data.email);
+        if (!hasData) return;
+
         if (fullNameInput && data.full_name) fullNameInput.value = data.full_name;
         if (phoneInput && data.phone) phoneInput.value = applyPhoneMask(data.phone);
         if (emailInput && data.email) emailInput.value = data.email;
+
+        showSavedCard(data);
         setSaveFeedback('Dados carregados do dispositivo.', 'success');
       } catch (error) {
         console.error('Não foi possível carregar os dados locais do perfil.', error);
@@ -428,6 +478,7 @@
         localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
         setSaveFeedback('Dados salvos no dispositivo.', 'success');
         showSaveBadge('Dados salvos no dispositivo.');
+        showSavedCard(payload);
       } catch (error) {
         console.error('Não foi possível salvar os dados do perfil.', error);
         setSaveFeedback('Erro ao salvar os dados localmente.', 'error');
@@ -525,6 +576,12 @@
       profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
         persistFormLocally();
+      });
+    }
+
+    if (editProfileButton) {
+      editProfileButton.addEventListener('click', () => {
+        showForm();
       });
     }
 
