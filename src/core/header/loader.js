@@ -1,6 +1,6 @@
 const DEFAULT_OPTIONS = {
   containerSelector: "[data-global-header]",
-  sourcePath: "/src/core/header/global-header.html",
+  sourcePath: new URL("./global-header.html", import.meta.url).href,
 };
 
 const LOAD_CACHE = new Map();
@@ -12,7 +12,12 @@ function resolveSourcePath(pathname) {
     return pathname;
   }
 
-  return `/${pathname.replace(/^\/+/, "")}`;
+  try {
+    return new URL(pathname, window.location.href).href;
+  } catch (error) {
+    console.warn("Falha ao resolver caminho relativo do header global", error);
+    return pathname;
+  }
 }
 
 function cloneAttributes(from, to) {
@@ -75,10 +80,15 @@ function extractBodyContent(documentSource) {
   return { fragment, inlineScripts };
 }
 
-function executeInlineScripts(target, scripts) {
+function executeInlineScripts(target, scripts, context = {}) {
   scripts.forEach((scriptNode) => {
     const script = document.createElement("script");
     cloneAttributes(scriptNode, script);
+
+    if (context.sourcePath) {
+      script.dataset.sourcePath = context.sourcePath;
+    }
+
     script.textContent = scriptNode.textContent;
     target.appendChild(script);
   });
@@ -113,7 +123,7 @@ export async function loadGlobalHeader(options = {}) {
     target.replaceChildren(fragment);
 
     await Promise.all(assetPromises);
-    executeInlineScripts(target, inlineScripts);
+    executeInlineScripts(target, inlineScripts, { sourcePath: resolvedSourcePath });
 
     return target;
   })();
