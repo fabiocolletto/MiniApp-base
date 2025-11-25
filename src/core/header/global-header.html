@@ -42,9 +42,12 @@
 </div></div>
 
 <script type="module">
-import { clearUserData, getUserData, saveUserData } from "/src/core/header/data-service.js";
+(async () => {
+const headerScript=document.currentScript;
+const headerSourcePath=headerScript?.dataset?.sourcePath;
+const headerBaseUrl=headerSourcePath?new URL(headerSourcePath,window.location.href):new URL('./global-header.html',window.location.href);
+const {clearUserData,getUserData,saveUserData}=await import(new URL('./data-service.js',headerBaseUrl).href);
 
-(function(){
 if (window.__GLOBAL_HEADER_READY__) return;
 window.__GLOBAL_HEADER_READY__ = true;
 
