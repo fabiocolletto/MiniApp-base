@@ -1,85 +1,125 @@
-import UserDataService from "../user/userDataService.js";
+// GoogleBackupService – compatível com CDN, GSI e ES Modules
+import localforage from "https://cdn.jsdelivr.net/npm/localforage/dist/localforage.mjs";
 
-const SCOPES = "https://www.googleapis.com/auth/drive.appdata";
-const FILE_NAME = "app5h-user-backup.json";
+const BACKUP_FILE_NAME = "miniapp-backup.json";
 
-let tokenClient;
+let tokenClient = null;
 let accessToken = null;
+let initialized = false;
+let CLIENT_ID = null;
 
 const GoogleBackupService = {
   init(clientId) {
+    if (!clientId) {
+      console.error("GoogleBackupService.init: CLIENT_ID ausente");
+      return false;
+    }
+
+    CLIENT_ID = clientId;
+
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: SCOPES,
-      callback: token => {
-        accessToken = token.access_token;
-      }
-    });
-  },
-
-  async authenticate() {
-    return new Promise(resolve => {
-      if (accessToken) return resolve(accessToken);
-      tokenClient.requestAccessToken();
-      const interval = setInterval(() => {
-        if (accessToken) {
-          clearInterval(interval);
-          resolve(accessToken);
+      client_id: CLIENT_ID,
+      scope: "https://www.googleapis.com/auth/drive.appdata",
+      callback: (response) => {
+        if (response.access_token) {
+          accessToken = response.access_token;
+        } else {
+          console.error("Erro ao obter token:", response);
         }
-      }, 100);
+      }
     });
+
+    initialized = true;
+    return true;
   },
 
-  async findBackupFile() {
-    const res = await fetch(
-      "https://www.googleapis.com/drive/v3/files?q=name='" +
-        FILE_NAME +
-        "' and mimeType='application/json' and trashed=false&spaces=appDataFolder",
-      {
-        headers: { Authorization: `Bearer ${accessToken}` }
+  async ensureToken() {
+    return new Promise((resolve) => {
+      if (!initialized || !tokenClient) {
+        console.error("GoogleBackupService: init() não foi executado.");
+        return resolve(false);
       }
-    );
-    const data = await res.json();
-    return data.files?.[0] || null;
+
+      if (accessToken) {
+        return resolve(true);
+      }
+
+      tokenClient.requestAccessToken();
+      
+      setTimeout(() => {
+        resolve(!!accessToken);
+      }, 500);
+    });
   },
 
   async uploadBackup() {
-    const backup = {
-      version: 1,
-      updated: new Date().toISOString(),
-      data: await UserDataService.load()
+    try {
+      const ok = await this.ensureToken();
+      if (!ok) return false;
+
+      const data = await this._generateLocalBackup();
+      const metadata = {
+        name: BACKUP_FILE_NAME,
+        parents: ["appDataFolder"]
+      };
+
+      const boundary = "-------314159265358979323846";
+      const delimiter = `\r\n--${boundary}\r\n`;
+      const closeDelimiter = `\r\n--${boundary}--`;
+
+      const multipartBody =
+        delimiter +
+        "Content-Type: application/json; charset=UTF-8\r\n\r\n" +
+        JSON.stringify(metadata) +
+        delimiter +
+        "Content-Type: application/json\r\n\r\n" +
+        JSON.stringify(data) +
+        closeDelimiter;
+
+      const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": `multipart/related; boundary=${boundary}`
+        },
+        body: multipartBody
+      });
+
+      return response.ok;
+    } catch (err) {
+      console.error("GoogleBackupService.uploadBackup error:", err);
+      return false;
+    }
+  },
+
+  async _generateLocalBackup() {
+    const storageKeys = await localforage.keys();
+    const backup = {};
+
+    for (const key of storageKeys) {
+      backup[key] = await localforage.getItem(key);
+    }
+
+    return {
+      generatedAt: new Date().toISOString(),
+      data: backup
     };
+  },
 
-    await this.authenticate();
+  async restoreBackup(fileContent) {
+    try {
+      if (!fileContent?.data) return false;
 
-    const file = await this.findBackupFile();
-    const metadata = {
-      name: FILE_NAME,
-      parents: ["appDataFolder"],
-      mimeType: "application/json"
-    };
+      const entries = Object.entries(fileContent.data);
+      for (const [key, value] of entries) {
+        await localforage.setItem(key, value);
+      }
 
-    const form = new FormData();
-    form.append(
-      "metadata",
-      new Blob([JSON.stringify(metadata)], { type: "application/json" })
-    );
-    form.append(
-      "file",
-      new Blob([JSON.stringify(backup)], { type: "application/json" })
-    );
-
-    const endpoint = file
-      ? `https://www.googleapis.com/upload/drive/v3/files/${file.id}?uploadType=multipart`
-      : "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
-
-    const res = await fetch(endpoint, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: form
-    });
-
-    return res.ok;
+      return true;
+    } catch (err) {
+      console.error("GoogleBackupService.restoreBackup error:", err);
+      return false;
+    }
   }
 };
 
