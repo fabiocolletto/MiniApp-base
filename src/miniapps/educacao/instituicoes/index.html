@@ -50,29 +50,13 @@
 </head>
 <body class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors">
 
-  <!-- Header-bar FIXO no topo, com botão de voltar (esquerda) e tema (direita) -->
-  <div class="fixed top-0 inset-x-0 z-50 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 bg-transparent">
-    
-    <!-- Novo botão para retornar à tela anterior (canto superior esquerdo) -->
-    <a href="javascript:history.back()"
-      class="inline-flex items-center gap-1 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
-      aria-label="Voltar à tela anterior"
-    >
-      <span class="material-symbols-rounded text-base sm:text-lg" aria-hidden="true">arrow_back</span>
-      <span class="hidden sm:inline">Voltar</span>
-    </a>
+  <div data-global-header></div>
 
-    <!-- Botão tema canto superior direito (existente) -->
-    <button
-      class="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
-      type="button"
-      data-theme-toggle
-      aria-label="Alternar tema"
-    >
-      <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-      <span class="sr-only" data-theme-label>Usar tema escuro</span>
-    </button>
-  </div>
+  <script type="module">
+    import { loadGlobalHeader } from '/src/core/header/loader.js';
+
+    loadGlobalHeader();
+  </script>
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20">
 

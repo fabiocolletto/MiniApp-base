@@ -7,6 +7,7 @@
 - fix(backup): inicialização resiliente de OAuth e pendências por provedor
 - fix(perfil aluno): persistência local dos dados e compatibilidade do painel com alternância de tema
 - docs(painel aluno): diretrizes de rotas, cartões clicáveis, ocultação de botões ao rolar, padrões de tema e checklist visual
+- chore: padronização dos HTMLs com placeholder de header global e remoção de barras locais
 
 ## [2024-06-07]
 - Ingestão do pacote `cards-2000` para alimentar o novo index dinâmico.

@@ -95,74 +95,14 @@
 </head>
 <body class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors">
 
-  <!-- Header-bar FIXO no topo, com botão de voltar (esquerda) e tema/configurações (direita) -->
-  <div data-top-bar class="fixed top-0 inset-x-0 z-50 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 bg-transparent">
-    
-    <!-- Botão para retornar à tela anterior (canto superior esquerdo) -->
-    <a href="javascript:history.back()"
-      class="inline-flex items-center gap-1 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
-      aria-label="Voltar à tela anterior"
-    >
-      <span class="material-symbols-rounded text-base sm:text-lg" aria-hidden="true">arrow_back</span>
-      <span class="hidden sm:inline">Voltar</span>
-    </a>
 
-    <!-- Agrupamento de botões de Ações (settings) e Tema (canto superior direito) -->
-    <div class="flex items-center gap-2 relative">
-        
-        <!-- Botão principal que abre o Pop-up (AÇÕES) -->
-        <button id="actions-toggle-btn" 
-                class="btn-header-base" 
-                onclick="toggleActionsMenu()" 
-                title="Ações e Configurações de Prova"
-                aria-haspopup="true"
-                aria-expanded="false"
-                aria-label="Menu de Ações">
-            <span class="material-symbols-rounded text-xl">settings</span>
-        </button>
+  <div data-global-header></div>
 
-        <!-- Botão tema canto superior direito (existente) -->
-        <button
-          class="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition"
-          type="button"
-          data-theme-toggle
-          aria-label="Alternar tema"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-          <span class="sr-only" data-theme-label>Usar tema escuro</span>
-        </button>
+  <script type="module">
+    import { loadGlobalHeader } from '/src/core/header/loader.js';
 
-        <!-- Pop-up/Hover com os 3 botões (AÇÕES) -->
-        <!-- Ajustado para direita (right-4) e topo (top-14) -->
-        <div id="actions-menu" 
-             class="absolute top-14 right-0 z-40 hidden w-64 p-3 rounded-xl shadow-2xl backdrop-blur-sm 
-                    border border-[rgb(var(--page-border)/0.25)] bg-[rgb(var(--page-bg)/0.9)] 
-                    transform origin-top-right transition-opacity duration-200"
-             onclick="event.stopPropagation()">
-            
-            <div class="space-y-2">
-                <!-- Ação 1: GERAR PROVA PERSONALIZADA (Primário) -->
-                <button class="btn-header-primary" onclick="toggleModal(true); toggleActionsMenu(false);" title="Gerar Prova Personalizada">
-                    <span class="material-symbols-rounded text-base">shuffle</span>
-                    Gerar Personalizada
-                </button>
-                
-                <!-- Ação 2: CARREGAR PROVA OFICIAL (Secundário) -->
-                <button class="btn-header-secondary w-full justify-start" onclick="console.log('Abrir lista de provas oficiais/salvas.'); toggleActionsMenu(false);" title="Carregar Prova Salva/Oficial">
-                    <span class="material-symbols-rounded text-base">archive</span>
-                    Carregar Oficial
-                </button>
-                
-                <!-- Ação 3: TOGGLE DE FILTROS (Secundário) -->
-                <button id="menu-filter-toggle" class="btn-header-secondary w-full justify-start" onclick="toggleFilters(); toggleActionsMenu(false);" title="Alternar visibilidade dos filtros">
-                    <span id="menu-filter-icon" class="material-symbols-rounded text-base">filter_list</span>
-                    Alternar Filtros
-                </button>
-            </div>
-        </div>
-    </div>
-  </div>
-
+    loadGlobalHeader();
+  </script>
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20">
 
     <!-- HERO centralizado, com destaque em Pink -->
@@ -504,31 +444,6 @@
             localStorage.setItem('theme', theme);
             apply(theme);
         });
-
-        // ============================
-        // Interação de scroll no topo
-        // ============================
-        const topBar = document.querySelector('[data-top-bar]');
-        if (topBar) {
-            const hiddenClasses = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
-            let lastScroll = window.scrollY;
-            topBar.classList.add('transition-all', 'duration-300');
-
-            const handleScroll = () => {
-                const current = window.scrollY;
-                const scrollingDown = current > lastScroll && current > 8;
-
-                if (scrollingDown) {
-                    topBar.classList.add(...hiddenClasses);
-                } else {
-                    topBar.classList.remove(...hiddenClasses);
-                }
-
-                lastScroll = current;
-            };
-
-            window.addEventListener('scroll', handleScroll, { passive: true });
-        }
 
         // ============================
         // Lógica de Toggle de Filtros
