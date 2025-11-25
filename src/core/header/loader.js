@@ -246,4 +246,142 @@ function setupUserPanel(root) {
     }
 
     if (!validatePhone(phoneMasked)) {
-      setStatus("Informe
+      setStatus("Informe um telefone válido (com DDD).", "warn");
+      return false;
+    }
+
+    if (!validateEmail(email)) {
+      setStatus("Informe um e-mail válido.", "warn");
+      return false;
+    }
+
+    const updated = {
+      name,
+      phone: phoneMasked,
+      email,
+      updated: new Date().toLocaleString("pt-BR")
+    };
+
+    await UserService.save(updated);
+    renderUser(updated);
+    setStatus(`Último salvamento: ${updated.updated}`, "ok");
+    return true;
+  }
+
+  // Eventos básicos
+  userBtn.addEventListener("click", () => {
+    userPanel.classList.remove("hidden");
+    userPanel.classList.add("flex");
+  });
+
+  if (userClose) {
+    userClose.addEventListener("click", () => {
+      userPanel.classList.add("hidden");
+      userPanel.classList.remove("flex");
+    });
+  }
+
+  // Enter/exit modo edição pelo ícone de lápis
+  if (userEditIcon && userForm && userData) {
+    const iconSpan = userEditIcon.querySelector(".material-symbols-rounded");
+
+    userEditIcon.addEventListener("click", async () => {
+      if (!isEditing) {
+        // Entrar em modo edição
+        isEditing = true;
+        userForm.classList.remove("hidden");
+        userData.classList.add("opacity-40");
+
+        if (iconSpan) iconSpan.textContent = "done";
+        userEditIcon.setAttribute("aria-label", "Salvar dados");
+        setStatus("Edite os dados e clique em salvar.", "info");
+      } else {
+        // Tentar salvar e sair do modo edição
+        const ok = await saveLocal();
+        if (!ok) return;
+
+        isEditing = false;
+        userForm.classList.add("hidden");
+        userData.classList.remove("opacity-40");
+
+        if (iconSpan) iconSpan.textContent = "edit";
+        userEditIcon.setAttribute("aria-label", "Editar dados");
+      }
+    });
+  }
+
+  // Máscara de telefone em tempo real
+  if (phoneInput) {
+    phoneInput.addEventListener("input", () => {
+      phoneInput.value = maskPhone(phoneInput.value);
+    });
+  }
+
+  // Botão de backup Google (placeholder por enquanto)
+  if (syncBtn) {
+    syncBtn.addEventListener("click", () => {
+      setStatus("Integração com Google Drive em construção.", "warn");
+    });
+  }
+
+  // Botão de excluir dados
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      const sure = window.confirm(
+        "Tem certeza que deseja excluir seus dados locais? Essa ação não pode ser desfeita."
+      );
+      if (!sure) return;
+
+      await UserService.clear();
+      if (nameInput) nameInput.value = "";
+      if (phoneInput) phoneInput.value = "";
+      if (emailInput) emailInput.value = "";
+      renderUser(null);
+      setStatus("Dados apagados deste dispositivo.", "error");
+    });
+  }
+
+  // Carrega dados na abertura
+  loadUser();
+}
+
+// Função principal exportada
+export async function loadGlobalHeader(options = {}) {
+  const selector = options.selector || "[data-global-header]";
+  const container = document.querySelector(selector);
+
+  if (!container) {
+    console.warn("loadGlobalHeader: nenhum container encontrado para", selector);
+    return;
+  }
+
+  try {
+    const response = await fetch("/src/core/element/header.html", {
+      cache: "no-cache"
+    });
+
+    if (!response.ok) {
+      console.error("loadGlobalHeader: erro ao carregar header.html", response.status);
+      return;
+    }
+
+    const html = await response.text();
+    container.innerHTML = html;
+
+    // Depois que o HTML for injetado, configuramos tudo
+    const root = container; // raiz local do header + painel
+    setupHeaderButtons(root);
+    await ThemeService.load();
+
+    const themeToggle = root.querySelector("#theme-toggle");
+    if (themeToggle) {
+      themeToggle.addEventListener("click", () => {
+        ThemeService.toggle();
+      });
+    }
+
+    setupUserPanel(root);
+  } catch (err) {
+    console.error("loadGlobalHeader: falha ao carregar header:", err);
+  }
+}
