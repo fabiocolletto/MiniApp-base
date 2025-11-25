@@ -86,64 +86,13 @@
 </head>
 <body class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors">
 
-  <!-- Header-bar FIXO no topo, com botão de voltar (esquerda) e tema/configurações (direita) -->
-  <div data-top-bar class="fixed top-0 inset-x-0 z-50 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 bg-transparent">
-    
-    <!-- Botão para retornar à tela anterior (canto superior esquerdo) -->
-    <a href="javascript:history.back()"
-      class="header-btn-standard"
-      aria-label="Voltar à tela anterior"
-    >
-      <span class="material-symbols-rounded text-base sm:text-lg" aria-hidden="true">arrow_back</span>
-      <span class="hidden sm:inline">Voltar</span>
-    </a>
+  <div data-global-header></div>
 
-    <!-- Agrupamento de botões de Ações (Config, Filtros) e Tema (canto superior direito) -->
-    <div class="flex items-center gap-2 relative">
-        
-        <!-- Botão de Notificações Persistente -->
-        <a href="#notifications"
-           id="persistent-notifications-btn" 
-           class="header-btn-standard hidden text-red-500/80 hover:bg-red-500/10" 
-           title="Notificações de Avisos Não Lidos">
-            <span class="material-symbols-rounded text-xl">notifications_active</span>
-        </a>
+  <script type="module">
+    import { loadGlobalHeader } from '/src/core/header/loader.js';
 
-        <!-- Botão que abre o popover de CONFIGURAÇÕES -->
-        <button id="config-toggle-btn" 
-                class="header-btn-standard" 
-                onclick="toggleConfigPopover()" 
-                title="Configurações"
-                aria-haspopup="true"
-                aria-expanded="false"
-                aria-label="Configurações">
-            <span class="material-symbols-rounded text-xl">settings</span>
-        </button>
-        
-        <!-- Botão que abre o popover com TODOS os filtros -->
-        <button id="filter-popover-toggle-btn" 
-                class="header-btn-standard" 
-                onclick="toggleFilterPopover()" 
-                title="Filtros de Avisos"
-                aria-haspopup="true"
-                aria-expanded="false"
-                aria-label="Alternar filtros">
-            <span class="material-symbols-rounded text-xl">filter_list</span>
-        </button>
-
-        <!-- Botão tema canto superior direito (existente) -->
-        <button
-          class="header-btn-standard"
-          type="button"
-          data-theme-toggle
-          aria-label="Alternar tema"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-          <span class="sr-only" data-theme-label>Usar tema escuro</span>
-        </button>
-    </div>
-  </div>
-
+    loadGlobalHeader();
+  </script>
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20">
 
     <!-- HERO centralizado, com destaque em Céu -->
@@ -422,31 +371,6 @@
             localStorage.setItem('theme', theme);
             apply(theme);
         });
-
-        // ============================
-        // Interação de scroll no topo
-        // ============================
-        const topBar = document.querySelector('[data-top-bar]');
-        if (topBar) {
-            const hiddenClasses = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
-            let lastScroll = window.scrollY;
-            topBar.classList.add('transition-all', 'duration-300');
-
-            const handleScroll = () => {
-                const current = window.scrollY;
-                const scrollingDown = current > lastScroll && current > 8;
-
-                if (scrollingDown) {
-                    topBar.classList.add(...hiddenClasses);
-                } else {
-                    topBar.classList.remove(...hiddenClasses);
-                }
-
-                lastScroll = current;
-            };
-
-            window.addEventListener('scroll', handleScroll, { passive: true });
-        }
 
         // ============================
         // Lógica de Popover de Filtros

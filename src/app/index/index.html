@@ -18,13 +18,13 @@
 </head>
 <body>
     <div class="app-shell">
-        <div class="header-bar">
-            <a class="link-button" href="/public/legacy/index-legacy.html">Home legada</a>
-            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema">
-                <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-                <span class="sr-only" data-theme-label>Usar tema escuro</span>
-            </button>
-        </div>
+        <div data-global-header></div>
+
+        <script type="module">
+            import { loadGlobalHeader } from '/src/core/header/loader.js';
+
+            loadGlobalHeader();
+        </script>
 
         <header class="hero">
             <div class="status-chip" aria-label="novo hub de MiniApps">
