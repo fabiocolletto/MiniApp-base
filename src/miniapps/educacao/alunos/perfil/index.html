@@ -301,6 +301,7 @@
 
   <script type="module">
     import { activateBackup, getBackupConfig } from '../../../core/backup/index.js';
+    import { getUserData, saveUserData } from '../../../core/header/data-service.js';
     
     // ============================
     // Lógica do Toast de Sincronização (NOVO)
@@ -436,10 +437,10 @@
       if (fullNameInput) fullNameInput.focus();
     }
 
-    function hydrateFormFromStorage() {
-      try {
-        const stored = localStorage.getItem(FORM_STORAGE_KEY);
-        if (!stored) return;
+      function hydrateFormFromStorage() {
+        try {
+          const stored = localStorage.getItem(FORM_STORAGE_KEY);
+          if (!stored) return;
 
         const data = JSON.parse(stored);
         const hasData = Boolean(data.full_name || data.phone || data.email);
@@ -454,22 +455,54 @@
       } catch (error) {
         console.error('Não foi possível carregar os dados locais do perfil.', error);
         setSaveFeedback('Falha ao carregar os dados salvos localmente.', 'error');
+        }
       }
-    }
 
-    function persistFormLocally() {
-      const payload = getFormData();
-      try {
-        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
-        setSaveFeedback('Dados salvos no dispositivo.', 'success');
-        showSaveBadge('Dados salvos no dispositivo.');
-        showSavedCard(payload);
-      } catch (error) {
-        console.error('Não foi possível salvar os dados do perfil.', error);
-        setSaveFeedback('Erro ao salvar os dados localmente.', 'error');
+      function applyUserDataToForm(data) {
+        if (!data) return;
+        if (fullNameInput && !fullNameInput.value && data.name) fullNameInput.value = data.name;
+        if (phoneInput && !phoneInput.value && data.phone) phoneInput.value = applyPhoneMask(data.phone);
+        if (emailInput && !emailInput.value && data.email) emailInput.value = data.email;
       }
-      return payload;
-    }
+
+      async function hydrateFromUserData() {
+        try {
+          const userData = await getUserData();
+          const hasData = Boolean(userData.name || userData.phone || userData.email);
+          if (!hasData) return;
+
+          applyUserDataToForm(userData);
+
+          if (!localStorage.getItem(FORM_STORAGE_KEY)) {
+            setSaveFeedback('Dados carregados do painel do usuário.', 'success');
+          }
+        } catch (error) {
+          console.error('Não foi possível aplicar os dados do usuário.', error);
+        }
+      }
+
+      function persistFormLocally() {
+        const payload = getFormData();
+        try {
+          localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
+          setSaveFeedback('Dados salvos no dispositivo.', 'success');
+          showSaveBadge('Dados salvos no dispositivo.');
+          showSavedCard(payload);
+        } catch (error) {
+          console.error('Não foi possível salvar os dados do perfil.', error);
+          setSaveFeedback('Erro ao salvar os dados localmente.', 'error');
+        }
+
+        saveUserData({
+          name: payload.full_name,
+          phone: payload.phone,
+          email: payload.email,
+          updated: new Date().toLocaleString(),
+        }).catch((error) => {
+          console.error('Não foi possível salvar os dados do usuário.', error);
+        });
+        return payload;
+      }
 
     // ============================
     // Lógica de Botões (Fluxo real de backup)
@@ -555,10 +588,11 @@
       }
     }
 
-    hydrateFormFromStorage();
+      hydrateFormFromStorage();
+      hydrateFromUserData();
 
-    if (profileForm) {
-      profileForm.addEventListener('submit', (event) => {
+      if (profileForm) {
+        profileForm.addEventListener('submit', (event) => {
         event.preventDefault();
         persistFormLocally();
       });
