@@ -3,6 +3,8 @@ const DEFAULT_OPTIONS = {
   sourcePath: "/src/core/header/global-header.html",
 };
 
+const LOAD_CACHE = new Map();
+
 function resolveSourcePath(pathname) {
   if (!pathname) return DEFAULT_OPTIONS.sourcePath;
 
@@ -89,23 +91,36 @@ export async function loadGlobalHeader(options = {}) {
 
   if (!target) return null;
 
-  const response = await fetch(resolvedSourcePath);
-
-  if (!response.ok) {
-    throw new Error(`Falha ao carregar header global: ${response.status}`);
+  const cacheKey = `${resolvedSourcePath}::${containerSelector}`;
+  if (LOAD_CACHE.has(cacheKey)) {
+    return LOAD_CACHE.get(cacheKey);
   }
 
-  const html = await response.text();
-  const parsed = new DOMParser().parseFromString(html, "text/html");
+  const loadPromise = (async () => {
+    const response = await fetch(resolvedSourcePath);
 
-  const headAssets = parsed.head.querySelectorAll("link[rel], script[src]");
-  const assetPromises = Array.from(headAssets, (node) => ensureHeadAsset(node));
+    if (!response.ok) {
+      throw new Error(`Falha ao carregar header global: ${response.status}`);
+    }
 
-  const { fragment, inlineScripts } = extractBodyContent(parsed);
-  target.replaceChildren(fragment);
+    const html = await response.text();
+    const parsed = new DOMParser().parseFromString(html, "text/html");
 
-  await Promise.all(assetPromises);
-  executeInlineScripts(target, inlineScripts);
+    const headAssets = parsed.head.querySelectorAll("link[rel], script[src]");
+    const assetPromises = Array.from(headAssets, (node) => ensureHeadAsset(node));
 
-  return target;
+    const { fragment, inlineScripts } = extractBodyContent(parsed);
+    target.replaceChildren(fragment);
+
+    await Promise.all(assetPromises);
+    executeInlineScripts(target, inlineScripts);
+
+    return target;
+  })();
+
+  LOAD_CACHE.set(cacheKey, loadPromise);
+  loadPromise.catch(() => {
+    LOAD_CACHE.delete(cacheKey);
+  });
+  return loadPromise;
 }
