@@ -41,9 +41,10 @@
 <div id="status-bar" class="mt-6 pt-3 border-t border-white/10 text-xs opacity-80 text-center">Nenhum backup realizado</div>
 </div></div>
 
-<script>
+<script type="module">
+import { clearUserData, getUserData, saveUserData } from "/src/core/header/data-service.js";
+
 (function(){
-const DataService={async get(){return await localforage.getItem('user-data')||{};},async save(d){await localforage.setItem('user-data',d);},async clear(){await localforage.removeItem('user-data');}};
 
 const ThemeService={
   storageKey:'theme',
@@ -94,15 +95,15 @@ phoneInput.oninput=()=>{phoneInput.value=maskPhone(phoneInput.value);};
 function validateName(n){return n.trim().split(' ').length>=2;}
 function validateEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}function validatePhone(p){return p.replace(/\D/g,'').length>=10;}
 
-async function saveLocal(){const n=nameInput.value.trim(),p=phoneInput.value.trim(),e=emailInput.value.trim();let error=!validateName(n)?'Nome incompleto — informe nome e sobrenome.':!validatePhone(p)?'Telefone incompleto — revise o número.':!validateEmail(e)?'E-mail inválido — revise o endereço.':'';statusBar.classList.remove('text-warn');if(error){statusBar.textContent=error;statusBar.classList.add('text-warn');return;}const updated={name:n,phone:p,email:e,updated:new Date().toLocaleString()};await DataService.save(updated);renderUser(updated);statusBar.textContent=`Último salvamento: ${updated.updated}`;}
+async function saveLocal(){const n=nameInput.value.trim(),p=phoneInput.value.trim(),e=emailInput.value.trim();let error=!validateName(n)?'Nome incompleto — informe nome e sobrenome.':!validatePhone(p)?'Telefone incompleto — revise o número.':!validateEmail(e)?'E-mail inválido — revise o endereço.':'';statusBar.classList.remove('text-warn');if(error){statusBar.textContent=error;statusBar.classList.add('text-warn');return;}const updated={name:n,phone:p,email:e,updated:new Date().toLocaleString()};await saveUserData(updated);renderUser(updated);statusBar.textContent=`Último salvamento: ${updated.updated}`;}
 
 nameInput.onblur=saveLocal;phoneInput.onblur=saveLocal;emailInput.onblur=saveLocal;
 
 userEditIcon.onclick=()=>{isEditing=!isEditing;if(isEditing){userForm.classList.remove('hidden');userData.classList.add('hidden');}else{userForm.classList.add('hidden');userData.classList.remove('hidden');}};
 
-document.getElementById('delete-data').onclick=async()=>{await DataService.clear();nameInput.value='';phoneInput.value='';emailInput.value='';userData.innerHTML='';statusBar.textContent='Dados excluídos';};
+document.getElementById('delete-data').onclick=async()=>{await clearUserData();nameInput.value='';phoneInput.value='';emailInput.value='';userData.innerHTML='';statusBar.textContent='Dados excluídos';};
 
-DataService.get().then(u=>{if(!u)return;nameInput.value=u.name||'';phoneInput.value=maskPhone(u.phone||'');emailInput.value=u.email||'';renderUser(u);statusBar.textContent=`Restaurado (última atualização: ${u.updated||'--'})`;});
+getUserData().then(u=>{if(!u)return;nameInput.value=u.name||'';phoneInput.value=maskPhone(u.phone||'');emailInput.value=u.email||'';renderUser(u);statusBar.textContent=`Restaurado (última atualização: ${u.updated||'--'})`;});
 })();
 </script>
 </body>
