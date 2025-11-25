@@ -181,7 +181,7 @@
       }
 
       function getInitialTheme() {
-        const saved = localStorage.getItem('miniapp-theme');
+        const saved = localStorage.getItem('theme');
         if (saved === 'light' || saved === 'dark') return saved;
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
@@ -190,7 +190,7 @@
       apply(theme, { silent: true });
       toggleBtn.addEventListener('click', () => {
         theme = theme === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('miniapp-theme', theme);
+        localStorage.setItem('theme', theme);
         apply(theme);
       });
     })();

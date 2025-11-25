@@ -130,58 +130,6 @@
     </div>
   </div>
 
-  <script>
-    // ============================
-    // Tema (mesmo padrão aprovado)
-    // ============================
-    (function () {
-      const html = document.documentElement;
-      const toggleBtn = document.querySelector('[data-theme-toggle]');
-      const icon = document.querySelector('[data-theme-icon]');
-      const srLabel = document.querySelector('[data-theme-label]');
-      const toast = document.getElementById('theme-toast');
-      const toastIcon = document.getElementById('theme-toast-icon');
-      const toastLabel = document.getElementById('theme-toast-label');
-      let toastTimer = null;
-
-      if (!toggleBtn) return;
-
-      function showToast(theme) {
-        if (!toast) return;
-        const isDark = theme === 'dark';
-        toastIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
-        toastLabel.textContent = isDark ? 'Tema escuro' : 'Tema claro';
-        toast.classList.remove('opacity-0', 'translate-y-2');
-        toast.classList.add('opacity-100', 'translate-y-0');
-        if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-2');
-          toast.classList.remove('opacity-100', 'translate-y-0');
-        }, 1800);
-      }
-
-      function apply(theme, opts = { silent: false }) {
-        html.setAttribute('data-theme', theme);
-        const isDark = theme === 'dark';
-        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
-        srLabel.textContent = isDark ? 'Usar tema claro' : 'Usar tema escuro';
-        if (!opts.silent) showToast(theme);
-      }
-
-      function getInitialTheme() {
-        const saved = localStorage.getItem('miniapp-theme');
-        if (saved === 'light' || saved === 'dark') return saved;
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-
-      let theme = getInitialTheme();
-      apply(theme, { silent: true });
-      toggleBtn.addEventListener('click', () => {
-        theme = theme === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('miniapp-theme', theme);
-        apply(theme);
-      });
-    })();
-  </script>
+  <script src="/theme.js"></script>
 </body>
 </html>
