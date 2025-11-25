@@ -1,7 +1,17 @@
 const DEFAULT_OPTIONS = {
   containerSelector: "[data-global-header]",
-  sourcePath: "src/core/header/global-header.html",
+  sourcePath: "/src/core/header/global-header.html",
 };
+
+function resolveSourcePath(pathname) {
+  if (!pathname) return DEFAULT_OPTIONS.sourcePath;
+
+  if (/^https?:\/\//.test(pathname) || pathname.startsWith("/")) {
+    return pathname;
+  }
+
+  return `/${pathname.replace(/^\/+/, "")}`;
+}
 
 function cloneAttributes(from, to) {
   Array.from(from.attributes).forEach((attr) => {
@@ -74,11 +84,12 @@ function executeInlineScripts(target, scripts) {
 
 export async function loadGlobalHeader(options = {}) {
   const { containerSelector, sourcePath } = { ...DEFAULT_OPTIONS, ...options };
+  const resolvedSourcePath = resolveSourcePath(sourcePath);
   const target = document.querySelector(containerSelector);
 
   if (!target) return null;
 
-  const response = await fetch(sourcePath);
+  const response = await fetch(resolvedSourcePath);
 
   if (!response.ok) {
     throw new Error(`Falha ao carregar header global: ${response.status}`);
