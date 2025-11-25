@@ -9,6 +9,7 @@
 - feat(core/header): helper centralizado de dados do usuário e autofill no perfil do aluno
 - feat(core/header): header unificado com estado compartilhado entre rotas
 - fix(core/header): carregamento absoluto do header para manter o localforage e dados em todas as telas
+- fix(core/header): cache de carregamento para evitar assets duplicados e reforço de acessibilidade/foco no painel do usuário
 - docs(painel aluno): diretrizes de rotas, cartões clicáveis, ocultação de botões ao rolar, padrões de tema e checklist visual
 - chore: armazenamento local compartilhado validado manualmente no smoke-test
 - chore: padronização dos HTMLs com placeholder de header global e remoção de barras locais

@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root{color-scheme:light dark;--page-bg:0 0 0;--page-bg-alpha:.92;--page-fg:248 250 252;}html[data-theme="light"]{--page-bg:248 250 252;--page-bg-alpha:.96;--page-fg:15 23 42;}.text-warn{color:#fbbf24;}
+:root{color-scheme:light dark;--page-bg:0 0 0;--page-bg-alpha:.92;--page-fg:248 250 252;--focus-ring:#38bdf8;}html[data-theme="light"]{--page-bg:248 250 252;--page-bg-alpha:.96;--page-fg:15 23 42;}button:focus-visible,a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:3px;}.text-warn{color:#fbbf24;}#user-container{width:min(480px,calc(100% - 32px));}
 </style>
 </head>
 <body class="min-h-screen font-inter text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))]">
@@ -45,6 +45,8 @@
 import { clearUserData, getUserData, saveUserData } from "/src/core/header/data-service.js";
 
 (function(){
+if (window.__GLOBAL_HEADER_READY__) return;
+window.__GLOBAL_HEADER_READY__ = true;
 
 const ThemeService={
   storageKey:'theme',
@@ -80,9 +82,12 @@ document.querySelectorAll('[data-theme-toggle]').forEach((btn)=>{btn.onclick=()=
 
 const userBtn=document.getElementById('user-btn'),userPanel=document.getElementById('user-panel'),userClose=document.getElementById('user-close'),userEditIcon=document.getElementById('user-edit-icon');
 let isEditing=false;
-userBtn.onclick=()=>{userPanel.classList.remove('hidden');userPanel.classList.add('flex');};
-userClose.onclick=()=>{userPanel.classList.add('hidden');userPanel.classList.remove('flex');isEditing=false;userForm.classList.add('hidden');userData.classList.remove('hidden');};
-userPanel.onclick=e=>{if(e.target===userPanel)userClose.onclick();};
+const openPanel=()=>{userPanel.classList.remove('hidden');userPanel.classList.add('flex');userClose?.focus();};
+const closePanel=()=>{userPanel.classList.add('hidden');userPanel.classList.remove('flex');isEditing=false;userForm.classList.add('hidden');userData.classList.remove('hidden');};
+userBtn.onclick=openPanel;
+userClose.onclick=closePanel;
+userPanel.onclick=e=>{if(e.target===userPanel)closePanel();};
+document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&!userPanel.classList.contains('hidden')){closePanel();}});
 
 const nameInput=document.getElementById('user-name'),phoneInput=document.getElementById('user-phone'),emailInput=document.getElementById('user-email');
 const userForm=document.getElementById('user-form'),userData=document.getElementById('user-data'),statusBar=document.getElementById('status-bar');
@@ -95,15 +100,15 @@ phoneInput.oninput=()=>{phoneInput.value=maskPhone(phoneInput.value);};
 function validateName(n){return n.trim().split(' ').length>=2;}
 function validateEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}function validatePhone(p){return p.replace(/\D/g,'').length>=10;}
 
-async function saveLocal(){const n=nameInput.value.trim(),p=phoneInput.value.trim(),e=emailInput.value.trim();let error=!validateName(n)?'Nome incompleto — informe nome e sobrenome.':!validatePhone(p)?'Telefone incompleto — revise o número.':!validateEmail(e)?'E-mail inválido — revise o endereço.':'';statusBar.classList.remove('text-warn');if(error){statusBar.textContent=error;statusBar.classList.add('text-warn');return;}const updated={name:n,phone:p,email:e,updated:new Date().toLocaleString()};await saveUserData(updated);renderUser(updated);statusBar.textContent=`Último salvamento: ${updated.updated}`;}
+async function saveLocal(){const n=nameInput.value.trim(),p=phoneInput.value.trim(),e=emailInput.value.trim();let error=!validateName(n)?'Nome incompleto — informe nome e sobrenome.':!validatePhone(p)?'Telefone incompleto — revise o número.':!validateEmail(e)?'E-mail inválido — revise o endereço.':'';statusBar.classList.remove('text-warn');if(error){statusBar.textContent=error;statusBar.classList.add('text-warn');return;}const updated={name:n,phone:p,email:e,updated:new Date().toLocaleString()};await saveUserData(updated);renderUser(updated);statusBar.textContent=`Último salvamento: ${updated.updated}`;statusBar.classList.remove('text-warn');}
 
 nameInput.onblur=saveLocal;phoneInput.onblur=saveLocal;emailInput.onblur=saveLocal;
 
 userEditIcon.onclick=()=>{isEditing=!isEditing;if(isEditing){userForm.classList.remove('hidden');userData.classList.add('hidden');}else{userForm.classList.add('hidden');userData.classList.remove('hidden');}};
 
-document.getElementById('delete-data').onclick=async()=>{await clearUserData();nameInput.value='';phoneInput.value='';emailInput.value='';userData.innerHTML='';statusBar.textContent='Dados excluídos';};
+document.getElementById('delete-data').onclick=async()=>{await clearUserData();nameInput.value='';phoneInput.value='';emailInput.value='';userData.innerHTML='<div class="opacity-70">Nenhum dado salvo.</div>';statusBar.textContent='Dados excluídos deste dispositivo';statusBar.classList.remove('text-warn');};
 
-getUserData().then(u=>{if(!u)return;nameInput.value=u.name||'';phoneInput.value=maskPhone(u.phone||'');emailInput.value=u.email||'';renderUser(u);statusBar.textContent=`Restaurado (última atualização: ${u.updated||'--'})`;});
+(async()=>{try{const u=await getUserData();if(!u)return;nameInput.value=u.name||'';phoneInput.value=maskPhone(u.phone||'');emailInput.value=u.email||'';renderUser(u);statusBar.textContent=`Restaurado (última atualização: ${u.updated||'--'})`;statusBar.classList.remove('text-warn');}catch(error){statusBar.textContent='Não foi possível carregar os dados do usuário.';statusBar.classList.add('text-warn');console.error('Falha ao restaurar dados do usuário',error);}})();
 })();
 </script>
 </body>
