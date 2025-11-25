@@ -33,10 +33,17 @@
       --page-border: 15 23 42;
       --disabled-opacity: .85;
     }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
   </style>
 </head>
-<body data-header-buttons="theme,user,home">
+
+<body
+  data-header-buttons="theme,user,home"
+  class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors"
+>
+  <!-- HEADER GLOBAL -->
   <div data-global-header></div>
 
   <script type="module">
@@ -49,74 +56,116 @@
     <!-- HERO centralizado, sem borda -->
     <header class="mt-8 bg-transparent p-4 sm:p-6 shadow-none text-center">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Portfólio de Aplicações</h1>
-      <p class="mt-1 text-sm sm:text-base text-[rgb(var(--page-fg-muted))]">Selecione o sistema que deseja acessar:</p>
+      <p class="mt-1 text-sm sm:text-base text-[rgb(var(--page-fg-muted))]">
+        Selecione o sistema que deseja acessar:
+      </p>
     </header>
 
     <!-- GRID de MiniApps -->
-    <section class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5" aria-label="MiniApps disponíveis">
-
+    <section
+      class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+      aria-label="MiniApps disponíveis"
+    >
       <!-- EDUCAÇÃO (primeiro card) - ativo -->
-      <a href="./src/miniapps/educacao/index.html"
-         class="group aspect-square relative overflow-hidden rounded-3xl border border-pink-600/40 bg-pink-500/10 backdrop-blur-sm p-5 flex flex-col hover:-translate-y-0.5 hover:border-pink-500/60 hover:bg-pink-500/15 transition">
+      <a
+        href="./src/miniapps/educacao/index.html"
+        class="group aspect-square relative overflow-hidden rounded-3xl border border-pink-600/40 bg-pink-500/10 backdrop-blur-sm p-5 flex flex-col hover:-translate-y-0.5 hover:border-pink-500/60 hover:bg-pink-500/15 transition"
+      >
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span class="material-symbols-rounded leading-none text-pink-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">cast_for_education</span>
+          <span class="material-symbols-rounded leading-none text-pink-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">
+            cast_for_education
+          </span>
         </div>
         <div class="relative z-10 flex items-start justify-between">
           <h2 class="text-lg font-semibold leading-tight">Educação</h2>
-          <div class="inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-200">Ativo</div>
+          <div class="inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-200">
+            Ativo
+          </div>
         </div>
         <div class="mt-auto"></div>
-        <p class="relative z-10 text-center text-sm opacity-90">Provas, simulados, turmas, dashboards e jornadas guiadas.</p>
+        <p class="relative z-10 text-center text-sm opacity-90">
+          Provas, simulados, turmas, dashboards e jornadas guiadas.
+        </p>
       </a>
 
       <!-- FINANCEIRO (green) - em breve -->
-      <div role="article" aria-label="Financeiro em breve"
-           class="aspect-square relative overflow-hidden rounded-3xl border border-emerald-600/40 bg-emerald-500/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-emerald-500/60 hover:bg-emerald-500/15 transition">
+      <div
+        role="article"
+        aria-label="Financeiro em breve"
+        class="aspect-square relative overflow-hidden rounded-3xl border border-emerald-600/40 bg-emerald-500/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-emerald-500/60 hover:bg-emerald-500/15 transition"
+      >
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span class="material-symbols-rounded leading-none text-emerald-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">account_balance</span>
+          <span class="material-symbols-rounded leading-none text-emerald-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">
+            account_balance
+          </span>
         </div>
         <div class="relative z-10 flex items-start justify-between">
           <h2 class="text-lg font-semibold leading-tight">Financeiro</h2>
-          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">Em breve</div>
+          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">
+            Em breve
+          </div>
         </div>
         <div class="mt-auto"></div>
-        <p class="relative z-10 text-center text-sm opacity-90">Fluxo de caixa, cobranças e relatórios rápidos.</p>
+        <p class="relative z-10 text-center text-sm opacity-90">
+          Fluxo de caixa, cobranças e relatórios rápidos.
+        </p>
       </div>
 
       <!-- SAÚDE (blue) - em breve -->
-      <div role="article" aria-label="Saúde em breve"
-           class="aspect-square relative overflow-hidden rounded-3xl border border-sky-600/40 bg-sky-500/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-sky-500/60 hover:bg-sky-500/15 transition">
+      <div
+        role="article"
+        aria-label="Saúde em breve"
+        class="aspect-square relative overflow-hidden rounded-3xl border border-sky-600/40 bg-sky-500/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-sky-500/60 hover:bg-sky-500/15 transition"
+      >
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span class="material-symbols-rounded leading-none text-sky-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">health_and_safety</span>
+          <span class="material-symbols-rounded leading-none text-sky-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">
+            health_and_safety
+          </span>
         </div>
         <div class="relative z-10 flex items-start justify-between">
           <h2 class="text-lg font-semibold leading-tight">Saúde</h2>
-          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">Em breve</div>
+          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">
+            Em breve
+          </div>
         </div>
         <div class="mt-auto"></div>
-        <p class="relative z-10 text-center text-sm opacity-90">Registro clínico, vacinação e comunicação interna.</p>
+        <p class="relative z-10 text-center text-sm opacity-90">
+          Registro clínico, vacinação e comunicação interna.
+        </p>
       </div>
 
       <!-- AGENDA (amber/orange) - em breve -->
-      <div role="article" aria-label="Agenda em breve"
-           class="aspect-square relative overflow-hidden rounded-3xl border border-amber-600/40 bg-amber-400/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-amber-500/60 hover:bg-amber-400/15 transition">
+      <div
+        role="article"
+        aria-label="Agenda em breve"
+        class="aspect-square relative overflow-hidden rounded-3xl border border-amber-600/40 bg-amber-400/10 backdrop-blur-sm p-5 flex flex-col opacity-[var(--disabled-opacity)] hover:border-amber-500/60 hover:bg-amber-400/15 transition"
+      >
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span class="material-symbols-rounded leading-none text-amber-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">calendar_month</span>
+          <span class="material-symbols-rounded leading-none text-amber-500/30 text-[7rem] sm:text-[8rem] md:text-[9rem]">
+            calendar_month
+          </span>
         </div>
         <div class="relative z-10 flex items-start justify-between">
           <h2 class="text-lg font-semibold leading-tight">Agenda</h2>
-          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">Em breve</div>
+          <div class="inline-flex rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold">
+            Em breve
+          </div>
         </div>
         <div class="mt-auto"></div>
-        <p class="relative z-10 text-center text-sm opacity-90">Calendários, eventos e lembretes em tempo real.</p>
+        <p class="relative z-10 text-center text-sm opacity-90">
+          Calendários, eventos e lembretes em tempo real.
+        </p>
       </div>
-
     </section>
-
   </main>
 
-  <!-- Toast de tema -->
-  <div id="theme-toast" class="fixed bottom-4 right-4 z-[60] pointer-events-none select-none opacity-0 translate-y-2 transition-all duration-300" role="status" aria-live="polite">
+  <!-- Toast de tema (pode ser usado pelo theme.js) -->
+  <div
+    id="theme-toast"
+    class="fixed bottom-4 right-4 z-[60] pointer-events-none select-none opacity-0 translate-y-2 transition-all duration-300"
+    role="status"
+    aria-live="polite"
+  >
     <div class="flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.18)] bg-[rgb(var(--page-bg)/0.9)] px-3 py-1.5 text-xs font-semibold shadow-lg">
       <span id="theme-toast-icon" class="material-symbols-rounded text-base">dark_mode</span>
       <span id="theme-toast-label">Tema escuro</span>
