@@ -6,6 +6,7 @@
 - feat(backup): ativação Drive/OneDrive no perfil do aluno
 - fix(backup): inicialização resiliente de OAuth e pendências por provedor
 - fix(perfil aluno): persistência local dos dados e compatibilidade do painel com alternância de tema
+- feat(core/header): helper centralizado de dados do usuário e autofill no perfil do aluno
 - docs(painel aluno): diretrizes de rotas, cartões clicáveis, ocultação de botões ao rolar, padrões de tema e checklist visual
 - chore: padronização dos HTMLs com placeholder de header global e remoção de barras locais
 
