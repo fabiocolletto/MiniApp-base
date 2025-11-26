@@ -218,6 +218,55 @@
     </div>
   </div>
 
+  <!-- MODAL DE BACKUP (IFRAME ISOLADO) -->
+  <div
+    id="backup-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="backup-title"
+    aria-hidden="true"
+  >
+    <div class="w-full max-w-5xl overflow-hidden rounded-3xl border border-[rgb(var(--page-border)/0.24)] bg-[rgb(var(--page-bg)/0.96)] shadow-2xl">
+      <div class="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div class="flex items-start gap-2">
+          <span class="material-symbols-rounded text-xl text-emerald-300">
+            cloud_backup
+          </span>
+          <div>
+            <h2 id="backup-title" class="text-base sm:text-lg font-semibold">
+              Backup Google
+            </h2>
+            <p class="text-xs sm:text-sm text-[rgb(var(--page-fg-muted))]">
+              Interface carregada em iframe para manter estilos e exigir cliques do usuário.
+            </p>
+          </div>
+        </div>
+        <button
+          id="backup-close"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/15 backdrop-blur-sm text-sm hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-white/40"
+          aria-label="Fechar painel de backup"
+        >
+          <span class="material-symbols-rounded text-base">
+            close
+          </span>
+        </button>
+      </div>
+      <div class="relative bg-black/40">
+        <iframe
+          id="backup-iframe"
+          title="Backup Google"
+          class="block h-[70vh] w-full bg-white"
+          src=""
+          loading="lazy"
+          sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
   <!-- CONTEÚDO PRINCIPAL -->
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-24">
     <!-- HERO -->
@@ -401,14 +450,56 @@
 
       function initBackupButton() {
         var backupBtn = document.getElementById("backup-btn");
-        if (!backupBtn) return;
+        var backupModal = document.getElementById("backup-modal");
+        var backupIframe = document.getElementById("backup-iframe");
+        var backupClose = document.getElementById("backup-close");
+
+        if (!backupBtn || !backupModal || !backupIframe || !backupClose) return;
 
         var backupUrl = "src/pages/backup-google.html";
+        var lastFocused = null;
+
+        function openBackupModal() {
+          lastFocused = document.activeElement;
+
+          if (!backupIframe.getAttribute("src")) {
+            backupIframe.setAttribute("src", backupUrl);
+          }
+
+          backupModal.classList.remove("hidden");
+          backupModal.setAttribute("aria-hidden", "false");
+          document.body.classList.add("overflow-hidden");
+
+          if (backupClose.focus) {
+            backupClose.focus();
+          }
+        }
+
+        function closeBackupModal() {
+          backupModal.classList.add("hidden");
+          backupModal.setAttribute("aria-hidden", "true");
+          document.body.classList.remove("overflow-hidden");
+
+          if (lastFocused && lastFocused.focus) {
+            lastFocused.focus();
+          }
+        }
 
         backupBtn.addEventListener("click", function () {
-          var win = window.open(backupUrl, "_blank", "noopener,noreferrer");
-          if (win) {
-            win.opener = null;
+          openBackupModal();
+        });
+
+        backupClose.addEventListener("click", closeBackupModal);
+
+        backupModal.addEventListener("click", function (event) {
+          if (event.target === backupModal) {
+            closeBackupModal();
+          }
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && !backupModal.classList.contains("hidden")) {
+            closeBackupModal();
           }
         });
       }
