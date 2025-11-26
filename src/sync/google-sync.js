@@ -1,20 +1,19 @@
 // src/sync/google-sync.js
 // Lógica de comunicação com a API do Google Drive
 
-// CORREÇÃO DE IMPORTAÇÃO: Usar CDN absoluto para garantir que funcione em qualquer ambiente
-import { getGoogleToken } from "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/auth/google-auth.js";
+// Importa o token de autenticação (src/auth/google-auth.js)
+import { getGoogleToken } from "../auth/google-auth.js"; 
 
 const BACKUP_FOLDER = "appdata"; // Nome da pasta/app no Drive
 const BACKUP_MIME_TYPE = "application/json";
 
 /**
  * Retorna o ID do arquivo de backup se ele existir, ou null.
- * @param {string} fileName - Nome do arquivo de backup (ex: 'backup.json').
  */
 async function findBackupFile(fileName) {
   const token = getGoogleToken();
   if (!token) throw new Error("Não autenticado com o Google.");
-  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
+
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false and 'root' in parents&fields=files(id, modifiedTime, size)`,
     {
@@ -25,7 +24,7 @@ async function findBackupFile(fileName) {
   );
 
   if (!response.ok) {
-    throw new Error("Erro ao buscar arquivo no Drive.");
+    throw new Error("Erro ao buscar arquivo no Drive: " + response.statusText);
   }
 
   const result = await response.json();
@@ -33,16 +32,14 @@ async function findBackupFile(fileName) {
 }
 
 /**
- * Salva (ou atualiza) os dados no Google Drive.
- * @param {object} appData - Os dados a serem salvos (JSON).
- * @param {string} fileName - Nome do arquivo (ex: 'backup.json').
+ * Salva (ou atualiza) os dados no Google Drive usando multipart/related.
  */
 export async function syncUpload(appData, fileName) {
   const token = getGoogleToken();
   if (!token) throw new Error("Não autenticado com o Google.");
 
   const fileInfo = await findBackupFile(fileName);
-  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
+
   const metadata = {
     name: fileName,
     mimeType: BACKUP_MIME_TYPE,
@@ -62,11 +59,9 @@ export async function syncUpload(appData, fileName) {
   let method;
 
   if (fileInfo) {
-    // Atualiza arquivo existente
     url = `https://www.googleapis.com/upload/drive/v3/files/${fileInfo.id}?uploadType=multipart`;
     method = "PATCH";
   } else {
-    // Cria novo arquivo
     url = `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
     method = "POST";
   }
@@ -80,7 +75,7 @@ export async function syncUpload(appData, fileName) {
   });
 
   if (!response.ok) {
-    throw new Error("Falha ao salvar o arquivo no Google Drive.");
+    throw new Error("Falha ao salvar o arquivo no Google Drive: " + response.statusText);
   }
 
   return await response.json();
@@ -88,8 +83,6 @@ export async function syncUpload(appData, fileName) {
 
 /**
  * Baixa os dados do Google Drive.
- * @param {string} fileName - Nome do arquivo (ex: 'backup.json').
- * @returns {object | null} O objeto de dados restaurado ou null se não houver backup.
  */
 export async function syncDownload(fileName) {
   const token = getGoogleToken();
@@ -97,7 +90,7 @@ export async function syncDownload(fileName) {
 
   const fileInfo = await findBackupFile(fileName);
   if (!fileInfo) return null;
-  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
+
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileInfo.id}?alt=media`,
     {
@@ -108,7 +101,7 @@ export async function syncDownload(fileName) {
   );
 
   if (!response.ok) {
-    throw new Error("Erro ao baixar o conteúdo do backup.");
+    throw new Error("Erro ao baixar o conteúdo do backup: " + response.statusText);
   }
 
   return await response.json();
