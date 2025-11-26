@@ -26,6 +26,11 @@ Hub central para MiniApps com entrega estática (GitHub Pages). A home `index.ht
 3. Para a versão legada, abra `/public/legacy/index-legacy.html`.
 4. O MiniApp Educação segue disponível em `/public/miniapps/educacao/`.
 
+## Backup e sincronização
+- No index, use o botão de **backup** no header para abrir a janela dedicada ao Drive/OneDrive.
+- Na janela, escolha o provedor, conclua o OAuth na nova aba e acompanhe o status antes de fechar.
+- Configure os client IDs no runtime expondo `window.GOOGLE_CLIENT_ID` e `window.MS_CLIENT_ID` antes de carregar o index/fluxo de backup.
+
 ## Diretrizes do painel do aluno
 - **Subpáginas e rotas**: o painel deve expor as entradas `/painel-aluno`, `/painel-aluno/aulas`, `/painel-aluno/atividades`, `/painel-aluno/notas` e `/painel-aluno/configuracoes`, mantendo o estado de navegação consistente entre elas.
 - **Cards 100% clicáveis**: todo card que representa uma aula, atividade ou atalho de configuração deve ter a área completa clicável e levar à rota correspondente.

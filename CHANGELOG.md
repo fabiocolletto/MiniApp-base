@@ -3,6 +3,8 @@
 ## [Unreleased]
 - Estrutura base do MiniApp-Base com Hubs e MiniApps plugáveis.
 - Pipeline GitHub Pages com `index.html` na raiz.
+- feat(index): botão de backup exposto no header do novo index
+- feat(backup): página `src/pages/backup-google.html` disponível para o fluxo Google
 - feat(backup): ativação Drive/OneDrive no perfil do aluno
 - fix(backup): inicialização resiliente de OAuth e pendências por provedor
 - fix(perfil aluno): persistência local dos dados e compatibilidade do painel com alternância de tema
