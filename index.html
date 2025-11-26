@@ -63,6 +63,21 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Botão de backup -->
+        <button
+          id="backup-btn"
+          type="button"
+          class="inline-flex h-9 items-center gap-2 rounded-full border border-white/15 bg-black/10 px-3 backdrop-blur-sm text-xs font-medium hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-white/40"
+          aria-label="Abrir painel de backup em nova janela"
+        >
+          <span class="material-symbols-rounded text-base">
+            cloud_backup
+          </span>
+          <span class="hidden sm:inline">
+            Backup
+          </span>
+        </button>
+
         <!-- Botão de tema -->
         <button
           id="theme-toggle"
@@ -384,6 +399,20 @@
         }
       }
 
+      function initBackupButton() {
+        var backupBtn = document.getElementById("backup-btn");
+        if (!backupBtn) return;
+
+        var backupUrl = "src/pages/backup-google.html";
+
+        backupBtn.addEventListener("click", function () {
+          var win = window.open(backupUrl, "_blank", "noopener,noreferrer");
+          if (win) {
+            win.opener = null;
+          }
+        });
+      }
+
       function initTheme() {
         var stored = null;
         try {
@@ -637,6 +666,7 @@
         if (themeToggle) {
           themeToggle.addEventListener("click", toggleTheme);
         }
+        initBackupButton();
         initUserPanel();
       });
     })();
