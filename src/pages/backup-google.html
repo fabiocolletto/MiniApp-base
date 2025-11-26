@@ -143,13 +143,14 @@
       setButtonsDisabled(true);
 
       try {
-        await loginWithGoogle(); 
+        await loginWithGoogle();
         setSyncUI(true);
         updateLog("Sucesso: Usuário autenticado e token obtido.");
       } catch (error) {
         setSyncUI(false);
-        updateStatus("Falha na conexão. Veja o log.", true);
-        updateLog("ERRO de Login: " + error.message);
+        const detail = error?.message || "Falha na conexão.";
+        updateStatus("Falha na conexão: " + detail, true);
+        updateLog("ERRO de Login: " + detail);
       } finally {
         setButtonsDisabled(false);
       }
