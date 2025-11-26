@@ -63,23 +63,66 @@ export async function initGoogleAuth() {
   });
 }
 
+function formatGoogleError(error) {
+  const normalized = error?.error || error?.type || error?.message;
+
+  switch (normalized) {
+    case "popup_closed":
+      return "Pop-up fechado ou bloqueado antes da autenticação.";
+    case "access_denied":
+      return "Permissão negada pelo usuário.";
+    case "invalid_request":
+      return "Solicitação inválida. Verifique o Client ID configurado.";
+    default:
+      return normalized || "Falha ao obter token do Google.";
+  }
+}
+
 /*
  * Realiza login e retorna dados básicos do usuário + token
  */
 export async function loginWithGoogle() {
-  return new Promise(async (resolve, reject) => {
+  const client = await initGoogleAuth();
+
+  return new Promise((resolve, reject) => {
+    let timeoutId;
+
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      client.callback = () => {};
+      client.error_callback = undefined;
+    };
+
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(
+        new Error(
+          "Tempo limite ao obter token do Google. Verifique bloqueio de pop-up ou permissões.",
+        ),
+      );
+    }, 18000);
+
+    client.callback = (response) => {
+      accessToken = response.access_token;
+
+      if (accessToken) {
+        cleanup();
+        resolve({ accessToken });
+      } else {
+        cleanup();
+        reject(new Error("Token não retornado pelo Google."));
+      }
+    };
+
+    client.error_callback = (error) => {
+      cleanup();
+      reject(new Error(formatGoogleError(error)));
+    };
+
     try {
-      const client = await initGoogleAuth();
-
       client.requestAccessToken();
-
-      const interval = setInterval(() => {
-        if (accessToken) {
-          clearInterval(interval);
-          resolve({ accessToken });
-        }
-      }, 200);
     } catch (err) {
+      cleanup();
       reject(err);
     }
   });
