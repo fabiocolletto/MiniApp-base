@@ -13,7 +13,7 @@
 <body class="bg-slate-900 text-slate-100 font-inter">
 
   <header class="fixed top-0 left-0 right-0 bg-slate-900/80 backdrop-blur border-b border-slate-700/40 flex items-center justify-between p-4">
-    <a href="/miniapp/index.html" class="text-slate-200 flex items-center gap-2">
+    <a href="../../index.html" class="text-slate-200 flex items-center gap-2">
       <span class="material-symbols-rounded">arrow_back</span>
       Voltar
     </a>
@@ -30,13 +30,13 @@
       </h2>
       <p class="text-sm text-slate-300">Gerencie seu backup na sua conta Google.</p>
 
-      <button id="btn-login" class="mt-4 w-full rounded-xl bg-blue-500 px-4 py-2 text-sm font-medium">Conectar com Google</button>
+      <button id="btn-login" type="button" class="mt-4 w-full rounded-xl bg-blue-500 px-4 py-2 text-sm font-medium">Conectar com Google</button>
 
-      <button id="btn-sync-upload" class="mt-2 w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium">
+      <button id="btn-sync-upload" type="button" class="mt-2 w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium">
         Sincronizar Agora
       </button>
 
-      <button id="btn-sync-download" class="mt-2 w-full rounded-xl bg-yellow-500 px-4 py-2 text-sm font-medium text-slate-900">
+      <button id="btn-sync-download" type="button" class="mt-2 w-full rounded-xl bg-yellow-500 px-4 py-2 text-sm font-medium text-slate-900">
         Baixar Backup
       </button>
     </section>
@@ -77,26 +77,38 @@
     import { syncUpload, syncDownload } from "../sync/google-sync.js";
 
     const statusEl = document.getElementById("status");
+    const loginBtn = document.getElementById("btn-login");
+    const uploadBtn = document.getElementById("btn-sync-upload");
+    const downloadBtn = document.getElementById("btn-sync-download");
 
-    document.getElementById("btn-login").onclick = async () => {
-      statusEl.textContent = "Conectando ao Google...";
-      await loginWithGoogle();
-      statusEl.textContent = "Conectado.";
-    };
+    const handlersReady = [loginWithGoogle, syncUpload, syncDownload].every(
+      (fn) => typeof fn === "function"
+    );
 
-    document.getElementById("btn-sync-upload").onclick = async () => {
-      statusEl.textContent = "Enviando backup...";
-      const r = await syncUpload("Base", "backup.json");
-      statusEl.textContent = JSON.stringify(r, null, 2);
-    };
+    if (!handlersReady) {
+      statusEl.textContent = "Erro ao carregar ações de backup.";
+      loginBtn.disabled = uploadBtn.disabled = downloadBtn.disabled = true;
+    } else {
+      loginBtn.onclick = async () => {
+        statusEl.textContent = "Conectando ao Google...";
+        await loginWithGoogle();
+        statusEl.textContent = "Conectado.";
+      };
 
-    document.getElementById("btn-sync-download").onclick = async () => {
-      statusEl.textContent = "Baixando backup...";
-      const r = await syncDownload("Base", "backup.json");
-      statusEl.textContent = r
-        ? "Backup restaurado com sucesso."
-        : "Nenhum backup encontrado.";
-    };
+      uploadBtn.onclick = async () => {
+        statusEl.textContent = "Enviando backup...";
+        const r = await syncUpload("Base", "backup.json");
+        statusEl.textContent = JSON.stringify(r, null, 2);
+      };
+
+      downloadBtn.onclick = async () => {
+        statusEl.textContent = "Baixando backup...";
+        const r = await syncDownload("Base", "backup.json");
+        statusEl.textContent = r
+          ? "Backup restaurado com sucesso."
+          : "Nenhum backup encontrado.";
+      };
+    }
   </script>
 
 </body>
