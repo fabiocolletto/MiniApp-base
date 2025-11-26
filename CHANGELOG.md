@@ -17,6 +17,8 @@
 - docs(painel aluno): diretrizes de rotas, cartões clicáveis, ocultação de botões ao rolar, padrões de tema e checklist visual
 - chore: armazenamento local compartilhado validado manualmente no smoke-test
 - chore: padronização dos HTMLs com placeholder de header global e remoção de barras locais
+- fix(auth): validação explícita do Client ID do Google com erro orientativo no fluxo de login
+- docs(backup): instruções para injetar Client IDs de OAuth no ambiente de deploy
 
 ## [2024-06-07]
 - Ingestão do pacote `cards-2000` para alimentar o novo index dinâmico.

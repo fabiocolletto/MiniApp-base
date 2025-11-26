@@ -4,9 +4,10 @@
 // Não contém lógica de backup; apenas autenticação.
 
 /*
- * CONFIGURAÇÕES: Substituir pelo CLIENT_ID criado no Google Cloud
+ * CONFIGURAÇÕES: Fallback local apenas para desenvolvimento
  */
-export const GOOGLE_CLIENT_ID = "364285430958-pk1hg8j3ci2e1qf600landobp529bl1a.apps.googleusercontent.com";
+const DEV_FALLBACK_CLIENT_ID =
+  "364285430958-pk1hg8j3ci2e1qf600landobp529bl1a.apps.googleusercontent.com";
 
 /*
  * Estado interno simples
@@ -31,11 +32,30 @@ function loadGoogleScript() {
 /*
  * Inicializa o client de login
  */
+function getGoogleClientId() {
+  const runtimeClientId =
+    window.GOOGLE_CLIENT_ID || window.__BACKUP_OAUTH__?.googleClientId;
+
+  if (runtimeClientId) return runtimeClientId;
+
+  const isDevHost = ["localhost", "127.0.0.1"].includes(
+    window.location.hostname,
+  );
+
+  if (isDevHost && DEV_FALLBACK_CLIENT_ID) {
+    return DEV_FALLBACK_CLIENT_ID;
+  }
+
+  throw new Error(
+    "Client ID do Google não configurado. Injete window.GOOGLE_CLIENT_ID ou window.__BACKUP_OAUTH__.googleClientId antes de carregar a página.",
+  );
+}
+
 export async function initGoogleAuth() {
   await loadGoogleScript();
 
   return window.google.accounts.oauth2.initTokenClient({
-    client_id: GOOGLE_CLIENT_ID,
+    client_id: getGoogleClientId(),
     scope: "openid profile email https://www.googleapis.com/auth/drive.file",
     callback: (response) => {
       accessToken = response.access_token;

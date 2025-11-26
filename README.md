@@ -31,6 +31,18 @@ Hub central para MiniApps com entrega estática (GitHub Pages). A home `index.ht
 - Na janela, escolha o provedor, conclua o OAuth na nova aba e acompanhe o status antes de fechar.
 - Configure os client IDs no runtime expondo `window.GOOGLE_CLIENT_ID` e `window.MS_CLIENT_ID` antes de carregar o index/fluxo de backup.
 
+### Injetando CLIENT_ID no deploy
+- Injete as variáveis globais antes de carregar a página (ex.: snippet inline no HTML servido pelo ambiente de deploy):
+  ```html
+  <script>
+    window.GOOGLE_CLIENT_ID = "seu-client-id-google";
+    window.MS_CLIENT_ID = "seu-client-id-onedrive";
+    // Opcional: objeto agrupado para backups
+    window.__BACKUP_OAUTH__ = { googleClientId: window.GOOGLE_CLIENT_ID };
+  </script>
+  ```
+- Não comitar client IDs; use injeção no runtime ou secrets do pipeline para preencher o HTML entregue ao usuário.
+
 ## Diretrizes do painel do aluno
 - **Subpáginas e rotas**: o painel deve expor as entradas `/painel-aluno`, `/painel-aluno/aulas`, `/painel-aluno/atividades`, `/painel-aluno/notas` e `/painel-aluno/configuracoes`, mantendo o estado de navegação consistente entre elas.
 - **Cards 100% clicáveis**: todo card que representa uma aula, atividade ou atalho de configuração deve ter a área completa clicável e levar à rota correspondente.
