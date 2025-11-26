@@ -41,6 +41,9 @@ Este arquivo define **como o Codex deve operar neste repositório**:
 - Nunca commitar `.env`, tokens, chaves.
 - Variáveis sensíveis devem ir para secrets no pipeline ou placeholders.
 
+## Observações operacionais
+- Client IDs de backup (`window.GOOGLE_CLIENT_ID`, `window.MS_CLIENT_ID`) devem ser injetados apenas em tempo de execução (ex.: script inline configurado na plataforma de deploy) antes de carregar o index/páginas de backup.
+
 ## Fluxo de Backup — Google/OneDrive
 - Sempre usar OAuth disparado por interação do usuário (sem pré-autorização automática).
 - Tokens devem ser armazenados apenas em IndexedDB via `idb-keyval` e nunca em arquivos versionados.
