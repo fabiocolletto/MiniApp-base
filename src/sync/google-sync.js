@@ -1,7 +1,8 @@
 // src/sync/google-sync.js
 // Lógica de comunicação com a API do Google Drive
 
-import { getGoogleToken } from "../auth/google-auth.js";
+// CORREÇÃO DE IMPORTAÇÃO: Usar CDN absoluto para garantir que funcione em qualquer ambiente
+import { getGoogleToken } from "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/auth/google-auth.js";
 
 const BACKUP_FOLDER = "appdata"; // Nome da pasta/app no Drive
 const BACKUP_MIME_TYPE = "application/json";
@@ -13,7 +14,7 @@ const BACKUP_MIME_TYPE = "application/json";
 async function findBackupFile(fileName) {
   const token = getGoogleToken();
   if (!token) throw new Error("Não autenticado com o Google.");
-
+  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false and 'root' in parents&fields=files(id, modifiedTime, size)`,
     {
@@ -41,7 +42,7 @@ export async function syncUpload(appData, fileName) {
   if (!token) throw new Error("Não autenticado com o Google.");
 
   const fileInfo = await findBackupFile(fileName);
-
+  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
   const metadata = {
     name: fileName,
     mimeType: BACKUP_MIME_TYPE,
@@ -96,7 +97,7 @@ export async function syncDownload(fileName) {
 
   const fileInfo = await findBackupFile(fileName);
   if (!fileInfo) return null;
-
+  // ... (RESTO DA FUNÇÃO PERMANECE IGUAL)
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileInfo.id}?alt=media`,
     {
