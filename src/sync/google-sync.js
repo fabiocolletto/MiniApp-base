@@ -1,149 +1,114 @@
-/**
- * google-sync.js
- * Sincronização completa do MiniApp com Google Drive via Apps Script.
- */
+// src/sync/google-sync.js
+// Lógica de comunicação com a API do Google Drive
 
 import { getGoogleToken } from "../auth/google-auth.js";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcm49CbeSuT-f8r-RvzhntPz6RRVWz3l0sNv-e_mM4ADB_CQXRvsmyWSsdWGT8qCQ6jw/exec";
+const BACKUP_FOLDER = "appdata"; // Nome da pasta/app no Drive
+const BACKUP_MIME_TYPE = "application/json";
 
-// ======== UTIL ========
-function deviceId() {
-  return localStorage.getItem("device-id") ||
-    (() => {
-      const id = "dev-" + Math.random().toString(36).substring(2);
-      localStorage.setItem("device-id", id);
-      return id;
-    })();
-}
-
-// ======== CRIPTOGRAFIA ========
-async function encrypt(text, key) {
-  const enc = new TextEncoder().encode(text);
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    key,
-    "AES-GCM",
-    false,
-    ["encrypt"]
-  );
-
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    cryptoKey,
-    enc
-  );
-
-  return {
-    iv: Array.from(iv),
-    data: btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted))),
-  };
-}
-
-async function decrypt(obj, key) {
-  const iv = new Uint8Array(obj.iv);
-  const encryptedBytes = Uint8Array.from(atob(obj.data), c => c.charCodeAt(0));
-
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    key,
-    "AES-GCM",
-    false,
-    ["decrypt"]
-  );
-
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
-    cryptoKey,
-    encryptedBytes
-  );
-
-  return new TextDecoder().decode(decrypted);
-}
-
-// ======== GERAÇÃO DA CHAVE LOCAL ========
-function getLocalKey() {
-  let hex = localStorage.getItem("crypto-key");
-  if (!hex) {
-    const key = crypto.getRandomValues(new Uint8Array(32));
-    hex = Array.from(key).map(b => b.toString(16).padStart(2, "0")).join("");
-    localStorage.setItem("crypto-key", hex);
-  }
-  return new Uint8Array(
-    hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))
-  );
-}
-
-// ======== EXPORTAR ESTADO LOCAL ========
-async function readDexieState() {
-  return {
-    user: await window.db?.kv?.toArray?.() ?? [],
-    updatedAt: new Date().toISOString()
-  };
-}
-
-// ======== IMPORTAR ESTADO PARA DEXIE ========
-async function applyDexieState(state) {
-  if (!window.db) return;
-
-  await window.db.kv.clear();
-  for (const entry of state.user) {
-    await window.db.kv.put(entry);
-  }
-}
-
-// ======== UPLOAD ========
-export async function syncUpload(miniApp = "Base", fileName = "backup.json") {
+/**
+ * Retorna o ID do arquivo de backup se ele existir, ou null.
+ * @param {string} fileName - Nome do arquivo de backup (ex: 'backup.json').
+ */
+async function findBackupFile(fileName) {
   const token = getGoogleToken();
-  if (!token) throw new Error("Usuário não está logado no Google.");
+  if (!token) throw new Error("Não autenticado com o Google.");
 
-  const key = getLocalKey();
-  const state = await readDexieState();
-
-  const encrypted = await encrypt(JSON.stringify(state), key);
-
-  const res = await fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      miniApp,
-      fileName,
-      data: JSON.stringify(encrypted),
-      deviceId: deviceId()
-    })
-  });
-
-  return res.json();
-}
-
-// ======== DOWNLOAD ========
-export async function syncDownload(miniApp = "Base", fileName = "backup.json") {
-  const token = getGoogleToken();
-  if (!token) throw new Error("Usuário não está logado no Google.");
-
-  const url = `${SCRIPT_URL}?miniApp=${miniApp}&fileName=${fileName}`;
-
-  const res = await fetch(url, {
-    headers: {
-      "Authorization": `Bearer ${token}`
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false and 'root' in parents&fields=files(id, modifiedTime, size)`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
+  );
+
+  if (!response.ok) {
+    throw new Error("Erro ao buscar arquivo no Drive.");
+  }
+
+  const result = await response.json();
+  return result.files.length > 0 ? result.files[0] : null;
+}
+
+/**
+ * Salva (ou atualiza) os dados no Google Drive.
+ * @param {object} appData - Os dados a serem salvos (JSON).
+ * @param {string} fileName - Nome do arquivo (ex: 'backup.json').
+ */
+export async function syncUpload(appData, fileName) {
+  const token = getGoogleToken();
+  if (!token) throw new Error("Não autenticado com o Google.");
+
+  const fileInfo = await findBackupFile(fileName);
+
+  const metadata = {
+    name: fileName,
+    mimeType: BACKUP_MIME_TYPE,
+  };
+
+  const form = new FormData();
+  form.append(
+    "metadata",
+    new Blob([JSON.stringify(metadata)], { type: "application/json" })
+  );
+  form.append(
+    "file",
+    new Blob([JSON.stringify(appData)], { type: BACKUP_MIME_TYPE })
+  );
+
+  let url;
+  let method;
+
+  if (fileInfo) {
+    // Atualiza arquivo existente
+    url = `https://www.googleapis.com/upload/drive/v3/files/${fileInfo.id}?uploadType=multipart`;
+    method = "PATCH";
+  } else {
+    // Cria novo arquivo
+    url = `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+    method = "POST";
+  }
+
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: form,
   });
 
-  const encryptedString = await res.text();
-  if (!encryptedString || encryptedString === "null") return null;
+  if (!response.ok) {
+    throw new Error("Falha ao salvar o arquivo no Google Drive.");
+  }
 
-  const encryptedObj = JSON.parse(encryptedString);
-  const key = getLocalKey();
+  return await response.json();
+}
 
-  const jsonString = await decrypt(encryptedObj, key);
-  const state = JSON.parse(jsonString);
+/**
+ * Baixa os dados do Google Drive.
+ * @param {string} fileName - Nome do arquivo (ex: 'backup.json').
+ * @returns {object | null} O objeto de dados restaurado ou null se não houver backup.
+ */
+export async function syncDownload(fileName) {
+  const token = getGoogleToken();
+  if (!token) throw new Error("Não autenticado com o Google.");
 
-  await applyDexieState(state);
+  const fileInfo = await findBackupFile(fileName);
+  if (!fileInfo) return null;
 
-  return state;
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileInfo.id}?alt=media`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Erro ao baixar o conteúdo do backup.");
+  }
+
+  return await response.json();
 }
