@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educação — Professores — Turmas</title>
+
+  <!-- Google Fonts / Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tokens de tema (mesmo padrão) + ACCENT EMERALD (cor do card Turmas) -->
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: 0 0 0;
+      --page-bg-alpha: .92;
+      --page-fg: 248 250 252;
+      --page-fg-muted: 226 232 240;
+      --page-border: 255 255 255;
+      --disabled-opacity: .72;
+
+      /* Accent emerald (dark) */
+      --accent: 16 185 129;        /* emerald-500 */
+      --accent-weak: 16 185 129 / 0.12;
+      --accent-border: 16 185 129 / 0.45;
+      --accent-text: 236 253 245;  /* emerald-50 */
+    }
+    html[data-theme="light"] {
+      --page-bg: 248 250 252;
+      --page-bg-alpha: .96;
+      --page-fg: 15 23 42;
+      --page-fg-muted: 51 65 85;
+      --page-border: 15 23 42;
+      --disabled-opacity: .85;
+
+      /* Accent emerald (light) */
+      --accent: 5 150 105;         /* emerald-600 */
+      --accent-weak: 5 150 105 / 0.10;
+      --accent-border: 5 150 105 / 0.40;
+      --accent-text: 6 78 59;      /* emerald-900 */
+    }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen antialiased relative text-[rgb(var(--page-fg))] bg-[rgb(var(--page-bg)/var(--page-bg-alpha))] transition-colors">
+
+  <div data-global-header></div>
+
+  <script type="module">
+    import { loadGlobalHeader } from '/src/core/header/loader.js';
+
+    loadGlobalHeader();
+  </script>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20">
+
+    <!-- HERO -->
+    <header class="mt-8 rounded-3xl bg-transparent p-4 sm:p-6 shadow-none">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Gerenciar Turmas</h1>
+          <p class="mt-1 text-sm sm:text-base text-[rgb(var(--page-fg-muted))]">Crie turmas, defina horários e organize seus alunos.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnExport" class="inline-flex items-center gap-2 rounded-xl border border-[rgb(var(--page-border)/0.12)] px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition">
+            <span class="material-symbols-rounded text-base">download</span>
+            Exportar
+          </button>
+          <button id="btnAdd" class="inline-flex items-center gap-2 rounded-xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent-weak))] px-3 py-2 text-sm font-semibold text-[rgb(var(--accent-text))] hover:bg-[rgb(var(--accent)/0.18)] transition">
+            <span class="material-symbols-rounded text-base">add</span>
+            Nova turma
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Barra de busca + filtros -->
+    <section class="mt-4 flex flex-col sm:flex-row gap-2 sm:items-center">
+      <label class="relative flex-1">
+        <span class="sr-only">Buscar turma</span>
+        <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[rgb(var(--page-fg-muted))]">search</span>
+        <input id="searchInput" type="search" placeholder="Buscar por nome, série/ano ou disciplina" class="w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent pl-10 pr-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" />
+      </label>
+      <select id="periodFilter" class="rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+        <option value="">Todos os períodos</option>
+        <option value="manha">Manhã</option>
+        <option value="tarde">Tarde</option>
+        <option value="noite">Noite</option>
+      </select>
+      <select id="statusFilter" class="rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+        <option value="">Todos os status</option>
+        <option value="ativa">Ativa</option>
+        <option value="inativa">Inativa</option>
+      </select>
+    </section>
+
+    <!-- Lista / Tabela com ordenação por cabeçalho -->
+    <section class="mt-4 rounded-3xl border border-[rgb(var(--page-border)/0.12)] bg-transparent overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left bg-[rgb(var(--accent)/0.06)]">
+            <tr>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="name" type="button">
+                  Turma
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="name">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="grade" type="button">
+                  Série/Ano
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="grade">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="subject" type="button">
+                  Disciplina
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="subject">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="period" type="button">
+                  Período
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="period">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="studentsCount" type="button">
+                  Alunos
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="studentsCount">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold">
+                <button class="sort-btn inline-flex items-center gap-1 hover:opacity-90" data-sort="status" type="button">
+                  Status
+                  <span class="material-symbols-rounded text-base opacity-70" data-sort-icon="status">unfold_more</span>
+                </button>
+              </th>
+              <th class="px-4 py-3 font-semibold text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="classesTbody" class="divide-y divide-[rgb(var(--page-border)/0.08)]"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="hidden p-8 text-center text-[rgb(var(--page-fg-muted))]">Nenhuma turma encontrada.</div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Nova/Editar turma -->
+  <div id="modal" class="fixed inset-0 z-[80] hidden">
+    <div class="absolute inset-0 bg-black/60" data-close></div>
+    <div class="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center p-3">
+      <form id="classForm" class="w-full sm:max-w-lg rounded-3xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--page-bg)/0.98)] p-5 sm:p-6">
+        <div class="flex items-center justify-between">
+          <h2 id="modalTitle" class="text-lg font-bold">Nova turma</h2>
+          <button type="button" class="rounded-full p-1 hover:bg-white/10" data-close aria-label="Fechar">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="block sm:col-span-2">
+            <span class="text-xs font-semibold opacity-80">Nome da turma</span>
+            <input name="name" required placeholder="Ex.: 9ºA" class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" />
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold opacity-80">Série/Ano</span>
+            <select name="grade" id="gradeSelect" required class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+              <!-- opções carregadas via JS -->
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold opacity-80">Disciplina</span>
+            <select name="subject" id="subjectSelect" required class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+              <!-- opções carregadas via JS -->
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold opacity-80">Período</span>
+            <select name="period" class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+              <option value="manha">Manhã</option>
+              <option value="tarde">Tarde</option>
+              <option value="noite">Noite</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold opacity-80">Status</span>
+            <select name="status" class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)]">
+              <option value="ativa">Ativa</option>
+              <option value="inativa">Inativa</option>
+            </select>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="text-xs font-semibold opacity-80">Sala / Local</span>
+            <input name="room" placeholder="Ex.: Sala 12" class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" />
+          </label>
+        </div>
+
+        <div class="mt-4">
+          <label class="block">
+            <span class="text-xs font-semibold opacity-80">Observações</span>
+            <textarea name="notes" rows="3" class="mt-1 w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" placeholder="Opcional"></textarea>
+          </label>
+        </div>
+
+        <div class="mt-5 flex items-center justify-end gap-2">
+          <button type="button" class="rounded-xl border border-[rgb(var(--page-border)/0.12)] px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition" data-close>Cancelar</button>
+          <button type="submit" class="rounded-xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent-weak))] px-3 py-2 text-sm font-semibold text-[rgb(var(--accent-text))] hover:bg-[rgb(var(--accent)/0.18)] transition">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Gerenciar alunos da turma -->
+  <div id="studentsModal" class="fixed inset-0 z-[85] hidden">
+    <div class="absolute inset-0 bg-black/60" data-students-close></div>
+    <div class="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center p-3">
+      <div class="w-full sm:max-w-2xl rounded-3xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--page-bg)/0.98)] p-5 sm:p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 id="studentsModalTitle" class="text-lg font-bold">Alunos da turma</h2>
+            <p class="text-xs text-[rgb(var(--page-fg-muted))] mt-0.5">Adicione alunos pelo nome e telefone.</p>
+          </div>
+          <button type="button" class="rounded-full p-1 hover:bg-white/10" data-students-close aria-label="Fechar">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <form id="studentForm" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <label class="sm:col-span-2">
+            <span class="sr-only">Nome do aluno</span>
+            <input name="studentName" required placeholder="Nome do aluno" class="w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" />
+          </label>
+          <label>
+            <span class="sr-only">Telefone do aluno</span>
+            <input name="studentPhone" required inputmode="tel" placeholder="Telefone (DDD + número)" class="w-full rounded-2xl border border-[rgb(var(--page-border)/0.12)] bg-transparent px-3 py-2 outline-none focus:border-[rgb(var(--accent-border))] focus:ring-2 focus:ring-[rgb(var(--accent)/0.20)] transition" />
+          </label>
+          <div class="sm:col-span-3 flex justify-end">
+            <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent-weak))] px-3 py-2 text-sm font-semibold text-[rgb(var(--accent-text))] hover:bg-[rgb(var(--accent)/0.18)] transition">
+              <span class="material-symbols-rounded text-base">person_add</span>
+              Adicionar aluno
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-4 rounded-2xl border border-[rgb(var(--page-border)/0.12)] overflow-hidden">
+          <div class="max-h-[45vh] overflow-auto">
+            <table class="min-w-full text-sm">
+              <thead class="text-left bg-[rgb(var(--accent)/0.06)]">
+                <tr>
+                  <th class="px-4 py-3 font-semibold">Aluno</th>
+                  <th class="px-4 py-3 font-semibold">Telefone</th>
+                  <th class="px-4 py-3 font-semibold text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTbody" class="divide-y divide-[rgb(var(--page-border)/0.08)]"></tbody>
+            </table>
+          </div>
+          <div id="studentsEmpty" class="hidden p-6 text-center text-[rgb(var(--page-fg-muted))]">Nenhum aluno nesta turma ainda.</div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-end">
+          <button type="button" class="rounded-xl border border-[rgb(var(--page-border)/0.12)] px-3 py-2 text-sm font-semibold hover:bg-[rgb(var(--page-border)/0.06)] transition" data-students-close>Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de tema -->
+  <div id="theme-toast" class="fixed bottom-4 right-4 z-[60] pointer-events-none select-none opacity-0 translate-y-2 transition-all duration-300" role="status" aria-live="polite">
+    <div class="flex items-center gap-2 rounded-full border border-[rgb(var(--page-border)/0.18)] bg-[rgb(var(--page-bg)/0.9)] px-3 py-1.5 text-xs font-semibold shadow-lg">
+      <span id="theme-toast-icon" class="material-symbols-rounded text-base">dark_mode</span>
+      <span id="theme-toast-label">Tema escuro</span>
+    </div>
+  </div>
+
+  <script>
+    // ============================
+    // Tema (mesmo padrão)
+    // ============================
+    (function () {
+      const html = document.documentElement;
+      const toggleBtn = document.querySelector('[data-theme-toggle]');
+      const icon = document.querySelector('[data-theme-icon]');
+      const srLabel = document.querySelector('[data-theme-label]');
+      const toast = document.getElementById('theme-toast');
+      const toastIcon = document.getElementById('theme-toast-icon');
+      const toastLabel = document.getElementById('theme-toast-label');
+      let toastTimer = null;
+
+      if (!toggleBtn) return;
+
+      function showToast(theme) {
+        if (!toast) return;
+        const isDark = theme === 'dark';
+        toastIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+        toastLabel.textContent = isDark ? 'Tema escuro' : 'Tema claro';
+        toast.classList.remove('opacity-0', 'translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 1800);
+      }
+
+      function apply(theme, opts = { silent: false }) {
+        html.setAttribute('data-theme', theme);
+        const isDark = theme === 'dark';
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        srLabel.textContent = isDark ? 'Usar tema claro' : 'Usar tema escuro';
+        if (!opts.silent) showToast(theme);
+      }
+
+      function getInitialTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') return saved;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      let theme = getInitialTheme();
+      apply(theme, { silent: true });
+      toggleBtn.addEventListener('click', () => {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', theme);
+        apply(theme);
+      });
+    })();
+
+    // ============================
+    // Listas fixas de Série/Ano e Disciplinas
+    // ============================
+    const GRADES = [
+      'Infantil I', 'Infantil II', 'Infantil III', 'Infantil IV', 'Infantil V',
+      '1º ano', '2º ano', '3º ano', '4º ano', '5º ano',
+      '6º ano', '7º ano', '8º ano', '9º ano',
+      '1ª série (EM)', '2ª série (EM)', '3ª série (EM)'
+    ];
+
+    const SUBJECTS = [
+      'Língua Portuguesa', 'Redação', 'Literatura',
+      'Matemática',
+      'Ciências', 'Biologia', 'Física', 'Química',
+      'História', 'Geografia',
+      'Língua Inglesa', 'Língua Espanhola',
+      'Artes', 'Educação Física',
+      'Filosofia', 'Sociologia',
+      'Tecnologia/Informática', 'Projeto/Itinerário Formativo',
+      'Ensino Religioso'
+    ];
+
+    function fillSelect(selectEl, options) {
+      if (!selectEl) return;
+      selectEl.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+    }
+
+    fillSelect(document.getElementById('gradeSelect'), GRADES);
+    fillSelect(document.getElementById('subjectSelect'), SUBJECTS);
+
+    // ============================
+    // Gerenciamento de turmas (demo local)
+    // ============================
+    const STORAGE_KEY = 'edu-prof-classes';
+
+    const tbody = document.getElementById('classesTbody');
+    const emptyState = document.getElementById('emptyState');
+    const searchInput = document.getElementById('searchInput');
+    const periodFilter = document.getElementById('periodFilter');
+    const statusFilter = document.getElementById('statusFilter');
+
+    const modal = document.getElementById('modal');
+    const form = document.getElementById('classForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const btnAdd = document.getElementById('btnAdd');
+    const btnExport = document.getElementById('btnExport');
+
+    let sortKey = 'name';
+    let sortDir = 'asc';
+
+    let classes = loadClasses();
+    let editingId = null;
+
+    function uid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function loadClasses() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const data = JSON.parse(raw);
+        return Array.isArray(data) ? data : [];
+      } catch { return []; }
+    }
+
+    function saveClasses() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(classes));
+    }
+
+    function normalizeForSort(v) {
+      if (v == null) return '';
+      return String(v).toLowerCase();
+    }
+
+    function sortClasses(list) {
+      const dir = sortDir === 'asc' ? 1 : -1;
+      return [...list].sort((a, b) => {
+        const va = normalizeForSort(a[sortKey]);
+        const vb = normalizeForSort(b[sortKey]);
+        if (va < vb) return -1 * dir;
+        if (va > vb) return  1 * dir;
+        return 0;
+      });
+    }
+
+    function updateSortIcons() {
+      document.querySelectorAll('[data-sort-icon]').forEach(el => {
+        const key = el.getAttribute('data-sort-icon');
+        if (key !== sortKey) {
+          el.textContent = 'unfold_more';
+          el.classList.remove('opacity-100');
+          el.classList.add('opacity-70');
+          return;
+        }
+        el.textContent = sortDir === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down';
+        el.classList.remove('opacity-70');
+        el.classList.add('opacity-100');
+      });
+    }
+
+    function periodLabel(v) {
+      return v === 'manha' ? 'Manhã' : v === 'tarde' ? 'Tarde' : 'Noite';
+    }
+
+    function statusPill(c) {
+      const isActive = c.status === 'ativa';
+      const icon = isActive ? 'check_circle' : 'pause_circle';
+      const label = isActive ? 'Ativa' : 'Inativa';
+      return `
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-[rgb(var(--accent-border))] bg-[rgb(var(--accent)/0.06)] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase backdrop-blur-sm">
+          <span class="material-symbols-rounded text-[14px] leading-none">${icon}</span>
+          <span>${label}</span>
+        </span>`;
+    }
+
+    function rowTemplate(c) {
+      return `
+        <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition">
+          <td class="px-4 py-3">
+            <div class="font-semibold">${escapeHtml(c.name)}</div>
+            ${c.room ? `<div class="text-xs text-[rgb(var(--page-fg-muted))]">${escapeHtml(c.room)}</div>` : ''}
+          </td>
+          <td class="px-4 py-3">${escapeHtml(c.grade)}</td>
+          <td class="px-4 py-3">${escapeHtml(c.subject)}</td>
+          <td class="px-4 py-3">${periodLabel(c.period)}</td>
+          <td class="px-4 py-3">${Number(c.studentsCount || 0)}</td>
+          <td class="px-4 py-3">${statusPill(c)}</td>
+          <td class="px-4 py-3">
+            <div class="flex items-center justify-end gap-1">
+              <button id="students-${c.id}" class="rounded-lg p-2 hover:bg-[rgb(var(--accent)/0.10)]" title="Gerenciar alunos">
+                <span class="material-symbols-rounded text-base">groups</span>
+              </button>
+              <button id="toggle-${c.id}" class="rounded-lg p-2 hover:bg-[rgb(var(--accent)/0.10)]" title="Alternar status">
+                <span class="material-symbols-rounded text-base">swap_horiz</span>
+              </button>
+              <button id="edit-${c.id}" class="rounded-lg p-2 hover:bg-[rgb(var(--accent)/0.10)]" title="Editar">
+                <span class="material-symbols-rounded text-base">edit</span>
+              </button>
+              <button id="del-${c.id}" class="rounded-lg p-2 hover:bg-[rgb(var(--accent)/0.10)]" title="Excluir">
+                <span class="material-symbols-rounded text-base">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function render() {
+      const q = searchInput.value.trim().toLowerCase();
+      const p = periodFilter.value;
+      const st = statusFilter.value;
+
+      let filtered = classes.filter(c => {
+        const hay = `${c.name} ${c.grade} ${c.subject}`.toLowerCase();
+        if (q && !hay.includes(q)) return false;
+        if (p && c.period !== p) return false;
+        if (st && c.status !== st) return false;
+        return true;
+      });
+
+      filtered = sortClasses(filtered);
+
+      tbody.innerHTML = filtered.map(rowTemplate).join('');
+      emptyState.classList.toggle('hidden', filtered.length > 0);
+
+      updateSortIcons();
+
+      filtered.forEach(c => {
+        document.getElementById(`students-${c.id}`)?.addEventListener('click', () => openStudents(c.id));
+        document.getElementById(`edit-${c.id}`)?.addEventListener('click', () => openEdit(c.id));
+        document.getElementById(`toggle-${c.id}`)?.addEventListener('click', () => toggleStatus(c.id));
+        document.getElementById(`del-${c.id}`)?.addEventListener('click', () => removeClass(c.id));
+      });
+    }
+
+    function openCreate() {
+      editingId = null;
+      modalTitle.textContent = 'Nova turma';
+      form.reset();
+      form.period.value = 'manha';
+      form.status.value = 'ativa';
+      form.grade.value = GRADES[0];
+      form.subject.value = SUBJECTS[0];
+      openModal();
+    }
+
+    function openEdit(id) {
+      const c = classes.find(x => x.id === id);
+      if (!c) return;
+      editingId = id;
+      modalTitle.textContent = 'Editar turma';
+      form.name.value = c.name;
+      form.grade.value = c.grade;
+      form.subject.value = c.subject;
+      form.period.value = c.period;
+      form.status.value = c.status;
+      form.room.value = c.room || '';
+      form.notes.value = c.notes || '';
+      openModal();
+    }
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function upsertClass(payload) {
+      if (editingId) {
+        const idx = classes.findIndex(x => x.id === editingId);
+        if (idx >= 0) {
+          const prev = classes[idx];
+          const prevStudents = prev.students || [];
+          classes[idx] = { ...prev, ...payload, students: prevStudents, studentsCount: prevStudents.length };
+        }
+      } else {
+        classes.unshift({ id: uid(), createdAt: Date.now(), students: [], studentsCount: 0, ...payload });
+      }
+      saveClasses();
+      render();
+    }
+
+    function removeClass(id) {
+      classes = classes.filter(x => x.id !== id);
+      saveClasses();
+      render();
+    }
+
+    function toggleStatus(id) {
+      const c = classes.find(x => x.id === id);
+      if (!c) return;
+      c.status = c.status === 'ativa' ? 'inativa' : 'ativa';
+      saveClasses();
+      render();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // eventos
+    btnAdd.addEventListener('click', openCreate);
+    modal.addEventListener('click', (e) => { if (e.target.matches('[data-close]')) closeModal(); });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const payload = {
+        name: form.name.value.trim(),
+        grade: form.grade.value.trim(),
+        subject: form.subject.value.trim(),
+        period: form.period.value,
+        status: form.status.value,
+        room: form.room.value.trim(),
+        notes: form.notes.value.trim(),
+      };
+      upsertClass(payload);
+      closeModal();
+    });
+
+    [searchInput, periodFilter, statusFilter].forEach(el => el.addEventListener('input', render));
+    periodFilter.addEventListener('change', render);
+    statusFilter.addEventListener('change', render);
+
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-sort');
+        if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        else { sortKey = key; sortDir = 'asc'; }
+        render();
+      });
+    });
+
+    btnExport.addEventListener('click', () => {
+      const dataStr = JSON.stringify(classes, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'turmas.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // seed opcional
+    if (classes.length === 0) {
+      classes = [
+        {
+          id: uid(), name: '9ºA', grade: '9º ano', subject: 'Matemática', period: 'manha',
+          students: [
+            { id: uid(), name: 'Ana Clara', phone: '41999990001' },
+            { id: uid(), name: 'Bruno Lima', phone: '41999990002' },
+          ],
+          studentsCount: 2, status: 'ativa', room: 'Sala 12', notes: ''
+        },
+        { id: uid(), name: '8ºB', grade: '8º ano', subject: 'Língua Portuguesa', period: 'tarde', students: [], studentsCount: 0, status: 'ativa', room: 'Sala 9', notes: 'Projeto de leitura' },
+        { id: uid(), name: '7ºC', grade: '7º ano', subject: 'Ciências', period: 'manha', students: [], studentsCount: 0, status: 'inativa', room: '', notes: 'Turma encerrada' },
+      ];
+      saveClasses();
+    }
+
+    render();
+
+    // ============================
+    // Alunos dentro de turma
+    // ============================
+    const studentsModal = document.getElementById('studentsModal');
+    const studentsTbody = document.getElementById('studentsTbody');
+    const studentsEmpty = document.getElementById('studentsEmpty');
+    const studentsModalTitle = document.getElementById('studentsModalTitle');
+    const studentForm = document.getElementById('studentForm');
+
+    let currentClassId = null;
+
+    function openStudents(classId) {
+      currentClassId = classId;
+      const c = classes.find(x => x.id === classId);
+      if (!c) return;
+
+      c.students = c.students || [];
+      c.studentsCount = c.students.length;
+
+      studentsModalTitle.textContent = `Alunos da turma ${c.name}`;
+      renderStudents();
+
+      studentsModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeStudents() {
+      studentsModal.classList.add('hidden');
+      document.body.style.overflow = '';
+      currentClassId = null;
+      studentForm?.reset();
+    }
+
+    function renderStudents() {
+      const c = classes.find(x => x.id === currentClassId);
+      if (!c) return;
+      const list = c.students || [];
+
+      studentsTbody.innerHTML = list.map(s => `
+        <tr class="hover:bg-[rgb(var(--accent)/0.04)] transition">
+          <td class="px-4 py-3 font-semibold">${escapeHtml(s.name)}</td>
+          <td class="px-4 py-3">${escapeHtml(s.phone)}</td>
+          <td class="px-4 py-3">
+            <div class="flex items-center justify-end gap-1">
+              <button id="std-del-${s.id}" class="rounded-lg p-2 hover:bg-[rgb(var(--accent)/0.10)]" title="Remover aluno">
+                <span class="material-symbols-rounded text-base">person_remove</span>
+              </button>
+            </div>
+          </td>
+        </tr>`).join('');
+
+      studentsEmpty.classList.toggle('hidden', list.length > 0);
+
+      list.forEach(s => {
+        document.getElementById(`std-del-${s.id}`)?.addEventListener('click', () => removeStudent(s.id));
+      });
+
+      c.studentsCount = list.length;
+      saveClasses();
+      render();
+    }
+
+    function addStudent(payload) {
+      const c = classes.find(x => x.id === currentClassId);
+      if (!c) return;
+      c.students = c.students || [];
+
+      const cleanPhone = payload.phone.replace(/\D/g, '');
+      if (c.students.some(s => s.phone.replace(/\D/g, '') === cleanPhone)) return;
+
+      c.students.unshift({ id: uid(), ...payload, phone: cleanPhone });
+      renderStudents();
+    }
+
+    function removeStudent(studentId) {
+      const c = classes.find(x => x.id === currentClassId);
+      if (!c) return;
+      c.students = (c.students || []).filter(s => s.id !== studentId);
+      renderStudents();
+    }
+
+    studentForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = studentForm.studentName.value.trim();
+      const phone = studentForm.studentPhone.value.trim();
+      if (!name || !phone) return;
+
+      addStudent({ name, phone });
+
+      studentForm.reset();
+      studentForm.studentName.focus();
+    });
+
+    studentsModal?.addEventListener('click', (e) => {
+      if (e.target.matches('[data-students-close]')) closeStudents();
+    });
+
+  </script>
+</body>
+</html>

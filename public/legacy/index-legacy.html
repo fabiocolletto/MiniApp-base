@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniApp Hub — Home legada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: 15 23 42;
+      --fg: 226 232 240;
+      --muted: 148 163 184;
+      --card: 30 41 59;
+      --accent: 94 234 212;
+    }
+
+    html[data-theme="light"] {
+      --bg: 248 250 252;
+      --fg: 30 41 59;
+      --muted: 71 85 105;
+      --card: 255 255 255;
+      --accent: 79 70 229;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: rgb(var(--bg));
+      color: rgb(var(--fg));
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 48px 24px;
+    }
+
+    .shell {
+      width: min(960px, 100%);
+      border-radius: 20px;
+      background: rgba(var(--card), 0.9);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(var(--fg), 0.08);
+      padding: 32px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0 0 18px;
+      color: rgb(var(--muted));
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-top: 12px;
+    }
+
+    a.button {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(var(--fg), 0.1);
+      background: rgba(var(--card), 0.6);
+      color: rgb(var(--fg));
+      font-weight: 600;
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+
+    a.button:hover,
+    a.button:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(var(--card), 0.75);
+      border-color: rgba(var(--accent), 0.5);
+      outline: none;
+    }
+
+    small {
+      color: rgb(var(--muted));
+    }
+  </style>
+</head>
+<body>
+  <main class="shell" aria-labelledby="legacy-title">
+    <p><small>Versão legada preservada para auditoria e fallback.</small></p>
+    <h1 id="legacy-title">MiniApp Hub — Home legada</h1>
+    <p>
+      Esta página mantém um ponto de entrada estático para a versão anterior do hub.
+      Use os atalhos abaixo para acessar a home atual, o catálogo dinâmico e o MiniApp Educação.
+    </p>
+
+    <section class="actions">
+      <a class="button" href="/" aria-label="Abrir a home atual do hub">
+        <span>Ir para a home atual</span>
+        <span aria-hidden="true">→</span>
+      </a>
+      <a class="button" href="/src/miniapps/educacao/index.html" aria-label="Abrir o MiniApp Educação na versão de desenvolvimento">
+        <span>MiniApp Educação (fonte)</span>
+        <span aria-hidden="true">→</span>
+      </a>
+      <a class="button" href="/public/miniapps/educacao/index.html" aria-label="Abrir o build estático do MiniApp Educação">
+        <span>MiniApp Educação (estático)</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </section>
+  </main>
+</body>
+</html>
