@@ -1,5 +1,7 @@
 // src/core/header/loader.js
 
+import { activateBackup, getBackupConfig } from "../backup/index.js";
+
 // Utilitário de armazenamento assíncrono com fallback:
 // tenta usar localforage (se existir) e cai pra localStorage se não tiver.
 const Storage = (() => {
@@ -217,6 +219,71 @@ function setupUserPanel(root) {
     if (type === "error") statusBar.classList.add("text-red-300");
   }
 
+  function getOwnerId() {
+    return (emailInput?.value || "").trim();
+  }
+
+  function normalizeProvider(provider) {
+    if (provider === "onedrive") return "onedrive";
+    return "google";
+  }
+
+  function setBackupStatusFromConfig(config) {
+    if (!config) return;
+
+    const label = config.provider === "onedrive" || config.requestedProvider === "onedrive"
+      ? "OneDrive"
+      : "Google Drive";
+
+    if (config.pendingSync) {
+      setStatus(`Backup pendente (offline) para ${label}. Será retomado quando a conexão voltar.`, "warn");
+      return;
+    }
+
+    if (config.provider === "google" || config.provider === "onedrive") {
+      setStatus(`Backup sincronizado via ${label}.`, "ok");
+    }
+  }
+
+  function tryOpenBackupTarget(button) {
+    const targetModal = button.dataset.modal || button.dataset.target;
+    if (targetModal) {
+      const modalEl = document.querySelector(targetModal);
+      if (modalEl) {
+        modalEl.classList.remove("hidden");
+        modalEl.classList.add("flex");
+        return true;
+      }
+    }
+
+    const targetUrl = button.dataset.href || button.dataset.url;
+    if (targetUrl) {
+      window.location.href = targetUrl;
+      return true;
+    }
+
+    return false;
+  }
+
+  async function handleBackupSync(provider) {
+    const normalized = normalizeProvider(provider);
+    setStatus("Conectando com o serviço de backup...", "info");
+
+    try {
+      const config = await activateBackup(normalized, getOwnerId());
+
+      if (!config) {
+        setStatus("Nenhuma resposta recebida do serviço de backup.", "warn");
+        return;
+      }
+
+      setBackupStatusFromConfig(config);
+    } catch (error) {
+      console.error("Erro ao ativar backup pelo painel do usuário", error);
+      setStatus("Erro ao ativar backup. Tente novamente.", "error");
+    }
+  }
+
   async function loadUser() {
     const user = await UserService.get();
     if (!user) {
@@ -317,10 +384,14 @@ function setupUserPanel(root) {
     });
   }
 
-  // Botão de backup Google (placeholder por enquanto)
+  // Botão de backup (Google/OneDrive)
   if (syncBtn) {
+    const providerFromButton = normalizeProvider(syncBtn.dataset.provider);
+
     syncBtn.addEventListener("click", () => {
-      setStatus("Integração com Google Drive em construção.", "warn");
+      if (tryOpenBackupTarget(syncBtn)) return;
+
+      handleBackupSync(providerFromButton);
     });
   }
 
@@ -340,9 +411,15 @@ function setupUserPanel(root) {
       setStatus("Dados apagados deste dispositivo.", "error");
     });
   }
-
+  
   // Carrega dados na abertura
   loadUser();
+  getBackupConfig()
+    .then(setBackupStatusFromConfig)
+    .catch((error) => {
+      console.error("loadUserPanel: não foi possível recuperar status de backup", error);
+      setStatus("Falha ao recuperar status de backup.", "error");
+    });
 }
 
 // Função principal exportada
