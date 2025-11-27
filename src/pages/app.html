@@ -1,0 +1,1944 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+
+// =========================================================================
+// 1. ESTILOS GLOBAIS (Tema Fixo CLARO)
+// =========================================================================
+
+const CSS_STYLES = `
+    /* INJEÇÃO DO MATERIAL SYMBOLS ROUNDED (Link corrigido para carregar os ícones) */
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
+
+    /* TEMA CLARO FORÇADO no root e no html */
+    :root, html {
+        color-scheme: light;
+        --page-bg: 248 250 252; /* Slate-50 Claro */
+        --page-bg-alpha: 0.96;
+        --page-fg: 15 23 42;    /* Slate-900 Preto para texto */
+        --page-fg-muted: 71 85 105; /* Slate-600 para texto secundário */
+        --page-border: 15 23 42;
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        min-height: 100vh;
+        /* Usando a variável CLARA que agora é global */
+        background-color: rgb(var(--page-bg) / var(--page-bg-alpha));
+        color: rgb(var(--page-fg));
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Estilos estruturais e de utilidade */
+    .mini-app-portfolio { --card-border-width: 2px; }
+    @media (min-width:640px) { .mini-app-portfolio { --card-border-width: 2px; } }
+    .mini-app-card-base {
+        /* REQUISITO: Mobile (até 640px) em 100% da largura, empilhados */
+        width: 100%;
+        aspect-ratio: 4/3;
+        border-style: solid;
+        border-width: var(--card-border-width); /* FIXADO em 2px */
+    }
+    @media (min-width: 640px) { /* SM breakpoint - 2 colunas */
+        /* Ajustando para a nova proporção de 2 colunas com gap maior (gap-8 = 32px, half gap = 16px) */
+        .mini-app-card-base {
+            width: calc(50% - 16px); 
+        }
+    }
+    @media (min-width: 1024px) { /* LG breakpoint - 4 colunas */
+        /* Ajustando para a nova proporção de 4 colunas com gap maior (gap-8 = 32px, (3*32)/4 = 24px) */
+        .mini-app-card-base {
+            width: calc(25% - 24px); 
+            /* Reduzido de 227px para 210px para encolher o card e aumentar o espaçamento */
+            max-width: 210px; 
+        }
+    }
+    .status-pending {
+        opacity: 0.45;
+        cursor: default;
+        pointer-events: none;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    .mini-app-card-base.selected {
+        border-width: 3px !important;
+        box-shadow: 0 0 0 4px rgb(var(--page-bg)), 0 0 0 6px var(--selection-color) !important;
+    }
+    #action-modal-content {
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    }
+    #action-modal.hidden #action-modal-content {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    #action-modal:not(.hidden) #action-modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+    /* CORREÇÃO DO TAMANHO DO ÍCONE GRANDE NOS CARDS */
+    .mini-app-card-base .icon-large {
+        font-size: 6rem; /* 96px */
+    }
+    @media (min-width: 640px) {
+        .mini-app-card-base .icon-large { font-size: 7rem; /* 112px */ }
+    }
+    @media (min-width: 1024px) {
+        /* Reduzido para caber melhor no card menor */
+        .mini-app-card-base .icon-large { font-size: 8rem; /* 128px */ }
+    }
+    /* Estilos para o Painel do Usuário (Migrados do HTML Antigo) */
+    .tab-content.hidden{display:none;}
+    .tab-button {
+        border-radius: 0.75rem;
+        /* REMOVENDO border-width FIXO */
+        transition: all 150ms ease;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+        color: rgb(var(--page-fg-muted));
+    }
+    /* ESTILOS DE TABA ATIVA REMOVIDOS PARA SEREM GERENCIADOS POR TAILWIND */
+
+    /* Estilo customizado para o Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 25px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 25px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 21px;
+        width: 21px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #8B5CF6; /* violet-500 */
+    }
+    input:checked + .slider:before {
+        transform: translateX(25px);
+    }
+    
+    /* ======================================= */
+    /* NOVOS ESTILOS PARA EFEITO DE ROLAGEM */
+    /* ======================================= */
+
+    /* Keyframes para o efeito de rolagem de cilindro (entrando de baixo para cima) */
+    @keyframes roll-in-up {
+        0% { transform: translateY(100%); opacity: 0; }
+        5% { opacity: 1; }
+        100% { transform: translateY(0%); opacity: 1; }
+    }
+
+    /* Contêiner de máscara para o texto do toast (esconde o que rola para cima/baixo) */
+    .toast-message-roll-mask {
+        height: 1.25rem; /* Altura de uma linha de texto (text-sm) */
+        overflow: hidden;
+    }
+
+    /* O wrapper do texto que será animado */
+    .toast-message-roll-wrapper {
+        display: inline-block;
+        animation: roll-in-up 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        /* Garante que o texto se alinhe ao topo da máscara após a animação */
+        transform-origin: bottom; 
+    }
+    /* FIM DOS NOVOS ESTILOS */
+`;
+
+// =========================================================================
+// 2. MÁSCARAS DE INPUTS (Movidas para o escopo global)
+// =========================================================================
+
+const createPhoneMask = () => {
+    let autoCC = false;
+    return (value) => {
+        let n = (value || "").replace(/\D/g, "");
+        if (!autoCC && n.length >= 2 && !n.startsWith("55")) { n = "55" + n; autoCC = true; }
+        if (n.length <= 2) return "+" + n;
+        if (n.length <= 4) return "+" + n.slice(0, 2) + " " + n.slice(2);
+        if (n.length <= 9) {
+            let cc = n.slice(0, 2);
+            let ddd = n.slice(2, 4);
+            let f = n.slice(4);
+            return "+" + cc + " " + ddd + " " + f;
+        }
+        let cc2 = n.slice(0, 2);
+        let ddd2 = n.slice(2, 4);
+        let first = n.length === 10 ? n.slice(4, 8) : n.slice(4, 9);
+        let last = n.slice(-4);
+        return "+" + cc2 + " " + ddd2 + " " + first + "-" + last;
+    };
+};
+const maskPhone = createPhoneMask();
+
+const maskCEP = (value) => {
+    const n = (value || "").replace(/\D/g, "").slice(0, 8); // Max 8 digits
+    if (n.length > 5) {
+        return n.replace(/^(\d{5})(\d{0,3})$/, '$1-$2');
+    }
+    return n;
+};
+
+const maskBirthDate = (value) => {
+    const n = (value || "").replace(/\D/g, "").slice(0, 8); // Max 8 digits
+    if (n.length > 4) {
+        return n.replace(/^(\d{2})(\d{2})(\d{0,4})$/, '$1/$2/$3');
+    } else if (n.length > 2) {
+        return n.replace(/^(\d{2})(\d{0,2})$/, '$1/$2');
+    }
+    return n;
+};
+
+
+// =========================================================================
+// 3. CUSTOM HOOK: useUserData (Gerencia a Persistência - Simplificada)
+// =========================================================================
+
+const USER_KEY = "app5-user-data";
+const THEME_PREF_KEY = "app5-theme-preference";
+
+const useUserData = () => {
+    const [userData, setInternalUserData] = useState(() => {
+        try {
+            const raw = localStorage.getItem(USER_KEY);
+            const data = raw ? JSON.parse(raw) : {};
+            // Inicializando novos campos e defaults
+            return { 
+                ...data, 
+                themePref: 'light', 
+                showAccessibilityFab: data.showAccessibilityFab === undefined ? true : data.showAccessibilityFab,
+                cep: data.cep || '',
+                birthDate: data.birthDate || '',
+                country: data.country || 'Brasil', // Default para Brasil
+                // NOVO: Flag para desativar a sequência de toasts iniciais
+                hasSeenIntroToasts: data.hasSeenIntroToasts === undefined ? false : data.hasSeenIntroToasts, 
+            }; 
+        } catch (e) {
+            return { themePref: 'light', showAccessibilityFab: true, cep: '', birthDate: '', country: 'Brasil', hasSeenIntroToasts: false };
+        }
+    });
+
+    const updateData = useCallback((key, value) => {
+        setInternalUserData(prev => {
+            const newUserData = { ...prev, [key]: value, updated: new Date().toISOString() };
+            try {
+                // Remove o salvamento de themePref no localStorage, mas mantém a estrutura para outros dados
+                const { themePref, ...dataToSave } = newUserData;
+                localStorage.setItem(USER_KEY, JSON.stringify(dataToSave));
+            } catch (e) { /* ignore */ }
+            return newUserData;
+        });
+    }, []);
+    
+    const clearUserData = useCallback(() => {
+         // Resetando para os defaults, incluindo o FAB
+         setInternalUserData({ themePref: 'light', showAccessibilityFab: true, cep: '', birthDate: '', country: 'Brasil', hasSeenIntroToasts: false }); 
+         try {
+            localStorage.removeItem(USER_KEY);
+            localStorage.setItem(THEME_PREF_KEY, 'light'); // Garante que o storage refletirá o tema fixo
+         } catch(e) { /* ignore */ }
+    }, []);
+    
+    // NOVO: Função para marcar o aviso inicial como lido
+    const confirmIntroToasts = useCallback(() => {
+        updateData('hasSeenIntroToasts', true);
+    }, [updateData]);
+
+
+    return {
+        data: userData,
+        updateData,
+        clearUserData,
+        // Mantemos a função, mas ela não fará mais nada no CSS
+        updatePersona: (persona) => updateData('persona', persona),
+        updateTheme: (themePref) => updateData('themePref', themePref),
+        // Expondo a função para toggle do FAB
+        toggleAccessibilityFab: () => updateData('showAccessibilityFab', !userData.showAccessibilityFab),
+        // Expondo o novo handler de confirmação
+        confirmIntroToasts
+    };
+};
+
+// =========================================================================
+// 4. CONSTANTES E Mapeamento
+// =========================================================================
+
+const SCREENS = {
+    CATALOG: 'catalog',
+    PERSONA_SELECTION: 'persona-selection',
+    STUDENT_MENU: 'student-menu',
+};
+
+const colorMap = {
+    pink: { base: 'pink-500', rgb: '236 72 153', icon: 'pink-500/30', label: 'Rosa' },
+    emerald: { base: 'emerald-500', rgb: '16 185 129', icon: 'emerald-500/30', label: 'Verde Esmeralda' },
+    cyan: { base: 'cyan-500', rgb: '6 182 212', icon: 'cyan-500/30', label: 'Ciano' },
+    amber: { base: 'amber-500', rgb: '245 158 11', icon: 'amber-500/30', label: 'Âmbar' },
+    violet: { base: 'violet-500', rgb: '139 92 246', icon: 'violet-500/30', label: 'Violeta' },
+    sky: { base: 'sky-500', rgb: '14 165 233', icon: 'sky-500/30', label: 'Sky' },
+    red: { base: 'red-500', rgb: '239 68 68', icon: 'red-500/30', label: 'Vermelho' }, // Adicionado red-500
+};
+
+// =========================================================================
+// 5. COMPONENTE: Card Reutilizável (MiniAppCard)
+// =========================================================================
+
+const MiniAppCard = ({ label, icon, color, status, onClick, dataAttr, selected }) => {
+    const isPending = status !== 'Ativo';
+    const colorStyle = colorMap[color] || colorMap.pink;
+
+    const borderClass = `border-${colorStyle.base}/80`;
+    const bgClass = `bg-${colorStyle.base}/10`;
+    const textClass = `text-${colorStyle.base}/90`;
+    const iconClass = `text-${colorStyle.icon}`;
+
+    // Status: Agora só precisamos do status 'Em breve' para estilizar o indicador
+    const indicatorClasses = isPending ? 'opacity-100' : 'opacity-0 pointer-events-none';
+    const indicatorBg = isPending ? 'bg-amber-500/70 border-amber-600/80 text-white' : '';
+
+    const cardClasses = `mini-app-card-base backdrop-blur-sm ${borderClass} ${bgClass} 
+                         p-5 rounded-3xl overflow-hidden flex flex-col relative
+                         transition-all hover:translate-y-[-0.5rem] hover:shadow-lg
+                         ${selected ? 'selected' : ''} ${isPending ? 'status-pending' : ''}`;
+
+    const handleCardClick = (e) => {
+        if (isPending) {
+            e.preventDefault();
+            return;
+        }
+        onClick && onClick(e);
+    };
+
+    const customStyle = {
+        '--selection-color': `rgb(${colorStyle.rgb})`,
+    };
+
+    return (
+        <a href="#" 
+           className={cardClasses}
+           style={customStyle}
+           onClick={handleCardClick}
+           data-label={label}
+           {...dataAttr}>
+            
+            {/* NOVO: Indicador Visual 'Em breve' no canto superior direito */}
+            <div className={`absolute top-4 right-4 z-20 transition-opacity duration-300 ${indicatorClasses}`}>
+                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold border-2 ${indicatorBg}`}>
+                    {status}
+                </span>
+            </div>
+
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                {/* Aplica a classe CSS 'icon-large' para garantir o tamanho grande */}
+                <span className={`material-symbols-rounded leading-none ${iconClass} icon-large`}>
+                    {icon}
+                </span>
+            </div>
+
+            {/* SPACER GRANDE: Empurra o Title para o fundo do card */}
+            <div className="mt-auto"></div> 
+
+            {/* Título: NOVO POSICIONAMENTO no rodapé interno do card */}
+            <div className="relative z-10 flex items-center justify-start">
+                <h2 className={`font-semibold text-xl leading-tight ${textClass}`}>{label}</h2>
+                {/* O status anterior foi removido daqui */}
+            </div>
+        </a>
+    );
+};
+
+// =========================================================================
+// 6. COMPONENTE: Gerador de Conteúdo do Produto (ProductContent)
+// =========================================================================
+
+// Componente Container Reutilizável (Usado em ProductContent e AccessibilityPanelModal)
+const Container = ({ icon, label, color }) => {
+    const colorStyle = colorMap[color] || colorMap.pink;
+    return (
+        // NOVO: min-h-[120px] para padronizar a altura
+        <div className={`p-4 rounded-xl border-2 border-${colorStyle.base}/50 bg-${colorStyle.base}/10 text-center flex flex-col items-center justify-center min-h-[120px] cursor-pointer
+                        transition duration-200 hover:shadow-lg hover:ring-2 hover:ring-${colorStyle.base}/50 hover:scale-[1.01]`}
+             role="button" aria-label={label}>
+            <span className={`material-symbols-rounded text-4xl text-${colorStyle.base}-400`}>{icon}</span>
+            {/* NOVO: text-base para melhor proporção */}
+            <p className={`font-medium text-base text-${colorStyle.base}-300 mt-2`}>{label}</p>
+        </div>
+    );
+};
+
+const ProductContent = ({ actionId }) => {
+    
+
+    if (actionId === 'simulados') {
+        return (
+            <div className="space-y-6">
+                {/* Título usando cor dinâmica de primeiro plano */}
+                <h3 className="text-xl font-bold text-[rgb(var(--page-fg))]">Menu Principal do Produto: Simulados e Provas</h3>
+                
+                {/* Aplicando h-[200px] para dar altura aos containers e visualmente separá-los */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl border-2 border-white/10 bg-white/5 h-[200px]">
+                    <Container icon="play_circle" label="Novo Simulado" color="pink" />
+                    <Container icon="bar_chart" label="Resultados" color="cyan" />
+                    <Container icon="assignment" label="Histórico de Provas" color="violet" />
+                    <Container icon="trophy" label="Metas e Ranking" color="emerald" />
+                </div>
+            </div>
+        );
+    } 
+    
+    if (actionId === 'notas') {
+        return (
+            <div className="space-y-6">
+                {/* Título usando cor dinâmica de primeiro plano */}
+                <h3 className="text-xl font-bold text-[rgb(var(--page-fg))]">Menu Principal do Produto: Notas e Frequência</h3>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl border-2 border-white/10 bg-white/5 h-[200px]">
+                    <Container icon="format_list_numbered" label="Boletim Completo" color="cyan" />
+                    <Container icon="person_check" label="Taxa de Presença" color="pink" />
+                    <Container icon="trending_up" label="Gráfico de Médias" color="amber" />
+                    <Container icon="warning" label="Alertas de Notas" color="red" />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-4 text-center">
+            <p className="text-lg text-white/80 animate-pulse">O conteúdo para esta ação ({actionId}) ainda não foi implementado.</p>
+        </div>
+    );
+};
+
+// =========================================================================
+// 7. COMPONENTES: Telas
+// =========================================================================
+
+const CatalogScreen = ({ onNavigate }) => {
+    const apps = [
+        { id: 'educacao', label: 'Educação', icon: 'cast_for_education', color: 'pink', status: 'Ativo' },
+        { id: 'financeiro', label: 'Financeiro', icon: 'account_balance', color: 'emerald', status: 'Em breve' },
+        { id: 'saude', label: 'Saúde', icon: 'health_and_safety', color: 'sky', status: 'Em breve' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar_month', color: 'amber', status: 'Em breve' },
+    ];
+
+    return (
+        <section id="screen-catalog" data-screen-id={SCREENS.CATALOG} 
+                 className="flex flex-wrap justify-center gap-8 mini-app-portfolio mt-8" aria-label="Catálogo de MiniApps">
+            {apps.map(app => (
+                <MiniAppCard
+                    key={app.id}
+                    label={app.label}
+                    icon={app.icon}
+                    color={app.color}
+                    status={app.status}
+                    onClick={() => app.id === 'educacao' && onNavigate(SCREENS.PERSONA_SELECTION)}
+                    dataAttr={{ 'data-app': app.id }}
+                />
+            ))}
+        </section>
+    );
+};
+
+const PersonaSelectionScreen = ({ onSelectPersona, selectedPersona, onNavigate }) => {
+    const personas = [
+        { id: 'aluno', label: 'Aluno', icon: 'school', color: 'pink', status: 'Ativo' },
+        { id: 'tutor', label: 'Tutor/Responsável', icon: 'person_raised_hand', color: 'cyan', status: 'Em breve' },
+        { id: 'professor', label: 'Professor', icon: 'local_library', color: 'violet', status: 'Em breve' },
+        { id: 'instituicao', label: 'Instituição', icon: 'corporate_fare', color: 'emerald', status: 'Em breve' },
+    ];
+
+    const handleClick = (id, label) => {
+        if (selectedPersona === id) {
+            onSelectPersona(null); // Deselect
+        } else {
+            onSelectPersona(id);
+            if (id === 'aluno') {
+                onNavigate(SCREENS.STUDENT_MENU, label);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            const isClickOnCard = e.target.closest('.mini-app-card-base');
+            const isClickOnModal = e.target.closest('#user-panel');
+            if (!isClickOnCard && !isClickOnModal && selectedPersona) {
+                onSelectPersona(null);
+            }
+        };
+        document.body.addEventListener('click', handleClickOutside);
+        return () => document.body.removeEventListener('click', handleClickOutside);
+    }, [selectedPersona, onSelectPersona]);
+
+
+    return (
+        <section id="screen-persona" data-screen-id={SCREENS.PERSONA_SELECTION} 
+                 className="flex flex-wrap justify-center gap-8 mini-app-portfolio mt-8" aria-label="Perfis de usuário disponíveis">
+            {personas.map(p => (
+                <MiniAppCard
+                    key={p.id}
+                    label={p.label}
+                    icon={p.icon}
+                    color={p.color}
+                    status={p.status}
+                    selected={selectedPersona === p.id}
+                    onClick={() => handleClick(p.id, p.label)}
+                    dataAttr={{ 'data-persona': p.id }}
+                />
+            ))}
+        </section>
+    );
+};
+
+const StudentMenuScreen = ({ onOpenActionModal }) => {
+    const studentActions = [
+        { id: 'simulados', label: 'Simulados e Provas', icon: 'quiz', color: 'pink', status: 'Ativo' },
+        { id: 'notas', label: 'Notas e Frequência', icon: 'rate_review', color: 'cyan', status: 'Ativo' },
+        { id: 'agenda', label: 'Agenda e Tarefas', icon: 'calendar_today', color: 'amber', status: 'Em breve' },
+        { id: 'conteudo', label: 'Conteúdo de Estudo', icon: 'book_4', color: 'violet', status: 'Em breve' },
+    ];
+
+    return (
+        <section id="screen-aluno" data-screen-id={SCREENS.STUDENT_MENU} 
+                 className="flex flex-wrap justify-center gap-8 mini-app-portfolio mt-8" aria-label="Menu do Aluno">
+            {studentActions.map(action => (
+                <MiniAppCard
+                    key={action.id}
+                    label={action.label}
+                    icon={action.icon}
+                    color={action.color}
+                    status={action.status}
+                    onClick={() => onOpenActionModal(action)}
+                    dataAttr={{ 'data-action': action.id, 'data-color': action.color }}
+                />
+            ))}
+        </section>
+    );
+};
+
+// =========================================================================
+// 8. COMPONENTE PRINCIPAL (App)
+// =========================================================================
+
+const App = () => {
+    // Hooks customizados
+    const { data: userData, updatePersona, updateTheme, clearUserData, updateData, confirmIntroToasts } = useUserData();
+    
+    // Estado de Navegação
+    const [currentScreen, setCurrentScreen] = useState(SCREENS.CATALOG);
+    
+    // Estado do Modal de Ação
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState({ title: '', id: '', color: 'pink' });
+    
+    // Estado do Painel do Usuário
+    const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
+    
+    // ESTADO DE AJUDA/ACESSIBILIDADE
+    const [isAccessibilityPanelOpen, setIsAccessibilityPanelOpen] = useState(false); 
+    
+    // NOVO ESTADO: PAINEL DE NOTIFICAÇÕES
+    const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+
+    // NOVO ESTADO para o Toast de Acessibilidade (acionado por clique)
+    const [showAccessibilityToast, setShowAccessibilityToast] = useState(false);
+    
+    // NOVO ESTADO para o Toast de Status do Usuário
+    const [showUserStatusToast, setShowUserStatusToast] = useState(false);
+    
+    // CORREÇÃO: Definindo personaLabel com useMemo de forma segura
+    const personaLabel = useMemo(() => {
+        const personaId = userData.persona;
+        if (!personaId) return '';
+        const labels = {
+            'aluno': 'Aluno', 'tutor': 'Tutor/Responsável', 'professor': 'Professor', 'instituicao': 'Instituição'
+        };
+        // Se personaId existir, ele será a chave; caso contrário, retorna ''
+        return labels[personaId] || ''; 
+    }, [userData.persona]);
+
+    // Sequência de mensagens inicial (CATALOG screen only)
+    const toastSequence = useMemo(() => {
+        if (currentScreen !== SCREENS.CATALOG) return [];
+        
+        const messages = [];
+        
+        // 1. Status Message (AJUSTADO PARA SER MAIS "DICA" E NÃO REPETIR O SUBTÍTULO)
+        const statusMessage = userData.persona ? 
+               `Perfil '${personaLabel}' carregado. Clique para entrar no Dashboard.` : 
+               'Dica: Clique em Educação para iniciar sua jornada.'; // MANTEM A INSTRUÇÃO DE AÇÃO
+               
+        messages.push({ id: 'status', message: statusMessage });
+
+        // 2. App 5 Horas Message (Reintroduzido na sequência)
+        messages.push({
+            id: 'app5horas',
+            message: 'Aviso da Empresa: Produto desenvolvido pela App 5 Horas - Soluções Digitais.',
+            linkUrl: 'https://app5horas.com.br/' 
+        });
+
+        // Exemplo futuro de alerta (Não Ativo, mas na lista)
+        // messages.push({ id: 'financeiro-future', message: 'O MiniApp Financeiro estará ativo na próxima semana!' });
+
+        return messages;
+    }, [currentScreen, userData.persona, personaLabel]);
+
+
+    // --- Handlers do Painel do Usuário ---
+    const openUserPanel = useCallback(() => {
+        setIsUserPanelOpen(true);
+        // NOVO: Dispara o Toast de Status do Usuário ao abrir o painel
+        setShowUserStatusToast(true);
+    }, []);
+    const closeUserPanel = useCallback(() => setIsUserPanelOpen(false), []);
+    
+    // --- Handlers do Painel de Ajuda/Acessibilidade ---
+    const openAccessibilityPanel = useCallback(() => { 
+        setIsAccessibilityPanelOpen(true);
+        // NOVO: Exibe o toast de instrução ao abrir o modal
+        setShowAccessibilityToast(true);
+    }, []); 
+    const closeAccessibilityPanel = useCallback(() => setIsAccessibilityPanelOpen(false), []); 
+    
+    // --- Handlers do Painel de Notificações ---
+    const openNotificationPanel = useCallback(() => { 
+        setIsNotificationPanelOpen(true);
+    }, []); 
+    const closeNotificationPanel = useCallback(() => setIsNotificationPanelOpen(false), []);
+
+
+    // Definição da função de navegação
+    const navigate = useCallback((screen, label = '') => {
+        setCurrentScreen(screen);
+        if (screen === SCREENS.PERSONA_SELECTION) {
+            updatePersona(null); // Limpa a persona ao entrar na seleção
+        }
+    }, [updatePersona]);
+
+    // Definição da função de voltar (handleBack) antes de ser usada
+    const handleBack = useCallback(() => {
+        if (currentScreen === SCREENS.STUDENT_MENU) {
+            updatePersona(null); 
+            setCurrentScreen(SCREENS.PERSONA_SELECTION);
+        } else if (currentScreen === SCREENS.PERSONA_SELECTION) {
+            updatePersona(null); 
+            setCurrentScreen(SCREENS.CATALOG);
+        } else if (currentScreen === SCREENS.CATALOG) {
+            window.history.back();
+        }
+    }, [currentScreen, updatePersona]);
+
+
+    // --- Gerenciamento de Navegação e Títulos (Retornando objeto de dados) ---
+
+    const { title, subtitle, backText, showBackButton } = useMemo(() => {
+        const commonBackText = "Voltar"; 
+        let currentTitle = "Catálogo de Aplicações";
+        let currentSubtitle = "Selecione o sistema que deseja acessar:";
+        let currentShowBackButton = false;
+
+        if (currentScreen === SCREENS.PERSONA_SELECTION) {
+            currentTitle = "MiniApp: Educação";
+            currentSubtitle = "Selecione seu perfil de acesso para customizar a experiência.";
+            currentShowBackButton = true;
+        } else if (currentScreen === SCREENS.STUDENT_MENU) {
+            // Usando o personaLabel que foi calculado de forma segura
+            currentTitle = `Dashboard - ${personaLabel}`;
+            currentSubtitle = "Selecione a funcionalidade que deseja acessar.";
+            currentShowBackButton = true;
+        }
+
+        return { 
+            title: currentTitle, 
+            subtitle: currentSubtitle, 
+            backText: commonBackText, 
+            showBackButton: currentShowBackButton,
+        };
+    }, [currentScreen, personaLabel]);
+
+
+    // --- Gerenciamento de Modal de Ação (Aulas/Simulados) ---
+
+    const openActionModal = useCallback((action) => {
+        setModalContent({
+            title: action.label,
+            id: action.id, // Passa apenas o ID da ação
+            color: action.color,
+        });
+        setIsModalOpen(true);
+    }, []);
+
+    const closeActionModal = useCallback(() => {
+        setIsModalOpen(false);
+    }, []);
+
+
+    // --- Renderização da Tela Ativa ---
+
+    const renderScreen = () => {
+        if (currentScreen === SCREENS.CATALOG) {
+            return <CatalogScreen onNavigate={navigate} />;
+        } else if (currentScreen === SCREENS.PERSONA_SELECTION) {
+            return <PersonaSelectionScreen 
+                        onSelectPersona={updatePersona} 
+                        selectedPersona={userData.persona}
+                        onNavigate={navigate}
+                    />;
+        } else if (currentScreen === SCREENS.STUDENT_MENU) {
+            return <StudentMenuScreen onOpenActionModal={openActionModal} />;
+        }
+        return null;
+    };
+
+    return (
+        <React.Fragment>
+            {/* 1. ESTILOS GLOBAIS */}
+            <style dangerouslySetInnerHTML={{ __html: CSS_STYLES }} />
+
+            {/* 2. HEADER - Recebendo todos os dados de título (statusMessage será ignorado por ele) */}
+            <Header 
+                onBack={handleBack} 
+                backButtonText={backText} 
+                showBackButton={showBackButton} 
+                onOpenUserPanel={openUserPanel}
+                title={title}
+                subtitle={subtitle}
+            />
+            
+            {/* 3. CONTEÚDO PRINCIPAL */}
+            {/* AJUSTE: pt-24 para acomodar o novo header mais alto e dar mais espaço */}
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-24"> 
+                {/* REMOÇÃO DA SEÇÃO DE TÍTULO ANTIGA */}
+                
+                <div id="screen-container">
+                    {renderScreen()}
+                </div>
+            </main>
+            
+            {/* 4. MODAIS E OVERLAYS */}
+
+            {/* MODAL DO PAINEL DO USUÁRIO */}
+            <UserPanelModal
+                isOpen={isUserPanelOpen}
+                onClose={closeUserPanel}
+                userData={userData}
+                updateTheme={updateTheme}
+                updateData={updateData} // Passando updateData para gerenciar showAccessibilityFab
+                clearUserData={clearUserData}
+            />
+            
+            {/* MODAL DE AJUDA/ACESSIBILIDADE */}
+            <AccessibilityPanelModal 
+                isOpen={isAccessibilityPanelOpen}
+                onClose={closeAccessibilityPanel}
+            />
+            
+            {/* NOVO MODAL: PAINEL DE NOTIFICAÇÕES */}
+            <NotificationPanelModal 
+                isOpen={isNotificationPanelOpen}
+                onClose={closeNotificationPanel}
+                // NOVO: Passando handler de confirmação de aviso e o status
+                onConfirmIntroToasts={confirmIntroToasts}
+                userData={userData}
+            />
+
+            {/* MODAL DE AÇÃO (Simulados/Notas) */}
+            <ActionModal 
+                isOpen={isModalOpen} 
+                onClose={closeActionModal} 
+                title={modalContent.title} 
+                color={modalContent.color}
+            >
+                {/* O conteúdo do modal é agora um componente React */}
+                <ProductContent actionId={modalContent.id} />
+            </ActionModal>
+
+            {/* 5. NOVO COMPONENTE GLOBAL OVERLAYS (Elementos fixos inferiores) */}
+            <GlobalOverlays
+                toastSequence={toastSequence} // Passa a sequência de mensagens
+                onOpenAccessibilityPanel={openAccessibilityPanel}
+                showAccessibilityFab={userData.showAccessibilityFab}
+                showAccessibilityToast={showAccessibilityToast}
+                setShowAccessibilityToast={setShowAccessibilityToast}
+                
+                // NOVO: Toast de Status do Usuário
+                showUserStatusToast={showUserStatusToast}
+                setShowUserStatusToast={setShowUserStatusToast}
+                userData={userData} // Passa os dados para o Toast saber o que exibir
+                
+                // NOVO: Handler para o Alert FAB
+                onOpenNotificationPanel={openNotificationPanel}
+                
+                // NOVO: Status de confirmação do aviso
+                hasSeenIntroToasts={userData.hasSeenIntroToasts}
+            />
+            
+        </React.Fragment>
+    );
+};
+
+
+// =========================================================================
+// FUNÇÃO UTILITÁRIA: Cálculo da Duração do Toast
+// =========================================================================
+
+/**
+ * Calcula a duração ideal do toast com base no comprimento da mensagem.
+ * @param {string} message - A mensagem a ser exibida.
+ * @returns {number} Duração em milissegundos.
+ */
+const calculateToastDuration = (message) => {
+    const MIN_DURATION = 3000; // 3 segundos
+    const BASE_DURATION_MS = 1000; // 1 segundo para processamento e início da leitura
+    const READING_RATE_MS_PER_WORD = 180; // 180ms por palavra (aprox. 333 palavras/minuto)
+
+    if (!message) return MIN_DURATION;
+
+    // Remove pontuação básica para contagem de palavras mais precisa
+    const wordCount = message.split(/\s+/).filter(Boolean).length;
+    
+    // Duração calculada = (Palavras * Taxa) + Base
+    const calculatedDuration = (wordCount * READING_RATE_MS_PER_WORD) + BASE_DURATION_MS;
+
+    return Math.max(calculatedDuration, MIN_DURATION);
+};
+
+
+// =========================================================================
+// NOVO COMPONENTE: GlobalOverlays (Agrupamento dos elementos inferiores)
+// =========================================================================
+
+const GlobalOverlays = ({ 
+    toastSequence, 
+    onOpenAccessibilityPanel, 
+    showAccessibilityFab, 
+    showAccessibilityToast, 
+    setShowAccessibilityToast,
+    // NOVAS PROPS
+    showUserStatusToast,
+    setShowUserStatusToast,
+    userData,
+    onOpenNotificationPanel, 
+    hasSeenIntroToasts // NOVO
+}) => {
+    
+    // O Toast de Status do Usuário tem prioridade sobre a sequência de carregamento
+    const isToastActive = showAccessibilityToast || showUserStatusToast;
+    
+    return (
+        <React.Fragment>
+            {/* Gerenciador de Sequência de Toasts */}
+            <ToastSequenceManager 
+                toastSequence={toastSequence}
+                // Garante que o toast de sequência não apareça se qualquer outro toast estiver ativo
+                isOverridden={isToastActive} 
+                // NOVO: Passa o status de confirmação
+                hasSeenIntroToasts={hasSeenIntroToasts}
+            />
+            
+            {/* Toast de Instrução de Acessibilidade: Sobrescrita de ordem (Z-index 50) */}
+            <AccessibilityInstructionToast
+                isVisible={showAccessibilityToast}
+                onClose={() => setShowAccessibilityToast(false)}
+            />
+            
+            {/* NOVO: Toast de Status do Usuário */}
+            <UserStatusToast
+                isVisible={showUserStatusToast}
+                onClose={() => setShowUserStatusToast(false)}
+                userData={userData}
+            />
+
+            {/* NOVO: Botão Flutuante de Alertas (Âmbar) */}
+            <AlertFAB onOpen={onOpenNotificationPanel} />
+
+            {/* Renderiza o FAB somente se showAccessibilityFab for true */}
+            {showAccessibilityFab && (
+                <AccessibilityFAB 
+                    onOpen={onOpenAccessibilityPanel}
+                />
+            )}
+        </React.Fragment>
+    );
+};
+
+// =========================================================================
+// NOVO COMPONENTE: FloatingToast (Componente Visual Base Padronizado)
+// =========================================================================
+
+const FloatingToast = ({ message, icon, colorBase, linkUrl, duration, isVisible, onClose, positioning = 'center', opaque = false }) => { 
+    
+    // Mapeamento dinâmico de cores
+    const colorClasses = {
+        // Agora usa a cor base para a borda
+        border: `border-${colorBase}-600/50`, 
+        // Se opaco, usa o BG do tema principal (mais branco/claro)
+        bg: opaque ? 'bg-[rgb(var(--page-bg)/0.9)] backdrop-blur-md' : `bg-${colorBase}-500/10 backdrop-blur-md`,
+        // Usa a cor base-700 para o texto e ícone
+        text: `text-${colorBase}-700`,
+        hoverBorder: `hover:border-${colorBase}-700`,
+        shadow: opaque ? 'shadow-xl' : 'shadow-lg',
+    };
+    
+    // Usa a duração calculada se não for fornecida (apenas como fallback visual)
+    const finalDuration = duration || calculateToastDuration(message); 
+    
+    // Controle de exibição para a animação
+    const [show, setShow] = useState(false);
+    
+    useEffect(() => {
+        if (isVisible) {
+            setShow(true);
+            // Usa a duração calculada/fornecida para o timer
+            const timer = setTimeout(() => {
+                setShow(false);
+                onClose && onClose();
+            }, finalDuration); 
+            return () => clearTimeout(timer);
+        } else {
+            setShow(false);
+        }
+    }, [isVisible, finalDuration, onClose]);
+    
+    if (!message) return null;
+
+    const content = (
+        // Aplica classes de fundo e sombra dinamicamente
+        <div className={`flex items-center gap-2 rounded-full border-2 ${colorClasses.border} ${colorClasses.bg} px-4 py-2 text-sm font-semibold ${colorClasses.shadow} ${colorClasses.text} ${linkUrl ? colorClasses.hoverBorder + ' transition-colors' : ''}`}>
+            <span className="material-symbols-rounded text-lg">{icon}</span>
+            
+            {/* NOVO: Wrapper de máscara para o efeito de rolagem */}
+            <div className="toast-message-roll-mask">
+                {/* O key={message} força a recriação deste elemento, re-executando a animação CSS */}
+                <span key={message} className="toast-message-roll-wrapper">
+                    {message}
+                </span>
+            </div>
+            {/* FIM: Wrapper de máscara */}
+            
+        </div>
+    );
+    
+    // Aplica classes de posicionamento com base na prop
+    const positionClasses = positioning === 'left'
+        ? 'bottom-16 left-4 right-auto max-w-[calc(100%-60px)] transform-none' // Alinhado à esquerda, evita quebrar a tela
+        : 'bottom-14 left-1/2 transform -translate-x-1/2'; // Centralizado padrão
+
+    const toastClasses = `fixed z-50 transition-all duration-300 ${positionClasses} ${show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`;
+    
+    return (
+        <div className={toastClasses} role="status" aria-live="polite">
+            {linkUrl ? (
+                <a href={linkUrl} target="_blank" rel="noopener noreferrer" className="block">
+                    {content}
+                </a>
+            ) : (
+                content
+            )}
+        </div>
+    );
+};
+
+// =========================================================================
+// NOVO COMPONENTE: ToastSequenceManager (Gerencia a Sequência de Avisos)
+// =========================================================================
+
+const ToastSequenceManager = ({ toastSequence, isOverridden, hasSeenIntroToasts }) => {
+    const [currentToastIndex, setCurrentToastIndex] = useState(0);
+    const [isSequenceComplete, setIsSequenceComplete] = useState(false);
+    
+    // NOVO ESTADO: Adiciona um atraso inicial antes de começar a sequência
+    const [isSequenceDelayed, setIsSequenceDelayed] = useState(true); 
+    const INITIAL_DELAY_MS = 1000; // 1 segundo de atraso inicial
+
+    // 1. Efeito para iniciar a sequência após o atraso
+    useEffect(() => {
+        if (toastSequence.length === 0) return;
+        
+        // Define o timer para remover o atraso inicial
+        const delayTimer = setTimeout(() => {
+            setIsSequenceDelayed(false);
+        }, INITIAL_DELAY_MS);
+        
+        // Limpa o timer de atraso se o componente for desmontado
+        return () => clearTimeout(delayTimer);
+    }, [toastSequence]);
+
+
+    // 2. Reinicia a sequência sempre que a lista de mensagens muda ou a tela muda
+    useEffect(() => {
+        if (toastSequence.length > 0) {
+            setCurrentToastIndex(0);
+            setIsSequenceComplete(false);
+            setIsSequenceDelayed(true); // Reseta o delay também
+        }
+    }, [toastSequence, hasSeenIntroToasts]); // Adicionado hasSeenIntroToasts
+
+
+    // 3. Efeito para avançar a sequência (só roda se o delay tiver acabado)
+    useEffect(() => {
+        // Verifica se a sequência está liberada para começar
+        if (isOverridden || isSequenceComplete || toastSequence.length === 0 || isSequenceDelayed || hasSeenIntroToasts) {
+            return; // Adicionado hasSeenIntroToasts
+        }
+
+        const currentToast = toastSequence[currentToastIndex];
+        // Determina a duração, usando a calculada se nenhuma for fornecida
+        const duration = currentToast.duration || calculateToastDuration(currentToast.message);
+        
+        const timer = setTimeout(() => {
+            if (currentToastIndex < toastSequence.length - 1) {
+                setCurrentToastIndex(prev => prev + 1);
+            } else {
+                setIsSequenceComplete(true);
+            }
+        }, duration);
+
+        return () => clearTimeout(timer);
+    }, [currentToastIndex, isSequenceComplete, isOverridden, isSequenceDelayed, toastSequence, hasSeenIntroToasts]);
+
+
+    // Se a sequência estiver completa, substituída, atrasada OU JÁ CONFIRMADA, não renderiza nada
+    if (isSequenceComplete || isOverridden || toastSequence.length === 0 || isSequenceDelayed || hasSeenIntroToasts) {
+        return null;
+    }
+
+    const currentToast = toastSequence[currentToastIndex];
+    
+    return (
+        <FloatingToast 
+            message={currentToast.message}
+            // MUDANÇA: Cor padronizada para AMBAR (Notificações)
+            icon="info" 
+            colorBase="amber" 
+            linkUrl={currentToast.linkUrl}
+            // Não passamos 'duration' aqui, pois ela é controlada pelo useEffect do SequenceManager
+            isVisible={true} // Sempre visível enquanto estiver no index atual
+            onClose={() => { /* O timer interno do FloatingToast chamará o avanço da sequência via useEffect acima */ }}
+            positioning="left" // MUDANÇA: Agora alinhado à esquerda
+            opaque={true} // MUDANÇA: Agora com fundo opaco para padronizar
+        />
+    );
+};
+
+
+// =========================================================================
+// TOAST DE ACESSIBILIDADE (Mantido separado por ser acionado por ação)
+// =========================================================================
+
+const AccessibilityInstructionToast = ({ isVisible, onClose }) => {
+    
+    const message = "Recursos de Acessibilidade em construção!";
+    const icon = "accessibility_new";
+    // MUDANÇA: Cor padronizada para AMBAR (Notificações)
+    const colorBase = "amber";
+    
+    // A duração é calculada automaticamente (duração longa para avisos importantes)
+    const duration = calculateToastDuration(message); 
+
+    // Utiliza o FloatingToast para garantir a padronização de estilo
+    return (
+        <FloatingToast 
+            message={message}
+            icon={icon}
+            colorBase={colorBase}
+            duration={duration} // Passa a duração calculada para o FloatingToast
+            isVisible={isVisible}
+            onClose={onClose}
+            positioning="left" 
+            opaque={true} 
+        />
+    );
+};
+
+// =========================================================================
+// NOVO COMPONENTE: UserStatusToast (Toast ao Abrir Painel do Usuário)
+// =========================================================================
+
+const UserStatusToast = ({ isVisible, onClose, userData }) => {
+    
+    // Verifica se o usuário preencheu o nome
+    const isDataFilled = !!userData.name && !!userData.email && !!userData.phone;
+    
+    // Determina a mensagem com base nos dados
+    const message = isDataFilled
+        ? `Bem-vindo(a), ${userData.name.split(' ')[0]}! Dados pessoais restaurados.`
+        : 'Preencha seus dados na aba "Dados do Usuário" para salvá-los neste dispositivo.';
+
+    const icon = isDataFilled ? "verified_user" : "contact_support";
+    
+    // MUDANÇA: Cor padronizada para AMBAR (Notificações)
+    const colorBase = "amber";
+    const duration = calculateToastDuration(message); 
+
+    return (
+        <FloatingToast 
+            message={message}
+            icon={icon}
+            colorBase={colorBase}
+            duration={duration} 
+            isVisible={isVisible}
+            onClose={onClose}
+            positioning="left" 
+            opaque={true} 
+        />
+    );
+};
+
+
+// =========================================================================
+// NOVO COMPONENTE: AlertFAB (Botão Flutuante para Alertas/Notificações)
+// =========================================================================
+
+const AlertFAB = ({ onOpen }) => {
+    // Cor AMBAR para notificações/alertas
+    const colorClass = "bg-amber-500 hover:bg-amber-600 text-white";
+    const shadowClass = "shadow-lg shadow-amber-500/50";
+    
+    return (
+        <button 
+            id="alert-fab"
+            type="button" 
+            onClick={onOpen}
+            // NOVO POSICIONAMENTO: bottom-20 (acima do FAB de Acessibilidade)
+            className={`fixed bottom-20 left-4 z-40 w-12 h-12 rounded-full transition-all duration-200
+                        flex items-center justify-center 
+                        ${colorClass} ${shadowClass} 
+                        focus:outline-none focus:ring-4 focus:ring-amber-300/50`}
+            aria-label="Abrir Painel de Avisos e Notificações"
+        >
+            <span className="material-symbols-rounded text-2xl">notifications</span>
+        </button>
+    );
+};
+
+// =========================================================================
+// NOVO COMPONENTE: AccessibilityFAB (Floating Action Button)
+// =========================================================================
+
+const AccessibilityFAB = ({ onOpen }) => {
+    // Definimos a cor violeta para o FAB para consistência com o painel interno
+    const colorClass = "bg-violet-500 hover:bg-violet-600 text-white";
+    const shadowClass = "shadow-lg shadow-violet-500/50";
+    
+    return (
+        <button 
+            id="accessibility-fab"
+            type="button" 
+            onClick={onOpen}
+            // FAB: Fixo no canto inferior esquerdo (bottom-4)
+            className={`fixed bottom-4 left-4 z-40 w-12 h-12 rounded-full transition-all duration-200
+                        flex items-center justify-center 
+                        ${colorClass} ${shadowClass} 
+                        focus:outline-none focus:ring-4 focus:ring-violet-300/50`}
+            aria-label="Abrir Painel de Acessibilidade e Ajuda"
+        >
+            <span className="material-symbols-rounded text-2xl">accessibility_new</span>
+        </button>
+    );
+};
+
+
+// =========================================================================
+// NOVO COMPONENTE: NotificationPanelModal (Recebe Alertas/Avisos)
+// =========================================================================
+
+const NotificationPanelModal = ({ isOpen, onClose, onConfirmIntroToasts, userData }) => {
+    
+    const title = 'Avisos e Notificações';
+    const subtitle = 'Central de status e alertas da aplicação.';
+    const colorBase = 'amber-500';
+    const icon = 'notifications';
+
+    const colorClasses = {
+        border: `border-${colorBase}/70`,
+        bg: `bg-${colorBase}/15`,
+    };
+
+    const presentationText = `Esta é a Central de Avisos. Aqui você pode revisar as notificações e o status de desenvolvimento da aplicação. (Confirme para desativar a sequência de alertas iniciais)`;
+    
+    // Consolidando todos os avisos em uma lista para gerenciamento local.
+    const initialAlerts = useMemo(() => [
+        { 
+            id: 'intro', 
+            icon: 'history_edu', 
+            title: 'Sobre este Painel', 
+            message: presentationText, 
+            status: userData.hasSeenIntroToasts ? 'removed' : 'active', // 'active', 'confirmed', 'removed'
+            isSpecial: true, // Indica que a confirmação é persistente (usa onConfirmIntroToasts)
+            color: 'amber'
+        },
+        { 
+            id: 'dica_educacao', 
+            icon: 'info', 
+            title: 'Alerta de Status', 
+            message: 'Dica: Clique em Educação para iniciar sua jornada. (Confirme para ocultar)', 
+            status: 'active',
+            isSpecial: false, 
+            color: 'amber'
+        },
+        { 
+            id: 'aviso_empresa', 
+            icon: 'rocket_launch', 
+            title: 'Aviso da Empresa', 
+            message: 'Produto desenvolvido pela App 5 Horas - Soluções Digitais.', 
+            status: 'active',
+            isSpecial: false, 
+            color: 'cyan', 
+            linkUrl: 'https://app5horas.com.br/' 
+        },
+        { 
+            id: 'beta_test', 
+            icon: 'bug_report', 
+            title: 'Beta: Feedback', 
+            message: 'Este app está em fase Beta. Envie feedback para ajudar no desenvolvimento.', 
+            status: 'active', 
+            isSpecial: false, 
+            color: 'red'
+        },
+    ], [userData.hasSeenIntroToasts]);
+
+    // Estado local para gerenciar a lista de alertas ativos (não removidos)
+    const [activeAlerts, setActiveAlerts] = useState([]);
+    
+    // Efeito para sincronizar a lista local com o status persistente ao abrir o modal
+    useEffect(() => {
+        if (isOpen) {
+            // Filtra o estado persistente: se 'intro' já foi visto, ele inicia como 'removed'
+            setActiveAlerts(initialAlerts.filter(alert => alert.status !== 'removed'));
+        }
+    }, [isOpen, initialAlerts]);
+
+    
+    // Duração do feedback de sucesso: 3 segundos (3000ms)
+    const CONFIRM_FEEDBACK_DURATION = 3000;
+
+
+    const handleConfirmAlert = useCallback((id, isSpecial) => {
+        // 1. Lógica Persistente (Apenas para o aviso 'intro')
+        if (isSpecial) {
+            onConfirmIntroToasts(); // Salva no localStorage, desativa a sequência de toasts.
+        }
+
+        // 2. Atualiza o estado local para mostrar o status "confirmed" (verde)
+        setActiveAlerts(prev => prev.map(alert => 
+            alert.id === id ? { ...alert, status: 'confirmed' } : alert
+        ));
+        
+        // 3. Define um timeout para remover o alerta da lista local (arquivamento visual)
+        setTimeout(() => {
+            setActiveAlerts(prev => prev.filter(alert => alert.id !== id));
+        }, CONFIRM_FEEDBACK_DURATION); 
+        
+    }, [onConfirmIntroToasts]);
+
+
+    // Componente local para renderizar um único cartão de alerta
+    const AlertCard = ({ alert }) => {
+        const isConfirmedLocal = alert.status === 'confirmed';
+        const alertColor = colorMap[alert.color] || colorMap.amber;
+        
+        // CORREÇÃO: Usando a cor esmeralda para o feedback, independente da cor original
+        const confirmationColorBase = 'emerald-500';
+        const confirmationIcon = 'check_circle';
+        const confirmationMessage = `${alert.title} — LIDO e ARQUIVADO.`;
+        
+        // Renderiza a mensagem de sucesso temporária se confirmada
+        if (isConfirmedLocal) {
+            // Estilo para transição de opacidade/escala para simular o desaparecimento
+            return (
+                 <div key={alert.id} 
+                    // Ajustamos as classes para garantir o desaparecimento suave (opacity 0 após o timeout)
+                    className={`p-3 rounded-xl border-2 border-emerald-500/50 bg-emerald-500/10 text-left 
+                                transition-opacity duration-1000 ease-in opacity-100 
+                                /* A escala não é mais necessária para o desaparecimento */`}
+                    style={{ 
+                        // O timeout de 3 segundos no pai controla a remoção, a transição controla a opacidade
+                        transitionDelay: '100ms' // Um pequeno delay para o estado 'confirmed' iniciar
+                    }}
+                >
+                    <div className="flex items-center gap-3">
+                        <span className={`material-symbols-rounded text-xl text-emerald-600`}>{confirmationIcon}</span>
+                        <p className="text-sm text-[rgb(var(--page-fg))] leading-snug">
+                            {confirmationMessage}
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+        
+        // Renderiza o aviso original se ativo
+        if (alert.status === 'active') {
+             // Cor original do alerta
+            const colorBaseActive = alertColor.base;
+            return (
+                <div key={alert.id} className="space-y-3 transition-all duration-300">
+                    <h3 className="text-base font-semibold text-[rgb(var(--page-fg))] flex items-center gap-2">
+                        <span className={`material-symbols-rounded text-lg text-${colorBaseActive}`}>{alert.icon}</span>
+                        {alert.title}
+                    </h3>
+                    {/* Container com cor de destaque */}
+                    <div className={`p-4 rounded-xl border-2 border-${colorBaseActive}/50 bg-${colorBaseActive}/10 text-left transition duration-300`}>
+                        <div className="flex justify-between items-start gap-4">
+                            <p className="text-sm text-[rgb(var(--page-fg))] opacity-90 leading-relaxed" aria-live="polite">
+                                {alert.message}
+                                {/* Exibe o link se houver */}
+                                {alert.linkUrl && (
+                                    <a href={alert.linkUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-700 ml-1 underline">
+                                        [Acessar link]
+                                    </a>
+                                )}
+                            </p>
+                            {/* Botão de Confirmação (Verde Esmeralda) */}
+                            <button
+                                type="button"
+                                onClick={() => handleConfirmAlert(alert.id, alert.isSpecial)}
+                                className="flex-shrink-0 p-2 rounded-full transition-all duration-200 
+                                           focus:outline-none focus:ring-4 focus:ring-emerald-300/50 
+                                           hover:bg-emerald-100/50"
+                                aria-label={`Confirmar que li o aviso ${alert.title}`}
+                                title="Marcar como lido"
+                            >
+                                <span className="material-symbols-rounded text-xl text-emerald-600">done_all</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
+        return null; 
+    };
+    
+    // Mapeia apenas os alertas ativos ou confirmados localmente
+    const noticesToDisplay = activeAlerts;
+
+
+    if (!isOpen) return null;
+    
+    // Estilos do botão de fechar (padronizado com o Header)
+    const closeButtonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+    const closeIconClasses = "material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700";
+    const closeTextClasses = "text-[rgb(var(--page-fg-muted))] text-sm font-medium";
+
+    return (
+        <div id="notification-panel" className="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex" aria-modal="true" role="dialog" onClick={onClose}>
+            <div className={`mx-4 w-full max-w-md max-h-full overflow-y-auto rounded-3xl border-2 ${colorClasses.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl`} onClick={(e) => e.stopPropagation()}>
+                
+                {/* Cabeçalho do Painel */}
+                <div className="flex items-start justify-between gap-3 border-b-2 border-gray-200/50 pb-4 mb-4">
+                    <div id="panel-title-container">
+                        <div className="flex items-center mb-1">
+                            <span className={`material-symbols-rounded text-lg text-${colorBase} mr-2`}>{icon}</span>
+                            <h2 id="panel-title" className="text-base sm:text-lg font-semibold">{title}</h2>
+                        </div>
+                        <p id="panel-subtitle" className="mt-1 text-xs sm:text-[0.75rem] text-[rgb(var(--page-fg-muted))]">{subtitle}</p>
+                    </div>
+                    
+                    {/* Botão Fechar (PADRONIZADO) */}
+                    <button id="alert-close" type="button" onClick={onClose} 
+                        className={`${closeButtonBase} ${closeTextClasses} px-3`}
+                        aria-label="Fechar painel de notificações"
+                    >
+                        <span className={`${closeIconClasses}`}>close</span>
+                        <span className="hidden sm:inline">Fechar</span>
+                    </button>
+                </div>
+
+                {/* CONTEÚDO PRINCIPAL: Mapeamento de todos os alertas ativos */}
+                <div className="relative mt-3 space-y-6">
+                    {noticesToDisplay.length > 0 ? (
+                        noticesToDisplay.map(alert => (
+                            // Adicionando um wrapper div para a transição do espaço
+                            <div key={alert.id} className="transition-all duration-500 ease-in-out">
+                                <AlertCard alert={alert} />
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-4 rounded-xl border-2 border-emerald-500/50 bg-emerald-500/10 text-center">
+                            <p className="text-sm text-emerald-800 font-medium">🎉 Parabéns! Sua caixa de entrada de avisos está vazia.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// =========================================================================
+// NOVO COMPONENTE: AccessibilityPanelModal (Painel Simplificado SEM Abas)
+// =========================================================================
+
+const AccessibilityPanelModal = ({ isOpen, onClose }) => {
+    
+    // Dados fixos para o Painel de Acessibilidade
+    const title = 'Acessibilidade e Ajuda';
+    const subtitle = 'Painel de Configurações do App 5 Horas.';
+    const colorBase = 'violet-500';
+    const icon = 'accessibility_new';
+
+    const colorClasses = {
+        border: `border-${colorBase}/70`,
+        bg: `bg-${colorBase}/15`,
+    };
+    
+    // NOVO: Ações de Acessibilidade (4 Botões)
+    const accessibilityActions = [
+        { label: 'Alto Contraste', icon: 'contrast', color: 'cyan' },
+        { label: 'Ajuste de Fonte', icon: 'text_fields', color: 'emerald' },
+        { label: 'Leitura de Tela', icon: 'volume_up', color: 'pink' },
+        { label: 'Comandos de Voz', icon: 'mic', color: 'amber' },
+    ];
+    
+
+    if (!isOpen) return null;
+    
+    // Estilos do botão de fechar (padronizado com o Header)
+    const closeButtonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+    const closeIconClasses = "material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700";
+    const closeTextClasses = "text-[rgb(var(--page-fg-muted))] text-sm font-medium";
+
+    return (
+        <div id="accessibility-panel" className="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex" aria-modal="true" role="dialog" onClick={onClose}>
+            <div className={`mx-4 w-full max-w-md max-h-full overflow-y-auto rounded-3xl border-2 ${colorClasses.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl`} onClick={(e) => e.stopPropagation()}>
+                
+                {/* Cabeçalho do Painel */}
+                <div className="flex items-start justify-between gap-3 border-b-2 border-gray-200/50 pb-4 mb-4">
+                    <div id="panel-title-container">
+                        <div className="flex items-center mb-1">
+                            <span className={`material-symbols-rounded text-lg text-${colorBase} mr-2`}>{icon}</span>
+                            <h2 id="panel-title" className="text-base sm:text-lg font-semibold">{title}</h2>
+                        </div>
+                        <p id="panel-subtitle" className="mt-1 text-xs sm:text-[0.75rem] text-[rgb(var(--page-fg-muted))]">{subtitle}</p>
+                    </div>
+                    
+                    {/* Botão Fechar (PADRONIZADO) */}
+                    <button id="help-close" type="button" onClick={onClose} 
+                        className={`${closeButtonBase} ${closeTextClasses} px-3`}
+                        aria-label="Fechar painel de acessibilidade"
+                    >
+                        <span className={`${closeIconClasses}`}>close</span>
+                        <span className="hidden sm:inline">Fechar</span>
+                    </button>
+                </div>
+
+                {/* CONTEÚDO PRINCIPAL (REESTRUTURADO) */}
+                <div className="relative mt-3 space-y-6">
+                    
+                    {/* 1. CONTAINER DE AÇÕES (4 BOTÕES COLORIDOS) */}
+                    <div className="space-y-3">
+                        <h3 className="text-base font-semibold text-[rgb(var(--page-fg))] flex items-center gap-2 mb-3">
+                            <span className={`material-symbols-rounded text-lg text-violet-500`}>settings_accessibility</span>
+                            Ferramentas de Customização (Em breve)
+                        </h3>
+                        {/* Grid de 2 colunas para os botões de acessibilidade */}
+                        <div className="grid grid-cols-2 gap-3">
+                            {accessibilityActions.map((action, index) => (
+                                <Container key={index} 
+                                    icon={action.icon} 
+                                    label={action.label} 
+                                    color={action.color} 
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* 2. ESPAÇADOR E LISTA DE AVISOS REMOVIDOS */}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// =========================================================================
+// COMPONENTE: UserPanelModal (Painel do Usuário)
+// =========================================================================
+
+const UserPanelModal = ({ isOpen, onClose, userData, updateTheme, updateData, clearUserData }) => {
+    const [currentTab, setCurrentTab] = useState('data');
+    // REMOVIDO statusMessage para que a mensagem seja controlada pelo Toast fora do Modal.
+    // O texto de status no rodapé do modal será gerado dinamicamente no efeito.
+    const [formData, setFormData] = useState({
+        name: userData.name || '',
+        phone: maskPhone(userData.phone || ''),
+        email: userData.email || '',
+        cep: maskCEP(userData.cep || ''), // NOVO
+        birthDate: maskBirthDate(userData.birthDate || ''), // NOVO
+        country: userData.country || 'Brasil', // NOVO
+    });
+    
+    // Obtendo o estado do FAB
+    const showFab = userData.showAccessibilityFab ?? true; // Usando fallback para garantir que seja um booleano
+
+
+    const getStatusText = (isCleared = false) => {
+        if (isCleared) return { text: 'Dados removidos e tema redefinido.', tone: 'error' };
+
+        const isDataFilled = !!userData.name || !!userData.email || !!userData.phone;
+        return isDataFilled 
+            ? { text: 'Dados restaurados.', tone: 'ok' }
+            : { text: 'Preencha seus dados para salvá-los.', tone: 'warn' };
+    };
+
+    const [statusMessage, setStatusMessage] = useState(getStatusText());
+    
+    // Efeito para sincronizar formData com userData E ATUALIZAR STATUS
+    useEffect(() => {
+        // Isso sincroniza o formulário com os dados mais recentes do localStorage
+        setFormData({
+            name: userData.name || '',
+            phone: maskPhone(userData.phone || ''),
+            email: userData.email || '',
+            cep: maskCEP(userData.cep || ''),
+            birthDate: maskBirthDate(userData.birthDate || ''),
+            country: userData.country || 'Brasil',
+        });
+        // Atualiza o status do rodapé do modal com base nos dados
+        setStatusMessage(getStatusText());
+    }, [userData.name, userData.phone, userData.email, userData.cep, userData.birthDate, userData.country, isOpen]);
+
+
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        
+        let newValue = value;
+        
+        // Aplica máscaras
+        if (name === 'phone') {
+            newValue = maskPhone(value);
+        } else if (name === 'cep') {
+            newValue = maskCEP(value);
+        } else if (name === 'birthDate') {
+            newValue = maskBirthDate(value);
+        }
+
+        setFormData(prev => {
+            const newFormData = { ...prev, [name]: newValue };
+            
+            // Simulação de auto-save
+            if (['name', 'phone', 'email', 'cep', 'birthDate', 'country'].includes(name)) {
+                // Salva o valor SEM máscara (apenas números para data/cep) se o campo for mascarado
+                let valueToSave = newValue;
+                if (name === 'cep' || name === 'birthDate') {
+                    valueToSave = newValue.replace(/\D/g, ''); 
+                }
+                updateData(name, valueToSave.trim());
+            }
+
+            // A mensagem de status de salvamento é mantida localmente para feedback imediato na digitação
+            setStatusMessage({ text: 'Dados salvos automaticamente.', tone: 'ok' });
+            return newFormData;
+        });
+    }
+    
+    // NOVO: Handler para o toggle do FAB
+    const handleFabToggle = (e) => {
+        const newValue = e.target.checked;
+        updateData('showAccessibilityFab', newValue);
+        setStatusMessage({ text: `Botão de Acessibilidade ${newValue ? 'ativado' : 'desativado'}.`, tone: 'ok' });
+    };
+
+    const handleClearData = () => {
+        clearUserData();
+        setFormData({ 
+            name: '', 
+            phone: '', 
+            email: '', 
+            cep: '', 
+            birthDate: '', 
+            country: 'Brasil' // Mantém o default
+        }); 
+        // updateTheme('system'); // Não faz mais nada, mas mantém o estado
+        setStatusMessage(getStatusText(true)); // Mensagem de 'Dados Removidos'
+        setCurrentTab('data');
+        setTimeout(onClose, 500);
+    }
+    
+    
+    // Componente Placeholder para a Seleção de Tema (Customizado para ser mais clean)
+    const ThemeSelectionPlaceholder = () => (
+        // Remoção do padding e da borda exterior, confiando na borda interna da aba.
+        <div className="space-y-4 pt-1"> 
+            
+            {/* 1. Customização de Tema (Sky Blue) - Tema do painel "Preferências" */}
+            <div className="p-3 rounded-xl border border-sky-300/70 bg-sky-500/5 transition duration-150 ease-in-out hover:shadow-md">
+                <h3 className="font-semibold text-base text-sky-700 flex items-center">
+                    <span className="material-symbols-rounded text-lg text-sky-500 align-middle mr-2">contrast</span>
+                    Customização de Tema
+                </h3>
+                <p className="mt-1 text-sm text-[rgb(var(--page-fg))] opacity-90">
+                    A alternância entre temas Claro e Escuro (Dark Mode) será implementada em breve.
+                </p>
+            </div>
+            
+            {/* 2. Botão de Acessibilidade (Violeta) */}
+            <div className="p-3 rounded-xl border border-violet-300/70 bg-violet-500/5 transition duration-150 ease-in-out hover:shadow-md">
+                <div className="flex justify-between items-center">
+                    <div className="flex flex-col">
+                        <h3 className="font-semibold text-base text-violet-700 flex items-center">
+                            <span className="material-symbols-rounded text-lg text-violet-500 align-middle mr-2">accessibility_new</span>
+                            Botão de Acessibilidade (FAB)
+                        </h3>
+                        <p className="mt-1 text-xs text-[rgb(var(--page-fg))] opacity-80">
+                            Exibe o botão flutuante de Acessibilidade no canto inferior esquerdo.
+                        </p>
+                    </div>
+                    
+                    {/* Toggle logic remains the same */}
+                    <label className="toggle-switch ml-4 flex-shrink-0">
+                        <input 
+                            type="checkbox" 
+                            checked={showFab} 
+                            onChange={handleFabToggle} 
+                            aria-label="Ativar/desativar botão de acessibilidade"
+                        />
+                        <span className="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    );
+
+    const tabs = [
+        // Adicionando ícones às abas
+        { id: 'data', label: 'Dados do Usuário', title: 'Central do Usuário', subtitle: 'Gerencie seus dados e o comportamento do sistema.', base: 'emerald-500', icon: 'badge' },
+        { id: 'prefs', label: 'Preferências', title: 'Preferências', subtitle: 'Configurações que controlam a aparência do sistema.', base: 'sky-500', icon: 'settings' },
+        { id: 'security', label: 'Segurança', title: 'Segurança', subtitle: 'Ações permanentes e críticas do sistema.', base: 'red-500', icon: 'lock' },
+    ];
+    
+    const activeTab = tabs.find(t => t.id === currentTab);
+
+    // Mapeamento dinâmico de cores para a aba ativa
+    const activeColorClasses = activeTab ? {
+        base: activeTab.base,
+        text: `text-${activeTab.base}/90`,
+        border: `border-${activeTab.base}/70`,
+        bg: `bg-${activeTab.base}/15`,
+    } : {};
+
+    // Estilos do botão de fechar (padronizado com o Header)
+    const closeButtonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+    const closeIconClasses = "material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700";
+    const closeTextClasses = "text-[rgb(var(--page-fg-muted))] text-sm font-medium";
+
+
+    if (!isOpen) return null;
+
+    return (
+        <div id="user-panel" className="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex" aria-modal="true" role="dialog" onClick={onClose}>
+            {/* APLICAÇÃO DA BORDA DINÂMICA: Usando activeColorClasses.border e border-2 */}
+            <div className={`mx-4 w-full max-w-md max-h-full overflow-y-auto rounded-3xl border-2 ${activeColorClasses.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl`} onClick={(e) => e.stopPropagation()}>
+                
+                {/* Cabeçalho do Painel */}
+                <div className="flex items-start justify-between gap-3">
+                    <div id="panel-title-container">
+                        <h2 id="panel-title" className="text-base sm:text-lg font-semibold">{activeTab.title}</h2>
+                        {/* Subtítulo usa a cor 'muted', o que é correto para texto secundário */}
+                        <p id="panel-subtitle" className="mt-1 text-xs sm:text-[0.75rem] text-[rgb(var(--page-fg-muted))]">{activeTab.subtitle}</p>
+                    </div>
+                    
+                    {/* Botão Fechar (PADRONIZADO) */}
+                    <button id="user-close" type="button" onClick={onClose} 
+                        className={`${closeButtonBase} ${closeTextClasses} px-3`}
+                        aria-label="Fechar painel do usuário"
+                    >
+                        {/* Ícone Ciano Vibrante */}
+                        <span className={`${closeIconClasses}`}>close</span>
+                        {/* Texto de Fechar (Visível apenas em telas maiores que 'sm') */}
+                        <span className="hidden sm:inline">Fechar</span>
+                    </button>
+                </div>
+
+                {/* ABAS - Aplicação do estilo dinâmico */}
+                <div id="tab-header" className="flex gap-2 border-b border-[rgb(var(--page-border)/0.18)] mt-4 mb-4 pb-1">
+                    {tabs.map(tab => {
+                        const isCurrent = currentTab === tab.id;
+                        const tabBase = tab.base;
+                        // Borda Ativa e Inativa agora usam border-b-2
+                        const activeClasses = isCurrent 
+                            ? `border-b-2 text-${tabBase}/90 bg-${tabBase}/10 font-bold` /* Borda Ativa 2px (LISA) */
+                            : 'border-b-2 border-transparent hover:border-[rgb(var(--page-fg-muted))] hover:text-[rgb(var(--page-fg))]'; /* Borda Inativa 2px */
+                        
+                        // Cor do ícone da aba (usando a cor base da aba)
+                        const iconColorClass = `text-${tabBase}/80`;
+
+                        return (
+                            <button key={tab.id} 
+                                data-tab={tab.id} 
+                                // Adicionando gap-1 para separar o ícone do texto
+                                className={`tab-button inline-flex items-center px-3 text-sm transition focus:outline-none gap-1 ${activeClasses}`} 
+                                onClick={() => setCurrentTab(tab.id)}>
+                                {/* Ícone da Aba */}
+                                <span className={`material-symbols-rounded text-base ${iconColorClass}`}>
+                                    {tab.icon}
+                                </span>
+                                {tab.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Tab Content Wrapper */}
+                <div className="relative mt-3 min-h-[420px]">
+                    
+                    {/* CONTEÚDO DA ABA 1: DADOS DO USUÁRIO - Usa cores do ActiveTab (Emerald) */}
+                    {currentTab === 'data' && (
+                        // Borda do contêiner interno alterada para 2px
+                        <div id="tab-data" className={`tab-content border-2 ${activeColorClasses.border} bg-${activeColorClasses.base}/10 rounded-2xl p-4 absolute top-0 left-0 w-full`}>
+                            <form id="user-form" className="space-y-4 text-sm">
+                                {/* Name Input */}
+                                <div>
+                                <label htmlFor="user-name" className="block text-xs font-medium mb-1 flex items-center">
+                                    <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>person</span>
+                                    Nome completo
+                                </label>
+                                {/* Borda do input alterada para 2px */}
+                                <input id="user-name" name="name" type="text" value={formData.name} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} placeholder="Seu nome e sobrenome" required/>
+                                </div>
+                                
+                                {/* Phone Input */}
+                                <div>
+                                <label htmlFor="user-phone" className="block text-xs font-medium mb-1 flex items-center">
+                                    <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>phone</span>
+                                    Telefone (WhatsApp)
+                                </label>
+                                {/* Borda do input alterada para 2px */}
+                                <input id="user-phone" name="phone" type="tel" inputMode="tel" value={formData.phone} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} placeholder="+55 DDD número" required/>
+                                </div>
+                                
+                                {/* Email Input */}
+                                <div>
+                                <label htmlFor="user-email" className="block text-xs font-medium mb-1 flex items-center">
+                                    <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>mail</span>
+                                    E-mail
+                                </label>
+                                {/* Borda do input alterada para 2px */}
+                                <input id="user-email" name="email" type="email" value={formData.email} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} placeholder="seuemail@exemplo.com" required/>
+                                </div>
+                                
+                                {/* CEP e Data de Nascimento em uma única linha (grid) */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* CEP Input */}
+                                    <div>
+                                        <label htmlFor="user-cep" className="block text-xs font-medium mb-1 flex items-center">
+                                            <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>location_on</span>
+                                            CEP
+                                        </label>
+                                        <input id="user-cep" name="cep" type="text" inputMode="numeric" pattern="[0-9]*" maxLength="9" value={formData.cep} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} placeholder="00000-000" required/>
+                                    </div>
+
+                                    {/* Data de Nascimento Input */}
+                                    <div>
+                                        <label htmlFor="user-birthDate" className="block text-xs font-medium mb-1 flex items-center">
+                                            <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>cake</span>
+                                            Data de Nascimento
+                                        </label>
+                                        <input id="user-birthDate" name="birthDate" type="text" inputMode="numeric" pattern="[0-9]*" maxLength="10" value={formData.birthDate} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} placeholder="DD/MM/AAAA" required/>
+                                    </div>
+                                </div>
+
+                                {/* País Selector */}
+                                <div>
+                                    <label htmlFor="user-country" className="block text-xs font-medium mb-1 flex items-center">
+                                        <span className={`material-symbols-rounded text-base text-${activeColorClasses.base} mr-1`}>public</span>
+                                        País
+                                    </label>
+                                    <select id="user-country" name="country" value={formData.country} onChange={handleFormChange} className={`w-full rounded-xl border-2 border-${activeColorClasses.base}/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-${activeColorClasses.base}/80 focus:border-transparent text-[rgb(var(--page-fg))]`} required>
+                                        <option value="Brasil">Brasil</option>
+                                        <option value="Outro">Outro (Especifique)</option>
+                                    </select>
+                                </div>
+                                
+                            </form>
+                            
+                            {/* REMOVIDO STATUS DAQUI: Movido para fora do container */}
+                            
+                        </div>
+                    )}
+
+                    {/* CONTEÚDO DA ABA 2: PREFERÊNCIAS - Usa cores do ActiveTab (Sky) */}
+                    {currentTab === 'prefs' && (
+                        // O CONTEÚDO DENTRO DESTA ABA FOI SIMPLIFICADO
+                        <div id="tab-prefs" className={`tab-content border-2 ${activeColorClasses.border} bg-${activeColorClasses.base}/10 rounded-2xl p-4 absolute top-0 left-0 w-full`}>
+                            <ThemeSelectionPlaceholder />
+                        </div>
+                    )}
+                    
+                    {/* CONTEÚDO DA ABA 3: SEGURANÇA - Usa cores do ActiveTab (Red) */}
+                    {currentTab === 'security' && (
+                        // Borda do contêiner interno alterada para 2px
+                        <div id="tab-security" className={`tab-content border-2 ${activeColorClasses.border} bg-${activeColorClasses.base}/10 rounded-2xl p-4 absolute top-0 left-0 w-full`}>
+                            <div className="space-y-4">
+                                <h3 className={`text-sm font-semibold text-${activeColorClasses.base}/90 flex items-center`}>
+                                    <span className={`material-symbols-rounded text-base text-${activeColorClasses.base}/90 mr-1`}>warning</span>
+                                    Exclusão de Dados
+                                </h3>
+                                <p className="text-sm text-[rgb(var(--page-fg))] opacity-90">
+                                    Esta ação removerá todos os seus dados (Nome, E-mail, Telefone, e Preferências de Tema) salvos **apenas neste dispositivo** (memória local). Esta ação é permanente e irreversível.
+                                </p>
+                                <div className="mt-6 flex justify-end">
+                                    {/* Botão de exclusão (PADRONIZADO E ESTILIZADO PARA AÇÃO CRÍTICA) */}
+                                    <button id="user-delete" type="button" onClick={handleClearData} 
+                                            // Aplicamos o estilo limpo, mas mantendo a cor de perigo (vermelho)
+                                            className="inline-flex h-10 items-center gap-2 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-red-300/40 hover:bg-red-500/10 group" 
+                                            aria-label="Remover dados">
+                                        
+                                        <span className="material-symbols-rounded text-lg text-red-500 group-hover:text-red-700">delete</span>
+                                        <span className="text-red-500 group-hover:text-red-700 text-sm font-medium">Remover dados permanentemente</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                </div>
+                
+                {/* NOVO RODAPÉ DE STATUS DO PAINEL */}
+                <div id="panel-status-footer" className={`mt-4 pt-3 border-t-2 border-[rgb(var(--page-border)/0.18)]`}>
+                    <p id="user-status-text" className={`text-[0.8rem] text-center ${statusMessage.tone === 'ok' ? 'text-emerald-600' : statusMessage.tone === 'error' ? 'text-red-500' : 'text-amber-500'}`}>
+                        {statusMessage.text}
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    );
+}
+
+
+// Componente Wrapper para o Modal Content
+const ActionModal = ({ isOpen, onClose, title, color, children }) => {
+    const colorRgb = colorMap[color]?.rgb || '255 255 255';
+    const borderStyle = { borderColor: `rgb(${colorRgb} / 0.8)` };
+
+    // Estilos do botão de fechar (padronizado com o Header)
+    const closeButtonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+    const closeIconClasses = "material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700";
+
+
+    return (
+        <div 
+            id="action-modal" 
+            className={`${isOpen ? 'flex' : 'hidden'} fixed inset-0 z-50 items-center justify-center bg-black/60 backdrop-blur-sm`} 
+            aria-modal="true" 
+            role="dialog" 
+            onClick={onClose}
+        >
+            <div 
+                // Borda do Modal de Ação alterada para 2px
+                id="action-modal-content" 
+                className="mx-4 w-full overflow-y-auto rounded-3xl border-2 p-6 shadow-xl bg-[rgb(var(--page-bg))] bg-opacity-95" 
+                style={borderStyle}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex items-start justify-between gap-3 pb-4 border-b border-white/10">
+                    {/* Título do Modal de Ação também usa a cor dinâmica de primeiro plano */}
+                    <h2 id="action-modal-title" className="text-xl sm:text-2xl font-bold text-[rgb(var(--page-fg))]">{title}</h2>
+                    {/* Botão Fechar (PADRONIZADO - apenas ícone) */}
+                    <button type="button" onClick={onClose} 
+                        className={`${closeButtonBase} h-7 w-7`} 
+                        aria-label="Fechar janela">
+                        <span className={`${closeIconClasses}`}>close</span>
+                    </button>
+                </div>
+
+                {/* O corpo usa a cor de primeiro plano padrão (alto contraste) */}
+                <div id="action-modal-body" className="mt-4 space-y-4">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// COMPONENTE HEADER - TOTALMENTE REESTRUTURADO
+const Header = ({ onBack, backButtonText, showBackButton, onOpenUserPanel, title, subtitle }) => {
+    
+    // REVISÃO UX: Botões sem borda, focando apenas no ícone ciano vibrante.
+    const iconClasses = "material-symbols-rounded text-lg text-cyan-500";
+    
+    // Classes comuns para o botão (padding, transição)
+    const buttonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+    
+    // Cor do texto (Muted para texto, Ciano para ícone)
+    const textClasses = "text-[rgb(var(--page-fg-muted))] text-sm font-medium";
+    
+    // Hover do Ícone: Ciano mais escuro para feedback visual
+    const iconHover = "group-hover:text-cyan-700";
+
+
+    return (
+        // Header com fundo e borda inferior para efeito de sobreposição
+        <header className="fixed top-0 inset-x-0 z-30 px-4 pt-3 pb-2 bg-[rgb(var(--page-bg)/0.9)] backdrop-blur-md border-b-2 border-[rgb(var(--page-border)/0.1)]">
+            {/* MUDANÇA: h-10 para h-14 para aumentar a altura do cabeçalho */}
+            <div className="max-w-5xl mx-auto flex items-center justify-between h-14">
+                
+                {/* 1. BOTÕES À ESQUERDA (Voltar) */}
+                <div className="flex items-center gap-1">
+                    {/* BOTÃO VOLTAR (aparece se showBackButton for true) */}
+                    <button 
+                        id="back-btn" 
+                        type="button" 
+                        onClick={onBack}
+                        className={`${buttonBase} ${textClasses} ${showBackButton ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+                        aria-label={backButtonText}
+                    >
+                        <span className={`${iconClasses} ${iconHover}`}>arrow_back</span>
+                        {/* CORREÇÃO DO ERRO: Usa backButtonText em vez de backText */}
+                        <span id="back-btn-text" className="hidden sm:inline back-text">{backButtonText}</span> 
+                    </button>
+                    
+                    {/* BOTÃO AJUDA REMOVIDO DAQUI */}
+                </div>
+                
+                {/* 2. TÍTULOS CENTRALIZADOS (CENTER) */}
+                {/* Usando w-full no div principal e max-w-xs no conteúdo central para garantir que ele não se sobreponha aos botões nas extremidades */}
+                <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-full sm:max-w-xs transition-opacity duration-300">
+                    {/* MUDANÇA: text-xl para text-2xl */}
+                    <h1 className="text-2xl font-bold text-[rgb(var(--page-fg))] truncate max-w-full leading-none">{title}</h1>
+                    {/* REMOÇÃO DO SUBTÍTULO: p className="text-sm..." foi removida */}
+                </div>
+
+
+                {/* 3. BOTÃO USUÁRIO (RIGHT) */}
+                <div className="flex items-center gap-2 ml-auto">
+                    <button 
+                        id="user-btn" 
+                        type="button" 
+                        onClick={onOpenUserPanel} 
+                        className={`${buttonBase} ${textClasses} sm:px-3`}
+                        aria-label="Abrir painel do usuário"
+                    >
+                        <span className={`${iconClasses} ${iconHover}`}>account_circle</span>
+                        <span className="hidden sm:inline">Usuário</span> 
+                    </button>
+                </div>
+            </div>
+            
+            {/* MENSAGEM DE STATUS REMOVIDA DAQUI: Movida para o StatusToast */}
+        </header>
+    );
+};
+
+export default App;
