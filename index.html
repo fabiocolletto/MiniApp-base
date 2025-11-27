@@ -7,6 +7,8 @@
   <!-- ADICIONE React e ReactDOM por CDN -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel para compilar JSX diretamente no navegador durante o desenvolvimento -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
   <!-- ... HEADER ... -->
@@ -16,10 +18,10 @@
   <div id="root"></div>
 
   <!-- ADICIONE: Script para montar React App -->
-  <script type="module">
-    import App from './src/pages/app.js'; // transpile seu app.jsx em app.js ES module 
+  <script type="text/babel" data-type="module" data-presets="env,react">
+    import App from './src/pages/app.js';
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App));
+    root.render(<App />);
   </script>
 </body>
 </html>
