@@ -20,6 +20,37 @@ const CSS_STYLES = `
         transition: background-color 0.3s, color 0.3s;
     }
 
+    .app-shell-header {
+        background: linear-gradient(180deg, rgb(var(--page-bg) / 0.95), rgb(var(--page-bg) / 0.85));
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgb(var(--page-border) / 0.08);
+        padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+
+    .header-inner {
+        position: relative;
+    }
+
+    .header-title-block {
+        pointer-events: none;
+    }
+
+    .header-subtitle {
+        color: rgb(var(--page-fg-muted));
+    }
+
+    .header-buttons {
+        gap: 0.35rem;
+    }
+
+    .app-main {
+        padding-top: 6rem;
+    }
+
+    .card-grid {
+        width: 100%;
+    }
+
     .mini-app-portfolio { 
         --card-border-width: 2px;
     }
@@ -67,6 +98,75 @@ const CSS_STYLES = `
 
         .mini-app-card-base {
             width: 100%;
+            padding: 1.25rem;
+            aspect-ratio: 1.1;
+        }
+
+        .mini-app-card-base .icon-large {
+            font-size: 3.5rem;
+        }
+
+        .app-shell-header {
+            padding-inline: 1rem;
+            padding-bottom: 0.75rem;
+        }
+
+        .header-inner {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+            height: auto;
+        }
+
+        .header-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .header-title-block {
+            position: static;
+            transform: none;
+            text-align: left;
+            width: 100%;
+        }
+
+        .header-title-block h1 {
+            font-size: 1.25rem;
+            line-height: 1.4;
+        }
+
+        .header-title-block .header-subtitle {
+            display: block;
+            margin-top: 0.15rem;
+            font-size: 0.9rem;
+        }
+
+        .header-buttons {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .card-grid {
+            gap: 1.25rem;
+        }
+
+        .app-main {
+            padding-inline: 1.1rem;
+            padding-top: 6.5rem;
+            padding-bottom: 4.5rem;
+        }
+
+        #alert-fab,
+        #accessibility-fab {
+            bottom: calc(1rem + env(safe-area-inset-bottom));
+        }
+
+        #action-modal-content {
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            max-height: calc(100vh - 2rem - env(safe-area-inset-top));
         }
     }
     
@@ -387,7 +487,7 @@ const CatalogScreen = ({ onNavigate }) => {
     return (
         <section id="screen-catalog" data-screen-id={SCREENS.CATALOG}
                  className="flex justify-center mini-app-portfolio mt-8 w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
+            <div className="card-grid grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {apps.map(app => (
                     <MiniAppCard
                         key={app.id}
@@ -439,7 +539,7 @@ const PersonaSelectionScreen = ({ onSelectPersona, selectedPersona, onNavigate }
     return (
         <section id="screen-persona" data-screen-id={SCREENS.PERSONA_SELECTION}
                  className="flex justify-center mini-app-portfolio mt-8 w-full">
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
+             <div className="card-grid grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {personas.map(p => (
                     <MiniAppCard
                         key={p.id}
@@ -468,7 +568,7 @@ const StudentMenuScreen = ({ onOpenActionModal }) => {
     return (
         <section id="screen-aluno" data-screen-id={SCREENS.STUDENT_MENU}
                  className="flex justify-center mini-app-portfolio mt-8 w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
+            <div className="card-grid grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {studentActions.map(action => (
                     <MiniAppCard
                         key={action.id}
@@ -689,7 +789,7 @@ const App = () => {
                 personaLabel={personaLabel}
             />
             
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-24"> 
+            <main className="app-main max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-24">
                 <React.Fragment>
                     {renderScreen()}
                 </React.Fragment>
@@ -1610,16 +1710,16 @@ const Header = ({ onBack, backButtonText, showBackButton, onOpenUserPanel, title
 
 
     return (
-        <header className="fixed top-0 inset-x-0 z-30 px-4 pt-3 pb-2">
-            <div className="max-w-5xl mx-auto flex items-center justify-between h-14">
-                
-                <div className="flex items-center gap-1">
-                    <button 
-                        id="back-btn" 
-                        type="button" 
+        <header className="app-shell-header fixed top-0 inset-x-0 z-30">
+            <div className="header-inner max-w-5xl mx-auto flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 pt-3 pb-2">
+
+                <div className="header-meta-row flex items-center gap-1">
+                    <button
+                        id="back-btn"
+                        type="button"
                         onClick={onBack}
                         // Usando a nova classe flexível para permitir o texto
-                        className={`${backButtonBase} ${showBackButton ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+                        className={`${backButtonBase} ${showBackButton ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                         aria-label={backButtonText}
                     >
                         <span className={`${iconClasses} ${iconHover}`}>arrow_back</span>
@@ -1627,19 +1727,20 @@ const Header = ({ onBack, backButtonText, showBackButton, onOpenUserPanel, title
                         <span className={backLabelClasses}>{backButtonText}</span>
                     </button>
                 </div>
-                
-                <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-full sm:max-w-xs transition-opacity duration-300">
+
+                <div className="header-title-block absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-full sm:max-w-xs transition-opacity duration-300">
                     <div className="inline-flex items-center justify-center gap-2">
                         <span className="material-symbols-rounded text-2xl text-cyan-500">apps</span>
                         <h1 className="text-2xl font-bold text-[rgb(var(--page-fg))] truncate max-w-full leading-none">{title}</h1>
                     </div>
+                    <p className="header-subtitle text-sm leading-tight sm:hidden">{subtitle}</p>
                 </div>
 
-                <div className="flex items-center gap-2 ml-auto">
-                    <button 
-                        id="user-btn" 
-                        type="button" 
-                        onClick={onOpenUserPanel} 
+                <div className="header-buttons flex items-center gap-2 ml-auto">
+                    <button
+                        id="user-btn"
+                        type="button"
+                        onClick={onOpenUserPanel}
                         className={userButtonBase}
                         aria-label="Abrir painel do usuário"
                     >
