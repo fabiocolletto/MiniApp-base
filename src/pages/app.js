@@ -25,9 +25,9 @@ const CSS_STYLES = `
     }
     
     .mini-app-card-base {
-        width: 200px; 
-        max-width: 200px;
-        min-width: 180px;
+        width: min(100%, 240px);
+        max-width: 100%;
+        min-width: 0;
         aspect-ratio: 4/3;
         border-style: solid;
         border-width: var(--card-border-width);
@@ -58,6 +58,16 @@ const CSS_STYLES = `
     
     .mini-app-card-base .icon-large {
         font-size: 5rem;
+    }
+
+    @media (max-width: 640px) {
+        .mini-app-portfolio {
+            width: 100%;
+        }
+
+        .mini-app-card-base {
+            width: 100%;
+        }
     }
     
     .tab-content.hidden{display:none;}
@@ -375,9 +385,9 @@ const CatalogScreen = ({ onNavigate }) => {
     ];
 
     return (
-        <section id="screen-catalog" data-screen-id={SCREENS.CATALOG} 
-                 className="flex justify-center mini-app-portfolio mt-8"> 
-            <div className="grid grid-cols-2 gap-8">
+        <section id="screen-catalog" data-screen-id={SCREENS.CATALOG}
+                 className="flex justify-center mini-app-portfolio mt-8 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {apps.map(app => (
                     <MiniAppCard
                         key={app.id}
@@ -427,9 +437,9 @@ const PersonaSelectionScreen = ({ onSelectPersona, selectedPersona, onNavigate }
 
 
     return (
-        <section id="screen-persona" data-screen-id={SCREENS.PERSONA_SELECTION} 
-                 className="flex justify-center mini-app-portfolio mt-8">
-             <div className="grid grid-cols-2 gap-8">
+        <section id="screen-persona" data-screen-id={SCREENS.PERSONA_SELECTION}
+                 className="flex justify-center mini-app-portfolio mt-8 w-full">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {personas.map(p => (
                     <MiniAppCard
                         key={p.id}
@@ -456,9 +466,9 @@ const StudentMenuScreen = ({ onOpenActionModal }) => {
     ];
 
     return (
-        <section id="screen-aluno" data-screen-id={SCREENS.STUDENT_MENU} 
-                 className="flex justify-center mini-app-portfolio mt-8">
-            <div className="grid grid-cols-2 gap-8">
+        <section id="screen-aluno" data-screen-id={SCREENS.STUDENT_MENU}
+                 className="flex justify-center mini-app-portfolio mt-8 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full justify-items-center">
                 {studentActions.map(action => (
                     <MiniAppCard
                         key={action.id}
