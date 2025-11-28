@@ -73,7 +73,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 #home-btn { --chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1); }
 
 /* --- REGRAS GLOBAIS PARA BOTÕES FLUTUANTES (Voltar e Fechar) --- */
-/* Ambos agora compartilham a mesma lógica visual de fundo branco sólido e destaque */
 
 /* Botão Voltar Global (Azul) */
 #back-btn-float button { 
@@ -132,7 +131,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 </main>
 
 <!-- BOTÃO VOLTAR (FLUTUANTE ESQUERDA - GLOBAL) -->
-<!-- Atualizado para z-[60] para ser simétrico ao botão de fechar em prioridade -->
 <div id="back-btn-float" class="fixed top-4 left-4 z-[60] hidden">
     <button onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
         <span class="material-symbols-rounded text-xl mr-2">arrow_back</span>
@@ -141,7 +139,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 </div>
 
 <!-- BOTÃO FECHAR (FLUTUANTE DIREITA - GLOBAL) -->
-<!-- z-[60] garante que fique acima dos overlays (que são z-50) -->
 <div id="close-btn-float" class="fixed top-4 right-4 z-[60] hidden">
     <button onclick="closeCurrentMiniApp()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
         <span class="material-symbols-rounded text-xl mr-2">close</span>
@@ -149,25 +146,28 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </button>
 </div>
 
-<!-- ================= MODAIS (OVERLAYS) ================= -->
+<!-- ================= MODAIS (VISUALIZAÇÃO IMERSIVA) ================= -->
+
+<!-- O erro está aqui: o h-[90vh] pode ser maior que o espaço seguro real.
+Ajustei para flex e max-h-[95vh] para permitir que o navegador calcule a altura segura. -->
 
 <!-- 1. PAINEL DE USUÁRIO -->
 <div id="user-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="user-panel-frame" class="w-full h-full border-0" title="Painel do Usuário"></iframe>
     </div>
 </div>
 
 <!-- 2. PAINEL DE ALERTAS -->
 <div id="alert-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="alert-panel-frame" class="w-full h-full border-0" title="Painel de Alertas"></iframe>
     </div>
 </div>
 
 <!-- 3. SIMULADOS -->
 <div id="simulados-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="simulados-frame" class="w-full h-full border-0" title="App Simulados"></iframe>
     </div>
 </div>
@@ -314,7 +314,8 @@ body, html { background-color: #f8fafc; color: #0f172a; }
                     min-height: 100%; 
                     margin: 0; 
                     padding: 0;
-                    padding-bottom: 80px !important; 
+                    /* Aumentei o padding-bottom para dar mais respiro em dispositivos móveis */
+                    padding-bottom: 120px !important; 
                     background: transparent !important; 
                     overflow-x: hidden;
                     overflow-y: auto;
