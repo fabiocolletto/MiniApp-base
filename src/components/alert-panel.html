@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Alerta Isolado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        /* Estilos base para tema claro (tela branca) */
+        :root, html {
+            --page-bg: 255 255 255; /* Branco Puro */
+            --page-fg: 15 23 42; /* Slate-900 Dark */
+            --page-fg-muted: 71 85 105; /* Slate-600 */
+            color-scheme: light;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+
+        /* Estilo para Tema Escuro (Permitir a troca) */
+        [data-theme="dark"] {
+            --page-bg: 15 23 42; /* Slate-900 Dark */
+            --page-fg: 248 250 252; /* Slate-50 Light */
+            --page-fg-muted: 156 163 175; /* Gray-400 */
+            color-scheme: dark;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: rgb(var(--page-bg));
+            color: rgb(var(--page-fg));
+            display: flex; /* Centraliza o ícone */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Estilos de Botão e Toggle (Baseado no HTML original) */
+        .tab-button {
+            border-radius: 0.75rem; 
+            transition: all 150ms ease; 
+            padding-top: 0.4rem; 
+            padding-bottom: 0.4rem; 
+            color: rgb(var(--page-fg-muted));
+        }
+        
+        /* O estilo para o painel lateral de Notificações (.notification-panel) não é mais necessário para o modal centralizado */
+        
+        /* Regras de mobile para modais (do HTML original) */
+        @media (max-width: 640px) {
+            .mobile-modal-overlay {
+                padding: 1rem; /* Afastamento de 16px */
+            }
+            .mobile-modal-content {
+                max-width: 100%;
+                max-height: calc(100vh - 2rem); 
+                margin-top: auto; 
+                margin-bottom: auto;
+            }
+        }
+        
+        /* Estilos para o Toggle Switch na aba Prefs (ajustado para a nova estrutura) */
+        .relative input[type="checkbox"]:checked + span {
+            background-color: var(--checked-color);
+        }
+        .relative input[type="checkbox"]:checked + span::before {
+            transform: translateX(1.5rem); /* 24px */
+        }
+        .relative input[type="checkbox"] + span {
+            --checked-color: #3b82f6; /* Default Blue, será sobrescrito inline */
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: #ccc; 
+            transition: .4s; 
+            border-radius: 9999px; /* rounded-full */
+        }
+        .relative input[type="checkbox"] + span::before {
+            position: absolute; 
+            content: ""; 
+            height: 1rem; /* 16px */
+            width: 1rem; /* 16px */
+            left: 0.25rem; /* 4px */
+            bottom: 0.25rem; /* 4px */
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%;
+        }
+        .alert-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .alert-item:hover {
+            background-color: rgba(var(--page-fg-muted), 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex gap-4">
+        <!-- O botão do Painel de Usuário (bg-cyan-500) foi removido daqui. -->
+
+        <!-- Botão de Abertura do Painel de Avisos (AGORA CENTRALIZADO) -->
+        <button id="open-alerts-btn" 
+            type="button" 
+            onclick="setAppState({isAlertsCentralOpen: true, isUserPanelOpen: false})" 
+            class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-amber-500 text-white shadow-xl shadow-amber-500/50 transition-all hover:bg-amber-600 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-300/50 relative" 
+            aria-label="Abrir central de avisos">
+            <span class="material-symbols-rounded text-3xl">notifications</span>
+            <span id="alert-badge" class="absolute top-2 right-2 w-4 h-4 text-xs font-bold text-white bg-red-600 rounded-full flex items-center justify-center shadow"></span>
+        </button>
+    </div>
+    
+    <div id="app-container">
+        <!-- O painel isolado será renderizado aqui -->
+    </div>
+
+    <script>
+        // Lógica e Variáveis Mínimas do HTML original para fazer o painel funcionar
+        const USER_KEY = "app5-user-data";
+        let userData = {};
+        let appState = {
+            currentScreen: 'catalog',
+            isUserPanelOpen: false, 
+            isNotificationPanelOpen: false, // ESTADO LATERAL - REMOVIDO DA LÓGICA DE RENDERIZAÇÃO
+            isAlertsCentralOpen: false,     // NOVO ESTADO CENTRALIZADO
+            currentPanelTab: 'login', 
+            tabs: [
+                { id: 'login', label: 'Login', title: 'Acesso ao Sistema', subtitle: 'Insira suas credenciais para continuar.', base: 'cyan-500', icon: 'login' }, 
+                { id: 'data', label: 'Dados do Usuário', title: 'Central do Usuário', subtitle: 'Gerencie seus dados e o comportamento do sistema.', base: 'emerald-500', icon: 'badge' },
+                { id: 'prefs', label: 'Preferências', title: 'Preferências', subtitle: 'Configurações que controlam a aparência do sistema.', base: 'sky-500', icon: 'settings' },
+            ],
+            alerts: []
+        };
+
+        // Funções essenciais copiadas/adaptadas do HTML original (index (17).html)
+        function loadUserData() {
+            try {
+                const raw = localStorage.getItem(USER_KEY);
+                const data = raw ? JSON.parse(raw) : {};
+                // Mock de alertas (3 alertas, 1 não lido)
+                const DEFAULT_ALERTS = [
+                    { id: 'a1', type: 'warning', icon: 'warning', title: 'Prazo Limite Próximo', message: 'O simulado de Matemática Básica vence amanhã.', timestamp: Date.now() - 3600000, read: false },
+                    { id: 'a2', type: 'info', icon: 'grade', title: 'Nova Pontuação', message: 'Sua nota no teste de História foi 85/100.', timestamp: Date.now() - 86400000, read: true },
+                    { id: 'a3', type: 'success', icon: 'celebration', title: 'Bem-vindo!', message: 'Obrigado por se juntar à nossa plataforma.', timestamp: Date.now() - 604800000, read: true },
+                ];
+
+                userData = {
+                    ...data,
+                    themePref: data.themePref || 'light',
+                    showAccessibilityFab: data.showAccessibilityFab === undefined ? true : data.showAccessibilityFab,
+                    showNotificationFab: data.showNotificationFab === undefined ? true : data.showNotificationFab,
+                    persona: data.persona || 'aluno',
+                    uniqueId: data.uniqueId || 'TEST-1234', 
+                    cep: data.cep || '',
+                    birthDate: data.birthDate || '',
+                    country: data.country || 'Brasil',
+                    name: data.name || '',
+                    phone: data.phone || '55',
+                    email: data.email || '',
+                    confirmedAlertsIds: data.confirmedAlertsIds || [],
+                    username: data.username || '',
+                    password: data.password || '',
+                    loginStatus: data.loginStatus || 'Sessão Não Iniciada',
+                    // NOVO: Lista de alertas
+                    appAlerts: data.appAlerts || DEFAULT_ALERTS 
+                };
+            } catch (e) {
+                console.error("Erro ao carregar dados do usuário:", e);
+                // Estado de fallback
+                userData = { themePref: 'light', showAccessibilityFab: true, showNotificationFab: true, persona: 'aluno', uniqueId: 'TEST-1234', cep: '', birthDate: '', country: 'Brasil', name: '', phone: '55', email: '', confirmedAlertsIds: [], username: '', password: '', loginStatus: 'Sessão Não Iniciada', appAlerts: [] };
+            }
+        }
+        
+        function saveUserData() {
+            try {
+                localStorage.setItem(USER_KEY, JSON.stringify(userData));
+            } catch (e) {
+                console.error("Erro ao salvar dados do usuário:", e);
+            }
+        }
+
+        function updateUserData(key, value) {
+            userData[key] = value;
+            userData.updated = new Date().toISOString();
+            saveUserData();
+            renderApp();
+        }
+
+        function clearUserData() {
+            const currentUniqueId = userData.uniqueId;
+            userData = { 
+                themePref: 'light', 
+                showAccessibilityFab: true, 
+                showNotificationFab: true, 
+                persona: 'aluno', 
+                uniqueId: currentUniqueId, 
+                cep: '', 
+                birthDate: '', 
+                country: 'Brasil', 
+                name: '', 
+                phone: '55', 
+                email: '', 
+                confirmedAlertsIds: [], 
+                username: '', 
+                password: '', 
+                loginStatus: 'Sessão Não Iniciada',
+                appAlerts: [] // Limpa alertas também
+            };
+            try {
+                localStorage.removeItem(USER_KEY);
+                saveUserData(); 
+            } catch (e) {
+                console.error("Erro ao limpar dados:", e);
+            }
+        }
+
+        function setAppState(newState) {
+            // Garante que apenas um modal centralizado esteja aberto por vez
+            if (newState.isAlertsCentralOpen) {
+                newState.isUserPanelOpen = false;
+            } else if (newState.isUserPanelOpen) {
+                 newState.isAlertsCentralOpen = false;
+            }
+            // O modal lateral (isNotificationPanelOpen) foi removido
+            // do controle centralizado, mas se ele estivesse ativo, também seria fechado aqui.
+
+            Object.assign(appState, newState);
+            renderApp();
+        }
+        
+        function setAppTheme(theme) {
+            if (theme !== 'light' && theme !== 'dark') return;
+            document.documentElement.setAttribute('data-theme', theme);
+            updateUserData('themePref', theme);
+        }
+
+        // Funções de máscara (mantidas)
+        const createPhoneMask = () => {
+            return (value) => {
+                let n = (value || "").replace(/\D/g, "");
+                if (userData.country === 'Brasil' && n.length > 0 && n[0] !== '5') {
+                    n = "55" + n;
+                }
+                
+                if (n.length <= 2) return "+" + n;
+                if (n.length <= 4) return "+" + n.slice(0, 2) + " " + n.slice(2);
+                if (n.length <= 9) {
+                    let cc = n.slice(0, 2);
+                    let ddd = n.slice(2, 4);
+                    let f = n.slice(4);
+                    return "+" + cc + " " + ddd + " " + f;
+                }
+                let cc2 = n.slice(0, 2);
+                let ddd2 = n.slice(2, 4);
+                
+                if (n.length > 11) {
+                    return `+${cc2} ${ddd2} ${n.slice(4, n.length - 4)}-${n.slice(-4)}`;
+                } else if (n.length === 11) {
+                    return `+${cc2} ${ddd2} ${n.slice(4, 7)}-${n.slice(7)}`;
+                } else if (n.length === 10) {
+                     return `+${cc2} ${ddd2} ${n.slice(4, 6)}-${n.slice(6)}`;
+                }
+                
+                return `+${cc2} ${ddd2} ${n.slice(4)}`;
+            };
+        };
+        const maskPhone = createPhoneMask();
+        const maskCEP = (value) => { 
+            const n = (value || "").replace(/\D/g, "").slice(0, 8); 
+            if (n.length > 5) { 
+                return n.replace(/^(\d{5})(\d{0,3})$/, '$1-$2'); 
+            } 
+            return n; 
+        };
+        const maskBirthDate = (value) => { 
+            const n = (value || "").replace(/\D/g, "").slice(0, 8); 
+            if (n.length > 4) { 
+                return n.replace(/^(\d{2})(\d{2})(\d{0,4})$/, '$1/$2/$3'); 
+            } else if (n.length > 2) { 
+                return n.replace(/^(\d{2})(\d{0,2})$/, '$1/$2'); 
+            } 
+            return n; 
+        };
+
+        // Funções de Ação (mantidas)
+        function handleToggle(key, event) {
+            const newValue = event.target.checked;
+            updateUserData(key, newValue);
+        }
+        
+        function handleClearData() {
+            if (!confirm('Tem certeza que deseja limpar todos os dados salvos localmente neste dispositivo? Esta ação é irreversível.')) {
+                return;
+            }
+            clearUserData();
+            setAppState({ isUserPanelOpen: false, isAlertsCentralOpen: false, currentPanelTab: 'login' }); 
+            const openBtn = document.getElementById('open-alerts-btn'); // Mudado para o botão de avisos
+            if(openBtn) {
+                // Atualiza o texto do botão de avisos temporariamente
+                openBtn.innerHTML = 'Dados Limpos!';
+                openBtn.classList.remove('bg-amber-500', 'shadow-amber-500/50', 'hover:bg-amber-600', 'focus:ring-amber-300/50');
+                openBtn.classList.add('bg-emerald-500', 'shadow-emerald-500/50', 'hover:bg-emerald-600', 'focus:ring-emerald-300/50');
+
+                setTimeout(() => {
+                    if (openBtn.innerHTML === 'Dados Limpos!') {
+                         openBtn.innerHTML = '<span class="material-symbols-rounded text-3xl">notifications</span><span id="alert-badge" class="absolute top-2 right-2 w-4 h-4 text-xs font-bold text-white bg-red-600 rounded-full flex items-center justify-center shadow"></span>';
+                         openBtn.classList.remove('bg-emerald-500', 'shadow-emerald-500/50', 'hover:bg-emerald-600', 'focus:ring-emerald-300/50');
+                         openBtn.classList.add('bg-amber-500', 'shadow-amber-500/50', 'hover:bg-amber-600', 'focus:ring-amber-300/50');
+                         renderAlertBadge(); // Re-renderiza o badge após restaurar o ícone
+                    }
+                }, 2000);
+            }
+        }
+
+        function handleLogin() {
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
+            
+            const username = usernameInput ? usernameInput.value : '';
+            const password = passwordInput ? passwordInput.value : '';
+
+            if (username && password) {
+                updateUserData('loginStatus', `Logado como: ${username}`);
+                updateUserData('username', username);
+                updateUserData('password', password); 
+                setAppState({ currentPanelTab: 'data' }); 
+            } else {
+                updateUserData('loginStatus', 'Erro: Preencha o usuário e a senha.');
+                if (!username) usernameInput.classList.add('border-red-500', 'ring-red-500/50');
+                if (!password) passwordInput.classList.add('border-red-500', 'ring-red-500/50');
+                setTimeout(() => {
+                    usernameInput.classList.remove('border-red-500', 'ring-red-500/50');
+                    passwordInput.classList.remove('border-red-500', 'ring-red-500/50');
+                }, 1500);
+            }
+        }
+        
+        function handleFormChange(e) {
+            const { name, value } = e.target;
+            let valueToSave = value;
+
+            if (name === 'cep' || name === 'birthDate') {
+                valueToSave = value.replace(/\D/g, '');
+            } else if (name === 'phone') {
+                valueToSave = value; 
+            }
+            
+            if (name === 'country') {
+                const phoneInput = document.getElementById('user-phone');
+                if (phoneInput) {
+                    let currentPhoneDigits = phoneInput.value.replace(/\D/g, '');
+                    if (value === 'Brasil') {
+                        if (!currentPhoneDigits.startsWith('55')) {
+                            let localNumber = currentPhoneDigits.length > 2 && !currentPhoneDigits.startsWith('55') ? currentPhoneDigits.substring(2) : currentPhoneDigits;
+                            currentPhoneDigits = '55' + localNumber.substring(0, 11);
+                        }
+                    } else {
+                        if (currentPhoneDigits.startsWith('55')) {
+                            currentPhoneDigits = currentPhoneDigits.substring(2);
+                        }
+                        currentPhoneDigits = currentPhoneDigits.substring(0, 13); 
+                    }
+                    phoneInput.value = maskPhone(currentPhoneDigits);
+                    updateUserData('phone', phoneInput.value.trim());
+                }
+                updateUserData(name, valueToSave.trim());
+                return;
+            }
+
+            updateUserData(name, valueToSave.trim());
+        }
+
+        // --- FUNÇÕES DE AVISOS ---
+        
+        /**
+         * Marca uma notificação como lida
+         * @param {string} alertId 
+         */
+        function markAlertAsRead(alertId) {
+            const alerts = userData.appAlerts;
+            const alertIndex = alerts.findIndex(a => a.id === alertId);
+            if (alertIndex !== -1 && !alerts[alertIndex].read) {
+                alerts[alertIndex].read = true;
+                updateUserData('appAlerts', alerts);
+            }
+        }
+
+        /**
+         * Retorna a classe de cor base para o tipo de alerta
+         * @param {string} type - success, warning, info, error
+         * @returns {Object} { text, iconBg }
+         */
+        function getAlertStyles(type) {
+            switch(type) {
+                case 'success': return { text: 'text-emerald-600', iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-500' };
+                case 'warning': return { text: 'text-amber-600', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-500' };
+                case 'error': return { text: 'text-red-600', iconBg: 'bg-red-500/10', iconColor: 'text-red-500' };
+                case 'info':
+                default: return { text: 'text-sky-600', iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500' };
+            }
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp; // diferença em milissegundos
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(minutes / 60 / 24);
+
+            if (days > 7) {
+                return new Date(timestamp).toLocaleDateString('pt-BR');
+            } else if (days > 0) {
+                return `${days}d atrás`;
+            } else if (hours > 0) {
+                return `${hours}h atrás`;
+            } else if (minutes > 0) {
+                return `${minutes}m atrás`;
+            } else {
+                return 'agora';
+            }
+        }
+        
+        // --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+        function getStatusText(isCleared = false) {
+            return { text: `Sessão: ${userData.loginStatus}`, tone: userData.loginStatus.startsWith('Logado') ? 'ok' : 'pending' };
+        }
+
+        function renderUserPanelModal() {
+            // Este modal não será renderizado, pois o botão foi removido
+            // Mas a função ainda precisa existir para o código não quebrar.
+            if (!appState.isUserPanelOpen) return '';
+
+            // Renderização do Painel do Usuário (mantida, mas inatingível pelo botão)
+            const activeTab = appState.tabs.find(t => t.id === appState.currentPanelTab);
+            const baseColor = activeTab?.base.split('-')[0] || 'cyan';
+            const activeColorClasses = { 
+                base: activeTab?.base, 
+                border: `border-${baseColor}-500/70`, 
+                bg: `bg-${baseColor}-500/10`,
+                text: `text-${baseColor}-500`
+            };
+            
+            const statusMessage = getStatusText();
+            const showFab = userData.showAccessibilityFab ?? true;
+            const showAlertFab = userData.showNotificationFab ?? true;
+            
+            const closeButtonBase = "inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group";
+            const closeIconClasses = "material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700";
+            const closeTextClasses = "text-[rgb(var(--page-fg-muted))] text-sm font-medium";
+            
+            const userPersonaOptions = [
+                { id: 'aluno', label: 'Aluno' },
+                { id: 'tutor', label: 'Tutor/Responsável' },
+                { id: 'professor', label: 'Professor' },
+                { id: 'instituicao', label: 'Instituição' },
+                { id: 'administrador', label: 'Administrador' },
+                { id: 'tecnico', label: 'Técnico' },
+            ];
+            
+            let tabContents = '';
+
+            // CONTEÚDO: Tab 'Login'
+            const tabLoginContent = `
+                <div class="space-y-6 pt-2">
+                    <p class="text-sm text-[rgb(var(--page-fg))] opacity-90">Status Atual: <span class="font-semibold text-cyan-500">${userData.loginStatus}</span></p>
+                    <form id="login-form" class="space-y-4 text-sm">
+                        <div>
+                            <label for="login-username" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-cyan-500 mr-1">person</span>Usuário / E-mail</label>
+                            <input id="login-username" name="username" type="text" value="${userData.username || ''}" 
+                                class="w-full rounded-xl border-2 border-cyan-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                placeholder="seu.usuario@exemplo.com" required oninput="handleFormChange(event)"/>
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-cyan-500 mr-1">lock</span>Senha</label>
+                            <input id="login-password" name="password" type="password" value="${userData.password || ''}" 
+                                class="w-full rounded-xl border-2 border-cyan-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                placeholder="Insira sua senha" required oninput="handleFormChange(event)"/>
+                        </div>
+                        <div class="pt-2">
+                            <button id="login-btn" type="button" onclick="handleLogin()" class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold bg-cyan-600 text-white shadow-md transition hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300/50">
+                                <span class="material-symbols-rounded text-lg">login</span>
+                                Entrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            // Tab 'Dados do Usuário'
+            const tabDataContent = `
+                <form id="user-form" class="space-y-4 text-sm">
+                    <div>
+                        <label for="user-name" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">person</span>Nome completo</label>
+                        <input id="user-name" name="name" type="text" value="${userData.name || ''}" 
+                            class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                            placeholder="Seu nome e sobrenome" required oninput="handleFormChange(event)"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-birthDate" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">cake</span>Data de Nascimento</label>
+                            <input id="user-birthDate" name="birthDate" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10" value="${maskBirthDate(userData.birthDate)}" 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                placeholder="DD/MM/AAAA" required oninput="handleFormChange(event)"/>
+                        </div>
+                        <div>
+                            <label for="user-country" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">public</span>País</label>
+                            <select id="user-country" name="country" 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                required onchange="handleFormChange(event)">
+                                <option value="Brasil" ${userData.country === 'Brasil' ? 'selected' : ''}>Brasil</option>
+                                <option value="Outro" ${userData.country === 'Outro' ? 'selected' : ''}>Outro (Especifique)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-persona" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">badge</span>Categoria</label>
+                            <select id="user-persona" name="persona" 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                required onchange="handleFormChange(event)">
+                                ${userPersonaOptions.map(p => `<option value="${p.id}" ${userData.persona === p.id ? 'selected' : ''}>${p.label}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="user-id" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">key</span>ID Único</label>
+                            <input id="user-id" name="uniqueId" type="text" value="${userData.uniqueId || ''}" readonly 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))] bg-gray-100/50 cursor-default" 
+                                placeholder="A ser definido" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-phone" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">phone</span>Telefone (WhatsApp)</label>
+                            <input id="user-phone" name="phone" type="tel" inputmode="tel" value="${maskPhone(userData.phone)}" 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                placeholder="+55 DDD número" required oninput="handleFormChange(event)"/>
+                        </div>
+                        <div>
+                            <label for="user-cep" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">location_on</span>CEP</label>
+                            <input id="user-cep" name="cep" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10" value="${maskCEP(userData.cep)}" 
+                                class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                                placeholder="00000-000" required oninput="handleFormChange(event)"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="user-email" class="block text-xs font-medium mb-1 flex items-center"><span class="material-symbols-rounded text-base text-emerald-500 mr-1">mail</span>E-mail</label>
+                        <input id="user-email" name="email" type="email" value="${userData.email || ''}" 
+                            class="w-full rounded-xl border-2 border-emerald-500/40 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/80 focus:border-transparent text-[rgb(var(--page-fg))]" 
+                            placeholder="seuemail@exemplo.com" required oninput="handleFormChange(event)"/>
+                    </div>
+                </form>
+            `;
+
+            // Tab 'Preferências'
+            const tabPrefsContent = `
+                <div class="space-y-4 pt-1">
+                    <div class="p-3 rounded-xl border border-sky-300/70 bg-sky-500/5 transition duration-150 ease-in-out hover:shadow-md">
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <h3 class="font-semibold text-base text-sky-700 flex items-center"><span class="material-symbols-rounded text-lg text-sky-500 align-middle mr-2">contrast</span>Customização de Tema</h3>
+                                <p class="mt-1 text-xs text-[rgb(var(--page-fg))] opacity-80">Alterne entre o modo Claro e Escuro.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="setAppTheme('light')" class="px-3 py-1 rounded-full text-sm font-medium transition ${userData.themePref === 'light' ? 'bg-sky-500 text-white' : 'bg-white text-sky-700 hover:bg-sky-100'}" aria-pressed="${userData.themePref === 'light'}">
+                                    <span class="material-symbols-rounded text-base">light_mode</span> Claro
+                                </button>
+                                <button type="button" onclick="setAppTheme('dark')" class="px-3 py-1 rounded-full text-sm font-medium transition ${userData.themePref === 'dark' ? 'bg-sky-700 text-white' : 'bg-white text-sky-700 hover:bg-sky-100'}" aria-pressed="${userData.themePref === 'dark'}">
+                                    <span class="material-symbols-rounded text-base">dark_mode</span> Escuro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl border border-amber-300/70 bg-amber-500/5 transition duration-150 ease-in-out hover:shadow-md">
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <h3 class="font-semibold text-base text-amber-700 flex items-center"><span class="material-symbols-rounded text-lg text-amber-500 align-middle mr-2">notifications</span>Botão de Avisos (FAB)</h3>
+                                <p class="mt-1 text-xs text-[rgb(var(--page-fg))] opacity-80">Exibe o botão flutuante de Avisos no canto inferior esquerdo.</p>
+                            </div>
+                            <!-- Implementação do Toggle Switch: Cor âmbar para Notificações -->
+                            <label class="relative inline-block w-12 h-6 flex-shrink-0">
+                                <input type="checkbox" id="alert-fab-toggle" ${showAlertFab ? 'checked' : ''} onclick="handleToggle('showNotificationFab', event)" class="opacity-0 w-0 h-0" aria-label="Ativar/desativar botão de avisos"/>
+                                <span style="--checked-color: #f59e0b;" class="absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 transition duration-400 rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-1 before:bg-white before:transition before:duration-400 before:rounded-full checked:before:translate-x-6"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl border border-violet-300/70 bg-violet-500/5 transition duration-150 ease-in-out hover:shadow-md">
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <h3 class="font-semibold text-base text-violet-700 flex items-center"><span class="material-symbols-rounded text-lg text-violet-500 align-middle mr-2">accessibility_new</span>Botão de Acessibilidade (FAB)</h3>
+                                <p class="mt-1 text-xs text-[rgb(var(--page-fg))] opacity-80">Exibe o botão flutuante de Acessibilidade no canto inferior esquerdo.</p>
+                            </div>
+                            <!-- Implementação do Toggle Switch: Cor violeta para Acessibilidade -->
+                            <label class="relative inline-block w-12 h-6 flex-shrink-0">
+                                <input type="checkbox" id="fab-toggle" ${showFab ? 'checked' : ''} onclick="handleToggle('showAccessibilityFab', event)" class="opacity-0 w-0 h-0" aria-label="Ativar/desativar botão de acessibilidade"/>
+                                <span style="--checked-color: #8b5cf6;" class="absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 transition duration-400 rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-1 before:bg-white before:transition before:duration-400 before:rounded-full checked:before:translate-x-6"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Tab 'Segurança' (Simplificada)
+            const tabSecurityContent = `
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-red-500/90 flex items-center"><span class="material-symbols-rounded text-base text-red-500/90 mr-1">warning</span>Exclusão de Dados</h3 >
+                    <p class="text-sm text-[rgb(var(--page-fg))] opacity-90">Esta ação removerá todos os seus dados (Nome, E-mail, Telefone, e Preferências de Tema) salvos **apenas neste dispositivo** (memória local). Esta ação é permanente e irreversível.</p>
+                    <div class="mt-6 flex justify-end">
+                        <button id="user-delete-btn" type="button" onclick="handleClearData()" class="inline-flex h-10 items-center gap-2 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-red-300/40 hover:bg-red-500/10 group" aria-label="Remover dados">
+                            <span class="material-symbols-rounded text-lg text-red-500 group-hover:text-red-700">delete</span>
+                            <span class="text-red-500 group-hover:text-red-700 text-sm font-medium">Remover dados permanentemente</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Renderiza o conteúdo das abas
+            appState.tabs.forEach(tab => {
+                let content = '';
+                if (tab.id === 'login') content = tabLoginContent;
+                if (tab.id === 'data') content = tabDataContent;
+                if (tab.id === 'prefs') content = tabPrefsContent;
+                if (tab.id === 'security') content = tabSecurityContent;
+                
+                const hiddenClass = appState.currentPanelTab !== tab.id ? 'hidden' : '';
+                
+                const tabColorBase = tab.base.split('-')[0];
+                const tabBorderClass = `border-${tabColorBase}-500/40`;
+                const tabBgClass = `bg-${tabColorBase}-500/10`;
+
+                tabContents += `<div id="tab-${tab.id}" class="tab-content border-2 ${tabBorderClass} ${tabBgClass} rounded-2xl p-4 absolute top-0 left-0 w-full ${hiddenClass}">${content}</div>`;
+            });
+
+            // Estrutura do Modal (Janela)
+            return `
+                <div id="user-panel" class="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex mobile-modal-overlay" 
+                    aria-modal="true" role="dialog" onclick="setAppState({isUserPanelOpen:false})">
+                    
+                    <div class="mx-4 w-full max-w-xl max-h-full overflow-y-auto rounded-3xl border-2 ${activeColorClasses.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl mobile-modal-content" 
+                        onclick="event.stopPropagation()">
+                        
+                        <div class="flex items-start justify-between gap-3">
+                            <div id="panel-title-container">
+                                <h2 id="panel-title" class="text-base sm:text-lg font-semibold">${activeTab.title}</h2>
+                                <p id="panel-subtitle" class="mt-1 text-xs sm:text-[0.75rem] text-[rgb(var(--page-fg-muted))]">${activeTab.subtitle}</p>
+                            </div>
+                            <button id="user-close" type="button" onclick="setAppState({isUserPanelOpen:false,currentPanelTab:'login'})" 
+                                class="${closeButtonBase} ${closeTextClasses} px-3" aria-label="Fechar painel do usuário">
+                                <span class="${closeIconClasses}">close</span>
+                                <span class="hidden sm:inline">Fechar</span>
+                            </button>
+                        </div>
+                        
+                        <div id="tab-header" class="flex gap-2 mt-4 mb-4 pb-1 border-b border-[rgb(var(--page-fg-muted)/0.3)]">
+                            ${appState.tabs.map(tab => {
+                                const isCurrent = appState.currentPanelTab === tab.id;
+                                const tabBase = tab.base.split('-')[0];
+                                const activeClasses = isCurrent ? `border-b-2 border-${tabBase}-500 text-${tabBase}-600 font-bold` : 'border-b-2 border-transparent text-[rgb(var(--page-fg-muted))] hover:text-[rgb(var(--page-fg))] hover:border-[rgb(var(--page-fg-muted)/0.5)]';
+                                const iconColorClass = `text-${tabBase}-500/80`;
+                                return `<button key="${tab.id}" data-tab-id="${tab.id}" class="tab-button inline-flex items-center px-3 text-sm transition focus:outline-none gap-1 ${activeClasses}" onclick="setAppState({currentPanelTab:'${tab.id}'})">
+                                    <span class="material-symbols-rounded text-base ${iconColorClass}">${tab.icon}</span>${tab.label}
+                                </button>`;
+                            }).join('')}
+                        </div>
+                        
+                        <!-- Container para o conteúdo das abas. A altura mínima é importante para evitar CLS. -->
+                        <div class="relative mt-3 min-h-[420px]">
+                            ${tabContents}
+                        </div>
+                        
+                        <div id="panel-status-footer" class="mt-4 pt-3 border-t border-[rgb(var(--page-fg-muted)/0.3)]">
+                            <p id="user-status-text" class="text-[0.8rem] text-center ${statusMessage.tone === 'ok' ? 'text-emerald-600' : statusMessage.tone === 'error' ? 'text-red-500' : 'text-amber-500'}">${statusMessage.text}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // NOVO COMPONENTE: Modal Centralizado para Avisos (Reutiliza o layout do modal principal)
+        function renderAlertsCentralModal() {
+            if (!appState.isAlertsCentralOpen) return '';
+
+            const alerts = userData.appAlerts.slice().sort((a, b) => b.timestamp - a.timestamp); // Ordena por mais recente
+            const unreadCount = alerts.filter(a => !a.read).length;
+            
+            const alertListHTML = alerts.length > 0 ? alerts.map(alert => {
+                const styles = getAlertStyles(alert.type);
+                const unreadClass = alert.read ? 'opacity-60' : 'font-semibold bg-amber-500/5 ring-2 ring-amber-500/30'; // Destaca não lidos
+
+                return `
+                    <div data-id="${alert.id}" onclick="markAlertAsRead('${alert.id}')" 
+                        class="alert-item p-4 mb-2 rounded-xl border border-[rgb(var(--page-fg-muted)/0.2)] ${styles.iconBg} flex items-start gap-3 ${unreadClass}">
+                        
+                        <span class="material-symbols-rounded text-xl ${styles.iconColor} pt-1">${alert.icon}</span>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start">
+                                <h4 class="text-sm ${styles.text} truncate">${alert.title}</h4>
+                                <span class="text-[0.7rem] text-[rgb(var(--page-fg-muted))] flex-shrink-0 ml-2">${formatTimeAgo(alert.timestamp)}</span>
+                            </div>
+                            <p class="text-xs text-[rgb(var(--page-fg))] mt-1">${alert.message}</p>
+                        </div>
+                        
+                        ${!alert.read ? `<span class="h-2 w-2 bg-red-500 rounded-full flex-shrink-0 mt-2 ml-1" aria-label="Não lido"></span>` : ''}
+                    </div>
+                `;
+            }).join('') : `
+                <div class="p-6 text-center text-[rgb(var(--page-fg-muted))] mt-12">
+                    <span class="material-symbols-rounded text-6xl opacity-40">notifications_off</span>
+                    <p class="mt-2 text-sm">Nenhum aviso ou notificação pendente.</p>
+                </div>
+            `;
+            
+            // Reutiliza a estrutura do modal centralizado
+            return `
+                <div id="alerts-central-modal" class="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex mobile-modal-overlay" 
+                    aria-modal="true" role="dialog" onclick="setAppState({isAlertsCentralOpen:false})">
+                    
+                    <div class="mx-4 w-full max-w-xl max-h-full overflow-y-auto rounded-3xl border-2 border-amber-500/70 bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl mobile-modal-content" 
+                        onclick="event.stopPropagation()">
+                        
+                        <div class="flex items-start justify-between gap-3 pb-4 border-b border-[rgb(var(--page-fg-muted)/0.3)]">
+                            <div id="panel-title-container">
+                                <h2 id="panel-title" class="text-xl font-bold flex items-center gap-2 text-amber-600">
+                                    <span class="material-symbols-rounded">notifications_active</span> Central de Avisos
+                                </h2>
+                                <p class="text-sm text-[rgb(var(--page-fg-muted))] mt-2">
+                                    ${unreadCount > 0 ? `<span class="font-semibold text-red-500">${unreadCount}</span> notificação(ões) não lida(s) no total.` : 'Todas as notificações foram lidas.'}
+                                </p>
+                            </div>
+                            <button type="button" onclick="setAppState({isAlertsCentralOpen:false})" 
+                                class="inline-flex h-10 items-center gap-1 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group" aria-label="Fechar">
+                                <span class="material-symbols-rounded text-lg text-cyan-500 group-hover:text-cyan-700">close</span>
+                                <span class="hidden sm:inline text-[rgb(var(--page-fg-muted))] text-sm font-medium">Fechar</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Lista de Avisos -->
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto">
+                            ${alertListHTML}
+                        </div>
+                        
+                        <div class="pt-4 border-t border-[rgb(var(--page-fg-muted)/0.3)] mt-4">
+                            <button onclick="updateUserData('appAlerts', userData.appAlerts.map(a => ({...a, read: true})))" class="w-full text-center text-sm text-sky-500 hover:text-sky-700 font-medium transition disabled:opacity-50" ${unreadCount === 0 ? 'disabled' : ''}>
+                                Marcar todos como lidos
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function renderAlertBadge() {
+            const badge = document.getElementById('alert-badge');
+            if (!badge) return;
+
+            const unreadCount = userData.appAlerts ? userData.appAlerts.filter(a => !a.read).length : 0;
+            
+            if (unreadCount > 0) {
+                badge.style.display = 'flex';
+                badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+
+        function renderApp() {
+            const appContainer = document.getElementById('app-container');
+            
+            if (!appContainer) return;
+
+            // Limpa o container antes de renderizar qualquer coisa, a não ser os modais.
+            appContainer.innerHTML = '';
+            
+            // 1. Renderiza o Painel de Usuário (Modal Centralizado 1)
+            if (appState.isUserPanelOpen) {
+                appContainer.innerHTML = renderUserPanelModal();
+            }
+            
+            // 2. Renderiza o Modal de Avisos (Modal Centralizado 2)
+            if (appState.isAlertsCentralOpen) {
+                appContainer.innerHTML = renderAlertsCentralModal();
+            }
+            
+            // 3. Atualiza o contador de não lidos no botão FAB
+            renderAlertBadge();
+
+            // 4. Re-anexa os eventos
+            attachEvents();
+        }
+
+        function attachEvents() {
+            // Eventos do Painel de Usuário (mantidos)
+            if (appState.isUserPanelOpen) {
+                const allFormInputs = document.querySelectorAll('#user-form input, #user-form select, #login-form input');
+                allFormInputs.forEach(input => {
+                    input.oninput = (e) => {
+                        if (e.target.name === 'phone') {
+                            e.target.value = maskPhone(e.target.value);
+                        } else if (e.target.name === 'cep') {
+                            e.target.value = maskCEP(e.target.value);
+                        } else if (e.target.name === 'birthDate') {
+                            e.target.value = maskBirthDate(e.target.value);
+                        }
+                        handleFormChange(e);
+                    };
+                    if (input.tagName === 'SELECT') {
+                        input.onchange = handleFormChange;
+                    }
+                });
+            }
+            // Não são necessários novos eventos para o Modal de Avisos, pois as ações
+            // (fechar, marcar como lido) estão no onclick do HTML renderizado, que chama setAppState ou markAlertAsRead.
+        }
+
+        function init() {
+            loadUserData();
+            document.documentElement.setAttribute('data-theme', userData.themePref || 'light'); 
+            renderApp();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
