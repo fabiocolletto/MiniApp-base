@@ -29,11 +29,9 @@
             min-height: 100vh;
             background-color: rgb(var(--page-bg));
             color: rgb(var(--page-fg));
-            display: flex; /* Centraliza o ícone */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            /* Removido: display: flex; flex-direction: column; align-items: center; justify-content: center; */
+            /* O corpo agora só precisa do contêiner para renderizar o modal */
+            padding: 0;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -61,17 +59,10 @@
     </style>
 </head>
 <body>
-    <!-- Botão de Abertura do Painel -->
-    <button id="open-panel-btn" 
-        type="button" 
-        onclick="setAppState({isUserPanelOpen: true})" 
-        class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-cyan-500 text-white shadow-xl shadow-cyan-500/50 transition-all hover:bg-cyan-600 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-300/50" 
-        aria-label="Abrir painel do usuário">
-        <span class="material-symbols-rounded text-3xl">account_circle</span>
-    </button>
+    <!-- Botão de Abertura do Painel REMOVIDO -->
     
     <div id="app-container">
-        <!-- O painel isolado será renderizado aqui -->
+        <!-- O painel isolado será renderizado aqui automaticamente -->
     </div>
 
     <script>
@@ -80,11 +71,11 @@
         let userData = {};
         let appState = {
             currentScreen: 'catalog',
-            isUserPanelOpen: false, 
-            // NOVA ABA: Define 'login' como a aba inicial
+            // ALTERADO: Definido como TRUE para abrir automaticamente
+            isUserPanelOpen: true, 
             currentPanelTab: 'login', 
             tabs: [
-                { id: 'login', label: 'Login', title: 'Acesso ao Sistema', subtitle: 'Insira suas credenciais para continuar.', base: 'cyan-500', icon: 'login' }, // NOVA ABA
+                { id: 'login', label: 'Login', title: 'Acesso ao Sistema', subtitle: 'Insira suas credenciais para continuar.', base: 'cyan-500', icon: 'login' }, 
                 { id: 'data', label: 'Dados do Usuário', title: 'Central do Usuário', subtitle: 'Gerencie seus dados e o comportamento do sistema.', base: 'emerald-500', icon: 'badge' },
                 { id: 'prefs', label: 'Preferências', title: 'Preferências', subtitle: 'Configurações que controlam a aparência do sistema.', base: 'sky-500', icon: 'settings' },
                 { id: 'security', label: 'Segurança', title: 'Segurança', subtitle: 'Ações permanentes e críticas do sistema.', base: 'red-500', icon: 'lock' }
@@ -195,12 +186,9 @@
         function handleClearData() {
             // Limpa dados e atualiza o estado para fechar o painel e mostrar a mensagem
             clearUserData();
-            setAppState({ isUserPanelOpen: false, currentPanelTab: 'login' }); // Volta para a aba de login
-            // Força a mensagem de status na próxima abertura (mock)
-            document.getElementById('open-panel-btn').innerText = 'Dados Limpos!';
-            setTimeout(() => {
-                 document.getElementById('open-panel-btn').innerHTML = '<span class="material-symbols-rounded text-3xl">account_circle</span>';
-            }, 2000);
+            // Mantemos o painel aberto ao limpar (ou você pode fechá-lo forçadamente, dependendo do requisito)
+            setAppState({ isUserPanelOpen: true, currentPanelTab: 'login' }); 
+            // Como o botão foi removido, não podemos atualizar o texto dele.
         }
 
         // NOVA FUNÇÃO: Simula o processo de login
@@ -261,6 +249,7 @@
         }
 
         function renderUserPanelModal() {
+            // Se o painel não estiver aberto, não renderiza nada (o que não deve acontecer agora)
             if (!appState.isUserPanelOpen) return '';
 
             const activeTab = appState.tabs.find(t => t.id === appState.currentPanelTab);
@@ -284,7 +273,7 @@
             
             let tabContents = '';
 
-            // NOVO CONTEÚDO: Tab 'Login'
+            // CONTEÚDO: Tab 'Login'
             const tabLoginContent = `
                 <div class="space-y-6 pt-2">
                     <p class="text-sm text-[rgb(var(--page-fg))] opacity-90">Status Atual: <span class="font-semibold text-cyan-500">${userData.loginStatus}</span></p>
@@ -438,7 +427,7 @@
                 <div id="user-panel" class="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex mobile-modal-overlay" 
                     aria-modal="true" role="dialog" onclick="setAppState({isUserPanelOpen:false})">
                     
-                    <!-- AQUI FOI ALTERADO: max-w-md para max-w-xl -->
+                    <!-- Alterado: max-w-md para max-w-xl -->
                     <div class="mx-4 w-full max-w-xl max-h-full overflow-y-auto rounded-3xl border-2 ${activeColorClasses.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl mobile-modal-content" 
                         onclick="event.stopPropagation()">
                         
@@ -447,6 +436,7 @@
                                 <h2 id="panel-title" class="text-base sm:text-lg font-semibold">${activeTab.title}</h2>
                                 <p id="panel-subtitle" class="mt-1 text-xs sm:text-[0.75rem] text-[rgb(var(--page-fg-muted))]">${activeTab.subtitle}</p>
                             </div>
+                            <!-- O botão de fechar ainda permite fechar o modal -->
                             <button id="user-close" type="button" onclick="setAppState({isUserPanelOpen:false,currentPanelTab:'login'})" 
                                 class="${closeButtonBase} ${closeTextClasses} px-3" aria-label="Fechar painel do usuário">
                                 <span class="${closeIconClasses}">close</span>
