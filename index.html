@@ -45,7 +45,11 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 /* Grid System */
 .app-grid-container { display: flex; justify-content: center; }
 .app-grid-base { display: grid; gap: 1.5rem; width: 100%; }
+
+/* Classe para <= 3 itens (Coluna Única Estrita) */
 .grid-1-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); max-width: 320px; }
+
+/* Classe para > 3 itens (Grid Responsivo) */
 .grid-3-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); }
 @media (min-width: 640px) { .grid-3-col-app { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 664px; } }
 @media (min-width: 1200px) { .grid-3-col-app { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1008px; } }
@@ -64,25 +68,27 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 }
 
 /* Cores Específicas dos Botões */
-#user-btn { --chip-color-text: #0891b2; border-color: #0891b2; --chip-color-hover: rgba(8, 145, 178, 0.1); } /* Cyan */
-#alert-btn { --chip-color-text: #d97706; border-color: #d97706; --chip-color-hover: rgba(217, 119, 6, 0.1); } /* Amber */
-#home-btn { --chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1); } /* Indigo/Roxo */
+#user-btn { --chip-color-text: #0891b2; border-color: #0891b2; --chip-color-hover: rgba(8, 145, 178, 0.1); }
+#alert-btn { --chip-color-text: #d97706; border-color: #d97706; --chip-color-hover: rgba(217, 119, 6, 0.1); }
+#home-btn { --chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1); }
 
-/* Botão Voltar (Padrão Cinza) */
+/* --- REGRAS GLOBAIS PARA BOTÕES FLUTUANTES (Voltar e Fechar) --- */
+/* Ambos agora compartilham a mesma lógica visual de fundo branco sólido e destaque */
+
+/* Botão Voltar Global (Azul) */
 #back-btn-float button { 
-    --chip-color-text: #4b5563; 
-    border-color: #d1d5db; 
-    --chip-color-hover: rgba(209, 213, 219, 0.3); 
+    --chip-color-text: #2563eb; 
+    border-color: #bfdbfe; /* Azul claro suave na borda */
+    --chip-color-hover: rgba(37, 99, 235, 0.1); 
     background-color: white !important;
 }
 
-/* Botão Fechar Modal */
-.modal-close-btn {
+/* Botão Fechar Global (Vermelho) */
+#close-btn-float button {
     --chip-color-text: #ef4444; 
-    border-color: #fecaca; 
+    border-color: #fecaca; /* Vermelho claro suave na borda */
     --chip-color-hover: rgba(254, 202, 202, 0.3);
-    background-color: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(4px);
+    background-color: white !important;
 }
 </style>
 </head>
@@ -97,7 +103,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             <p class="mt-1 text-sm text-gray-500">Selecione o sistema que deseja acessar:</p>
         </section>
         <div class="app-grid-container">
-            <section id="portfolio-grid" class="mt-6 app-grid-base grid-3-col-app"></section>
+            <section id="portfolio-grid" class="mt-6 app-grid-base"></section>
         </div>
     </div>
 
@@ -108,7 +114,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             <p class="mt-1 text-sm text-gray-500">Selecione uma área para iniciar.</p>
         </section>
         <div class="app-grid-container">
-            <section id="education-grid" class="mt-6 app-grid-base grid-3-col-app"></section>
+            <section id="education-grid" class="mt-6 app-grid-base"></section>
         </div>
     </div>
 
@@ -119,70 +125,54 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
         </section>
         <div class="app-grid-container">
-            <section id="student-menu-grid" class="mt-6 app-grid-base grid-1-col-app"></section>
+            <section id="student-menu-grid" class="mt-6 app-grid-base"></section>
         </div>
     </div>
     
 </main>
 
-<!-- BOTÃO VOLTAR (NAVEGAÇÃO INTERNA SIMPLIFICADA) -->
-<div id="back-btn-float" class="fixed top-4 left-4 z-40 hidden">
-    <button onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-sm">
+<!-- BOTÃO VOLTAR (FLUTUANTE ESQUERDA - GLOBAL) -->
+<!-- Atualizado para z-[60] para ser simétrico ao botão de fechar em prioridade -->
+<div id="back-btn-float" class="fixed top-4 left-4 z-[60] hidden">
+    <button onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
         <span class="material-symbols-rounded text-xl mr-2">arrow_back</span>
         <span>Voltar</span>
     </button>
 </div>
 
+<!-- BOTÃO FECHAR (FLUTUANTE DIREITA - GLOBAL) -->
+<!-- z-[60] garante que fique acima dos overlays (que são z-50) -->
+<div id="close-btn-float" class="fixed top-4 right-4 z-[60] hidden">
+    <button onclick="closeCurrentMiniApp()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
+        <span class="material-symbols-rounded text-xl mr-2">close</span>
+        <span>Fechar</span>
+    </button>
+</div>
 
-<!-- ==================================================================================== -->
-<!-- MODAL 1: PAINEL DE USUÁRIO (OVERLAY) -->
-<!-- ==================================================================================== -->
+<!-- ================= MODAIS (OVERLAYS) ================= -->
+
+<!-- 1. PAINEL DE USUÁRIO -->
 <div id="user-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
-        
-        <!-- Botão Fechar -->
-        <button type="button" onclick="closeMiniApp('user-modal-overlay')" class="absolute top-4 right-4 modal-close-btn chip-button inline-flex items-center text-xs font-semibold uppercase tracking-wider transition px-3 py-1.5 rounded-full shadow-md border z-50">
-            <span class="material-symbols-rounded text-base mr-1">close</span>
-            Fechar
-        </button>
-        
         <iframe id="user-panel-frame" class="w-full h-full border-0" title="Painel do Usuário"></iframe>
     </div>
 </div>
 
-<!-- ==================================================================================== -->
-<!-- MODAL 2: PAINEL DE ALERTAS (OVERLAY) -->
-<!-- ==================================================================================== -->
+<!-- 2. PAINEL DE ALERTAS -->
 <div id="alert-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
-        
-        <!-- Botão Fechar -->
-        <button type="button" onclick="closeMiniApp('alert-modal-overlay')" class="absolute top-4 right-4 modal-close-btn chip-button inline-flex items-center text-xs font-semibold uppercase tracking-wider transition px-3 py-1.5 rounded-full shadow-md border z-50">
-            <span class="material-symbols-rounded text-base mr-1">close</span>
-            Fechar
-        </button>
-        
         <iframe id="alert-panel-frame" class="w-full h-full border-0" title="Painel de Alertas"></iframe>
     </div>
 </div>
 
-<!-- ==================================================================================== -->
-<!-- MODAL 3: SIMULADOS (OVERLAY) -->
-<!-- ==================================================================================== -->
+<!-- 3. SIMULADOS -->
 <div id="simulados-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
-        
-        <!-- Botão Fechar -->
-        <button type="button" onclick="closeMiniApp('simulados-modal-overlay')" class="absolute top-4 right-4 modal-close-btn chip-button inline-flex items-center text-xs font-semibold uppercase tracking-wider transition px-3 py-1.5 rounded-full shadow-md border z-50">
-            <span class="material-symbols-rounded text-base mr-1">close</span>
-            Fechar
-        </button>
-        
         <iframe id="simulados-frame" class="w-full h-full border-0" title="App Simulados"></iframe>
     </div>
 </div>
 
-<!-- MODAL DE LOADING -->
+<!-- LOADING -->
 <div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
     <div class="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center">
         <svg aria-hidden="true" class="w-10 h-10 text-gray-200 animate-spin fill-blue-600 mb-3" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
@@ -190,13 +180,11 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- BARRA DE NAVEGAÇÃO INFERIOR -->
+<!-- NAVEGAÇÃO INFERIOR -->
 <div id="main-nav-buttons" class="fixed bottom-4 left-4 z-30 flex flex-col space-y-2 transition-opacity duration-300">
-    <!-- NOVO BOTÃO: INÍCIO (Acima do Alertas) -->
     <button id="home-btn" type="button" onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
         <span class="material-symbols-rounded text-xl mr-2">home</span><span class="hidden sm:inline">Início</span>
     </button>
-    
     <button id="alert-btn" type="button" onclick="loadAlertPanel()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
         <span class="material-symbols-rounded text-xl mr-2">notifications</span><span class="hidden sm:inline">Alertas</span>
     </button>
@@ -208,6 +196,9 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.1.1/flowbite.min.js"></script>
 
 <script>
+    // --- VARIÁVEIS DE ESTADO ---
+    let currentOpenModalId = null; 
+
     // --- DADOS ---
     const PORTFOLIO_ITEMS = [
         { title: "Educação", href: "javascript:showEducationCategories()", color: "pink", icon: "cast_for_education" },
@@ -243,10 +234,13 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         }
     }
 
-    function closeMiniApp(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add('hidden');
-        toggleMainInterface(true); // Restaura os botões
+    function closeCurrentMiniApp() {
+        if (currentOpenModalId) {
+            document.getElementById(currentOpenModalId).classList.add('hidden');
+            document.getElementById('close-btn-float').classList.add('hidden'); 
+            toggleMainInterface(true); 
+            currentOpenModalId = null;
+        }
     }
 
     // --- FUNÇÕES DE NAVEGAÇÃO ---
@@ -259,21 +253,38 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     function showEducationCategories() {
         switchView('education-categories-view');
         renderGridSection("education-grid", EDUCATION_CATEGORIES, false);
-        updateBackButton(showPortfolio); // Apenas ação
+        updateBackButton(showPortfolio);
     }
 
     function showStudentMenu() {
         switchView('student-menu-view');
         renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
-        updateBackButton(showEducationCategories); // Apenas ação
+        updateBackButton(showEducationCategories);
+    }
+
+    // --- RENDERIZAÇÃO DO GRID ---
+    function renderGridSection(id, data, isMain) {
+        const container = document.getElementById(id);
+        if (container) {
+            container.className = "mt-6 app-grid-base";
+            if (data.length <= 3) {
+                container.classList.add('grid-1-col-app');
+            } else {
+                container.classList.add('grid-3-col-app');
+            }
+            container.innerHTML = data.map(item => getCardTemplate(item, isMain)).join('');
+        }
     }
 
     // --- FERRAMENTA PADRÃO DE CARREGAMENTO ---
     async function loadMiniApp(iframeId, url, basePath, modalIdToOpen) {
         const frame = document.getElementById(iframeId);
         
-        toggleMainInterface(false);
-        document.getElementById(modalIdToOpen).classList.remove('hidden');
+        toggleMainInterface(false); 
+        document.getElementById(modalIdToOpen).classList.remove('hidden'); 
+        document.getElementById('close-btn-float').classList.remove('hidden'); 
+        
+        currentOpenModalId = modalIdToOpen;
         
         if (frame.srcdoc) return; 
 
@@ -298,8 +309,16 @@ body, html { background-color: #f8fafc; color: #0f172a; }
                 ::-webkit-scrollbar-track { background: transparent; }
 
                 html, body {
-                    width: 100%; min-height: 100%; margin: 0; padding: 0;
-                    background: transparent !important; overflow-x: hidden;
+                    width: 100%; 
+                    height: auto; 
+                    min-height: 100%; 
+                    margin: 0; 
+                    padding: 0;
+                    padding-bottom: 80px !important; 
+                    background: transparent !important; 
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    box-sizing: border-box;
                 }
                 header, footer, nav, .navbar, .header-bar, h1 { display: none !important; }
                 
@@ -388,11 +407,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
                     <h2 class="text-${item.color}-700">${item.title}</h2>
                 </div>
             </div>`;
-    }
-
-    function renderGridSection(id, data, isMain) {
-        const container = document.getElementById(id);
-        if (container) container.innerHTML = data.map(item => getCardTemplate(item, isMain)).join('');
     }
 
     document.addEventListener("DOMContentLoaded", showPortfolio);
