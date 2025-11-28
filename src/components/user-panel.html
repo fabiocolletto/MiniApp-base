@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApps - Monolítico para Teste (IndexedDB/Dexie)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Dexie.js (Biblioteca para IndexedDB) -->
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        /* =============================================== */
+        /* ESTILOS CORE */
+        /* =============================================== */
+        :root, html {
+            --page-bg: 248 250 252;
+            --page-bg-alpha: 0.96;
+            --page-fg: 15 23 42;
+            --page-fg-muted: 71 85 105;
+            --page-border: 15 23 42;
+            color-scheme: light;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        
+        [data-theme="dark"] {
+            --page-bg: 15 23 42;
+            --page-bg-alpha: 1;
+            --page-fg: 248 250 252;
+            --page-fg-muted: 156 163 175;
+            --page-border: 248 250 252;
+            color-scheme: dark;
+        }
+        
+        body {
+            min-height: 100vh;
+            background-color: rgb(var(--page-bg) / var(--page-bg-alpha));
+            color: rgb(var(--page-fg));
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .mini-app-card-base {
+            width: 100%;
+            max-width: 300px;
+            min-width: 180px;
+            aspect-ratio: 4/3;
+            border-style: solid;
+            border-width: 2px;
+        }
+
+        @media (max-width: 640px) {
+             .card-grid-container > a {
+                max-width: 90%; 
+             }
+        }
+        
+        .status-pending {opacity: 0.45; cursor: default; pointer-events: none; transform: none !important; box-shadow: none !important;}
+        .mini-app-card-base.selected {border-width: 3px !important; box-shadow: 0 0 0 4px rgb(var(--page-bg)), 0 0 0 6px var(--selection-color) !important;}
+        .mini-app-card-base .icon-large {font-size: 5rem;}
+        .tab-content.hidden{display:none;}
+        .tab-button {border-radius: 0.75rem; transition: all 150ms ease; padding-top: 0.4rem; padding-bottom: 0.4rem; color: rgb(var(--page-fg-muted));}
+        
+        .toggle-switch {position: relative; display: inline-block; width: 50px; height: 25px;}
+        .toggle-switch input {opacity: 0; width: 0; height: 0;}
+        .slider {position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 25px;}
+        .slider:before {position: absolute; content: ""; height: 21px; width: 21px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;}
+        input:checked + .slider {background-color: #8B5CF6;}
+        input:checked + .slider:before {transform: translateX(25px);}
+
+        @media (max-width: 640px) {
+            .mobile-modal-overlay {
+                padding: 1rem;
+            }
+            .mobile-modal-content {
+                max-width: 100%;
+                max-height: calc(100vh - 2rem); 
+                margin-top: auto; 
+                margin-bottom: auto;
+            }
+        }
+
+        @media screen and (orientation: landscape) and (max-width: 500px) {
+            #app-container, header, main, .fab-container {
+                display: none;
+            }
+            body::before {
+                content: "Gire o dispositivo para a posição vertical (retrato).";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgb(var(--page-bg));
+                color: rgb(var(--page-fg));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                z-index: 9999;
+                text-align: center;
+                padding: 20px;
+            }
+        }
+        
+        .spinner {
+            border-top-color: currentColor;
+            border-right-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- O conteúdo será preenchido pelo renderApp() -->
+    </div>
+    
+    <script>
+        // ===============================================
+        // CONTEÚDO DO host-app.js (CORE, ESTADO, UI)
+        // ===============================================
+
+        const SCREENS = {
+            CATALOG: 'catalog',
+            MINI_APP: 'mini_app',
+            PERSONA_SELECTION: 'persona_selection',
+            STUDENT_MENU: 'student_menu',
+        };
+
+        // Estado Global da Aplicação
+        const appState = {
+            currentScreen: SCREENS.CATALOG, 
+            isUserPanelOpen: false,        
+            currentPanelTab: 'data',       
+            isActionModalOpen: false,      
+            isAccessibilityPanelOpen: false,
+            isNotificationPanelOpen: false,
+            activeProduct: null,
+            activeProductHTML: null,
+            // Novo estado para dados específicos do mini-app
+            simuladosData: null, 
+        };
+
+        // Estado Mínimo do Usuário (Usando localStorage para persistência de PREFERÊNCIAS)
+        const USER_KEY = "app5-user-data";
+        let userData = {};
+
+        let forceRenderCallback = () => console.warn("Render callback not initialized.");
+
+        // --- Funções de Usuário (PREFERÊNCIAS - Usa localStorage) ---
+        function loadUser() {
+            const DEFAULT_USER_STATE = { themePref: 'light', persona: 'aluno', showAccessibilityFab: true, showNotificationFab: true, uniqueId: Math.random().toString(36).substring(2, 9) };
+            try {
+                const raw = localStorage.getItem(USER_KEY);
+                const data = raw ? JSON.parse(raw) : {};
+                userData = { ...DEFAULT_USER_STATE, ...data };
+                if (userData.country === 'Brasil' && (!userData.phone || userData.phone.replace(/\D/g, '').length === 0)) {
+                    userData.phone = '55';
+                }
+            } catch (e) {
+                userData = { ...DEFAULT_USER_STATE };
+            }
+            return userData;
+        }
+
+        function getUserState() {
+            return userData;
+        }
+
+        function updateUser(key, value) {
+            if (key === 'persona' && value !== 'aluno') return; 
+            userData[key] = value;
+            try {
+                userData.updated = new Date().toISOString();
+                localStorage.setItem(USER_KEY, JSON.stringify(userData));
+            } catch (e) { console.error("Erro ao salvar dados."); }
+        }
+
+        function clearUser() {
+             userData = { themePref: 'light', persona: 'aluno', showAccessibilityFab: true, showNotificationFab: true, uniqueId: Math.random().toString(36).substring(2, 9) };
+            try {
+                localStorage.removeItem(USER_KEY);
+            } catch (e) { console.error("Erro ao limpar dados."); }
+        }
+        // --------------------------------------------------------
+
+        // --- Funções de Estado ---
+        function setAppState(newState) {
+            // CORREÇÃO: Garante que newState seja um objeto antes de usá-lo ou padroniza para um objeto vazio.
+            const updates = newState || {};
+            
+            Object.assign(appState, updates);
+            
+            // CORRIGIDO: Verifica se a propriedade existe no objeto updates.
+            if (updates.hasOwnProperty('currentScreen') && updates.currentScreen !== appState.currentScreen) {
+                appState.isUserPanelOpen = false;
+                appState.isActionModalOpen = false;
+                appState.isAccessibilityPanelOpen = false;
+                appState.isNotificationPanelOpen = false;
+            }
+            
+            forceRenderCallback();
+        }
+
+        function initializeRenderCallback(callback) {
+            forceRenderCallback = callback;
+        }
+        // --------------------------------------------------------
+
+
+        // ===============================================
+        // SERVIÇO DE DADOS DO MINI-APP (INDEXEDDB / DEXIE)
+        // ===============================================
+
+        // 1. Inicializa o banco de dados Dexie para o Mini-App
+        const SimuladosDB = new Dexie("SimuladosAppDB");
+        SimuladosDB.version(1).stores({
+            // Definimos as "tabelas" (Object Stores)
+            respostas: '++id, usuarioId, simuladoId, perguntaId', 
+            progresso: 'usuarioId',
+        });
+        // SimuladosDB.open().catch(err => console.error("Falha ao abrir Dexie DB:", err));
+
+        /**
+         * 2. Salva uma resposta de simulado no IndexedDB.
+         * Esta função seria chamada de dentro do código do Mini-App Simulados.
+         * @param {Object} resposta - {simuladoId: 'A1', perguntaId: 5, resposta: 'C'}
+         */
+        async function saveSimuladoResponse(resposta) {
+            const user = getUserState();
+            const dataToSave = {
+                ...resposta,
+                usuarioId: user.uniqueId,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await SimuladosDB.respostas.put(dataToSave);
+                console.log(`Resposta salva para o usuário ${user.uniqueId} no IndexedDB.`);
+            } catch (error) {
+                console.error("Erro ao salvar resposta no Dexie:", error);
+            }
+        }
+
+        /**
+         * 3. Carrega o progresso de simulados para o usuário atual.
+         */
+        async function loadSimuladosData() {
+            const user = getUserState();
+            try {
+                const progresso = await SimuladosDB.progresso.get(user.uniqueId);
+                const respostas = await SimuladosDB.respostas.where('usuarioId').equals(user.uniqueId).toArray();
+
+                setAppState({
+                    simuladosData: {
+                        progresso: progresso,
+                        respostas: respostas,
+                    }
+                });
+                console.log(`Dados do Simulado carregados para o usuário ${user.uniqueId}.`);
+            } catch (error) {
+                console.error("Erro ao carregar dados do Dexie:", error);
+                setAppState({ simuladosData: null });
+            }
+        }
+
+        // ===============================================
+        // CONTINUAÇÃO: UTILIDADES DE UI e RENDERIZAÇÃO
+        // ===============================================
+
+        // --- UTILIDADES DE UI (Mantidas) ---
+        function setAppTheme(theme) {
+            const html = document.documentElement;
+            if (theme === 'dark') {
+                html.setAttribute('data-theme', 'dark');
+            } else {
+                html.removeAttribute('data-theme');
+            }
+        }
+        
+        function getColorStyle(baseColor) {
+            const colorMap = {
+                emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-700', border: 'border-emerald-500/40' },
+                sky: { bg: 'bg-sky-500/10', text: 'text-sky-700', border: 'border-sky-500/40' },
+                red: { bg: 'bg-red-500/10', text: 'text-red-700', border: 'border-red-500/40' },
+                default: { bg: 'bg-indigo-500/10', text: 'text-indigo-700', border: 'border-indigo-500/40' }
+            };
+            return colorMap[baseColor] || colorMap.default;
+        }
+
+        function getPersonaLabel(personaId) {
+            const labels = { aluno: 'Aluno', professor: 'Professor', instituicao: 'Instituição' };
+            return labels[personaId] || personaId;
+        }
+
+        function renderMiniAppCard({ id, title, icon, color }) {
+            const styles = getColorStyle(color);
+            return `<a href="#" data-app-id="${id}" class="mini-app-card-base rounded-2xl p-4 flex flex-col justify-center items-center ${styles.bg} ${styles.border} border-2 hover:shadow-xl transition duration-300 transform hover:scale-[1.02] active:scale-100" style="--selection-color: rgb(var(--page-fg-muted));">
+                <span class="material-symbols-rounded icon-large ${styles.text} opacity-80">${icon}</span>
+                <div class="mt-4 text-center">
+                    <h3 class="font-semibold text-lg ${styles.text}">${title}</h3>
+                </div>
+            </a>`;
+        }
+
+        function renderContainer(content) { return `<div class="p-4 bg-gray-50/50 rounded-xl">${content}</div>`; }
+        
+        // --- FUNÇÕES PLACEHOLDER DE COMPONENTES ---
+        function renderHeader(state, getUserState, handleBack, getPersonaLabel, setAppState) {
+            const user = getUserState();
+            return `<header class="bg-indigo-600 shadow-lg fixed top-0 w-full z-30">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+                    <h1 class="text-white text-xl font-bold">Host App</h1>
+                    <button onclick="window.hostApp.setAppState({isUserPanelOpen: true})" class="text-white hover:text-indigo-200 transition">
+                        <span class="material-symbols-rounded">account_circle</span>
+                    </button>
+                </div>
+            </header>`;
+        }
+        function renderCatalogScreen(state, getUserState, getColorStyle, renderMiniAppCard) {
+            const user = getUserState();
+            const cards = [
+                { id: 'simulados', title: 'Simulados', icon: 'quiz', color: 'emerald' },
+                { id: 'tarefas', title: 'Tarefas', icon: 'assignment', color: 'sky' },
+            ];
+            const cardHtml = cards.map(c => renderMiniAppCard(c)).join('');
+            return `<h2 class="2xl font-bold mb-6">Catálogo de Mini-Apps (${getPersonaLabel(user.persona)})</h2><div class="card-grid-container flex flex-wrap gap-6 justify-center sm:justify-start">${cardHtml}</div>`;
+        }
+
+        // Placeholders de Componentes
+        const handleBack = () => setAppState({ currentScreen: SCREENS.CATALOG, activeProduct: null, activeProductHTML: null });
+        
+        async function handleAppCardClick(e, setAppState, SCREENS) {
+            e.preventDefault();
+            const appId = e.currentTarget.getAttribute('data-app-id');
+            setAppState({ currentScreen: SCREENS.MINI_APP, activeProduct: appId, activeProductHTML: null });
+            
+            // Lógica de Carregamento Assíncrono do Mini-App (Agora com carga de dados)
+            if (appId === 'simulados') {
+                // 1. Carrega os dados específicos do simulado
+                await loadSimuladosData();
+                
+                // 2. Carrega o HTML (simulando fetch para o arquivo no repositório)
+                // OBS: Esta URL deve ser ajustada para o seu ambiente ou CDN!
+                const htmlPath = 'products/educacao/simulados.html'; 
+                try {
+                    const response = await fetch(htmlPath);
+                    if (!response.ok) throw new Error(`Falha ao carregar ${htmlPath}`);
+                    const htmlContent = await response.text();
+                    
+                    // 3. Atualiza o estado com o HTML carregado
+                    setAppState({ activeProductHTML: htmlContent });
+
+                } catch (error) {
+                    console.error("Erro ao carregar mini-app:", error);
+                    setAppState({ activeProductHTML: `<div class="text-red-600 p-8">Erro ao carregar o Mini-App: ${htmlPath}. Verifique se o arquivo existe e o caminho está correto.</div>` });
+                }
+            }
+        }
+
+        function renderMiniAppScreen(state) {
+            if (!state.activeProductHTML) {
+                // Exibe loading enquanto espera o fetch/dados
+                return `<div class="p-6 text-center text-gray-500">
+                            <span class="material-symbols-rounded text-6xl text-gray-400 animate-spin">progress_activity</span>
+                            <p class="mt-2">Carregando mini-app: ${state.activeProduct}...</p>
+                            <button onclick="window.hostApp.setAppState({currentScreen: SCREENS.CATALOG})" class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition">Voltar</button>
+                        </div>`;
+            }
+            return `
+                <div class="mb-4">
+                    <button onclick="window.hostApp.handleBack()" class="text-indigo-600 hover:text-indigo-800 flex items-center mb-4">
+                        <span class="material-symbols-rounded text-lg mr-1">arrow_back</span> Voltar ao Catálogo
+                    </button>
+                    <!-- Aqui o código do mini-app será injetado -->
+                    ${state.activeProductHTML}
+                    <div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                        <p class="font-bold">Dados do Mini-App (IndexedDB)</p>
+                        <p class="text-sm">Os dados específicos deste mini-app (Simulados) devem ser carregados aqui, vindos do IndexedDB/Dexie. Status de dados carregados: ${appState.simuladosData ? 'Pronto' : 'Carregando/Erro'}.</p>
+                        <button onclick="window.hostApp.saveSimuladoExample()" class="mt-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded-full hover:bg-yellow-600 transition">Salvar Exemplo no Dexie</button>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function renderPersonaSelectionScreen() { return '<div>Tela de Seleção de Persona (Placeholder)</div>'; }
+        function renderStudentMenuScreen() { return '<div>Menu do Aluno (Placeholder)</div>'; }
+        function renderActionModal() { return ''; }
+        function renderProductContent() { return ''; }
+        function handleGeminiBrainstorm() { return ''; }
+        function renderAlertFAB() { return ''; }
+        function renderAccessibilityFAB() { return ''; }
+        function renderNotificationPanelModal() { return ''; }
+        function renderAccessibilityPanelModal() { return ''; }
+        function confirmAlert() { return ''; }
+        function handleToggle() { return ''; }
+        // -------------------------------------------------------------
+
+        // ===============================================
+        // COMPONENTE user-panel.js (Placeholder funcional)
+        // ===============================================
+        
+        const TABS = [
+            { id: 'data', label: 'Dados', title: 'Central do Usuário', base: 'emerald-500', icon: 'badge' },
+            { id: 'prefs', label: 'Prefs', title: 'Preferências', base: 'sky-500', icon: 'settings' },
+            { id: 'security', label: 'Segurança', title: 'Segurança', base: 'red-500', icon: 'lock' }
+        ];
+
+        // UTILS ESPECÍFICOS DO PAINEL (Simplificados)
+        const maskPhone = (value) => (value || "").replace(/\D/g, '').slice(0, 11).replace(/^(\d{2})(\d{5})(\d{4})$/, '+55 $1 $2-$3');
+        const maskCEP = (value) => (value || "").replace(/\D/g, '').slice(0, 8).replace(/^(\d{5})(\d{3})$/, '$1-$2');
+        const maskBirthDate = (value) => (value || "").replace(/\D/g, '').slice(0, 8).replace(/^(\d{2})(\d{2})(\d{4})$/, '$1/$2/$3');
+
+        function handleFormChange(e, onUpdate, setAppTheme) {
+            const { name, value } = e.target;
+            let valueToSave = value.trim();
+
+            if (name === 'phone') valueToSave = value;
+            if (name === 'cep' || name === 'birthDate') valueToSave = value.replace(/\D/g, '');
+
+            updateUser(name, valueToSave);
+            
+            if(name === 'themePref') setAppTheme(value);
+            // CORREÇÃO: Não chama onUpdate (que é setAppState) aqui, pois digitar não deve re-renderizar o app inteiro, apenas salvar o dado.
+            // A re-renderização completa só é necessária para o tema, que já é chamada acima.
+            // if (onUpdate) onUpdate(); // LINHA REMOVIDA
+        }
+
+        function attachUserPanelEvents(setGlobalState, setAppTheme, onClose) {
+            const user = getUserState();
+            
+            document.querySelectorAll('#user-form input, #user-form select').forEach(input => {
+                const handler = (e) => {
+                    if (e.type === 'input') {
+                        if (e.target.name === 'phone') e.target.value = maskPhone(e.target.value);
+                        if (e.target.name === 'cep') e.target.value = maskCEP(e.target.value);
+                        if (e.target.name === 'birthDate') e.target.value = maskBirthDate(e.target.value);
+                    }
+                    handleFormChange(e, setGlobalState, setAppTheme);
+                };
+                input.oninput = handler;
+                input.onchange = handler;
+                
+                if (input.name === 'birthDate') {
+                    input.value = maskBirthDate(user.birthDate);
+                }
+            });
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    // Este clique DEVE re-renderizar, então ele chama setAppState
+                    setGlobalState({ currentPanelTab: btn.getAttribute('data-tab-id') }); 
+                };
+            });
+            
+            document.getElementById('user-delete-btn').onclick = () => {
+                window.hostApp.clearUser();
+                window.hostApp.setAppState({ isUserPanelOpen: false, currentPanelTab: 'data' });
+            };
+
+            document.getElementById('user-close-btn').onclick = () => onClose();
+            document.getElementById('user-panel-overlay').onclick = () => onClose();
+        }
+
+        function renderUserPanelModal(appState, getColorStyle, getUserState) {
+            const user = getUserState();
+            if (!appState.isUserPanelOpen) return '';
+
+            const activeTab = TABS.find(t => t.id === appState.currentPanelTab) || TABS[0];
+            const styles = getColorStyle(activeTab.base.split('-')[0]);
+
+            const tabDataContent = `
+                <form id="user-form" class="space-y-4 text-sm">
+                    <div><label>Nome</label><input id="user-name" name="name" type="text" value="${user.name || ''}" class="w-full rounded-xl border-2 ${styles.border} bg-white/70 px-3 py-2" placeholder="Seu nome" required/></div>
+                    <div><label>Email</label><input id="user-email" name="email" type="email" value="${user.email || ''}" class="w-full rounded-xl border-2 ${styles.border} bg-white/70 px-3 py-2" placeholder="seuemail@exemplo.com" required/></div>
+                    <div><label>Telefone</label><input id="user-phone" name="phone" type="tel" value="${user.phone ? maskPhone(user.phone) : ''}" class="w-full rounded-xl border-2 ${styles.border} bg-white/70 px-3 py-2" placeholder="+55 99 99999-9999"/></div>
+                    <div><label>Data Nasc.</label><input id="user-birthDate" name="birthDate" type="text" value="${user.birthDate ? maskBirthDate(user.birthDate) : ''}" class="w-full rounded-xl border-2 ${styles.border} bg-white/70 px-3 py-2" placeholder="DD/MM/AAAA"/></div>
+                    <div><label>ID Único</label><input type="text" value="${user.uniqueId}" readonly class="w-full rounded-xl border-2 ${styles.border} bg-gray-100/50 px-3 py-2 cursor-default"/></div>
+                </form>`;
+
+            const tabPrefsContent = `
+                <div class="space-y-4 pt-1">
+                    <div class="p-3 rounded-xl border border-sky-300/70 bg-sky-500/5 transition hover:shadow-md">
+                        <h3 class="font-semibold text-base text-sky-700">Tema</h3>
+                        <div class="flex gap-2 mt-2">
+                            <button id="light-theme-btn" onclick="window.hostApp.updateUser('themePref', 'light'); setAppTheme('light'); window.hostApp.renderApp();" class="px-3 py-1 rounded-full text-sm font-medium ${user.themePref === 'light' ? 'bg-sky-500 text-white' : 'bg-white text-sky-700 hover:bg-sky-100'}">Claro</button>
+                            <button id="dark-theme-btn" onclick="window.hostApp.updateUser('themePref', 'dark'); setAppTheme('dark'); window.hostApp.renderApp();" class="px-3 py-1 rounded-full text-sm font-medium ${user.themePref === 'dark' ? 'bg-sky-700 text-white' : 'bg-white text-sky-700 hover:bg-sky-100'}">Escuro</button>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl border border-violet-300/70 bg-violet-500/5 transition hover:shadow-md">
+                        <h3 class="font-semibold text-base text-violet-700">Acessibilidade FAB</h3>
+                        <label class="toggle-switch mt-2">
+                            <input type="checkbox" id="fab-toggle" ${user.showAccessibilityFab ? 'checked' : ''} onchange="window.hostApp.updateUser('showAccessibilityFab', this.checked); window.hostApp.renderApp();"/>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>`;
+
+            const tabSecurityContent = `
+                <div class="space-y-4 pt-1">
+                    <h3 class="text-sm font-semibold text-red-500">Exclusão de Dados</h3>
+                    <p class="text-sm">Removerá todos os dados salvos **apenas neste dispositivo**.</p>
+                    <button id="user-delete-btn" type="button" class="inline-flex h-10 items-center gap-2 rounded-full p-2 transition focus:outline-none focus:ring-2 focus:ring-red-300/40 hover:bg-red-500/10 group">
+                        <span class="material-symbols-rounded text-lg text-red-500 group-hover:text-red-700">delete</span>
+                        <span class="text-red-500 group-hover:text-red-700 text-sm font-medium">Remover dados</span>
+                    </button>
+                </div>`;
+
+            let tabContents = '';
+            TABS.forEach(tab => {
+                let content = '';
+                if (tab.id === 'data') content = tabDataContent;
+                if (tab.id === 'prefs') content = tabPrefsContent;
+                if (tab.id === 'security') content = tabSecurityContent;
+
+                const hiddenClass = appState.currentPanelTab !== tab.id ? 'hidden' : '';
+                tabContents += `<div id="tab-${tab.id}" class="tab-content border-2 ${styles.border} ${styles.bg} rounded-2xl p-4 absolute top-0 left-0 w-full ${hiddenClass}">${content}</div>`;
+            });
+
+            return `
+                <div id="user-panel-overlay" class="fixed inset-0 z-40 items-center justify-center bg-black/60 backdrop-blur-sm flex mobile-modal-overlay" aria-modal="true" role="dialog">
+                    <div class="mx-4 w-full max-w-md max-h-full overflow-y-auto rounded-3xl border-2 ${styles.border} bg-[rgb(var(--page-bg))] bg-opacity-95 p-5 shadow-xl mobile-modal-content" onclick="event.stopPropagation()">
+                        <div class="flex items-start justify-between gap-3">
+                            <h2 class="text-lg font-semibold">${activeTab.title}</h2>
+                            <button id="user-close-btn" type="button" onclick="window.hostApp.setAppState({ isUserPanelOpen: false })" class="text-cyan-500 hover:text-cyan-700 transition">
+                                <span class="material-symbols-rounded">close</span>
+                            </button>
+                        </div>
+                        
+                        <div id="tab-header" class="flex gap-2 mt-4 mb-4 pb-1 border-b border-[rgb(var(--page-fg-muted)/0.3)]">
+                            ${TABS.map(tab => {
+                                const isCurrent = appState.currentPanelTab === tab.id;
+                                const tabStyles = getColorStyle(tab.base.split('-')[0]);
+                                const activeClasses = isCurrent ? `border-b-2 ${tabStyles.border} ${tabStyles.text} font-bold` : 'border-b-2 border-transparent text-[rgb(var(--page-fg-muted))] hover:text-[rgb(var(--page-fg))]';
+                                return `<button data-tab-id="${tab.id}" class="tab-button inline-flex items-center px-3 text-sm ${activeClasses} pt-2">
+                                            <span class="material-symbols-rounded text-base ${tabStyles.text}">${tab.icon}</span>${tab.label}
+                                        </button>`;
+                            }).join('')}
+                        </div>
+                        
+                        <div class="relative mt-3 min-h-[420px]">
+                            ${tabContents}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        // -------------------------------------------------------------
+
+
+        // --- FUNÇÕES DE ORQUESTRAÇÃO E RENDERIZAÇÃO DO HOST ---
+
+        function renderUserPanelModalWrapper() {
+            if (!appState.isUserPanelOpen) return '';
+
+            const modalHTML = renderUserPanelModal(appState, getColorStyle, getUserState);
+            
+            document.querySelectorAll('#user-panel-overlay').forEach(el => el.remove());
+
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHTML;
+            
+            if (modalContainer.firstElementChild) {
+                document.body.appendChild(modalContainer.firstElementChild);
+                
+                attachUserPanelEvents(setAppState, setAppTheme, () => setAppState({ isUserPanelOpen: false }));
+            }
+            
+            return '';
+        }
+
+        function renderMiniAppScreen(state) {
+            if (!state.activeProductHTML) {
+                return `<div class="p-6 text-center text-gray-500">
+                            <span class="material-symbols-rounded text-6xl text-gray-400 animate-spin">progress_activity</span>
+                            <p class="mt-2">Carregando mini-app: ${state.activeProduct}...</p>
+                            <button onclick="window.hostApp.setAppState({currentScreen: SCREENS.CATALOG})" class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition">Voltar</button>
+                        </div>`;
+            }
+            return `
+                <div class="mb-4">
+                    <button onclick="window.hostApp.handleBack()" class="text-indigo-600 hover:text-indigo-800 flex items-center mb-4">
+                        <span class="material-symbols-rounded text-lg mr-1">arrow_back</span> Voltar ao Catálogo
+                    </button>
+                    <!-- Aqui o código do mini-app será injetado -->
+                    ${state.activeProductHTML}
+                    <div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                        <p class="font-bold">Dados do Mini-App (IndexedDB)</p>
+                        <p class="text-sm">Os dados específicos deste mini-app (Simulados) devem ser carregados aqui, vindos do IndexedDB/Dexie. Status de dados carregados: ${appState.simuladosData ? 'Pronto' : 'Carregando/Erro'}.</p>
+                        <button onclick="window.hostApp.saveSimuladoExample()" class="mt-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded-full hover:bg-yellow-600 transition">Salvar Exemplo no Dexie</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderApp() {
+            const appContainer = document.getElementById('app-container');
+            if (!appContainer) return;
+            
+            document.querySelectorAll('#user-panel-overlay').forEach(el => el.remove());
+
+            let mainContent = '';
+
+            if (appState.currentScreen === SCREENS.CATALOG) {
+                mainContent = renderCatalogScreen(appState, getUserState, getColorStyle, renderMiniAppCard);
+            } else if (appState.currentScreen === SCREENS.MINI_APP) {
+                mainContent = renderMiniAppScreen(appState);
+            } else {
+                 mainContent = renderCatalogScreen(appState, getUserState, getColorStyle, renderMiniAppCard);
+            }
+
+
+            appContainer.innerHTML = `
+                ${renderHeader(appState, getUserState, handleBack, getPersonaLabel, setAppState)}
+                <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-4">
+                    ${mainContent}
+                </main>
+                <!-- placeholders para outros modais e FABs -->
+                ${renderAlertFAB(getUserState)}
+                ${renderAccessibilityFAB(getUserState)}
+            `;
+            
+            if (appState.isUserPanelOpen) {
+                renderUserPanelModalWrapper();
+            }
+
+            attachGlobalEvents();
+        }
+
+        function attachGlobalEvents() {
+            const cards = document.querySelectorAll('.mini-app-card-base');
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => handleAppCardClick(e, setAppState, SCREENS));
+            });
+        }
+        
+        // --- FUNÇÃO DE INICIALIZAÇÃO ---
+
+        // Configuração síncrona do tema (fora do DOMContentLoaded)
+        loadUser(); 
+        setAppTheme(getUserState().themePref); 
+
+        function init() {
+            // Exposição Global de Funções para uso no onclick do HTML
+            window.hostApp = {
+                setAppState,
+                renderApp: () => forceRenderCallback(),
+                updateUser,
+                clearUser,
+                SCREENS,
+                // Expõe funções do mini-app para teste:
+                saveSimuladoExample: () => saveSimuladoResponse({ simuladoId: 'Exemplo-A', perguntaId: Date.now(), resposta: 'A' }),
+                handleBack, // Expor handleBack para o botão de voltar do mini-app
+            };
+            
+            initializeRenderCallback(renderApp); 
+            renderApp();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
