@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulados e Provas - App 5 Horas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        /* Variáveis de Tema (Claro é o padrão) */
+        :root, html {
+            --page-bg: 248 250 252;
+            --page-bg-alpha: 0.96;
+            --page-fg: 15 23 42;
+            --page-fg-muted: 71 85 105;
+            --page-border: 15 23 42;
+            --pink-base: 236 72 153; /* pink-500 */
+            color-scheme: light;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        
+        [data-theme="dark"] {
+            --page-bg: 15 23 42;
+            --page-bg-alpha: 1;
+            --page-fg: 248 250 252;
+            --page-fg-muted: 156 163 175;
+            --page-border: 248 250 252;
+            --pink-base: 236 72 153;
+            color-scheme: dark;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: rgb(var(--page-bg) / var(--page-bg-alpha));
+            color: rgb(var(--page-fg));
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Efeito de carregamento/skeleton */
+        .skeleton-loading {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 5. Impedir Giro (Aviso CSS) */
+        @media screen and (orientation: landscape) and (max-width: 500px) {
+            body > * { display: none; }
+            body::before {
+                content: "Gire o dispositivo para a posição vertical (retrato).";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgb(var(--page-bg));
+                color: rgb(var(--page-fg));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                z-index: 9999;
+                text-align: center;
+                padding: 20px;
+            }
+        }
+
+        /* Estilo para Botão de Aba Ativo */
+        .tab-button-simulado {
+            transition: all 150ms ease;
+        }
+        .tab-button-simulado.active {
+            background-color: rgb(var(--pink-base) / 0.8) !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(var(--pink-base) / 0.4), 0 2px 4px -2px rgb(var(--pink-base) / 0.4);
+        }
+        
+        /* Estilo para Botão de Seleção de Fluxo Ativo */
+        .flow-select-card {
+            border-width: 2px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .flow-select-card.active {
+            border-color: rgb(var(--pink-base) / 1);
+            box-shadow: 0 0 0 4px rgb(var(--pink-base) / 0.1);
+        }
+        
+        /* Cores Dinâmicas para os Cards da Etapa 1 */
+        .card-avaliacao { --card-color: 236 72 153; /* pink */ }
+        .card-revisao { --card-color: 14 165 233; /* sky */ }
+        .card-diagnostico { --card-color: 16 185 129; /* emerald */ }
+        .card-personalizado { --card-color: 245 158 11; /* amber */ } /* Nova Cor Adicionada */
+        
+        .card-flow {
+             background-color: rgb(var(--card-color) / 0.1);
+             border-color: rgb(var(--card-color) / 0.4);
+             transition: all 0.2s;
+        }
+        .card-flow:hover {
+             transform: scale(1.02);
+             box-shadow: 0 4px 10px -1px rgb(var(--card-color) / 0.2);
+        }
+        .card-flow-active, .card-flow.active {
+             border-color: rgb(var(--card-color) / 1);
+             background-color: rgb(var(--card-color) / 0.2);
+        }
+        .card-flow .icon-color {
+             color: rgb(var(--card-color) / 0.8);
+        }
+    </style>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variáveis Globais de Configuração (Assumidas pelo Ambiente Canvas)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Expondo variáveis para o escopo global (usado pelo script principal)
+        window.appId = appId;
+        window.db = null;
+        window.auth = null;
+        window.userId = null;
+        window.isAuthReady = false;
+
+        // Inicialização do Firebase e Autenticação
+        async function initFirebase() {
+            if (!firebaseConfig) {
+                console.error("Firebase config is missing.");
+                window.isAuthReady = true;
+                window.renderApp();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                window.db = getFirestore(app);
+                window.auth = getAuth(app);
+                
+                if (initialAuthToken) {
+                    await signInWithCustomToken(window.auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+
+                onAuthStateChanged(window.auth, (user) => {
+                    if (user) {
+                        window.userId = user.uid;
+                    } else {
+                        window.userId = null;
+                    }
+                    window.isAuthReady = true;
+                    window.renderApp(); // Redesenha a aplicação após a autenticação
+                });
+
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                window.isAuthReady = true;
+                window.renderApp();
+            }
+        }
+        window.initFirebase = initFirebase;
+    </script>
+</head>
+<body onload="init()">
+    <div id="app-root">
+    </div>
+
+    <script>
+        // =========================================================================
+        // VARIAVEIS DE ESTADO E CONSTANTES
+        // =========================================================================
+        
+        let appState = {
+            currentView: 'dashboard', // 'dashboard' | 'pre_test' | 'test' | 'results' | 'review'
+            currentTab: null, // Começa como null para mostrar Boas-Vindas
+            activeTestId: null,
+            questions: [],
+            currentQIndex: 0,
+            answers: {},
+            testLoading: false,
+            availableSimulados: [], 
+            completedSubmissions: [],
+            simuladosLoading: true,
+            
+            reviewQIndex: 0, 
+            
+            // NOVO: Estado para as etapas de seleção de simulado
+            newSimuladoStage: 1, // 1: Tipo | 2: Foco (Matéria/Nível) | 3: Catálogo
+            
+            // Filtros de Seleção (Usado nas Etapas 1 e 2)
+            currentFilters: {
+                simuladoType: null, // 'Avaliação' | 'Revisão'
+                category: null, // Ex: 'Matemática'
+                level: null, // Ex: '7ª Série'
+            },
+            
+            // Estado para gerenciar as sub-etapas do pre-teste (1: Confirmação, 2: Instruções)
+            preTestStage: 1, 
+        };
+        
+        // DUMMY_QUESTIONS: Questões de mock para o teste
+        const DUMMY_QUESTIONS = [
+            { id: 1, text: "Qual é o principal componente da atmosfera da Terra?", options: ["Oxigênio", "Nitrogênio", "Dióxido de Carbono", "Argônio"], answer: "Nitrogênio" },
+            { id: 2, text: "Quem pintou a Mona Lisa?", options: ["Van Gogh", "Picasso", "Da Vinci", "Rembrandt"], answer: "Da Vinci" },
+            { id: 3, text: "O que significa a sigla HTML?", options: ["Hyper Text Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyperlink and Text Management"], answer: "Hyper Text Markup Language" },
+        ];
+
+        const Tabs = [
+            { id: 'new_simulado', label: 'Novo Simulado', icon: 'play_circle', color: 'pink', title: 'Iniciar Novo Simulado' },
+            { id: 'results', label: 'Meus Resultados', icon: 'bar_chart', color: 'cyan', title: 'Análise de Desempenho' },
+            { id: 'history', label: 'Histórico', icon: 'history', color: 'violet', title: 'Histórico de Avaliações' },
+            { id: 'goals', label: 'Metas', icon: 'trophy', color: 'emerald', title: 'Metas e Ranking' },
+        ];
+        
+        const SimuladoTypes = [
+            { id: 'avaliacao', label: 'Prova de Avaliação', icon: 'assignment', color: 'pink', description: 'Simula provas formais com tempo limite.' },
+            { id: 'revisao', label: 'Revisão Focada', icon: 'lightbulb', color: 'sky', description: 'Testes curtos para fixação de conteúdo.' },
+            { id: 'diagnostico', label: 'Teste Diagnóstico', icon: 'search_check', color: 'emerald', description: 'Identifica pontos fortes e fracos.' },
+            { id: 'personalizado', label: 'Teste Personalizado', icon: 'tune', color: 'amber', description: 'Crie um teste com filtros específicos.' },
+        ];
+
+        const SimuladoFocos = {
+            'Matemática': ['6ª Série', '7ª Série', 'ENEM'],
+            'Português': ['6ª Série', '7ª Série', 'ENEM'],
+            'Biologia': ['9ª Série', 'ENEM'],
+        };
+        
+        // =========================================================================
+        // FUNÇÕES DE UTILIDADE E ESTADO (REATIVIDADE)
+        // =========================================================================
+
+        const navigateBack = () => history.back();
+        
+        // Função reativa que imita o setState do React
+        function setAppState(newState) {
+            Object.assign(appState, newState);
+            renderApp();
+        }
+
+        function loadTheme() {
+            // Simulação de carregamento do tema do index.html
+            try {
+                const userData = localStorage.getItem("app5-user-data");
+                const theme = userData ? JSON.parse(userData).themePref : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        }
+        
+        function LoadingSpinner(color = 'text-pink-500') {
+            return `
+                <div class="flex justify-center items-center py-8 ${color}">
+                    <svg class="animate-spin h-6 w-6 mr-3 border-4 border-t-transparent rounded-full spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25" />
+                        <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75" fill="currentColor" />
+                    </svg>
+                    <span>Carregando...</span>
+                </div>
+            `;
+        }
+
+        // =========================================================================
+        // FIREBASE DATA (SIMULADA)
+        // =========================================================================
+
+        function fetchSimuladosList() {
+            // Simulação da lista de simulados disponíveis (que podem ser agendados ou iniciados)
+            const availableSimuladosList = [
+                { id: 'enem_2024', label: 'Simulado ENEM 2024', status: 'Disponível', duration: '180 min', questionCount: 45, category: 'Matemática', level: 'ENEM', type: 'avaliacao' },
+                { id: 'math_basic', label: 'Operações Fundamentais', status: 'Agendado', duration: '60 min', questionCount: 15, category: 'Matemática', level: '7ª Série', type: 'revisao' },
+                { id: 'port_verbos', label: 'Revisão: Verbos', status: 'Disponível', duration: '30 min', questionCount: 10, category: 'Português', level: '6ª Série', type: 'revisao' },
+                { id: 'history_ancient', label: 'Vestibular: História Antiga', status: 'Disponível', duration: '90 min', questionCount: 30, category: 'Biologia', level: '9ª Série', type: 'avaliacao' },
+                { id: 'biology_cell', label: 'Biologia Celular', status: 'Em breve', duration: '90 min', questionCount: 30, category: 'Biologia', level: 'ENEM', type: 'diagnostico' },
+            ];
+            
+            // Simulação de submissões concluídas (somente para o Histórico)
+            const completedSubmissionsList = [
+                { 
+                    simuladoId: 'math_basic_old', 
+                    label: 'Operações Fundamentais (Jan/24)',
+                    completed: true, 
+                    score: 1, total: 3, 
+                    date: '2024-01-15',
+                    answers: { 1: 'Oxigênio', 2: 'Da Vinci', 3: 'Home Tool Markup Language' },
+                    questionsData: DUMMY_QUESTIONS
+                },
+                { 
+                    simuladoId: 'port_literatura', 
+                    label: 'Literatura Clássica',
+                    completed: true, 
+                    score: 2, total: 3, 
+                    date: '2024-03-10',
+                    answers: { 1: 'Nitrogênio', 2: 'Picasso', 3: 'Hyper Text Markup Language' },
+                    questionsData: DUMMY_QUESTIONS
+                },
+            ];
+
+            setTimeout(() => {
+                setAppState({ 
+                    availableSimulados: availableSimuladosList, 
+                    completedSubmissions: completedSubmissionsList, 
+                    simuladosLoading: false 
+                });
+            }, 1000);
+        }
+
+        // =========================================================================
+        // HANDLERS
+        // =========================================================================
+
+        function handleStartTest(testId) {
+            // Etapa 1: Inicia o fluxo de pre-teste (Confirmação)
+            const simuladoInfo = appState.availableSimulados.find(s => s.id === testId);
+            if (!simuladoInfo) return;
+
+            setAppState({ 
+                activeTestId: testId,
+                currentView: 'pre_test', // Inicia o novo estado
+                preTestStage: 1, // Etapa 1: Confirmação
+                // Carrega as informações básicas do simulado para a view
+                activeSimuladoInfo: simuladoInfo 
+            });
+        }
+        
+        function handleNextPreTestStage() {
+            // Avança para a próxima etapa do pre-teste
+            if (appState.preTestStage === 1) {
+                setAppState({ preTestStage: 2 }); // Etapa 2: Instruções
+            } else if (appState.preTestStage === 2) {
+                // Etapa 3: Inicia o carregamento (muda para 'test' com loading: true)
+                setAppState({ 
+                    currentView: 'test',
+                    testLoading: true,
+                    questions: [],
+                    currentQIndex: 0,
+                    answers: {},
+                    preTestStage: 1 // Reseta a sub-etapa
+                });
+                fetchQuestions(appState.activeTestId);
+            }
+        }
+
+        function handleFilterChange(filterType, value) {
+            setAppState({ 
+                currentFilters: {
+                    ...appState.currentFilters,
+                    [filterType]: value
+                }
+            });
+        }
+        
+        // Gerencia a navegação nas 3 etapas de seleção de simulado
+        function handleSimuladoSelection(stage, value) {
+            if (stage === 1) { // Seleção do Tipo
+                setAppState({
+                    currentFilters: { ...appState.currentFilters, simuladoType: value },
+                    newSimuladoStage: 2,
+                });
+            } else if (stage === 2) { // Seleção de Nível (Ação final na Etapa 2)
+                const [category, level] = value.split('|');
+                setAppState({
+                    currentFilters: { ...appState.currentFilters, category: category, level: level },
+                    newSimuladoStage: 3, // Vai para o catálogo
+                });
+            } else if (stage === 2.1) { // Seleção de Categoria (Ação temporária na Etapa 2)
+                // Usado para atualizar a categoria e limpar o nível, permitindo a seleção do nível
+                 setAppState({
+                    currentFilters: { ...appState.currentFilters, category: value, level: null }
+                });
+            }
+        }
+        
+        function handleAgendarSimulado(simuladoId) {
+            // Simulação de alteração do status para 'Agendado'
+            const simuladoIndex = appState.availableSimulados.findIndex(s => s.id === simuladoId);
+            if (simuladoIndex > -1) {
+                const updatedSimulados = [...appState.availableSimulados];
+                updatedSimulados[simuladoIndex] = { ...updatedSimulados[simuladoIndex], status: 'Agendado', color: 'amber' };
+                setAppState({ availableSimulados: updatedSimulados });
+            }
+        }
+        
+        function viewResults(simuladoId) {
+            // Busca a submissão concluída na lista de completedSubmissions
+            const mockSubmission = appState.completedSubmissions.find(s => s.simuladoId === simuladoId || s.simuladoId === appState.activeTestId);
+            
+            if (mockSubmission) {
+                 setAppState({
+                    currentView: 'results', 
+                    activeTestId: mockSubmission.label, // Usa o label para o título
+                    score: mockSubmission.score,
+                    total: mockSubmission.total,
+                    questions: mockSubmission.questionsData, 
+                    answers: mockSubmission.answers,
+                    reviewQIndex: 0 
+                });
+            } else {
+                console.warn(`Submissão para ${simuladoId} não encontrada.`);
+                handleBackToDashboard(); 
+            }
+        }
+        
+        function fetchQuestions(testId) {
+            // Simulação de busca das questões (substituir por lógica Firestore real)
+            setTimeout(() => {
+                setAppState({
+                    questions: DUMMY_QUESTIONS, // Mock data
+                    testLoading: false, // Etapa 4: Prova pronta
+                });
+            }, 1000);
+        }
+
+        function handleAnswerChange(questionId, option) {
+            const newAnswers = { ...appState.answers, [questionId]: option };
+            setAppState({ answers: newAnswers });
+        }
+
+        function handleFinishTest(answers) {
+            // 1. Cálculo do Score
+            const score = Object.keys(answers).filter(qId => {
+                const question = DUMMY_QUESTIONS.find(q => q.id === parseInt(qId));
+                return question && question.answer === answers[qId];
+            }).length;
+
+            // 2. Simulação de criação de uma nova submissão
+            const simuladoInfo = appState.availableSimulados.find(s => s.id === appState.activeTestId);
+            const newSubmission = { 
+                simuladoId: appState.activeTestId, 
+                label: simuladoInfo ? simuladoInfo.label : 'Simulado Recente',
+                completed: true, 
+                score: score, 
+                total: DUMMY_QUESTIONS.length,
+                date: new Date().toISOString(),
+                questionsData: DUMMY_QUESTIONS,
+                answers: answers
+            };
+            
+            // 3. Atualiza o estado das submissões concluídas
+            let updatedSubmissions = [newSubmission, ...appState.completedSubmissions];
+            
+            // 4. Mudar para a tela de resultados
+            setAppState({
+                currentView: 'results',
+                score: score,
+                total: DUMMY_QUESTIONS.length,
+                completedSubmissions: updatedSubmissions,
+                questions: DUMMY_QUESTIONS,
+                reviewQIndex: 0 
+            });
+        }
+        
+        // Volta para a tela inicial do Mini-App (sair do simulados.html)
+        function handleBackToDashboard() {
+            setAppState({ 
+                currentView: 'dashboard',
+                activeTestId: null,
+                currentTab: null, 
+                questions: [],
+                currentQIndex: 0,
+                answers: {},
+                preTestStage: 1, 
+                newSimuladoStage: 1, // Volta para a primeira etapa de seleção
+                currentFilters: { simuladoType: null, category: null, level: null }, // Limpa filtros
+            });
+        }
+
+        // Volta para o Dashboard do Simulado (útil durante o pre-teste)
+        function handleBackToSimuladoDashboard() {
+             setAppState({ 
+                currentView: 'dashboard',
+                activeTestId: null,
+                currentTab: 'new_simulado', // Retorna para a aba Novo Simulado
+                preTestStage: 1,
+                // Mantém a etapa de seleção no 3 (Catálogo) para evitar refazer os filtros, se já estiver no 3
+                newSimuladoStage: appState.newSimuladoStage < 3 ? 1 : 3,
+            });
+        }
+
+        // NOVO: Gerencia a navegação de volta DENTRO da aba "Novo Simulado"
+        function handleSimuladoBack() {
+            const { newSimuladoStage, currentFilters } = appState;
+            
+            if (newSimuladoStage === 3) {
+                // Etapa 3 (Catálogo) -> Etapa 2 (Foco)
+                setAppState({ newSimuladoStage: 2, currentFilters: { ...currentFilters, category: null, level: null } });
+            } else if (newSimuladoStage === 2) {
+                // Etapa 2 (Foco) -> Etapa 1 (Tipo)
+                setAppState({ newSimuladoStage: 1, currentFilters: { ...currentFilters, simuladoType: null, category: null, level: null } });
+            } else {
+                // Etapa 1 -> Sair do Mini-App (Ação padrão)
+                navigateBack(); 
+            }
+        }
+        
+        // =========================================================================
+        // RENDERIZAÇÃO DE TELAS
+        // =========================================================================
+        
+        function renderPreTestView() {
+            const info = appState.activeSimuladoInfo;
+            const title = info ? info.label : 'Simulado Selecionado';
+
+            // Etapa 1: Confirmação e Resumo
+            const confirmationContent = `
+                <div class="text-center p-8 space-y-6">
+                    <span class="material-symbols-rounded text-6xl text-pink-500">task_alt</span>
+                    <h3 class="text-3xl font-bold text-pink-500">Pronto para Iniciar?</h3>
+                    <p class="text-lg text-[rgb(var(--page-fg))]">Você selecionou o simulado:</p>
+                    
+                    <div class="inline-block p-4 rounded-xl bg-pink-500/10 border border-pink-500/30 text-left w-full max-w-sm mx-auto">
+                        <p class="font-semibold text-xl">${title}</p>
+                        <ul class="mt-2 space-y-1 text-sm text-[rgb(var(--page-fg-muted))]">
+                            <li class="flex items-center gap-2"><span class="material-symbols-rounded text-base">timer</span> Duração: ${info.duration}</li>
+                            <li class="flex items-center gap-2"><span class="material-symbols-rounded text-base">format_list_numbered</span> Questões: ${info.questionCount}</li>
+                            <li class="flex items-center gap-2"><span class="material-symbols-rounded text-base">category</span> Categoria: ${info.category}</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center gap-4 pt-6 border-t border-[rgb(var(--page-fg-muted)/0.2)]">
+                    <button onclick="handleBackToSimuladoDashboard()" 
+                        class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-[rgb(var(--page-fg))] rounded-full transition shadow-md">
+                        Cancelar
+                    </button>
+                    <button onclick="handleNextPreTestStage()" 
+                        class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition shadow-md">
+                        Continuar (Ver Instruções)
+                    </button>
+                </div>
+            `;
+            
+            // Etapa 2: Instruções
+            const instructionsContent = `
+                <div class="p-8 space-y-6">
+                    <div class="text-center">
+                        <span class="material-symbols-rounded text-6xl text-cyan-500">info</span>
+                        <h3 class="text-3xl font-bold text-cyan-500 mt-2">Instruções Finais</h3>
+                    </div>
+                    
+                    <div class="space-y-4 text-[rgb(var(--page-fg))]">
+                        <p class="font-semibold">Leia atentamente antes de começar o simulado ${title}:</p>
+                        <ul class="list-disc list-inside space-y-2 text-sm text-[rgb(var(--page-fg-muted))]">
+                            <li><span class="material-symbols-rounded text-base align-middle text-emerald-500 mr-1">timer</span> O tempo limite é de ${info.duration}. O cronômetro começará imediatamente.</li>
+                            <li><span class="material-symbols-rounded text-base align-middle text-emerald-500 mr-1">lock</span> Não é possível pausar ou sair do teste sem perder o progresso.</li>
+                            <li><span class="material-symbols-rounded text-base align-middle text-emerald-500 mr-1">quiz</span> Certifique-se de responder todas as ${info.questionCount} questões.</li>
+                            <li><span class="material-symbols-rounded text-base align-middle text-emerald-500 mr-1">desktop_windows</span> Recomenda-se o uso em tela cheia para evitar distrações.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center gap-4 pt-6 border-t border-[rgb(var(--page-fg-muted)/0.2)]">
+                    <button onclick="setAppState({preTestStage: 1})" 
+                        class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-[rgb(var(--page-fg))] rounded-full transition shadow-md">
+                        Voltar (Resumo)
+                    </button>
+                    <button onclick="handleNextPreTestStage()" 
+                        class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition shadow-md">
+                        Iniciar Prova Agora
+                    </button>
+                </div>
+            `;
+            
+            const currentContent = appState.preTestStage === 1 ? confirmationContent : instructionsContent;
+
+            return `
+                <div class="max-w-xl mx-auto p-4 bg-[rgb(var(--page-bg)/0.8)] rounded-3xl shadow-xl border-2 border-pink-500/40">
+                    ${currentContent}
+                </div>
+            `;
+        }
+
+        function renderSimuladoView() {
+            // Conteúdo da prova em andamento (mantido)
+            if (appState.testLoading) {
+                // Etapa 3: Carregamento
+                return `
+                    <div class="text-center p-8 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-4 max-w-lg mx-auto">
+                        <h3 class="text-2xl font-bold text-pink-500">Carregando Questões...</h3>
+                        <p class="text-[rgb(var(--page-fg-muted))]">O simulado começará em instantes. Prepare-se!</p>
+                        ${LoadingSpinner('text-pink-500')}
+                    </div>
+                `;
+            }
+
+            const currentQuestion = appState.questions[appState.currentQIndex];
+            const totalQuestions = appState.questions.length;
+            const answeredCount = Object.keys(appState.answers).length;
+            
+            if (!currentQuestion) {
+                return `
+                    <div class="text-center p-8 bg-[rgb(var(--page-bg)/0.8)] rounded-xl border border-pink-500/20 shadow-lg max-w-lg mx-auto">
+                        <h3 class="text-xl font-bold mb-4 text-pink-500">Simulado Concluído!</h3>
+                        <p class="text-[rgb(var(--page-fg-muted))]">Obrigado por participar. Clique abaixo para finalizar.</p>
+                        <button 
+                            onclick="handleFinishTest(appState.answers)"
+                            class="mt-4 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition shadow-lg"
+                        >
+                            Finalizar e Ver Resultado
+                        </button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="space-y-6 max-w-3xl mx-auto">
+                    <div class="flex justify-between items-center pb-4 border-b border-[rgb(var(--page-fg-muted)/0.2)]">
+                        <h3 class="text-2xl font-bold text-pink-500">Questão ${appState.currentQIndex + 1} de ${totalQuestions}</h3>
+                        <span class="text-sm font-medium bg-pink-500/20 text-pink-400 px-3 py-1 rounded-full">
+                            Respondidas: ${answeredCount}
+                        </span>
+                    </div>
+
+                    <!-- Corpo da Questão -->
+                    <div class="p-6 bg-[rgb(var(--page-bg)/0.8)] rounded-xl shadow-lg space-y-4 border border-pink-500/20">
+                        <p class="text-lg font-medium">${currentQuestion.text}</p>
+                        
+                        <div class="space-y-2">
+                            ${currentQuestion.options.map((option, index) => {
+                                const questionId = currentQuestion.id;
+                                const isSelected = appState.answers[questionId] === option;
+                                
+                                // Escapa aspas simples no argumento da função
+                                const safeOption = option.replace(/'/g, "\\'"); 
+                                
+                                return `
+                                    <div 
+                                         class="p-3 rounded-lg border cursor-pointer transition 
+                                         ${isSelected ? 'bg-pink-500/40 border-pink-400 font-semibold text-white' : 'bg-[rgb(var(--page-bg)/0.5)] border-[rgb(var(--page-fg-muted)/0.3)] hover:bg-[rgb(var(--page-fg-muted)/0.1)]'}"
+                                         onclick="handleAnswerChange(${questionId}, '${safeOption}')"
+                                    >
+                                        <label class="flex items-center space-x-3 cursor-pointer">
+                                            <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center 
+                                                ${isSelected ? 'border-pink-500 bg-pink-500' : 'border-[rgb(var(--page-fg-muted)/0.5)]'}">
+                                                ${isSelected ? '<span class="w-2 h-2 rounded-full bg-white"></span>' : ''}
+                                            </span>
+                                            <span class="text-base">${String.fromCharCode(65 + index)}. ${option}</span>
+                                        </label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Botão de Finalizar no final da prova (após a última questão) -->
+                    ${appState.currentQIndex === totalQuestions - 1 ? `
+                         <div class="text-center pt-8">
+                            <button 
+                                onclick="setAppState({currentQIndex: appState.currentQIndex + 1})"
+                                class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full transition shadow-lg"
+                            >
+                                Finalizar Simulado
+                            </button>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- NOVO: Botão Próxima Questão para avanço automático/manual -->
+                    ${appState.currentQIndex < totalQuestions - 1 ? `
+                        <div class="flex justify-end pt-4">
+                            <button 
+                                onclick="setAppState({currentQIndex: appState.currentQIndex + 1})"
+                                class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition"
+                            >
+                                Próxima <span class="material-symbols-rounded align-middle text-lg">arrow_forward</span>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderResultsView() {
+            const score = appState.score || 0;
+            const total = appState.total || DUMMY_QUESTIONS.length;
+            const percentage = (score / total) * 100;
+            const scoreColor = percentage >= 70 ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-red-500';
+
+            return `
+                <div class="text-center p-8 bg-pink-500/10 rounded-xl space-y-4 max-w-lg mx-auto border border-pink-500/30">
+                    <h3 class="text-3xl font-bold ${scoreColor}">Resultado Final!</h3>
+                    <p class="text-lg">Você concluiu o simulado: ${appState.activeTestId}.</p>
+                    
+                    <p class="text-4xl font-extrabold ${scoreColor}">${score} / ${total}</p>
+                    <p class="text-xl font-semibold">(${percentage.toFixed(1)}%)</p>
+
+                    <button 
+                        onclick="setAppState({currentView: 'review', reviewQIndex: 0})"
+                        class="mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full transition shadow-lg mr-4"
+                    >
+                        Revisar Prova <span class="material-symbols-rounded align-middle ml-1">history_edu</span>
+                    </button>
+                    
+                    <button 
+                        onclick="handleBackToDashboard()" 
+                        class="mt-4 px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition shadow-lg"
+                    >
+                        Voltar ao Menu Principal
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Renderiza a tela de revisão
+        function renderReviewView() {
+            const totalQuestions = appState.questions.length;
+            const currentQ = appState.questions[appState.reviewQIndex];
+            
+            if (!currentQ) {
+                return `
+                    <div class="text-center p-8 bg-[rgb(var(--page-bg)/0.8)] rounded-xl border border-pink-500/20 shadow-lg max-w-lg mx-auto">
+                        <h3 class="xl font-bold mb-4 text-pink-500">Revisão Concluída</h3>
+                        <p class="text-[rgb(var(--page-fg-muted))]">Você revisou todas as questões. Retorne ao menu.</p>
+                        <button 
+                            onclick="handleBackToDashboard()" 
+                            class="mt-4 px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition shadow-lg"
+                        >
+                            Voltar ao Menu Principal
+                        </button>
+                    </div>
+                `;
+            }
+
+            const userAnswer = appState.answers[currentQ.id];
+            const isCorrect = userAnswer === currentQ.answer;
+            const resultIcon = isCorrect ? 'check_circle' : 'cancel';
+            const resultColor = isCorrect ? 'emerald-500' : 'red-500';
+            const resultText = isCorrect ? 'Resposta Correta' : 'Resposta Incorreta';
+
+            return `
+                <div class="space-y-6 max-w-3xl mx-auto">
+                    <div class="flex justify-between items-center pb-4 border-b border-[rgb(var(--page-fg-muted)/0.2)]">
+                        <h3 class="text-2xl font-bold text-cyan-500">Revisão: Questão ${appState.reviewQIndex + 1} de ${totalQuestions}</h3>
+                        <span class="text-sm font-medium bg-${resultColor}/20 text-${resultColor} px-3 py-1 rounded-full flex items-center gap-1">
+                            <span class="material-symbols-rounded text-lg">${resultIcon}</span>
+                            ${resultText}
+                        </span>
+                    </div>
+
+                    <!-- Corpo da Questão -->
+                    <div class="p-6 bg-[rgb(var(--page-bg)/0.8)] rounded-xl shadow-lg space-y-4 border border-cyan-500/20">
+                        <p class="text-lg font-medium">${currentQ.text}</p>
+                        
+                        <div class="space-y-2">
+                            ${currentQ.options.map((option, index) => {
+                                const isUserChoice = userAnswer === option;
+                                const isCorrectAnswer = currentQ.answer === option;
+                                
+                                let optionClasses = 'bg-[rgb(var(--page-bg)/0.5)] border-[rgb(var(--page-fg-muted)/0.3)]';
+                                
+                                if (isCorrectAnswer) {
+                                    optionClasses = 'bg-emerald-500/30 border-emerald-400 font-semibold text-emerald-800 dark:text-emerald-300';
+                                } else if (isUserChoice && !isCorrectAnswer) {
+                                    optionClasses = 'bg-red-500/30 border-red-400 font-semibold text-red-800 dark:text-red-300';
+                                }
+                                
+                                return `
+                                    <div class="p-3 rounded-lg border transition ${optionClasses}">
+                                        <label class="flex items-center space-x-3">
+                                            <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center 
+                                                ${isCorrectAnswer ? 'border-emerald-500 bg-emerald-500' : isUserChoice ? 'border-red-500 bg-red-500' : 'border-[rgb(var(--page-fg-muted)/0.5)]'}">
+                                                <span class="material-symbols-rounded text-xs text-white">
+                                                    ${isCorrectAnswer ? 'done' : isUserChoice ? 'close' : ''}
+                                                </span>
+                                            </span>
+                                            <span class="text-base">${String.fromCharCode(65 + index)}. ${option}</span>
+                                        </label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        <!-- Destaque da Resposta Correta se o usuário errou -->
+                        ${!isCorrect ? `
+                            <div class="mt-4 p-3 bg-emerald-100/50 dark:bg-emerald-800/20 border-l-4 border-emerald-500 rounded text-sm">
+                                A resposta correta é: <strong>${currentQ.answer}</strong>.
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Controles de Navegação de Revisão -->
+                    <div class="flex justify-between pt-4">
+                        <button 
+                            onclick="setAppState({reviewQIndex: Math.max(0, appState.reviewQIndex - 1)})"
+                            ${appState.reviewQIndex === 0 ? 'disabled' : ''}
+                            class="px-4 py-2 bg-[rgb(var(--page-fg-muted)/0.1)] hover:bg-[rgb(var(--page-fg-muted)/0.2)] text-[rgb(var(--page-fg))] rounded-full transition disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <span class="material-symbols-rounded align-middle text-lg">arrow_back</span> Questão Anterior
+                        </button>
+                        
+                        <button 
+                            onclick="setAppState({reviewQIndex: appState.reviewQIndex + 1})"
+                            ${appState.reviewQIndex === totalQuestions - 1 ? 'disabled' : ''}
+                            class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full transition disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            Próxima Questão <span class="material-symbols-rounded align-middle text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Mensagem de Boas-Vindas
+        function renderWelcomeMessage() {
+            return `
+                <div class="text-center p-8 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-4 mt-8">
+                    <span class="material-symbols-rounded text-6xl text-pink-500">handshake</span>
+                    <h3 class="text-2xl font-bold text-pink-500">Olá! Bem-vindo(a) à Central de Avaliações.</h3>
+                    <p class="text-[rgb(var(--page-fg-muted))]">
+                        Para começar, escolha uma das opções do **Menu Principal** acima.
+                    </p>
+                    <ul class="text-left inline-block space-y-2 text-sm text-[rgb(var(--page-fg))]">
+                        <li><span class="material-symbols-rounded text-base align-middle text-pink-500 mr-2">play_circle</span> **Novo Simulado:** Inicie o processo de seleção da sua prova.</li>
+                        <li><span class="material-symbols-rounded text-base align-middle text-violet-500 mr-2">history</span> **Histórico:** Revise provas passadas.</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // =========================================================================
+        // RENDERIZAÇÃO DA ABA "NOVO SIMULADO" (3 ETAPAS)
+        // =========================================================================
+
+        // Etapa 1: Seleção do Tipo de Simulado
+        function renderSimuladoStage1() {
+            return `
+                <div class="p-6 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-6">
+                    <h3 class="text-xl font-semibold text-pink-500 flex items-center gap-2">
+                        <span class="material-symbols-rounded">filter_1</span>
+                        Etapa 1: Escolha o Tipo de Avaliação
+                    </h3>
+                    <p class="text-[rgb(var(--page-fg-muted))]">Selecione o formato de teste que você deseja realizar:</p>
+                    
+                    <!-- LAYOUT DE GRID COM CARDS ESTÉTICOS (4 POR LINHA) -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        ${SimuladoTypes.map(type => {
+                            const isActive = appState.currentFilters.simuladoType === type.id;
+                            const activeClass = isActive ? 'card-flow-active active' : 'hover:shadow-lg hover:scale-[1.02]';
+                            const cardColorClass = `card-${type.id}`; // Ex: card-avaliacao, card-revisao
+                            
+                            return `
+                                <div onclick="handleSimuladoSelection(1, '${type.id}')"
+                                    class="flow-select-card card-flow ${cardColorClass} ${activeClass} 
+                                    flex flex-col items-center justify-center p-4 rounded-xl shadow-md h-[140px] text-center"
+                                >
+                                    <span class="material-symbols-rounded text-4xl icon-color">${type.icon}</span>
+                                    <p class="font-semibold text-[rgb(var(--page-fg))] mt-2 text-sm">${type.label}</p>
+                                    <p class="text-xs text-[rgb(var(--page-fg-muted))] mt-1">${type.description.split(' ')[0]}...</p>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Etapa 2: Seleção de Foco (Matéria e Nível)
+        function renderSimuladoStage2() {
+            const selectedType = appState.currentFilters.simuladoType;
+            const selectedTypeLabel = SimuladoTypes.find(t => t.id === selectedType).label;
+            const selectedCategory = appState.currentFilters.category;
+            const selectedLevel = appState.currentFilters.level;
+            const isNextEnabled = selectedCategory && selectedLevel;
+
+            const categories = Object.keys(SimuladoFocos);
+
+            return `
+                <div class="p-6 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-6">
+                    <h3 class="text-xl font-semibold text-pink-500 flex items-center gap-2">
+                        <span class="material-symbols-rounded">filter_2</span>
+                        Etapa 2: Defina o Foco (Matéria e Nível)
+                    </h3>
+                    <p class="text-[rgb(var(--page-fg-muted))]">O simulado é do tipo **${selectedTypeLabel}**. Agora escolha a Matéria e o Nível de ensino:</p>
+                    
+                    <!-- Seleção de Matéria (Categoria) -->
+                    <div class="space-y-2">
+                        <label class="block font-semibold text-[rgb(var(--page-fg))]">Matéria (Categoria):</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            ${categories.map(cat => {
+                                const isActive = selectedCategory === cat;
+                                const activeClass = isActive ? 'active border-pink-500 bg-pink-500/10' : 'border-[rgb(var(--page-border)/0.2)] hover:border-pink-500/50';
+                                
+                                // Ícone simulado para Matéria
+                                const icon = cat === 'Matemática' ? 'calculate' : cat === 'Português' ? 'menu_book' : 'science';
+                                
+                                // Corrigido o handler para a Etapa 2.1 (Seleção de Categoria)
+                                return `
+                                    <div onclick="handleSimuladoSelection(2.1, '${cat}')" 
+                                        class="flow-select-card flex flex-col items-center p-4 rounded-xl text-center ${activeClass}"
+                                    >
+                                        <span class="material-symbols-rounded text-3xl text-pink-500">${icon}</span>
+                                        <p class="font-semibold text-[rgb(var(--page-fg))] mt-2">${cat}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Seleção de Nível/Série -->
+                    <div class="space-y-2">
+                        <label class="block font-semibold text-[rgb(var(--page-fg))]">Nível / Série:</label>
+                        ${selectedCategory && SimuladoFocos[selectedCategory] ? `
+                            <div class="grid grid-cols-2 gap-4">
+                                ${SimuladoFocos[selectedCategory].map(level => {
+                                    const isActive = selectedLevel === level;
+                                    const activeClass = isActive ? 'active border-cyan-500 bg-cyan-500/10' : 'border-[rgb(var(--page-border)/0.2)] hover:border-cyan-500/50';
+                                    
+                                    const value = `${selectedCategory}|${level}`;
+                                    
+                                    // Corrigido o handler para a Etapa 2 (Seleção de Nível/Próximo)
+                                    return `
+                                        <div onclick="handleSimuladoSelection(2, '${value}')"
+                                            class="flow-select-card flex flex-col items-center p-4 rounded-xl text-center ${activeClass}"
+                                        >
+                                            <span class="material-symbols-rounded text-3xl text-cyan-500">grade</span>
+                                            <p class="font-semibold text-[rgb(var(--page-fg))] mt-2">${level}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : `
+                            <p class="text-sm text-red-500 italic">Selecione uma matéria acima para ver os níveis disponíveis.</p>
+                        `}
+                    </div>
+                    
+                    <div class="flex justify-between pt-6 border-t border-[rgb(var(--page-fg-muted)/0.2)]">
+                        <button onclick="handleSimuladoBack()" 
+                            class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-[rgb(var(--page-fg))] rounded-full transition shadow-md">
+                            <span class="material-symbols-rounded align-middle text-lg mr-1">arrow_back</span> Mudar Tipo
+                        </button>
+                        <button onclick="setAppState({newSimuladoStage: 3})" 
+                            ${!isNextEnabled ? 'disabled' : ''}
+                            class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition shadow-md disabled:opacity-30">
+                            Ver Catálogo (${selectedCategory ? selectedCategory : '...'} - ${selectedLevel ? selectedLevel : '...'}) <span class="material-symbols-rounded align-middle text-lg ml-1">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Etapa 3: Catálogo de Simulados (Renderizado em Cards)
+        function renderSimuladoStage3() {
+            const { simuladoType, category, level } = appState.currentFilters;
+
+            if (appState.simuladosLoading) {
+                return `
+                    <div class="p-6 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-4">
+                        <h3 class="text-2xl font-bold text-pink-500">Carregando Catálogo...</h3>
+                        ${LoadingSpinner('text-pink-500')}
+                    </div>
+                `;
+            }
+            
+            // Aplica filtros
+            const filteredSimulados = appState.availableSimulados.filter(simulado => {
+                const typeMatch = simulado.type === simuladoType;
+                const categoryMatch = simulado.category === category;
+                const levelMatch = simulado.level === level;
+                
+                // Exclui simulados concluídos (eles devem estar no Histórico)
+                const isCompleted = appState.completedSubmissions.some(s => s.simuladoId === simulado.id && s.completed);
+                
+                return typeMatch && categoryMatch && levelMatch && !isCompleted;
+            });
+            
+            const hasResults = filteredSimulados.length > 0;
+
+            return `
+                <div class="p-6 rounded-3xl border-2 border-pink-500/30 bg-pink-500/5 space-y-6">
+                    <h3 class="text-xl font-semibold text-pink-500 flex items-center gap-2">
+                        <span class="material-symbols-rounded">filter_3</span>
+                        Etapa 3: Catálogo de Simulados Disponíveis
+                    </h3>
+                    <p class="text-[rgb(var(--page-fg-muted))]">
+                        Exibindo resultados para: **${SimuladoTypes.find(t => t.id === simuladoType).label}** | ${category} - ${level}.
+                    </p>
+                    
+                    <div class="pt-4 border-t border-[rgb(var(--page-fg-muted)/0.2)]">
+                        ${hasResults ? `
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                ${filteredSimulados.map(simulado => {
+                                    const isAgendado = simulado.status === 'Agendado';
+                                    const isDisponivel = simulado.status === 'Disponível' || isAgendado;
+
+                                    // Botão de Iniciar
+                                    const startButton = isDisponivel ? `
+                                        <button 
+                                            onclick="handleStartTest('${simulado.id}')"
+                                            class="flex-1 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition text-sm flex items-center justify-center gap-1">
+                                            <span class="material-symbols-rounded text-lg">play_arrow</span> Iniciar
+                                        </button>
+                                    ` : `
+                                        <span class="flex-1 text-center text-xs font-semibold text-gray-500">Em Breve</span>
+                                    `;
+
+                                    // Botão de Agendar/Salvar
+                                    const agendaButton = isDisponivel ? (isAgendado ? `
+                                        <button disabled
+                                            class="flex-1 px-4 py-2 bg-amber-500/30 text-amber-500 rounded-full transition text-sm flex items-center justify-center gap-1 cursor-default">
+                                            <span class="material-symbols-rounded text-lg">bookmark</span> Agendado
+                                        </button>
+                                    ` : `
+                                        <button 
+                                            onclick="handleAgendarSimulado('${simulado.id}')"
+                                            class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-[rgb(var(--page-fg))] rounded-full transition text-sm flex items-center justify-center gap-1">
+                                            <span class="material-symbols-rounded text-lg">event</span> Agendar
+                                        </button>
+                                    `) : '';
+                                    
+                                    return `
+                                        <div key="${simulado.id}" 
+                                            class="flex flex-col p-4 rounded-xl border border-[rgb(var(--page-border)/0.2)] bg-[rgb(var(--page-bg)/0.5)] shadow-md space-y-3"
+                                        >
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-lg text-[rgb(var(--page-fg))]">${simulado.label}</span>
+                                                <span class="text-xs px-2 py-0.5 rounded-full ${isAgendado ? 'bg-amber-500/30 text-amber-500' : 'bg-pink-500/30 text-pink-500'}">
+                                                    ${simulado.status}
+                                                </span>
+                                            </div>
+                                            <ul class="text-sm text-[rgb(var(--page-fg-muted))] space-y-1">
+                                                <li><span class="material-symbols-rounded text-base align-middle mr-1">timer</span> Duração: ${simulado.duration}</li>
+                                                <li><span class="material-symbols-rounded text-base align-middle mr-1">format_list_numbered</span> Questões: ${simulado.questionCount}</li>
+                                            </ul>
+                                            <div class="flex gap-2 pt-2 border-t border-[rgb(var(--page-border)/0.1)]">
+                                                ${startButton}
+                                                ${agendaButton}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : `
+                            <div class="p-8 text-center text-[rgb(var(--page-fg-muted))] italic border rounded-xl border-dashed">
+                                Nenhum simulado disponível para a combinação **${category} - ${level}**. Tente mudar o foco.
+                            </div>
+                        `}
+                    </div>
+                    
+                    <div class="flex justify-center pt-6 border-t border-[rgb(var(--page-fg-muted)/0.2)]">
+                        <button onclick="handleSimuladoBack()" 
+                            class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-[rgb(var(--page-fg))] rounded-full transition shadow-md">
+                            <span class="material-symbols-rounded align-middle text-lg mr-1">arrow_back</span> Mudar Foco
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderNewSimuladoTab() {
+            if (appState.newSimuladoStage === 1) {
+                return renderSimuladoStage1();
+            } else if (appState.newSimuladoStage === 2) {
+                return renderSimuladoStage2();
+            } else if (appState.newSimuladoStage === 3) {
+                return renderSimuladoStage3();
+            }
+            return ''; // Fallback
+        }
+
+        function renderHistoryTab() {
+            // Filtra e exibe APENAS simulados concluídos
+            const historyList = appState.completedSubmissions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const hasHistory = historyList.length > 0;
+
+            return `
+                <div class="p-6 rounded-3xl border-2 border-violet-500/30 bg-violet-500/5 space-y-4">
+                    <h3 class="text-xl font-semibold text-violet-500 flex items-center gap-2">
+                        <span class="material-symbols-rounded">history</span>
+                        Histórico de Provas Concluídas
+                    </h3>
+                    <p class="text-[rgb(var(--page-fg-muted))]">Acesse o registro e a revisão de todas as suas provas passadas.</p>
+                    
+                    ${appState.simuladosLoading ? LoadingSpinner('text-violet-500') : (hasHistory ? `
+                        <div class="space-y-3">
+                            ${historyList.map(submission => {
+                                const scoreColor = (submission.score / submission.total) * 100 >= 70 ? 'text-emerald-500' : 'text-amber-500';
+                                const formattedDate = new Date(submission.date).toLocaleDateString('pt-BR');
+                                
+                                return `
+                                    <div key="${submission.simuladoId}" 
+                                        class="flex items-center justify-between p-4 rounded-xl border border-[rgb(var(--page-border)/0.2)] bg-[rgb(var(--page-bg)/0.5)] transition shadow-sm"
+                                    >
+                                        <div class="flex flex-col">
+                                            <span class="font-semibold text-base text-[rgb(var(--page-fg))]">${submission.label}</span>
+                                            <span class="text-sm text-[rgb(var(--page-fg-muted))]">Concluído em: ${formattedDate}</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-lg font-bold ${scoreColor}">${submission.score}/${submission.total}</span>
+                                            <button 
+                                                onclick="viewResults('${submission.simuladoId}')"
+                                                class="flex items-center gap-1 px-3 py-1 rounded-full text-white transition text-sm bg-violet-500 hover:bg-violet-600">
+                                                <span class="material-symbols-rounded text-lg">history_edu</span> Revisar
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : `
+                        <div class="p-4 text-center text-[rgb(var(--page-fg-muted))] italic border rounded-xl border-dashed">
+                            Você ainda não tem simulados concluídos para exibir aqui.
+                        </div>
+                    `)}
+                </div>
+            `;
+        }
+        
+        // Renderização de outras abas (simplificada)
+        const renderResultsTab = () => `<div class="p-6 rounded-3xl border-2 border-cyan-500/30 bg-cyan-500/5 space-y-4"><h3 class="text-xl font-semibold text-cyan-500 flex items-center gap-2"><span class="material-symbols-rounded">bar_chart</span>Resultados e Desempenho</h3><p class="text-[rgb(var(--page-fg-muted))]">Visualize suas notas e a evolução do seu aprendizado. (Funcionalidade em desenvolvimento)</p><div class="skeleton-loading p-4 rounded-xl border border-[rgb(var(--page-border)/0.2)] bg-[rgb(var(--page-bg)/0.5)] h-40 flex items-center justify-center"><span class="text-cyan-400 font-medium">Gráfico de desempenho (Em breve)</span></div></div>`;
+        const renderGoalsTab = () => `<div class="p-6 rounded-3xl border-2 border-emerald-500/30 bg-emerald-500/5 space-y-4"><h3 class="text-xl font-semibold text-emerald-500 flex items-center gap-2"><span class="material-symbols-rounded">trophy</span>Metas de Estudos</h3><p class="text-[rgb(var(--page-fg-muted))]">Defina seus objetivos e acompanhe seu progresso no ranking. (Funcionalidade em desenvolvimento)</p></div>`;
+
+
+        function renderSimuladoDashboard() {
+            let tabContent = '';
+            
+            if (appState.currentTab === null) {
+                tabContent = renderWelcomeMessage();
+            } else if (appState.currentTab === 'new_simulado') {
+                tabContent = renderNewSimuladoTab();
+            } else if (appState.currentTab === 'results') {
+                tabContent = renderResultsTab();
+            } else if (appState.currentTab === 'history') {
+                tabContent = renderHistoryTab();
+            } else if (appState.currentTab === 'goals') {
+                tabContent = renderGoalsTab();
+            }
+
+            // RENDERIZAÇÃO DO MENU
+            const renderQuickActionsMenu = () => `
+                <div id="quick-actions-menu" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    ${Tabs.map(tab => {
+                        const isActive = appState.currentTab === tab.id;
+                        
+                        // Lógica de toggle: se ativo, desativa (null); senão, ativa o novo tab.
+                        const toggleAction = isActive ? 'null' : `'${tab.id}'`;
+                        const setTabAction = `setAppState({currentTab: ${toggleAction}, newSimuladoStage: 1})` // Reset stage on tab change
+
+                        const baseClass = `bg-${tab.color}-500/20 hover:bg-${tab.color}-500/30 text-${tab.color}-400`;
+                        const activeClass = isActive ? 'active' : '';
+
+                        return `
+                            <button type="button" onclick="${setTabAction}" 
+                                class="tab-button-simulado flex flex-col items-center p-4 rounded-xl transition shadow-md ${baseClass} ${activeClass} h-[140px]" 
+                                data-tab-id="${tab.id}">
+                                <span class="material-symbols-rounded text-4xl">${tab.icon}</span>
+                                <span class="mt-2 text-sm font-medium">${tab.label}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            return `
+                <section class="mb-8 p-6 rounded-3xl border-2 border-pink-500/50 bg-pink-500/10 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="material-symbols-rounded text-2xl text-pink-500">quiz</span>
+                        Menu Principal
+                    </h3>
+                    ${renderQuickActionsMenu()}
+                </section>
+                
+                <section id="tab-content-container" class="space-y-4">
+                    ${tabContent}
+                </section>
+            `;
+        }
+        
+        // =========================================================================
+        // FUNÇÃO PRINCIPAL DE RENDERIZAÇÃO
+        // =========================================================================
+
+        function renderApp() {
+            const root = document.getElementById('app-root');
+            if (!root) return;
+
+            let contentHTML = '';
+            let headerAction = 'navigateBack()';
+            let headerLabel = 'Voltar';
+
+            // Define a ação e label do botão "Voltar"
+            if (!window.isAuthReady) {
+                // Carregamento: Ação padrão (sair)
+            } else if (appState.currentView === 'dashboard' && appState.currentTab === 'new_simulado') {
+                // Dashboard -> Aba Novo Simulado: Voltar entre as etapas ou sair na Etapa 1
+                headerAction = 'handleSimuladoBack()';
+                headerLabel = appState.newSimuladoStage > 1 ? 'Etapa Anterior' : 'Voltar';
+            } else if (appState.currentView === 'pre_test') {
+                // Pre-Teste: Voltar para o dashboard
+                headerAction = 'handleBackToSimuladoDashboard()';
+                headerLabel = 'Cancelar';
+            } else if (appState.currentView === 'test' || appState.currentView === 'results' || appState.currentView === 'review') {
+                // Teste / Resultados / Revisão: Voltar para o dashboard (limpa o estado do teste)
+                headerAction = 'handleBackToDashboard()';
+                headerLabel = 'Menu Principal';
+            } else {
+                // Outras Views/Abas: Ação padrão (sair)
+            }
+            
+            // Define o conteúdo principal
+            if (!window.isAuthReady) {
+                contentHTML = LoadingSpinner();
+            } else if (appState.currentView === 'pre_test') {
+                contentHTML = renderPreTestView();
+            } else if (appState.currentView === 'test') {
+                contentHTML = renderSimuladoView();
+            } else if (appState.currentView === 'results') {
+                contentHTML = renderResultsView();
+            } else if (appState.currentView === 'review') {
+                contentHTML = renderReviewView();
+            } else { // dashboard
+                contentHTML = renderSimuladoDashboard();
+            }
+
+
+            root.innerHTML = `
+                <!-- CABEÇALHO FIXO COM OPÇÃO DE VOLTAR -->
+                <header class="fixed top-0 inset-x-0 z-30 px-4 pt-3 pb-2">
+                    <div class="max-w-7xl mx-auto flex items-center justify-between h-14">
+                        <div class="flex items-center gap-1">
+                            <a href="#" onclick="${headerAction}; return false;" class="inline-flex h-10 items-center gap-1 rounded-full px-3 py-2 transition focus:outline-none focus:ring-2 focus:ring-cyan-300/40 hover:bg-[rgb(var(--page-fg-muted)/0.1)] group" aria-label="${headerLabel}">
+                                <span class="material-symbols-rounded text-2xl text-cyan-500 group-hover:text-cyan-700">arrow_back</span>
+                                <span class="text-base font-medium text-[rgb(var(--page-fg))] group-hover:text-cyan-700 transition duration-200 hidden sm:inline">${headerLabel}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- REMOVIDO: h1 Título centralizado no header (redundante com o título rolável) -->
+                        
+                        <span class="text-sm text-[rgb(var(--page-fg-muted))]">${window.userId ? `ID: ${window.userId.substring(0, 8)}...` : 'Autenticando...'}</span>
+                    </div>
+                </header>
+
+                <!-- CONTEÚDO PRINCIPAL -->
+                <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-4">
+                    <!-- TÍTULOS ROLÁVEIS (Mobile e Desktop) - ESTE É O ÚNICO TÍTULO AGORA -->
+                    <div class="max-w-7xl mx-auto pb-4 text-center sm:text-left">
+                        <h2 class="text-3xl font-bold text-pink-500 mb-1">Simulados e Provas</h2>
+                        <p class="text-sm sm:text-base text-[rgb(var(--page-fg-muted))]">Seu centro de avaliações e progresso acadêmico.</p>
+                    </div>
+
+                    ${contentHTML}
+                </main>
+            `;
+        }
+
+        // =========================================================================
+        // INICIALIZAÇÃO
+        // =========================================================================
+
+        function init() {
+            loadTheme();
+            // Inicia o Firebase (definido no script module)
+            if (window.initFirebase) {
+                window.initFirebase();
+            }
+            
+            // Inicia o fetch da lista de simulados e submissões
+            fetchSimuladosList();
+            
+            // Renderiza o esqueleto inicial
+            renderApp(); 
+        }
+
+        // Expor a função para o script module (necessário para a reatividade após auth)
+        window.renderApp = renderApp;
+    </script>
+</body>
+</html>
