@@ -148,31 +148,31 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
 <!-- ================= MODAIS (VISUALIZAÇÃO IMERSIVA) ================= -->
 
-<!-- O erro está aqui: o h-[90vh] pode ser maior que o espaço seguro real.
-Ajustei para flex e max-h-[95vh] para permitir que o navegador calcule a altura segura. -->
-
 <!-- 1. PAINEL DE USUÁRIO -->
 <div id="user-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <!-- CORREÇÃO APLICADA: Substituí max-h-[95vh] por min-h-full e h-full para garantir que o container use todo o espaço do pai (p-4), sem ser cortado pela barra do navegador. -->
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="user-panel-frame" class="w-full h-full border-0" title="Painel do Usuário"></iframe>
     </div>
 </div>
 
 <!-- 2. PAINEL DE ALERTAS -->
 <div id="alert-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <!-- CORREÇÃO APLICADA -->
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="alert-panel-frame" class="w-full h-full border-0" title="Painel de Alertas"></iframe>
     </div>
 </div>
 
 <!-- 3. SIMULADOS -->
 <div id="simulados-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
+    <!-- CORREÇÃO APLICADA -->
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="simulados-frame" class="w-full h-full border-0" title="App Simulados"></iframe>
     </div>
 </div>
 
-<!-- LOADING -->
+<!-- LOADING GLOBAL (Movido para fora do JS para ser usado por todos) -->
 <div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
     <div class="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center">
         <svg aria-hidden="true" class="w-10 h-10 text-gray-200 animate-spin fill-blue-600 mb-3" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
@@ -275,18 +275,36 @@ Ajustei para flex e max-h-[95vh] para permitir que o navegador calcule a altura 
             container.innerHTML = data.map(item => getCardTemplate(item, isMain)).join('');
         }
     }
+    
+    // --- NOVO: FUNÇÃO PARA CONTROLAR VISIBILIDADE DO LOADING ---
+    function showLoading(show) {
+        const loading = document.getElementById('loading-modal');
+        if (loading) {
+            if (show) {
+                loading.classList.remove('hidden');
+            } else {
+                loading.classList.add('hidden');
+            }
+        }
+    }
 
     // --- FERRAMENTA PADRÃO DE CARREGAMENTO ---
     async function loadMiniApp(iframeId, url, basePath, modalIdToOpen) {
         const frame = document.getElementById(iframeId);
         
+        // 1. Prepara Interface e Loading
         toggleMainInterface(false); 
+        showLoading(true); // Exibe o loading
+        
         document.getElementById(modalIdToOpen).classList.remove('hidden'); 
         document.getElementById('close-btn-float').classList.remove('hidden'); 
         
         currentOpenModalId = modalIdToOpen;
         
-        if (frame.srcdoc) return; 
+        if (frame.srcdoc) {
+             showLoading(false); // Esconde loading se o conteúdo já estiver em cache
+             return; 
+        }
 
         frame.srcdoc = `<div style="display:flex;justify-content:center;align-items:center;height:100%;font-family:sans-serif;color:#666;">Carregando...</div>`;
 
@@ -337,19 +355,17 @@ Ajustei para flex e max-h-[95vh] para permitir que o navegador calcule a altura 
         } catch (error) {
             console.error(`Falha ao carregar ${iframeId}:`, error);
             frame.srcdoc = `<div style="text-align:center; padding:2rem; color:#ef4444;"><h3>Erro</h3><p>${error.message}</p></div>`;
+        } finally {
+            // 2. Esconde Loading APÓS A CONCLUSÃO/ERRO
+             showLoading(false);
         }
     }
 
     // --- IMPLEMENTAÇÃO ---
 
     function startSimuladosFlow() {
-        const loading = document.getElementById('loading-modal');
-        loading.classList.remove('hidden');
-
-        setTimeout(() => {
-            loading.classList.add('hidden');
-            showSimuladosIframe();
-        }, 1500);
+        // Remove a lógica de loading manual, apenas chama a função de visualização
+        showSimuladosIframe();
     }
 
     function showSimuladosIframe() {
