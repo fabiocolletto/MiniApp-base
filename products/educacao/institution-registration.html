@@ -1,0 +1,537 @@
+<!-- Caminho no Repositório: products/educacao/institution-registration.html -->
+<!-- Nome do Arquivo: institution-registration.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro da Instituição</title>
+    
+    <!-- Fontes e Ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background-color: #a78bfa; border-radius: 20px; } /* Violet-300 */
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db; /* Gray-300 */
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .form-input:focus {
+            border-color: #8b5cf6; /* Violet-500 */
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+            outline: none;
+        }
+        .form-input:disabled {
+            background-color: #f3f4f6; /* Gray-100 */
+            cursor: not-allowed;
+        }
+
+        /* --- ESTILOS DO CHIP BUTTON --- */
+        
+        /* Cores base do tema Instituição (Roxo/Violeta) */
+        :root {
+            --chip-color-text-save: #6d28d9; /* violet-700 */
+            --chip-color-border-save: #a78bfa; /* violet-400 */
+            --chip-color-hover-bg-save: #f5f3ff; /* violet-50 */
+            
+            --chip-color-text-delete: #dc2626; /* red-600 */
+            --chip-color-border-delete: #fca5a5; /* red-300 */
+            --chip-color-hover-bg-delete: #fef2f2; /* red-50 */
+
+            /* NOVO TEMA: AZUL/CIANO PARA LIMPAR */
+            --chip-color-text-clear: #0891b2; /* cyan-600 */
+            --chip-color-border-clear: #67e8f9; /* cyan-300 */
+            --chip-color-hover-bg-clear: #ecfeff; /* cyan-50 */
+        }
+        
+        /* Estilo do Botão de Ação (Replicando o chip-button) */
+        .action-chip-button {
+            /* Fundo branco e borda sutil para imitar o estilo flutuante */
+            background-color: white !important; 
+            border-width: 1px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+            
+            transition: all 0.2s ease-in-out;
+            padding: 0.75rem 1rem; 
+            border-radius: 0.75rem; 
+            font-weight: 600;
+        }
+        .action-chip-button:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); 
+        }
+
+        /* Classes específicas para o tema Roxo (Salvar) */
+        .action-chip-save {
+            color: var(--chip-color-text-save) !important;
+            border-color: var(--chip-color-border-save);
+        }
+        .action-chip-save:hover {
+            background-color: var(--chip-color-hover-bg-save) !important;
+        }
+
+        /* Classes específicas para o tema Vermelho (Deletar) */
+        .action-chip-delete {
+            color: var(--chip-color-text-delete) !important;
+            border-color: var(--chip-color-border-delete);
+        }
+        .action-chip-delete:hover {
+            background-color: var(--chip-color-hover-bg-delete) !important;
+        }
+
+        /* Classes específicas para o tema AZUL/CIANO (Limpar) */
+        .action-chip-clear {
+            color: var(--chip-color-text-clear) !important;
+            border-color: var(--chip-color-border-clear);
+        }
+        .action-chip-clear:hover {
+            background-color: var(--chip-color-hover-bg-clear) !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased overflow-y-auto">
+
+    <main class="space-y-6 px-6 py-6 max-w-2xl mx-auto">
+
+        <!-- CABEÇALHO -->
+        <div class="border-b pb-4 border-purple-100">
+            <h2 class="text-xl font-bold text-purple-600">Cadastro da Instituição</h2>
+            <p class="text-sm text-gray-500">Preencha os dados básicos e de contato.</p>
+        </div>
+        
+        <!-- PAINEL DE RESUMO (Onde os dados salvos serão mostrados) -->
+        <div id="summary-panel" class="bg-purple-50 p-4 rounded-xl shadow-md border border-purple-200">
+            <p class="text-sm font-semibold text-purple-800 flex items-center mb-2">
+                <span class="material-symbols-rounded text-lg mr-1">info</span> Status Atual
+            </p>
+            <div id="summary-content">
+                <p class="text-gray-500 text-sm italic">Nenhum dado salvo localmente.</p>
+            </div>
+        </div>
+
+        <!-- FORMULÁRIO DE REGISTRO -->
+        <section class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <form id="institution-form" class="space-y-6">
+                
+                <!-- Nome da Instituição -->
+                <div>
+                    <label for="inst-name" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo da Instituição</label>
+                    <input type="text" id="inst-name" required placeholder="Ex: Escola Modelo Alfa" class="form-input"/>
+                </div>
+
+                <!-- ENDEREÇO -->
+                <fieldset class="space-y-4 border border-gray-200 p-4 rounded-lg">
+                    <legend class="text-base font-semibold text-purple-600 px-2">Endereço (Busca por CEP)</legend>
+
+                    <!-- CEP -->
+                    <div>
+                        <label for="addr-cep" class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                        <input type="text" id="addr-cep" required placeholder="00000-000" maxlength="9" class="form-input"/>
+                        <p id="cep-status" class="text-xs mt-1 text-gray-500 min-h-[1rem]">Digite o CEP para buscar o endereço.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Logradouro (Rua) -->
+                        <div class="md:col-span-2">
+                            <label for="addr-street" class="block text-sm font-medium text-gray-700 mb-1">Logradouro (Rua/Avenida)</label>
+                            <input type="text" id="addr-street" required placeholder="Rua / Avenida" class="form-input" disabled/>
+                        </div>
+
+                        <!-- Número -->
+                        <div>
+                            <label for="addr-number" class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                            <input type="text" id="addr-number" required placeholder="Ex: 123" class="form-input"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Bairro -->
+                        <div>
+                            <label for="addr-neighborhood" class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                            <input type="text" id="addr-neighborhood" required placeholder="Bairro" class="form-input" disabled/>
+                        </div>
+                        
+                        <!-- Cidade -->
+                        <div>
+                            <label for="addr-city" class="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                            <input type="text" id="addr-city" required placeholder="Cidade" class="form-input" disabled/>
+                        </div>
+
+                        <!-- Estado (UF) -->
+                        <div>
+                            <label for="addr-state" class="block text-sm font-medium text-gray-700 mb-1">Estado (UF)</label>
+                            <input type="text" id="addr-state" required placeholder="UF" maxlength="2" class="form-input" disabled/>
+                        </div>
+                    </div>
+
+                    <!-- Complemento -->
+                    <div>
+                        <label for="addr-complement" class="block text-sm font-medium text-gray-700 mb-1">Complemento (Opcional)</label>
+                        <input type="text" id="addr-complement" placeholder="Ex: Bloco A, Sala 101" class="form-input"/>
+                    </div>
+                </fieldset>
+
+                <!-- CONTATOS OFICIAIS E RESPONSÁVEL -->
+                <fieldset class="space-y-4 border border-gray-200 p-4 rounded-lg">
+                    <legend class="text-base font-semibold text-purple-600 px-2">Contatos</legend>
+                    
+                    <!-- Contato Responsável -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nome do Contato Responsável -->
+                        <div>
+                            <label for="contact-name" class="block text-sm font-medium text-gray-700 mb-1">Nome do Contato Responsável</label>
+                            <input type="text" id="contact-name" required placeholder="Ex: João da Silva" class="form-input"/>
+                        </div>
+
+                        <!-- Cargo/Função -->
+                        <div>
+                            <label for="contact-title" class="block text-sm font-medium text-gray-700 mb-1">Cargo / Função</label>
+                            <input type="text" id="contact-title" required placeholder="Ex: Diretor, Coordenador" class="form-input"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Telefone Oficial -->
+                        <div>
+                            <label for="official-phone" class="block text-sm font-medium text-gray-700 mb-1">Telefone Oficial</label>
+                            <input type="text" id="official-phone" required placeholder="(XX) XXXXX-XXXX" maxlength="15" class="form-input"/>
+                        </div>
+
+                        <!-- E-mail Oficial -->
+                        <div>
+                            <label for="official-email" class="block text-sm font-medium text-gray-700 mb-1">E-mail Oficial</label>
+                            <input type="email" id="official-email" required placeholder="contato@instituicao.com.br" class="form-input"/>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Botão de Salvar -->
+                <div id="status-message" class="text-sm p-3 rounded-lg text-center font-medium hidden"></div>
+
+                <!-- Contêiner Flexível para os Botões -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                    <!-- BOTÃO LIMPAR FORMULÁRIO (NOVO) -->
+                    <button type="button" id="clear-form-btn"
+                        class="action-chip-button action-chip-clear w-full sm:w-auto shadow-lg transition flex items-center justify-center font-semibold order-last sm:order-first">
+                        <span class="material-symbols-rounded text-xl mr-2">refresh</span> Limpar Formulário
+                    </button>
+
+                    <button type="submit" 
+                        class="action-chip-button action-chip-save w-full sm:w-auto flex-grow shadow-lg transition flex items-center justify-center font-semibold order-first sm:order-none">
+                        <span class="material-symbols-rounded text-xl mr-2">save</span> Salvar Dados Locais
+                    </button>
+                    
+                    <!-- Botão Deletar com estilo de Chip Vermelho -->
+                    <button type="button" id="delete-data-btn"
+                        class="action-chip-button action-chip-delete w-full sm:w-auto shadow-lg transition flex items-center justify-center font-semibold mt-0">
+                        <span class="material-symbols-rounded text-xl mr-2">delete</span> Deletar Dados
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <script type="module">
+        const LOCAL_STORAGE_KEY = 'institution_data';
+        const VIA_CEP_URL = 'https://viacep.com.br/ws/';
+        
+        // --- Referências DOM (para preenchimento) ---
+        let streetInput, neighborhoodInput, cityInput, stateInput, cepStatusEl;
+
+        // --- UTILS DE VALIDAÇÃO E MÁSCARA ---
+
+        function validatePhone(phone) {
+            // Regex simples para (XX) XXXXX-XXXX
+            return /\(\d{2}\)\s\d{4,5}-\d{4}/.test(phone);
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function maskPhone(value) {
+            value = value.replace(/\D/g, "");
+            value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
+            value = value.replace(/(\d)(\d{4})$/, "$1-$2");
+            return value;
+        }
+
+        function maskCep(value) {
+            value = value.replace(/\D/g, "");
+            value = value.replace(/^(\d{5})(\d)/g, "$1-$2");
+            return value;
+        }
+
+        function setStatus(message, type) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800');
+            
+            if (type === 'ok') {
+                statusEl.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'warn') {
+                statusEl.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else if (type === 'error') {
+                statusEl.classList.add('bg-red-100', 'text-red-800');
+            } else {
+                statusEl.classList.add('bg-gray-100', 'text-gray-800');
+            }
+        }
+        
+        // --- PERSISTÊNCIA ---
+
+        function getInstitutionData() {
+            const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+            return data ? JSON.parse(data) : null;
+        }
+
+        function saveInstitutionData(data) {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function clearInstitutionData() {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+        }
+
+        // --- INTEGRAÇÃO VIACEP ---
+
+        function disableAddressFields(disable) {
+            streetInput.disabled = disable;
+            neighborhoodInput.disabled = disable;
+            cityInput.disabled = disable;
+            stateInput.disabled = disable;
+        }
+
+        function clearAddressFields() {
+            streetInput.value = '';
+            neighborhoodInput.value = '';
+            cityInput.value = '';
+            stateInput.value = '';
+        }
+
+        async function fetchCepData(cep) {
+            // Remove a máscara para a requisição
+            const cleanCep = cep.replace(/\D/g, '');
+            if (cleanCep.length !== 8) {
+                clearAddressFields();
+                cepStatusEl.textContent = 'Digite 8 dígitos para buscar.';
+                return;
+            }
+
+            cepStatusEl.textContent = 'Buscando endereço...';
+            clearAddressFields();
+            disableAddressFields(true);
+            
+            try {
+                const response = await fetch(`${VIA_CEP_URL}${cleanCep}/json/`);
+                const data = await response.json();
+
+                if (data.erro) {
+                    cepStatusEl.textContent = 'CEP não encontrado.';
+                    disableAddressFields(false);
+                } else {
+                    streetInput.value = data.logradouro || '';
+                    neighborhoodInput.value = data.bairro || '';
+                    cityInput.value = data.localidade || '';
+                    stateInput.value = data.uf || '';
+                    cepStatusEl.textContent = 'Endereço encontrado e preenchido.';
+
+                    // Se logradouro ou bairro estiver vazio, permite edição manual
+                    const allowManualEdit = !data.logradouro || !data.bairro;
+                    disableAddressFields(!allowManualEdit);
+                }
+            } catch (error) {
+                cepStatusEl.textContent = 'Erro na comunicação com a API de CEP.';
+                console.error("CEP Fetch Error:", error);
+                disableAddressFields(false); // Permite edição manual em caso de erro
+            }
+        }
+
+
+        // --- RENDERIZAÇÃO ---
+
+        function renderSummary(data) {
+            const content = document.getElementById('summary-content');
+            if (data && data.name) {
+                const addr = data.address;
+                const contactTitleDisplay = data.contactTitle ? ` (${data.contactTitle})` : '';
+                
+                content.innerHTML = `
+                    <p class="text-sm font-bold text-gray-700 flex items-center"><span class="material-symbols-rounded text-lg mr-1 text-purple-500">school</span> ${data.name}</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-xs text-gray-600 font-semibold">Contato Oficial:</p>
+                        <p class="text-xs text-gray-600 ml-3">📞 ${data.officialPhone} | 📧 ${data.officialEmail}</p>
+                        
+                        <p class="text-xs text-gray-600 font-semibold mt-2">Responsável:</p>
+                        <p class="text-xs text-gray-600 ml-3">👤 ${data.contactName}${contactTitleDisplay}</p>
+                        
+                        <p class="text-xs text-gray-600 font-semibold mt-2">Endereço:</p>
+                        <p class="text-xs text-gray-600 ml-3">${addr.street}, ${addr.number} ${addr.complement ? '(' + addr.complement + ')' : ''}</p>
+                        <p class="text-xs text-gray-600 ml-3">${addr.neighborhood}, ${addr.city}/${addr.state} - CEP ${addr.cep}</p>
+                    </div>
+                    <p class="text-xs text-purple-500 mt-3">Última atualização: ${data.updated}</p>
+                `;
+            } else {
+                content.innerHTML = `<p class="text-gray-500 text-sm italic">Nenhum dado salvo localmente. Preencha o formulário abaixo.</p>`;
+            }
+        }
+
+        // --- INICIALIZAÇÃO E EVENTOS ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('institution-form');
+            const nameInput = document.getElementById('inst-name');
+            const officialPhoneInput = document.getElementById('official-phone');
+            const officialEmailInput = document.getElementById('official-email');
+            const contactNameInput = document.getElementById('contact-name');
+            const contactTitleInput = document.getElementById('contact-title'); // NOVO INPUT
+            const deleteBtn = document.getElementById('delete-data-btn');
+            const clearFormBtn = document.getElementById('clear-form-btn'); // NOVO BOTÃO
+            
+            // Referências de Endereço
+            const cepInput = document.getElementById('addr-cep');
+            streetInput = document.getElementById('addr-street');
+            neighborhoodInput = document.getElementById('addr-neighborhood');
+            cityInput = document.getElementById('addr-city');
+            stateInput = document.getElementById('addr-state');
+            const numberInput = document.getElementById('addr-number');
+            const complementInput = document.getElementById('addr-complement');
+            cepStatusEl = document.getElementById('cep-status');
+
+
+            // 1. Carrega dados e preenche (se existirem)
+            const savedData = getInstitutionData();
+            if (savedData) {
+                nameInput.value = savedData.name || '';
+                officialPhoneInput.value = savedData.officialPhone || '';
+                officialEmailInput.value = savedData.address.officialEmail || '';
+                contactNameInput.value = savedData.contactName || '';
+                contactTitleInput.value = savedData.contactTitle || ''; // NOVO CAMPO
+                
+                if (savedData.address) {
+                    cepInput.value = savedData.address.cep || '';
+                    streetInput.value = savedData.address.street || '';
+                    neighborhoodInput.value = savedData.address.neighborhood || '';
+                    cityInput.value = savedData.address.city || '';
+                    stateInput.value = savedData.address.state || '';
+                    numberInput.value = savedData.address.number || '';
+                    complementInput.value = savedData.address.complement || '';
+                }
+                cepStatusEl.textContent = 'CEP carregado. Altere para buscar novamente.';
+            } else {
+                // Se não houver dados, garante que campos de endereço estejam desabilitados inicialmente
+                disableAddressFields(true); 
+                cepStatusEl.textContent = 'Digite o CEP para buscar o endereço.';
+            }
+            renderSummary(savedData);
+
+            // 2. Listeners de Máscara
+            officialPhoneInput.addEventListener('input', (e) => { e.target.value = maskPhone(e.target.value); });
+            cepInput.addEventListener('input', (e) => { e.target.value = maskCep(e.target.value); });
+            
+            // 3. Listener do CEP para Busca
+            cepInput.addEventListener('blur', (e) => {
+                if (e.target.value.length === 9) { // 9 caracteres é o formato 00000-000
+                    fetchCepData(e.target.value);
+                }
+            });
+
+
+            // 4. Listener para o formulário de submissão
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const name = nameInput.value.trim();
+                const officialPhone = officialPhoneInput.value.trim();
+                const officialEmail = officialEmailInput.value.trim();
+                const contactName = contactNameInput.value.trim();
+                const contactTitle = contactTitleInput.value.trim(); // NOVO CAMPO
+                const maskedPhone = maskPhone(officialPhone); 
+                
+                // Endereço
+                const cep = cepInput.value.trim();
+                const street = streetInput.value.trim();
+                const neighborhood = neighborhoodInput.value.trim();
+                const city = cityInput.value.trim();
+                const state = stateInput.value.trim();
+                const number = numberInput.value.trim();
+                const complement = complementInput.value.trim();
+
+
+                // --- VALIDAÇÕES ---
+                if (!name) { setStatus("Informe o nome da instituição.", "warn"); return; }
+                if (!contactName) { setStatus("Informe o nome do contato responsável.", "warn"); return; }
+                if (!contactTitle) { setStatus("Informe o cargo/função do contato responsável.", "warn"); return; }
+                if (!validatePhone(maskedPhone)) { setStatus("Telefone oficial inválido.", "warn"); return; }
+                if (!validateEmail(officialEmail)) { setStatus("E-mail oficial inválido.", "warn"); return; }
+                
+                if (cep.length !== 9) { setStatus("CEP inválido. Deve ter 8 dígitos.", "warn"); return; }
+                if (!street || !neighborhood || !city || !state) { setStatus("Campos de endereço incompletos. Verifique o CEP.", "warn"); return; }
+                if (!number) { setStatus("O número predial é obrigatório.", "warn"); return; }
+
+
+                const data = {
+                    name: name,
+                    officialPhone: maskedPhone,
+                    officialEmail: officialEmail,
+                    contactName: contactName,
+                    contactTitle: contactTitle, // NOVO DADO SALVO
+                    address: {
+                        cep: cep,
+                        street: street,
+                        neighborhood: neighborhood,
+                        city: city,
+                        state: state,
+                        number: number,
+                        complement: complement,
+                    },
+                    updated: new Date().toLocaleString('pt-BR'),
+                };
+
+                saveInstitutionData(data);
+                renderSummary(data);
+                setStatus("Dados salvos neste dispositivo.", "ok");
+            });
+
+            // 5. Listener para deletar dados
+            deleteBtn.addEventListener('click', () => {
+                const isConfirmed = window.confirm("Tem certeza que deseja remover os dados locais da instituição? Esta ação é irreversível.");
+                if (isConfirmed) {
+                    clearInstitutionData();
+                    form.reset();
+                    renderSummary(null);
+                    disableAddressFields(true);
+                    cepStatusEl.textContent = 'Digite o CEP para buscar o endereço.';
+                    setStatus("Dados removidos localmente.", "error");
+                }
+            });
+
+            // 6. Listener para limpar formulário (NOVO)
+            clearFormBtn.addEventListener('click', () => {
+                const isConfirmed = window.confirm("Tem certeza que deseja limpar todos os campos do formulário?");
+                if (isConfirmed) {
+                    form.reset();
+                    // Garante que os campos desabilitados voltem ao estado inicial
+                    disableAddressFields(true);
+                    cepStatusEl.textContent = 'Formulário limpo. Digite o CEP para buscar o endereço.';
+                    setStatus("Formulário limpo. Os dados salvos localmente não foram alterados.", "warn");
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
