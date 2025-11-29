@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tarefas</title>
+    
+    <!-- Fontes e Ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+
+    <!-- Tailwind e Flowbite -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.1.1/flowbite.min.css" rel="stylesheet" />
+
+    <style>
+        /* Estilos base para garantir a aparência limpa dentro do iframe */
+        body { font-family: 'Inter', sans-serif; background-color: #fff; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background-color: #fca5a5; border-radius: 20px; } /* Red-300 */
+        
+        /* Estilos da Tabela */
+        .tasks-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tasks-table th {
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            cursor: pointer;
+            color: #ef4444; /* text-red-500 */
+            background-color: #fee2e2; /* bg-red-100 */
+            transition: background-color 0.2s;
+            position: sticky; /* Fixa o cabeçalho no topo da rolagem */
+            top: 0;
+            z-index: 10;
+        }
+        .tasks-table th:hover {
+            background-color: #fecaca; /* red-200 */
+        }
+        .tasks-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #fecaca; /* red-200 */
+            vertical-align: middle;
+        }
+        .tasks-table tr:last-child td {
+            border-bottom: none;
+        }
+        .tasks-table tr:nth-child(even) {
+            background-color: #fff7f7; /* Um toque de branco/vermelho para linhas pares */
+        }
+
+        .tasks-table .completed td {
+            background-color: #f9fafb !important; /* Gray-50 */
+            color: #9ca3af; /* Gray-400 */
+            text-decoration: line-through;
+        }
+        .tasks-table .completed input[type="checkbox"]:checked {
+             border-color: #9ca3af; /* Gray-400 */
+        }
+
+        .category-chip, .status-chip {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+        }
+        /* Estilo para o campo de edição direta */
+        .task-edit-input {
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #f87171; /* red-400 */
+            border-radius: 0.375rem; /* rounded-md */
+            outline: none;
+        }
+        
+        /* --- ESTILOS REPLICADOS DO CHIP GLOBAL (TEMA TAREFAS - VERMELHO) --- */
+        
+        /* Cores base do tema Tarefas */
+        :root {
+            --chip-color-text: #dc2626; /* red-600 */
+            --chip-color-border: #f87171; /* red-400 */
+            --chip-color-hover-bg: #fef2f2; /* red-50 */
+        }
+        
+        /* Estilo do Botão de Ação (Recria o chip-button do app principal) */
+        .action-chip-button {
+            background-color: white !important; /* Fundo branco para parecer flutuante */
+            border-width: 1px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); 
+            
+            /* Usa as variáveis de cor */
+            color: var(--chip-color-text) !important;
+            border-color: var(--chip-color-border);
+            
+            transition: all 0.2s ease-in-out;
+            padding: 0.75rem 1rem; 
+            border-radius: 0.75rem; 
+            font-weight: 600;
+        }
+        .action-chip-button:hover {
+            background-color: var(--chip-color-hover-bg) !important;
+            box-shadow: 0 8px 10px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.06); 
+        }
+
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+    <main class="px-6 py-4 space-y-6">
+
+        <!-- CABEÇALHO LIMPO -->
+        <div class="flex items-center justify-between border-b pb-4 border-red-100">
+            <h2 class="text-xl font-bold text-red-600">Lista de Tarefas</h2>
+            <span id="user-info" class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Sincronização Local</span>
+        </div>
+
+        <!-- NOVO: PAINEL DE INDICADORES / ESTATÍSTICAS -->
+        <section id="stats-panel" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            
+            <!-- Card 1: Total -->
+            <div id="stat-total" class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
+                <p class="text-2xl font-bold text-gray-800">0</p>
+                <p class="text-xs text-gray-500 mt-1">Total</p>
+            </div>
+            
+            <!-- Card 2: Pendente -->
+            <div id="stat-pending" class="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
+                <p class="text-2xl font-bold text-red-600">0</p>
+                <p class="text-xs text-red-500 mt-1">Pendente</p>
+            </div>
+
+            <!-- Card 3: Em Progresso -->
+            <div id="stat-progress" class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 text-center">
+                <p class="text-2xl font-bold text-yellow-600">0</p>
+                <p class="text-xs text-yellow-500 mt-1">Em Progresso</p>
+            </div>
+
+            <!-- Card 4: Concluído -->
+            <div id="stat-completed" class="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                <p class="text-2xl font-bold text-green-600">0</p>
+                <p class="text-xs text-green-500 mt-1">Concluído</p>
+            </div>
+        </section>
+
+
+        <!-- LISTA DE TAREFAS (TABELA) -->
+        <section class="overflow-x-auto">
+            <div id="tasks-list-container" class="bg-white rounded-xl shadow-md border border-red-100">
+                <table id="tasks-table" class="tasks-table">
+                    <thead>
+                        <tr>
+                            <!-- Coluna Sequencial -->
+                            <th class="w-10">#</th> 
+                            <!-- Coluna de Tarefa (Ordenável) -->
+                            <th data-sort-key="text">Tarefa <span class="material-symbols-rounded text-base align-middle ml-1 opacity-50">unfold_more</span></th> 
+                            <!-- Coluna de Status (Ordenável) -->
+                            <th data-sort-key="status" class="w-32 hidden sm:table-cell">Status <span class="material-symbols-rounded text-base align-middle ml-1 opacity-50">unfold_more</span></th>
+                            <!-- Coluna de Categoria (Ordenável) -->
+                            <th data-sort-key="category" class="w-32 hidden sm:table-cell">Categoria <span class="material-symbols-rounded text-base align-middle ml-1 opacity-50">unfold_more</span></th>
+                            <!-- Coluna de Prazo (Ordenável) -->
+                            <th data-sort-key="dueDate" class="w-32 hidden sm:table-cell">Prazo <span class="material-symbols-rounded text-base align-middle ml-1 opacity-50">unfold_more</span></th>
+                            <!-- Coluna de Deletar -->
+                            <th class="w-12 text-center"></th> 
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-table-body">
+                        <!-- Tarefas serão injetadas aqui -->
+                        <tr>
+                            <!-- colspan ajustado para 6 colunas -->
+                            <td colspan="6" class="text-center text-gray-500 p-6">
+                                <span class="animate-pulse" id="loading-tasks">Carregando tarefas locais...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button id="clear-completed-btn" class="text-xs text-gray-500 hover:text-red-500 transition">
+                    Limpar tarefas concluídas
+                </button>
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- BOTÕES FLUTUANTES (MOVIDOS PARA A ESQUERDA) -->
+    <div class="fixed bottom-4 left-4 z-20 flex flex-col space-y-2">
+        
+        <!-- NOVO: BOTÃO POPULAR DADOS (TEMPORÁRIO) -->
+        <button id="populate-tasks-float" onclick="populateWithSampleTasks()" 
+            class="action-chip-button shadow-xl transition-transform hover:scale-105 flex items-center justify-center !text-blue-600 !border-blue-400 !bg-blue-50 hover:!bg-blue-100">
+            <span class="material-symbols-rounded mr-2">dataset</span> Pop. Dados
+        </button>
+
+        <!-- BOTÃO ADICIONAR TAREFA -->
+        <button id="add-task-float" onclick="showAddTaskModal()" 
+            class="action-chip-button shadow-xl transition-transform hover:scale-105 flex items-center justify-center">
+            <span class="material-symbols-rounded mr-2">add_task</span> Adicionar
+        </button>
+    </div>
+
+
+    <!-- MODAL DE ADICIONAR TAREFA -->
+    <div id="add-task-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm border border-red-200">
+            
+            <!-- Header do Modal -->
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-red-600">Adicionar Nova Tarefa</h3>
+                <button onclick="closeAddTaskModal()" class="text-gray-400 hover:text-red-600">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+
+            <!-- FORMULÁRIO (MANTIDO O ID PARA REAPROVEITAR O SCRIPT) -->
+            <form id="new-task-form" class="space-y-4">
+                
+                <!-- Input Principal -->
+                <div>
+                    <label for="task-input" class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <input type="text" id="task-input" placeholder="O que precisa ser feito?" required 
+                        class="w-full p-3 border border-red-300 rounded-xl focus:ring-red-500 focus:border-red-500 transition"/>
+                </div>
+                
+                <!-- Status Inicial -->
+                <div>
+                    <label for="task-status" class="block text-sm font-medium text-gray-700 mb-1">Status Inicial</label>
+                    <select id="task-status" 
+                        class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-red-500 focus:border-red-500 text-sm transition">
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Progresso">Em Progresso</option>
+                        <option value="Bloqueada">Bloqueada</option>
+                        <option value="Concluída">Concluída</option>
+                    </select>
+                </div>
+
+
+                <!-- Categoria -->
+                <div>
+                    <label for="task-category" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                    <select id="task-category" 
+                        class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-red-500 focus:border-red-500 text-sm transition">
+                        <option value="Pessoal">Pessoal</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Estudo">Estudo</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <!-- Prazo -->
+                <div>
+                    <label for="task-due-date" class="block text-sm font-medium text-gray-700 mb-1">Prazo</label>
+                    <input type="date" id="task-due-date" 
+                        class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-red-500 focus:border-red-500 text-sm transition"/>
+                </div>
+
+                <!-- Botão de Adicionar Final -->
+                <button type="submit" 
+                    class="w-full bg-red-600 text-white p-3 rounded-xl shadow-md hover:bg-red-700 transition flex items-center justify-center font-semibold mt-4">
+                    <span class="material-symbols-rounded mr-2">save</span> Salvar Tarefa
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- LÓGICA DE PERSISTÊNCIA LOCAL E TABELA (ATUALIZADA) -->
+    <script type="module">
+        const LOCAL_STORAGE_KEY = 'miniapp_tasks';
+        
+        // Mapeamento de cores para as categorias
+        const CATEGORY_COLORS = {
+            'Pessoal': 'bg-blue-100 text-blue-800',
+            'Trabalho': 'bg-green-100 text-green-800',
+            'Estudo': 'bg-yellow-100 text-yellow-800',
+            'Outros': 'bg-gray-100 text-gray-800',
+        };
+        const ALL_CATEGORIES = Object.keys(CATEGORY_COLORS);
+        
+        // NOVO: Mapeamento de cores, ícones e ordem para os status
+        const STATUS_MAP = {
+            'Pendente': { color: 'bg-red-200 text-red-800', icon: 'pending', next: 'Em Progresso', isCompleted: false },
+            'Em Progresso': { color: 'bg-yellow-200 text-yellow-800', icon: 'schedule', next: 'Concluída', isCompleted: false },
+            'Bloqueada': { color: 'bg-gray-400 text-gray-900', icon: 'block', next: 'Pendente', isCompleted: false },
+            'Concluída': { color: 'bg-green-200 text-green-800', icon: 'check_circle', next: 'Pendente', isCompleted: true },
+        };
+        const ALL_STATUSES = Object.keys(STATUS_MAP);
+
+
+        // Formato Brasileiro de Data (DD/MM/AAAA)
+        const dateFormatter = new Intl.DateTimeFormat('pt-BR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
+        
+        let currentSort = { key: 'dueDate', direction: 'asc' }; // Estado de ordenação
+
+        // Referências do Modal
+        let addTaskModal;
+        let form;
+        let input, categorySelect, dueDateInput, statusSelect;
+
+
+        // --- 1. FUNÇÕES DE PERSISTÊNCIA LOCAL ---
+
+        function getTasksFromLocal() {
+            const tasksJson = localStorage.getItem(LOCAL_STORAGE_KEY);
+            try {
+                return tasksJson ? JSON.parse(tasksJson) : [];
+            } catch (e) {
+                console.error("Erro ao ler tarefas do localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveTasksToLocal(tasks) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
+            } catch (e) {
+                console.error("Erro ao salvar tarefas no localStorage:", e);
+            }
+        }
+        
+        // --- FUNÇÃO TEMPORÁRIA: POPULAR DADOS ---
+        window.populateWithSampleTasks = function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const format = (date) => date.toISOString().split('T')[0];
+
+            const sampleTasks = [
+                { id: crypto.randomUUID(), text: 'Finalizar Relatório Semanal', category: 'Trabalho', dueDate: format(tomorrow), status: 'Em Progresso', completed: false, createdAt: Date.now() - 100000 },
+                { id: crypto.randomUUID(), text: 'Comprar presentes de aniversário', category: 'Pessoal', dueDate: format(new Date(2025, 11, 25)), status: 'Pendente', completed: false, createdAt: Date.now() - 90000 },
+                { id: crypto.randomUUID(), text: 'Revisar Módulo 4 de JS', category: 'Estudo', dueDate: format(tomorrow), status: 'Pendente', completed: false, createdAt: Date.now() - 80000 },
+                { id: crypto.randomUUID(), text: 'Pagar conta de luz (vencida)', category: 'Pessoal', dueDate: format(yesterday), status: 'Bloqueada', completed: false, createdAt: Date.now() - 70000 },
+                { id: crypto.randomUUID(), text: 'Preparar slides para reunião', category: 'Trabalho', dueDate: format(tomorrow), status: 'Em Progresso', completed: false, createdAt: Date.now() - 60000 },
+                { id: crypto.randomUUID(), text: 'Enviar e-mail de follow-up ao cliente X', category: 'Trabalho', dueDate: format(tomorrow), status: 'Concluída', completed: true, createdAt: Date.now() - 50000 },
+                { id: crypto.randomUUID(), text: 'Lavar a louça e arrumar a cozinha', category: 'Pessoal', dueDate: format(today), status: 'Pendente', completed: false, createdAt: Date.now() - 40000 },
+                { id: crypto.randomUUID(), text: 'Planejar aulas de Lógica', category: 'Estudo', dueDate: format(new Date(2025, 11, 30)), status: 'Pendente', completed: false, createdAt: Date.now() - 30000 },
+                { id: crypto.randomUUID(), text: 'Fazer backup do PC', category: 'Outros', dueDate: format(new Date(2026, 0, 15)), status: 'Pendente', completed: false, createdAt: Date.now() - 20000 },
+                { id: crypto.randomUUID(), text: 'Comprar café', category: 'Pessoal', dueDate: format(today), status: 'Concluída', completed: true, createdAt: Date.now() - 10000 },
+            ];
+
+            saveTasksToLocal(sampleTasks);
+            updateAndRender();
+        }
+        
+        // --- 2. MANIPULAÇÃO DO DOM / RENDERIZAÇÃO ---
+        
+        // Funções do Modal
+        window.showAddTaskModal = function() {
+            addTaskModal.classList.remove('hidden');
+        }
+
+        window.closeAddTaskModal = function() {
+            addTaskModal.classList.add('hidden');
+            // Limpa o formulário ao fechar
+            form.reset(); 
+        }
+        
+        // NOVO: Função para atualizar o Painel de Estatísticas
+        function updateStatsPanel(tasks) {
+            const total = tasks.length;
+            const pendingCount = tasks.filter(t => t.status === 'Pendente').length;
+            const progressCount = tasks.filter(t => t.status === 'Em Progresso').length;
+            const completedCount = tasks.filter(t => t.status === 'Concluída').length;
+            
+            document.getElementById('stat-total').querySelector('p:first-child').textContent = total;
+            document.getElementById('stat-pending').querySelector('p:first-child').textContent = pendingCount;
+            document.getElementById('stat-progress').querySelector('p:first-child').textContent = progressCount;
+            document.getElementById('stat-completed').querySelector('p:first-child').textContent = completedCount;
+        }
+
+        // --- Edição Inline Comum (Texto) ---
+        function handleInlineTextEdit(cell, taskId, currentText) {
+            // Cria o input
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'task-edit-input';
+            input.value = currentText;
+
+            // Substitui o texto pelo input
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            input.focus();
+
+            // Lógica para salvar ao perder o foco (blur) ou pressionar Enter
+            const saveChanges = () => {
+                const newText = input.value.trim();
+                if (newText !== currentText) {
+                    updateTaskDetail(taskId, 'text', newText); // Atualiza no localStorage
+                }
+                // Re-renderiza a tabela para exibir o texto atualizado e reanexar listeners
+                updateAndRender(); 
+            };
+
+            input.addEventListener('blur', saveChanges);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveChanges();
+                }
+            });
+            
+            // Remove o listener de clique da célula enquanto está editando
+            cell.onclick = null; 
+        }
+
+        // --- Edição Inline de Data (Prazo) ---
+        function handleInlineDateEdit(cell, taskId, currentDate) {
+             // Cria o input de data
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'task-edit-input h-8'; // h-8 para melhor alinhamento
+            input.value = currentDate || ''; // currentDate é a string 'YYYY-MM-DD'
+
+            // Substitui o texto pelo input
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            input.focus();
+
+            const saveChanges = () => {
+                const newDate = input.value;
+                if (newDate !== currentDate) {
+                    updateTaskDetail(taskId, 'dueDate', newDate); // Atualiza no localStorage
+                }
+                // Re-renderiza a tabela
+                updateAndRender();
+            };
+
+            input.addEventListener('blur', saveChanges);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveChanges();
+                }
+            });
+            
+            cell.onclick = null;
+        }
+
+        // --- Edição Inline de Categoria (Select) ---
+        function handleInlineCategoryEdit(cell, taskId, currentCategory) {
+            // Cria o select
+            const select = document.createElement('select');
+            select.className = 'task-edit-input h-8 text-xs'; // Estilo
+            
+            ALL_CATEGORIES.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                if (cat === currentCategory) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // Substitui o chip pelo select
+            cell.innerHTML = '';
+            cell.appendChild(select);
+            select.focus();
+
+            const saveChanges = () => {
+                const newCategory = select.value;
+                if (newCategory !== currentCategory) {
+                    updateTaskDetail(taskId, 'category', newCategory); // Atualiza no localStorage
+                }
+                // Re-renderiza a tabela
+                updateAndRender();
+            };
+            
+            // Salva ao selecionar (change) ou perder o foco (blur)
+            select.addEventListener('change', saveChanges);
+            select.addEventListener('blur', saveChanges);
+            
+            cell.onclick = null;
+        }
+        
+        // --- Edição Inline de Status (Select) ---
+        function handleInlineStatusEdit(cell, taskId, currentStatus) {
+            // Cria o select
+            const select = document.createElement('select');
+            select.className = 'task-edit-input h-8 text-xs'; // Estilo
+            
+            ALL_STATUSES.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                if (status === currentStatus) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // Substitui o chip pelo select
+            cell.innerHTML = '';
+            cell.appendChild(select);
+            select.focus();
+
+            const saveChanges = () => {
+                const newStatus = select.value;
+                if (newStatus !== currentStatus) {
+                    updateTaskDetail(taskId, 'status', newStatus); // Atualiza no localStorage
+                    // A função updateTaskDetail já sincroniza o 'completed'
+                }
+                // Re-renderiza a tabela
+                updateAndRender();
+            };
+            
+            // Salva ao selecionar (change) ou perder o foco (blur)
+            select.addEventListener('change', saveChanges);
+            select.addEventListener('blur', saveChanges);
+            
+            cell.onclick = null;
+        }
+
+
+        function createTableRow(task, index) { 
+            const row = document.createElement('tr');
+            // A classe 'completed' agora depende do status
+            row.className = `${STATUS_MAP[task.status]?.isCompleted ? 'completed' : ''}`;
+            row.setAttribute('data-id', task.id);
+            
+            const categoryClass = CATEGORY_COLORS[task.category] || CATEGORY_COLORS['Outros'];
+            const statusData = STATUS_MAP[task.status] || STATUS_MAP['Pendente']; // Padrão
+            
+            // Formata a data para exibição no formato DD/MM/AAAA
+            let dueDateDisplay = task.dueDate 
+                ? dateFormatter.format(new Date(task.dueDate + 'T00:00:00')) 
+                : '-';
+            
+            // Verifica se está vencido (apenas se não estiver concluído)
+            const isLate = !statusData.isCompleted && task.dueDate && new Date(task.dueDate + 'T00:00:00') < new Date();
+            const dueDateClasses = isLate ? 'text-red-500 font-semibold' : 'text-gray-600';
+
+            row.innerHTML = `
+                <!-- Coluna Sequencial -->
+                <td class="text-center text-gray-500">${index + 1}</td>
+                
+                <!-- Coluna 2: Tarefa (Editável - Texto) -->
+                <td class="task-text-cell text-gray-700">
+                    <span class="inline-flex items-center gap-2">
+                        <!-- O ÍCONE DE STATUS FOI REMOVIDO DAQUI -->
+                        <span>${task.text}</span>
+                    </span>
+                </td>
+                
+                <!-- Coluna 3: Status (Editável - Select) -->
+                <td class="task-status-cell hidden sm:table-cell cursor-pointer">
+                    <span class="status-chip ${statusData.color}">${task.status}</span>
+                </td>
+
+                <!-- Coluna 4: Categoria (Editável - Select) -->
+                <td class="task-category-cell hidden sm:table-cell cursor-pointer">
+                    <span class="category-chip ${categoryClass}">${task.category}</span>
+                </td>
+                
+                <!-- Coluna 5: Prazo (Editável - Data) -->
+                <td class="task-date-cell hidden sm:table-cell cursor-pointer ${dueDateClasses}">${dueDateDisplay}</td>
+                
+                <!-- Coluna 6: Deletar -->
+                <td class="text-center">
+                    <button data-action="delete" class="text-gray-400 hover:text-red-500 transition">
+                        <span class="material-symbols-rounded text-lg">delete</span>
+                    </button>
+                </td>
+            `;
+            
+            // --- Anexo de Listeners de Edição ---
+            
+            // 1. Texto (Tarefa)
+            const textCell = row.querySelector('.task-text-cell');
+            textCell.querySelector('span:last-child').onclick = () => handleInlineTextEdit(textCell, task.id, task.text);
+
+            // 2. Status (NOVO)
+            const statusCell = row.querySelector('.task-status-cell');
+            statusCell.onclick = () => handleInlineStatusEdit(statusCell, task.id, task.status);
+
+            // 3. Categoria
+            const categoryCell = row.querySelector('.task-category-cell');
+            categoryCell.onclick = () => handleInlineCategoryEdit(categoryCell, task.id, task.category);
+
+            // 4. Prazo
+            const dateCell = row.querySelector('.task-date-cell');
+            dateCell.onclick = () => handleInlineDateEdit(dateCell, task.id, task.dueDate);
+
+
+            // --- Anexo de Listeners de Ação ---
+
+            // Adiciona listener para deletar
+            row.querySelector('[data-action="delete"]').addEventListener('click', () => {
+                deleteTask(task.id);
+            });
+
+            return row;
+        }
+
+        function renderTasks(tasks) {
+            const tbody = document.getElementById('tasks-table-body');
+            tbody.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-gray-400 p-6">
+                            Você não tem tarefas. Adicione uma nova!
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // Passa o índice para a função createTableRow
+                tasks.forEach((task, index) => {
+                    tbody.appendChild(createTableRow(task, index));
+                });
+            }
+            // Atualiza os indicadores de ordenação no cabeçalho
+            updateSortIndicators();
+        }
+        
+        function updateSortIndicators() {
+            document.querySelectorAll('#tasks-table th[data-sort-key]').forEach(th => {
+                const icon = th.querySelector('.material-symbols-rounded');
+                if (icon) {
+                    if (th.getAttribute('data-sort-key') === currentSort.key) {
+                        icon.textContent = currentSort.direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
+                        icon.classList.remove('opacity-50');
+                    } else {
+                        icon.textContent = 'unfold_more';
+                        icon.classList.add('opacity-50');
+                    }
+                }
+            });
+        }
+
+
+        // --- 3. OPERAÇÕES DE DADOS LOCAIS (CRUD e ORDENAÇÃO) ---
+        
+        function sortTasks(tasks) {
+            const { key, direction } = currentSort;
+            
+            // Prioriza concluído vs. não concluído (não ordenável)
+            tasks.sort((a, b) => {
+                const aCompleted = STATUS_MAP[a.status]?.isCompleted || false;
+                const bCompleted = STATUS_MAP[b.status]?.isCompleted || false;
+                
+                // Concluído (true) vai para o final (1)
+                if (aCompleted !== bCompleted) {
+                    return aCompleted ? 1 : -1; 
+                }
+                return 0;
+            });
+
+            // Ordena pelo key/direction atual (apenas em não concluídos)
+            const incompleteTasks = tasks.filter(t => !STATUS_MAP[t.status]?.isCompleted);
+            const completedTasks = tasks.filter(t => STATUS_MAP[t.status]?.isCompleted);
+
+            incompleteTasks.sort((a, b) => {
+                let valueA, valueB;
+
+                if (key === 'dueDate') {
+                    valueA = a.dueDate ? new Date(a.dueDate + 'T00:00:00').getTime() : Infinity;
+                    valueB = b.dueDate ? new Date(b.dueDate + 'T00:00:00').getTime() : Infinity;
+                } else if (key === 'text' || key === 'category' || key === 'status') {
+                    valueA = a[key].toLowerCase();
+                    valueB = b[key].toLowerCase();
+                } else {
+                    return 0;
+                }
+
+                if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+                if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            return [...incompleteTasks, ...completedTasks];
+        }
+
+        function updateAndRender() {
+            const tasks = getTasksFromLocal();
+            const sortedTasks = sortTasks(tasks);
+            renderTasks(sortedTasks);
+            updateStatsPanel(tasks); // NOVO: Atualiza o painel de estatísticas
+        }
+        
+        function addTask(text, category, dueDate, status) {
+            const tasks = getTasksFromLocal();
+            const newTask = {
+                id: crypto.randomUUID(),
+                text: text,
+                category: category,
+                dueDate: dueDate,
+                status: status, // NOVO: status
+                completed: STATUS_MAP[status]?.isCompleted || false, // Deriva completed do status
+                createdAt: Date.now()
+            };
+            
+            tasks.push(newTask);
+            saveTasksToLocal(tasks);
+            updateAndRender();
+        }
+
+        function toggleTaskCompletion(id, completed) {
+            // Esta função não é mais usada para o ciclo principal, mas permanece para compatibilidade
+            const tasks = getTasksFromLocal();
+            const taskIndex = tasks.findIndex(t => t.id === id);
+            
+            if (taskIndex !== -1) {
+                const newStatus = completed ? 'Concluída' : 'Pendente';
+                tasks[taskIndex].status = newStatus;
+                tasks[taskIndex].completed = completed;
+                saveTasksToLocal(tasks);
+                updateAndRender();
+            }
+        }
+        
+        // Função genérica para atualizar qualquer detalhe
+        function updateTaskDetail(id, key, value) {
+             const tasks = getTasksFromLocal();
+             const taskIndex = tasks.findIndex(t => t.id === id);
+            
+             if (taskIndex !== -1) { // Removi a checagem '&& value' para permitir datas vazias ou texto vazio
+                 tasks[taskIndex][key] = value;
+                 
+                 // Sincroniza o completed se o status for alterado
+                 if (key === 'status') {
+                     tasks[taskIndex].completed = STATUS_MAP[value]?.isCompleted || false;
+                 }
+                 
+                 saveTasksToLocal(tasks);
+                 updateStatsPanel(tasks); // Atualiza estatísticas após CRUD
+             }
+        }
+        
+        function updateTaskText(id, newText) {
+             updateTaskDetail(id, 'text', newText);
+        }
+
+
+        function deleteTask(id) {
+            const tasks = getTasksFromLocal();
+            const updatedTasks = tasks.filter(t => t.id !== id);
+            
+            saveTasksToLocal(updatedTasks);
+            updateAndRender();
+        }
+        
+        function clearCompletedTasks() {
+            const tasks = getTasksFromLocal();
+            // Filtra pelo atributo 'isCompleted' do mapa de status
+            const incompleteTasks = tasks.filter(t => !STATUS_MAP[t.status]?.isCompleted); 
+            
+            saveTasksToLocal(incompleteTasks);
+            updateAndRender();
+        }
+
+
+        // --- 4. EVENT LISTENERS E INÍCIO ---
+        
+        function handleSortClick(e) {
+            const th = e.currentTarget;
+            const key = th.getAttribute('data-sort-key');
+            
+            if (key) {
+                if (currentSort.key === key) {
+                    // Inverte a direção se a chave for a mesma
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // Nova chave de ordenação, reseta para ascendente
+                    currentSort = { key: key, direction: 'asc' };
+                }
+                updateAndRender();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            addTaskModal = document.getElementById('add-task-modal');
+            form = document.getElementById('new-task-form');
+            input = document.getElementById('task-input');
+            categorySelect = document.getElementById('task-category');
+            dueDateInput = document.getElementById('task-due-date');
+            statusSelect = document.getElementById('task-status'); // Referência ao select de status
+            const clearBtn = document.getElementById('clear-completed-btn');
+
+            updateAndRender(); 
+
+            // Adiciona listeners aos cabeçalhos da tabela
+            document.querySelectorAll('#tasks-table th[data-sort-key]').forEach(th => {
+                th.addEventListener('click', handleSortClick);
+            });
+
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = input.value.trim();
+                const category = categorySelect.value;
+                const dueDate = dueDateInput.value;
+                const status = statusSelect.value; 
+                
+                if (text) {
+                    addTask(text, category, dueDate, status);
+                    window.closeAddTaskModal(); // Fecha o modal após adicionar
+                }
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                clearCompletedTasks();
+            });
+            
+            // Listener removido, pois o ciclo de status foi movido para o editor inline.
+        });
+
+    </script>
+</body>
+</html>
