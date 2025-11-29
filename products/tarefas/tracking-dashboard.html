@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de Produtividade</title>
+    
+    <!-- Fontes e Ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+
+    <!-- Tailwind e Chart.js (Necessário para gráficos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background-color: #c4b5fd; border-radius: 20px; } /* Violet-300 */
+        
+        .stat-card {
+            background-color: #f5f3ff; /* Violet-50 */
+            border: 1px solid #ddd6fe; /* Violet-200 */
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px; /* Altura fixa para os gráficos */
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased overflow-y-auto">
+
+    <main class="space-y-6 px-4 py-4">
+
+        <!-- CABEÇALHO -->
+        <div class="flex items-center justify-between border-b pb-4 border-violet-100">
+            <h2 class="text-xl font-bold text-violet-600">Acompanhamento de Produtividade</h2>
+            <span class="text-xs text-gray-500 bg-violet-100 px-3 py-1 rounded-full">Últimos 30 Dias</span>
+        </div>
+        
+        <!-- PAINEL DE MÉTRICAS RÁPIDAS -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stat-card">
+                <p class="text-xs text-violet-600 font-semibold">Taxa de Conclusão</p>
+                <p id="completion-rate" class="text-2xl font-bold mt-1 text-violet-900">--%</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-violet-600 font-semibold">Média Diária</p>
+                <p id="avg-daily" class="text-2xl font-bold mt-1 text-violet-900">--</p>
+            </div>
+            <div class="stat-card col-span-2 md:col-span-1">
+                <p class="text-xs text-violet-600 font-semibold">Mais Comum</p>
+                <p id="top-category" class="text-base font-bold mt-1 text-violet-900 truncate">--</p>
+            </div>
+             <div class="stat-card col-span-2 md:col-span-1">
+                <p class="text-xs text-violet-600 font-semibold">Total de Tarefas</p>
+                <p id="total-tasks" class="text-2xl font-bold mt-1 text-violet-900">--</p>
+            </div>
+        </section>
+
+        <!-- GRÁFICOS DE HISTÓRICO -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- GRÁFICO 1: Histórico de Conclusão (Linha) -->
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-violet-100">
+                <h3 class="font-semibold text-gray-700 mb-2">Conclusões por Semana</h3>
+                <div class="chart-container">
+                    <canvas id="completion-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 2: Distribuição por Categoria (Rosca) -->
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-violet-100">
+                <h3 class="font-semibold text-gray-700 mb-2">Distribuição por Categoria</h3>
+                <div class="chart-container">
+                    <canvas id="category-chart"></canvas>
+                </div>
+            </div>
+            
+        </section>
+
+    </main>
+
+    <script type="module">
+        const LOCAL_STORAGE_KEY = 'miniapp_tasks';
+
+        // Mapeamentos de Cores (Replicados dos outros apps para consistência)
+        const CATEGORY_COLORS = {
+            'Pessoal': 'rgba(59, 130, 246, 1)', // Blue-500
+            'Trabalho': 'rgba(16, 185, 129, 1)', // Emerald-500
+            'Estudo': 'rgba(245, 158, 11, 1)', // Amber-500
+            'Outros': 'rgba(156, 163, 175, 1)', // Gray-400
+        };
+
+        const STATUS_MAP = {
+            'Concluída': { isCompleted: true },
+        };
+        
+        let completionChartInstance;
+        let categoryChartInstance;
+
+        // --- FUNÇÕES DE PERSISTÊNCIA ---
+
+        function getTasksFromLocal() {
+            const tasksJson = localStorage.getItem(LOCAL_STORAGE_KEY);
+            try {
+                return tasksJson ? JSON.parse(tasksJson) : [];
+            } catch (e) {
+                console.error("Erro ao ler tarefas do localStorage:", e);
+                return [];
+            }
+        }
+
+        // --- FUNÇÕES DE CÁLCULO DE ESTATÍSTICAS ---
+
+        function calculateStats(tasks) {
+            const total = tasks.length;
+            const completed = tasks.filter(t => STATUS_MAP[t.status]?.isCompleted).length;
+            const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+            
+            const categoryCounts = {};
+            tasks.forEach(t => {
+                const cat = t.category || 'Outros';
+                categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+            
+            let topCategory = 'Nenhuma';
+            let maxCount = 0;
+            for (const cat in categoryCounts) {
+                if (categoryCounts[cat] > maxCount) {
+                    maxCount = categoryCounts[cat];
+                    topCategory = cat;
+                }
+            }
+            
+            // Simulação de dados semanais (para o Gráfico de Linha)
+            const simulatedWeeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
+            const simulatedCompleted = [5, 8, 3, 7]; // Tarefas concluídas por semana
+            const avgDaily = (completed / 30).toFixed(1); // Média de 30 dias
+
+            return { total, completed, completionRate, categoryCounts, topCategory, simulatedWeeks, simulatedCompleted, avgDaily };
+        }
+
+        // --- FUNÇÕES DE GRÁFICOS ---
+
+        function initializeCharts() {
+            const ctxCompletion = document.getElementById('completion-chart').getContext('2d');
+            const ctxCategory = document.getElementById('category-chart').getContext('2d');
+
+            // Configuração base para ROSCA (Category Chart)
+            categoryChartInstance = new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: [], // Preenchido em updateCharts
+                    datasets: [{ data: [], backgroundColor: [] }] // Preenchido em updateCharts
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: false }
+                    },
+                    cutout: '70%',
+                }
+            });
+
+            // Configuração base para LINHA (Completion Chart)
+            completionChartInstance = new Chart(ctxCompletion, {
+                type: 'line',
+                data: {
+                    labels: [], // Preenchido em updateCharts
+                    datasets: [{
+                        label: 'Tarefas Concluídas',
+                        data: [], // Preenchido em updateCharts
+                        backgroundColor: 'rgba(139, 92, 246, 0.5)', // Violet-500
+                        borderColor: 'rgba(109, 40, 217, 1)', // Violet-700
+                        tension: 0.4,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(stats) {
+            // 1. Atualiza Gráfico de Categorias (Rosca)
+            const catLabels = Object.keys(stats.categoryCounts);
+            const catData = Object.values(stats.categoryCounts);
+            const catColors = catLabels.map(label => CATEGORY_COLORS[label] || CATEGORY_COLORS['Outros']);
+
+            categoryChartInstance.data.labels = catLabels;
+            categoryChartInstance.data.datasets[0].data = catData;
+            categoryChartInstance.data.datasets[0].backgroundColor = catColors;
+            categoryChartInstance.update();
+
+            // 2. Atualiza Gráfico de Conclusão (Linha)
+            completionChartInstance.data.labels = stats.simulatedWeeks;
+            completionChartInstance.data.datasets[0].data = stats.simulatedCompleted;
+            completionChartInstance.update();
+        }
+
+        // --- FUNÇÃO PRINCIPAL DE RENDERIZAÇÃO ---
+
+        function updateAndRender() {
+            const tasks = getTasksFromLocal();
+            const stats = calculateStats(tasks);
+
+            // Atualiza Métricas Rápidas
+            document.getElementById('completion-rate').textContent = `${stats.completionRate}%`;
+            document.getElementById('avg-daily').textContent = stats.avgDaily;
+            document.getElementById('top-category').textContent = stats.topCategory;
+            document.getElementById('total-tasks').textContent = stats.total;
+
+            // Atualiza Gráficos
+            if (categoryChartInstance && completionChartInstance) {
+                updateCharts(stats);
+            }
+        }
+        
+        // --- INÍCIO DO APP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            updateAndRender();
+
+            // Otimização: Recarrega a cada 5 segundos para refletir mudanças
+            setInterval(updateAndRender, 5000);
+        });
+
+    </script>
+</body>
+</html>
