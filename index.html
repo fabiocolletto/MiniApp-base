@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -68,7 +69,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 }
 
 /* Cores Específicas dos Botões */
-#user-btn { --chip-color-text: #0891b2; border-color: #0891b2; --chip-color-hover: rgba(8, 145, 178, 0.1); }
 #alert-btn { --chip-color-text: #d97706; border-color: #d97706; --chip-color-hover: rgba(217, 119, 6, 0.1); }
 #home-btn { --chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1); }
 
@@ -161,17 +161,36 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     
 </main>
 
-<!-- BOTÃO VOLTAR (FLUTUANTE ESQUERDA - GLOBAL) -->
-<div id="back-btn-float" class="fixed top-4 left-4 z-[60] hidden">
-    <button onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
+<!-- BOTÕES DE NAVEGAÇÃO FLUTUANTES (CONSOLIDADO SUPERIOR ESQUERDO) -->
+<div id="float-nav-buttons" class="fixed top-4 left-4 z-[60] flex flex-col space-y-2">
+    <!-- 1. Botão VOLTAR (Visível apenas em sub-menus) -->
+    <button id="back-btn-float" onclick="showEducationCategories()" 
+            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105 hidden" 
+            style="--chip-color-text: #2563eb; border-color: #bfdbfe; --chip-color-hover: rgba(37, 99, 235, 0.1); background-color: white !important;">
         <span class="material-symbols-rounded text-xl mr-2">arrow_back</span>
         <span>Voltar</span>
     </button>
+
+    <!-- 2. Botão HOME (Visível na navegação de categorias) -->
+    <button id="home-btn" type="button" onclick="showPortfolio()" 
+            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105" 
+            style="--chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1);">
+        <span class="material-symbols-rounded text-xl mr-2">home</span><span class="hidden sm:inline">Início</span>
+    </button>
+    
+    <!-- 3. Botão ALERTAS (Visível na navegação de categorias) -->
+    <button id="alert-btn" type="button" onclick="loadAlertPanel()" 
+            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105"
+            style="--chip-color-text: #d97706; border-color: #d97706; --chip-color-hover: rgba(217, 119, 6, 0.1);">
+        <span class="material-symbols-rounded text-xl mr-2">notifications</span><span class="hidden sm:inline">Alertas</span>
+    </button>
 </div>
 
-<!-- BOTÃO FECHAR (FLUTUANTE DIREITA - GLOBAL) -->
+
+<!-- BOTÃO FECHAR (FLUTUANTE DIREITA - GLOBAL - SEMPRE ISOLADO) -->
 <div id="close-btn-float" class="fixed top-4 right-4 z-[60] hidden">
-    <button onclick="closeCurrentMiniApp()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
+    <button onclick="closeCurrentMiniApp()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105"
+            style="--chip-color-text: #ef4444; border-color: #fecaca; --chip-color-hover: rgba(254, 202, 202, 0.3); background-color: white !important;">
         <span class="material-symbols-rounded text-xl mr-2">close</span>
         <span>Fechar</span>
     </button>
@@ -179,10 +198,10 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
 <!-- ================= MODAIS (VISUALIZAÇÃO IMERSIVA) ================= -->
 
-<!-- 1. PAINEL DE USUÁRIO -->
-<div id="user-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="user-panel-frame" class="w-full h-full border-0" title="Painel do Usuário"></iframe>
+<!-- MODAL PADRÃO DE REGISTRO/CADASTRO (Reutilizável para Aluno, Responsável, Tutor) -->
+<div id="registration-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-blue-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="registration-frame" class="w-full h-full border-0" title="Painel de Cadastro Reutilizável"></iframe>
     </div>
 </div>
 
@@ -256,20 +275,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- NAVEGAÇÃO INFERIOR -->
-<div id="main-nav-buttons" class="fixed left-6 bottom-8 z-30 flex flex-col space-y-2 transition-opacity duration-300">
-    <!-- Ordem visual: Início (Topo) -> Alertas (Meio) -> Usuário (Base) -->
-    <button id="home-btn" type="button" onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
-        <span class="material-symbols-rounded text-xl mr-2">home</span><span class="hidden sm:inline">Início</span>
-    </button>
-    <button id="alert-btn" type="button" onclick="loadAlertPanel()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
-        <span class="material-symbols-rounded text-xl mr-2">notifications</span><span class="hidden sm:inline">Alertas</span>
-    </button>
-    <button id="user-btn" type="button" onclick="loadUserPanel()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
-        <span class="material-symbols-rounded text-xl mr-2">account_circle</span><span class="hidden sm:inline">Usuário</span>
-    </button>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.1.1/flowbite.min.js"></script>
 
 <script>
@@ -285,16 +290,23 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     ];
     
     const EDUCATION_CATEGORIES = [
+        // Mapeamento direto para a navegação do Menu do Aluno
         { title: "Alunos", href: "javascript:showStudentMenu()", color: "sky", icon: "person" },
-        { title: "Tutores", href: "javascript:showPlaceholder()", color: "emerald", icon: "supervisor_account", status: "Em breve" }, 
-        { title: "Professores", href: "javascript:showPlaceholder()", color: "amber", icon: "person_pin", status: "Em breve" }, 
-        // NOVO: Instituições agora carrega o MiniApp
+        { title: "Responsáveis", href: "javascript:loadResponsibleRegistrationApp()", color: "violet", icon: "diversity_3" },
+        { title: "Tutores", href: "javascript:loadTutorRegistrationApp()", color: "amber", icon: "supervisor_account", status: "Em breve" }, 
+        { title: "Professores", href: "javascript:loadTutorRegistrationApp()", color: "emerald", icon: "person_pin", status: "Em breve" }, // Aponta para o mesmo app de cadastro
         { title: "Instituições", href: "javascript:loadInstitutionRegistrationApp()", color: "purple", icon: "apartment" }, 
+        
+    ];
+    
+    const STUDENT_MENU_ITEMS = [
+        { title: "Cadastro do Aluno", href: "javascript:loadStudentRegistrationApp()", color: "blue", icon: "app_registration" },
+        { title: "Simulados e Provas", href: "javascript:startSimuladosFlow()", color: "pink", icon: "edit_note", status: "Em breve" },
+        { title: "Agenda de Aulas", href: "javascript:showPlaceholder()", color: "teal", icon: "event", status: "Em breve" },
     ];
     
     // --- DADOS FINANCEIRO ---
     const FINANCE_MENU_ITEMS = [
-        // Voltando para placeholder estático
         { title: "Gestão de Despesas", href: "javascript:showPlaceholder()", color: "emerald", icon: "payments", status: "Em breve" }, 
         { title: "Metas e Economia", href: "javascript:showPlaceholder()", color: "teal", icon: "savings", status: "Em breve" },
         { title: "Contas a Pagar", href: "javascript:showPlaceholder()", color: "red", icon: "event_busy", status: "Em breve" },
@@ -303,7 +315,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
     // --- DADOS SAÚDE ---
     const HEALTH_MENU_ITEMS = [
-        // Voltando para placeholder estático
         { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart", status: "Em breve" }, 
         { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center", status: "Em breve" },
         { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining", status: "Em breve" },
@@ -317,85 +328,97 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         { title: "Acompanhamento", href: "javascript:loadTrackingDashboardApp()", color: "purple", icon: "timeline" },
     ];
 
-    const STUDENT_MENU_ITEMS = [
-        { title: "Simulados", href: "javascript:startSimuladosFlow()", color: "pink", icon: "edit_square" },
-        { title: "Provas", href: "javascript:showPlaceholder()", color: "red", icon: "assignment", status: "Em breve" },
-        { title: "Tarefas", href: "javascript:showPlaceholder()", color: "indigo", icon: "task", status: "Em breve" },
-        { title: "Avisos", href: "javascript:showPlaceholder()", color: "blue", icon: "campaign", status: "Em breve" }
-    ];
-
     // --- CONTROLE DE INTERFACE ---
-    function toggleMainInterface(show) {
-        const navButtons = document.getElementById('main-nav-buttons');
-        const backBtn = document.getElementById('back-btn-float');
+    
+    // Função utilitária para esconder todas as views
+    function hideAllViews() {
+        ['portfolio-view', 'education-categories-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view', 'student-menu-view'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+    }
+
+    // Gerencia o botão voltar (quem é o pai da view atual)
+    let parentView = 'portfolio-view'; 
+    
+    function switchView(viewId, newParentView) {
+        hideAllViews();
+        const target = document.getElementById(viewId);
+        if (target) target.classList.remove('hidden');
         
-        if (show) {
-            navButtons.classList.remove('hidden');
-            if (document.getElementById('portfolio-view').classList.contains('hidden')) {
-                backBtn.classList.remove('hidden');
-            }
-        } else {
-            navButtons.classList.add('hidden');
-            backBtn.classList.add('hidden');
+        // Atualiza a navegação flutuante
+        const isPortfolio = viewId === 'portfolio-view';
+        
+        document.getElementById('home-btn').classList.toggle('hidden', !isPortfolio);
+        document.getElementById('alert-btn').classList.toggle('hidden', !isPortfolio);
+        document.getElementById('back-btn-float').classList.toggle('hidden', isPortfolio);
+        
+        // Define o target de volta (para onde o back-btn irá)
+        const backBtn = document.getElementById('back-btn-float');
+        if (backBtn && !isPortfolio && newParentView) {
+            backBtn.setAttribute('onclick', `switchView('${newParentView}', '${parentView}')`);
+            parentView = newParentView;
+        } else if (backBtn && isPortfolio) {
+            // Se voltarmos ao Portfolio, resetamos o pai para ser ele mesmo
+            parentView = 'portfolio-view';
         }
     }
+
 
     function closeCurrentMiniApp() {
         if (currentOpenModalId) {
             document.getElementById(currentOpenModalId).classList.add('hidden');
             document.getElementById('close-btn-float').classList.add('hidden'); 
-            toggleMainInterface(true); 
+            
+            // Retorna para a view que estava ativa antes do modal ser aberto
+            switchView(parentView); 
+            
             currentOpenModalId = null;
         }
     }
     
     // FUNÇÃO PARA O PLACEHOLDER ESTÁTICO
     function showPlaceholder() {
-        toggleMainInterface(false);
+        // Não esconde a interface principal aqui, pois o modal de placeholder é pequeno
         document.getElementById('placeholder-modal-overlay').classList.remove('hidden');
         document.getElementById('close-btn-float').classList.remove('hidden'); 
         currentOpenModalId = 'placeholder-modal-overlay';
     }
 
 
-    // --- FUNÇÕES DE NAVEGAÇÃO ---
+    // --- FUNÇÕES DE NAVEGAÇÃO DE TELA ---
     function showPortfolio() {
-        switchView('portfolio-view');
+        switchView('portfolio-view', 'portfolio-view');
         renderGridSection("portfolio-grid", PORTFOLIO_ITEMS, true);
-        document.getElementById("back-btn-float").classList.add('hidden');
+        document.getElementById("back-btn-float").setAttribute('onclick', `switchView('portfolio-view', 'portfolio-view')`); // Redireciona para Home
     }
 
     function showEducationCategories() {
-        switchView('education-categories-view');
+        switchView('education-categories-view', 'portfolio-view');
         renderGridSection("education-grid", EDUCATION_CATEGORIES, false);
-        updateBackButton(showPortfolio);
     }
     
     function showFinanceMenu() {
-        switchView('finance-menu-view');
+        switchView('finance-menu-view', 'portfolio-view');
         renderGridSection("finance-menu-grid", FINANCE_MENU_ITEMS, false);
-        updateBackButton(showPortfolio);
     }
 
     function showHealthMenu() {
-        switchView('health-menu-view');
+        switchView('health-menu-view', 'portfolio-view');
         renderGridSection("health-menu-grid", HEALTH_MENU_ITEMS, false);
-        updateBackButton(showPortfolio);
     }
     
     function showTasksMenu() { 
-        switchView('tasks-menu-view'); 
+        switchView('tasks-menu-view', 'portfolio-view'); 
         renderGridSection("tasks-menu-grid", TASKS_MENU_ITEMS, false); 
-        updateBackButton(showPortfolio);
-    }
-
-
-    function showStudentMenu() {
-        switchView('student-menu-view');
-        renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
-        updateBackButton(showEducationCategories);
     }
     
+    function showStudentMenu() {
+        switchView('student-menu-view', 'education-categories-view');
+        renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
+    }
+
+
     // --- RENDERIZAÇÃO DO GRID ---
     function renderGridSection(id, data, isMain) {
         const container = document.getElementById(id);
@@ -409,7 +432,32 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             container.innerHTML = data.map(item => getCardTemplate(item, isMain)).join('');
         }
     }
-    
+
+    function getCardTemplate(item, isMain) {
+        let statusChipHtml = '';
+        if (item.status === "Em breve") {
+            statusChipHtml = `
+                <div class="absolute top-3 right-3 z-20">
+                    <span class="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
+                        ${item.status}
+                    </span>
+                </div>
+            `;
+        }
+
+        const opacity = item.status === "Em breve" ? 'opacity-50 pointer-events-none' : '';
+        return `
+            <div onclick="${item.href}" role="button" class="card-base border-${item.color}-500 bg-${item.color}-500/20 ${opacity}">
+                ${statusChipHtml}
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                    <span class="material-symbols-rounded leading-none icon-xxl text-${item.color}-500">${item.icon}</span>
+                </div>
+                <div class="relative z-10 flex flex-col justify-end h-full text-center">
+                    <h2 class="text-${item.color}-700">${item.title}</h2>
+                </div>
+            </div>`;
+    }
+
     // --- FUNÇÃO PARA CONTROLAR VISIBILIDADE DO LOADING ---
     function showLoading(show) {
         const loading = document.getElementById('loading-modal');
@@ -421,12 +469,12 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             }
         }
     }
-
+    
     // --- FERRAMENTA PADRÃO DE CARREGAMENTO (MANTIDA PARA APPS FUNCIONAIS) ---
     async function loadMiniApp(iframeId, url, basePath, modalIdToOpen) {
         const frame = document.getElementById(iframeId);
         
-        toggleMainInterface(false); 
+        switchView(parentView); // Garante que a interface principal está visível antes de abrir o modal
         showLoading(true); 
         
         document.getElementById(modalIdToOpen).classList.remove('hidden'); 
@@ -442,7 +490,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         frame.srcdoc = `<div style="display:flex;justify-content:center;align-items:center;height:100%;font-family:sans-serif;color:#666;">Carregando...</div>`;
 
         try {
-            console.log(`Carregando MiniApp [${iframeId}]`);
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
             let htmlContent = await response.text();
@@ -485,8 +532,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             frame.srcdoc = htmlContent.replace('<head>', `<head>${baseTag}${styleClean}`);
 
         } catch (error) {
-            console.error(`Falha ao carregar ${iframeId}:`, error);
-            // Mensagem de Fallback automática mantida para MiniApps futuros (que podem ser implementados)
+            console.error(`Falha ao carregar MiniApp:`, error);
             frame.srcdoc = `<div style="text-align:center; padding:2rem; font-family:sans-serif;">
                 <div style="font-size:3rem; margin-bottom:1rem; opacity:0.5;">🚧</div>
                 <h3 style="color:#4b5563; margin:0;">Módulo em Implantação</h3>
@@ -497,40 +543,37 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         }
     }
 
-    // --- IMPLEMENTAÇÃO ---
+    // --- FUNÇÕES DE CARREGAMENTO DE CADASTRO (Reutilizando o Modal de Registro) ---
 
-    function startSimuladosFlow() {
-        showSimuladosIframe();
-    }
-
-    function showSimuladosIframe() {
+    function loadStudentRegistrationApp() {
         loadMiniApp(
-            'simulados-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html',
+            'registration-frame',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html',
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
-            'simulados-modal-overlay'
+            'registration-modal-overlay'
         );
     }
 
-    function loadUserPanel() {
+    function loadResponsibleRegistrationApp() {
         loadMiniApp(
-            'user-panel-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/user-panel.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/',
-            'user-modal-overlay'
+            'registration-frame',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/responsible-registration.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
+            'registration-modal-overlay'
         );
     }
 
-    function loadAlertPanel() {
+    function loadTutorRegistrationApp() {
+        // Assume que o arquivo tutor-registration.html será criado
         loadMiniApp(
-            'alert-panel-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/alert-panel.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/',
-            'alert-modal-overlay'
+            'registration-frame',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/tutor-registration.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
+            'registration-modal-overlay'
         );
     }
-
-    // NOVO: Função de carregamento para o Cadastro da Instituição
+    
+    // NOVO: Função de carregamento para o Cadastro da Instituição (Reutilizando o Modal de Instituição)
     function loadInstitutionRegistrationApp() {
         loadMiniApp(
             'institution-registration-frame', 
@@ -540,7 +583,26 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         );
     }
 
-    // --- FUNÇÕES DE TAREFAS/PRODUTIVIDADE (MANTIDAS) ---
+
+    // --- OUTRAS FUNÇÕES DE CARREGAMENTO (MANTIDAS) ---
+    function loadAlertPanel() {
+        loadMiniApp(
+            'alert-panel-frame',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/alert-panel.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/',
+            'alert-modal-overlay'
+        );
+    }
+
+    function startSimuladosFlow() {
+        loadMiniApp(
+            'simulados-frame', 
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
+            'simulados-modal-overlay'
+        );
+    }
+    
     function loadTasksApp() {
         loadMiniApp(
             'tasks-frame', 
@@ -577,50 +639,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         );
     }
 
-    // --- HELPER FUNCTIONS ---
-    function switchView(viewId) {
-        ['portfolio-view', 'education-categories-view', 'student-menu-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        });
-        const target = document.getElementById(viewId);
-        if (target) target.classList.remove('hidden');
-    }
-
-    function updateBackButton(action) {
-        const btnDiv = document.getElementById("back-btn-float");
-        const btnEl = btnDiv.querySelector('button');
-        
-        btnEl.onclick = action; 
-        btnDiv.classList.remove('hidden');
-    }
-
-    function getCardTemplate(item, isMain) {
-        // Gera o HTML do chip de status se o item.status existir
-        let statusChipHtml = '';
-        if (item.status === "Em breve") {
-            // Estilo discreto no canto superior direito
-            statusChipHtml = `
-                <div class="absolute top-3 right-3 z-20">
-                    <span class="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
-                        ${item.status}
-                    </span>
-                </div>
-            `;
-        }
-
-        const opacity = item.opacity ? 'opacity-50' : '';
-        return `
-            <div onclick="${item.href}" role="button" class="card-base border-${item.color}-500 bg-${item.color}-500/20 ${opacity}">
-                ${statusChipHtml} <!-- CHIP DE STATUS ADICIONADO AQUI -->
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                    <span class="material-symbols-rounded leading-none icon-xxl text-${item.color}-500">${item.icon}</span>
-                </div>
-                <div class="relative z-10 flex flex-col justify-end h-full text-center">
-                    <h2 class="text-${item.color}-700">${item.title}</h2>
-                </div>
-            </div>`;
-    }
 
     document.addEventListener("DOMContentLoaded", showPortfolio);
 </script>
