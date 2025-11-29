@@ -119,8 +119,8 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     
     <div id="finance-menu-view" class="hidden">
         <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Finanças: Categorias</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione a área de gestão desejada.</p>
+            <h1 class="text-3xl font-bold tracking-tight">Finanças: Gestão</h1>
+            <p class="mt-1 text-sm text-gray-500">Ferramentas para seu controle financeiro.</p>
         </section>
         <div class="app-grid-container">
             <section id="finance-menu-grid" class="mt-6 app-grid-base"></section>
@@ -200,7 +200,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- 4. MODAL PADRÃO DE PLACEHOLDER -->
+<!-- NOVO: MODAL PADRÃO DE PLACEHOLDER (ESTÁTICO) -->
 <div id="placeholder-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden animate-fade-in-up p-8 text-center">
         <span class="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
@@ -213,13 +213,40 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- 5. MODAL DE TAREFAS -->
+<!-- 5. MODAL DE TAREFAS (FUNCIONAL) -->
 <div id="tasks-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-red-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="tasks-frame" class="w-full h-full border-0" title="App Lista de Tarefas"></iframe>
     </div>
 </div>
 
+<!-- 6. MODAL DE PLANEJAMENTO SEMANAL (FUNCIONAL) -->
+<div id="weekly-planner-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-indigo-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="weekly-planner-frame" class="w-full h-full border-0" title="App Planejamento Semanal"></iframe>
+    </div>
+</div>
+
+<!-- 7. MODAL: CALENDÁRIO MENSAL (FUNCIONAL) -->
+<div id="monthly-calendar-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-blue-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="monthly-calendar-frame" class="w-full h-full border-0" title="App Agenda Mensal"></iframe>
+    </div>
+</div>
+
+<!-- 8. MODAL: ACOMPANHAMENTO (FUNCIONAL) -->
+<div id="tracking-dashboard-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="tracking-dashboard-frame" class="w-full h-full border-0" title="App Acompanhamento"></iframe>
+    </div>
+</div>
+
+<!-- NOVO MODAL: CADASTRO INSTITUIÇÃO -->
+<div id="institution-registration-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="institution-registration-frame" class="w-full h-full border-0" title="App Cadastro Instituição"></iframe>
+    </div>
+</div>
 
 <!-- LOADING GLOBAL -->
 <div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
@@ -259,28 +286,42 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     
     const EDUCATION_CATEGORIES = [
         { title: "Alunos", href: "javascript:showStudentMenu()", color: "sky", icon: "person" },
-        { title: "Tutores", href: "javascript:showPlaceholder()", color: "emerald", icon: "supervisor_account" }, 
-        { title: "Professores", href: "javascript:showPlaceholder()", color: "amber", icon: "person_pin" }, 
-        { title: "Instituições", href: "javascript:showPlaceholder()", color: "purple", icon: "apartment" }, 
+        { title: "Tutores", href: "javascript:showPlaceholder()", color: "emerald", icon: "supervisor_account", status: "Em breve" }, 
+        { title: "Professores", href: "javascript:showPlaceholder()", color: "amber", icon: "person_pin", status: "Em breve" }, 
+        // NOVO: Instituições agora carrega o MiniApp
+        { title: "Instituições", href: "javascript:loadInstitutionRegistrationApp()", color: "purple", icon: "apartment" }, 
     ];
     
+    // --- DADOS FINANCEIRO ---
     const FINANCE_MENU_ITEMS = [
-        { title: "Economia Familiar", href: "javascript:showPlaceholder()", color: "emerald", icon: "savings" }, 
+        // Voltando para placeholder estático
+        { title: "Gestão de Despesas", href: "javascript:showPlaceholder()", color: "emerald", icon: "payments", status: "Em breve" }, 
+        { title: "Metas e Economia", href: "javascript:showPlaceholder()", color: "teal", icon: "savings", status: "Em breve" },
+        { title: "Contas a Pagar", href: "javascript:showPlaceholder()", color: "red", icon: "event_busy", status: "Em breve" },
+        { title: "Calculadora de Juros", href: "javascript:showPlaceholder()", color: "cyan", icon: "calculate", status: "Em breve" },
     ];
 
+    // --- DADOS SAÚDE ---
     const HEALTH_MENU_ITEMS = [
-        { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart" }, 
-        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center" },
-        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining" },
+        // Voltando para placeholder estático
+        { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart", status: "Em breve" }, 
+        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center", status: "Em breve" },
+        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining", status: "Em breve" },
+        { title: "Diário de Corrida", href: "javascript:showPlaceholder()", color: "amber", icon: "directions_run", status: "Em breve" },
     ];
 
     const TASKS_MENU_ITEMS = [
-        { title: "Planejamento Semanal", href: "javascript:showPlaceholder()", color: "amber", icon: "event_note" }, 
+        { title: "Planejamento Semanal", href: "javascript:loadWeeklyPlannerApp()", color: "amber", icon: "event_note" }, 
         { title: "Lista de Tarefas", href: "javascript:loadTasksApp()", color: "red", icon: "check_box" }, 
+        { title: "Agenda (Mensal)", href: "javascript:loadMonthlyCalendarApp()", color: "blue", icon: "calendar_month" }, 
+        { title: "Acompanhamento", href: "javascript:loadTrackingDashboardApp()", color: "purple", icon: "timeline" },
     ];
 
     const STUDENT_MENU_ITEMS = [
-        { title: "Simulados", href: "javascript:startSimuladosFlow()", color: "pink", icon: "edit_square" }
+        { title: "Simulados", href: "javascript:startSimuladosFlow()", color: "pink", icon: "edit_square" },
+        { title: "Provas", href: "javascript:showPlaceholder()", color: "red", icon: "assignment", status: "Em breve" },
+        { title: "Tarefas", href: "javascript:showPlaceholder()", color: "indigo", icon: "task", status: "Em breve" },
+        { title: "Avisos", href: "javascript:showPlaceholder()", color: "blue", icon: "campaign", status: "Em breve" }
     ];
 
     // --- CONTROLE DE INTERFACE ---
@@ -307,6 +348,15 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             currentOpenModalId = null;
         }
     }
+    
+    // FUNÇÃO PARA O PLACEHOLDER ESTÁTICO
+    function showPlaceholder() {
+        toggleMainInterface(false);
+        document.getElementById('placeholder-modal-overlay').classList.remove('hidden');
+        document.getElementById('close-btn-float').classList.remove('hidden'); 
+        currentOpenModalId = 'placeholder-modal-overlay';
+    }
+
 
     // --- FUNÇÕES DE NAVEGAÇÃO ---
     function showPortfolio() {
@@ -346,14 +396,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         updateBackButton(showEducationCategories);
     }
     
-    function showPlaceholder() {
-        toggleMainInterface(false);
-        document.getElementById('placeholder-modal-overlay').classList.remove('hidden');
-        document.getElementById('close-btn-float').classList.remove('hidden'); 
-        currentOpenModalId = 'placeholder-modal-overlay';
-    }
-
-
     // --- RENDERIZAÇÃO DO GRID ---
     function renderGridSection(id, data, isMain) {
         const container = document.getElementById(id);
@@ -380,11 +422,10 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         }
     }
 
-    // --- FERRAMENTA PADRÃO DE CARREGAMENTO ---
+    // --- FERRAMENTA PADRÃO DE CARREGAMENTO (MANTIDA PARA APPS FUNCIONAIS) ---
     async function loadMiniApp(iframeId, url, basePath, modalIdToOpen) {
         const frame = document.getElementById(iframeId);
         
-        // 1. Prepara Interface e Loading
         toggleMainInterface(false); 
         showLoading(true); 
         
@@ -393,7 +434,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         
         currentOpenModalId = modalIdToOpen;
         
-        if (frame.srcdoc) {
+        if (frame.srcdoc && !frame.srcdoc.includes("Carregando...")) {
              showLoading(false); 
              return; 
         }
@@ -424,7 +465,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
                     min-height: 100%; 
                     margin: 0; 
                     padding: 0;
-                    /* Aumentei o padding-bottom para dar mais respiro em dispositivos móveis */
                     padding-bottom: 120px !important; 
                     background: transparent !important; 
                     overflow-x: hidden;
@@ -446,9 +486,13 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
         } catch (error) {
             console.error(`Falha ao carregar ${iframeId}:`, error);
-            frame.srcdoc = `<div style="text-align:center; padding:2rem; color:#ef4444;"><h3>Erro</h3><p>${error.message}</p></div>`;
+            // Mensagem de Fallback automática mantida para MiniApps futuros (que podem ser implementados)
+            frame.srcdoc = `<div style="text-align:center; padding:2rem; font-family:sans-serif;">
+                <div style="font-size:3rem; margin-bottom:1rem; opacity:0.5;">🚧</div>
+                <h3 style="color:#4b5563; margin:0;">Módulo em Implantação</h3>
+                <p style="color:#9ca3af; font-size:0.9rem;">O arquivo <code>${url.split('/').pop()}</code> ainda não está disponível.</p>
+            </div>`;
         } finally {
-            // 2. Esconde Loading APÓS A CONCLUSÃO/ERRO
              showLoading(false);
         }
     }
@@ -486,12 +530,50 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         );
     }
 
+    // NOVO: Função de carregamento para o Cadastro da Instituição
+    function loadInstitutionRegistrationApp() {
+        loadMiniApp(
+            'institution-registration-frame', 
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/institution-registration.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
+            'institution-registration-modal-overlay' 
+        );
+    }
+
+    // --- FUNÇÕES DE TAREFAS/PRODUTIVIDADE (MANTIDAS) ---
     function loadTasksApp() {
         loadMiniApp(
             'tasks-frame', 
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html',
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
             'tasks-modal-overlay' 
+        );
+    }
+    
+    function loadWeeklyPlannerApp() {
+        loadMiniApp(
+            'weekly-planner-frame', 
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/weekly-planner.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
+            'weekly-planner-modal-overlay' 
+        );
+    }
+    
+    function loadMonthlyCalendarApp() {
+        loadMiniApp(
+            'monthly-calendar-frame', 
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/monthly-calendar.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
+            'monthly-calendar-modal-overlay' 
+        );
+    }
+    
+    function loadTrackingDashboardApp() {
+        loadMiniApp(
+            'tracking-dashboard-frame', 
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tracking-dashboard.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
+            'tracking-dashboard-modal-overlay' 
         );
     }
 
@@ -514,9 +596,23 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     }
 
     function getCardTemplate(item, isMain) {
+        // Gera o HTML do chip de status se o item.status existir
+        let statusChipHtml = '';
+        if (item.status === "Em breve") {
+            // Estilo discreto no canto superior direito
+            statusChipHtml = `
+                <div class="absolute top-3 right-3 z-20">
+                    <span class="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
+                        ${item.status}
+                    </span>
+                </div>
+            `;
+        }
+
         const opacity = item.opacity ? 'opacity-50' : '';
         return `
             <div onclick="${item.href}" role="button" class="card-base border-${item.color}-500 bg-${item.color}-500/20 ${opacity}">
+                ${statusChipHtml} <!-- CHIP DE STATUS ADICIONADO AQUI -->
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
                     <span class="material-symbols-rounded leading-none icon-xxl text-${item.color}-500">${item.icon}</span>
                 </div>
