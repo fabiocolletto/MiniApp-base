@@ -17,7 +17,7 @@
 body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
 body, html { background-color: #f8fafc; color: #0f172a; }
 
-/* Base de Estilo do Card */
+/* Base de Estilo do Card (ALTURA MÍNIMA REDUZIDA PARA DENSIDADE) */
 .card-base {
     position: relative;
     border-radius: 1rem;
@@ -29,7 +29,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     cursor: pointer;
     overflow: hidden;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    min-height: 200px;
+    min-height: 160px; /* Reduzido de 200px */
     max-width: 320px; 
 }
 .card-base:hover {
@@ -49,8 +49,8 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 /* Classe para <= 3 itens (Coluna Única Estrita) */
 .grid-1-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); max-width: 320px; }
 
-/* Classe para > 3 itens (Grid Responsivo) */
-.grid-3-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+/* Classe para > 3 itens (Grid Responsivo - MUDANÇA DE MAX-WIDTH PARA 100% NO MOBILE) */
+.grid-3-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); max-width: 100%; } /* Usa a largura total da tela no mobile */
 @media (min-width: 640px) { .grid-3-col-app { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 664px; } }
 @media (min-width: 1200px) { .grid-3-col-app { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1008px; } }
 
@@ -151,6 +151,39 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         </section>
         <div class="app-grid-container">
             <section id="student-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
+    <!-- NOVAS TELAS: MENU DO RESPONSÁVEL -->
+    <div id="responsible-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 id="responsible-title" class="text-3xl font-bold tracking-tight">Área do Responsável</h1>
+            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="responsible-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
+    <!-- NOVAS TELAS: MENU DO TUTOR/PROFESSOR -->
+    <div id="tutor-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 id="tutor-title" class="text-3xl font-bold tracking-tight">Área do Tutor/Professor</h1>
+            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="tutor-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
+    <!-- NOVAS TELAS: MENU DA INSTITUIÇÃO -->
+    <div id="institution-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 id="institution-title" class="text-3xl font-bold tracking-tight">Área da Instituição</h1>
+            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="institution-menu-grid" class="mt-6 app-grid-base"></section>
         </div>
     </div>
     
@@ -281,14 +314,31 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         { title: "Saúde", href: "javascript:showHealthMenu()", color: "sky", icon: "health_and_safety" }, 
         { title: "Tarefas", href: "javascript:showTasksMenu()", color: "amber", icon: "calendar_month" }, 
     ];
+
+    const RESPONSIBLE_MENU_ITEMS = [
+        // O card de cadastro agora é o único disponível (os outros são "Em breve")
+        { title: "Cadastro do Responsável", href: "javascript:loadResponsibleRegistrationApp()", color: "violet", icon: "app_registration" },
+        { title: "Acessar Dados do Aluno", href: "javascript:showPlaceholder()", color: "pink", icon: "person", status: "Em breve" },
+    ];
+
+    const TUTOR_PROFESSOR_MENU_ITEMS = [
+        { title: "Cadastro de Tutor/Professor", href: "javascript:loadTutorRegistrationApp()", color: "emerald", icon: "app_registration" },
+        { title: "Gerenciar Alunos Vinculados", href: "javascript:showPlaceholder()", color: "amber", icon: "people", status: "Em breve" },
+    ];
+
+    const INSTITUTION_MENU_ITEMS = [
+        { title: "Cadastro da Instituição", href: "javascript:loadInstitutionRegistrationApp()", color: "purple", icon: "app_registration" },
+        { title: "Gerenciar Vínculos de Alunos", href: "javascript:showPlaceholder()", color: "sky", icon: "link", status: "Em breve" },
+    ];
     
     const EDUCATION_CATEGORIES = [
-        // Mapeamento direto para a navegação do Menu do Aluno
+        // Mapeamentos agora levam para um menu intermediário
         { title: "Alunos", href: "javascript:showStudentMenu()", color: "sky", icon: "person" },
-        { title: "Responsáveis", href: "javascript:loadResponsibleRegistrationApp()", color: "violet", icon: "diversity_3" },
-        { title: "Tutores", href: "javascript:loadTutorRegistrationApp()", color: "amber", icon: "supervisor_account", status: "Em breve" }, 
-        { title: "Professores", href: "javascript:loadTutorRegistrationApp()", color: "emerald", icon: "person_pin", status: "Em breve" }, 
-        { title: "Instituições", href: "javascript:loadInstitutionRegistrationApp()", color: "purple", icon: "apartment" }, 
+        // STATUS ALTERADO PARA EM BREVE
+        { title: "Responsáveis", href: "javascript:showResponsibleMenu()", color: "violet", icon: "diversity_3", status: "Em breve" }, 
+        { title: "Tutores", href: "javascript:showTutorMenu()", color: "amber", icon: "supervisor_account", status: "Em breve" }, 
+        { title: "Professores", href: "javascript:showTutorMenu()", color: "emerald", icon: "person_pin", status: "Em breve" }, 
+        { title: "Instituições", href: "javascript:showInstitutionMenu()", color: "purple", icon: "apartment", status: "Em breve" }, 
         
     ];
     
@@ -323,7 +373,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     
     // Função utilitária para esconder todas as views
     function hideAllViews() {
-        ['portfolio-view', 'education-categories-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view', 'student-menu-view'].forEach(id => {
+        ['portfolio-view', 'education-categories-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view', 'student-menu-view', 'responsible-menu-view', 'tutor-menu-view', 'institution-menu-view'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
         });
@@ -408,9 +458,25 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         renderGridSection("tasks-menu-grid", TASKS_MENU_ITEMS, false); 
     }
     
+    // NOVAS FUNÇÕES DE MENU INTERMEDIÁRIO
     function showStudentMenu() {
         switchView('student-menu-view', 'education-categories-view');
         renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
+    }
+
+    function showResponsibleMenu() {
+        switchView('responsible-menu-view', 'education-categories-view');
+        renderGridSection("responsible-menu-grid", RESPONSIBLE_MENU_ITEMS, false);
+    }
+
+    function showTutorMenu() {
+        switchView('tutor-menu-view', 'education-categories-view');
+        renderGridSection("tutor-menu-grid", TUTOR_PROFESSOR_MENU_ITEMS, false);
+    }
+
+    function showInstitutionMenu() {
+        switchView('institution-menu-view', 'education-categories-view');
+        renderGridSection("institution-menu-grid", INSTITUTION_MENU_ITEMS, false);
     }
 
 
@@ -419,6 +485,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         const container = document.getElementById(id);
         if (container) {
             container.className = "mt-6 app-grid-base";
+            // Lógica de grid alterada: Agora usa o grid-3-col-app para maior densidade e flexibilidade
             if (data.length <= 3) {
                 container.classList.add('grid-1-col-app');
             } else {
@@ -555,7 +622,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         loadMiniApp(
             'registration-frame',
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/responsible-registration.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/responsible-registration.html',
             'registration-modal-overlay'
         );
     }
