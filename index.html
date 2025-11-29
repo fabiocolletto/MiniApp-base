@@ -116,6 +116,40 @@ body, html { background-color: #f8fafc; color: #0f172a; }
             <section id="education-grid" class="mt-6 app-grid-base"></section>
         </div>
     </div>
+    
+    <!-- 2. TELA DE CATEGORIAS DE FINANÇAS -->
+    <div id="finance-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 class="text-3xl font-bold tracking-tight">Finanças: Categorias</h1>
+            <p class="mt-1 text-sm text-gray-500">Selecione a área de gestão desejada.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="finance-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
+    <!-- 2. TELA DE CATEGORIAS DE SAÚDE -->
+    <div id="health-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 class="text-3xl font-bold tracking-tight">Saúde: Categorias</h1>
+            <p class="mt-1 text-sm text-gray-500">Ferramentas de bem-estar e monitoramento.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="health-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
+    <!-- 2. TELA DE CATEGORIAS DE TAREFAS (Ex-Agenda) -->
+    <div id="tasks-menu-view" class="hidden">
+        <section class="mt-4 text-center">
+            <h1 class="text-3xl font-bold tracking-tight">Tarefas e Produtividade</h1>
+            <p class="mt-1 text-sm text-gray-500">Gerencie seus compromissos e foco.</p>
+        </section>
+        <div class="app-grid-container">
+            <section id="tasks-menu-grid" class="mt-6 app-grid-base"></section>
+        </div>
+    </div>
+
 
     <!-- 3. TELA: MENU DO ALUNO -->
     <div id="student-menu-view" class="hidden">
@@ -150,7 +184,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
 <!-- 1. PAINEL DE USUÁRIO -->
 <div id="user-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <!-- CORREÇÃO APLICADA: Substituí max-h-[95vh] por min-h-full e h-full para garantir que o container use todo o espaço do pai (p-4), sem ser cortado pela barra do navegador. -->
     <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="user-panel-frame" class="w-full h-full border-0" title="Painel do Usuário"></iframe>
     </div>
@@ -158,7 +191,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
 <!-- 2. PAINEL DE ALERTAS -->
 <div id="alert-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <!-- CORREÇÃO APLICADA -->
     <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="alert-panel-frame" class="w-full h-full border-0" title="Painel de Alertas"></iframe>
     </div>
@@ -166,11 +198,31 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
 <!-- 3. SIMULADOS -->
 <div id="simulados-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <!-- CORREÇÃO APLICADA -->
     <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="simulados-frame" class="w-full h-full border-0" title="App Simulados"></iframe>
     </div>
 </div>
+
+<!-- NOVO: 4. MODAL PADRÃO DE PLACEHOLDER -->
+<div id="placeholder-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden animate-fade-in-up p-8 text-center">
+        <span class="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
+        <h3 class="text-xl font-bold text-gray-800">Recurso em Desenvolvimento</h3>
+        <p class="text-gray-600 mt-2">Esta funcionalidade estará disponível em breve. Agradecemos sua paciência!</p>
+        <button onclick="closeCurrentMiniApp()" class="chip-button mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
+            <span class="material-symbols-rounded text-xl mr-2">check</span>
+            <span>Entendido</span>
+        </button>
+    </div>
+</div>
+
+<!-- NOVO: 5. MODAL DE TAREFAS -->
+<div id="tasks-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-red-500 flex flex-col overflow-hidden animate-fade-in-up">
+        <iframe id="tasks-frame" class="w-full h-full border-0" title="App Lista de Tarefas"></iframe>
+    </div>
+</div>
+
 
 <!-- LOADING GLOBAL (Movido para fora do JS para ser usado por todos) -->
 <div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
@@ -202,16 +254,32 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     // --- DADOS ---
     const PORTFOLIO_ITEMS = [
         { title: "Educação", href: "javascript:showEducationCategories()", color: "pink", icon: "cast_for_education" },
-        { title: "Financeiro", href: "#", status: "Em breve", color: "emerald", icon: "account_balance" },
-        { title: "Saúde", href: "#", status: "Em breve", color: "sky", icon: "health_and_safety" },
-        { title: "Agenda", href: "#", status: "Em breve", color: "amber", icon: "calendar_month" },
+        { title: "Financeiro", href: "javascript:showFinanceMenu()", color: "emerald", icon: "account_balance" }, 
+        { title: "Saúde", href: "javascript:showHealthMenu()", color: "sky", icon: "health_and_safety" }, 
+        { title: "Tarefas", href: "javascript:showTasksMenu()", color: "amber", icon: "calendar_month" }, 
     ];
     
     const EDUCATION_CATEGORIES = [
         { title: "Alunos", href: "javascript:showStudentMenu()", color: "sky", icon: "person" },
-        { title: "Tutores", href: "#", color: "emerald", icon: "supervisor_account" },
-        { title: "Professores", href: "#", color: "amber", icon: "person_pin" },
-        { title: "Instituições", href: "#", color: "purple", icon: "apartment" },
+        { title: "Tutores", href: "javascript:showPlaceholder()", color: "emerald", icon: "supervisor_account" }, 
+        { title: "Professores", href: "javascript:showPlaceholder()", color: "amber", icon: "person_pin" }, 
+        { title: "Instituições", href: "javascript:showPlaceholder()", color: "purple", icon: "apartment" }, 
+    ];
+    
+    const FINANCE_MENU_ITEMS = [
+        { title: "Economia Familiar", href: "javascript:showPlaceholder()", color: "emerald", icon: "savings" }, 
+    ];
+
+    const HEALTH_MENU_ITEMS = [
+        { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart" }, 
+        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center" }, // NOVO: Exercícios
+        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining" }, // NOVO: Alimentação
+    ];
+
+    const TASKS_MENU_ITEMS = [
+        { title: "Planejamento Semanal", href: "javascript:showPlaceholder()", color: "amber", icon: "event_note" }, 
+        // ATUALIZADO: Chama a função para carregar o MiniApp de Tarefas
+        { title: "Lista de Tarefas", href: "javascript:loadTasksApp()", color: "red", icon: "check_box" }, 
     ];
 
     const STUDENT_MENU_ITEMS = [
@@ -255,12 +323,39 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         renderGridSection("education-grid", EDUCATION_CATEGORIES, false);
         updateBackButton(showPortfolio);
     }
+    
+    function showFinanceMenu() {
+        switchView('finance-menu-view');
+        renderGridSection("finance-menu-grid", FINANCE_MENU_ITEMS, false);
+        updateBackButton(showPortfolio);
+    }
+
+    function showHealthMenu() {
+        switchView('health-menu-view');
+        renderGridSection("health-menu-grid", HEALTH_MENU_ITEMS, false);
+        updateBackButton(showPortfolio);
+    }
+    
+    function showTasksMenu() { 
+        switchView('tasks-menu-view'); 
+        renderGridSection("tasks-menu-grid", TASKS_MENU_ITEMS, false); 
+        updateBackButton(showPortfolio);
+    }
+
 
     function showStudentMenu() {
         switchView('student-menu-view');
         renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
         updateBackButton(showEducationCategories);
     }
+    
+    function showPlaceholder() {
+        toggleMainInterface(false);
+        document.getElementById('placeholder-modal-overlay').classList.remove('hidden');
+        document.getElementById('close-btn-float').classList.remove('hidden'); 
+        currentOpenModalId = 'placeholder-modal-overlay';
+    }
+
 
     // --- RENDERIZAÇÃO DO GRID ---
     function renderGridSection(id, data, isMain) {
@@ -276,7 +371,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         }
     }
     
-    // --- NOVO: FUNÇÃO PARA CONTROLAR VISIBILIDADE DO LOADING ---
+    // --- FUNÇÃO PARA CONTROLAR VISIBILIDADE DO LOADING ---
     function showLoading(show) {
         const loading = document.getElementById('loading-modal');
         if (loading) {
@@ -294,7 +389,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         
         // 1. Prepara Interface e Loading
         toggleMainInterface(false); 
-        showLoading(true); // Exibe o loading
+        showLoading(true); 
         
         document.getElementById(modalIdToOpen).classList.remove('hidden'); 
         document.getElementById('close-btn-float').classList.remove('hidden'); 
@@ -302,7 +397,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         currentOpenModalId = modalIdToOpen;
         
         if (frame.srcdoc) {
-             showLoading(false); // Esconde loading se o conteúdo já estiver em cache
+             showLoading(false); 
              return; 
         }
 
@@ -364,7 +459,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     // --- IMPLEMENTAÇÃO ---
 
     function startSimuladosFlow() {
-        // Remove a lógica de loading manual, apenas chama a função de visualização
         showSimuladosIframe();
     }
 
@@ -395,9 +489,20 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         );
     }
 
+    // NOVO: Função para carregar o MiniApp de Tarefas
+    function loadTasksApp() {
+        loadMiniApp(
+            'tasks-frame', // ID do iframe
+            // URL do arquivo que você acabou de finalizar
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html',
+            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
+            'tasks-modal-overlay' // ID do modal
+        );
+    }
+
     // --- HELPER FUNCTIONS ---
     function switchView(viewId) {
-        ['portfolio-view', 'education-categories-view', 'student-menu-view'].forEach(id => {
+        ['portfolio-view', 'education-categories-view', 'student-menu-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
         });
