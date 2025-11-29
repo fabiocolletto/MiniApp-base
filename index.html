@@ -106,7 +106,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         </div>
     </div>
 
-    <!-- 2. TELA: CATEGORIAS DE EDUCAÇÃO -->
+    <!-- 2. TELAS DE CATEGORIAS (Educação, Finanças, Saúde, Tarefas) -->
     <div id="education-categories-view" class="hidden">
         <section class="mt-4 text-center">
             <h1 id="education-title" class="text-3xl font-bold tracking-tight">Educação: Categorias</h1>
@@ -117,7 +117,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         </div>
     </div>
     
-    <!-- 2. TELA DE CATEGORIAS DE FINANÇAS -->
     <div id="finance-menu-view" class="hidden">
         <section class="mt-4 text-center">
             <h1 class="text-3xl font-bold tracking-tight">Finanças: Categorias</h1>
@@ -128,7 +127,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         </div>
     </div>
 
-    <!-- 2. TELA DE CATEGORIAS DE SAÚDE -->
     <div id="health-menu-view" class="hidden">
         <section class="mt-4 text-center">
             <h1 class="text-3xl font-bold tracking-tight">Saúde: Categorias</h1>
@@ -139,7 +137,6 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         </div>
     </div>
 
-    <!-- 2. TELA DE CATEGORIAS DE TAREFAS (Ex-Agenda) -->
     <div id="tasks-menu-view" class="hidden">
         <section class="mt-4 text-center">
             <h1 class="text-3xl font-bold tracking-tight">Tarefas e Produtividade</h1>
@@ -203,7 +200,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- NOVO: 4. MODAL PADRÃO DE PLACEHOLDER -->
+<!-- 4. MODAL PADRÃO DE PLACEHOLDER -->
 <div id="placeholder-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden animate-fade-in-up p-8 text-center">
         <span class="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
@@ -216,7 +213,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
     </div>
 </div>
 
-<!-- NOVO: 5. MODAL DE TAREFAS -->
+<!-- 5. MODAL DE TAREFAS -->
 <div id="tasks-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
     <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-red-500 flex flex-col overflow-hidden animate-fade-in-up">
         <iframe id="tasks-frame" class="w-full h-full border-0" title="App Lista de Tarefas"></iframe>
@@ -224,7 +221,7 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 </div>
 
 
-<!-- LOADING GLOBAL (Movido para fora do JS para ser usado por todos) -->
+<!-- LOADING GLOBAL -->
 <div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
     <div class="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center">
         <svg aria-hidden="true" class="w-10 h-10 text-gray-200 animate-spin fill-blue-600 mb-3" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
@@ -233,7 +230,9 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 </div>
 
 <!-- NAVEGAÇÃO INFERIOR -->
-<div id="main-nav-buttons" class="fixed bottom-4 left-4 z-30 flex flex-col space-y-2 transition-opacity duration-300">
+<!-- NOVO: Ajustado para left-6 e ordem correta (Início topo, Usuário base) -->
+<div id="main-nav-buttons" class="fixed left-6 bottom-8 z-30 flex flex-col space-y-2 transition-opacity duration-300">
+    <!-- Ordem visual: Início (Topo) -> Alertas (Meio) -> Usuário (Base) -->
     <button id="home-btn" type="button" onclick="showPortfolio()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center">
         <span class="material-symbols-rounded text-xl mr-2">home</span><span class="hidden sm:inline">Início</span>
     </button>
@@ -272,13 +271,12 @@ body, html { background-color: #f8fafc; color: #0f172a; }
 
     const HEALTH_MENU_ITEMS = [
         { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart" }, 
-        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center" }, // NOVO: Exercícios
-        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining" }, // NOVO: Alimentação
+        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center" },
+        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining" },
     ];
 
     const TASKS_MENU_ITEMS = [
         { title: "Planejamento Semanal", href: "javascript:showPlaceholder()", color: "amber", icon: "event_note" }, 
-        // ATUALIZADO: Chama a função para carregar o MiniApp de Tarefas
         { title: "Lista de Tarefas", href: "javascript:loadTasksApp()", color: "red", icon: "check_box" }, 
     ];
 
@@ -489,14 +487,12 @@ body, html { background-color: #f8fafc; color: #0f172a; }
         );
     }
 
-    // NOVO: Função para carregar o MiniApp de Tarefas
     function loadTasksApp() {
         loadMiniApp(
-            'tasks-frame', // ID do iframe
-            // URL do arquivo que você acabou de finalizar
+            'tasks-frame', 
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html',
             'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
-            'tasks-modal-overlay' // ID do modal
+            'tasks-modal-overlay' 
         );
     }
 
