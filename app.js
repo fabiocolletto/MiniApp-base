@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// Removidas todas as importações de Firebase
+// 1. Acesso Global aos Hooks do React (SEM IMPORT)
+const { useState, useEffect, useCallback, useMemo } = React;
 
 // --- Variáveis Globais de Ambiente (Não usadas, mas mantidas por convenção) ---
 const APP_ID = 'miniapps-app-id'; 
 const FIREBASE_CONFIG = {}; 
 const INITIAL_AUTH_TOKEN = null; 
 
-// --- DADOS DA APLICAÇÃO (Traduzidos do HTML) ---
+// --- DADOS DA APLICAÇÃO ---
 const PORTFOLIO_ITEMS = [
-    // ITEM DE CADASTRO/LOGIN REMOVIDO DAQUI (AGORA É UM BOTÃO FLUTUANTE)
-    
     { id: 'education', title: "Educação", view: 'education-categories', color: "pink", icon: "cast_for_education" },
     { id: 'finance', title: "Financeiro", view: 'finance-menu', color: "emerald", icon: "account_balance" }, 
     { id: 'health', title: "Saúde", view: 'health-menu', color: "sky", icon: "health_and_safety" }, 
@@ -36,7 +34,6 @@ const TASKS_MENU_ITEMS = [
     { title: "Acompanhamento", action: 'modal', modalId: 'tracking-dashboard', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tracking-dashboard.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "purple", icon: "timeline" },
 ];
 
-// Mapeamento de View ID para Título e Dados
 const VIEW_MAP = {
     'portfolio': { title: "Portfólio de Aplicações", subtitle: "Selecione o sistema que deseja acessar:", data: PORTFOLIO_ITEMS },
     'education-categories': { title: "Educação: Categorias", subtitle: "Selecione uma área para iniciar.", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
@@ -46,7 +43,6 @@ const VIEW_MAP = {
     'student-menu': { title: "Área do Aluno", subtitle: "Selecione o serviço desejado.", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
 };
 
-// Dados do Botão de Autenticação (Movido para uma constante)
 const AUTH_ITEM_CONFIG = {
     id: 'auth', 
     title: "Entrar/Cadastrar", 
@@ -115,10 +111,9 @@ const MiniAppModal = ({ modalConfig, closeModal, loading, setLoading, appId, fbC
 
             const baseTag = `<base href="${basePath}">`;
 
-            // REMOVIDA INJEÇÃO DE FIREBASE - AGORA APENAS CONFIGS BÁSICAS
+            // INJEÇÃO DE CONFIGS BÁSICAS
             const configScript = `
                 <script>
-                    // Manter variáveis de ambiente se o MiniApp precisar de referências.
                     window.__app_id = "${appId}"; 
                 </script>
             `;
@@ -191,9 +186,10 @@ const MiniAppModal = ({ modalConfig, closeModal, loading, setLoading, appId, fbC
 };
 
 // --- Componente Principal (Next.js Page/App Component) ---
-export default function App() {
+// CORREÇÃO: Removido 'export default' para expor App globalmente
+function App() {
     // 1. Estados de Autenticação (SIMULADA)
-    const [userPhone, setUserPhone] = useState(null); // Usado para simular o estado de login
+    const [userPhone, setUserPhone] = useState(localStorage.getItem('user_phone') || null); // Inicializa com o valor salvo
     const isAuthReady = true; 
     
     // 2. Estados de Navegação
@@ -227,15 +223,8 @@ export default function App() {
         window.addEventListener('click', resetTimer);
         window.addEventListener('scroll', resetTimer);
         
-        // CORREÇÃO: Remove o bloqueio de login na inicialização.
-        const savedPhone = localStorage.getItem('user_phone');
-        if (savedPhone) {
-            setUserPhone(savedPhone);
-            startTimer();
-        } else {
-             // Apenas inicia o timer, não força o modal
-            startTimer();
-        }
+        // CORREÇÃO: Usa o estado inicial (userPhone) para iniciar o timer
+        startTimer();
         
         // --- Comunicação com o MiniApp de Autenticação (Login) ---
         const handleAuthMessage = (event) => {
@@ -280,10 +269,6 @@ export default function App() {
     // --- 3. Lógica de Modal/MiniApp ---
     
     const handleCardClick = (item) => {
-        // CORREÇÃO: Remove a exigência de login para acessar qualquer MiniApp.
-        // O usuário só será forçado ao login se tentar acessar um recurso sensível DENTRO do MiniApp,
-        // ou se clicar no botão 'Entrar/Cadastrar'.
-
         if (item.status === "Em breve") return; 
 
         if (item.action === 'modal') {
@@ -331,7 +316,7 @@ export default function App() {
         </div>
     );
     
-    // O Painel de Alertas do Firestore foi removido. Usaremos um placeholder.
+    // O Painel de Alertas é um placeholder
     const AlertPanel = () => {
         return (
             <div className="p-6 text-center">
@@ -431,7 +416,7 @@ export default function App() {
                 </button>
             </div>
             
-            {/* NOVO: BOTÃO DE ACESSO AO PAINEL DO USUÁRIO (DIREITA) */}
+            {/* BOTÃO DE ACESSO AO PAINEL DO USUÁRIO (DIREITA) */}
             <div className="fixed top-4 right-4 z-40">
                 <button onClick={openAuthModal} 
                         className={`chip-button bg-purple-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-purple-500 text-purple-600 ${isNavMinimized ? 'w-12 h-12 p-0 flex items-center justify-center transform scale-95' : 'w-auto px-4 py-2.5'}`}>
@@ -504,8 +489,8 @@ export default function App() {
                     modalConfig={{ 
                         modalId: 'auth-modal',
                         title: 'Cadastro e Acesso',
-                        url: AUTH_ITEM_CONFIG.url, // Usa a URL da constante de configuração
-                        basePath: AUTH_ITEM_CONFIG.basePath // Usa o basePath da constante de configuração
+                        url: AUTH_ITEM_CONFIG.url, 
+                        basePath: AUTH_ITEM_CONFIG.basePath
                     }} 
                     closeModal={closeModal} 
                     loading={modalLoading} 
@@ -516,4 +501,4 @@ export default function App() {
             )}
         </div>
     );
-                  }
+                    }
