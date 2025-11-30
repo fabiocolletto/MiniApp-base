@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniApps - Versão Debug Única</title>
+    <title>MiniApps - Local & Cloud Backup</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Dexie.js para Banco de Dados Local -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,6 +27,13 @@
             background-color: #f8fafc;
             color: #0f172a;
         }
+        
+        /* Dark Mode styles applied to the body for a better effect (mantido mas não ativo) */
+        .dark body {
+            background-color: #1f2937; 
+            color: #f3f4f6; 
+        }
+        
         .card-base {
             position: relative;
             border-radius: 1rem;
@@ -33,32 +43,92 @@
             border-width: 1px;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            width: 8rem;
-            height: 8rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); 
+            /* AJUSTE MOBILE: Tamanho um pouco menor para evitar overflow em telas estreitas */
+            width: 7rem;
+            height: 7rem;
             padding: 0.5rem; 
         }
+        
+        @media (min-width: 768px) {
+            .card-base {
+                width: 8rem;
+                height: 8rem;
+            }
+        }
+        
         .card-base:hover {
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             transform: translateY(-0.25rem);
         }
+        
         .app-grid-base-flexible { 
             display: grid; 
-            gap: 2.5rem;
+            /* AJUSTE MOBILE: Gap menor */
+            gap: 1rem;
             width: 100%; 
             max-width: 1008px;
-            grid-template-columns: repeat(auto-fit, 8rem); 
+            /* AJUSTE MOBILE: Usa 7rem como base no auto-fit */
+            grid-template-columns: repeat(auto-fit, 7rem); 
             justify-content: center;
             justify-items: center;
-            padding: 0 1rem;
+            /* CORREÇÃO AQUI: Remove o padding lateral global para evitar dupla margem no modal */
+            padding: 0; 
         }
+
+        @media (min-width: 768px) {
+             .app-grid-base-flexible {
+                /* REVERSÃO DESKTOP: Volta ao espaçamento e tamanho de card original */
+                gap: 2.5rem;
+                grid-template-columns: repeat(auto-fit, 8rem); 
+            }
+        }
+        
         .chip-button {
             border-width: 1px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             transition: all 0.3s ease-in-out;
+            /* Adicionado shadow padrão para o estilo de chip flutuante */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+
+        /* Classe específica para esconder a sombra nos botões flutuantes */
+        .chip-button.no-shadow {
+            box-shadow: none !important;
+        }
+
         .chip-button:hover {
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); 
+            box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); 
+        }
+        /* Garantindo que o hover não aplique sombra no dark mode */
+        .dark .chip-button.no-shadow:hover {
+             box-shadow: none !important;
+        }
+
+
+        /* Custom Scrollbar for Menu */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #94a3b8; /* slate-400 */
+            border-radius: 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #64748b; /* slate-500 */
+        }
+        
+        /* Estilo para a animação do Accordion/Gaveta */
+        .accordion-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        /* Classe para o flow column no menu (removida, mas mantendo o nome por coerência) */
+        .menu-column-flow {
+            flex-direction: column;
         }
     </style>
 </head>
@@ -69,39 +139,32 @@
         </div>
     </div>
 
-    <!-- 
-      SCRIPT AUXILIAR (JAVASCRIPT PURO)
-      Este script roda fora do Babel para manipular as strings HTML perigosas 
-      sem causar erros de sintaxe no React.
-    -->
+    <!-- SCRIPT AUXILIAR -->
     <script>
-        window.prepareMiniAppHtml = function(htmlContent, appId, basePath) {
-            // 1. Limpeza do HTML original
-            let cleanHtml = htmlContent
-                .replace(/<header[\s\S]*?<\/header>/gi, '') // Remove headers
-                .replace(/data-theme="dark"/g, 'data-theme="light"'); // Força tema claro
+        var db = new Dexie("MiniAppsDB");
+        db.version(2).stores({
+            user: 'id, name, phone, school, email, createdAt', 
+            logs: '++id, date, action, details',
+            settings: 'key, value' 
+        });
 
-            // 2. Definição segura das tags (concatenação evita erros de parser)
+        window.prepareMiniAppHtml = function(htmlContent, appId, basePath) {
+            let cleanHtml = htmlContent
+                .replace(/<header[\s\S]*?<\/header>/gi, '') 
+                .replace(/data-theme="dark"/g, 'data-theme="light"'); 
+
             var scriptTagOpen = '<script>';
-            var scriptTagClose = '<' + '/script>'; // Quebra da tag de fechamento
+            var scriptTagClose = '<' + '/script>'; 
             var styleTagOpen = '<style>';
             var styleTagClose = '<' + '/style>';
-
-            // 3. Configuração do App ID injetada
             var configScript = scriptTagOpen + 'window.__app_id = "' + appId + '";' + scriptTagClose;
-            
-            // 4. Base Path para recursos relativos
             var baseTag = '<base href="' + basePath + '">';
-
-            // 5. CSS de limpeza para o iframe
             var styleCleanContent = 'html, body {padding-bottom: 120px !important; background: transparent !important;} main {box-shadow: none !important; border: none !important; background-color: transparent !important; padding: 1.5rem !important; margin: 0 !important;}';
             var styleClean = styleTagOpen + styleCleanContent + styleTagClose;
 
-            // 6. Injeção no <head>
             if (cleanHtml.indexOf('<head>') !== -1) {
                 return cleanHtml.replace('<head>', '<head>' + configScript + baseTag + styleClean);
             } else {
-                // Fallback se não tiver head
                 return configScript + baseTag + styleClean + cleanHtml;
             }
         };
@@ -109,219 +172,907 @@
 
     <!-- CÓDIGO REACT/BABEL -->
     <script type="text/babel">
-    const { useState, useEffect, useCallback, useMemo } = React;
+    const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
     const APP_ID = 'miniapps-app-id'; 
-    const FIREBASE_CONFIG = {}; 
-    const INITIAL_AUTH_TOKEN = null; 
-
-    // --- DADOS ---
-    const PORTFOLIO_ITEMS = [
-        { id: 'education', title: "Educação", view: 'education-categories', color: "pink", icon: "cast_for_education" },
-        { id: 'finance', title: "Finances", view: 'finance-menu', color: "emerald", icon: "account_balance" }, 
-        { id: 'health', title: "Saúde", view: 'health-menu', color: "sky", icon: "health_and_safety" }, 
-        { id: 'tasks', title: "Tarefas", view: 'tasks-menu', color: "amber", icon: "calendar_month" }, 
-    ];
-
-    const EDUCATION_CATEGORIES = [
-        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person" },
-        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", status: "Em breve" }, 
-        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", status: "Em breve" }, 
-        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", status: "Em breve" }, 
-    ];
-
+    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcxdROcnZID-bkrmhZ7kPBz_2fcVWv8JQBsWiYIlz38n0IyRjHrrvz7YAX9iKhHCQopQ/exec";
+    
+    // --- DEFINIÇÕES DE DADOS HIERÁRQUICOS SIMPLIFICADAS PARA SUB-MENU ---
+    
+    // Nível 3: Itens finais de cada menu (que levam a um Modal ou Placeholder)
     const STUDENT_MENU_ITEMS = [
-        { title: "Cadastro", action: 'modal', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "blue", icon: "app_registration" },
-        { title: "Simulados", action: 'modal', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "pink", icon: "edit_note", status: "Em breve" },
-        { title: "Agenda", action: 'placeholder', color: "teal", icon: "event", status: "Em breve" },
+        // Itens que disparam MODAIS ATIVOS (cor tema)
+        { id: 'student-profile', title: "Perfil", action: 'modal', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts" },
+        { id: 'simulados', title: "Simulados", action: 'modal', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note" },
+        // Itens PLACEHOLDERS (serão cinza no modo inativo)
+        { id: 'provas', title: "Provas", action: 'placeholder', color: "emerald", icon: "assignment" }, 
+        { id: 'agenda-aluno', title: "Agenda", action: 'placeholder', color: "emerald", icon: "event" },
+    ];
+    
+    // Nível 2: Categorias da Educação
+    const EDUCATION_CATEGORIES = [
+        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person", submenu: STUDENT_MENU_ITEMS },
+        // Itens PLACEHOLDERS (serão cinza no modo inativo)
+        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", action: 'placeholder' }, 
+        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", action: 'placeholder' }, 
+        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", action: 'placeholder' }, 
     ];
 
-    const TASKS_MENU_ITEMS = [
-        { title: "Planejamento Semanal", action: 'modal', modalId: 'weekly-planner', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/weekly-planner.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "amber", icon: "event_note" }, 
-        { title: "Lista de Tarefas", action: 'modal', modalId: 'tasks', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "red", icon: "check_box" }, 
-        { title: "Agenda (Mensal)", action: 'modal', modalId: 'monthly-calendar', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/monthly-calendar.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "blue", icon: "calendar_month" }, 
-        { title: "Acompanhamento", action: 'modal', modalId: 'tracking-dashboard', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tracking-dashboard.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "purple", icon: "timeline" },
+    // Nível 1: Portfólio Principal (Mapeado para o menu principal)
+    const MAIN_MENU_PORTFOLIO = [
+        // Item ATIVO (modal)
+        { id: 'education', title: "Educação", action: 'modal', modalId: 'education-menu-modal', color: "emerald", icon: "cast_for_education" },
+        // Itens PLACEHOLDERS (serão cinza no modo inativo)
+        { id: 'finance', title: "Financeiro", action: 'placeholder', color: "lime", icon: "account_balance" }, 
+        { id: 'health', title: "Saúde", action: 'placeholder', color: "sky", icon: "health_and_safety" }, 
+        { id: 'tasks', title: "Tarefas", action: 'placeholder', color: "amber", icon: "calendar_month" }, 
     ];
 
+    // Mapeamento de visualizações (Para tela principal - Não mudou)
     const VIEW_MAP = {
-        'portfolio': { title: "Portfólio de Aplicações", subtitle: "Selecione o sistema que deseja acessar:", data: PORTFOLIO_ITEMS },
+        'portfolio': { title: "Portfólio de Aplicações", subtitle: "Selecione o sistema que deseja acessar:", data: MAIN_MENU_PORTFOLIO },
         'education-categories': { title: "Educação: Categorias", subtitle: "Selecione uma área para iniciar.", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
         'finance-menu': { title: "Finanças: Gestão", subtitle: "Ferramentas para seu controle financeiro.", data: [], parent: 'portfolio' }, 
         'health-menu': { title: "Saúde: Categorias", subtitle: "Ferramentas de bem-estar e monitoramento.", data: [], parent: 'portfolio' }, 
-        'tasks-menu': { title: "Tarefas e Produtividade", subtitle: "Gerencie seus compromissos e foco.", data: TASKS_MENU_ITEMS, parent: 'portfolio' },
+        'tasks-menu': { title: "Tarefas e Produtividade", subtitle: "Gerencie seus compromissos e foco.", data: [], parent: 'portfolio' },
         'student-menu': { title: "Área do Aluno", subtitle: "Selecione o serviço desejado.", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
+    };
+    
+    // Mapeamento de SUB-MENUS (necessário apenas para manter a estrutura original para reutilização)
+    const SUB_MENU_MAP = {
+        'portfolio-root': { title: 'Mapa de Aplicações', items: MAIN_MENU_PORTFOLIO },
+        'education-categories': { title: 'Educação', items: EDUCATION_CATEGORIES, parentId: 'portfolio-root' },
+        'student-menu': { title: 'Área do Aluno', items: STUDENT_MENU_ITEMS, parentId: 'education-categories' }
+        // Outros menus intermedários (Responsáveis, Tutores, etc.) não foram definidos para evitar complexidade desnecessária no teste.
     };
 
     const AUTH_ITEM_CONFIG = {
         id: 'auth', 
         title: "Entrar/Cadastrar", 
         action: 'modal', 
-        modalId: 'auth-modal', 
-        url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/auth-panel.html', 
-        basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/', 
+        modalId: 'auth-modal',
         color: "purple", 
         icon: "lock_open" 
     };
+    
+    // Função utilitária para inicializar o Dark Mode com base na preferência do sistema
+    const initializeDarkMode = () => {
+        // CORREÇÃO: Força o Modo Claro (retorna false) para estabilizar o sistema
+        return false;
+    };
 
-    // --- COMPONENTES ---
 
-    const AppCard = ({ item, onClick }) => {
-        const opacity = item.status === "Em breve" ? 'opacity-50 pointer-events-none' : '';
-        const clickHandler = item.status === "Em breve" ? (e) => e.preventDefault() : onClick;
+    // --- COMPONENTES AUXILIARES ---
+    // NOVO: CloseButton aceita prop themeColor
+    const CloseButton = ({ onClick, themeColor = "red" }) => {
+        const colorClasses = `border-${themeColor}-500 bg-${themeColor}-100 text-${themeColor}-600 hover:bg-${themeColor}-200`;
+        return (
+            <button 
+                onClick={onClick} 
+                className={`absolute top-4 right-4 z-50 h-10 w-10 rounded-full shadow-md border ${colorClasses} flex items-center justify-center transition-transform duration-200 hover:scale-110`}
+                title="Fechar"
+            >
+                <span className="material-symbols-rounded text-xl">close</span>
+            </button>
+        );
+    };
+
+    // Componente para o título da seção com tema
+    const SectionTitle = ({ icon, title, color, isSubMenu = false, onBack }) => (
+        <div className={`px-2 flex items-center mt-3 first:mt-0 ${isSubMenu ? 'pb-2 border-b border-indigo-200 mb-2' : ''}`}>
+            {isSubMenu && (
+                <button onClick={onBack} className="mr-2 p-1 rounded-full hover:bg-indigo-100 transition">
+                     <span className={`material-symbols-rounded text-lg text-${color}-600`}>arrow_back</span>
+                </button>
+            )}
+            <span className={`material-symbols-rounded text-lg mr-2 text-${color}-600`}>{icon}</span>
+            <span className={`text-[11px] font-bold text-${color}-600 uppercase tracking-wider`}>{title}</span>
+        </div>
+    );
+    
+    // --- Renderização do Botão de Navegação (Reutilizado no Menu e no Modal) ---
+    const RenderNavButton = ({ item, color, onClickOverride, isInactiveModeActive }) => {
+        // --- LÓGICA DE INATIVIDADE ---
+        const isLogicallyInactive = item.action === 'placeholder';
+        // A inatividade visual (cinza) é forçada APENAS se o modo inativo estiver ativado.
+        const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
+        
+        // A inatividade real (botão desativado) é sempre verificada pelo isLogicallyInactive.
+        const isDisabled = isLogicallyInactive; 
+        
+        const themeColor = item.color || color;
+        const visualColor = shouldShowInactiveStyle ? 'slate' : themeColor;
+        
+        // CLASSES BASE CINZAS (usadas para o modo inativo)
+        const INACTIVE_CHIP_CLASS = `
+            bg-slate-100 border-slate-300 text-slate-500 
+            hover:bg-slate-100 hover:border-slate-400
+        `;
+        
+        // CLASSES BASE ATIVAS (usadas para o modo ativo ou quando o item é um modal)
+        const ACTIVE_CHIP_CLASS = (c) => `
+            chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all 
+            bg-${c}-50 border border-${c}-200 text-${c}-700 
+            hover:bg-${c}-100 hover:border-${c}-300 hover:translate-x-1
+        `;
+
+        const classes = shouldShowInactiveStyle ? INACTIVE_CHIP_CLASS : ACTIVE_CHIP_CLASS(visualColor);
+        
+        const isSubMenuLink = item.action === 'submenu' || (item.submenu && item.submenu.length > 0);
+        
+        // Define a ação de clique: se placeholder (e, portanto, isDisabled), não faz nada.
+        const handleClick = onClickOverride || (isDisabled ? () => {} : undefined); 
+        
+        // Cor do ícone e texto
+        const iconColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-500' : `text-${visualColor}-600`; 
+        const textColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-700' : 'text-current';
+        
+        // A opacidade é aplicada quando o botão está logicamente inativo E o modo visual está ATIVO (colorido), para manter um leve hint.
+        const opacityClass = isDisabled && !shouldShowInactiveStyle ? 'opacity-70' : '';
 
         return (
-            <div 
-                onClick={clickHandler} 
-                role="button" 
-                className={`card-base border-${item.color}-500 bg-${item.color}-500/20 w-32 h-32 md:w-36 md:h-36 ${opacity} hover:ring-2 hover:ring-${item.color}-500 transition-all duration-300`}
+            <button
+                onClick={handleClick}
+                // Aplica a classe base do chip e as classes de cor/inativo
+                className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${classes} ${opacityClass} ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                disabled={isDisabled && !onClickOverride}
             >
-                {item.status === "Em breve" && (
-                    <div className="absolute top-1 right-1 z-20">
-                        <span className="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            {item.status}
-                        </span>
-                    </div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                    <span 
-                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }} 
-                        className={`material-symbols-rounded leading-none text-${item.color}-500 opacity-30`}
-                    >
-                        {item.icon}
-                    </span>
+                <div className="flex items-center">
+                    <span className={`material-symbols-rounded text-xl mr-3 ${iconColorClass}`}>{item.icon}</span>
+                    <span className={`font-semibold text-sm ${textColorClass} text-left`}>{item.title}</span>
                 </div>
-                <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
-                    <h2 className={`text-sm text-${item.color}-700 font-semibold leading-tight`}>{item.title}</h2>
+                {isSubMenuLink ? (
+                    <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>chevron_right</span>
+                ) : (
+                    <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>launch</span>
+                )}
+            </button>
+        );
+    };
+
+    // --- NOVO COMPONENTE: MODAL DE NAVEGAÇÃO EDUCAÇÃO (ACORDION/GAVETA) ---
+    const EducationMenuModal = ({ closeModal, onAppClick, isInactiveModeActive }) => {
+        const [activeCategory, setActiveCategory] = useState(null);
+        const modalRef = useRef(null);
+        
+        // Cor Tema: emerald
+        const THEME_COLOR = "emerald";
+        
+        const handleCategoryToggle = (id) => {
+            setActiveCategory(activeCategory === id ? null : id);
+        };
+        
+        // Função que trata o clique em um item de sub-menu (item de App final)
+        const handleSubItemClick = (item) => {
+            if (item.action === "placeholder") {
+                return;
+            }
+            // Dispara a função de abertura de App no App.js principal
+            onAppClick(item); 
+            closeModal(); // Feche o modal após o clique no App
+        };
+        
+        // Renderização dos cards internos
+        const RenderSubMenuCards = ({ submenu }) => (
+             <section className="app-grid-base-flexible mx-auto">
+                {submenu.map(item => (
+                    <AppCard 
+                        key={item.id}
+                        item={item} 
+                        onClick={() => handleSubItemClick(item)} // Usa o handler do Modal
+                        isInactiveModeActive={isInactiveModeActive} // Passa o estado do modo inativo
+                    />
+                ))}
+            </section>
+        );
+
+
+        return (
+            <div ref={modalRef} className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+                <div onClick={(e) => e.stopPropagation()} className={`relative w-full max-w-2xl h-full max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up`}>
+                    
+                    {/* BOTÃO FECHAR (X) - Canto superior direito (CORRIGIDO PARA O TEMA) */}
+                    <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
+                    
+                    {/* BOTÃO VOLTAR (CORRIGIDO PARA O TEMA) */}
+                    <button 
+                        onClick={closeModal} 
+                        className={`absolute top-4 left-4 z-50 h-10 w-10 rounded-full shadow-md border border-${THEME_COLOR}-500 bg-${THEME_COLOR}-100 text-${THEME_COLOR}-600 hover:bg-${THEME_COLOR}-200 flex items-center justify-center transition-transform duration-200 hover:scale-110`}
+                        title="Voltar ao Menu Principal"
+                    >
+                        <span className="material-symbols-rounded text-xl">arrow_back</span>
+                    </button>
+
+
+                    <div className="p-8 pt-16 flex flex-col h-full overflow-y-auto custom-scrollbar">
+                        
+                        {/* CABEÇALHO DO MODAL (APENAS TÍTULO) */}
+                        <div className="text-center mb-6">
+                            <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Central de Educação</h2>
+                            <p className={`text-md text-${THEME_COLOR}-500 mt-1`}>Navegue pelas áreas e serviços disponíveis.</p>
+                        </div>
+                        
+                        
+                        {/* ACORDION / GAVETAS */}
+                        <div className="space-y-4 flex-1">
+                            {EDUCATION_CATEGORIES.map((category) => {
+                                // Lógica de inatividade para categorias (uso de action: 'placeholder')
+                                const isCategoryLogicallyInactive = category.action === 'placeholder';
+                                const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive && isInactiveModeActive;
+                                
+                                // Determina a cor visual
+                                const categoryVisualColor = shouldCategoryShowInactiveStyle ? 'slate' : THEME_COLOR;
+                                
+                                // CLASSE DO CABEÇALHO DO ACCORDION
+                                const headerClasses = shouldCategoryShowInactiveStyle 
+                                    ? INACTIVE_ACCORDION_CLASS // Cinza se modo inativo ativo
+                                    : (activeCategory === category.id 
+                                        ? `bg-${categoryVisualColor}-100 text-${categoryVisualColor}-800 border border-${categoryVisualColor}-200` 
+                                        : `bg-${categoryVisualColor}-50 hover:bg-${categoryVisualColor}-100 text-${categoryVisualColor}-700 border border-${categoryVisualColor}-200`);
+
+                                // Cor do Ícone/Texto interno da categoria.
+                                const categoryIconColor = `text-${categoryVisualColor}-600`;
+                                const categoryTextColor = shouldCategoryShowInactiveStyle ? 'text-slate-700' : '';
+                                
+                                // Estilo da Borda externa do wrapper
+                                const wrapperBorderClass = `border-${categoryVisualColor}-200`;
+                                
+                                // Classes para desabilitar o clique da categoria (exceto se for o submenu de 'Alunos')
+                                const isDisabled = isCategoryLogicallyInactive && !category.submenu;
+                                
+                                // CLASSES BASE CINZAS para o Accordion Header (Não está usando a prop color do item, então definimos explicitamente)
+                                const INACTIVE_ACCORDION_CLASS = `
+                                    bg-slate-100 border-slate-300 text-slate-500
+                                    hover:bg-slate-100 cursor-not-allowed pointer-events-none
+                                    border border-slate-300
+                                `;
+
+                                return (
+                                    <div key={category.id} className={`${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
+                                        {/* CABEÇALHO DO ACORDION */}
+                                        <button
+                                            onClick={() => handleCategoryToggle(category.id)}
+                                            className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
+                                            disabled={isDisabled}
+                                        >
+                                            <div className="flex items-center">
+                                                {/* Ícone usa a cor visual (tema ou cinza) */}
+                                                <span className={`material-symbols-rounded text-2xl mr-3 ${categoryIconColor}`}>{category.icon}</span>
+                                                <span className={`font-bold text-lg ${categoryTextColor}`}>{category.title}</span>
+                                            </div>
+                                            <span className={`material-symbols-rounded transition-transform duration-200 ${shouldCategoryShowInactiveStyle ? 'text-slate-500' : ''} ${activeCategory === category.id ? 'rotate-90' : 'rotate-0'}`}>chevron_right</span>
+                                        </button>
+
+                                        {/* CONTEÚDO DA GAVETA */}
+                                        <div 
+                                            className="accordion-content transition-all duration-300" 
+                                            style={{ 
+                                                maxHeight: activeCategory === category.id && category.submenu ? `${modalRef.current?.scrollHeight || 500}px` : '0px', 
+                                                // Fallback de altura para garantir a transição inicial
+                                                transition: `max-height ${activeCategory === category.id ? '0.5s' : '0.3s'} ease-in-out`
+                                            }}
+                                        >
+                                            {category.submenu && (
+                                                // CORREÇÃO: Aplica p-4 (1rem) em todos os lados.
+                                                <div className={`p-4 border-t border-${THEME_COLOR}-100 bg-white`}>
+                                                    {/* NOVO VISUAL: Usa o grid de cards quadrados e o AppCard */}
+                                                    <RenderSubMenuCards submenu={category.submenu} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    
+    // --- COMPONENTE DE MENU CENTRALIZADO (ESTILO PÍLULA/CHIP) ---
+    const MainMenu = ({ 
+        userData, 
+        onHome, 
+        onAlerts, 
+        onSettings, 
+        onAuth, 
+        onAdmin,
+        isFloatingBtnVisible, // CORRIGIDO AQUI
+        toggleAccessibility, 
+        onAppClick,
+        isInactiveModeActive, // NOVO PROP
+        setIsInactiveModeActive, // NOVO PROP
+    }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        // NOVO: estado para rastrear o menu atual na navegação hierárquica
+        const [currentMenuId, setCurrentMenuId] = useState('portfolio-root');
+        const menuRef = useRef(null);
+
+        const PERFIL_COLOR = 'purple';
+        const NAVEGACAO_COLOR = 'indigo';
+        const SISTEMA_COLOR = 'cyan'; 
+        const ACESSIBILIDADE_COLOR = 'fuchsia';
+        
+        // Classe unificada para o visual de botões desativados/placeholder (Não usada nos itens do menu principal)
+        const INACTIVE_CHIP_CLASS = `
+            bg-slate-50 border-slate-300 text-slate-500 
+            hover:bg-slate-100 hover:border-slate-400
+        `;
+        
+        const getInitials = (name) => {
+            if (!name) return 'U';
+            const parts = name.trim().split(' ');
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        };
+
+        const toggleMenu = () => {
+            setIsOpen(!isOpen);
+            // Ao fechar, sempre volta para o menu raiz
+            if (isOpen) {
+                setCurrentMenuId('portfolio-root');
+            }
+        };
+        
+        const menuItemClass = (color) => `
+            chip-button w-full mb-1 px-4 py-2.5 rounded-xl 
+            flex items-center justify-start 
+            bg-${color}-50 border border-${color}-200 text-${color}-700 
+            hover:bg-${color}-100 hover:border-${color}-300 hover:translate-x-1 transition-all
+        `;
+        
+        // --- NAVEGAÇÃO HIERÁRQUICA (SubMenu) ---
+        const handleMenuItemClick = (item) => {
+            if (item.action === "placeholder") {
+                // Simplificação: O botão cinza não faz nada se for placeholder
+                return;
+            }
+            
+            // 1. Navegação para MODAL
+            if (item.action === 'modal') {
+                 if (item.modalId === 'education-menu-modal') {
+                    // Novo modal de educação
+                    onAppClick(item); 
+                 } else {
+                     // Lógica para outros modais (autenticação, etc.)
+                     if (item.modalId === 'registration') { onHome(item.view); }
+                     // Se for um modal genérico, usamos o onAppClick
+                     else { onAppClick(item); }
+                 }
+                 setIsOpen(false);
+                 return;
+            }
+
+            // Ação Antiga (Submenu/View) - Agora simplificada para apenas Views (se houver)
+            if (item.view) {
+                onHome(item.view); // Navega para a view principal
+                setIsOpen(false); 
+                setCurrentMenuId('portfolio-root'); // Volta ao raiz após fechar
+            }
+        };
+        
+        // --- COLUNA 2: Opções de Sistema e Acessibilidade (Estaticamente agrupadas) ---
+        const SystemAccessibilityColumn = ({ isFloatingBtnVisible, toggleAccessibility, isInactiveModeActive, setIsInactiveModeActive }) => { // CORRIGIDO AQUI
+            // Lógica de classes para o novo botão Inativos
+            const isInactiveActive = isInactiveModeActive;
+            const INACTIVE_MODE_COLOR = SISTEMA_COLOR; // Cor do tema (Cyan)
+            
+            // CLASSES DE ESTILO DO BOTÃO INATIVOS (Sempre Ciano)
+            const INACTIVE_MODE_BUTTON_CLASSES = `
+                bg-${INACTIVE_MODE_COLOR}-50 border-${INACTIVE_MODE_COLOR}-300 text-${INACTIVE_MODE_COLOR}-700 
+                hover:bg-${INACTIVE_MODE_COLOR}-100 hover:border-${INACTIVE_MODE_COLOR}-400
+            `;
+            
+            // Lógica de classes para o ícone e toggle do Inativos
+            const INACTIVE_ICON_COLOR_CLASS = isInactiveActive 
+                ? `text-${INACTIVE_MODE_COLOR}-600` // Ciano se ativo
+                : 'text-slate-500'; // Cinza se inativo
+            
+            const INACTIVE_TOGGLE_BG_CLASS = isInactiveActive ? `bg-${INACTIVE_MODE_COLOR}-400` : 'bg-slate-400';
+            const INACTIVE_TOGGLE_POS_CLASS = isInactiveActive ? 'right-0.5' : 'left-0.5';
+            
+            
+            // Lógica para os 4 botões de placeholder que precisam ficar cinza (slate) quando isInactiveModeActive=true
+            const systemStyle = useMemo(() => {
+                const INACTIVE_SLATE_STYLE = {
+                    baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
+                    iconColor: 'text-slate-500',
+                    textColor: 'text-slate-700',
+                    toggleBg: 'bg-slate-400',
+                    toggleOffPos: 'left-0.5',
+                    isDisabled: true,
+                };
+                
+                if (isInactiveModeActive) {
+                    return INACTIVE_SLATE_STYLE;
+                } else {
+                    const c = SISTEMA_COLOR;
+                    return {
+                        baseClasses: `bg-${c}-50 border border-${c}-200 text-${c}-700 hover:bg-${c}-100 hover:border-${c}-300 hover:translate-x-1`,
+                        iconColor: `text-${c}-600`,
+                        textColor: 'text-current',
+                        toggleBg: `bg-${c}-400`,
+                        toggleOffPos: 'left-0.5',
+                        isDisabled: false,
+                    };
+                }
+            }, [isInactiveModeActive]);
+            
+            // Lógica para o botão BOTÕES (Acessibilidade) - AGORA IGNORA isInactiveModeActive
+            const accessibilityVisualStyle = useMemo(() => {
+                const activeColor = ACESSIBILIDADE_COLOR; // fuchsia
+                
+                // Base classes: Fuchsia para ON e OFF.
+                const baseClasses = isFloatingBtnVisible // CORRIGIDO AQUI
+                    ? `bg-${activeColor}-100 border-${activeColor}-400 text-${activeColor}-700 hover:bg-${activeColor}-200 hover:border-${activeColor}-500`
+                    : `bg-${activeColor}-50 border-${activeColor}-300 text-${activeColor}-700 hover:bg-${activeColor}-100 hover:border-${activeColor}-400`;
+
+                // Ícone/Toggle: Usa Cinza (slate) quando OFF.
+                const iconColor = isFloatingBtnVisible ? `text-${activeColor}-600` : 'text-slate-500'; // CORRIGIDO AQUI
+                const toggleBg = isFloatingBtnVisible ? `bg-${activeColor}-400` : 'bg-slate-400'; // CORRIGIDO AQUI
+                const togglePos = isFloatingBtnVisible ? 'right-0.5' : 'left-0.5'; // CORRIGIDO AQUI
+                
+                // O modo Inativo não deve afetar o tema deste botão, apenas os placeholders.
+                return {
+                    base: baseClasses,
+                    icon: iconColor,
+                    toggleBg: toggleBg,
+                    togglePos: togglePos,
+                    textColor: 'text-current' // Deixa o texto ser definido pelas classes base
+                };
+            
+            }, [isFloatingBtnVisible]); // CORRIGIDO AQUI
+
+
+            return (
+             <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
+                {/* SEÇÃO: SISTEMA (CIANO) */}
+                <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
+
+                {/* BOTÃO: INATIVOS (TEMA CIANO) */}
+                <button 
+                    onClick={() => setIsInactiveModeActive(!isInactiveModeActive)}
+                    className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${INACTIVE_MODE_BUTTON_CLASSES}`}
+                >
+                    <div className="flex items-center">
+                        {/* ÍCONE: Varia de Ciano (Ativo) para Cinza (Inativo) */}
+                        <span className={`material-symbols-rounded mr-3 ${INACTIVE_ICON_COLOR_CLASS}`}>{isInactiveActive ? 'visibility' : 'visibility_off'}</span>
+                        <span className={`font-semibold text-sm text-current`}>Inativos</span>
+                    </div>
+                    {/* TOGGLE SWITCH */}
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${INACTIVE_TOGGLE_BG_CLASS}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${INACTIVE_TOGGLE_POS_CLASS}`}></div>
+                    </div>
+                </button>
+                
+                {/* Botão Alertas (Agora usa systemStyle) */}
+                <button onClick={() => {}} className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} disabled={systemStyle.isDisabled}>
+                    <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>notifications</span> 
+                    <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Alertas</span>
+                </button>
+
+                {/* Botão Admin (Agora usa systemStyle) */}
+                <button onClick={() => {}} className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} disabled={systemStyle.isDisabled}>
+                    <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>admin_panel_settings</span>
+                    <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Admin</span>
+                </button>
+                
+                {/* Botão Tema (Agora usa systemStyle) */}
+                <button 
+                    onClick={() => {}} 
+                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
+                    disabled={systemStyle.isDisabled}
+                >
+                    <div className="flex items-center">
+                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>dark_mode</span>
+                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Tema</span> 
+                    </div>
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
+                    </div>
+                </button>
+
+                {/* Botão Animações (Agora usa systemStyle) */}
+                <button 
+                    onClick={() => {}}
+                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
+                    disabled={systemStyle.isDisabled}
+                >
+                    <div className="flex items-center">
+                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>slow_motion_video</span>
+                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Animações</span>
+                    </div>
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
+                    </div>
+                </button>
+
+                {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Apenas o botão flutuante está ativo */}
+                <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
+                
+                {/* Botão "Botões" (Funcional) - SEMPRE FUCHSIA, ÍCONE MUDA POR ESTADO INTERNO */}
+                <button 
+                    onClick={() => toggleAccessibility(!isFloatingBtnVisible)} // CORRIGIDO AQUI
+                    className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${accessibilityVisualStyle.base}`}
+                >
+                    <div className="flex items-center">
+                        {/* ÍCONE: Varia de Fuchsia (ON) para Cinza (OFF) */}
+                        <span className={`material-symbols-rounded mr-3 ${accessibilityVisualStyle.icon}`}>accessibility_new</span>
+                        <span className={`font-semibold text-sm ${accessibilityVisualStyle.textColor}`}>Botões</span>
+                    </div>
+                    {/* TOGGLE SWITCH */}
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${accessibilityVisualStyle.toggleBg}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${accessibilityVisualStyle.togglePos}`}></div>
+                    </div>
+                </button>
+            </div>
+        );
+        }; 
+
+        // --- COLUNA 1: Perfil e Mapa de Aplicações ---
+        const RenderProfileAndRootNavigation = () => {
+            const profileColor = PERFIL_COLOR;
+            
+            return (
+                <div className="flex flex-col gap-1 w-full relative">
+                    {/* SEÇÃO: PERFIL (ROXO) */}
+                    <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
+
+                    <button onClick={() => { onAuth(); setIsOpen(false); }} 
+                        // CORREÇÃO AQUI: Mudança de mt-2 para mt-4 para afastar o botão do título SectionTitle
+                        className={`chip-button w-full mb-1 mt-4 px-3 py-3 rounded-xl flex items-center justify-start bg-${profileColor}-50 border border-${profileColor}-200 text-${profileColor}-700 hover:bg-${profileColor}-100 transition-all text-left group`}>
+                        <div className={`w-10 h-10 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-sm shrink-0 mr-3 shadow-sm group-hover:scale-110 transition-transform`}>
+                            {userData ? getInitials(userData.name) : <span className="material-symbols-rounded">person</span>}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold leading-tight">
+                                {userData ? userData.name.split(' ')[0] : 'Visitante'}
+                            </span>
+                            <span className="text-xs opacity-80">
+                                {userData ? 'Perfil Conectado' : 'Login / Cadastre-se'}
+                            </span
+                        ></div>
+                    </button>
+                    
+                    {/* SEÇÃO: MAPA DE APPLICAÇÕES (ÍNDIGO) - SEM HIERARQUIA INTERNA AQUI */}
+                    <SectionTitle icon="map" title="Mapa de Aplicações" color={NAVEGACAO_COLOR} isSubMenu={false} />
+
+                    {/* RENDERIZAÇÃO DOS ITENS DO MAPA COMO LISTA DE BOTÕES (APENAS RAIZ) */}
+                    <div className="space-y-1 mt-2 w-full">
+                        {MAIN_MENU_PORTFOLIO.map((item) => (
+                            <RenderNavButton
+                                key={item.id}
+                                item={item}
+                                color={NAVEGACAO_COLOR}
+                                onClickOverride={() => handleMenuItemClick(item)} // Usa o handler simplificado
+                                isInactiveModeActive={isInactiveModeActive} // Passa o novo estado
+                            />
+                        ))}
+                    </div>
+                    
+                    {/* SEPARADOR para mobile (visível apenas em telas pequenas) */}
+                    <div className="h-px bg-slate-200 my-4 md:hidden"></div>
+                </div>
+            );
+        };
+
+
+        return (
+            <div ref={menuRef} className="fixed top-4 left-4 z-50 flex flex-col items-start">
+                {/* NOVO BOTÃO MENU: Usa o padrão de chip flutuante */}
+                <button 
+                    onClick={toggleMenu}
+                    className="chip-button bg-indigo-100 border-indigo-500 text-indigo-600 font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 z-50 px-4 py-2.5 h-12 shadow-lg" // Adicionado shadow-lg
+                >
+                    <span className={`material-symbols-rounded text-xl mr-2 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}>
+                        {isOpen ? 'close' : 'menu'} 
+                    </span>
+                    <span className="font-semibold">
+                        {isOpen ? 'Fechar' : 'Menu'}
+                    </span>
+                </button>
+
+                <div 
+                    className={`
+                        absolute top-16 left-0 mt-2 w-full md:w-[620px] 
+                        bg-white backdrop-blur-md border rounded-2xl shadow-2xl p-4 
+                        
+                        // Borda Índigo (azul) e condicional para espessura
+                        border-indigo-300 transition-all ${isOpen ? 'border-2' : 'border'} 
+                        
+                        // Breakpoint MD: Grid de 2 Colunas (para Tablet/Desktop)
+                        flex flex-col md:grid md:grid-cols-2 md:gap-4
+                        
+                        transition-all duration-300 origin-top-left
+                        max-h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden custom-scrollbar // Rolagem Vertical e Sem Horizontal
+                        
+                        ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-4 pointer-events-none'}
+                    `}
+                >
+                    {/* COLUNA 1: Renderização do Perfil e Camadas de Navegação */}
+                    <RenderProfileAndRootNavigation />
+
+                    {/* COLUNA 2: Sistemas e Acessibilidade (Sempre visível se o menu estiver aberto) */}
+                    <SystemAccessibilityColumn 
+                        isFloatingBtnVisible={isFloatingBtnVisible} // CORREÇÃO AQUI
+                        toggleAccessibility={toggleAccessibility} 
+                        isInactiveModeActive={isInactiveModeActive} 
+                        setIsInactiveModeActive={setIsInactiveModeActive} 
+                    />
                 </div>
             </div>
         );
     };
 
-    const MiniAppModal = ({ modalConfig, closeModal, loading, setLoading, appId, fbConfig }) => {
+    // --- COMPONENTE DE AUTH NATIVO (LOGIN/CADASTRO) - TEMA ROXO ---
+    const AuthPanel = ({ onLoginSuccess, onClose }) => {
+        const [isRegistering, setIsRegistering] = useState(false);
+        const [formData, setFormData] = useState({ phone: '', name: '', password: '' });
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (isRegistering && !formData.name) { alert("Por favor, preencha o nome."); return; }
+            if (!formData.phone || formData.phone.length < 8) { alert("Telefone inválido."); return; }
+            onLoginSuccess({ phone: formData.phone, name: formData.name || 'Usuário', role: 'user' });
+        };
+
+        return (
+            <div className="p-8 w-full pt-16">
+                <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-purple-700">{isRegistering ? 'Criar Conta' : 'Entrar'}</h2>
+                    <p className="text-sm text-purple-500 mt-1">{isRegistering ? 'Preencha seus dados para começar.' : 'Acesse sua conta para continuar.'}</p>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {isRegistering && (
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-1">Nome Completo</label>
+                            <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="Seu nome" />
+                        </div>
+                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-purple-700 mb-1">Telefone (ID)</label>
+                            <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="(99) 99999-9999" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-purple-700 mb-1">Senha</label>
+                        <input type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="******" required />
+                    </div>
+                    <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:scale-[1.02]">{isRegistering ? 'Cadastrar' : 'Entrar'}</button>
+                </form>
+                <div className="mt-6 text-center">
+                    <button onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-purple-600 hover:text-purple-800 font-medium underline">
+                        {isRegistering ? 'Já tem conta? Fazer Login' : 'Não tem conta? Cadastre-se'}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    // --- COMPONENTE DE CONFIGURAÇÕES (SETTINGS PANEL) - TEMA CIANO ---
+    const SettingsPanel = ({ userData }) => {
+        return (
+            <div className="p-8 w-full pt-16">
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-cyan-700">Configurações</h2>
+                    <p className="text-sm text-cyan-600 mt-1">Ajuste o sistema do seu jeito.</p>
+                </div>
+
+                <div className="space-y-6">
+                    {/* Seção de Perfil com borda de destaque */}
+                    <div className="bg-cyan-50 p-4 rounded-xl border border-cyan-300">
+                        <div className="flex items-center mb-3">
+                            <span className="material-symbols-rounded text-cyan-500 mr-2">badge</span>
+                            <h3 className="font-semibold text-cyan-800">Meus Dados</h3>
+                        </div>
+                        <p className="text-sm text-cyan-700"><strong>Nome:</strong> {userData ? userData.name : 'Visitante'}</p>
+                        <p className="text-sm text-cyan-700"><strong>ID:</strong> {userData ? userData.phone : '-'}</p>
+                        <button className="mt-3 text-xs text-cyan-600 hover:text-cyan-800 font-medium flex items-center bg-white border border-cyan-300 px-3 py-1.5 rounded-full shadow-sm hover:bg-cyan-50 transition-colors">
+                            <span className="material-symbols-rounded text-sm mr-1">edit</span> Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- CARTÃO PRINCIPAL DA TELA DE APPS ---
+    const AppCard = ({ item, onClick, isInactiveModeActive }) => {
+        
+        const isLogicallyInactive = item.action === 'placeholder';
+        const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
+        
+        // Determina a cor visual (slate se modo inativo e for placeholder, senão usa a cor do item)
+        const visualColor = shouldShowInactiveStyle ? 'slate' : item.color;
+        
+        // --- REGRA GERAL DE INATIVIDADE ---
+        const opacity = isLogicallyInactive && !shouldShowInactiveStyle ? 'opacity-70' : '';
+        const pointerEvents = isLogicallyInactive ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer';
+        
+        // Classes de cor baseadas na visualColor
+        const colorClass = `border-${visualColor}-500 bg-${visualColor}-500/20`;
+        const iconColorClass = `text-${visualColor}-500`;
+        const textColorClass = `text-${visualColor}-700`;
+
+        // Se inativo, o clickHandler não faz nada.
+        const clickHandler = isLogicallyInactive ? (e) => e.preventDefault() : onClick;
+        
+        return (
+            <div 
+                data-app-id={item.id} 
+                onClick={clickHandler} 
+                role="button" 
+                className={`card-base ${colorClass} w-32 h-32 md:w-36 md:h-36 ${opacity} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
+            >
+                {/* ÍCONE GRANDE */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                    <span 
+                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }} 
+                        className={`material-symbols-rounded leading-none ${iconColorClass} opacity-30`}
+                    >
+                        {item.icon}
+                    </span>
+                </div>
+                
+                {/* TÍTULO */}
+                <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
+                    <h2 className={`text-sm ${textColorClass} font-semibold leading-tight`}>{item.title}</h2>
+                </div>
+            </div>
+        );
+    };
+
+    const MiniAppModal = ({ modalConfig, closeModal, loading, setLoading, appId, customClass, dynamicHeight }) => {
         const iframeRef = React.useRef(null);
-        const { modalId, url, basePath } = modalConfig;
+        const { modalId, url, basePath, color } = modalConfig; 
+        
+        const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
+        
+        const containerClasses = customClass || `relative w-full max-w-5xl h-full bg-white rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up`;
 
         const loadMiniAppContent = useCallback(async () => {
             if (!url || !iframeRef.current) return;
-
             setLoading(true);
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 const htmlContent = await response.text();
-
-                // USO DA FUNÇÃO EXTERNA SEGURA
-                // Aqui delegamos o trabalho sujo de string HTML para o script puro lá em cima
+                let processedHtml = "";
                 if (window.prepareMiniAppHtml) {
-                    iframeRef.current.srcdoc = window.prepareMiniAppHtml(htmlContent, appId, basePath);
+                    // Prepara o HTML e injeta o Dark Mode se estiver ativo
+                    const isDark = document.documentElement.classList.contains('dark');
+                    processedHtml = window.prepareMiniAppHtml(htmlContent, appId, basePath);
+                    if (dynamicHeight) processedHtml = processedHtml.replace('padding-bottom: 120px !important;', 'padding-bottom: 1rem !important;');
+                    
+                    // Injeta a classe dark no iframe
+                    if (isDark) {
+                        processedHtml = processedHtml.replace('<html lang="pt-BR">', '<html lang="pt-BR" class="dark">');
+                    }
+                    
+                    iframeRef.current.srcdoc = processedHtml;
                 } else {
-                    console.error("Função prepareMiniAppHtml não encontrada.");
-                    iframeRef.current.srcdoc = htmlContent; // Fallback arriscado
+                    iframeRef.current.srcdoc = htmlContent; 
                 }
-
                 iframeRef.current.onload = () => {
                     setLoading(false);
+                    if (dynamicHeight && iframeRef.current.contentWindow) {
+                        try {
+                            const doc = iframeRef.current.contentWindow.document;
+                            const height = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+                            if (height > 0) iframeRef.current.style.height = (height + 20) + 'px'; 
+                        } catch(e) {}
+                    }
                 };
-
             } catch (error) {
-                console.error(`Falha ao carregar MiniApp:`, error);
-                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem; font-family:sans-serif;">
-                    <h3 style="color:#ef4444; margin:0;">Erro de Carregamento</h3>
-                    <p style="color:#9ca3af; font-size:0.9rem;">O arquivo <code>${url.split('/').pop()}</code> falhou ao carregar.</p>
-                </div>`;
+                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem;">Erro de Carregamento</div>`;
                 setLoading(false);
             }
-        }, [url, basePath, setLoading, appId]);
+        }, [url, basePath, setLoading, appId, dynamicHeight]);
 
-        useEffect(() => {
-            loadMiniAppContent();
-        }, [loadMiniAppContent]);
+        useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
 
         return (
-            <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" 
-                className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-                <div className="relative w-full max-w-5xl h-full bg-white rounded-2xl shadow-2xl border border-indigo-500 flex flex-col overflow-hidden animate-fade-in-up">
-                    <button onClick={closeModal} 
-                            className="absolute top-4 right-4 z-20 chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105 bg-white border border-red-300 text-red-500">
-                        <span className="material-symbols-rounded text-xl mr-2">close</span>
-                        <span>Fechar</span>
-                    </button>
-                    
-                    <iframe 
-                        ref={iframeRef} 
-                        className="w-full h-full border-0" 
-                        title={`App ${modalConfig.title || modalId}`}
-                    ></iframe>
-
-                    {loading && (
-                        <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm">
-                            <svg aria-hidden="true" className="w-10 h-10 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
-                            <p className="ml-3 text-sm font-semibold text-gray-700">Carregando MiniApp...</p>
-                        </div>
-                    )}
+            <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+                <div onClick={(e) => e.stopPropagation()} className={containerClasses}>
+                    <CloseButton onClick={closeModal} themeColor={color} /> 
+                    <iframe ref={iframeRef} className="w-full h-full border-0" title={`App ${modalConfig.title || modalId}`} style={dynamicHeight ? { minHeight: '300px' } : {}}></iframe>
+                    {loading && <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm"><p className="ml-3 text-sm font-semibold text-gray-700">Carregando...</p></div>}
                 </div>
             </div>
         );
     };
 
     function App() {
-        const [userPhone, setUserPhone] = useState(localStorage.getItem('user_phone') || null);
-        const isAuthReady = true; 
-        
+        const [userData, setUserData] = useState(null);
+        const [adminConfig, setAdminConfig] = useState({ sheetId: '', sheetTab: '' });
+        const [isSyncing, setIsSyncing] = useState(false);
         const [currentView, setCurrentView] = useState('portfolio');
         const [history, setHistory] = useState([]);
-        const [isNavMinimized, setIsNavMinimized] = useState(false);
-        
         const [modalConfig, setModalConfig] = useState(null);
         const [modalLoading, setModalLoading] = useState(false);
-        const [placeholderVisible, setPlaceholderVisible] = useState(false);
+        const [showAuthModal, setShowAuthModal] = useState(false);
+        const [showSettingsModal, setShowSettingsModal] = useState(false);
+        
+        // NOVO ESTADO: Modo para forçar a visualização cinza em botões inativos
+        const [isInactiveModeActive, setIsInactiveModeActive] = useState(false); 
+        
+        // CORREÇÃO: Força o Modo Claro (false) para estabilizar.
+        const [isDarkMode, setIsDarkMode] = useState(false); 
+        // CORREÇÃO: Renomeado showAccessibilityBtn para isFloatingBtnVisible
+        const [isFloatingBtnVisible, setIsFloatingBtnVisible] = useState(true);
+        const [isReducedAnimation, setIsReducedAnimation] = useState(false); 
+        
+        // Função para alternar a acessibilidade
+        // CORREÇÃO: Usa setIsFloatingBtnVisible
+        const toggleAccessibility = (newState) => {
+            setIsFloatingBtnVisible(newState);
+        };
+
+
+        // Efeito para aplicar a classe 'dark' no <html> e ouvir mudanças do sistema
+        useEffect(() => {
+            const rootHtml = document.documentElement;
+            // CORREÇÃO: Remove a classe dark para forçar o light mode
+            rootHtml.classList.remove('dark');
+            
+            // Remove o listener de mudança de tema do sistema operacional, já que está travado
+            
+        }, [isDarkMode]); // O isDarkMode não será usado aqui, mas o efeito é mantido para clareza
+
+        // Efeito para aplicar animações reduzidas (futura implementação)
+        useEffect(() => {
+            console.log(`Animações Reduzidas: ${isReducedAnimation ? 'ATIVAS' : 'INATIVAS'}`);
+        }, [isReducedAnimation]);
 
         useEffect(() => {
-            const MINIMIZE_DELAY = 5000; 
-            let timer;
-
-            const startTimer = () => {
-                timer = setTimeout(() => {
-                    setIsNavMinimized(true);
-                }, MINIMIZE_DELAY);
+            const loadData = async () => {
+                try {
+                    const users = await db.user.toArray();
+                    if (users.length > 0) setUserData(users[0]);
+                    const sheetId = await db.settings.get('sheetId');
+                    const sheetTab = await db.settings.get('sheetTab');
+                    if (sheetId && sheetTab) setAdminConfig({ sheetId: sheetId.value, sheetTab: sheetTab.value });
+                } catch (error) { console.error("Erro ao carregar dados do Dexie:", error); }
             };
+            loadData();
+        }, []);
 
-            const resetTimer = () => {
-                clearTimeout(timer);
-                setIsNavMinimized(false);
-                startTimer();
-            };
-            
-            window.addEventListener('mousemove', resetTimer);
-            window.addEventListener('click', resetTimer);
-            window.addEventListener('scroll', resetTimer);
-            
-            startTimer();
-            
-            const handleAuthMessage = (event) => {
-                if (event.data && event.data.type === 'AUTH_SUCCESS' && event.data.phone) {
-                    setUserPhone(event.data.phone);
-                    localStorage.setItem('user_phone', event.data.phone);
-                    closeModal();
-                }
-            };
+        const saveAdminConfig = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const newSheetId = form.sheetId.value;
+            const newSheetTab = form.sheetTab.value;
+            try {
+                await db.settings.put({ key: 'sheetId', value: newSheetId });
+                await db.settings.put({ key: 'sheetTab', value: newSheetTab });
+                setAdminConfig({ sheetId: newSheetId, sheetTab: newSheetTab });
+                alert("Configurações salvas com sucesso!");
+                closeModal();
+            } catch (error) { alert("Erro ao salvar configurações."); }
+        };
 
-            window.addEventListener('message', handleAuthMessage);
-
-            return () => {
-                clearTimeout(timer);
-                window.removeEventListener('mousemove', resetTimer);
-                window.removeEventListener('click', resetTimer);
-                window.removeEventListener('scroll', resetTimer);
-                window.removeEventListener('message', handleAuthMessage);
-            };
-        }, [currentView, modalConfig]); 
+        const backupToCloud = async () => {
+            if (!userData) { alert("Nenhum dado de usuário para salvar."); return; }
+            if (!adminConfig.sheetId) { alert("Atenção: ID da Planilha não configurado no Painel Admin!"); return; }
+            setIsSyncing(true);
+            try {
+                const payload = { action: 'backup', user: userData, timestamp: new Date().toISOString(), targetSheetId: adminConfig.sheetId, targetTabName: adminConfig.sheetTab || 'users' };
+                await fetch(DEFAULT_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                alert("Backup enviado para a Planilha configurada!");
+            } catch (error) { alert("Erro ao conectar."); } finally { setIsSyncing(false); }
+        };
+        
+        const handleNativeLogin = async (user) => {
+            const newUser = { id: user.phone, phone: user.phone, name: user.name || 'Usuário', createdAt: new Date() };
+            try {
+                await db.user.put(newUser);
+                setUserData(newUser);
+                setShowAuthModal(false); 
+            } catch (e) { alert("Erro ao salvar login localmente."); }
+        };
 
         const navigateTo = (newView, pushToHistory = true) => {
-            if (currentView !== newView && pushToHistory) {
-                setHistory(prev => [...prev, currentView]);
-            }
+            if (currentView !== newView && pushToHistory) setHistory(prev => [...prev, currentView]);
             setCurrentView(newView);
         };
 
@@ -330,182 +1081,197 @@
                 const previousView = history[history.length - 1];
                 setHistory(prev => prev.slice(0, -1));
                 setCurrentView(previousView);
-            } else {
-                setCurrentView('portfolio');
-            }
+            } else { setCurrentView('portfolio'); }
         };
         
         const handleCardClick = (item) => {
-            if (item.status === "Em breve") return; 
-
-            if (item.action === 'modal') {
-                setModalConfig(item);
-                setModalLoading(true);
-            } else if (item.action === 'placeholder') {
-                setPlaceholderVisible(true);
-            } else if (item.view) {
-                navigateTo(item.view);
+            if (item.action === "placeholder") {
+                // Se for placeholder, não faz nada (botão cinza não responde)
+                return; 
             }
+            if (item.id === 'auth') { setShowAuthModal(true); return; }
+            
+            // NOVO: Tratamento do Modal de Menu de Educação
+            if (item.modalId === 'education-menu-modal') {
+                setModalConfig({ modalId: 'education-menu-modal', title: 'Central de Educação' });
+                return;
+            }
+
+            if (item.action === 'modal') { setModalConfig(item); setModalLoading(true); } 
+            else if (item.action === 'placeholder') { 
+                return; 
+            } 
+            else if (item.view) { navigateTo(item.view); }
+        };
+        
+        // Função genérica para clique em App de dentro de um modal (ex: EducationMenuModal)
+        const handleAppClickFromModal = (item) => {
+            setModalConfig(item); 
+            setModalLoading(true);
+            // O EducationMenuModal fecha a si mesmo após chamar esta função
         };
 
         const closeModal = () => {
             setModalConfig(null);
-            setPlaceholderVisible(false);
+            setShowAuthModal(false); 
+            setShowSettingsModal(false);
         };
         
-        const openAuthModal = () => {
-            handleCardClick(AUTH_ITEM_CONFIG);
-        };
-
+        const openAuthModal = () => handleCardClick(AUTH_ITEM_CONFIG);
 
         const currentViewData = VIEW_MAP[currentView] || VIEW_MAP['portfolio'];
         const renderedItems = useMemo(() => currentViewData.data || [], [currentViewData.data]);
         
+        
         const RenderedView = ({ title, subtitle, items }) => (
             <div className="flex flex-col items-center">
                 <section className="mt-4 text-center w-full">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-800">{title}</h1>
+                    {/* Dark mode classes desnecessárias já que o app está travado no Light mode */}
+                    <h1 className="3xl font-bold tracking-tight text-gray-800">{title}</h1>
                     <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
                 </section>
+                {/* REVERSÃO: Voltando para a classe CSS definida no <style> para garantir quebras de coluna corretas e centralização. */}
                 <div className="app-grid-container w-full max-w-5xl">
                     <section className="mt-6 app-grid-base-flexible mx-auto">
-                        {items.map((item, index) => (
-                            <AppCard 
-                                key={item.id || index} 
-                                item={item} 
-                                onClick={() => handleCardClick(item)} 
-                            />
-                        ))}
+                        {items.map((item, index) => (<AppCard key={item.id || index} item={item} onClick={() => handleCardClick(item)} isInactiveModeActive={isInactiveModeActive} />))}
                     </section>
                 </div>
             </div>
         );
+
+        // Estilos para o botão flutuante
+        const buttonBaseClasses = "chip-button no-shadow font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 h-12 flex justify-center overflow-hidden";
+        const fixedButtonClasses = `${buttonBaseClasses} px-4`;
+
+        // Lógica para o BOTÃO FLUTUANTE (Canto superior direito)
+        const floatingButtonClasses = useMemo(() => {
+            const base = `${fixedButtonClasses} animate-fade-in-up no-shadow`;
+            const color = isInactiveModeActive
+                ? `bg-slate-100 border-slate-300 text-slate-500 cursor-not-allowed`
+                : `bg-fuchsia-100 border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-200 hover:border-fuchsia-600`;
+            return `${base} ${color}`;
+        }, [isInactiveModeActive]);
         
-        const AlertPanel = () => {
-            return (
-                <div className="p-6 text-center">
-                    <h2 className="text-2xl font-bold mb-4 text-amber-600">Painel de Alertas</h2>
-                    <span className="material-symbols-rounded text-6xl text-amber-400">info</span>
-                    <p className="text-gray-600 mt-4">O sistema de notificações via Planilha Google está ativo. Novas notificações aparecerão aqui após o login.</p>
-                    <p className="mt-2 text-sm text-gray-500">Usuário atual: {userPhone || 'Não Logado'}</p>
-                    <button onClick={closeModal} className="mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
-                        Fechar
-                    </button>
-                </div>
-            );
-        };
-        
-        const minimizationClasses = isNavMinimized 
-            ? 'w-12 h-12 p-0 flex items-center justify-center transform scale-95'
-            : 'w-auto px-4 py-2.5'; 
-        
-        const textClasses = isNavMinimized ? 'hidden' : 'inline';
+        const floatingButtonClickHandler = isInactiveModeActive ? () => {} : () => {};
+
 
         return (
             <div className="min-h-screen antialiased flex flex-col">
-                <div className="fixed top-4 left-4 z-40 flex flex-col space-y-2">
-                    {history.length > 0 && (
-                        <button onClick={goBack} 
-                                className={`chip-button bg-teal-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-teal-300 text-teal-600 ${minimizationClasses}`}>
-                            <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>arrow_back</span>
-                            <span className={textClasses}>Voltar</span>
+                
+                {/* --- MENU DE NAVEGAÇÃO CENTRALIZADO --- */}
+                <MainMenu 
+                    userData={userData}
+                    onHome={(viewId) => { navigateTo(viewId || 'portfolio', false); }}
+                    onAlerts={() => handleCardClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '' })}
+                    onSettings={() => setShowSettingsModal(true)}
+                    onAuth={openAuthModal}
+                    onAdmin={() => handleCardClick({ action: 'modal', modalId: 'admin-modal', title: 'Admin' })}
+                    isFloatingBtnVisible={isFloatingBtnVisible} // CORRIGIDO AQUI
+                    toggleAccessibility={toggleAccessibility} // <-- Passando a função aqui
+                    onAppClick={handleAppClickFromModal} // Adiciona a função para ser usada pelo Menu
+                    isInactiveModeActive={isInactiveModeActive} // NOVO PROP
+                    setIsInactiveModeActive={setIsInactiveModeActive} // NOVO PROP
+                />
+                
+                {/* --- BOTÕES FLUTUANTES DIREITA --- */}
+                <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
+                    {/* Botão Flutuante de Acessibilidade (Controlado pelo Menu) */}
+                    {isFloatingBtnVisible && ( // CORRIGIDO AQUI
+                        <button 
+                            onClick={floatingButtonClickHandler} 
+                            className={floatingButtonClasses}
+                            disabled={isInactiveModeActive}
+                        >
+                            <span className="material-symbols-rounded text-xl mr-2">accessibility_new</span>
+                            <span className="whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out">Acessibilidade</span>
                         </button>
                     )}
-                    <button onClick={() => navigateTo('portfolio', false)} 
-                            className={`chip-button bg-indigo-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-indigo-500 text-indigo-600 ${minimizationClasses}`}>
-                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>home</span>
-                        <span className={`hidden sm:${textClasses}`}>Início</span> 
-                    </button>
-                    <button onClick={() => handleCardClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '' })} 
-                            className={`chip-button bg-amber-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-amber-500 text-amber-600 ${minimizationClasses}`}>
-                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>notifications</span>
-                        <span className={`hidden sm:${textClasses}`}>Alertas</span>
-                    </button>
                 </div>
-                
-                <div className="fixed top-4 right-4 z-40">
-                    <button onClick={openAuthModal} 
-                            className={`chip-button bg-purple-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-purple-500 text-purple-600 ${isNavMinimized ? 'w-12 h-12 p-0 flex items-center justify-center transform scale-95' : 'w-auto px-4 py-2.5'}`}>
-                        
-                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : (userPhone ? 'mr-2' : 'mr-2')}`}>
-                            {userPhone ? 'account_circle' : 'login'}
-                        </span>
-                        
-                        <span className={`hidden sm:${isNavMinimized ? 'hidden' : 'inline'}`}>
-                            {userPhone ? userPhone : 'Entrar/Cadastrar'}
-                        </span>
-                        
-                    </button>
-                </div>
-
 
                 <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 min-h-screen flex flex-col w-full justify-center">
-                    <RenderedView 
-                        title={currentViewData.title} 
-                        subtitle={currentViewData.subtitle} 
-                        items={renderedItems} 
-                    />
+                    <RenderedView title={currentViewData.title} subtitle={currentViewData.subtitle} items={renderedItems} />
                 </main>
                 
-                {placeholderVisible && (
-                    <div id="placeholder-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-                        <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden p-8 text-center">
-                            <span className="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
-                            <h3 className="text-xl font-bold text-gray-800">Recurso em Desenvolvimento</h3>
-                            <p className="text-gray-600 mt-2">Esta funcionalidade estará disponível em breve. Agradecemos sua paciência!</p>
-                            <button onClick={closeModal} className="chip-button mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
-                                <span className="material-symbols-rounded text-xl mr-2">check</span>
-                                <span>Entendido</span>
-                            </button>
+                {/* NOVO MODAL: MENU DE EDUCAÇÃO COM GAVETA */}
+                {modalConfig && modalConfig.modalId === 'education-menu-modal' && (
+                    <EducationMenuModal closeModal={closeModal} onAppClick={handleAppClickFromModal} isInactiveModeActive={isInactiveModeActive} />
+                )}
+
+                {/* MODAL ADMIN */}
+                {modalConfig && modalConfig.modalId === 'admin-modal' && (
+                    <div id="admin-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
+                        <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                             <CloseButton onClick={closeModal} themeColor="slate" />
+                            <div className="p-6 pt-12">
+                                <h2 className="text-2xl font-bold mb-4 text-slate-700 flex items-center justify-center"><span className="material-symbols-rounded mr-2 text-3xl">admin_panel_settings</span>Configurações Admin</h2>
+                                <form onSubmit={saveAdminConfig} className="space-y-4 max-w-lg mx-auto">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">ID da Planilha Google</label>
+                                        <input type="text" name="sheetId" defaultValue={adminConfig.sheetId} placeholder="Ex: 1aKPEGQcKRzY..." className="w-full rounded-md border border-slate-400 shadow-sm focus:border-slate-500 focus:ring-slate-500 p-2 bg-slate-50 focus:bg-white transition-colors" required />
+                                        <p className="text-xs text-slate-500 mt-1">O ID longo encontrado na URL da sua planilha.</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Nome da Aba (Tab)</label>
+                                        <input type="text" name="sheetTab" defaultValue={adminConfig.sheetTab} placeholder="Ex: users" className="w-full rounded-md border border-slate-400 shadow-sm focus:border-slate-500 focus:ring-slate-500 p-2 bg-slate-50 focus:bg-white transition-colors" required />
+                                    </div>
+                                    <div className="pt-4 flex justify-center"><button type="submit" className="bg-slate-600 text-white px-6 py-2 rounded-full hover:bg-slate-700 transition shadow-lg flex items-center"><span className="material-symbols-rounded mr-2">save</span>Salvar Configurações</button></div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 )}
                 
+                {/* MODAL ALERTAS */}
                 {modalConfig && modalConfig.modalId === 'alerts' && (
-                    <div id="alerts-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-                        <div className="relative w-full max-w-xl h-full max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden">
-                            <div className='flex justify-end p-2'>
-                                <button onClick={closeModal} className="text-gray-500 hover:text-gray-900">
-                                    <span className="material-symbols-rounded">close</span>
-                                </button>
+                    <div id="alerts-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
+                        <div className="relative w-full max-w-xl h-full max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                            <CloseButton onClick={closeModal} themeColor="amber" />
+                            <div className="p-6 pt-12 text-center">
+                                <h2 className="text-2xl font-bold mb-4 text-amber-600">Painel de Alertas</h2>
+                                <span className="material-symbols-rounded text-6xl text-amber-400">info</span>
+                                <p className="text-amber-700 mt-4 font-medium">O sistema de notificações via Planilha Google está ativo.</p>
+                                <p className="mt-2 text-sm text-amber-600/80">Usuário: {userData ? userData.phone : 'Não Logado'}</p>
+                                {userData && (
+                                    <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-300">
+                                        <h4 className="font-semibold text-amber-800 mb-2">Sincronização</h4>
+                                        {!adminConfig.sheetId ? (<p className="text-red-500 text-sm mb-2">⚠️ Configure o ID da planilha no Painel Admin.</p>) : (<p className="text-green-600 text-xs mb-2">Conectado à planilha: ...{adminConfig.sheetId.substr(0,8)}</p>)}
+                                        <button onClick={backupToCloud} disabled={isSyncing || !adminConfig.sheetId} className={`bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center transition shadow-sm ${(!adminConfig.sheetId) ? 'opacity-50 cursor-not-allowed' : ''}`}><span className={`material-symbols-rounded text-xl mr-2 ${isSyncing ? 'animate-spin' : ''}`}>{isSyncing ? 'sync' : 'cloud_upload'}</span><span>{isSyncing ? 'Fazer Backup na Nuvem' : 'Fazer Backup na Nuvem'}</span></button>
+                                    </div>
+                                )}
+                                <br/><button onClick={closeModal} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Fechar</button>
                             </div>
-                            <AlertPanel />
                         </div>
                     </div>
                 )}
 
-                {modalConfig && modalConfig.modalId !== 'alerts' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && (
-                    <MiniAppModal 
-                        modalConfig={modalConfig} 
-                        closeModal={closeModal} 
-                        loading={modalLoading} 
-                        setLoading={setModalLoading} 
-                        appId={APP_ID}
-                        fbConfig={FIREBASE_CONFIG} 
-                    />
+                {/* MODAIS DE MINI-APPS (iframe) */}
+                {modalConfig && modalConfig.modalId !== 'alerts' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && modalConfig.modalId !== 'admin-modal' && modalConfig.modalId !== 'education-menu-modal' && (
+                    <MiniAppModal modalConfig={modalConfig} closeModal={closeModal} loading={modalLoading} setLoading={setModalLoading} appId={APP_ID} />
                 )}
 
-                {modalConfig && modalConfig.modalId === 'auth-modal' && (
-                    <MiniAppModal 
-                        modalConfig={{ 
-                            modalId: 'auth-modal',
-                            title: 'Cadastro e Acesso',
-                            url: AUTH_ITEM_CONFIG.url, 
-                            basePath: AUTH_ITEM_CONFIG.basePath
-                        }} 
-                        closeModal={closeModal} 
-                        loading={modalLoading} 
-                        setLoading={setModalLoading} 
-                        appId={APP_ID}
-                        fbConfig={FIREBASE_CONFIG} 
-                    />
+                {/* MODAL AUTH */}
+                {showAuthModal && (
+                    <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
+                        <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                            <CloseButton onClick={closeModal} themeColor="purple" />
+                            <AuthPanel onLoginSuccess={handleNativeLogin} onClose={closeModal} />
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL CONFIGURAÇÕES */}
+                {showSettingsModal && (
+                    <div id="settings-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
+                        <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                            <CloseButton onClick={closeModal} themeColor="cyan" />
+                            <SettingsPanel userData={userData} />
+                        </div>
+                    </div>
                 )}
             </div>
         );
     }
 
-    // --- MONTAGEM DO APP (CORREÇÃO DE ESCOPO) ---
-    // Movemos a renderização para DENTRO do script Babel para garantir que 'App' esteja disponível.
     const rootElement = document.getElementById('root');
     if (rootElement) {
         const root = ReactDOM.createRoot(rootElement);
