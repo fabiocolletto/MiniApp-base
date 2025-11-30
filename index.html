@@ -199,7 +199,10 @@
     ];
 
     // Nível 1: Portfólio Principal (Mapeado para o menu principal)
+    // ALTERAÇÃO: Adicionado 'menu-central' como o primeiro item
     const MAIN_MENU_PORTFOLIO = [
+        // NOVO ITEM: O antigo Menu Centralizado, agora um AppCard/Modal
+        { id: 'menu-central', title: "Menu Central", action: 'modal', modalId: 'central-menu-modal', color: "indigo", icon: "menu_book" },
         // Item ATIVO (modal)
         { id: 'education', title: "Educação", action: 'modal', modalId: 'education-menu-modal', color: "emerald", icon: "cast_for_education" },
         // Itens PLACEHOLDERS (serão cinza no modo inativo)
@@ -271,16 +274,16 @@
     );
     
     // --- Renderização do Botão de Navegação (Reutilizado no Menu e no Modal) ---
-    const RenderNavButton = ({ item, color, onClickOverride, isInactiveModeActive }) => {
-        // --- LÓGICA DE INATIVIDADE ---
+    const RenderNavButton = ({ item, color, onClickOverride }) => {
+        // Lógica de inatividade agora é FIXA (isInactiveModeActive = true implicitamente)
         const isLogicallyInactive = item.action === 'placeholder';
-        // A inatividade visual (cinza) é forçada APENAS se o modo inativo estiver ativado.
-        const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
+        // A inatividade visual (cinza) é SEMPRE TRUE se for placeholder, removendo a dependência de `isInactiveModeActive`.
+        const shouldShowInactiveStyle = isLogicallyInactive; 
         
-        // A inatividade real (botão desativado) é sempre verificada pelo isLogicallyInactive.
         const isDisabled = isLogicallyInactive; 
         
         const themeColor = item.color || color;
+        // O visual é cinza se inativo, senão usa a cor do tema.
         const visualColor = shouldShowInactiveStyle ? 'slate' : themeColor;
         
         // CLASSES BASE CINZAS (usadas para o modo inativo)
@@ -308,7 +311,8 @@
         const textColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-700' : 'text-current';
         
         // A opacidade é aplicada quando o botão está logicamente inativo E o modo visual está ATIVO (colorido), para manter um leve hint.
-        const opacityClass = isDisabled && !shouldShowInactiveStyle ? 'opacity-70' : '';
+        // Como agora o visual é sempre cinza quando inativo, a opacidade não é mais necessária fora do estilo base.
+        const opacityClass = '';
 
         return (
             <button
@@ -331,7 +335,7 @@
     };
 
     // --- NOVO COMPONENTE: MODAL DE NAVEGAÇÃO EDUCAÇÃO (ACORDION/GAVETA) ---
-    const EducationMenuModal = ({ closeModal, onAppClick, isInactiveModeActive }) => {
+    const EducationMenuModal = ({ closeModal, onAppClick }) => {
         const [activeCategory, setActiveCategory] = useState(null);
         const modalRef = useRef(null);
         
@@ -360,12 +364,14 @@
                         key={item.id}
                         item={item} 
                         onClick={() => handleSubItemClick(item)} // Usa o handler do Modal
-                        isInactiveModeActive={isInactiveModeActive} // Passa o estado do modo inativo
+                        // isInactiveModeActive removido, AppCard lida com a inatividade internamente (fixo em true)
                     />
                 ))}
             </section>
         );
 
+        // Lógica de inatividade é fixa (true)
+        const isInactiveModeActive = true; 
 
         return (
             // Removendo padding do overlay em mobile (sm:p-4 mantém o padding em desktop)
@@ -400,7 +406,8 @@
                             {EDUCATION_CATEGORIES.map((category) => {
                                 // Lógica de inatividade para categorias (uso de action: 'placeholder')
                                 const isCategoryLogicallyInactive = category.action === 'placeholder';
-                                const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive && isInactiveModeActive;
+                                // A inatividade visual (cinza) é SEMPRE TRUE se for placeholder.
+                                const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive;
                                 
                                 // Determina a cor visual
                                 const categoryVisualColor = shouldCategoryShowInactiveStyle ? 'slate' : THEME_COLOR;
@@ -473,37 +480,26 @@
         );
     }
     
-    // --- COMPONENTE DE MENU CENTRALIZADO (ESTILO PÍLULA/CHIP) ---
-    const MainMenu = ({ 
+    // --- COMPONENTE DE MENU CENTRALIZADO (AGORA MODAL) ---
+    // RENOMEADO DE MainMenu para CentralMenuModal
+    const CentralMenuModal = ({ 
         userData, 
-        onHome, 
-        onAlerts, 
-        onSettings, 
         onAuth, 
-        onAdmin,
         isFloatingBtnVisible, 
         toggleAccessibility, 
         onAppClick,
-        isInactiveModeActive, // NOVO PROP
-        setIsInactiveModeActive, // NOVO PROP
-        isCompactMode // NOVO PROP
+        closeModal // NOVO PROP
     }) => {
-        const [isOpen, setIsOpen] = useState(false);
-        // NOVO: estado para rastrear o menu atual na navegação hierárquica
-        const [currentMenuId, setCurrentMenuId] = useState('portfolio-root');
-        const menuRef = useRef(null);
-
+        // COR TEMA: Para o card e o modal (Indigo)
+        const THEME_COLOR = "indigo";
         const PERFIL_COLOR = 'purple';
         const NAVEGACAO_COLOR = 'indigo';
         const SISTEMA_COLOR = 'cyan'; 
         const ACESSIBILIDADE_COLOR = 'fuchsia';
         
-        // Classe unificada para o visual de botões desativados/placeholder (Não usada nos itens do menu principal)
-        const INACTIVE_CHIP_CLASS = `
-            bg-slate-50 border-slate-300 text-slate-500 
-            hover:bg-slate-100 hover:border-slate-400
-        `;
-        
+        // Lógica de inatividade é fixa (true)
+        const isInactiveModeActive = true;
+
         const getInitials = (name) => {
             if (!name) return 'U';
             const parts = name.trim().split(' ');
@@ -511,13 +507,11 @@
             return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         };
 
-        const toggleMenu = () => {
-            setIsOpen(!isOpen);
-            // Ao fechar, sempre volta para o menu raiz
-            if (isOpen) {
-                setCurrentMenuId('portfolio-root');
-            }
-        };
+        // Classe unificada para o visual de botões desativados/placeholder (Não usada nos itens do menu principal)
+        const INACTIVE_CHIP_CLASS = `
+            bg-slate-50 border-slate-300 text-slate-500 
+            hover:bg-slate-100 hover:border-slate-400
+        `;
         
         const menuItemClass = (color) => `
             chip-button w-full mb-1 px-4 py-2.5 rounded-xl 
@@ -526,59 +520,27 @@
             hover:bg-${color}-100 hover:border-${color}-300 hover:translate-x-1 transition-all
         `;
         
-        // --- NAVEGAÇÃO HIERÁRQUICA (SubMenu) ---
+        // --- NAVEGAÇÃO HIERÁRQUICA (Simplificada) ---
         const handleMenuItemClick = (item) => {
             if (item.action === "placeholder") {
-                // Simplificação: O botão cinza não faz nada se for placeholder
                 return;
             }
             
-            // 1. Navegação para MODAL
+            // Se for um modal (Educação, Auth, Alertas, Admin, etc.), usa onAppClick
             if (item.action === 'modal') {
-                 if (item.modalId === 'education-menu-modal') {
-                    // Novo modal de educação
-                    onAppClick(item); 
-                 } else {
-                     // Lógica para outros modais (autenticação, etc.)
-                     if (item.modalId === 'registration') { onHome(item.view); }
-                     // Se for um modal genérico, usamos o onAppClick
-                     else { onAppClick(item); }
-                 }
-                 setIsOpen(false);
+                 // onAppClick está sendo usado para abrir o EducationMenuModal, Auth, etc.
+                 onAppClick(item); 
+                 // O modal atual deve ser fechado após a abertura de outro modal.
+                 closeModal();
                  return;
-            }
-
-            // Ação Antiga (Submenu/View) - Agora simplificada para apenas Views (se houver)
-            if (item.view) {
-                onHome(item.view); // Navega para a view principal
-                setIsOpen(false); 
-                setCurrentMenuId('portfolio-root'); // Volta ao raiz após fechar
             }
         };
         
         // --- COLUNA 2: Opções de Sistema e Acessibilidade (Estaticamente agrupadas) ---
-        const SystemAccessibilityColumn = ({ isFloatingBtnVisible, toggleAccessibility, isInactiveModeActive, setIsInactiveModeActive }) => { 
-            // Lógica de classes para o novo botão Inativos
-            const isInactiveActive = isInactiveModeActive;
-            const INACTIVE_MODE_COLOR = SISTEMA_COLOR; // Cor do tema (Cyan)
-            
-            // CLASSES DE ESTILO DO BOTÃO INATIVOS (Sempre Ciano)
-            const INACTIVE_MODE_BUTTON_CLASSES = `
-                bg-${INACTIVE_MODE_COLOR}-50 border-${INACTIVE_MODE_COLOR}-300 text-${INACTIVE_MODE_COLOR}-700 
-                hover:bg-${INACTIVE_MODE_COLOR}-100 hover:border-${INACTIVE_MODE_COLOR}-400
-            `;
-            
-            // Lógica de classes para o ícone e toggle do Inativos
-            const INACTIVE_ICON_COLOR_CLASS = isInactiveActive 
-                ? `text-${INACTIVE_MODE_COLOR}-600` // Ciano se ativo
-                : 'text-slate-500'; // Cinza se inativo
-            
-            const INACTIVE_TOGGLE_BG_CLASS = isInactiveActive ? `bg-${INACTIVE_MODE_COLOR}-400` : 'bg-slate-400';
-            const INACTIVE_TOGGLE_POS_CLASS = isInactiveActive ? 'right-0.5' : 'left-0.5';
-            
-            
-            // Lógica para os 4 botões de placeholder que precisam ficar cinza (slate) quando isInactiveModeActive=true
+        const SystemAccessibilityColumn = ({ isFloatingBtnVisible, toggleAccessibility }) => { 
+            // Lógica para os botões de placeholder que precisam ficar cinza (slate) 
             const systemStyle = useMemo(() => {
+                // Estilo INATIVO é o padrão para todos os placeholders neste grupo
                 const INACTIVE_SLATE_STYLE = {
                     baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
                     iconColor: 'text-slate-500',
@@ -587,23 +549,10 @@
                     toggleOffPos: 'left-0.5',
                     isDisabled: true,
                 };
-                
-                if (isInactiveModeActive) {
-                    return INACTIVE_SLATE_STYLE;
-                } else {
-                    const c = SISTEMA_COLOR;
-                    return {
-                        baseClasses: `bg-${c}-50 border border-${c}-200 text-${c}-700 hover:bg-${c}-100 hover:border-${c}-300 hover:translate-x-1`,
-                        iconColor: `text-${c}-600`,
-                        textColor: 'text-current',
-                        toggleBg: `bg-${c}-400`,
-                        toggleOffPos: 'left-0.5',
-                        isDisabled: false,
-                    };
-                }
-            }, [isInactiveModeActive]);
+                return INACTIVE_SLATE_STYLE;
+            }, []); // Não depende de isInactiveModeActive, pois é fixo agora.
             
-            // Lógica para o botão BOTÕES (Acessibilidade) - AGORA IGNORA isInactiveModeActive
+            // Lógica para o botão BOTÕES (Acessibilidade) - AGORA NÃO DEPENDE DE isInactiveModeActive
             const accessibilityVisualStyle = useMemo(() => {
                 const activeColor = ACESSIBILIDADE_COLOR; // fuchsia
                 
@@ -617,113 +566,108 @@
                 const toggleBg = isFloatingBtnVisible ? `bg-${activeColor}-400` : 'bg-slate-400'; 
                 const togglePos = isFloatingBtnVisible ? 'right-0.5' : 'left-0.5'; 
                 
-                // O modo Inativo não deve afetar o tema deste botão, apenas os placeholders.
                 return {
                     base: baseClasses,
                     icon: iconColor,
                     toggleBg: toggleBg,
                     togglePos: togglePos,
-                    textColor: 'text-current' // Deixa o texto ser definido pelas classes base
+                    textColor: 'text-current' 
                 };
             
             }, [isFloatingBtnVisible]); 
 
 
             return (
-             <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
-                {/* SEÇÃO: SISTEMA (CIANO) */}
-                <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
+                <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
+                    {/* SEÇÃO: SISTEMA (CIANO) */}
+                    <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
 
-                {/* BOTÃO: INATIVOS (TEMA CIANO) */}
-                <button 
-                    onClick={() => setIsInactiveModeActive(!isInactiveModeActive)}
-                    className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${INACTIVE_MODE_BUTTON_CLASSES}`}
-                >
-                    <div className="flex items-center">
-                        {/* ÍCONE: Varia de Ciano (Ativo) para Cinza (Inativo) */}
-                        <span className={`material-symbols-rounded mr-3 ${INACTIVE_ICON_COLOR_CLASS}`}>{isInactiveActive ? 'visibility' : 'visibility_off'}</span>
-                        <span className={`font-semibold text-sm text-current`}>Inativos</span>
-                    </div>
-                    {/* TOGGLE SWITCH */}
-                    <div className={`w-8 h-4 rounded-full relative transition-colors ${INACTIVE_TOGGLE_BG_CLASS}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${INACTIVE_TOGGLE_POS_CLASS}`}></div>
-                    </div>
-                </button>
-                
-                {/* Botão Alertas (Agora usa systemStyle) */}
-                <button onClick={() => {}} className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} disabled={systemStyle.isDisabled}>
-                    <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>notifications</span> 
-                    <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Alertas</span>
-                </button>
+                    {/* REMOVIDO: BOTÃO INATIVOS */}
+                    
+                    {/* Botão Alertas (Agora usa systemStyle e onAppClick) - Fixo como PLACEHOLDER */}
+                    <button 
+                        onClick={() => onAppClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '', color: "amber" })} 
+                        className={`chip-button w-full mt-2 px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} 
+                        disabled={systemStyle.isDisabled}
+                    >
+                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>notifications</span> 
+                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Alertas</span>
+                    </button>
 
-                {/* Botão Admin (Agora usa systemStyle) */}
-                <button onClick={() => {}} className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} disabled={systemStyle.isDisabled}>
-                    <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>admin_panel_settings</span>
-                    <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Admin</span>
-                </button>
-                
-                {/* Botão Tema (Agora usa systemStyle) */}
-                <button 
-                    onClick={() => {}} 
-                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
-                    disabled={systemStyle.isDisabled}
-                >
-                    <div className="flex items-center">
-                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>dark_mode</span>
-                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Tema</span> 
-                    </div>
-                    <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
-                    </div>
-                </button>
+                    {/* Botão Admin (Agora usa systemStyle e onAppClick) - Fixo como PLACEHOLDER */}
+                    <button 
+                        onClick={() => onAppClick({ action: 'modal', modalId: 'admin-modal', title: 'Admin', color: "slate" })} 
+                        className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} 
+                        disabled={systemStyle.isDisabled}
+                    >
+                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>admin_panel_settings</span>
+                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Admin</span>
+                    </button>
+                    
+                    {/* Botão Tema (Agora usa systemStyle) - Fixo como PLACEHOLDER */}
+                    <button 
+                        onClick={() => {}} 
+                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
+                        disabled={systemStyle.isDisabled}
+                    >
+                        <div className="flex items-center">
+                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>dark_mode</span>
+                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Tema</span> 
+                        </div>
+                        <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
+                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
+                        </div>
+                    </button>
 
-                {/* Botão Animações (Agora usa systemStyle) */}
-                <button 
-                    onClick={() => {}}
-                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
-                    disabled={systemStyle.isDisabled}
-                >
-                    <div className="flex items-center">
-                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>slow_motion_video</span>
-                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Animações</span>
-                    </div>
-                    <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
-                    </div>
-                </button>
+                    {/* Botão Animações (Agora usa systemStyle) - Fixo como PLACEHOLDER */}
+                    <button 
+                        onClick={() => {}}
+                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
+                        disabled={systemStyle.isDisabled}
+                    >
+                        <div className="flex items-center">
+                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>slow_motion_video</span>
+                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Animações</span>
+                        </div>
+                        <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
+                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
+                        </div>
+                    </button>
 
-                {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Apenas o botão flutuante está ativo */}
-                <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
-                
-                {/* Botão "Botões" (Funcional) - SEMPRE FUCHSIA, ÍCONE MUDA POR ESTADO INTERNO */}
-                <button 
-                    onClick={() => toggleAccessibility(!isFloatingBtnVisible)} 
-                    className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${accessibilityVisualStyle.base}`}
-                >
-                    <div className="flex items-center">
-                        {/* ÍCONE: Varia de Fuchsia (ON) para Cinza (OFF) */}
-                        <span className={`material-symbols-rounded mr-3 ${accessibilityVisualStyle.icon}`}>accessibility_new</span>
-                        <span className={`font-semibold text-sm ${accessibilityVisualStyle.textColor}`}>Botões</span>
-                    </div>
-                    {/* TOGGLE SWITCH */}
-                    <div className={`w-8 h-4 rounded-full relative transition-colors ${accessibilityVisualStyle.toggleBg}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${accessibilityVisualStyle.togglePos}`}></div>
-                    </div>
-                </button>
-            </div>
-        );
+                    {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Apenas o botão flutuante está ativo */}
+                    <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
+                    
+                    {/* Botão "Botões" (Funcional) - SEMPRE FUCHSIA, ÍCONE MUDA POR ESTADO INTERNO */}
+                    <button 
+                        onClick={() => toggleAccessibility(!isFloatingBtnVisible)} 
+                        className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${accessibilityVisualStyle.base}`}
+                    >
+                        <div className="flex items-center">
+                            {/* ÍCONE: Varia de Fuchsia (ON) para Cinza (OFF) */}
+                            <span className={`material-symbols-rounded mr-3 ${accessibilityVisualStyle.icon}`}>accessibility_new</span>
+                            <span className={`font-semibold text-sm ${accessibilityVisualStyle.textColor}`}>Botões</span>
+                        </div>
+                        {/* TOGGLE SWITCH */}
+                        <div className={`w-8 h-4 rounded-full relative transition-colors ${accessibilityVisualStyle.toggleBg}`}>
+                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${accessibilityVisualStyle.togglePos}`}></div>
+                        </div>
+                    </button>
+                </div>
+            );
         }; 
 
         // --- COLUNA 1: Perfil e Mapa de Aplicações ---
-        const RenderProfileAndRootNavigation = () => {
+        const RenderProfileAndRootNavigation = ({ onAuth }) => {
             const profileColor = PERFIL_COLOR;
+            // A inatividade é fixada em true para os AppCards
+            const isInactiveModeActiveForCards = true; 
             
             return (
                 <div className="flex flex-col gap-1 w-full relative">
                     {/* SEÇÃO: PERFIL (ROXO) */}
                     <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
 
-                    <button onClick={() => { onAuth(); setIsOpen(false); }} 
+                    <button onClick={() => { onAuth(); closeModal(); }} 
                         // CORREÇÃO: Aplicando w-full e espaçamento vertical
                         className={`chip-button w-full mb-1 mt-4 px-3 py-3 rounded-xl flex items-center justify-start bg-${profileColor}-50 border border-${profileColor}-200 text-${profileColor}-700 hover:bg-${profileColor}-100 transition-all text-left group`}>
                         <div className={`w-10 h-10 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-sm shrink-0 mr-3 shadow-sm group-hover:scale-110 transition-transform`}>
@@ -735,8 +679,8 @@
                             </span>
                             <span className="text-xs opacity-80">
                                 {userData ? 'Perfil Conectado' : 'Login / Cadastre-se'}
-                            </span
-                        ></div>
+                            </span>
+                        </div>
                     </button>
                     
                     {/* SEÇÃO: MAPA DE APPLICAÇÕES (ÍNDIGO) - SEM HIERARQUIA INTERNA AQUI */}
@@ -745,13 +689,15 @@
 
                     {/* RENDERIZAÇÃO DOS ITENS DO MAPA COMO LISTA DE BOTÕES (APENAS RAIZ) */}
                     <div className="space-y-2 mt-2 w-full"> {/* Aumentando o space-y para 2 */}
-                        {MAIN_MENU_PORTFOLIO.map((item) => (
+                        {MAIN_MENU_PORTFOLIO
+                            .filter(item => item.id !== 'menu-central') // O card Menu Central não aparece aqui dentro
+                            .map((item) => (
                             <RenderNavButton
                                 key={item.id}
                                 item={item}
                                 color={NAVEGACAO_COLOR}
                                 onClickOverride={() => handleMenuItemClick(item)} // Usa o handler simplificado
-                                isInactiveModeActive={isInactiveModeActive} // Passa o novo estado
+                                // isInactiveModeActive removido.
                             />
                         ))}
                     </div>
@@ -764,48 +710,43 @@
 
 
         return (
-            <div ref={menuRef} className="fixed top-4 left-4 z-50 flex flex-col items-start w-[calc(100%-80px)] sm:w-[calc(100%-320px)] md:w-auto"> {/* Ajuste de largura para mobile */}
-                {/* NOVO BOTÃO MENU: Usa o padrão de chip flutuante */}
-                <button 
-                    onClick={toggleMenu}
-                    // CLASSES PARA MODO COMPACTO E TAMANHO REDUZIDO (h-10 em vez de h-12)
-                    className={`chip-button bg-indigo-100 border-indigo-500 text-indigo-600 font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 z-50 h-10 shadow-lg ${isOpen ? 'w-auto px-4' : (isCompactMode ? 'w-10 px-2' : 'w-auto px-3')}`} 
-                >
-                    <span className={`material-symbols-rounded text-xl transition-all duration-300 ${isOpen ? 'rotate-90' : ''} ${isCompactMode ? 'mr-0' : 'mr-1'}`}>
-                        {isOpen ? 'close' : 'menu'} 
-                    </span>
-                    <span className={`font-semibold overflow-hidden transition-all duration-300 ${isCompactMode && !isOpen ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>
-                        {isOpen ? 'Fechar' : 'Menu'}
-                    </span>
-                </button>
-
-                <div 
+            // Overlay: Mantém o p-0 sm:p-4 (padding só em desktop)
+            <div id={`central-menu-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+                {/* CONTAINER DO MODAL */}
+                <div onClick={(e) => e.stopPropagation()} 
                     className={`
-                        absolute top-16 left-0 mt-2 w-full sm:w-[620px] 
-                        bg-white backdrop-blur-md border rounded-2xl shadow-2xl p-4 
-                        
-                        // Borda Índigo (azul) e condicional para espessura
-                        border-indigo-300 transition-all ${isOpen ? 'border-2' : 'border'} 
-                        
-                        // **CORREÇÃO AQUI:** Ponto de quebra movido para sm (640px)
-                        flex flex-col sm:grid sm:grid-cols-2 sm:gap-4
-                        
-                        transition-all duration-300 origin-top-left
-                        max-h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden custom-scrollbar // Rolagem Vertical e Sem Horizontal
-                        
-                        ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-4 pointer-events-none'}
+                        relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl 
+                        border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up
                     `}
                 >
-                    {/* COLUNA 1: Renderização do Perfil e Camadas de Navegação */}
-                    <RenderProfileAndRootNavigation />
+                    
+                    {/* BOTÃO FECHAR (X) - Canto superior direito (CORRIGIDO PARA O TEMA) */}
+                    <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
 
-                    {/* COLUNA 2: Sistemas e Acessibilidade (Sempre visível se o menu estiver aberto) */}
-                    <SystemAccessibilityColumn 
-                        isFloatingBtnVisible={isFloatingBtnVisible} 
-                        toggleAccessibility={toggleAccessibility} 
-                        isInactiveModeActive={isInactiveModeActive} 
-                        setIsInactiveModeActive={setIsInactiveModeActive} 
-                    />
+                    {/* CORREÇÃO AQUI: Conteúdo interno (p-8) */}
+                    <div className="p-8 pt-16 px-4 sm:px-8 flex flex-col h-full overflow-y-auto custom-scrollbar">
+                            
+                        {/* CABEÇALHO DO MODAL (APENAS TÍTULO) */}
+                        <div className="text-center mb-6">
+                            <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Menu Central</h2>
+                            <p className={`text-md text-${THEME_COLOR}-500 mt-1`}>Navegação Rápida e Configurações.</p>
+                        </div>
+
+                        {/* CONTEÚDO (AS DUAS COLUNAS) */}
+                        <div className="flex-1 flex flex-col sm:grid sm:grid-cols-2 sm:gap-4">
+                            {/* COLUNA 1: Perfil e Mapa de Aplicações */}
+                            <RenderProfileAndRootNavigation 
+                                userData={userData} 
+                                onAuth={onAuth}
+                            />
+
+                            {/* COLUNA 2: Sistemas e Acessibilidade */}
+                            <SystemAccessibilityColumn 
+                                isFloatingBtnVisible={isFloatingBtnVisible} 
+                                toggleAccessibility={toggleAccessibility} 
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -818,8 +759,18 @@
 
         const handleSubmit = async (e) => {
             e.preventDefault();
-            if (isRegistering && !formData.name) { alert("Por favor, preencha o nome."); return; }
-            if (!formData.phone || formData.phone.length < 8) { alert("Telefone inválido."); return; }
+            // SUBSTITUIÇÃO: Remoção de alert()
+            if (isRegistering && !formData.name) { 
+                console.error("Por favor, preencha o nome."); 
+                // Implementação futura: Adicionar um toaster/snackbar no App.js
+                return; 
+            }
+            // SUBSTITUIÇÃO: Remoção de alert()
+            if (!formData.phone || formData.phone.length < 8) { 
+                console.error("Telefone inválido."); 
+                // Implementação futura: Adicionar um toaster/snackbar no App.js
+                return; 
+            }
             onLoginSuccess({ phone: formData.phone, name: formData.name || 'Usuário', role: 'user' });
         };
 
@@ -885,7 +836,9 @@
     };
 
     // --- CARTÃO PRINCIPAL DA TELA DE APPS ---
-    const AppCard = ({ item, onClick, isInactiveModeActive }) => {
+    const AppCard = ({ item, onClick }) => {
+        // Lógica de inatividade é fixada em TRUE
+        const isInactiveModeActive = true;
         
         const isLogicallyInactive = item.action === 'placeholder';
         const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
@@ -894,7 +847,8 @@
         const visualColor = shouldShowInactiveStyle ? 'slate' : item.color;
         
         // --- REGRA GERAL DE INATIVIDADE ---
-        const opacity = isLogicallyInactive && !shouldShowInactiveStyle ? 'opacity-70' : '';
+        // A opacidade é removida, pois o visual cinza já indica inatividade
+        const opacity = ''; 
         const pointerEvents = isLogicallyInactive ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer';
         
         // Classes de cor baseadas na visualColor
@@ -1003,9 +957,8 @@
         const [showAuthModal, setShowAuthModal] = useState(false);
         const [showSettingsModal, setShowSettingsModal] = useState(false);
         
-        // NOVO ESTADO: Modo para forçar a visualização cinza em botões inativos
-        // CORREÇÃO: Setando para TRUE para que inicie em estado inativo
-        const [isInactiveModeActive, setIsInactiveModeActive] = useState(true); 
+        // REMOVIDO: isInactiveModeActive não é mais um estado dinâmico.
+        const isInactiveModeActive = true; // FIXADO em TRUE para forçar o visual cinza
         
         // CORREÇÃO: Força o Modo Claro (false) para estabilizar.
         const [isDarkMode, setIsDarkMode] = useState(false); 
@@ -1013,8 +966,6 @@
         const [isFloatingBtnVisible, setIsFloatingBtnVisible] = useState(true);
         const [isReducedAnimation, setIsReducedAnimation] = useState(false); 
         
-        // NOVO ESTADO: Controla se os botões flutuantes devem estar no modo ícone-apenas
-        const [isCompactMode, setIsCompactMode] = useState(false);
         const activityTimerRef = useRef(null);
         const ACTIVITY_TIMEOUT_MS = 3000; // 3 segundos
         
@@ -1024,42 +975,18 @@
         };
         
         // NOVO: Função para monitorar a atividade do usuário e iniciar o modo compacto
+        // Simplificado, pois só precisa ser usado para o botão de acessibilidade (flutuante)
         const handleUserActivity = useCallback(() => {
-            // 1. Mostrar o texto (descompactar)
-            // Forçamos 'false' para garantir que o texto apareça
-            setIsCompactMode(false); 
+            // Se o botão flutuante não estiver visível, não há necessidade de animar
+            if (!isFloatingBtnVisible) return;
 
-            // 2. Limpar o timer anterior
-            if (activityTimerRef.current) {
-                clearTimeout(activityTimerRef.current);
-            }
-
-            // 3. Configurar um novo timer para ocultar o texto (compactar)
-            activityTimerRef.current = setTimeout(() => {
-                setIsCompactMode(true);
-            }, ACTIVITY_TIMEOUT_MS);
-            
-        }, []); 
-        // O useCallback não depende de isCompactMode, pois ele sempre força o estado para false
-        // e depois agenda a mudança para true.
+        }, [isFloatingBtnVisible]); 
+        
 
         useEffect(() => {
-            // 4. Configurar listeners globais no documento
-            document.addEventListener('mousemove', handleUserActivity);
-            document.addEventListener('touchstart', handleUserActivity);
-            document.addEventListener('scroll', handleUserActivity);
-            
-            // Iniciar o timer na montagem
-            activityTimerRef.current = setTimeout(() => {
-                 setIsCompactMode(true);
-            }, ACTIVITY_TIMEOUT_MS);
-
-
+            // Os listeners de atividade não são mais necessários já que não há modo compacto
+            // Removendo: Limpar listeners e timer na desmontagem
             return () => {
-                // 5. Limpar listeners e timer na desmontagem
-                document.removeEventListener('mousemove', handleUserActivity);
-                document.removeEventListener('touchstart', handleUserActivity);
-                document.removeEventListener('scroll', handleUserActivity);
                 if (activityTimerRef.current) {
                     clearTimeout(activityTimerRef.current);
                 }
@@ -1104,20 +1031,29 @@
                 await db.settings.put({ key: 'sheetId', value: newSheetId });
                 await db.settings.put({ key: 'sheetTab', value: newSheetTab });
                 setAdminConfig({ sheetId: newSheetId, sheetTab: newSheetTab });
-                alert("Configurações salvas com sucesso!");
+                // SUBSTITUIÇÃO: Remoção de alert()
+                console.log("Configurações salvas com sucesso!");
                 closeModal();
-            } catch (error) { alert("Erro ao salvar configurações."); }
+            } catch (error) { 
+                // SUBSTITUIÇÃO: Remoção de alert()
+                console.error("Erro ao salvar configurações:", error); 
+            }
         };
 
         const backupToCloud = async () => {
-            if (!userData) { alert("Nenhum dado de usuário para salvar."); return; }
-            if (!adminConfig.sheetId) { alert("Atenção: ID da Planilha não configurado no Painel Admin!"); return; }
+            // SUBSTITUIÇÃO: Remoção de alert()
+            if (!userData) { console.error("Nenhum dado de usuário para salvar."); return; }
+            if (!adminConfig.sheetId) { console.error("Atenção: ID da Planilha não configurado no Painel Admin!"); return; }
             setIsSyncing(true);
             try {
                 const payload = { action: 'backup', user: userData, timestamp: new Date().toISOString(), targetSheetId: adminConfig.sheetId, targetTabName: adminConfig.sheetTab || 'users' };
                 await fetch(DEFAULT_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                alert("Backup enviado para a Planilha configurada!");
-            } catch (error) { alert("Erro ao conectar."); } finally { setIsSyncing(false); }
+                // SUBSTITUIÇÃO: Remoção de alert()
+                console.log("Backup enviado para a Planilha configurada!");
+            } catch (error) { 
+                // SUBSTITUIÇÃO: Remoção de alert()
+                console.error("Erro ao conectar:", error); 
+            } finally { setIsSyncing(false); }
         };
         
         const handleNativeLogin = async (user) => {
@@ -1126,7 +1062,10 @@
                 await db.user.put(newUser);
                 setUserData(newUser);
                 setShowAuthModal(false); 
-            } catch (e) { alert("Erro ao salvar login localmente."); }
+            } catch (e) { 
+                // SUBSTITUIÇÃO: Remoção de alert()
+                console.error("Erro ao salvar login localmente:", e); 
+            }
         };
 
         const navigateTo = (newView, pushToHistory = true) => {
@@ -1149,9 +1088,14 @@
             }
             if (item.id === 'auth') { setShowAuthModal(true); return; }
             
-            // NOVO: Tratamento do Modal de Menu de Educação
+            // Tratamento do Modal de Menu de Educação
             if (item.modalId === 'education-menu-modal') {
-                setModalConfig({ modalId: 'education-menu-modal', title: 'Central de Educação' });
+                setModalConfig({ modalId: 'education-menu-modal', title: 'Central de Educação', color: "emerald" });
+                return;
+            }
+            // Tratamento do Modal de Menu Central
+            if (item.modalId === 'central-menu-modal') {
+                setModalConfig({ modalId: 'central-menu-modal', title: 'Menu Central', color: "indigo" });
                 return;
             }
 
@@ -1164,9 +1108,19 @@
         
         // Função genérica para clique em App de dentro de um modal (ex: EducationMenuModal)
         const handleAppClickFromModal = (item) => {
-            setModalConfig(item); 
-            setModalLoading(true);
-            // O EducationMenuModal fecha a si mesmo após chamar esta função
+            // Se o item for Auth, Admin ou Settings, abre o modal nativo em vez de um iframe
+            if (item.modalId === 'auth-modal') {
+                setShowAuthModal(true);
+            } else if (item.modalId === 'admin-modal') {
+                setModalConfig({ modalId: 'admin-modal', title: 'Admin', color: "slate" });
+            } else if (item.modalId === 'alerts') {
+                setModalConfig({ modalId: 'alerts', title: 'Painel de Alertas', color: "amber" });
+            } else if (item.modalId === 'settings-modal') { // Opção adicionada, embora o settings não seja um AppCard
+                 setShowSettingsModal(true);
+            } else {
+                setModalConfig(item); 
+                setModalLoading(true);
+            }
         };
 
         const closeModal = () => {
@@ -1191,7 +1145,14 @@
                 {/* REVERSÃO: Voltando para a classe CSS definida no <style> para garantir quebras de coluna corretas e centralização. */}
                 <div className="app-grid-container w-full max-w-5xl">
                     <section className="mt-6 app-grid-base-flexible mx-auto">
-                        {items.map((item, index) => (<AppCard key={item.id || index} item={item} onClick={() => handleCardClick(item)} isInactiveModeActive={isInactiveModeActive} />))}
+                        {items.map((item, index) => (
+                            <AppCard 
+                                key={item.id || index} 
+                                item={item} 
+                                onClick={() => handleCardClick(item)} 
+                                // isInactiveModeActive removido.
+                            />
+                        ))}
                     </section>
                 </div>
             </div>
@@ -1202,19 +1163,18 @@
         const buttonBaseClasses = "chip-button no-shadow font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 h-10 flex justify-center overflow-hidden";
         const fixedButtonClasses = `${buttonBaseClasses}`;
 
-        // Lógica para o BOTÃO FLUTUANTE (Canto superior direito)
+        // Lógica para o BOTÃO FLUTUANTE (Canto superior direito) - AGORA SÓ ACESSIBILIDADE
         const floatingButtonClasses = useMemo(() => {
             const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
             const color = isInactiveModeActive
                 ? `bg-slate-100 border-slate-300 text-slate-500 cursor-not-allowed`
                 : `bg-fuchsia-100 border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-200 hover:border-fuchsia-600`;
                 
-            // CLASSES PARA MODO COMPACTO: w-10 px-2.5 -> w-8 px-2 para o ícone
-            // CLASSES PARA MODO EXPANDIDO: w-auto px-4 -> w-auto px-3 para o texto
-            const compactStyle = isCompactMode ? 'w-10 px-2.5' : 'w-auto px-3';
+            // Como o modo compacto foi removido, o botão flutuante é sempre expandido (w-auto px-4)
+            const compactStyle = 'w-auto px-4';
                 
             return `${base} ${color} ${compactStyle}`;
-        }, [isInactiveModeActive, isCompactMode]);
+        }, [isInactiveModeActive]);
         
         const floatingButtonClickHandler = isInactiveModeActive ? () => {} : () => {};
 
@@ -1222,23 +1182,8 @@
         return (
             <div className="min-h-screen antialiased flex flex-col">
                 
-                {/* --- MENU DE NAVEGAÇÃO CENTRALIZADO --- */}
-                <MainMenu 
-                    userData={userData}
-                    onHome={(viewId) => { navigateTo(viewId || 'portfolio', false); }}
-                    onAlerts={() => handleCardClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '' })}
-                    onSettings={() => setShowSettingsModal(true)}
-                    onAuth={openAuthModal}
-                    onAdmin={() => handleCardClick({ action: 'modal', modalId: 'admin-modal', title: 'Admin' })}
-                    isFloatingBtnVisible={isFloatingBtnVisible} 
-                    toggleAccessibility={toggleAccessibility} 
-                    onAppClick={handleAppClickFromModal} 
-                    isInactiveModeActive={isInactiveModeActive} 
-                    setIsInactiveModeActive={setIsInactiveModeActive} 
-                    isCompactMode={isCompactMode} // PASSANDO NOVO ESTADO
-                />
-                
-                {/* --- BOTÕES FLUTUANTES DIREITA --- */}
+                {/* --- BOTÕES FLUTUANTES DIREITA (APENAS ACESSIBILIDADE) --- */}
+                {/* O Menu Centralizado Flutuante foi removido e substituído por um AppCard no RenderedView */}
                 <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
                     {/* Botão Flutuante de Acessibilidade (Controlado pelo Menu) */}
                     {isFloatingBtnVisible && ( 
@@ -1247,8 +1192,8 @@
                             className={floatingButtonClasses}
                             disabled={isInactiveModeActive}
                         >
-                            <span className={`material-symbols-rounded text-xl transition-all duration-300 ${isCompactMode ? 'mr-0' : 'mr-1'}`}>accessibility_new</span>
-                            <span className={`font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${isCompactMode ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>Acessibilidade</span>
+                            <span className={`material-symbols-rounded text-xl mr-1`}>accessibility_new</span>
+                            <span className={`font-medium whitespace-nowrap overflow-hidden`}>Acessibilidade</span>
                         </button>
                     )}
                 </div>
@@ -1257,9 +1202,22 @@
                     <RenderedView title={currentViewData.title} subtitle={currentViewData.subtitle} items={renderedItems} />
                 </main>
                 
+                {/* NOVO MODAL: MENU CENTRALIZADO */}
+                {modalConfig && modalConfig.modalId === 'central-menu-modal' && (
+                    <CentralMenuModal 
+                        closeModal={closeModal} 
+                        onAppClick={handleAppClickFromModal} // Permite abrir outros modais
+                        // isInactiveModeActive removido.
+                        userData={userData}
+                        onAuth={openAuthModal} // Permite abrir o modal de Auth
+                        isFloatingBtnVisible={isFloatingBtnVisible} 
+                        toggleAccessibility={toggleAccessibility} 
+                    />
+                )}
+
                 {/* NOVO MODAL: MENU DE EDUCAÇÃO COM GAVETA */}
                 {modalConfig && modalConfig.modalId === 'education-menu-modal' && (
-                    <EducationMenuModal closeModal={closeModal} onAppClick={handleAppClickFromModal} isInactiveModeActive={isInactiveModeActive} />
+                    <EducationMenuModal closeModal={closeModal} onAppClick={handleAppClickFromModal} />
                 )}
 
                 {/* MODAL ADMIN */}
@@ -1314,7 +1272,7 @@
                 )}
 
                 {/* MODAIS DE MINI-APPS (iframe) */}
-                {modalConfig && modalConfig.modalId !== 'alerts' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && modalConfig.modalId !== 'admin-modal' && modalConfig.modalId !== 'education-menu-modal' && (
+                {modalConfig && modalConfig.modalId !== 'alerts' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && modalConfig.modalId !== 'admin-modal' && modalConfig.modalId !== 'education-menu-modal' && modalConfig.modalId !== 'central-menu-modal' && (
                     <MiniAppModal modalConfig={modalConfig} closeModal={closeModal} loading={modalLoading} setLoading={setModalLoading} appId={APP_ID} />
                 )}
 
