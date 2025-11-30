@@ -1,708 +1,518 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>App 5 Horas – MiniApps</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
-<!-- 1. Carregar Tailwind CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- 2. Carregar Flowbite CDN CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.1.1/flowbite.min.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniApps - Versão Debug Única</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<style>
-body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
-body, html { background-color: #f8fafc; color: #0f172a; }
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
 
-/* Base de Estilo do Card (ALTURA MÍNIMA REDUZIDA PARA DENSIDADE) */
-.card-base {
-    position: relative;
-    border-radius: 1rem;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    transition: all 300ms;
-    border-width: 1px;
-    cursor: pointer;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    min-height: 160px; /* Reduzido de 200px */
-    max-width: 320px; 
-}
-.card-base:hover {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    transform: translateY(-0.25rem);
-}
-.card-base h2 { font-size: 1.25rem; font-weight: 600; }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
 
-.icon-xxl { font-size: 7rem; opacity: 0.3; }
-@media (min-width: 640px) { .icon-xxl { font-size: 8rem; } }
-@media (min-width: 1024px) { .icon-xxl { font-size: 9rem; } }
-
-/* Grid System */
-.app-grid-container { display: flex; justify-content: center; }
-.app-grid-base { display: grid; gap: 1.5rem; width: 100%; }
-
-/* Classe para <= 3 itens (Coluna Única Estrita) */
-.grid-1-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); max-width: 320px; }
-
-/* Classe para > 3 itens (Grid Responsivo - MUDANÇA DE MAX-WIDTH PARA 100% NO MOBILE) */
-.grid-3-col-app { grid-template-columns: repeat(1, minmax(0, 1fr)); max-width: 100%; } /* Usa a largura total da tela no mobile */
-@media (min-width: 640px) { .grid-3-col-app { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 664px; } }
-@media (min-width: 1200px) { .grid-3-col-app { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1008px; } }
-
-/* Botões Chip (Estilo Base Unificado) */
-.chip-button {
-    background-color: transparent !important;
-    border-width: 1px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-    color: var(--chip-color-text) !important;
-    transition: all 0.2s ease-in-out;
-}
-.chip-button:hover {
-    background-color: var(--chip-color-hover) !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); 
-}
-
-/* Cores Específicas dos Botões */
-#back-btn-float { 
-    --chip-color-text: #0d9488; /* Teal-600 */
-    border-color: #6ee7b7; /* Teal-300 */
-    --chip-color-hover: rgba(13, 148, 136, 0.1); 
-    background-color: white !important;
-}
-#home-btn { --chip-color-text: #4f46e5; border-color: #4f46e5; --chip-color-hover: rgba(79, 70, 229, 0.1); }
-#alert-btn { --chip-color-text: #d97706; border-color: #d97706; --chip-color-hover: rgba(217, 119, 6, 0.1); }
-
-/* Botão Fechar Global (Vermelho) */
-#close-btn-float button {
-    --chip-color-text: #ef4444; 
-    border-color: #fecaca; /* Vermelho claro suave na borda */
-    --chip-color-hover: rgba(254, 202, 202, 0.3);
-    background-color: white !important;
-}
-</style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .card-base {
+            position: relative;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 300ms;
+            border-width: 1px;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 8rem;
+            height: 8rem;
+            padding: 0.5rem; 
+        }
+        .card-base:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            transform: translateY(-0.25rem);
+        }
+        .app-grid-base-flexible { 
+            display: grid; 
+            gap: 2.5rem;
+            width: 100%; 
+            max-width: 1008px;
+            grid-template-columns: repeat(auto-fit, 8rem); 
+            justify-content: center;
+            justify-items: center;
+            padding: 0 1rem;
+        }
+        .chip-button {
+            border-width: 1px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .chip-button:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); 
+        }
+    </style>
 </head>
 <body class="min-h-screen antialiased">
-
-<main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 min-h-screen flex flex-col">
-
-    <!-- 1. TELA: PORTFÓLIO PRINCIPAL -->
-    <div id="portfolio-view">
-        <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Portfólio de Aplicações</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione o sistema que deseja acessar:</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="portfolio-grid" class="mt-6 app-grid-base"></section>
+    <div id="root" class="min-h-screen flex flex-col">
+        <div class="fixed inset-0 flex items-center justify-center bg-slate-100 text-gray-500">
+            Carregando aplicação...
         </div>
     </div>
 
-    <!-- 2. TELAS DE CATEGORIAS (Educação, Finanças, Saúde, Tarefas) -->
-    <div id="education-categories-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 id="education-title" class="text-3xl font-bold tracking-tight">Educação: Categorias</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione uma área para iniciar.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="education-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
-    
-    <div id="finance-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Finanças: Gestão</h1>
-            <p class="mt-1 text-sm text-gray-500">Ferramentas para seu controle financeiro.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="finance-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+    <!-- 
+      SCRIPT AUXILIAR (JAVASCRIPT PURO)
+      Este script roda fora do Babel para manipular as strings HTML perigosas 
+      sem causar erros de sintaxe no React.
+    -->
+    <script>
+        window.prepareMiniAppHtml = function(htmlContent, appId, basePath) {
+            // 1. Limpeza do HTML original
+            let cleanHtml = htmlContent
+                .replace(/<header[\s\S]*?<\/header>/gi, '') // Remove headers
+                .replace(/data-theme="dark"/g, 'data-theme="light"'); // Força tema claro
 
-    <div id="health-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Saúde: Categorias</h1>
-            <p class="mt-1 text-sm text-gray-500">Ferramentas de bem-estar e monitoramento.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="health-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+            // 2. Definição segura das tags (concatenação evita erros de parser)
+            var scriptTagOpen = '<script>';
+            var scriptTagClose = '<' + '/script>'; // Quebra da tag de fechamento
+            var styleTagOpen = '<style>';
+            var styleTagClose = '<' + '/style>';
 
-    <div id="tasks-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Tarefas e Produtividade</h1>
-            <p class="mt-1 text-sm text-gray-500">Gerencie seus compromissos e foco.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="tasks-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+            // 3. Configuração do App ID injetada
+            var configScript = scriptTagOpen + 'window.__app_id = "' + appId + '";' + scriptTagClose;
+            
+            // 4. Base Path para recursos relativos
+            var baseTag = '<base href="' + basePath + '">';
 
+            // 5. CSS de limpeza para o iframe
+            var styleCleanContent = 'html, body {padding-bottom: 120px !important; background: transparent !important;} main {box-shadow: none !important; border: none !important; background-color: transparent !important; padding: 1.5rem !important; margin: 0 !important;}';
+            var styleClean = styleTagOpen + styleCleanContent + styleTagClose;
 
-    <!-- 3. TELA: MENU DO ALUNO -->
-    <div id="student-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 class="text-3xl font-bold tracking-tight">Área do Aluno</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="student-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+            // 6. Injeção no <head>
+            if (cleanHtml.indexOf('<head>') !== -1) {
+                return cleanHtml.replace('<head>', '<head>' + configScript + baseTag + styleClean);
+            } else {
+                // Fallback se não tiver head
+                return configScript + baseTag + styleClean + cleanHtml;
+            }
+        };
+    </script>
 
-    <!-- NOVAS TELAS: MENU DO RESPONSÁVEL -->
-    <div id="responsible-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 id="responsible-title" class="text-3xl font-bold tracking-tight">Área do Responsável</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="responsible-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+    <!-- CÓDIGO REACT/BABEL -->
+    <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo } = React;
 
-    <!-- NOVAS TELAS: MENU DO TUTOR/PROFESSOR -->
-    <div id="tutor-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 id="tutor-title" class="text-3xl font-bold tracking-tight">Área do Tutor/Professor</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="tutor-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
+    const APP_ID = 'miniapps-app-id'; 
+    const FIREBASE_CONFIG = {}; 
+    const INITIAL_AUTH_TOKEN = null; 
 
-    <!-- NOVAS TELAS: MENU DA INSTITUIÇÃO -->
-    <div id="institution-menu-view" class="hidden">
-        <section class="mt-4 text-center">
-            <h1 id="institution-title" class="text-3xl font-bold tracking-tight">Área da Instituição</h1>
-            <p class="mt-1 text-sm text-gray-500">Selecione o serviço desejado.</p>
-        </section>
-        <div class="app-grid-container">
-            <section id="institution-menu-grid" class="mt-6 app-grid-base"></section>
-        </div>
-    </div>
-    
-</main>
-
-<!-- BOTÕES DE NAVEGAÇÃO FLUTUANTES (CONSOLIDADO SUPERIOR ESQUERDO) -->
-<div id="float-nav-buttons" class="fixed top-12 left-4 z-[60] flex flex-col space-y-2">
-    <!-- 1. Botão VOLTAR (Visível apenas em sub-menus) -->
-    <button id="back-btn-float" onclick="switchView('education-categories-view', 'portfolio-view')" 
-            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105 hidden">
-        <span class="material-symbols-rounded text-xl mr-2">arrow_back</span>
-        <span>Voltar</span>
-    </button>
-
-    <!-- 2. Botão HOME (Visível na navegação de categorias) -->
-    <button id="home-btn" type="button" onclick="showPortfolio()" 
-            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
-        <span class="material-symbols-rounded text-xl mr-2">home</span><span class="hidden sm:inline">Início</span>
-    </button>
-    
-    <!-- 3. Botão ALERTAS (Visível na navegação de categorias) -->
-    <button id="alert-btn" type="button" onclick="loadAlertPanel()" 
-            class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105">
-        <span class="material-symbols-rounded text-xl mr-2">notifications</span><span class="hidden sm:inline">Alertas</span>
-    </button>
-</div>
-
-
-<!-- BOTÃO FECHAR (FLUTUANTE DIREITA - GLOBAL - SEMPRE ISOLADO) -->
-<div id="close-btn-float" class="fixed top-4 right-4 z-[60] hidden">
-    <button onclick="closeCurrentMiniApp()" class="chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105"
-            style="--chip-color-text: #ef4444; border-color: #fecaca; --chip-color-hover: rgba(254, 202, 202, 0.3); background-color: white !important;">
-        <span class="material-symbols-rounded text-xl mr-2">close</span>
-        <span>Fechar</span>
-    </button>
-</div>
-
-<!-- ================= MODAIS (VISUALIZAÇÃO IMERSIVA) ================= -->
-
-<!-- MODAL PADRÃO DE REGISTRO/CADASTRO (Reutilizável para Aluno, Responsável, Tutor) -->
-<div id="registration-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-blue-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="registration-frame" class="w-full h-full border-0" title="Painel de Cadastro Reutilizável"></iframe>
-    </div>
-</div>
-
-<!-- 2. PAINEL DE ALERTAS -->
-<div id="alert-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="alert-panel-frame" class="w-full h-full border-0" title="Painel de Alertas"></iframe>
-    </div>
-</div>
-
-<!-- 3. SIMULADOS -->
-<div id="simulados-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-pink-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="simulados-frame" class="w-full h-full border-0" title="App Simulados"></iframe>
-    </div>
-</div>
-
-<!-- NOVO: MODAL PADRÃO DE PLACEHOLDER (ESTÁTICO) -->
-<div id="placeholder-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden animate-fade-in-up p-8 text-center">
-        <span class="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
-        <h3 class="text-xl font-bold text-gray-800">Recurso em Desenvolvimento</h3>
-        <p class="text-gray-600 mt-2">Esta funcionalidade estará disponível em breve. Agradecemos sua paciência!</p>
-        <button onclick="closeCurrentMiniApp()" class="chip-button mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
-            <span class="material-symbols-rounded text-xl mr-2">check</span>
-            <span>Entendido</span>
-        </button>
-    </div>
-</div>
-
-<!-- 5. MODAL DE TAREFAS (FUNCIONAL) -->
-<div id="tasks-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-red-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="tasks-frame" class="w-full h-full border-0" title="App Lista de Tarefas"></iframe>
-    </div>
-</div>
-
-<!-- 6. MODAL DE PLANEJAMENTO SEMANAL (FUNCIONAL) -->
-<div id="weekly-planner-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-indigo-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="weekly-planner-frame" class="w-full h-full border-0" title="App Planejamento Semanal"></iframe>
-    </div>
-</div>
-
-<!-- 7. MODAL: CALENDÁRIO MENSAL (FUNCIONAL) -->
-<div id="monthly-calendar-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-blue-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="monthly-calendar-frame" class="w-full h-full border-0" title="App Agenda Mensal"></iframe>
-    </div>
-</div>
-
-<!-- 8. MODAL: ACOMPANHAMENTO (FUNCIONAL) -->
-<div id="tracking-dashboard-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="tracking-dashboard-frame" class="w-full h-full border-0" title="App Acompanhamento"></iframe>
-    </div>
-</div>
-
-<!-- NOVO MODAL: CADASTRO INSTITUIÇÃO -->
-<div id="institution-registration-modal-overlay" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-5xl min-h-full h-full bg-white rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up">
-        <iframe id="institution-registration-frame" class="w-full h-full border-0" title="App Cadastro Instituição"></iframe>
-    </div>
-</div>
-
-<!-- LOADING GLOBAL -->
-<div id="loading-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[60] flex justify-center items-center w-full h-full bg-black/30 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center">
-        <svg aria-hidden="true" class="w-10 h-10 text-gray-200 animate-spin fill-blue-600 mb-3" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
-        <p class="text-sm font-semibold text-gray-700">Carregando...</p>
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.1.1/flowbite.min.js"></script>
-
-<script>
-    // --- VARIÁVEIS DE ESTADO ---
-    let currentOpenModalId = null; 
-    let parentView = 'portfolio-view'; 
-    
     // --- DADOS ---
     const PORTFOLIO_ITEMS = [
-        { title: "Educação", href: "javascript:showEducationCategories()", color: "pink", icon: "cast_for_education" },
-        { title: "Financeiro", href: "javascript:showFinanceMenu()", color: "emerald", icon: "account_balance" }, 
-        { title: "Saúde", href: "javascript:showHealthMenu()", color: "sky", icon: "health_and_safety" }, 
-        { title: "Tarefas", href: "javascript:showTasksMenu()", color: "amber", icon: "calendar_month" }, 
+        { id: 'education', title: "Educação", view: 'education-categories', color: "pink", icon: "cast_for_education" },
+        { id: 'finance', title: "Finances", view: 'finance-menu', color: "emerald", icon: "account_balance" }, 
+        { id: 'health', title: "Saúde", view: 'health-menu', color: "sky", icon: "health_and_safety" }, 
+        { id: 'tasks', title: "Tarefas", view: 'tasks-menu', color: "amber", icon: "calendar_month" }, 
     ];
 
-    const RESPONSIBLE_MENU_ITEMS = [
-        // O card de cadastro agora é o único disponível (os outros são "Em breve")
-        { title: "Cadastro do Responsável", href: "javascript:loadResponsibleRegistrationApp()", color: "violet", icon: "app_registration" },
-        { title: "Acessar Dados do Aluno", href: "javascript:showPlaceholder()", color: "pink", icon: "person", status: "Em breve" },
-    ];
-
-    const TUTOR_PROFESSOR_MENU_ITEMS = [
-        { title: "Cadastro de Tutor/Professor", href: "javascript:loadTutorRegistrationApp()", color: "emerald", icon: "app_registration" },
-        { title: "Gerenciar Alunos Vinculados", href: "javascript:showPlaceholder()", color: "amber", icon: "people", status: "Em breve" },
-    ];
-
-    const INSTITUTION_MENU_ITEMS = [
-        { title: "Cadastro da Instituição", href: "javascript:loadInstitutionRegistrationApp()", color: "purple", icon: "app_registration" },
-        { title: "Gerenciar Vínculos de Alunos", href: "javascript:showPlaceholder()", color: "sky", icon: "link", status: "Em breve" },
-    ];
-    
     const EDUCATION_CATEGORIES = [
-        // Mapeamentos agora levam para um menu intermediário
-        { title: "Alunos", href: "javascript:showStudentMenu()", color: "sky", icon: "person" },
-        // STATUS ALTERADO PARA EM BREVE
-        { title: "Responsáveis", href: "javascript:showResponsibleMenu()", color: "violet", icon: "diversity_3", status: "Em breve" }, 
-        { title: "Tutores", href: "javascript:showTutorMenu()", color: "amber", icon: "supervisor_account", status: "Em breve" }, 
-        { title: "Professores", href: "javascript:showTutorMenu()", color: "emerald", icon: "person_pin", status: "Em breve" }, 
-        { title: "Instituições", href: "javascript:showInstitutionMenu()", color: "purple", icon: "apartment", status: "Em breve" }, 
-        
-    ];
-    
-    const STUDENT_MENU_ITEMS = [
-        { title: "Cadastro do Aluno", href: "javascript:loadStudentRegistrationApp()", color: "blue", icon: "app_registration" },
-        { title: "Simulados e Provas", href: "javascript:startSimuladosFlow()", color: "pink", icon: "edit_note", status: "Em breve" },
-        { title: "Agenda de Aulas", href: "javascript:showPlaceholder()", color: "teal", icon: "event", status: "Em breve" },
-    ];
-    
-    const FINANCE_MENU_ITEMS = [
-        { title: "Gestão de Despesas", href: "javascript:showPlaceholder()", color: "emerald", icon: "payments", status: "Em breve" }, 
-        { title: "Metas e Economia", href: "javascript:showPlaceholder()", color: "teal", icon: "savings", status: "Em breve" },
-        { title: "Contas a Pagar", href: "javascript:showPlaceholder()", color: "red", icon: "event_busy", status: "Em breve" },
-        { title: "Calculadora de Juros", href: "javascript:showPlaceholder()", color: "cyan", icon: "calculate", status: "Em breve" },
+        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person" },
+        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", status: "Em breve" }, 
+        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", status: "Em breve" }, 
+        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", status: "Em breve" }, 
     ];
 
-    const HEALTH_MENU_ITEMS = [
-        { title: "Monitoramento de Sinais", href: "javascript:showPlaceholder()", color: "sky", icon: "monitor_heart", status: "Em breve" }, 
-        { title: "Exercícios e Treino", href: "javascript:showPlaceholder()", color: "red", icon: "fitness_center", status: "Em breve" },
-        { title: "Alimentação e Nutrição", href: "javascript:showPlaceholder()", color: "green", icon: "local_dining", status: "Em breve" },
-        { title: "Diário de Corrida", href: "javascript:showPlaceholder()", color: "amber", icon: "directions_run", status: "Em breve" },
+    const STUDENT_MENU_ITEMS = [
+        { title: "Cadastro", action: 'modal', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "blue", icon: "app_registration" },
+        { title: "Simulados", action: 'modal', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "pink", icon: "edit_note", status: "Em breve" },
+        { title: "Agenda", action: 'placeholder', color: "teal", icon: "event", status: "Em breve" },
     ];
 
     const TASKS_MENU_ITEMS = [
-        { title: "Planejamento Semanal", href: "javascript:loadWeeklyPlannerApp()", color: "amber", icon: "event_note" }, 
-        { title: "Lista de Tarefas", href: "javascript:loadTasksApp()", color: "red", icon: "check_box" }, 
-        { title: "Agenda (Mensal)", href: "javascript:loadMonthlyCalendarApp()", color: "blue", icon: "calendar_month" }, 
-        { title: "Acompanhamento", href: "javascript:loadTrackingDashboardApp()", color: "purple", icon: "timeline" },
+        { title: "Planejamento Semanal", action: 'modal', modalId: 'weekly-planner', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/weekly-planner.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "amber", icon: "event_note" }, 
+        { title: "Lista de Tarefas", action: 'modal', modalId: 'tasks', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "red", icon: "check_box" }, 
+        { title: "Agenda (Mensal)", action: 'modal', modalId: 'monthly-calendar', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/monthly-calendar.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "blue", icon: "calendar_month" }, 
+        { title: "Acompanhamento", action: 'modal', modalId: 'tracking-dashboard', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tracking-dashboard.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/', color: "purple", icon: "timeline" },
     ];
 
-    // --- CONTROLE DE INTERFACE ---
-    
-    // Função utilitária para esconder todas as views
-    function hideAllViews() {
-        ['portfolio-view', 'education-categories-view', 'finance-menu-view', 'health-menu-view', 'tasks-menu-view', 'student-menu-view', 'responsible-menu-view', 'tutor-menu-view', 'institution-menu-view'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        });
-    }
+    const VIEW_MAP = {
+        'portfolio': { title: "Portfólio de Aplicações", subtitle: "Selecione o sistema que deseja acessar:", data: PORTFOLIO_ITEMS },
+        'education-categories': { title: "Educação: Categorias", subtitle: "Selecione uma área para iniciar.", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
+        'finance-menu': { title: "Finanças: Gestão", subtitle: "Ferramentas para seu controle financeiro.", data: [], parent: 'portfolio' }, 
+        'health-menu': { title: "Saúde: Categorias", subtitle: "Ferramentas de bem-estar e monitoramento.", data: [], parent: 'portfolio' }, 
+        'tasks-menu': { title: "Tarefas e Produtividade", subtitle: "Gerencie seus compromissos e foco.", data: TASKS_MENU_ITEMS, parent: 'portfolio' },
+        'student-menu': { title: "Área do Aluno", subtitle: "Selecione o serviço desejado.", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
+    };
 
-    function switchView(viewId, newParentView) {
-        hideAllViews();
-        const target = document.getElementById(viewId);
-        if (target) target.classList.remove('hidden');
-        
-        // Atualiza a navegação flutuante
-        const isPortfolio = viewId === 'portfolio-view';
-        
-        // O container #float-nav-buttons controla todos os 3 botões (Voltar, Home, Alertas)
-        // O botão Voltar é ocultado separadamente quando estamos no Portfolio
-        document.getElementById('back-btn-float').classList.toggle('hidden', isPortfolio); 
-        
-        // Os botões Home e Alertas são sempre visíveis quando não estamos no Portfolio
-        document.getElementById('home-btn').classList.toggle('hidden', isPortfolio); 
-        document.getElementById('alert-btn').classList.toggle('hidden', isPortfolio); 
+    const AUTH_ITEM_CONFIG = {
+        id: 'auth', 
+        title: "Entrar/Cadastrar", 
+        action: 'modal', 
+        modalId: 'auth-modal', 
+        url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/auth-panel.html', 
+        basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/', 
+        color: "purple", 
+        icon: "lock_open" 
+    };
 
-        
-        const backBtn = document.getElementById('back-btn-float');
-        if (backBtn && !isPortfolio && newParentView) {
-            backBtn.setAttribute('onclick', `switchView('${newParentView}')`);
-            parentView = newParentView; 
-        } else if (backBtn && isPortfolio) {
-            parentView = 'portfolio-view';
-        }
-    }
+    // --- COMPONENTES ---
 
+    const AppCard = ({ item, onClick }) => {
+        const opacity = item.status === "Em breve" ? 'opacity-50 pointer-events-none' : '';
+        const clickHandler = item.status === "Em breve" ? (e) => e.preventDefault() : onClick;
 
-    function closeCurrentMiniApp() {
-        if (currentOpenModalId) {
-            document.getElementById(currentOpenModalId).classList.add('hidden');
-            document.getElementById('close-btn-float').classList.add('hidden'); 
-            
-            // Restaurar a visibilidade dos botões de navegação (Voltar, Home, Alertas)
-            document.getElementById('float-nav-buttons').classList.remove('hidden');
-
-            // Retorna para a view que estava ativa antes do modal ser aberto
-            switchView(parentView, parentView); 
-            
-            currentOpenModalId = null;
-        }
-    }
-    
-    // FUNÇÃO PARA O PLACEHOLDER ESTÁTICO
-    function showPlaceholder() {
-        // Ocultar a navegação principal (Voltar, Home, Alertas) ao abrir o Placeholder
-        document.getElementById('float-nav-buttons').classList.add('hidden');
-
-        document.getElementById('placeholder-modal-overlay').classList.remove('hidden');
-        document.getElementById('close-btn-float').classList.remove('hidden'); 
-        currentOpenModalId = 'placeholder-modal-overlay';
-    }
-
-
-    // --- FUNÇÕES DE NAVEGAÇÃO DE TELA ---
-    function showPortfolio() {
-        switchView('portfolio-view', 'portfolio-view');
-        renderGridSection("portfolio-grid", PORTFOLIO_ITEMS, true);
-    }
-
-    function showEducationCategories() {
-        switchView('education-categories-view', 'portfolio-view');
-        renderGridSection("education-grid", EDUCATION_CATEGORIES, false);
-    }
-    
-    function showFinanceMenu() {
-        switchView('finance-menu-view', 'portfolio-view');
-        renderGridSection("finance-menu-grid", FINANCE_MENU_ITEMS, false);
-    }
-
-    function showHealthMenu() {
-        switchView('health-menu-view', 'portfolio-view');
-        renderGridSection("health-menu-grid", HEALTH_MENU_ITEMS, false);
-    }
-    
-    function showTasksMenu() { 
-        switchView('tasks-menu-view', 'portfolio-view'); 
-        renderGridSection("tasks-menu-grid", TASKS_MENU_ITEMS, false); 
-    }
-    
-    // NOVAS FUNÇÕES DE MENU INTERMEDIÁRIO
-    function showStudentMenu() {
-        switchView('student-menu-view', 'education-categories-view');
-        renderGridSection("student-menu-grid", STUDENT_MENU_ITEMS, false);
-    }
-
-    function showResponsibleMenu() {
-        switchView('responsible-menu-view', 'education-categories-view');
-        renderGridSection("responsible-menu-grid", RESPONSIBLE_MENU_ITEMS, false);
-    }
-
-    function showTutorMenu() {
-        switchView('tutor-menu-view', 'education-categories-view');
-        renderGridSection("tutor-menu-grid", TUTOR_PROFESSOR_MENU_ITEMS, false);
-    }
-
-    function showInstitutionMenu() {
-        switchView('institution-menu-view', 'education-categories-view');
-        renderGridSection("institution-menu-grid", INSTITUTION_MENU_ITEMS, false);
-    }
-
-
-    // --- RENDERIZAÇÃO DO GRID ---
-    function renderGridSection(id, data, isMain) {
-        const container = document.getElementById(id);
-        if (container) {
-            container.className = "mt-6 app-grid-base";
-            // Lógica de grid alterada: Agora usa o grid-3-col-app para maior densidade e flexibilidade
-            if (data.length <= 3) {
-                container.classList.add('grid-1-col-app');
-            } else {
-                container.classList.add('grid-3-col-app');
-            }
-            container.innerHTML = data.map(item => getCardTemplate(item, isMain)).join('');
-        }
-    }
-
-    function getCardTemplate(item, isMain) {
-        let statusChipHtml = '';
-        if (item.status === "Em breve") {
-            statusChipHtml = `
-                <div class="absolute top-3 right-3 z-20">
-                    <span class="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
-                        ${item.status}
+        return (
+            <div 
+                onClick={clickHandler} 
+                role="button" 
+                className={`card-base border-${item.color}-500 bg-${item.color}-500/20 w-32 h-32 md:w-36 md:h-36 ${opacity} hover:ring-2 hover:ring-${item.color}-500 transition-all duration-300`}
+            >
+                {item.status === "Em breve" && (
+                    <div className="absolute top-1 right-1 z-20">
+                        <span className="bg-gray-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-md">
+                            {item.status}
+                        </span>
+                    </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                    <span 
+                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }} 
+                        className={`material-symbols-rounded leading-none text-${item.color}-500 opacity-30`}
+                    >
+                        {item.icon}
                     </span>
                 </div>
-            `;
-        }
-
-        const opacity = item.status === "Em breve" ? 'opacity-50 pointer-events-none' : '';
-        return `
-            <div onclick="${item.href}" role="button" class="card-base border-${item.color}-500 bg-${item.color}-500/20 ${opacity}">
-                ${statusChipHtml}
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                    <span class="material-symbols-rounded leading-none icon-xxl text-${item.color}-500">${item.icon}</span>
+                <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
+                    <h2 className={`text-sm text-${item.color}-700 font-semibold leading-tight`}>{item.title}</h2>
                 </div>
-                <div class="relative z-10 flex flex-col justify-end h-full text-center">
-                    <h2 class="text-${item.color}-700">${item.title}</h2>
-                </div>
-            </div>`;
-    }
+            </div>
+        );
+    };
 
-    // --- FUNÇÃO PARA CONTROLAR VISIBILIDADE DO LOADING ---
-    function showLoading(show) {
-        const loading = document.getElementById('loading-modal');
-        if (loading) {
-            if (show) {
-                loading.classList.remove('hidden');
-            } else {
-                loading.classList.add('hidden');
+    const MiniAppModal = ({ modalConfig, closeModal, loading, setLoading, appId, fbConfig }) => {
+        const iframeRef = React.useRef(null);
+        const { modalId, url, basePath } = modalConfig;
+
+        const loadMiniAppContent = useCallback(async () => {
+            if (!url || !iframeRef.current) return;
+
+            setLoading(true);
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const htmlContent = await response.text();
+
+                // USO DA FUNÇÃO EXTERNA SEGURA
+                // Aqui delegamos o trabalho sujo de string HTML para o script puro lá em cima
+                if (window.prepareMiniAppHtml) {
+                    iframeRef.current.srcdoc = window.prepareMiniAppHtml(htmlContent, appId, basePath);
+                } else {
+                    console.error("Função prepareMiniAppHtml não encontrada.");
+                    iframeRef.current.srcdoc = htmlContent; // Fallback arriscado
+                }
+
+                iframeRef.current.onload = () => {
+                    setLoading(false);
+                };
+
+            } catch (error) {
+                console.error(`Falha ao carregar MiniApp:`, error);
+                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem; font-family:sans-serif;">
+                    <h3 style="color:#ef4444; margin:0;">Erro de Carregamento</h3>
+                    <p style="color:#9ca3af; font-size:0.9rem;">O arquivo <code>${url.split('/').pop()}</code> falhou ao carregar.</p>
+                </div>`;
+                setLoading(false);
             }
-        }
-    }
-    
-    // --- FERRAMENTA PADRÃO DE CARREGAMENTO (MANTIDA PARA APPS FUNCIONAIS) ---
-    async function loadMiniApp(iframeId, url, basePath, modalIdToOpen) {
-        const frame = document.getElementById(iframeId);
+        }, [url, basePath, setLoading, appId]);
+
+        useEffect(() => {
+            loadMiniAppContent();
+        }, [loadMiniAppContent]);
+
+        return (
+            <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" 
+                className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+                <div className="relative w-full max-w-5xl h-full bg-white rounded-2xl shadow-2xl border border-indigo-500 flex flex-col overflow-hidden animate-fade-in-up">
+                    <button onClick={closeModal} 
+                            className="absolute top-4 right-4 z-20 chip-button font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center shadow-md transition-transform hover:scale-105 bg-white border border-red-300 text-red-500">
+                        <span className="material-symbols-rounded text-xl mr-2">close</span>
+                        <span>Fechar</span>
+                    </button>
+                    
+                    <iframe 
+                        ref={iframeRef} 
+                        className="w-full h-full border-0" 
+                        title={`App ${modalConfig.title || modalId}`}
+                    ></iframe>
+
+                    {loading && (
+                        <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm">
+                            <svg aria-hidden="true" className="w-10 h-10 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9171 97.0079 33.5532C95.2932 28.8223 92.871 24.3692 89.8167 20.348C85.8318 15.352 80.8878 11.238 75.2124 7.95925C69.3789 4.47169 63.0454 2.19507 56.5135 1.07246C53.5136 0.514332 50.4131 0.473551 47.4653 0.999784C43.3421 1.77636 39.399 3.25708 35.8458 5.41995C33.454 6.94273 31.543 8.87895 30.0163 11.1397C28.4896 13.4005 27.3503 15.8996 26.6521 18.5273C25.9538 21.1551 25.6174 23.8821 25.6174 26.6346Z" fill="current-fill"/></svg>
+                            <p className="ml-3 text-sm font-semibold text-gray-700">Carregando MiniApp...</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    function App() {
+        const [userPhone, setUserPhone] = useState(localStorage.getItem('user_phone') || null);
+        const isAuthReady = true; 
         
-        // Ocultar a navegação principal (Voltar, Home, Alertas) ao abrir o MiniApp
-        document.getElementById('float-nav-buttons').classList.add('hidden');
-
-        showLoading(true); 
+        const [currentView, setCurrentView] = useState('portfolio');
+        const [history, setHistory] = useState([]);
+        const [isNavMinimized, setIsNavMinimized] = useState(false);
         
-        document.getElementById(modalIdToOpen).classList.remove('hidden'); 
-        document.getElementById('close-btn-float').classList.remove('hidden'); 
-        
-        currentOpenModalId = modalIdToOpen;
-        
-        if (frame.srcdoc && !frame.srcdoc.includes("Carregando...")) {
-             showLoading(false); 
-             return; 
-        }
+        const [modalConfig, setModalConfig] = useState(null);
+        const [modalLoading, setModalLoading] = useState(false);
+        const [placeholderVisible, setPlaceholderVisible] = useState(false);
 
-        frame.srcdoc = `<div style="display:flex;justify-content:center;align-items:center;height:100%;font-family:sans-serif;color:#666;">Carregando...</div>`;
+        useEffect(() => {
+            const MINIMIZE_DELAY = 5000; 
+            let timer;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-            let htmlContent = await response.text();
+            const startTimer = () => {
+                timer = setTimeout(() => {
+                    setIsNavMinimized(true);
+                }, MINIMIZE_DELAY);
+            };
 
-            htmlContent = htmlContent.replace(/class="[^"]*dark[^"]*"/g, 'class=""');
-            htmlContent = htmlContent.replace(/data-theme="dark"/g, 'data-theme="light"');
-            htmlContent = htmlContent.replace(/<header[\s\S]*?<\/header>/gi, ''); 
-
-            const baseTag = `<base href="${basePath}">`;
-
-            const styleClean = `
-            <style>
-                ::-webkit-scrollbar { width: 6px; }
-                ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-                ::-webkit-scrollbar-track { background: transparent; }
-
-                html, body {
-                    width: 100%; 
-                    height: auto; 
-                    min-height: 100%; 
-                    margin: 0; 
-                    padding: 0;
-                    padding-bottom: 120px !important; 
-                    background: transparent !important; 
-                    overflow-x: hidden;
-                    overflow-y: auto;
-                    box-sizing: border-box;
-                }
-                header, footer, nav, .navbar, .header-bar, h1 { display: none !important; }
-                
-                main, .container, .card, .bg-white {
-                    box-shadow: none !important; border: none !important;
-                    background-color: transparent !important;
-                    width: 100% !important; max-width: 100% !important;
-                    padding: 1.5rem !important; margin: 0 !important;
-                }
-            </style>
-            `;
+            const resetTimer = () => {
+                clearTimeout(timer);
+                setIsNavMinimized(false);
+                startTimer();
+            };
             
-            frame.srcdoc = htmlContent.replace('<head>', `<head>${baseTag}${styleClean}`);
+            window.addEventListener('mousemove', resetTimer);
+            window.addEventListener('click', resetTimer);
+            window.addEventListener('scroll', resetTimer);
+            
+            startTimer();
+            
+            const handleAuthMessage = (event) => {
+                if (event.data && event.data.type === 'AUTH_SUCCESS' && event.data.phone) {
+                    setUserPhone(event.data.phone);
+                    localStorage.setItem('user_phone', event.data.phone);
+                    closeModal();
+                }
+            };
 
-        } catch (error) {
-            console.error(`Falha ao carregar MiniApp:`, error);
-            frame.srcdoc = `<div style="text-align:center; padding:2rem; font-family:sans-serif;">
-                <div style="font-size:3rem; margin-bottom:1rem; opacity:0.5;">🚧</div>
-                <h3 style="color:#4b5563; margin:0;">Módulo em Implantação</h3>
-                <p style="color:#9ca3af; font-size:0.9rem;">O arquivo <code>${url.split('/').pop()}</code> ainda não está disponível.</p>
-            </div>`;
-        } finally {
-             showLoading(false);
-        }
-    }
+            window.addEventListener('message', handleAuthMessage);
 
-    // --- FUNÇÕES DE CARREGAMENTO DE CADASTRO (Reutilizando o Modal de Registro) ---
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('mousemove', resetTimer);
+                window.removeEventListener('click', resetTimer);
+                window.removeEventListener('scroll', resetTimer);
+                window.removeEventListener('message', handleAuthMessage);
+            };
+        }, [currentView, modalConfig]); 
 
-    function loadStudentRegistrationApp() {
-        loadMiniApp(
-            'registration-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
-            'registration-modal-overlay'
+        const navigateTo = (newView, pushToHistory = true) => {
+            if (currentView !== newView && pushToHistory) {
+                setHistory(prev => [...prev, currentView]);
+            }
+            setCurrentView(newView);
+        };
+
+        const goBack = () => {
+            if (history.length > 0) {
+                const previousView = history[history.length - 1];
+                setHistory(prev => prev.slice(0, -1));
+                setCurrentView(previousView);
+            } else {
+                setCurrentView('portfolio');
+            }
+        };
+        
+        const handleCardClick = (item) => {
+            if (item.status === "Em breve") return; 
+
+            if (item.action === 'modal') {
+                setModalConfig(item);
+                setModalLoading(true);
+            } else if (item.action === 'placeholder') {
+                setPlaceholderVisible(true);
+            } else if (item.view) {
+                navigateTo(item.view);
+            }
+        };
+
+        const closeModal = () => {
+            setModalConfig(null);
+            setPlaceholderVisible(false);
+        };
+        
+        const openAuthModal = () => {
+            handleCardClick(AUTH_ITEM_CONFIG);
+        };
+
+
+        const currentViewData = VIEW_MAP[currentView] || VIEW_MAP['portfolio'];
+        const renderedItems = useMemo(() => currentViewData.data || [], [currentViewData.data]);
+        
+        const RenderedView = ({ title, subtitle, items }) => (
+            <div className="flex flex-col items-center">
+                <section className="mt-4 text-center w-full">
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-800">{title}</h1>
+                    <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+                </section>
+                <div className="app-grid-container w-full max-w-5xl">
+                    <section className="mt-6 app-grid-base-flexible mx-auto">
+                        {items.map((item, index) => (
+                            <AppCard 
+                                key={item.id || index} 
+                                item={item} 
+                                onClick={() => handleCardClick(item)} 
+                            />
+                        ))}
+                    </section>
+                </div>
+            </div>
+        );
+        
+        const AlertPanel = () => {
+            return (
+                <div className="p-6 text-center">
+                    <h2 className="text-2xl font-bold mb-4 text-amber-600">Painel de Alertas</h2>
+                    <span className="material-symbols-rounded text-6xl text-amber-400">info</span>
+                    <p className="text-gray-600 mt-4">O sistema de notificações via Planilha Google está ativo. Novas notificações aparecerão aqui após o login.</p>
+                    <p className="mt-2 text-sm text-gray-500">Usuário atual: {userPhone || 'Não Logado'}</p>
+                    <button onClick={closeModal} className="mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
+                        Fechar
+                    </button>
+                </div>
+            );
+        };
+        
+        const minimizationClasses = isNavMinimized 
+            ? 'w-12 h-12 p-0 flex items-center justify-center transform scale-95'
+            : 'w-auto px-4 py-2.5'; 
+        
+        const textClasses = isNavMinimized ? 'hidden' : 'inline';
+
+        return (
+            <div className="min-h-screen antialiased flex flex-col">
+                <div className="fixed top-4 left-4 z-40 flex flex-col space-y-2">
+                    {history.length > 0 && (
+                        <button onClick={goBack} 
+                                className={`chip-button bg-teal-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-teal-300 text-teal-600 ${minimizationClasses}`}>
+                            <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>arrow_back</span>
+                            <span className={textClasses}>Voltar</span>
+                        </button>
+                    )}
+                    <button onClick={() => navigateTo('portfolio', false)} 
+                            className={`chip-button bg-indigo-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-indigo-500 text-indigo-600 ${minimizationClasses}`}>
+                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>home</span>
+                        <span className={`hidden sm:${textClasses}`}>Início</span> 
+                    </button>
+                    <button onClick={() => handleCardClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '' })} 
+                            className={`chip-button bg-amber-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-amber-500 text-amber-600 ${minimizationClasses}`}>
+                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : 'mr-2'}`}>notifications</span>
+                        <span className={`hidden sm:${textClasses}`}>Alertas</span>
+                    </button>
+                </div>
+                
+                <div className="fixed top-4 right-4 z-40">
+                    <button onClick={openAuthModal} 
+                            className={`chip-button bg-purple-100 shadow-xl font-medium rounded-full text-sm inline-flex items-center transition-all duration-300 hover:scale-105 border-purple-500 text-purple-600 ${isNavMinimized ? 'w-12 h-12 p-0 flex items-center justify-center transform scale-95' : 'w-auto px-4 py-2.5'}`}>
+                        
+                        <span className={`material-symbols-rounded text-xl ${isNavMinimized ? 'm-0' : (userPhone ? 'mr-2' : 'mr-2')}`}>
+                            {userPhone ? 'account_circle' : 'login'}
+                        </span>
+                        
+                        <span className={`hidden sm:${isNavMinimized ? 'hidden' : 'inline'}`}>
+                            {userPhone ? userPhone : 'Entrar/Cadastrar'}
+                        </span>
+                        
+                    </button>
+                </div>
+
+
+                <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 min-h-screen flex flex-col w-full justify-center">
+                    <RenderedView 
+                        title={currentViewData.title} 
+                        subtitle={currentViewData.subtitle} 
+                        items={renderedItems} 
+                    />
+                </main>
+                
+                {placeholderVisible && (
+                    <div id="placeholder-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+                        <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden p-8 text-center">
+                            <span className="material-symbols-rounded text-6xl text-gray-500 mx-auto mb-4">construction</span>
+                            <h3 className="text-xl font-bold text-gray-800">Recurso em Desenvolvimento</h3>
+                            <p className="text-gray-600 mt-2">Esta funcionalidade estará disponível em breve. Agradecemos sua paciência!</p>
+                            <button onClick={closeModal} className="chip-button mt-6 bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100 font-medium rounded-full text-sm px-4 py-2.5 inline-flex items-center mx-auto transition">
+                                <span className="material-symbols-rounded text-xl mr-2">check</span>
+                                <span>Entendido</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                {modalConfig && modalConfig.modalId === 'alerts' && (
+                    <div id="alerts-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-4">
+                        <div className="relative w-full max-w-xl h-full max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden">
+                            <div className='flex justify-end p-2'>
+                                <button onClick={closeModal} className="text-gray-500 hover:text-gray-900">
+                                    <span className="material-symbols-rounded">close</span>
+                                </button>
+                            </div>
+                            <AlertPanel />
+                        </div>
+                    </div>
+                )}
+
+                {modalConfig && modalConfig.modalId !== 'alerts' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && (
+                    <MiniAppModal 
+                        modalConfig={modalConfig} 
+                        closeModal={closeModal} 
+                        loading={modalLoading} 
+                        setLoading={setModalLoading} 
+                        appId={APP_ID}
+                        fbConfig={FIREBASE_CONFIG} 
+                    />
+                )}
+
+                {modalConfig && modalConfig.modalId === 'auth-modal' && (
+                    <MiniAppModal 
+                        modalConfig={{ 
+                            modalId: 'auth-modal',
+                            title: 'Cadastro e Acesso',
+                            url: AUTH_ITEM_CONFIG.url, 
+                            basePath: AUTH_ITEM_CONFIG.basePath
+                        }} 
+                        closeModal={closeModal} 
+                        loading={modalLoading} 
+                        setLoading={setModalLoading} 
+                        appId={APP_ID}
+                        fbConfig={FIREBASE_CONFIG} 
+                    />
+                )}
+            </div>
         );
     }
 
-    function loadResponsibleRegistrationApp() {
-        loadMiniApp(
-            'registration-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/responsible-registration.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/responsible-registration.html',
-            'registration-modal-overlay'
-        );
+    // --- MONTAGEM DO APP (CORREÇÃO DE ESCOPO) ---
+    // Movemos a renderização para DENTRO do script Babel para garantir que 'App' esteja disponível.
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    } else {
+        console.error("ERRO: Elemento root não encontrado");
     }
-
-    function loadTutorRegistrationApp() {
-        loadMiniApp(
-            'registration-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/tutor-registration.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
-            'registration-modal-overlay'
-        );
-    }
-    
-    function loadInstitutionRegistrationApp() {
-        loadMiniApp(
-            'institution-registration-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/institution-registration.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
-            'institution-registration-modal-overlay' 
-        );
-    }
-
-
-    // --- OUTRAS FUNÇÕES DE CARREGAMENTO (MANTIDAS) ---
-    function loadAlertPanel() {
-        loadMiniApp(
-            'alert-panel-frame',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/alert-panel.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/',
-            'alert-modal-overlay'
-        );
-    }
-
-    function startSimuladosFlow() {
-        loadMiniApp(
-            'simulados-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/',
-            'simulados-modal-overlay'
-        );
-    }
-    
-    function loadTasksApp() {
-        loadMiniApp(
-            'tasks-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tasks.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
-            'tasks-modal-overlay' 
-        );
-    }
-    
-    function loadWeeklyPlannerApp() {
-        loadMiniApp(
-            'weekly-planner-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/weekly-planner.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
-            'weekly-planner-modal-overlay' 
-        );
-    }
-    
-    function loadMonthlyCalendarApp() {
-        loadMiniApp(
-            'monthly-calendar-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/monthly-calendar.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
-            'monthly-calendar-modal-overlay' 
-        );
-    }
-    
-    function loadTrackingDashboardApp() {
-        loadMiniApp(
-            'tracking-dashboard-frame', 
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/tracking-dashboard.html',
-            'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/tarefas/',
-            'tracking-dashboard-modal-overlay' 
-        );
-    }
-
-
-    document.addEventListener("DOMContentLoaded", showPortfolio);
-</script>
+    </script>
 </body>
 </html>
