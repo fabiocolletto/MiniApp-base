@@ -370,8 +370,8 @@
         return (
             // Removendo padding do overlay em mobile (sm:p-4 mantém o padding em desktop)
             <div ref={modalRef} className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-                {/* AJUSTE RESPONSIVO: Mobile usa w-full h-full, rounded-none. Desktop usa max-w-2xl max-h-[90vh] e rounded-2xl. */}
-                <div onClick={(e) => e.stopPropagation()} className={`relative w-full h-full max-h-full sm:max-h-[90vh] sm:max-w-2xl bg-white rounded-none sm:rounded-2xl shadow-2xl border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up`}>
+                {/* AJUSTE DE RESPONSIVIDADE PARA AREA UTIL: w-screen h-screen em mobile, max-w-2xl max-h-[90vh] e rounded-2xl em desktop. */}
+                <div onClick={(e) => e.stopPropagation()} className={`relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up`}>
                     
                     {/* BOTÃO FECHAR (X) - Canto superior direito (CORRIGIDO PARA O TEMA) */}
                     <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
@@ -385,8 +385,8 @@
                         <span className="material-symbols-rounded text-xl">arrow_back</span>
                     </button>
 
-
-                    <div className="p-8 pt-16 flex flex-col h-full overflow-y-auto custom-scrollbar">
+                    {/* CORREÇÃO AQUI: Substituído px-8 por px-4 em mobile e mantido px-8 em sm:px-8 */}
+                    <div className="p-8 pt-16 px-4 sm:px-8 flex flex-col h-full overflow-y-auto custom-scrollbar">
                         
                         {/* CABEÇALHO DO MODAL (APENAS TÍTULO) */}
                         <div className="text-center mb-6">
@@ -430,8 +430,9 @@
                                 `;
 
                                 return (
-                                    <div key={category.id} className={`${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
-                                        {/* CABEÇALHO DO ACORDION */}
+                                    // Adicionando w-full para garantir que o wrapper ocupe a largura total
+                                    <div key={category.id} className={`w-full ${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
+                                        {/* CABEÇALHO DO ACORDION: w-full já está aqui, mas reforçando */}
                                         <button
                                             onClick={() => handleCategoryToggle(category.id)}
                                             className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
@@ -780,14 +781,14 @@
 
                 <div 
                     className={`
-                        absolute top-16 left-0 mt-2 w-full md:w-[620px] 
+                        absolute top-16 left-0 mt-2 w-full sm:w-[620px] 
                         bg-white backdrop-blur-md border rounded-2xl shadow-2xl p-4 
                         
                         // Borda Índigo (azul) e condicional para espessura
                         border-indigo-300 transition-all ${isOpen ? 'border-2' : 'border'} 
                         
-                        // Breakpoint MD: Grid de 2 Colunas (para Tablet/Desktop)
-                        flex flex-col md:grid md::grid-cols-2 md:gap-4
+                        // **CORREÇÃO AQUI:** Ponto de quebra movido para sm (640px)
+                        flex flex-col sm:grid sm:grid-cols-2 sm:gap-4
                         
                         transition-all duration-300 origin-top-left
                         max-h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden custom-scrollbar // Rolagem Vertical e Sem Horizontal
@@ -935,9 +936,8 @@
         
         const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
         
-        // AJUSTE RESPONSIVO: full width and height in mobile, max-w-5xl/h-full in tablet/desktop
-        // CORREÇÃO: Adicionando p-0 para remover qualquer padding no mobile, mas mantendo o arredondamento em desktop
-        const containerClasses = customClass || `relative w-full h-full sm:max-w-5xl sm:h-full bg-white rounded-none sm:rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up p-0 sm:p-0`;
+        // AJUSTE RESPONSIVO PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-5xl em desktop.
+        const containerClasses = customClass || `relative w-screen h-screen sm:w-full sm:max-w-5xl sm:h-full bg-white rounded-none sm:rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up p-0 sm:p-0`;
 
         const loadMiniAppContent = useCallback(async () => {
             if (!url || !iframeRef.current) return;
@@ -981,7 +981,7 @@
         useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
 
         return (
-            // AJUSTE RESPONSIVO: O overlay mantém a centralização, o conteúdo interno cobre 100% em mobile
+            // Overlay: Mantém o p-0 sm:p-4 (padding só em desktop)
             <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4">
                 <div onClick={(e) => e.stopPropagation()} className={containerClasses}>
                     <CloseButton onClick={closeModal} themeColor={color} /> 
@@ -1004,7 +1004,8 @@
         const [showSettingsModal, setShowSettingsModal] = useState(false);
         
         // NOVO ESTADO: Modo para forçar a visualização cinza em botões inativos
-        const [isInactiveModeActive, setIsInactiveModeActive] = useState(false); 
+        // CORREÇÃO: Setando para TRUE para que inicie em estado inativo
+        const [isInactiveModeActive, setIsInactiveModeActive] = useState(true); 
         
         // CORREÇÃO: Força o Modo Claro (false) para estabilizar.
         const [isDarkMode, setIsDarkMode] = useState(false); 
@@ -1264,8 +1265,8 @@
                 {/* MODAL ADMIN */}
                 {modalConfig && modalConfig.modalId === 'admin-modal' && (
                     <div id="admin-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE RESPONSIVO: w-full h-full em mobile, max-w-lg em desktop, rounded-none em mobile. */}
-                        <div className="relative w-full h-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-slate-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
+                        <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-slate-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                              <CloseButton onClick={closeModal} themeColor="slate" />
                             {/* CORREÇÃO: Removendo padding lateral do painel do formulário em mobile */}
                             <div className="p-6 pt-12 px-0 sm:p-6 sm:pt-12 sm:px-6"> 
@@ -1290,8 +1291,8 @@
                 {/* MODAL ALERTAS */}
                 {modalConfig && modalConfig.modalId === 'alerts' && (
                     <div id="alerts-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE RESPONSIVO: w-full h-full em mobile, max-w-xl max-h-[80vh] em desktop, rounded-none em mobile. */}
-                        <div className="relative w-full h-full sm:max-w-xl sm:max-h-[80vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-xl max-h-[80vh] em desktop. */}
+                        <div className="relative w-screen h-screen sm:w-full sm:max-w-xl sm:max-h-[80vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="amber" />
                             {/* CORREÇÃO: Removendo padding lateral do painel do conteúdo em mobile */}
                             <div className="p-6 pt-12 text-center px-0 sm:p-6 sm:pt-12 sm:px-6"> 
@@ -1320,8 +1321,8 @@
                 {/* MODAL AUTH */}
                 {showAuthModal && (
                     <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                         {/* AJUSTE RESPONSIVO: w-full h-full em mobile, max-w-lg em desktop, rounded-none em mobile. */}
-                        <div className="relative w-full h-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                         {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
+                        <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="purple" />
                             {/* CORREÇÃO: AuthPanel já foi ajustado para remover padding no mobile */}
                             <AuthPanel onLoginSuccess={handleNativeLogin} onClose={closeModal} />
@@ -1332,8 +1333,8 @@
                 {/* MODAL CONFIGURAÇÕES */}
                 {showSettingsModal && (
                     <div id="settings-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE RESPONSIVO: w-full h-full em mobile, max-w-lg em desktop, rounded-none em mobile. */}
-                        <div className="relative w-full h-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
+                        <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="cyan" />
                             {/* CORREÇÃO: SettingsPanel já foi ajustado para remover padding no mobile */}
                             <SettingsPanel userData={userData} />
@@ -1353,4 +1354,4 @@
     }
     </script>
 </body>
-</html>
+    </html>
