@@ -22,10 +22,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
 
-        .min-h-dvh {
+        /* NOVO: Classe para Small Viewport Height (svh) - Mais segura para min-height */
+        .min-h-svh {
             min-height: 100vh; /* Fallback */
-            min-height: 100dvh;
+            min-height: 100svh;
         }
+        /* MANTIDO: Classe para Dynamic Viewport Height (dvh) - Ideal para modais */
         .h-dvh {
             height: 100vh; /* Fallback */
             height: 100dvh;
@@ -122,8 +124,8 @@
         }
     </style>
 </head>
-<body class="min-h-dvh antialiased hide-scrollbar">
-    <div id="root" class="min-h-dvh flex flex-col">
+<body class="min-h-svh antialiased hide-scrollbar">
+    <div id="root" class="min-h-svh flex flex-col">
         <div class="fixed inset-0 flex items-center justify-center bg-slate-100 text-gray-500">
             Carregando aplicação...
         </div>
@@ -1108,7 +1110,7 @@
 
 
         return (
-            <div className="min-h-dvh antialiased flex flex-col">
+            <div className="min-h-svh antialiased flex flex-col">
                 
                 {/* BOTÕES FLUTUANTES DIREITA (ACESSIBILIDADE) */}
                 <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
