@@ -22,7 +22,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
 
-        /* CORREÇÃO: Nova classe CSS para usar Dynamic Viewport Height (dvh) */
         .min-h-dvh {
             min-height: 100vh; /* Fallback */
             min-height: 100dvh;
@@ -32,12 +31,10 @@
             height: 100dvh;
         }
 
-        /* PADRONIZAÇÃO: Classe para OCULTAR BARRAS DE ROLAGEM */
         .hide-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;     /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        /* WebKit (Chrome, Safari) */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -48,7 +45,6 @@
             color: #0f172a;
         }
         
-        /* Dark Mode styles applied to the body for a better effect (mantido mas não ativo) */
         .dark body {
             background-color: #1f2937; 
             color: #f3f4f6; 
@@ -64,7 +60,6 @@
             cursor: pointer;
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); 
-            /* AJUSTE MOBILE: Tamanho um pouco menor para evitar overflow em telas estreitas */
             width: 7rem;
             height: 7rem;
             padding: 0.5rem; 
@@ -84,21 +79,17 @@
         
         .app-grid-base-flexible { 
             display: grid; 
-            /* AJUSTE MOBILE: Gap menor */
             gap: 1rem;
             width: 100%; 
             max-width: 1008px;
-            /* **CORREÇÃO AQUI:** Usa 8rem como base no auto-fit para mobile (era 7rem) */
             grid-template-columns: repeat(auto-fit, 8rem); 
             justify-content: center;
             justify-items: center;
-            /* CORREÇÃO AQUI: Remove o padding lateral global para evitar dupla margem no modal */
             padding: 0; 
         }
 
         @media (min-width: 768px) {
              .app-grid-base-flexible {
-                /* Mantém o GAP de 4rem (64px) para maior espaçamento uniforme em desktop */
                 gap: 4rem; 
                 grid-template-columns: repeat(auto-fit, 8rem); 
             }
@@ -107,11 +98,9 @@
         .chip-button {
             border-width: 1px;
             transition: all 0.3s ease-in-out;
-            /* Adicionado shadow padrão para o estilo de chip flutuante */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
 
-        /* Classe específica para esconder a sombra nos botões flutuantes */
         .chip-button.no-shadow {
             box-shadow: none !important;
         }
@@ -119,27 +108,21 @@
         .chip-button:hover {
             box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); 
         }
-        /* Garantindo que o hover não aplique sombra no dark mode */
         .dark .chip-button.no-shadow:hover {
              box-shadow: none !important;
         }
         
-        /* REMOVIDO: Custom Scrollbar original */
-        
-        /* Estilo para a animação do Accordion/Gaveta */
         .accordion-content {
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
         
-        /* Classe para o flow column no menu (removida, mas mantendo o nome por coerência) */
         .menu-column-flow {
             flex-direction: column;
         }
     </style>
 </head>
 <body class="min-h-dvh antialiased hide-scrollbar">
-    <!-- APLICANDO hide-scrollbar no body -->
     <div id="root" class="min-h-dvh flex flex-col">
         <div class="fixed inset-0 flex items-center justify-center bg-slate-100 text-gray-500">
             Carregando aplicação...
@@ -186,55 +169,45 @@
     
     // --- DEFINIÇÕES DE DADOS HIERÁRQUICOS SIMPLIFICADAS PARA SUB-MENU ---
     
-    // Nível 3: Itens finais de cada menu (que levam a um Modal ou Placeholder)
+    // ALTERAÇÃO: Todos os itens do menu Aluno agora são 'placeholder' para ficarem inativos
     const STUDENT_MENU_ITEMS = [
-        // Itens que disparam MODAIS ATIVOS (cor tema)
-        { id: 'student-profile', title: "Perfil", action: 'modal', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts" },
-        { id: 'simulados', title: "Simulados", action: 'modal', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note" },
-        // Itens PLACEHOLDERS (serão cinza no modo inativo)
+        // Alterado de 'modal' para 'placeholder'
+        { id: 'student-profile', title: "Perfil", action: 'placeholder', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts" },
+        // Alterado de 'modal' para 'placeholder'
+        { id: 'simulados', title: "Simulados", action: 'placeholder', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note" },
         { id: 'provas', title: "Provas", action: 'placeholder', color: "emerald", icon: "assignment" }, 
         { id: 'agenda-aluno', title: "Agenda", action: 'placeholder', color: "emerald", icon: "event" },
     ];
     
-    // Nível 2: Categorias da Educação
     const EDUCATION_CATEGORIES = [
         { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person", submenu: STUDENT_MENU_ITEMS },
-        // Itens PLACEHOLDERS (serão cinza no modo inativo)
         { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", action: 'placeholder' }, 
         { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", action: 'placeholder' }, 
         { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", action: 'placeholder' }, 
     ];
 
-    // Nível 1: Portfólio Principal (Mapeado para o menu principal)
     const MAIN_MENU_PORTFOLIO = [
-        // ALTERAÇÃO 1: Menu Central renomeado para Configurações
         { id: 'menu-central', title: "Configurações", action: 'modal', modalId: 'central-menu-modal', color: "indigo", icon: "settings" },
-        // NOVO ITEM 2: Central de Notificações
         { id: 'notifications', title: "Notificações", action: 'modal', modalId: 'alerts-panel', color: "amber", icon: "notifications" },
-        // Item ATIVO (modal)
         { id: 'education', title: "Educação", action: 'modal', modalId: 'education-menu-modal', color: "emerald", icon: "cast_for_education" },
-        // Itens PLACEHOLDERS (serão cinza no modo inativo)
         { id: 'finance', title: "Financeiro", action: 'placeholder', color: "lime", icon: "account_balance" }, 
         { id: 'health', title: "Saúde", action: 'placeholder', color: "sky", icon: "health_and_safety" }, 
         { id: 'tasks', title: "Tarefas", action: 'placeholder', color: "amber", icon: "calendar_month" }, 
     ];
 
-    // Mapeamento de visualizações (Para tela principal - Não mudou)
     const VIEW_MAP = {
-        'portfolio': { title: "Portfólio de Aplicações", subtitle: "Selecione o sistema que deseja acessar:", data: MAIN_MENU_PORTFOLIO },
-        'education-categories': { title: "Educação: Categorias", subtitle: "Selecione uma área para iniciar.", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
-        'finance-menu': { title: "Finanças: Gestão", subtitle: "Ferramentas para seu controle financeiro.", data: [], parent: 'portfolio' }, 
-        'health-menu': { title: "Saúde: Categorias", subtitle: "Ferramentas de bem-estar e monitoramento.", data: [], parent: 'portfolio' }, 
-        'tasks-menu': { title: "Tarefas e Produtividade", subtitle: "Gerencie seus compromissos e foco.", data: [], parent: 'portfolio' },
-        'student-menu': { title: "Área do Aluno", subtitle: "Selecione o serviço desejado.", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
+        'portfolio': { title: "Portfólio", data: MAIN_MENU_PORTFOLIO },
+        'education-categories': { title: "Educação", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
+        'finance-menu': { title: "Finanças", data: [], parent: 'portfolio' }, 
+        'health-menu': { title: "Saúde", data: [], parent: 'portfolio' }, 
+        'tasks-menu': { title: "Tarefas", data: [], parent: 'portfolio' },
+        'student-menu': { title: "Aluno", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
     };
     
-    // Mapeamento de SUB-MENUS (necessário apenas para manter a estrutura original para reutilização)
     const SUB_MENU_MAP = {
-        'portfolio-root': { title: 'Mapa de Aplicações', items: MAIN_MENU_PORTFOLIO },
+        'portfolio-root': { title: 'Portfólio', items: MAIN_MENU_PORTFOLIO },
         'education-categories': { title: 'Educação', items: EDUCATION_CATEGORIES, parentId: 'portfolio-root' },
-        'student-menu': { title: 'Área do Aluno', items: STUDENT_MENU_ITEMS, parentId: 'education-categories' }
-        // Outros menus intermedários (Responsáveis, Tutores, etc.) não foram definidos para evitar complexidade desnecessária no teste.
+        'student-menu': { title: 'Aluno', items: STUDENT_MENU_ITEMS, parentId: 'education-categories' }
     };
 
     const AUTH_ITEM_CONFIG = {
@@ -246,21 +219,17 @@
         icon: "lock_open" 
     };
     
-    // Função utilitária para inicializar o Dark Mode com base na preferência do sistema
     const initializeDarkMode = () => {
-        // CORREÇÃO: Força o Modo Claro (retorna false) para estabilizar o sistema
         return false;
     };
 
 
     // --- COMPONENTES AUXILIARES ---
-    // NOVO: CloseButton aceita prop themeColor
     const CloseButton = ({ onClick, themeColor = "red" }) => {
         const colorClasses = `border-${themeColor}-500 bg-${themeColor}-100 text-${themeColor}-600 hover:bg-${themeColor}-200`;
         return (
             <button 
                 onClick={onClick} 
-                // ALTERAÇÃO: Trocando rounded-full (círculo) por rounded-lg (quadrado arredondado)
                 className={`absolute top-4 right-4 z-50 h-10 w-10 rounded-lg shadow-md border ${colorClasses} flex items-center justify-center transition-transform duration-200 hover:scale-110`}
                 title="Fechar"
             >
@@ -269,7 +238,6 @@
         );
     };
 
-    // Componente para o título da seção com tema
     const SectionTitle = ({ icon, title, color, isSubMenu = false, onBack }) => (
         <div className={`px-2 flex items-center mt-3 first:mt-0 ${isSubMenu ? 'pb-2 border-b border-indigo-200 mb-2' : ''}`}>
             {isSubMenu && (
@@ -282,26 +250,20 @@
         </div>
     );
     
-    // --- Renderização do Botão de Navegação (Reutilizado no Menu e no Modal) ---
     const RenderNavButton = ({ item, color, onClickOverride }) => {
-        // Lógica de inatividade agora é FIXA (isInactiveModeActive = true implicitamente)
         const isLogicallyInactive = item.action === 'placeholder';
-        // A inatividade visual (cinza) é SEMPRE TRUE se for placeholder, removendo a dependência de `isInactiveModeActive`.
         const shouldShowInactiveStyle = isLogicallyInactive; 
         
         const isDisabled = isLogicallyInactive; 
         
         const themeColor = item.color || color;
-        // O visual é cinza se inativo, senão usa a cor do tema.
         const visualColor = shouldShowInactiveStyle ? 'slate' : themeColor;
         
-        // CLASSES BASE CINZAS (usadas para o modo inativo)
         const INACTIVE_CHIP_CLASS = `
             bg-slate-100 border-slate-300 text-slate-500 
             hover:bg-slate-100 hover:border-slate-400
         `;
         
-        // CLASSES BASE ATIVAS (usadas para o modo ativo ou quando o item é um modal)
         const ACTIVE_CHIP_CLASS = (c) => `
             chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all 
             bg-${c}-50 border border-${c}-200 text-${c}-700 
@@ -312,21 +274,16 @@
         
         const isSubMenuLink = item.action === 'submenu' || (item.submenu && item.submenu.length > 0);
         
-        // Define a ação de clique: se placeholder (e, portanto, isDisabled), não faz nada.
         const handleClick = onClickOverride || (isDisabled ? () => {} : undefined); 
         
-        // Cor do ícone e texto
         const iconColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-500' : `text-${visualColor}-600`; 
         const textColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-700' : 'text-current';
         
-        // A opacidade é aplicada quando o botão está logicamente inativo E o modo visual está ATIVO (colorido), para manter um leve hint.
-        // Como agora o visual é sempre cinza quando inativo, a opacidade não é mais necessária fora do estilo base.
         const opacityClass = '';
 
         return (
             <button
                 onClick={handleClick}
-                // Aplica a classe base do chip e as classes de cor/inativo
                 className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${classes} ${opacityClass} ${isDisabled ? 'cursor-not-allowed' : ''}`}
                 disabled={isDisabled && !onClickOverride}
             >
@@ -343,104 +300,71 @@
         );
     };
 
-    // --- NOVO COMPONENTE: MODAL DE NAVEGAÇÃO EDUCAÇÃO (ACORDION/GAVETA) ---
     const EducationMenuModal = ({ closeModal, onAppClick }) => {
         const [activeCategory, setActiveCategory] = useState(null);
         const modalRef = useRef(null);
         
-        // Cor Tema: emerald
         const THEME_COLOR = "emerald";
         
         const handleCategoryToggle = (id) => {
             setActiveCategory(activeCategory === id ? null : id);
         };
         
-        // Função que trata o clique em um item de sub-menu (item de App final)
         const handleSubItemClick = (item) => {
             if (item.action === "placeholder") {
                 return;
             }
-            // Dispara a função de abertura de App no App.js principal
             onAppClick(item); 
-            closeModal(); // Feche o modal após o clique no App
+            closeModal();
         };
         
-        // Renderização dos cards internos
         const RenderSubMenuCards = ({ submenu }) => (
              <section className="app-grid-base-flexible mx-auto">
                 {submenu.map(item => (
                     <AppCard 
                         key={item.id}
                         item={item} 
-                        onClick={() => handleSubItemClick(item)} // Usa o handler do Modal
-                        // isInactiveModeActive removido, AppCard lida com a inatividade internamente (fixo em true)
+                        onClick={() => handleSubItemClick(item)} 
                     />
                 ))}
             </section>
         );
 
-        // Lógica de inatividade é fixa (true)
         const isInactiveModeActive = true; 
 
         return (
-            // APLICANDO h-dvh NO OVERLAY
             <div ref={modalRef} className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-                {/* AJUSTE DE RESPONSIVIDADE PARA AREA UTIL: w-screen h-screen em mobile, max-w-2xl max-h-[90vh] e rounded-2xl em desktop. */}
                 <div onClick={(e) => e.stopPropagation()} className={`relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up`}>
                     
-                    {/* BOTÃO FECHAR (X) - Canto superior direito (CORRIGIDO PARA O TEMA) */}
                     <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
                     
-                    {/* BOTÃO VOLTAR (CORRIGIDO PARA O TEMA) 
-                    <button 
-                        onClick={closeModal} 
-                        className={`absolute top-4 left-4 z-50 h-10 w-10 rounded-full shadow-md border border-${THEME_COLOR}-500 bg-${THEME_COLOR}-100 text-${THEME_COLOR}-600 hover:bg-${THEME_COLOR}-200 flex items-center justify-center transition-transform duration-200 hover:scale-110`}
-                        title="Voltar ao Menu Principal"
-                    >
-                        <span className="material-symbols-rounded text-xl">arrow_back</span>
-                    </button>
-                    */}
-
-                    {/* CORREÇÃO AQUI: Substituído px-8 por px-4 em mobile e mantido px-8 em sm:px-8 */}
-                    {/* APLICANDO hide-scrollbar aqui */}
                     <div className="p-8 pt-16 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
                         
-                        {/* CABEÇALHO DO MODAL (APENAS TÍTULO) */}
                         <div className="text-center mb-6">
-                            <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Central de Educação</h2>
-                            <p className={`text-md text-${THEME_COLOR}-500 mt-1`}>Navegue pelas áreas e serviços disponíveis.</p>
+                            <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Educação</h2>
                         </div>
                         
                         
-                        {/* ACORDION / GAVETAS */}
                         <div className="space-y-4 flex-1">
                             {EDUCATION_CATEGORIES.map((category) => {
-                                // Lógica de inatividade para categorias (uso de action: 'placeholder')
                                 const isCategoryLogicallyInactive = category.action === 'placeholder';
-                                // A inatividade visual (cinza) é SEMPRE TRUE se for placeholder.
                                 const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive;
                                 
-                                // Determina a cor visual
                                 const categoryVisualColor = shouldCategoryShowInactiveStyle ? 'slate' : THEME_COLOR;
                                 
-                                // CLASSE DO CABEÇALHO DO ACCORDION
                                 const headerClasses = shouldCategoryShowInactiveStyle 
-                                    ? INACTIVE_ACCORDION_CLASS // Cinza se modo inativo ativo
+                                    ? INACTIVE_ACCORDION_CLASS
                                     : (activeCategory === category.id 
                                         ? `bg-${categoryVisualColor}-100 text-${categoryVisualColor}-800 border border-${categoryVisualColor}-200` 
                                         : `bg-${categoryVisualColor}-50 hover:bg-${categoryVisualColor}-100 text-${categoryVisualColor}-700 border border-${categoryVisualColor}-200`);
 
-                                // Cor do Ícone/Texto interno da categoria.
                                 const categoryIconColor = `text-${categoryVisualColor}-600`;
                                 const categoryTextColor = shouldCategoryShowInactiveStyle ? 'text-slate-700' : '';
                                 
-                                // Estilo da Borda externa do wrapper
                                 const wrapperBorderClass = `border-${categoryVisualColor}-200`;
                                 
-                                // Classes para desabilitar o clique da categoria (exceto se for o submenu de 'Alunos')
                                 const isDisabled = isCategoryLogicallyInactive && !category.submenu;
                                 
-                                // CLASSES BASE CINZAS para o Accordion Header (Não está usando a prop color do item, então definimos explicitamente)
                                 const INACTIVE_ACCORDION_CLASS = `
                                     bg-slate-100 border-slate-300 text-slate-500
                                     hover:bg-slate-100 cursor-not-allowed pointer-events-none
@@ -448,35 +372,28 @@
                                 `;
 
                                 return (
-                                    // Adicionando w-full para garantir que o wrapper ocupe a largura total
                                     <div key={category.id} className={`w-full ${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
-                                        {/* CABEÇALHO DO ACORDION: w-full já está aqui, mas reforçando */}
                                         <button
                                             onClick={() => handleCategoryToggle(category.id)}
                                             className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
                                             disabled={isDisabled}
                                         >
                                             <div className="flex items-center">
-                                                {/* Ícone usa a cor visual (tema ou cinza) */}
                                                 <span className={`material-symbols-rounded text-2xl mr-3 ${categoryIconColor}`}>{category.icon}</span>
                                                 <span className={`font-bold text-lg ${categoryTextColor}`}>{category.title}</span>
                                             </div>
                                             <span className={`material-symbols-rounded transition-transform duration-200 ${shouldCategoryShowInactiveStyle ? 'text-slate-500' : ''} ${activeCategory === category.id ? 'rotate-90' : 'rotate-0'}`}>chevron_right</span>
                                         </button>
 
-                                        {/* CONTEÚDO DA GAVETA */}
                                         <div 
                                             className="accordion-content transition-all duration-300" 
                                             style={{ 
                                                 maxHeight: activeCategory === category.id && category.submenu ? `${modalRef.current?.scrollHeight || 500}px` : '0px', 
-                                                // Fallback de altura para garantir a transição inicial
                                                 transition: `max-height ${activeCategory === category.id ? '0.5s' : '0.3s'} ease-in-out`
                                             }}
                                         >
                                             {category.submenu && (
-                                                // CORREÇÃO: Aplica p-4 (1rem) em todos os lados.
                                                 <div className={`p-4 border-t border-${THEME_COLOR}-100 bg-white`}>
-                                                    {/* NOVO VISUAL: Usa o grid de cards quadrados e o AppCard */}
                                                     <RenderSubMenuCards submenu={category.submenu} />
                                                 </div>
                                             )}
@@ -491,26 +408,23 @@
         );
     }
     
-    // --- COMPONENTE DE MENU CENTRALIZADO (AGORA MODAL DE CONFIGURAÇÕES) ---
-    // RENOMEADO DE CentralMenuModal para SettingsMenuModal para refletir a mudança de título
     const SettingsMenuModal = ({ 
         userData, 
         onAuth, 
         isFloatingBtnVisible, 
         toggleAccessibility, 
-        onAppClick,
-        closeModal,
+        backupToCloud, 
+        isSyncing, 
+        closeModal, 
         isAlertsFloatingBtnVisible, 
         toggleAlertsFloatingButton 
     }) => {
-        // COR TEMA: Para o card e o modal (Indigo)
         const THEME_COLOR = "indigo";
         const PERFIL_COLOR = 'purple';
-        const NAVEGACAO_COLOR = 'indigo';
+        const SEGURANCA_COLOR = 'amber';
         const SISTEMA_COLOR = 'cyan'; 
         const ACESSIBILIDADE_COLOR = 'fuchsia';
         
-        // Lógica de inatividade é fixa (true)
         const isInactiveModeActive = true;
 
         const getInitials = (name) => {
@@ -520,45 +434,18 @@
             return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         };
 
-        // Classe unificada para o visual de botões desativados/placeholder (Não usada nos itens do menu principal)
         const INACTIVE_CHIP_CLASS = `
             bg-slate-50 border-slate-300 text-slate-500 
             hover:bg-slate-100 hover:border-slate-400
         `;
         
-        const menuItemClass = (color) => `
-            chip-button w-full mb-1 px-4 py-2.5 rounded-xl 
-            flex items-center justify-start 
-            bg-${color}-50 border border-${color}-200 text-${color}-700 
-            hover:bg-${color}-100 hover:border-${color}-300 hover:translate-x-1 transition-all
-        `;
-        
-        // --- NAVEGAÇÃO HIERÁRQUICA (Simplificada) ---
-        const handleMenuItemClick = (item) => {
-            if (item.action === "placeholder") {
-                return;
-            }
-            
-            // Se for um modal (Educação, Auth, Alertas, Admin, etc.), usa onAppClick
-            if (item.action === 'modal') {
-                 // onAppClick está sendo usado para abrir o EducationMenuModal, Auth, etc.
-                 onAppClick(item); 
-                 // O modal atual deve ser fechado após a abertura de outro modal.
-                 closeModal();
-                 return;
-            }
-        };
-        
-        // --- COLUNA 2: Opções de Sistema e Acessibilidade (Estaticamente agrupadas) ---
         const SystemAccessibilityColumn = ({ 
             isFloatingBtnVisible, 
             toggleAccessibility,
             isAlertsFloatingBtnVisible, 
             toggleAlertsFloatingButton 
         }) => { 
-            // Lógica para os botões de placeholder que precisam ficar cinza (slate) 
             const systemStyle = useMemo(() => {
-                // Estilo INATIVO é o padrão para todos os placeholders neste grupo
                 const INACTIVE_SLATE_STYLE = {
                     baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
                     iconColor: 'text-slate-500',
@@ -568,18 +455,15 @@
                     isDisabled: true,
                 };
                 return INACTIVE_SLATE_STYLE;
-            }, []); // Não depende de isInactiveModeActive, pois é fixo agora.
+            }, []);
             
-            // Lógica para o botão BOTÕES (Acessibilidade) - AGORA NÃO DEPENDE DE isInactiveModeActive
             const accessibilityVisualStyle = useMemo(() => {
-                const activeColor = ACESSIBILIDADE_COLOR; // fuchsia
+                const activeColor = ACESSIBILIDADE_COLOR;
                 
-                // Base classes: Fuchsia para ON e OFF.
                 const baseClasses = isFloatingBtnVisible 
                     ? `bg-${activeColor}-100 border-${activeColor}-400 text-${activeColor}-700 hover:bg-${activeColor}-200 hover:border-${activeColor}-500`
                     : `bg-${activeColor}-50 border-${activeColor}-300 text-${activeColor}-700 hover:bg-${activeColor}-100 hover:border-${activeColor}-400`;
 
-                // Ícone/Toggle: Usa Cinza (slate) quando OFF.
                 const iconColor = isFloatingBtnVisible ? `text-${activeColor}-600` : 'text-slate-500'; 
                 const toggleBg = isFloatingBtnVisible ? `bg-${activeColor}-400` : 'bg-slate-400'; 
                 const togglePos = isFloatingBtnVisible ? 'right-0.5' : 'left-0.5'; 
@@ -594,9 +478,8 @@
             
             }, [isFloatingBtnVisible]); 
 
-            // --- NOVO: Lógica para o botão FLUTUANTE DE ALERTAS (AMBER) ---
             const alertsFloatingBtnVisualStyle = useMemo(() => {
-                const activeColor = 'amber'; // Cor Amber
+                const activeColor = 'amber';
                 const isActive = isAlertsFloatingBtnVisible;
                 
                 const baseClasses = isActive 
@@ -638,28 +521,6 @@
                         </div>
                     </button>
                     
-                    {/* Botão Alertas (Modal) - Fixo como PLACEHOLDER. REMOVIDO POIS AGORA É UM CARD NO PORTFÓLIO */}
-                    {/*
-                    <button 
-                        onClick={() => onAppClick({ action: 'modal', modalId: 'alerts', title: 'Painel de Alertas', url: 'ALERT_PANEL_PLACEHOLDER', basePath: '', color: "amber" })} 
-                        className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} 
-                        disabled={systemStyle.isDisabled}
-                    >
-                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>notifications</span> 
-                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Painel de Alertas</span>
-                    </button>
-                    */}
-
-                    {/* Botão Admin (Modal) - Fixo como PLACEHOLDER */}
-                    <button 
-                        onClick={() => onAppClick({ action: 'modal', modalId: 'admin-modal', title: 'Admin', color: "slate" })} 
-                        className={`chip-button w-full px-4 py-2.5 rounded-xl flex items-center justify-start ${systemStyle.baseClasses}`} 
-                        disabled={systemStyle.isDisabled}
-                    >
-                        <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>admin_panel_settings</span>
-                        <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Admin</span>
-                    </button>
-                    
                     {/* Botão Tema (Toggle) - Fixo como PLACEHOLDER */}
                     <button 
                         onClick={() => {}} 
@@ -675,20 +536,24 @@
                         </div>
                     </button>
 
-                    {/* Botão Animações (Toggle) - Fixo como PLACEHOLDER */}
+                    {/* LINGUAGEM (INATIVO, mas mantém o indicador) */}
                     <button 
-                        onClick={() => {}}
+                        onClick={() => {}} 
                         className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
                         disabled={systemStyle.isDisabled}
                     >
                         <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>slow_motion_video</span>
-                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Animações</span>
+                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>language</span>
+                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Linguagem</span> 
                         </div>
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
+                        {/* INDICADOR DE SELEÇÃO: PORTUGUÊS (BR) - Estilo cinza (slate) */}
+                        <div className="flex items-center">
+                             <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-sm">
+                                Português (BR)
+                            </span>
                         </div>
                     </button>
+
 
                     {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Apenas o botão flutuante está ativo */}
                     <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
@@ -699,7 +564,6 @@
                         className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${accessibilityVisualStyle.base}`}
                     >
                         <div className="flex items-center">
-                            {/* ÍCONE: Varia de Fuchsia (ON) para Cinza (OFF) */}
                             <span className={`material-symbols-rounded mr-3 ${accessibilityVisualStyle.icon}`}>accessibility_new</span>
                             <span className={`font-semibold text-sm ${accessibilityVisualStyle.textColor}`}>Botões Flutuantes</span>
                         </div>
@@ -712,19 +576,26 @@
             );
         }; 
 
-        // --- COLUNA 1: Perfil e Mapa de Aplicações ---
-        const RenderProfileAndRootNavigation = ({ onAuth }) => {
+        const RenderProfileAndRootNavigation = ({ onAuth, backupToCloud, isSyncing, userData }) => {
             const profileColor = PERFIL_COLOR;
-            // A inatividade é fixada em true para os AppCards
-            const isInactiveModeActiveForCards = true; 
+            const securityColor = SEGURANCA_COLOR;
             
+            const INACTIVE_SLATE_STYLE = {
+                baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
+                iconColor: 'text-slate-500',
+                textColor: 'text-slate-700',
+                isDisabled: true,
+            };
+
+            const isBackupDisabled = isSyncing || !userData; 
+
             return (
                 <div className="flex flex-col gap-1 w-full relative">
                     {/* SEÇÃO: PERFIL (ROXO) */}
                     <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
 
-                    <button onClick={() => { onAuth(); closeModal(); }} 
-                        // CORREÇÃO: Aplicando w-full e espaçamento vertical
+                    <button 
+                        onClick={onAuth} 
                         className={`chip-button w-full mb-1 mt-4 px-3 py-3 rounded-xl flex items-center justify-start bg-${profileColor}-50 border border-${profileColor}-200 text-${profileColor}-700 hover:bg-${profileColor}-100 transition-all text-left group`}>
                         <div className={`w-10 h-10 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-sm shrink-0 mr-3 shadow-sm group-hover:scale-110 transition-transform`}>
                             {userData ? getInitials(userData.name) : <span className="material-symbols-rounded">person</span>}
@@ -734,31 +605,45 @@
                                 {userData ? userData.name.split(' ')[0] : 'Visitante'}
                             </span>
                             <span className="text-xs opacity-80">
-                                {userData ? 'Perfil Conectado' : 'Login / Cadastre-se'}
+                                {userData ? 'Conectado' : 'Login'}
                             </span>
                         </div>
                     </button>
                     
-                    {/* SEÇÃO: MAPA DE APPLICAÇÕES (ÍNDIGO) - SEM HIERARQUIA INTERNA AQUI */}
-                    {/* CORREÇÃO: Adicionando espaçamento superior à seção */}
-                    <SectionTitle icon="map" title="Mapa de Aplicações" color={NAVEGACAO_COLOR} isSubMenu={false} />
-
-                    {/* RENDERIZAÇÃO DOS ITENS DO MAPA COMO LISTA DE BOTÕES (APENAS RAIZ) */}
-                    <div className="space-y-2 mt-2 w-full"> {/* Aumentando o space-y para 2 */}
-                        {MAIN_MENU_PORTFOLIO
-                            .filter(item => item.id !== 'menu-central' && item.id !== 'notifications') // Configurações e Notificações não aparecem aqui dentro
-                            .map((item) => (
-                            <RenderNavButton
-                                key={item.id}
-                                item={item}
-                                color={NAVEGACAO_COLOR}
-                                onClickOverride={() => handleMenuItemClick(item)} // Usa o handler simplificado
-                                // isInactiveModeActive removido.
-                            />
-                        ))}
-                    </div>
+                    {/* SEÇÃO SEGURANÇA (AMBAR) */}
+                    <SectionTitle icon="security" title="Segurança" color={securityColor} />
                     
-                    {/* SEPARADOR para mobile (visível apenas em telas pequenas) */}
+                    {/* BOTÃO 1: BACKUP */}
+                    <button 
+                        onClick={backupToCloud} 
+                        disabled={isBackupDisabled} 
+                        className={`chip-button w-full mt-2 px-4 py-2.5 rounded-xl flex items-center justify-start 
+                                    ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.baseClasses : `bg-${securityColor}-50 border border-${securityColor}-300 text-${securityColor}-700 hover:bg-${securityColor}-100`} 
+                                    transition-all ${isBackupDisabled ? 'cursor-not-allowed' : ''}`}
+                    >
+                        <div className="flex items-center">
+                            <span className={`material-symbols-rounded mr-3 ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.iconColor : `text-${securityColor}-600`} ${isSyncing ? 'animate-spin' : ''}`}>
+                                {isSyncing ? 'sync' : 'cloud_upload'}
+                            </span>
+                            <span className={`font-semibold text-sm ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.textColor : `text-${securityColor}-700`}`}>
+                                {isBackupDisabled && !userData ? 'Login para Backup' : (isSyncing ? 'Fazendo Backup' : 'Backup')}
+                            </span>
+                        </div>
+                    </button>
+
+                    {/* BOTÃO 2: TROCAR SENHA (INATIVO) */}
+                    <button 
+                        onClick={() => {}} 
+                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-start ${INACTIVE_SLATE_STYLE.baseClasses}`}
+                        disabled={INACTIVE_SLATE_STYLE.isDisabled}
+                    >
+                        <div className="flex items-center">
+                            <span className={`material-symbols-rounded mr-3 ${INACTIVE_SLATE_STYLE.iconColor}`}>vpn_key</span>
+                            <span className={`font-semibold text-sm ${INACTIVE_SLATE_STYLE.textColor}`}>Senha</span> 
+                        </div>
+                    </button>
+                    
+                    {/* SEPARADOR para mobile */}
                     <div className="h-px bg-slate-200 my-4 md:hidden"></div>
                 </div>
             );
@@ -766,9 +651,7 @@
 
 
         return (
-            // APLICANDO h-dvh NO OVERLAY
             <div id={`central-menu-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-                {/* CONTAINER DO MODAL */}
                 <div onClick={(e) => e.stopPropagation()} 
                     className={`
                         relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl 
@@ -776,25 +659,21 @@
                     `}
                 >
                     
-                    {/* BOTÃO FECHAR (X) - Canto superior direito (CORRIGIDO PARA O TEMA) */}
                     <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
 
-                    {/* CORREÇÃO AQUI: Conteúdo interno (p-8) */}
-                    {/* APLICANDO hide-scrollbar aqui */}
                     <div className="p-8 pt-16 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
                             
-                        {/* CABEÇALHO DO MODAL (APENAS TÍTULO) */}
                         <div className="text-center mb-6">
                             <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Configurações</h2>
-                            <p className={`text-md text-${THEME_COLOR}-500 mt-1`}>Navegação Rápida e Opções do Sistema.</p>
                         </div>
 
-                        {/* CONTEÚDO (AS DUAS COLUNAS) */}
                         <div className="flex-1 flex flex-col sm:grid sm:grid-cols-2 sm:gap-4">
-                            {/* COLUNA 1: Perfil e Mapa de Aplicações */}
+                            {/* COLUNA 1: Perfil e Segurança */}
                             <RenderProfileAndRootNavigation 
                                 userData={userData} 
                                 onAuth={onAuth}
+                                backupToCloud={backupToCloud} 
+                                isSyncing={isSyncing} 
                             />
 
                             {/* COLUNA 2: Sistemas e Acessibilidade */}
@@ -811,37 +690,32 @@
         );
     };
     
-    // --- NOVO COMPONENTE: MODAL DE PAINEL DE ALERTAS (AMBER) ---
     const AlertsPanel = ({ userData, closeModal }) => {
         return (
-             // CORREÇÃO: Removendo o padding do painel interno (móvel)
             <div className="p-8 w-full pt-16 sm:p-8 sm:pt-16">
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-amber-700">Central de Notificações</h2>
-                    <p className="text-sm text-amber-600 mt-1">Seus alertas e mensagens importantes.</p>
+                    <h2 className="text-2xl font-bold text-amber-700">Notificações</h2>
                 </div>
 
                 <div className="space-y-4">
-                    {/* Placeholder para uma notificação */}
                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-300 flex items-center">
                          <span className="material-symbols-rounded text-2xl text-amber-500 mr-3">info</span>
                         <div>
-                            <h3 className="font-semibold text-amber-800">Boas-vindas ao Sistema!</h3>
-                            <p className="text-sm text-amber-700">Esta é a sua nova Central de Notificações, onde seus alertas e informações importantes serão armazenados.</p>
+                            <h3 className="font-semibold text-amber-800">Boas-vindas</h3>
+                            <p className="text-sm text-amber-700">Esta é a sua nova Central de Notificações.</p>
                         </div>
                     </div>
                     
-                    {/* Placeholder de notificação secundária */}
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-300 flex items-center opacity-70">
                          <span className="material-symbols-rounded text-2xl text-slate-500 mr-3">check_circle</span>
                         <div>
-                            <h3 className="font-semibold text-slate-700">Sincronização Concluída</h3>
+                            <h3 className="font-semibold text-slate-700">Concluído</h3>
                             <p className="text-sm text-slate-600">Último backup salvo na nuvem com sucesso. (2 minutos atrás)</p>
                         </div>
                     </div>
 
                     <div className="text-center pt-4">
-                        <button onClick={closeModal} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Fechar Painel</button>
+                        <button onClick={closeModal} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Fechar</button>
                     </div>
                 </div>
             </div>
@@ -849,34 +723,27 @@
     };
 
 
-    // --- COMPONENTE DE AUTH NATIVO (LOGIN/CADASTRO) - TEMA ROXO ---
     const AuthPanel = ({ onLoginSuccess, onClose }) => {
         const [isRegistering, setIsRegistering] = useState(false);
         const [formData, setFormData] = useState({ phone: '', name: '', password: '' });
 
         const handleSubmit = async (e) => {
             e.preventDefault();
-            // SUBSTITUIÇÃO: Remoção de alert()
             if (isRegistering && !formData.name) { 
                 console.error("Por favor, preencha o nome."); 
-                // Implementação futura: Adicionar um toaster/snackbar no App.js
                 return; 
             }
-            // SUBSTITUIÇÃO: Remoção de alert()
             if (!formData.phone || formData.phone.length < 8) { 
                 console.error("Telefone inválido."); 
-                // Implementação futura: Adicionar um toaster/snackbar no App.js
                 return; 
             }
             onLoginSuccess({ phone: formData.phone, name: formData.name || 'Usuário', role: 'user' });
         };
 
         return (
-            // CORREÇÃO: Removendo o padding do painel interno (móvel)
             <div className="p-8 w-full pt-16 sm:p-8 sm:pt-16"> 
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-purple-700">{isRegistering ? 'Criar Conta' : 'Entrar'}</h2>
-                    <p className="text-sm text-purple-500 mt-1">{isRegistering ? 'Preencha seus dados para começar.' : 'Acesse sua conta para continuar.'}</p>
+                    <h2 className="text-2xl font-bold text-purple-700">{isRegistering ? 'Cadastro' : 'Login'}</h2>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {isRegistering && (
@@ -904,18 +771,14 @@
         );
     };
 
-    // --- COMPONENTE DE CONFIGURAÇÕES (SETTINGS PANEL) - TEMA CIANO ---
     const SettingsPanel = ({ userData }) => {
         return (
-             // CORREÇÃO: Removendo o padding do painel interno (móvel)
             <div className="p-8 w-full pt-16 sm:p-8 sm:pt-16">
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-cyan-700">Configurações</h2>
-                    <p className="text-sm text-cyan-600 mt-1">Ajuste o sistema do seu jeito.</p>
                 </div>
 
                 <div className="space-y-6">
-                    {/* Seção de Perfil com borda de destaque */}
                     <div className="bg-cyan-50 p-4 rounded-xl border border-cyan-300">
                         <div className="flex items-center mb-3">
                             <span className="material-symbols-rounded text-cyan-500 mr-2">badge</span>
@@ -932,28 +795,21 @@
         );
     };
 
-    // --- CARTÃO PRINCIPAL DA TELA DE APPS ---
     const AppCard = ({ item, onClick }) => {
-        // Lógica de inatividade é fixada em TRUE
         const isInactiveModeActive = true;
         
         const isLogicallyInactive = item.action === 'placeholder';
         const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
         
-        // Determina a cor visual (slate se modo inativo e for placeholder, senão usa a cor do item)
         const visualColor = shouldShowInactiveStyle ? 'slate' : item.color;
         
-        // --- REGRA GERAL DE INATIVIDADE ---
-        // A opacidade é removida, pois o visual cinza já indica inatividade
         const opacity = ''; 
         const pointerEvents = isLogicallyInactive ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer';
         
-        // Classes de cor baseadas na visualColor
         const colorClass = `border-${visualColor}-500 bg-${visualColor}-500/20`;
         const iconColorClass = `text-${visualColor}-500`;
         const textColorClass = `text-${visualColor}-700`;
 
-        // Se inativo, o clickHandler não faz nada.
         const clickHandler = isLogicallyInactive ? (e) => e.preventDefault() : onClick;
         
         return (
@@ -961,9 +817,8 @@
                 data-app-id={item.id} 
                 onClick={clickHandler} 
                 role="button" 
-                className={`card-base ${colorClass} w-32 h-32 md:w-36 md:h-36 ${opacity} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
+                className={`card-base w-32 h-32 md:w-36 md:h-36 ${colorClass} ${opacity} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
             >
-                {/* ÍCONE GRANDE */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
                     <span 
                         style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }} 
@@ -973,7 +828,6 @@
                     </span>
                 </div>
                 
-                {/* TÍTULO */}
                 <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
                     <h2 className={`text-sm ${textColorClass} font-semibold leading-tight`}>{item.title}</h2>
                 </div>
@@ -987,8 +841,6 @@
         
         const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
         
-        // AJUSTE RESPONSIVO PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-5xl em desktop.
-        // APLICANDO h-dvh NO CONTAINER DO MODAL
         const containerClasses = customClass || `relative w-screen h-dvh sm:w-full sm:max-w-5xl sm:h-full bg-white rounded-none sm:rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up p-0 sm:p-0`;
 
         const loadMiniAppContent = useCallback(async () => {
@@ -1000,12 +852,10 @@
                 const htmlContent = await response.text();
                 let processedHtml = "";
                 if (window.prepareMiniAppHtml) {
-                    // Prepara o HTML e injeta o Dark Mode se estiver ativo
                     const isDark = document.documentElement.classList.contains('dark');
                     processedHtml = window.prepareMiniAppHtml(htmlContent, appId, basePath);
                     if (dynamicHeight) processedHtml = processedHtml.replace('padding-bottom: 120px !important;', 'padding-bottom: 1rem !important;');
                     
-                    // Injeta a classe dark no iframe
                     if (isDark) {
                         processedHtml = processedHtml.replace('<html lang="pt-BR">', '<html lang="pt-BR" class="dark">');
                     }
@@ -1033,11 +883,9 @@
         useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
 
         return (
-            // APLICANDO h-dvh NO OVERLAY
             <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
                 <div onClick={(e) => e.stopPropagation()} className={containerClasses}>
                     <CloseButton onClick={closeModal} themeColor={color} /> 
-                    {/* Aplicando hide-scrollbar no iframe/webview */}
                     <iframe ref={iframeRef} className="w-full h-full border-0 hide-scrollbar" title={`App ${modalConfig.title || modalId}`} style={dynamicHeight ? { minHeight: '300px' } : {}}></iframe>
                     {loading && <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm"><p className="ml-3 text-sm font-semibold text-gray-700">Carregando...</p></div>}
                 </div>
@@ -1054,70 +902,28 @@
         const [modalConfig, setModalConfig] = useState(null);
         const [modalLoading, setModalLoading] = useState(false);
         const [showAuthModal, setShowAuthModal] = useState(false);
-        // NOVO: estado para o novo modal de Notificações
         const [showAlertsPanelModal, setShowAlertsPanelModal] = useState(false);
         const [showSettingsModal, setShowSettingsModal] = useState(false);
         
-        // REMOVIDO: isInactiveModeActive não é mais um estado dinâmico.
-        const isInactiveModeActive = true; // FIXADO em TRUE para forçar o visual cinza
+        const isInactiveModeActive = true;
         
-        // CORREÇÃO: Força o Modo Claro (false) para estabilizar.
         const [isDarkMode, setIsDarkMode] = useState(false); 
-        // CORREÇÃO: Renomeado showAccessibilityBtn para isFloatingBtnVisible
         const [isFloatingBtnVisible, setIsFloatingBtnVisible] = useState(true);
-        // NOVO ESTADO: Botão flutuante de Alertas
         const [isAlertsFloatingBtnVisible, setIsAlertsFloatingBtnVisible] = useState(true); 
         
-        const [isReducedAnimation, setIsReducedAnimation] = useState(false); 
-        
-        const activityTimerRef = useRef(null);
-        const ACTIVITY_TIMEOUT_MS = 3000; // 3 segundos
-        
-        // Função para alternar a acessibilidade
         const toggleAccessibility = (newState) => {
             setIsFloatingBtnVisible(newState);
         };
         
-        // NOVA FUNÇÃO: Para alternar o botão flutuante de Alertas
         const toggleAlertsFloatingButton = (newState) => {
             setIsAlertsFloatingBtnVisible(newState);
         };
 
-        // NOVO: Função para monitorar a atividade do usuário e iniciar o modo compacto
-        // Simplificado, pois só precisa ser usado para o botão de acessibilidade (flutuante)
-        const handleUserActivity = useCallback(() => {
-            // Se o botão flutuante não estiver visível, não há necessidade de animar
-            if (!isFloatingBtnVisible) return;
-
-        }, [isFloatingBtnVisible]); 
-        
-
-        useEffect(() => {
-            // Os listeners de atividade não são mais necessários já que não há modo compacto
-            // Removendo: Limpar listeners e timer na desmontagem
-            return () => {
-                if (activityTimerRef.current) {
-                    clearTimeout(activityTimerRef.current);
-                }
-            };
-        }, [handleUserActivity]);
-
-
-        // Efeito para aplicar a classe 'dark' no <html> e ouvir mudanças do sistema
         useEffect(() => {
             const rootHtml = document.documentElement;
-            // CORREÇÃO: Remove a classe dark para forçar o light mode
             rootHtml.classList.remove('dark');
-            
-            // Remove o listener de mudança de tema do sistema operacional, já que está travado
-            
-        }, [isDarkMode]); // O isDarkMode não será usado aqui, mas o efeito é mantido para clareza
-
-        // Efeito para aplicar animações reduzidas (futura implementação)
-        useEffect(() => {
-            console.log(`Animações Reduzidas: ${isReducedAnimation ? 'ATIVAS' : 'INATIVAS'}`);
-        }, [isReducedAnimation]);
-
+        }, [isDarkMode]);
+        
         useEffect(() => {
             const loadData = async () => {
                 try {
@@ -1140,28 +946,29 @@
                 await db.settings.put({ key: 'sheetId', value: newSheetId });
                 await db.settings.put({ key: 'sheetTab', value: newSheetTab });
                 setAdminConfig({ sheetId: newSheetId, sheetTab: newSheetTab });
-                // SUBSTITUIÇÃO: Remoção de alert()
                 console.log("Configurações salvas com sucesso!");
                 closeModal();
             } catch (error) { 
-                // SUBSTITUIÇÃO: Remoção de alert()
                 console.error("Erro ao salvar configurações:", error); 
             }
         };
 
         const backupToCloud = async () => {
-            // SUBSTITUIÇÃO: Remoção de alert()
-            if (!userData) { console.error("Nenhum dado de usuário para salvar."); return; }
-            if (!adminConfig.sheetId) { console.error("Atenção: ID da Planilha não configurado no Painel Admin!"); return; }
+            if (!userData) { 
+                console.error("ERRO DE BACKUP: Nenhum dado de utilizador para salvar. Por favor, faça login."); 
+                return; 
+            }
+            if (!adminConfig.sheetId) { 
+                console.error("ERRO DE BACKUP: Atenção: ID da Planilha não configurado no Painel Admin!"); 
+                return; 
+            }
             setIsSyncing(true);
             try {
                 const payload = { action: 'backup', user: userData, timestamp: new Date().toISOString(), targetSheetId: adminConfig.sheetId, targetTabName: adminConfig.sheetTab || 'users' };
                 await fetch(DEFAULT_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                // SUBSTITUIÇÃO: Remoção de alert()
                 console.log("Backup enviado para a Planilha configurada!");
             } catch (error) { 
-                // SUBSTITUIÇÃO: Remoção de alert()
-                console.error("Erro ao conectar:", error); 
+                console.error("ERRO DE CONEXÃO: Erro ao conectar:", error); 
             } finally { setIsSyncing(false); }
         };
         
@@ -1172,7 +979,6 @@
                 setUserData(newUser);
                 setShowAuthModal(false); 
             } catch (e) { 
-                // SUBSTITUIÇÃO: Remoção de alert()
                 console.error("Erro ao salvar login localmente:", e); 
             }
         };
@@ -1192,23 +998,20 @@
         
         const handleCardClick = (item) => {
             if (item.action === "placeholder") {
-                // Se for placeholder, não faz nada (botão cinza não responde)
                 return; 
             }
             if (item.id === 'auth') { setShowAuthModal(true); return; }
             
-            // Tratamento do Modal de Menu de Educação
             if (item.modalId === 'education-menu-modal') {
-                setModalConfig({ modalId: 'education-menu-modal', title: 'Central de Educação', color: "emerald" });
+                setModalConfig({ modalId: 'education-menu-modal', title: 'Educação', color: "emerald" });
                 return;
             }
-            // Tratamento do Modal de Configurações (antigo Menu Central)
             if (item.modalId === 'central-menu-modal') {
                 setModalConfig({ modalId: 'central-menu-modal', title: 'Configurações', color: "indigo" });
                 return;
             }
-            // NOVO: Tratamento do Modal de Notificações
             if (item.modalId === 'alerts-panel') {
+                setModalConfig({ modalId: 'alerts-panel', title: 'Notificações', color: "amber" });
                 setShowAlertsPanelModal(true);
                 return;
             }
@@ -1220,18 +1023,16 @@
             else if (item.view) { navigateTo(item.view); }
         };
         
-        // Função genérica para clique em App de dentro de um modal (ex: EducationMenuModal)
         const handleAppClickFromModal = (item) => {
-            // Se o item for Auth, Admin ou Settings, abre o modal nativo em vez de um iframe
             if (item.modalId === 'auth-modal') {
                 setShowAuthModal(true);
-            } else if (item.modalId === 'alerts-panel') { // NOVO VÍNCULO DO PAINEL DE NOTIFICAÇÕES
+            } else if (item.modalId === 'alerts-panel') { 
                 setShowAlertsPanelModal(true);
             } else if (item.modalId === 'admin-modal') {
                 setModalConfig({ modalId: 'admin-modal', title: 'Admin', color: "slate" });
             } else if (item.modalId === 'alerts') {
-                setModalConfig({ modalId: 'alerts', title: 'Painel de Alertas', color: "amber" });
-            } else if (item.modalId === 'settings-modal') { // Opção adicionada, embora o settings não seja um AppCard
+                setModalConfig({ modalId: 'alerts', title: 'Alertas', color: "amber" });
+            } else if (item.modalId === 'settings-modal') { 
                  setShowSettingsModal(true);
             } else {
                 setModalConfig(item); 
@@ -1243,25 +1044,25 @@
             setModalConfig(null);
             setShowAuthModal(false); 
             setShowSettingsModal(false);
-            setShowAlertsPanelModal(false); // NOVO FECHAMENTO
+            setShowAlertsPanelModal(false); 
         };
         
-        const openAuthModal = () => handleCardClick(AUTH_ITEM_CONFIG);
-        // NOVO: Clique no botão flutuante de Alertas abre o modal de Notificações
+        const openAuthModal = () => {
+            closeModal(); 
+            handleCardClick(AUTH_ITEM_CONFIG); 
+        };
+        
         const openAlertsPanel = () => handleCardClick({ id: 'notifications', title: "Notificações", action: 'modal', modalId: 'alerts-panel', color: "amber", icon: "notifications" });
 
         const currentViewData = VIEW_MAP[currentView] || VIEW_MAP['portfolio'];
         const renderedItems = useMemo(() => currentViewData.data || [], [currentViewData.data]);
         
         
-        const RenderedView = ({ title, subtitle, items }) => (
+        const RenderedView = ({ title, items }) => (
             <div className="flex flex-col items-center">
                 <section className="mt-4 text-center w-full">
-                    {/* Dark mode classes desnecessárias já que o app está travado no Light mode */}
                     <h1 className="3xl font-bold tracking-tight text-gray-800">{title}</h1>
-                    <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
                 </section>
-                {/* REVERSÃO: Voltando para a classe CSS definida no <style> para garantir quebras de coluna corretas e centralização. */}
                 <div className="app-grid-container w-full max-w-5xl">
                     <section className="mt-6 app-grid-base-flexible mx-auto">
                         {items.map((item, index) => (
@@ -1269,7 +1070,6 @@
                                 key={item.id || index} 
                                 item={item} 
                                 onClick={() => handleCardClick(item)} 
-                                // isInactiveModeActive removido.
                             />
                         ))}
                     </section>
@@ -1277,12 +1077,9 @@
             </div>
         );
 
-        // Estilos para o botão flutuante
-        // ALTERAÇÃO AQUI: Trocando rounded-full para rounded-lg para padronizar com CloseButton
         const buttonBaseClasses = "chip-button no-shadow font-medium rounded-lg text-sm inline-flex items-center transition-all duration-300 hover:scale-105 h-10 flex justify-center overflow-hidden";
         const fixedButtonClasses = `${buttonBaseClasses}`;
 
-        // Lógica para o BOTÃO FLUTUANTE DE ACESSIBILIDADE (Canto superior direito)
         const floatingAccessibilityButtonClasses = useMemo(() => {
             const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
             const color = isInactiveModeActive
@@ -1294,7 +1091,6 @@
             return `${base} ${color} ${compactStyle}`;
         }, [isInactiveModeActive]);
         
-        // Lógica para o NOVO BOTÃO FLUTUANTE DE ALERTAS (Canto inferior esquerdo)
         const floatingAlertsButtonClasses = useMemo(() => {
             const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
             const color = isInactiveModeActive
@@ -1307,19 +1103,15 @@
         }, [isInactiveModeActive]);
         
         
-        // CORREÇÃO: O click handler do botão flutuante de acessibilidade deve ser `floatingButtonClickHandler` que não faz nada se inativo, ou `toggleAccessibility` se ativo.
         const floatingAccessibilityClickHandler = isInactiveModeActive ? () => {} : () => toggleAccessibility(!isFloatingBtnVisible);
-        // NOVO VÍNCULO: O click handler do botão flutuante de alertas deve abrir o modal de Notificações
         const floatingAlertsClickHandler = isInactiveModeActive ? () => {} : openAlertsPanel;
 
 
         return (
-            // APLICANDO min-h-dvh NO CONTAINER PRINCIPAL
             <div className="min-h-dvh antialiased flex flex-col">
                 
-                {/* --- BOTÕES FLUTUANTES DIREITA (ACESSIBILIDADE) --- */}
+                {/* BOTÕES FLUTUANTES DIREITA (ACESSIBILIDADE) */}
                 <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
-                    {/* Botão Flutuante de Acessibilidade (Controlado pelo Menu) */}
                     {isFloatingBtnVisible && ( 
                         <button 
                             onClick={floatingAccessibilityClickHandler} 
@@ -1332,15 +1124,12 @@
                     )}
                 </div>
 
-                {/* --- NOVO: BOTÃO FLUTUANTE INFERIOR ESQUERDO (ALERTAS) --- */}
+                {/* BOTÃO FLUTUANTE INFERIOR ESQUERDO (ALERTAS) */}
                 <div className="fixed bottom-4 left-4 z-40 flex flex-col items-start space-y-2">
-                    {/* Botão Flutuante de Alertas (Controlado pelo Menu) */}
                     {isAlertsFloatingBtnVisible && ( 
                         <button 
                             onClick={floatingAlertsClickHandler} 
                             className={floatingAlertsButtonClasses}
-                            // O botão só é visualmente desativado (cinza) se o modo inativo for true, mas ele é sempre clicável para abrir o painel.
-                            // Deixaremos `disabled` como `false` por enquanto para garantir que o clique funcione, mesmo se o modo inativo for `true` (apenas o visual é afetado).
                             disabled={false} 
                         >
                             <span className={`material-symbols-rounded text-xl mr-1`}>notifications</span>
@@ -1350,28 +1139,28 @@
                 </div>
 
 
-                <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 min-h-screen flex flex-col w-full justify-center">
-                    <RenderedView title={currentViewData.title} subtitle={currentViewData.subtitle} items={renderedItems} />
+                <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 flex flex-col w-full justify-center">
+                    <RenderedView title={currentViewData.title} items={renderedItems} />
                 </main>
                 
-                {/* MODAIS (APLICANDO h-dvh NOS OVERLAYS) */}
+                {/* MODAIS */}
                 
-                {/* NOVO MODAL: MENU CENTRALIZADO -> RENOMEADO PARA CONFIGURAÇÕES */}
+                {/* MODAL: CONFIGURAÇÕES */}
                 {modalConfig && modalConfig.modalId === 'central-menu-modal' && (
                     <SettingsMenuModal 
                         closeModal={closeModal} 
-                        onAppClick={handleAppClickFromModal} // Permite abrir outros modais
-                        // isInactiveModeActive removido.
                         userData={userData}
-                        onAuth={openAuthModal} // Permite abrir o modal de Auth
+                        onAuth={openAuthModal} 
                         isFloatingBtnVisible={isFloatingBtnVisible} 
                         toggleAccessibility={toggleAccessibility} 
                         isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible} 
                         toggleAlertsFloatingButton={toggleAlertsFloatingButton}
+                        backupToCloud={backupToCloud}
+                        isSyncing={isSyncing}
                     />
                 )}
 
-                {/* NOVO MODAL: MENU DE EDUCAÇÃO COM GAVETA */}
+                {/* MODAL: MENU DE EDUCAÇÃO */}
                 {modalConfig && modalConfig.modalId === 'education-menu-modal' && (
                     <EducationMenuModal closeModal={closeModal} onAppClick={handleAppClickFromModal} />
                 )}
@@ -1379,13 +1168,11 @@
                 {/* MODAL ADMIN */}
                 {modalConfig && modalConfig.modalId === 'admin-modal' && (
                     <div id="admin-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-slate-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                              <CloseButton onClick={closeModal} themeColor="slate" />
-                            {/* CORREÇÃO: Removendo padding lateral do painel do formulário em mobile */}
                             <div className="p-6 pt-12 px-0 sm:p-6 sm:pt-12 sm:px-6"> 
-                                <h2 className="text-2xl font-bold mb-4 text-slate-700 flex items-center justify-center"><span className="material-symbols-rounded mr-2 text-3xl">admin_panel_settings</span>Configurações Admin</h2>
-                                <form onSubmit={saveAdminConfig} className="space-y-4 max-w-lg mx-auto p-4 sm:p-0"> {/* Adicionando p-4 interno no formulário para manter o padding interno em mobile */}
+                                <h2 className="text-2xl font-bold mb-4 text-slate-700 flex items-center justify-center"><span className="material-symbols-rounded mr-2 text-3xl">admin_panel_settings</span>Admin</h2>
+                                <form onSubmit={saveAdminConfig} className="space-y-4 max-w-lg mx-auto p-4 sm:p-0">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">ID da Planilha Google</label>
                                         <input type="text" name="sheetId" defaultValue={adminConfig.sheetId} placeholder="Ex: 1aKPEGQcKRzY..." className="w-full rounded-md border border-slate-400 shadow-sm focus:border-slate-500 focus:ring-slate-500 p-2 bg-slate-50 focus:bg-white transition-colors" required />
@@ -1402,7 +1189,6 @@
                     </div>
                 )}
                 
-                {/* MODAL ALERTAS (ANTIGO) - REMOVIDO EM FAVOR DE ALERTSPANEL */}
                 {/* MODAIS DE MINI-APPS (iframe) */}
                 {modalConfig && modalConfig.modalId !== 'alerts-panel' && modalConfig.modalId !== 'placeholder' && modalConfig.modalId !== 'auth-modal' && modalConfig.modalId !== 'admin-modal' && modalConfig.modalId !== 'education-menu-modal' && modalConfig.modalId !== 'central-menu-modal' && (
                     <MiniAppModal modalConfig={modalConfig} closeModal={closeModal} loading={modalLoading} setLoading={setModalLoading} appId={APP_ID} />
@@ -1411,19 +1197,16 @@
                 {/* MODAL AUTH */}
                 {showAuthModal && (
                     <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                         {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="purple" />
-                            {/* CORREÇÃO: AuthPanel já foi ajustado para remover padding no mobile */}
                             <AuthPanel onLoginSuccess={handleNativeLogin} onClose={closeModal} />
                         </div>
                     </div>
                 )}
 
-                {/* NOVO MODAL: PAINEL DE NOTIFICAÇÕES (ALERTSPANEL) */}
+                {/* MODAL: PAINEL DE NOTIFICAÇÕES (ALERTSPANEL) */}
                 {showAlertsPanelModal && (
                     <div id="alerts-panel-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="amber" />
                             <AlertsPanel userData={userData} closeModal={closeModal} />
@@ -1432,13 +1215,11 @@
                 )}
 
 
-                {/* MODAL CONFIGURAÇÕES (Antigo SettingsPanel, não usado atualmente) */}
+                {/* MODAL CONFIGURAÇÕES (SettingsPanel) */}
                 {showSettingsModal && (
                     <div id="settings-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
-                        {/* AJUSTE DE RESPONSIVIDADE PARA ÁREA ÚTIL: w-screen h-screen em mobile, max-w-lg em desktop. */}
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="cyan" />
-                            {/* CORREÇÃO: SettingsPanel já foi ajustado para remover padding no mobile */}
                             <SettingsPanel userData={userData} />
                         </div>
                     </div>
