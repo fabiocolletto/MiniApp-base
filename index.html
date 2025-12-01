@@ -1,1312 +1,811 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniApps - Local & Cloud Backup</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiniApps</title>
 
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Dexie.js para Banco de Dados Local -->
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <!-- Dexie (Offline DB) -->
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200" rel="stylesheet"/>
+    <!-- Firebase (Compat versions) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Google Fonts + Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet"/>
+
+    <!-- Tailwind Customization -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ["Inter", "sans-serif"] },
+                    animation: { "fade-in-up": "fadeInUp .3s ease-out forwards" },
+                    keyframes: {
+                        fadeInUp: {
+                            "0%": { opacity: "0", transform: "translateY(10px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
-            min-height: 100vh;
-        }
-
-        .dark body {
-            background-color: #1f2937;
-            color: #f3f4f6;
-        }
-
-        .card-base {
-            position: relative;
-            border-radius: 1rem;
-            display: flex;
-            flex-direction: column;
-            transition: all 300ms;
-            border-width: 1px;
-            cursor: pointer;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            width: 7rem;
-            height: 7rem;
-            padding: 0.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .card-base {
-                width: 8rem;
-                height: 8rem;
-            }
-        }
-
-        .card-base:hover {
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            transform: translateY(-0.25rem);
-        }
-
-        .app-grid-base-flexible {
-            display: grid;
-            gap: 1rem;
-            width: 100%;
-            max-width: 1008px;
-            grid-template-columns: repeat(auto-fit, 8rem);
-            justify-content: center;
-            justify-items: center;
-            padding: 0;
-        }
-
-        @media (min-width: 768px) {
-             .app-grid-base-flexible {
-                gap: 4rem;
-                grid-template-columns: repeat(auto-fit, 8rem);
-            }
-        }
-
-        .chip-button {
-            border-width: 1px;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-
-        .chip-button.no-shadow {
-            box-shadow: none !important;
-        }
-
-        .chip-button:hover {
-            box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .dark .chip-button.no-shadow:hover {
-             box-shadow: none !important;
-        }
-
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .accordion-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .menu-column-flow {
-            flex-direction: column;
-        }
-
-        /* NOVO: Estilo base para todas as telas (replaces modal container) */
-        .screen-container {
-            width: 100%;
-            max-width: 100%; /* Limita o contentor dentro do main (max-w-5xl) */
-            height: auto; /* Permite rolagem */
-            min-height: 80vh; /* Altura mínima para preencher o ecrã em desktop */
-            background-color: #fff;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            border-radius: 1rem;
-            position: relative;
-            padding-top: 5rem; /* Espaço para o botão voltar */
-        }
-        
-        /* Tooltip para itens inativos */
-        .inactive-tooltip-container {
-            position: relative;
-            display: inline-block;
-        }
-        .inactive-tooltip {
-            visibility: hidden;
-            width: 120px;
-            background-color: #4b5563; /* Gray-600 */
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px 0;
-            position: absolute;
-            z-index: 10;
-            bottom: 100%; /* Position above the element */
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.75rem;
-            line-height: 1rem;
-        }
-        .inactive-tooltip-container:hover .inactive-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-        
-        /* Novo estilo para o campo de configuração inativo com toggle */
-        .inactive-field {
-            background-color: #f9fafb !important; /* slate-50 */
-            border-color: #e5e7eb !important; /* slate-200 */
-            color: #9ca3af !important; /* slate-400 */
-            pointer-events: none;
-            cursor: not-allowed;
-            box-shadow: none !important;
-        }
-        
+        .hide-scrollbar { scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="antialiased hide-scrollbar">
-    <div id="root" class="flex flex-col min-h-screen">
-        <div class="fixed inset-0 flex items-center justify-center bg-slate-100 text-gray-500">
-            Carregando aplicação...
-        </div>
+
+<body class="antialiased bg-slate-50 text-slate-900 min-h-screen selection:bg-indigo-200 flex flex-col">
+
+<div id="root" class="flex-1 flex flex-col relative">
+    <div id="initial-loader" class="fixed inset-0 flex items-center justify-center bg-slate-50 text-slate-400 animate-pulse z-50">
+        <span class="material-symbols-rounded text-4xl animate-spin mr-2">donut_large</span>
+        <span class="font-semibold">Carregando...</span>
     </div>
+</div>
 
-    <!-- SCRIPT AUXILIAR -->
-    <script>
-        var db = new Dexie("MiniAppsDB");
-        db.version(2).stores({
-            user: 'id, name, phone, school, email, createdAt',
-            logs: '++id, date, action, details',
-            settings: 'key, value'
-        });
+<script>
+/* ============================================
+   DATABASE (DEXIE)
+   ============================================ */
+var db = new Dexie("MiniAppsDB");
 
-        window.prepareMiniAppHtml = function(htmlContent, appId, basePath) {
-            let cleanHtml = htmlContent
-                .replace(/<header[\s\S]*?<\/header>/gi, '')
-                .replace(/data-theme="dark"/g, 'data-theme="light"');
+db.version(3).stores({
+    user: 'id, name, phone, email, role, schoolId, createdAt', 
+    settings: 'key, value',
+    students: 'id, name, classId',
+    assessments: '++id, title, subject, date, type',
+    results: '++id, studentId, assessmentId, score, date, synced',
+    sync_queue: '++id, table, data, action, timestamp' 
+});
 
-            var scriptTagOpen = '<script>';
-            var scriptTagClose = '<' + '/script>';
-            var styleTagOpen = '<style>';
-            var styleTagClose = '<' + '/style>';
-            var configScript = scriptTagOpen + 'window.__app_id = "' + appId + '";' + scriptTagClose;
-            var baseTag = '<base href="' + basePath + '">';
-            var styleCleanContent = 'html, body {padding-bottom: 1rem !important; background: transparent !important;} main {box-shadow: none !important; border: none !important; background-color: transparent !important; padding: 1.5rem !important; margin: 0 !important;}';
-            var styleClean = styleTagOpen + styleCleanContent + styleTagClose;
+/* ============================================
+   FIREBASE MANAGER (Dinâmico)
+   ============================================ */
+let dbFirestore = null;
 
-            if (cleanHtml.indexOf('<head>') !== -1) {
-                return cleanHtml.replace('<head>', '<head>' + configScript + baseTag + styleClean);
+window.initializeFirebase = async () => {
+    try {
+        const configRecord = await db.settings.get('firebase_config');
+        if (configRecord && configRecord.value) {
+            const config = JSON.parse(configRecord.value);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(config);
+                dbFirestore = firebase.firestore();
+                console.log("Firebase Conectado via Configuração Dinâmica.");
+                return true;
             } else {
-                return configScript + baseTag + styleClean + cleanHtml;
+                dbFirestore = firebase.firestore();
+                return true;
             }
-        };
-    </script>
-
-    <!-- CÓDIGO REACT/BABEL -->
-    <script type="text/babel">
-    const { useState, useEffect, useCallback, useMemo, useRef } = React;
-
-    const APP_ID = 'miniapps-app-id';
-    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcxdROcnZID-bkrmhZ7kPBz_2fcVWv8JQBsWiYIlz38n0IyRjHrrvz7YAX9iKhHCQopQ/exec";
-    
-    // CORREÇÃO: Definindo a variável JavaScript/React INACTIVE_FIELD_STYLE globalmente
-    const INACTIVE_FIELD_STYLE = 'inactive-field border-slate-200';
-
-    // --- DEFINIÇÕES DE DADOS HIERÁRQUICOS SIMPLIFICADAS PARA SUB-MENU ---
-
-    const STUDENT_MENU_ITEMS = [
-        { id: 'student-profile', title: "Perfil", action: 'modal', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts", parentTitle: "Aluno" },
-        { id: 'simulados', title: "Simulados", action: 'modal', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note", parentTitle: "Aluno" },
-        { id: 'provas', title: "Provas", action: 'placeholder', color: "emerald", icon: "assignment", parentTitle: "Aluno" },
-        { id: 'agenda-aluno', title: "Agenda", action: 'placeholder', color: "emerald", icon: "event", parentTitle: "Aluno" },
-    ];
-
-    const EDUCATION_CATEGORIES = [
-        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person", submenu: STUDENT_MENU_ITEMS, parentTitle: "Educação" },
-        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", action: 'placeholder', parentTitle: "Educação" },
-        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", action: 'placeholder', parentTitle: "Educação" },
-        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", action: 'placeholder', parentTitle: "Educação" },
-    ];
-
-    const MAIN_MENU_PORTFOLIO = [
-        { id: 'menu-central', title: "Configurações", action: 'screen', screenId: 'settings', color: "indigo", icon: "settings" },
-        { id: 'notifications', title: "Notificações", action: 'screen', screenId: 'alerts', color: "amber", icon: "notifications" },
-        { id: 'education', title: "Educação", action: 'screen', screenId: 'education', color: "emerald", icon: "cast_for_education" },
-        { id: 'finance', title: "Financeiro", action: 'placeholder', color: "lime", icon: "account_balance" },
-        { id: 'health', title: "Saúde", action: 'placeholder', color: "sky", icon: "health_and_safety" },
-        { id: 'tasks', title: "Tarefas", action: 'placeholder', color: "amber", icon: "calendar_month" },
-    ];
-
-    const VIEW_MAP = {
-        'portfolio': { title: "Portfólio", data: MAIN_MENU_PORTFOLIO },
-        'education-categories': { title: "Educação", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
-        'student-menu': { title: "Aluno", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
-    };
-
-    const AUTH_ITEM_CONFIG = {
-        id: 'auth',
-        title: "Entrar/Cadastrar",
-        action: 'screen',
-        screenId: 'auth',
-        color: "purple",
-        icon: "lock_open"
-    };
-
-
-    // --- COMPONENTES AUXILIARES ---
-
-    /**
-     * Componente Tooltip para itens inativos ('placeholder').
-     * @param {object} children - O elemento a ser envolvido.
-     * @param {boolean} show - Se a tooltip deve ser exibida.
-     * @param {string} message - Mensagem da tooltip.
-     */
-    const InactiveTooltip = ({ children, show, message = "Em breve" }) => {
-        if (!show) return children;
-
-        return (
-            <div className="inactive-tooltip-container">
-                {children}
-                <span className="inactive-tooltip">
-                    {message}
-                </span>
-            </div>
-        );
-    };
-
-    /**
-     * Componente Botão Voltar (Melhorado com título dinâmico).
-     * @param {function} onClick - Função a ser chamada ao clicar.
-     * @param {string} themeColor - Cor de destaque.
-     * @param {string} previousTitle - Título da tela anterior.
-     */
-    const BackButton = ({ onClick, themeColor = "indigo", previousTitle = "Portfólio" }) => {
-        const colorClasses = `border-${themeColor}-500 bg-${themeColor}-100 text-${themeColor}-600 hover:bg-${themeColor}-200`;
-        const titleText = `Voltar para ${previousTitle}`;
-
-        return (
-            <button
-                onClick={onClick}
-                className={`absolute top-4 left-4 z-20 h-10 w-10 rounded-lg shadow-md border ${colorClasses} flex items-center justify-center transition-transform duration-200 hover:scale-110`}
-                title={titleText}
-                aria-label={titleText}
-            >
-                <span className="material-symbols-rounded text-xl">arrow_back</span>
-            </button>
-        );
-    };
-
-    /**
-     * Componente Toggle Switch acessível.
-     * @param {boolean} isChecked - Estado atual (ligado/desligado).
-     * @param {function} onChange - Função de callback ao mudar o estado.
-     * @param {string} color - Cor de destaque.
-     */
-    const ToggleSwitch = ({ isChecked, onChange, color }) => {
-        const activeColor = color || 'indigo';
-        const toggleBg = isChecked ? `bg-${activeColor}-400` : 'bg-slate-400';
-        const togglePos = isChecked ? 'translate-x-4' : 'translate-x-0.5';
-
-        return (
-            <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={onChange}
-                    className="sr-only peer"
-                    role="switch"
-                    aria-checked={isChecked}
-                />
-                <div className={`w-8 h-4 rounded-full transition-colors ${toggleBg} peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-${activeColor}-300`}>
-                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-200 ${togglePos}`}></div>
-                </div>
-            </label>
-        );
-    };
-
-    /**
-     * Componente padronizado para um Item de Configuração (Botão ou Campo de Alternância).
-     * Garante largura e padding uniformes.
-     * * @param {string} icon - Ícone do Material Symbols.
-     * @param {string} title - Título do item.
-     * @param {string} color - Cor de destaque (ex: 'amber', 'fuchsia').
-     * @param {boolean} isDisabled - Se o item está desativado (usa estilo 'inactive-field').
-     * @param {function} onClick - Função de clique (se for um botão).
-     * @param {React.ReactNode} children - O elemento do lado direito (ToggleSwitch, Indicador, etc.).
-     * @param {string} extraClasses - Classes CSS adicionais para o contêiner.
-     */
-    const ConfigItem = ({ icon, title, color, isDisabled, onClick, children, extraClasses = '' }) => {
-        const visualColor = color || 'indigo';
-        
-        const isInteractive = !!onClick; // É um botão se tiver onClick
-        const isPlaceholder = isDisabled && !isInteractive; // É apenas um campo de status/toggle inativo
-
-        let containerClasses;
-        let iconClasses;
-        let textClasses;
-        let wrapperProps = {};
-        
-        const baseClasses = "flex items-center justify-between w-full px-4 py-2.5 rounded-xl transition-all shadow-sm";
-
-        if (isPlaceholder) {
-            // Estilo para itens inativos (cinza, sem hover, sem clique)
-            containerClasses = `${baseClasses} ${INACTIVE_FIELD_STYLE} cursor-not-allowed ${extraClasses}`;
-            iconClasses = 'text-slate-500';
-            textClasses = 'text-slate-700';
-            wrapperProps = { 
-                role: 'status', 
-                'aria-disabled': 'true' 
-            }; 
-        } else if (isInteractive) {
-             // Estilo para botões ativos (com hover e clique)
-            containerClasses = `${baseClasses} bg-${visualColor}-50 border border-${visualColor}-300 text-${visualColor}-700 hover:bg-${visualColor}-100 hover:border-${visualColor}-400 cursor-pointer ${extraClasses}`;
-            iconClasses = `text-${visualColor}-600`;
-            textClasses = `text-${visualColor}-700`;
-            wrapperProps = { 
-                onClick: isDisabled ? () => {} : onClick, 
-                role: 'button',
-                disabled: isDisabled 
-            };
         } else {
-             // Estilo para campos de alternância ATIVOS (sem hover de botão, mas com interação no toggle)
-            containerClasses = `${baseClasses} bg-${visualColor}-50 border border-${visualColor}-200 text-${visualColor}-700 ${extraClasses}`;
-            iconClasses = `text-${visualColor}-600`;
-            textClasses = `text-${visualColor}-700`;
-            wrapperProps = { 
-                role: 'group' 
-            }; 
+            console.warn("Nenhuma configuração do Firebase encontrada no Banco Local.");
+            return false;
         }
+    } catch (e) {
+        console.error("Erro ao inicializar Firebase:", e);
+        return false;
+    }
+};
 
-        const ItemContent = (
-             <div className={containerClasses} {...wrapperProps}>
-                {/* O primeiro div usa flex-grow para empurrar o conteúdo da direita */}
-                <div className="flex items-center flex-grow"> 
-                    <span className={`material-symbols-rounded mr-3 ${iconClasses}`}>{icon}</span>
-                    <span className={`font-semibold text-sm ${textClasses}`}>{title}</span>
+/* ============================================
+   API DE COMUNICAÇÃO (BRIDGE)
+   ============================================ */
+window.addEventListener('message', async (event) => {
+    const { type, payload, requestId } = event.data;
+
+    if (type === 'DB_REQUEST') {
+        try {
+            let result;
+            if (payload.action === 'get_user') {
+                const users = await db.user.toArray();
+                result = users[0];
+            } else if (payload.action === 'save_result') {
+                result = await db.results.add(payload.data);
+            } else if (payload.action === 'update_user') {
+                if (payload.data && payload.data.id) {
+                    await db.user.put(payload.data);
+                    result = payload.data;
+                }
+            }
+            const iframe = document.querySelector('iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'DB_RESPONSE', requestId, result }, '*');
+            }
+        } catch (error) {
+            console.error("Erro na Bridge DB:", error);
+        }
+    }
+});
+
+/* ============================================
+   FUNÇÕES DE BACKUP (LOCAL E NUVEM)
+   ============================================ */
+window.generateHashId = async (email, phone) => {
+    const data = (email.trim().toLowerCase() + phone.replace(/\D/g, '')); 
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+window.exportLocalBackup = async () => {
+    try {
+        const allData = await window.getDbDump();
+        const blob = new Blob([JSON.stringify(allData, null, 2)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `miniapps_backup_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return true;
+    } catch (e) { console.error(e); return false; }
+};
+
+window.getDbDump = async () => {
+    return {
+        user: await db.user.toArray(),
+        settings: await db.settings.toArray(),
+        assessments: await db.assessments.toArray(),
+        results: await db.results.toArray(),
+        timestamp: new Date().toISOString()
+    };
+};
+
+window.restoreDbDump = async (data) => {
+    await db.transaction('rw', db.user, db.settings, db.assessments, db.results, async () => {
+        await db.user.clear();
+        await db.settings.clear();
+        await db.assessments.clear();
+        await db.results.clear();
+        if(data.user) await db.user.bulkAdd(data.user);
+        if(data.settings) await db.settings.bulkAdd(data.settings);
+        if(data.assessments) await db.assessments.bulkAdd(data.assessments);
+        if(data.results) await db.results.bulkAdd(data.results);
+    });
+};
+
+window.cloudUpload = async (userHash) => {
+    if (!dbFirestore) return { success: false, msg: "Sistema Offline ou Sem Configuração de Nuvem." };
+    try {
+        const data = await window.getDbDump();
+        await dbFirestore.collection("backups").doc(userHash).set({
+            data: JSON.stringify(data),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, msg: e.message };
+    }
+};
+
+window.cloudRestore = async (userHash) => {
+    if (!dbFirestore) return { success: false, msg: "Sistema Offline ou Sem Configuração de Nuvem." };
+    try {
+        const doc = await dbFirestore.collection("backups").doc(userHash).get();
+        if (doc.exists) {
+            const content = JSON.parse(doc.data().data);
+            await window.restoreDbDump(content);
+            return { success: true };
+        } else {
+            return { success: false, msg: "Backup não encontrado." };
+        }
+    } catch (e) {
+        console.error(e);
+        return { success: false, msg: e.message };
+    }
+};
+
+window.prepareMiniAppHtml = function(html, appId, basePath) {
+    let cleaned = html.replace(/<header[\s\S]*?<\/header>/gi, "");
+    const inject = `
+        <base href="${basePath}">
+        <script>window.__app_id = "${appId}"<\/script>
+        <style>
+            html, body { background: transparent !important; padding-bottom: 32px !important; }
+            main { background: transparent !important; padding: 1rem !important; }
+        </style>
+    `;
+    return cleaned.includes("<head>") ? cleaned.replace("<head>", "<head>" + inject) : inject + cleaned;
+};
+
+const LANG_REPO_BASE = "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/language/";
+const FALLBACK_I18N = {
+    "pt-BR": {
+        app_title_portfolio: "Portfólio",
+        app_title_language_select: "Selecione o Idioma",
+        back_to: "Voltar",
+        coming_soon: "Em breve",
+        menu_education: "Educação",
+        menu_settings: "Configurações",
+        edu_student_profile: "Matrícula",
+        edu_simulados: "Simulados",
+        settings_title: "Configurações",
+        section_profile: "Perfil",
+        section_backup: "Backup e Sincronização",
+        section_system: "Sistema",
+        section_admin: "Área Admin & Dev",
+        section_accessibility: "Acessibilidade",
+        settings_profile_visitor: "Visitante",
+        action_manage_account: "Gerir Conta",
+        auth_login: "Entrar",
+        auth_register: "Cadastrar",
+        auth_name_placeholder: "Nome Completo",
+        auth_email_placeholder: "Seu E-mail",
+        auth_phone_placeholder: "Telefone (ex: +55...)",
+        auth_switch_to_login: "Já tem backup? Restaurar.",
+        auth_switch_to_register: "Novo? Criar conta.",
+        auth_welcome: "Bem-vindo!",
+        auth_welcome_subtitle: "Seus dados de acesso geram sua chave única.",
+        auth_btn_restore: "Restaurar da Nuvem",
+        auth_btn_login_local: "Entrar Localmente",
+        settings_backup_cloud: "Backup na Nuvem",
+        settings_backup_cloud_desc: "Requer configuração Firebase.",
+        settings_sync_devices: "Restaurar da Nuvem",
+        settings_sync_devices_desc: "Baixar dados e substituir.",
+        settings_backup_local: "Backup Local (Arquivo)",
+        msg_backup_success: "Sucesso!",
+        msg_backup_error: "Erro.",
+        msg_cloud_success: "Sincronizado com a nuvem!",
+        msg_cloud_restore_success: "Dados restaurados! Recarregando...",
+        admin_firebase_config: "Configuração Firebase (JSON)",
+        admin_save_config: "Salvar Configuração",
+        admin_config_saved: "Configuração salva! Recarregue a página.",
+        admin_config_error: "JSON Inválido.",
+        lang_select_footer: "Novos idiomas serão adicionados em breve.",
+        status_active: "Ativo",
+        msg_cloud_not_found: "Backup não encontrado na nuvem.",
+        msg_cloud_error_details: "Erro na nuvem:",
+        msg_login_local_success: "Entrando com dados locais...",
+        msg_user_not_found_anywhere: "Usuário não encontrado nem localmente, nem na nuvem. Verifique seus dados.",
+        settings_large_text: "Texto Grande",
+        settings_dark_mode: "Modo Escuro",
+        settings_language: "Idioma"
+    },
+    "en-US": {
+        app_title_portfolio: "Portfolio",
+        app_title_language_select: "Select Language",
+        back_to: "Back",
+        coming_soon: "Coming Soon",
+        menu_education: "Education",
+        menu_settings: "Settings",
+        edu_student_profile: "Registration",
+        edu_simulados: "Simulations",
+        settings_title: "Settings",
+        section_profile: "Profile",
+        section_backup: "Backup & Sync",
+        section_system: "System",
+        section_admin: "Admin & Dev Area",
+        section_accessibility: "Accessibility",
+        settings_profile_visitor: "Visitor",
+        action_manage_account: "Manage Account",
+        auth_login: "Login",
+        auth_register: "Register",
+        auth_name_placeholder: "Full Name",
+        auth_email_placeholder: "Your Email",
+        auth_phone_placeholder: "Phone (e.g., +1...)",
+        auth_switch_to_login: "Have backup? Restore.",
+        auth_switch_to_register: "New? Create account.",
+        auth_welcome: "Welcome!",
+        auth_welcome_subtitle: "Your credentials create your unique key.",
+        auth_btn_restore: "Restore from Cloud",
+        auth_btn_login_local: "Login Locally",
+        settings_backup_cloud: "Cloud Backup",
+        settings_backup_cloud_desc: "Requires Firebase config.",
+        settings_sync_devices: "Restore from Cloud",
+        settings_sync_devices_desc: "Download and replace.",
+        settings_backup_local: "Local Backup (File)",
+        msg_backup_success: "Success!",
+        msg_backup_error: "Error.",
+        msg_cloud_success: "Synced to cloud!",
+        msg_cloud_restore_success: "Data restored! Reloading...",
+        admin_firebase_config: "Firebase Config (JSON)",
+        admin_save_config: "Save Config",
+        admin_config_saved: "Config saved! Reload page.",
+        admin_config_error: "Invalid JSON.",
+        lang_select_footer: "New languages coming soon.",
+        status_active: "Active",
+        msg_cloud_not_found: "Backup not found in cloud.",
+        msg_cloud_error_details: "Cloud error:",
+        msg_login_local_success: "Logging in with local data...",
+        msg_user_not_found_anywhere: "User not found locally or in cloud. Check credentials.",
+        settings_large_text: "Large Text",
+        settings_dark_mode: "Dark Mode",
+        settings_language: "Language"
+    }
+};
+
+const COLOR = {
+    indigo: { base:"indigo", bg50:"bg-indigo-50", bg100:"bg-indigo-100", text900:"text-indigo-900", text700:"text-indigo-700", border100:"border-indigo-100", border300:"border-indigo-300" },
+    emerald:{ base:"emerald",bg50:"bg-emerald-50",bg100:"bg-emerald-100",text900:"text-emerald-900",text700:"text-emerald-700",border100:"border-emerald-100",border300:"border-emerald-300"},
+    amber:{ base:"amber",bg50:"bg-amber-50",bg100:"bg-amber-100",text900:"text-amber-900",text700:"text-amber-700",border100:"border-amber-100",border300:"border-amber-300"},
+    cyan:{ base:"cyan",bg50:"bg-cyan-50",bg100:"bg-cyan-100",text900:"text-cyan-900",text700:"text-cyan-700",border100:"border-cyan-100",border300:"border-cyan-300"},
+    rose:{ base:"rose",bg50:"bg-rose-50",bg100:"bg-rose-100",text900:"text-rose-900",text700:"text-rose-700",border100:"border-rose-100",border300:"border-rose-300"},
+    purple:{ base:"purple",bg50:"bg-purple-50",bg100:"bg-purple-100",text900:"text-purple-900",text700:"text-purple-700",border100:"border-purple-100",border300:"border-purple-300"},
+    fuchsia:{ base:"fuchsia",bg50:"bg-fuchsia-50",bg100:"bg-fuchsia-100",text900:"text-fuchsia-900",text700:"text-fuchsia-700",border100:"border-fuchsia-100",border300:"border-fuchsia-300"},
+    slate:{ base:"slate",bg50:"bg-slate-50",bg100:"bg-slate-100",text900:"text-slate-900",text700:"text-slate-700",border100:"border-slate-100",border300:"border-slate-300"},
+};
+</script>
+
+<script type="text/babel">
+
+const { useState, useEffect, useRef } = React;
+
+const BackButton = ({ onClick, color="indigo", title }) => {
+    const c = COLOR[color] || COLOR.indigo;
+    return (
+        <button onClick={onClick} className={`h-10 w-10 flex items-center justify-center rounded-xl border ${c.border100} bg-slate-50 text-${c.base}-600 hover:bg-white hover:shadow-sm hover:scale-105 transition`} title={title}>
+            <span className="material-symbols-rounded">arrow_back</span>
+        </button>
+    );
+};
+
+const ToggleSwitch = ({ isChecked, onChange, color = "indigo" }) => {
+    const c = COLOR[color] || COLOR.indigo;
+    return (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked={isChecked} onChange={onChange} className="sr-only peer" />
+            <div className={`w-9 h-5 rounded-full peer bg-slate-300 peer-checked:bg-${c.base}-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4 shadow-inner`}></div>
+        </label>
+    );
+};
+
+const SectionTitle = ({ icon, title, color = "slate" }) => {
+    const c = COLOR[color] || COLOR.slate;
+    return (
+        <div className="flex items-center gap-2 mb-2 mt-4 first:mt-0 px-1">
+            <span className={`material-symbols-rounded text-sm text-${c.base}-500`}>{icon}</span>
+            <span className={`text-xs font-bold text-${c.base}-600 uppercase tracking-widest`}>{title}</span>
+        </div>
+    );
+};
+
+const ConfigItem = ({ icon, title, subtitle, color = "indigo", isDisabled, onClick, children, t, isLoading }) => {
+    const c = COLOR[color] || COLOR.indigo;
+    const isInteractive = !!onClick && !isDisabled;
+    return (
+        <div className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all border ${isDisabled ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : `bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-${c.base}-200 shadow-sm hover:shadow`} ${isInteractive ? 'cursor-pointer active:scale-[0.99]' : ''}`} onClick={isInteractive ? onClick : undefined}>
+            <div className="flex items-center gap-3 overflow-hidden">
+                <span className={`material-symbols-rounded text-xl ${isDisabled ? 'text-slate-300' : `text-${c.base}-500`}`}>{icon}</span>
+                <div className="flex flex-col overflow-hidden">
+                    <span className="font-medium text-sm truncate">{title}</span>
+                    {subtitle && <span className="text-[10px] text-slate-400 truncate">{subtitle}</span>}
                 </div>
-                {/* O conteúdo da direita (toggle/indicador) está alinhado automaticamente à direita */}
+            </div>
+            <div className="flex items-center pl-2">
+                {isLoading ? <span className={`material-symbols-rounded animate-spin text-${c.base}-500`}>sync</span> : children}
+                {isInteractive && !children && !isLoading && <span className="material-symbols-rounded text-slate-400">chevron_right</span>}
+                {isDisabled && !children && <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-400 px-2 py-0.5 rounded">{t('coming_soon')}</span>}
+            </div>
+        </div>
+    );
+};
+
+const ScreenWrapper = ({ title, children, color="indigo", onBack, t }) => {
+    const c = COLOR[color] || COLOR.indigo;
+    return (
+        <div className="w-full h-full flex flex-col bg-white rounded-2xl border border-slate-100 animate-fade-in-up overflow-hidden">
+            <div className="flex items-center gap-4 p-4 border-b border-slate-50 bg-white/50 backdrop-blur-sm sticky top-0 z-20">
+                <BackButton color={color} onClick={onBack} title={t("back_to")}/>
+                <h2 className={`font-bold text-xl ${c.text900}`}>{title}</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col">
                 {children}
             </div>
-        );
-        
-        // Aplica InactiveTooltip apenas se for um item inativo (placeholder)
-        return isPlaceholder ? (
-            <InactiveTooltip show={true} message="Em breve">
-                {ItemContent}
-            </InactiveTooltip>
-        ) : ItemContent;
-    };
-
-
-    const SectionTitle = ({ icon, title, color }) => (
-        // ALTERADO: Removido px-2 e usado pl-0 para alinhar o título com o padding do fieldset (p-4)
-        <legend className={`flex items-center mt-3 first:mt-0 mb-3 pl-0`}>
-            <span className={`material-symbols-rounded text-lg mr-2 text-${color}-600`}>{icon}</span>
-            <span className={`text-[11px] font-bold text-${color}-600 uppercase tracking-wider`}>{title}</span>
-        </legend>
+        </div>
     );
+};
 
-    const RenderNavButton = ({ item, color, onClickOverride }) => {
-        const isLogicallyInactive = item.action === 'placeholder';
-        const shouldShowInactiveStyle = isLogicallyInactive;
-
-        const isDisabled = isLogicallyInactive;
-
-        const themeColor = item.color || color;
-        const visualColor = shouldShowInactiveStyle ? 'slate' : themeColor;
-
-        const INACTIVE_CHIP_CLASS = `
-            bg-slate-100 border-slate-300 text-slate-500
-            hover:bg-slate-100 hover:border-slate-400
-        `;
-
-        const ACTIVE_CHIP_CLASS = (c) => `
-            chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all
-            bg-${c}-50 border border-${c}-200 text-${c}-700
-            hover:bg-${c}-100 hover:border-${c}-300 hover:translate-x-1
-        `;
-
-        const classes = shouldShowInactiveStyle ? INACTIVE_CHIP_CLASS : ACTIVE_CHIP_CLASS(visualColor);
-
-        const isSubMenuLink = item.action === 'submenu' || (item.submenu && item.submenu.length > 0) || item.view;
-
-        const handleClick = onClickOverride || (isDisabled ? () => {} : undefined);
-
-        const iconColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-500' : `text-${visualColor}-600`;
-        const textColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-700' : 'text-current';
-
-        return (
-            <InactiveTooltip show={isDisabled} message="Em breve">
-                <button
-                    onClick={handleClick}
-                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${classes} ${isDisabled ? 'cursor-not-allowed' : ''}`}
-                    disabled={isDisabled && !onClickOverride}
-                >
-                    <div className="flex items-center">
-                        <span className={`material-symbols-rounded text-xl mr-3 ${iconColorClass}`}>{item.icon}</span>
-                        <span className={`font-semibold text-sm ${textColorClass} text-left`}>{item.title}</span>
-                    </div>
-                    {isSubMenuLink ? (
-                        <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>chevron_right</span>
-                    ) : (
-                        <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>launch</span>
-                    )}
-                </button>
-            </InactiveTooltip>
-        );
-    };
-
-    // --- CARTÃO PRINCIPAL DA TELA DE APPS ---
-    const AppCard = ({ item, onClick }) => {
-        const isLogicallyInactive = item.action === 'placeholder';
-        const shouldShowInactiveStyle = isLogicallyInactive;
-
-        // Determina a cor visual (slate se modo inativo e for placeholder, senão usa a cor do item)
-        const visualColor = shouldShowInactiveStyle ? 'slate' : item.color;
-
-        const pointerEvents = isLogicallyInactive ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer';
-
-        // Classes de cor baseadas na visualColor
-        const colorClass = `border-${visualColor}-500 bg-${visualColor}-500/20`;
-        const iconColorClass = `text-${visualColor}-500`;
-        const textColorClass = `text-${visualColor}-700`;
-
-        // Se inativo, o clickHandler não faz nada.
-        const clickHandler = isLogicallyInactive ? (e) => e.preventDefault() : onClick;
-
-        const cardContent = (
-             <div
-                data-app-id={item.id}
-                onClick={clickHandler}
-                role="button"
-                className={`card-base w-32 h-32 md:w-36 md:h-36 ${colorClass} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
-            >
-                {/* ÍCONE GRANDE */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                    <span
-                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }}
-                        className={`material-symbols-rounded leading-none ${iconColorClass} opacity-30`}
-                    >
-                        {item.icon}
-                    </span>
-                </div>
-
-                {/* TÍTULO */}
-                <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
-                    <h2 className={`text-sm ${textColorClass} font-semibold leading-tight`}>{item.title}</h2>
-                </div>
+function AppCard({ item, t, onClick }) {
+    const c = COLOR[item.color] || COLOR.indigo;
+    const disabled = item.action === "placeholder";
+    return (
+        <div onClick={!disabled ? onClick : undefined} className={`relative flex flex-col items-center justify-end w-32 h-32 rounded-2xl group cursor-pointer transition border ${c.border100} ${c.bg50} hover:shadow hover:-translate-y-1`}>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`material-symbols-rounded text-[5rem] opacity-10 group-hover:opacity-20 text-${c.base}-600`}>{item.icon}</span>
             </div>
-        );
+            <div className="relative z-10 p-2 text-center">
+                <span className={`font-semibold text-sm ${c.text900}`}>{t(item.titleKey)}</span>
+            </div>
+        </div>
+    );
+}
 
-        return (
-            <InactiveTooltip show={isLogicallyInactive} message="Em breve">
-                {cardContent}
-            </InactiveTooltip>
-        );
-    };
+const AuthScreen = ({ onLoginSuccess, goBack, t, currentLang }) => {
+    const [isRegistering, setIsRegistering] = useState(true);
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+    const [loading, setLoading] = useState(false);
 
-    // RENOMEADO: EducationMenuModal -> EducationScreen (Para refletir a troca de telas)
-    const EducationScreen = ({ goToPortfolio, onAppClick, goBack }) => {
-        const [activeCategory, setActiveCategory] = useState(null);
-        const modalRef = useRef(null);
+    useEffect(() => {
+        if (!formData.phone) {
+            const prefix = currentLang === 'pt-BR' ? '+55 ' : '+1 ';
+            setFormData(prev => ({ ...prev, phone: prefix }));
+        }
+    }, [currentLang]);
 
-        const THEME_COLOR = "emerald";
-
-        const handleCategoryToggle = (id) => {
-            setActiveCategory(activeCategory === id ? null : id);
-        };
-
-        const handleSubItemClick = (item) => {
-            if (item.action === "placeholder") {
-                return;
+    const validateForm = () => {
+        if (isRegistering) {
+            if (!formData.name.trim() || formData.name.trim().split(/\s+/).length < 2) {
+                alert(t('auth_error_name_invalid')); return false;
             }
-            onAppClick(item);
-        };
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            alert(t('auth_error_email_invalid')); return false;
+        }
+        const cleanPhone = formData.phone.replace(/[\s-]/g, '');
+        if (cleanPhone.length < 8) { 
+             alert(t('auth_error_phone_invalid')); return false;
+        }
+        return true;
+    };
 
-        const RenderSubMenuCards = ({ submenu }) => (
-             <section className="app-grid-base-flexible mx-auto">
-                {submenu.map(item => (
-                    <AppCard
-                        key={item.id}
-                        item={item}
-                        onClick={() => handleSubItemClick(item)}
-                    />
-                ))}
-            </section>
-        );
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+        setLoading(true);
 
-        const INACTIVE_ACCORDION_CLASS = `
-            bg-slate-100 border-slate-300 text-slate-500
-            hover:bg-slate-100 cursor-not-allowed pointer-events-none
-            border border-slate-300
-        `;
+        try {
+            const secureId = await window.generateHashId(formData.email, formData.phone);
+            let user;
 
-        return (
-            <div ref={modalRef} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`} role="region" aria-label="Menu Educação">
+            if (isRegistering) {
+                user = {
+                    id: secureId,
+                    phone: formData.phone.trim(),
+                    email: formData.email.trim(),
+                    name: formData.name.trim(),
+                    role: 'student', 
+                    createdAt: new Date()
+                };
+                onLoginSuccess(user);
+            } else {
+                const result = await window.cloudRestore(secureId);
+                
+                if (result.success) {
+                    alert(t('msg_cloud_restore_success'));
+                    window.location.reload(); 
+                } else {
+                    const existingUser = await db.user.where('id').equals(secureId).first();
+                    if(existingUser) {
+                        alert(`${t('msg_cloud_not_found')} (${result.msg})\n\n${t('msg_login_local_success')}`);
+                        onLoginSuccess(existingUser);
+                    } else {
+                        alert(`${t('msg_user_not_found_anywhere')}\n\n${t('msg_cloud_error_details')} ${result.msg}`);
+                        setLoading(false);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erro inesperado: " + err.message);
+            setLoading(false);
+        }
+    };
 
-                <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
-
-                <div className="p-8 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
-
-                    <div className="text-center mb-6">
-                        <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Educação</h2>
+    return (
+        <ScreenWrapper title={isRegistering ? t('auth_register') : t('auth_login')} color="purple" onBack={goBack} t={t}>
+            <div className="flex flex-col items-center justify-center p-8 w-full max-w-md mx-auto flex-1">
+                <div className="mb-6 text-center">
+                    <div className="h-20 w-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="material-symbols-rounded text-4xl text-purple-600">cloud_sync</span>
                     </div>
-
-
-                    <div className="space-y-4 flex-1">
-                        {EDUCATION_CATEGORIES.map((category) => {
-                            const isCategoryLogicallyInactive = category.action === 'placeholder';
-                            const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive;
-
-                            const categoryVisualColor = shouldCategoryShowInactiveStyle ? 'slate' : THEME_COLOR;
-
-                            const headerClasses = shouldCategoryShowInactiveStyle
-                                ? INACTIVE_ACCORDION_CLASS
-                                : (activeCategory === category.id
-                                    ? `bg-${categoryVisualColor}-100 text-${categoryVisualColor}-800 border border-${categoryVisualColor}-200`
-                                    : `bg-${categoryVisualColor}-50 hover:bg-${categoryVisualColor}-100 text-${categoryVisualColor}-700 border border-${categoryVisualColor}-200`);
-
-                            const categoryIconColor = `text-${categoryVisualColor}-600`;
-                            const categoryTextColor = shouldCategoryShowInactiveStyle ? 'text-slate-700' : '';
-
-                            const wrapperBorderClass = `border-${categoryVisualColor}-200`;
-
-                            const isDisabled = isCategoryLogicallyInactive && !category.submenu;
-
-                            const contentHeight = activeCategory === category.id && category.submenu
-                                ? `${modalRef.current?.scrollHeight || 500}px`
-                                : '0px';
-
-                            return (
-                                <InactiveTooltip key={category.id} show={isDisabled} message="Em breve">
-                                    <div className={`w-full ${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
-                                        <button
-                                            onClick={() => handleCategoryToggle(category.id)}
-                                            className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
-                                            disabled={isDisabled}
-                                            aria-expanded={activeCategory === category.id}
-                                            aria-controls={`collapse-${category.id}`}
-                                        >
-                                            <div className="flex items-center">
-                                                <span className={`material-symbols-rounded text-2xl mr-3 ${categoryIconColor}`}>{category.icon}</span>
-                                                <span className={`font-bold text-lg ${categoryTextColor}`}>{category.title}</span>
-                                            </div>
-                                            <span className={`material-symbols-rounded transition-transform duration-200 ${shouldCategoryShowInactiveStyle ? 'text-slate-500' : ''} ${activeCategory === category.id ? 'rotate-90' : 'rotate-0'}`}>chevron_right</span>
-                                        </button>
-
-                                        <div
-                                            id={`collapse-${category.id}`}
-                                            className="accordion-content transition-all duration-300"
-                                            style={{
-                                                maxHeight: contentHeight,
-                                                transition: `max-height ${activeCategory === category.id ? '0.5s' : '0.3s'} ease-in-out`
-                                            }}
-                                        >
-                                            {category.submenu && (
-                                                <div className={`p-4 border-t border-${THEME_COLOR}-100 bg-white`}>
-                                                    <RenderSubMenuCards submenu={category.submenu} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </InactiveTooltip>
-                            );
-                        })}
-                    </div>
+                    <h2 className="text-2xl font-bold text-purple-900">{t('auth_welcome')}</h2>
+                    <p className="text-purple-600/80 mt-1">{t('auth_welcome_subtitle')}</p>
                 </div>
+
+                <form onSubmit={handleSubmit} className="w-full space-y-4">
+                    {isRegistering && (
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500 ml-1 uppercase">Nome Completo</label>
+                            <input type="text" placeholder={t('auth_name_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}/>
+                        </div>
+                    )}
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">E-mail</label>
+                        <input type="email" placeholder={t('auth_email_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}/>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">Telefone</label>
+                        <input type="tel" placeholder={t('auth_phone_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}/>
+                    </div>
+                    <button type="submit" disabled={loading} className={`w-full py-4 bg-purple-600 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-purple-700 transition-all mt-6 flex justify-center items-center ${loading ? 'opacity-70' : ''}`}>
+                        {loading ? <span className="material-symbols-rounded animate-spin mr-2">sync</span> : null}
+                        {isRegistering ? t('auth_register') : t('auth_btn_restore')}
+                    </button>
+                </form>
+
+                <button onClick={() => { setIsRegistering(!isRegistering); }} className="mt-6 text-sm text-purple-600 hover:text-purple-800 font-medium underline">
+                    {isRegistering ? t('auth_switch_to_login') : t('auth_switch_to_register')}
+                </button>
             </div>
-        );
-    }
+        </ScreenWrapper>
+    );
+};
 
-    // RENOMEADO: SettingsMenuModal -> SettingsScreen
-    const SettingsScreen = ({
-        userData,
-        onAuth,
-        isFloatingBtnVisible,
-        toggleAccessibility,
-        backupToCloud,
-        isSyncing,
-        goBack, // ATUALIZADO
-        isAlertsFloatingBtnVisible,
-        toggleAlertsFloatingButton
-    }) => {
-        const THEME_COLOR = "indigo";
-        const PERFIL_COLOR = 'purple';
-        const SEGURANCA_COLOR = 'amber';
-        const SISTEMA_COLOR = 'cyan';
-        const ACESSIBILIDADE_COLOR = 'fuchsia';
+const LanguageSelectionScreen = ({ goBack, currentLang, setLang, t }) => {
+    const LANGUAGES = [
+        { code: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷' },
+        { code: 'en-US', label: 'English (US)', flag: '🇺🇸' },
+        { code: 'es-ES', label: 'Español (España)', flag: '🇪🇸', disabled: true }, 
+        { code: 'fr-FR', label: 'Français', flag: '🇫🇷', disabled: true }
+    ];
+    return (
+        <ScreenWrapper title={t('app_title_language_select')} color="cyan" onBack={goBack} t={t}>
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto w-full">
+                {LANGUAGES.map(lang => (
+                    <div key={lang.code} onClick={() => !lang.disabled && setLang(lang.code)} className={`relative flex items-center p-4 rounded-xl border transition-all ${lang.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md hover:border-cyan-300'} ${currentLang === lang.code ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'bg-white'}`}>
+                        <span className="text-4xl mr-4">{lang.flag}</span>
+                        <div className="flex-1"><h3 className="font-bold text-slate-800">{lang.label}</h3></div>
+                    </div>
+                ))}
+            </div>
+        </ScreenWrapper>
+    );
+};
 
-        const getInitials = (name) => {
-            if (!name) return 'U';
-            const parts = name.trim().split(' ');
-            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        };
-        
-        const RenderProfileAndRootNavigation = ({ onAuth, backupToCloud, isSyncing, userData }) => {
-            const profileColor = PERFIL_COLOR;
-            const securityColor = SEGURANCA_COLOR;
+const SettingsScreen = ({ userData, onAuth, onOpenProfile, goBack, t, currentLang, onOpenLanguage }) => {
+    const initials = userData?.name ? userData.name.substring(0,2).toUpperCase() : 'VN';
+    const [cloudLoading, setCloudLoading] = useState({ upload: false, download: false });
+    const [fbConfig, setFbConfig] = useState('');
+    const [showAdmin, setShowAdmin] = useState(false);
 
-            const isBackupDisabled = isSyncing || !userData;
+    useEffect(() => {
+        db.settings.get('firebase_config').then(rec => {
+            if(rec) setFbConfig(rec.value);
+        });
+    }, []);
 
-            return (
-                <div className="flex flex-col gap-1 w-full relative">
-                    {/* SEÇÃO: PERFIL (ROXO) - Usando fieldset para agrupamento lógico */}
-                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
-                        <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
-                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
-                        <div className="w-full space-y-3">
-                            {/* ATUALIZADO: Usando o estilo padrão de botão de perfil que tem um layout complexo */}
-                            <button
-                                onClick={onAuth}
-                                className={`chip-button w-full px-4 py-3 rounded-xl flex items-center justify-start bg-white border border-slate-200 hover:bg-slate-50 transition-all text-left group shadow-md`}>
-                                <div className={`w-12 h-12 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-lg shrink-0 mr-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                                    {userData ? getInitials(userData.name) : <span className="material-symbols-rounded">person</span>}
-                                </div>
-                                <div className="flex flex-col text-gray-800">
-                                    <span className="text-lg font-bold leading-tight">
-                                        {userData ? userData.name.split(' ')[0] : 'Visitante'}
-                                    </span>
-                                    <span className={`text-sm font-semibold ${userData ? 'text-green-600' : 'text-purple-600'} flex items-center`}>
-                                        <span className={`material-symbols-rounded text-base mr-1`}>{userData ? 'check_circle' : 'lock_open'}</span>
-                                        {userData ? 'Conectado' : 'Login / Cadastro'}
-                                    </span>
-                                </div>
+    const handleSaveConfig = async () => {
+        try {
+            const parsed = JSON.parse(fbConfig);
+            await db.settings.put({ key: 'firebase_config', value: JSON.stringify(parsed) });
+            alert(t('admin_config_saved'));
+            window.location.reload();
+        } catch(e) {
+            alert(t('admin_config_error'));
+        }
+    };
+
+    const handleLocalBackup = async () => {
+        const success = await window.exportLocalBackup();
+        alert(success ? t('msg_backup_success') : t('msg_backup_error'));
+    };
+
+    const handleCloudUpload = async () => {
+        if(!userData) return;
+        setCloudLoading(prev => ({...prev, upload: true}));
+        const res = await window.cloudUpload(userData.id);
+        setCloudLoading(prev => ({...prev, upload: false}));
+        alert(res.success ? t('msg_cloud_success') : res.msg);
+    };
+
+    const handleCloudDownload = async () => {
+        if(!userData) return;
+        if(!confirm("Isso substituirá seus dados locais pelos da nuvem. Continuar?")) return;
+        setCloudLoading(prev => ({...prev, download: true}));
+        const res = await window.cloudRestore(userData.id);
+        setCloudLoading(prev => ({...prev, download: false}));
+        if(res.success) {
+            alert(t('msg_cloud_restore_success'));
+            window.location.reload();
+        } else {
+            alert(res.msg);
+        }
+    };
+
+    return (
+        <ScreenWrapper title={t('settings_title')} color="indigo" onBack={goBack} t={t}>
+            <div className="p-6 grid gap-6 sm:grid-cols-2 max-w-5xl mx-auto w-full pb-20">
+                <div className="flex flex-col gap-3">
+                    <SectionTitle icon="person" title={t('section_profile')} color="purple" />
+                    
+                    {/* Cartão de Perfil */}
+                    <div 
+                        onClick={() => userData ? onOpenProfile() : onAuth()}
+                        className={`bg-purple-50 rounded-2xl p-4 border border-purple-100 flex items-center gap-4 shadow-sm transition hover:shadow-md cursor-pointer`}
+                    >
+                        <div className="h-14 w-14 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                            {userData ? initials : <span className="material-symbols-rounded">person</span>}
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-purple-900 leading-tight">{userData ? userData.name : t('settings_profile_visitor')}</h3>
+                            <span className="text-xs font-medium text-purple-600 mt-1 block">
+                                {userData ? t('action_manage_account') : t('auth_login')}
+                            </span>
+                        </div>
+                        {userData && <span className="material-symbols-rounded text-purple-300">chevron_right</span>}
+                    </div>
+
+                    {/* Botão Extra para Abrir o Painel (Padronizado com ConfigItem) */}
+                    <ConfigItem 
+                        icon="dashboard" 
+                        title="Painel de Dados" 
+                        subtitle="Gerenciar informações do usuário"
+                        color="purple" 
+                        onClick={onOpenProfile} 
+                        t={t} 
+                    />
+                    
+                    <SectionTitle icon="cloud" title={t('section_backup')} color="amber" />
+                    <ConfigItem icon="cloud_upload" title={t('settings_backup_cloud')} subtitle={t('settings_backup_cloud_desc')} color="amber" isDisabled={!userData} onClick={handleCloudUpload} t={t} isLoading={cloudLoading.upload} />
+                    <ConfigItem icon="cloud_download" title={t('settings_sync_devices')} subtitle={t('settings_sync_devices_desc')} color="amber" isDisabled={!userData} onClick={handleCloudDownload} t={t} isLoading={cloudLoading.download} />
+                    <ConfigItem icon="download" title={t('settings_backup_local')} color="amber" isDisabled={false} onClick={handleLocalBackup} t={t} />
+                </div>
+
+                <div className="flex flex-col gap-3">
+                    <SectionTitle icon="tune" title={t('section_system')} color="cyan" />
+                    <ConfigItem icon="language" title={t('settings_language')} color="cyan" isDisabled={false} onClick={onOpenLanguage} t={t}>
+                        <div className="flex items-center gap-2"><span className="text-sm font-bold text-cyan-600 uppercase">{currentLang.split('-')[0]}</span><span className="material-symbols-rounded text-cyan-400 text-sm">chevron_right</span></div>
+                    </ConfigItem>
+                    <SectionTitle icon="accessibility" title={t('section_accessibility')} color="fuchsia" />
+                    <ConfigItem icon="zoom_in" title={t('settings_large_text')} color="fuchsia" isDisabled={false} t={t}><ToggleSwitch isChecked={false} onChange={() => {}} color="fuchsia" /></ConfigItem>
+                    <ConfigItem icon="dark_mode" title={t('settings_dark_mode')} color="slate" isDisabled={false} t={t}><ToggleSwitch isChecked={false} onChange={() => {}} color="slate" /></ConfigItem>
+                </div>
+                
+                {/* ÁREA ADMIN / DEV */}
+                <div className="col-span-1 sm:col-span-2 mt-4 border-t border-slate-100 pt-4">
+                     <div onClick={() => setShowAdmin(!showAdmin)} className="flex items-center gap-2 cursor-pointer opacity-60 hover:opacity-100 transition">
+                        <span className="material-symbols-rounded text-slate-500">terminal</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('section_admin')}</span>
+                        <span className="material-symbols-rounded text-slate-400 text-sm ml-auto">{showAdmin ? 'expand_less' : 'expand_more'}</span>
+                     </div>
+                     
+                     {showAdmin && (
+                        <div className="mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 animate-fade-in-up">
+                            <label className="block text-xs font-bold text-slate-500 mb-2">{t('admin_firebase_config')}</label>
+                            <textarea 
+                                className="w-full h-32 p-3 text-xs font-mono bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none"
+                                placeholder='{"apiKey": "...", "authDomain": "..."}'
+                                value={fbConfig}
+                                onChange={e => setFbConfig(e.target.value)}
+                            />
+                            <button onClick={handleSaveConfig} className="mt-3 px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition">
+                                {t('admin_save_config')}
                             </button>
                         </div>
-                    </fieldset>
-
-                    {/* SEÇÃO SEGURANÇA (AMBAR) - Usando fieldset para agrupamento lógico */}
-                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
-                        <SectionTitle icon="security" title="Segurança" color={securityColor} />
-                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
-                        <div className="w-full space-y-3">
-                            {/* BOTÃO 1: BACKUP */}
-                            <ConfigItem 
-                                icon={isSyncing ? 'sync' : 'cloud_upload'} 
-                                title={isBackupDisabled && !userData ? 'Login para Backup' : (isSyncing ? 'Fazendo Backup' : 'Backup na Nuvem')}
-                                color={securityColor}
-                                isDisabled={isBackupDisabled}
-                                onClick={backupToCloud}
-                                extraClasses={isSyncing ? 'animate-pulse' : ''}
-                            >
-                                {isSyncing ? <span className="material-symbols-rounded animate-spin">sync</span> : null}
-                            </ConfigItem>
-
-                            {/* BOTÃO 2: TROCAR SENHA (INATIVO) */}
-                            <ConfigItem 
-                                icon="vpn_key" 
-                                title="Senha" 
-                                color={securityColor}
-                                isDisabled={true}
-                                onClick={() => {}}
-                            />
-                        </div>
-                        {/* SEPARADOR para mobile (fora do div w-full space-y-3) */}
-                        <div className="h-px bg-slate-200 my-4 md:hidden"></div>
-                    </fieldset>
+                     )}
                 </div>
-            );
-        };
-        
-        const SystemAccessibilityColumn = ({
-            isFloatingBtnVisible,
-            toggleAccessibility,
-            isAlertsFloatingBtnVisible,
-            toggleAlertsFloatingButton
-        }) => {
-            
-            return (
-                <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
-                    {/* SEÇÃO: SISTEMA (CIANO) - Usando fieldset para agrupamento lógico */}
-                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
-                        <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
-                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
-                        <div className="w-full space-y-3"> 
-                            {/* NOVO BOTÃO: FLUTUANTE ALERTAS (INTEGRAÇÃO NO MENU) */}
-                            <ConfigItem 
-                                icon="notifications" 
-                                title="Alertas Flutuante" 
-                                color="amber"
-                                isDisabled={false}
-                                extraClasses="bg-amber-50"
-                            >
-                                <ToggleSwitch
-                                    isChecked={isAlertsFloatingBtnVisible}
-                                    onChange={() => toggleAlertsFloatingButton(!isAlertsFloatingBtnVisible)}
-                                    color="amber"
-                                />
-                            </ConfigItem>
 
-                            {/* Botão Tema (Toggle) - Fixo como PLACEHOLDER */}
-                            <ConfigItem 
-                                icon="dark_mode" 
-                                title="Tema" 
-                                color="cyan" 
-                                isDisabled={true}
-                            >
-                                <ToggleSwitch isChecked={false} onChange={() => {}} color="slate" />
-                            </ConfigItem>
-
-                            {/* LINGUAGEM (INATIVO, mas mantém o indicador) */}
-                            <ConfigItem 
-                                icon="language" 
-                                title="Linguagem" 
-                                color="cyan" 
-                                isDisabled={true}
-                            >
-                                {/* INDICADOR DE SELEÇÃO: PORTUGUÊS (BR) - Estilo cinza (slate) */}
-                                {/* ADICIONADO: ml-auto para forçar o alinhamento à direita */}
-                                <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-sm ml-auto">
-                                    Português (BR)
-                                </span>
-                            </ConfigItem>
-                        </div>
-                    </fieldset>
-
-
-                    {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Usando fieldset para agrupamento lógico */}
-                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
-                        <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
-                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
-                        <div className="w-full space-y-3">
-                            {/* Botão "Botões" (Funcional) */}
-                            <ConfigItem 
-                                icon="accessibility_new" 
-                                title="Botões Flutuantes" 
-                                color={ACESSIBILIDADE_COLOR} 
-                                isDisabled={false}
-                                extraClasses={`bg-${ACESSIBILIDADE_COLOR}-50`}
-                            >
-                                <ToggleSwitch
-                                    isChecked={isFloatingBtnVisible}
-                                    onChange={() => toggleAccessibility(!isFloatingBtnVisible)}
-                                    color={ACESSIBILIDADE_COLOR}
-                                />
-                            </ConfigItem>
-                        </div>
-                    </fieldset>
-                </div>
-            );
-        };
-
-
-        return (
-            <div id={`central-menu-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`} role="dialog" aria-modal="true" aria-label="Configurações da Aplicação">
-
-                <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
-
-                <div className="p-8 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
-
-                    <div className="text-center mb-6">
-                        <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Configurações</h2>
-                    </div>
-
-                    <div className="flex-1 flex flex-col sm:grid sm:grid-cols-2 sm:gap-4">
-                        {/* COLUNA 1: Perfil e Segurança */}
-                        <RenderProfileAndRootNavigation
-                            userData={userData}
-                            onAuth={onAuth}
-                            backupToCloud={backupToCloud}
-                            isSyncing={isSyncing}
-                        />
-
-                        {/* COLUNA 2: Sistemas e Acessibilidade */}
-                        <SystemAccessibilityColumn
-                            isFloatingBtnVisible={isFloatingBtnVisible}
-                            toggleAccessibility={toggleAccessibility}
-                            isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible}
-                            toggleAlertsFloatingButton={toggleAlertsFloatingButton}
-                        />
-                    </div>
-                </div>
             </div>
-        );
-    };
+        </ScreenWrapper>
+    );
+};
 
-    // RENOMEADO: AlertsPanel -> AlertsScreen
-    const AlertsScreen = ({ userData, goBack }) => {
-        const THEME_COLOR = "amber";
-        return (
-            <div id={`alerts-panel`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`} role="dialog" aria-modal="true" aria-label="Notificações e Alertas">
-                 <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
+function MiniAppScreen({ config, goBack, t }) {
+    const iframeRef = useRef(null);
+    const [loading, setLoading] = useState(true);
+    const color = config.color || "indigo";
+    const c = COLOR[color];
 
-                <div className="p-8 w-full px-4 sm:p-8 sm:px-8 pt-16">
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-amber-700">Notificações</h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-300 flex items-center">
-                            <span className="material-symbols-rounded text-2xl text-amber-500 mr-3">info</span>
-                            <div>
-                                <h3 className="font-semibold text-amber-800">Boas-vindas</h3>
-                                <p className="text-sm text-amber-700">Esta é a sua nova Central de Notificações.</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-300 flex items-center opacity-70">
-                            <span className="material-symbols-rounded text-2xl text-slate-500 mr-3">check_circle</span>
-                            <div>
-                                <h3 className="font-semibold text-slate-700">Concluído</h3>
-                                <p className="text-sm text-slate-600">Último backup salvo na nuvem com sucesso. (2 minutos atrás)</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="text-center pt-4">
-                        <button onClick={goBack} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Voltar</button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-
-    // RENOMEADO: AuthPanel -> AuthScreen
-    const AuthScreen = ({ onLoginSuccess, goBack }) => {
-        const [isRegistering, setIsRegistering] = useState(false);
-        const [formData, setFormData] = useState({ phone: '', name: '', password: '' });
-        const THEME_COLOR = "purple";
-
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            if (isRegistering && !formData.name) {
-                console.error("Por favor, preencha o nome.");
-                return;
-            }
-            if (!formData.phone || formData.phone.length < 8) {
-                console.error("Telefone inválido.");
-                return;
-            }
-            onLoginSuccess({ phone: formData.phone, name: formData.name || 'Usuário', role: 'user' });
-        };
-
-        return (
-            <div id={`auth-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`} role="dialog" aria-modal="true" aria-label={isRegistering ? 'Cadastro de Usuário' : 'Login de Usuário'}>
-                 <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
-
-                <div className="p-8 w-full px-4 sm:p-8 sm:px-8 pt-16">
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-purple-700">{isRegistering ? 'Cadastro' : 'Login'}</h2>
-                    </div>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {isRegistering && (
-                            <div>
-                                <label htmlFor="auth-name" className="block text-sm font-medium text-purple-700 mb-1">Nome Completo</label>
-                                <input id="auth-name" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="Seu nome" />
-                            </div>
-                        )}
-                        <div>
-                            <label htmlFor="auth-phone" className="block text-sm font-medium text-purple-700 mb-1">Telefone (ID)</label>
-                                <input id="auth-phone" type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="(99) 99999-9999" required />
-                        </div>
-                        <div>
-                            <label htmlFor="auth-password" className="block text-sm font-medium text-purple-700 mb-1">Senha</label>
-                            <input id="auth-password" type="password" value={formData.password} onChange={(e) => setFormData({...formData.password, password: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="******" required />
-                        </div>
-                        <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:scale-[1.02]">{isRegistering ? 'Cadastrar' : 'Entrar'}</button>
-                    </form>
-                    <div className="mt-6 text-center">
-                        <button onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-purple-600 hover:text-purple-800 font-medium underline">
-                            {isRegistering ? 'Já tem conta? Fazer Login' : 'Não tem conta? Cadastre-se'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    // RENOMEADO: MiniAppModal -> MiniAppScreen
-    const MiniAppScreen = ({ screenConfig, goBack, loading, setLoading, appId }) => {
-        const iframeRef = React.useRef(null);
-        const { id, title, url, basePath, color, parentTitle = "Educação" } = screenConfig;
-
-        const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
-
-        const loadMiniAppContent = useCallback(async () => {
-            if (!url || !iframeRef.current) return;
-            setLoading(true);
+    useEffect(() => {
+        (async () => {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const htmlContent = await response.text();
-                let processedHtml = "";
-                if (window.prepareMiniAppHtml) {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    processedHtml = window.prepareMiniAppHtml(htmlContent, appId, basePath);
-
-                    if (isDark) {
-                        processedHtml = processedHtml.replace('<html lang="pt-BR">', '<html lang="pt-BR" class="dark">');
-                    }
-
-                    iframeRef.current.srcdoc = processedHtml;
-                } else {
-                    iframeRef.current.srcdoc = htmlContent;
-                }
-                iframeRef.current.onload = () => {
+                if (!config.url && config.id === 'profile_viewer') {
                     setLoading(false);
-                };
-            } catch (error) {
-                console.error("Erro ao carregar MiniApp:", error);
-                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem; color: #ef4444;">
-                                                <h1 style="font-weight: bold; font-size: 1.5rem;">Erro de Carregamento</h1>
-                                                <p>Não foi possível carregar o MiniApp. Verifique a URL.</p>
-                                            </div>`;
-                setLoading(false);
-            }
-        }, [url, basePath, setLoading, appId]);
-
-        useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
-
-        return (
-             <div id={`${id}-screen`} className={`screen-container border ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up w-full min-h-screen`} role="application" aria-label={`Mini Aplicativo: ${title}`}>
-
-                <BackButton onClick={goBack} themeColor={color} previousTitle={parentTitle} />
-
-                {/* Título do App */}
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-0 text-center">
-                    <h2 className={`text-xl font-bold text-${color}-700`}>{title}</h2>
-                </div>
-
-                <iframe ref={iframeRef} className="w-full h-full border-0 hide-scrollbar" title={`App ${title}`}></iframe>
-                {loading && (
-                    <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm" role="alert" aria-live="assertive" aria-busy="true">
-                        <svg className={`animate-spin -ml-1 mr-3 h-8 w-8 text-${color}-600`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p className={`ml-3 text-sm font-semibold text-${color}-700`}>Carregando...</p>
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-
-    function App() {
-        const [userData, setUserData] = useState(null);
-        const [adminConfig, setAdminConfig] = useState({ sheetId: '', sheetTab: '' });
-        const [isSyncing, setIsSyncing] = useState(false);
-        const [currentView, setCurrentView] = useState('portfolio');
-        const [history, setHistory] = useState([]);
-
-        // NOVO ESTADO: Armazena a tela secundária ativa
-        const [activeScreen, setActiveScreen] = useState(null);
-        const [screenLoading, setScreenLoading] = useState(false);
-
-        // ESTADOS DE ACESSIBILIDADE E FLUTUANTES
-        const [isDarkMode, setIsDarkMode] = useState(false);
-        const [isFloatingBtnVisible, setIsFloatingBtnVisible] = useState(true);
-        const [isAlertsFloatingBtnVisible, setIsAlertsFloatingBtnVisible] = useState(true);
-
-        const toggleAccessibility = (newState) => {
-            setIsFloatingBtnVisible(newState);
-        };
-
-        const toggleAlertsFloatingButton = (newState) => {
-            setIsAlertsFloatingBtnVisible(newState);
-        };
-
-        // NOVO: Função para voltar à tela anterior no histórico
-        const goBack = useCallback(() => {
-            if (activeScreen) {
-                // Se estiver em uma tela secundária, volta para o portfólio
-                setActiveScreen(null);
-            } else if (history.length > 0) {
-                // Se estiver em uma sub-view do portfólio, usa o histórico
-                const previousView = history[history.length - 1];
-                setHistory(prev => prev.slice(0, -1));
-                setCurrentView(previousView);
-            } else {
-                // Caso contrário, fica no portfólio
-                setCurrentView('portfolio');
-            }
-        }, [activeScreen, history]);
-
-        // Efeito para lidar com navegação de teclado (Escape e Backspace/Alt+Left)
-        useEffect(() => {
-            const handleKeyDown = (event) => {
-                // Tecla ESCAPE: Fechar tela secundária (modal-like)
-                if (event.key === 'Escape' && activeScreen) {
-                    goBack();
-                }
-                // Tecla Backspace ou Alt + Seta Esquerda: Voltar
-                if (event.key === 'Backspace' || (event.altKey && event.key === 'ArrowLeft')) {
-                    // Evita que Backspace ative o 'voltar' no navegador se um input estiver focado
-                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-                        event.preventDefault();
-                        goBack();
-                    }
-                }
-            };
-
-            document.addEventListener('keydown', handleKeyDown);
-            return () => document.removeEventListener('keydown', handleKeyDown);
-        }, [goBack, activeScreen]);
-
-
-        useEffect(() => {
-            const rootHtml = document.documentElement;
-            rootHtml.classList.remove('dark');
-        }, [isDarkMode]);
-
-        useEffect(() => {
-            const loadData = async () => {
-                try {
-                    const users = await db.user.toArray();
-                    if (users.length > 0) setUserData(users[0]);
-                    const sheetId = await db.settings.get('sheetId');
-                    const sheetTab = await db.settings.get('sheetTab');
-                    if (sheetId && sheetTab) setAdminConfig({ sheetId: sheetId.value, sheetTab: sheetTab.value });
-                } catch (error) { console.error("Erro ao carregar dados do Dexie:", error); }
-            };
-            loadData();
-        }, []);
-
-        const backupToCloud = async () => {
-            if (!userData) {
-                console.error("ERRO DE BACKUP: Nenhum dado de utilizador para salvar. Por favor, faça login.");
-                return;
-            }
-            if (!adminConfig.sheetId) {
-                console.error("ERRO DE BACKUP: Atenção: ID da Planilha não configurado no Painel Admin!");
-                return;
-            }
-            setIsSyncing(true);
-            try {
-                const payload = { action: 'backup', user: userData, timestamp: new Date().toISOString(), targetSheetId: adminConfig.sheetId, targetTabName: adminConfig.sheetTab || 'users' };
-                // Usando fetch com 'no-cors' para simular a chamada ao Google Script
-                await fetch(DEFAULT_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                console.log("Backup enviado para a Planilha configurada!");
-            } catch (error) {
-                console.error("ERRO DE CONEXÃO: Erro ao conectar:", error);
-            } finally { setIsSyncing(false); }
-        };
-
-        const handleNativeLogin = async (user) => {
-            const newUser = { id: user.phone, phone: user.phone, name: user.name || 'Usuário', createdAt: new Date() };
-            try {
-                await db.user.put(newUser);
-                setUserData(newUser);
-                setActiveScreen(null); // Volta ao portfólio após login
-            } catch (e) {
-                console.error("Erro ao salvar login localmente:", e);
-            }
-        };
-
-        const navigateTo = (newView, pushToHistory = true) => {
-            if (currentView !== newView && pushToHistory) setHistory(prev => [...prev, currentView]);
-            setCurrentView(newView);
-        };
-
-
-        // NOVO: Função para lidar com o clique em um cartão e ativar a tela
-        const handleCardClick = (item) => {
-            if (item.action === "placeholder") {
-                return;
-            }
-
-            // Mapeamento para Telas Secundárias (Screen)
-            if (item.action === 'screen' && item.screenId) {
-                 const screenMap = {
-                    'settings': SettingsScreen,
-                    'alerts': AlertsScreen,
-                    'education': EducationScreen,
-                    'auth': AuthScreen
-                };
-                if (screenMap[item.screenId]) {
-                    setActiveScreen({ type: item.screenId, config: item });
                     return;
                 }
-            }
+                const res = await fetch(config.url);
+                const text = await res.text();
+                iframeRef.current.srcdoc = window.prepareMiniAppHtml(text, "APP", config.basePath);
+            } catch {}
+            setLoading(false);
+        })();
+    }, [config]);
 
-            // Mapeamento para MiniApps (IFrame)
-            if (item.action === 'modal' && item.url) {
-                setActiveScreen({ type: 'miniapp', config: item });
-                setScreenLoading(true);
-                return;
-            }
-
-            // Mapeamento para navegação interna (View)
-            if (item.view) { navigateTo(item.view); }
-        };
-
-        // Função genérica para clique em App de dentro de uma tela (ex: EducationScreen)
-        const handleAppClickFromScreen = (item) => {
-             // Mapeamento MiniApp (IFrame)
-            if (item.action === 'modal' && item.url) {
-                setActiveScreen({ type: 'miniapp', config: item });
-                setScreenLoading(true);
-                return;
-            }
-             // Mapeamento para tela de Auth (Login)
-            if (item.modalId === 'auth-modal') {
-                setActiveScreen({ type: 'auth', config: AUTH_ITEM_CONFIG });
-                return;
-            }
-            console.error("Ação de App não mapeada:", item);
-        };
-
-        const openAuthModal = () => {
-            handleCardClick(AUTH_ITEM_CONFIG);
-        };
-
-        const openAlertsPanel = () => handleCardClick(MAIN_MENU_PORTFOLIO.find(i => i.id === 'notifications'));
-
-        const currentViewData = VIEW_MAP[currentView] || VIEW_MAP['portfolio'];
-        const renderedItems = useMemo(() => currentViewData.data || [], [currentViewData.data]);
-
-
-        const RenderedView = ({ title, items }) => (
-            <div className="flex flex-col items-center">
-                <section className="mt-4 text-center w-full">
-                    <h1 className="3xl font-bold tracking-tight text-gray-800">{title}</h1>
-                </section>
-                <div className="app-grid-container w-full max-w-5xl">
-                    <section className="mt-6 app-grid-base-flexible mx-auto">
-                        {items.map((item, index) => (
-                            <AppCard
-                                key={item.id || index}
-                                item={item}
-                                onClick={() => handleCardClick(item)}
-                            />
-                        ))}
-                    </section>
-                </div>
+    return (
+        <ScreenWrapper title={t(config.titleKey)} color={color} onBack={goBack} t={t}>
+            <div className="relative flex-1 flex flex-col h-full">
+                {config.id === 'profile_viewer' ? (
+                     <iframe src="src/components/user-panel.html" className="w-full h-full border-0 flex-1 min-h-[500px]" />
+                ) : (
+                    <>
+                        {loading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+                                <span className={`material-symbols-rounded animate-spin text-3xl ${c.text700}`}>sync</span>
+                            </div>
+                        )}
+                        <iframe ref={iframeRef} className="w-full h-full border-0 flex-1 min-h-[500px]"/>
+                    </>
+                )}
             </div>
-        );
+        </ScreenWrapper>
+    );
+}
 
-        const buttonBaseClasses = "chip-button no-shadow font-medium rounded-lg text-sm inline-flex items-center transition-all duration-300 hover:scale-105 h-10 flex justify-center overflow-hidden";
-        const fixedButtonClasses = `${buttonBaseClasses}`;
+function App() {
+    const [view, setView] = useState("home");
+    const [activeApp, setActiveApp] = useState(null);
+    const [userData, setUserData] = useState(null);
+    const [lang, setLang] = useState("pt-BR");
+    const [i18nData, setI18nData] = useState({});
 
-        const floatingAccessibilityButtonClasses = useMemo(() => {
-            const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
-            const color = `bg-fuchsia-100 border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-200 hover:border-fuchsia-600`;
+    const t = (key) => {
+        const repoVal = i18nData[lang]?.[key];
+        const localVal = FALLBACK_I18N[lang]?.[key];
+        return repoVal || localVal || key;
+    };
 
-            const compactStyle = 'w-auto px-4';
+    const handleLogin = async (user) => {
+        await db.user.put(user);
+        setUserData(user);
+        setView("settings");
+    };
 
-            return `${base} ${color} ${compactStyle}`;
-        }, []);
-
-        const floatingAlertsButtonClasses = useMemo(() => {
-            const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
-            const color = `bg-amber-100 border-amber-500 text-amber-700 hover:bg-amber-200 hover:border-amber-600`;
-
-            const compactStyle = 'w-auto px-4';
-
-            return `${base} ${color} ${compactStyle}`;
-        }, []);
-
-
-        const floatingAccessibilityClickHandler = () => toggleAccessibility(!isFloatingBtnVisible);
-        const floatingAlertsClickHandler = openAlertsPanel;
-
-        // Renderiza a tela ativa ou o Portfólio
-        const renderActiveScreen = () => {
-            if (!activeScreen) {
-                // Se não há tela secundária ativa, renderiza a view principal (Portfólio/Educação/etc)
-                const currentData = VIEW_MAP[currentView];
-                if (currentData.parent) {
-                    // Se estiver em uma sub-view, renderiza a tela e o BackButton (apenas se for sub-view e não uma tela principal)
-                    return (
-                        <div className="flex flex-col w-full relative pt-16">
-                            <BackButton onClick={goBack} themeColor="indigo" previousTitle={VIEW_MAP[currentData.parent]?.title || 'Portfólio'} />
-                             <RenderedView title={currentData.title} items={currentData.data} />
-                        </div>
-                    );
-                }
-                return <RenderedView title={currentViewData.title} items={renderedItems} />;
-            }
-
-            const { type, config } = activeScreen;
-
-            // Define o título da tela anterior para o BackButton
-            const previousTitle = currentViewData.title;
-
-            switch (type) {
-                case 'auth':
-                    return <AuthScreen onLoginSuccess={handleNativeLogin} goBack={goBack} />;
-                case 'settings':
-                    return <SettingsScreen
-                        userData={userData}
-                        onAuth={openAuthModal}
-                        isFloatingBtnVisible={isFloatingBtnVisible}
-                        toggleAccessibility={toggleAccessibility}
-                        isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible}
-                        toggleAlertsFloatingButton={toggleAlertsFloatingButton}
-                        backupToCloud={backupToCloud}
-                        isSyncing={isSyncing}
-                        goBack={goBack}
-                    />;
-                case 'alerts':
-                    return <AlertsScreen userData={userData} goBack={goBack} />;
-                case 'education':
-                    return <EducationScreen goBack={goBack} onAppClick={handleAppClickFromScreen} />;
-                case 'miniapp':
-                    // IFrame Screens (MiniAppScreen)
-                    return <MiniAppScreen
-                        screenConfig={{...config, parentTitle: previousTitle}} // Passa o título da tela anterior
-                        goBack={goBack}
-                        loading={screenLoading}
-                        setLoading={setScreenLoading}
-                        appId={APP_ID}
-                    />;
-                default:
-                    return <RenderedView title={currentViewData.title} items={renderedItems} />;
-            }
+    const handleOpenProfile = () => {
+        const profileConfig = {
+            id: "profile_viewer",
+            titleKey: "section_profile",
+            color: "purple",
+            url: "src/components/user-panel.html" // Atualizado para o novo caminho
         };
+        setActiveApp(profileConfig);
+        setView("miniapp");
+    };
 
+    useEffect(() => {
+        (async () => {
+            await window.initializeFirebase();
+            const users = await db.user.toArray();
+            if(users.length) setUserData(users[0]);
+            try {
+                const [pt, en] = await Promise.all([
+                    fetch(LANG_REPO_BASE + 'pt-BR.json').then(r => r.ok ? r.json() : null),
+                    fetch(LANG_REPO_BASE + 'en-US.json').then(r => r.ok ? r.json() : null)
+                ]);
+                setI18nData({ "pt-BR": pt || {}, "en-US": en || {} });
+            } catch (e) { console.warn("Using fallback i18n", e); }
+        })();
+    }, []);
 
-        return (
-            <div className="antialiased flex flex-col min-h-screen">
+    const MENU = [
+        {id:"settings", titleKey:"menu_settings", icon:"settings", color:"indigo", action:()=>{ setView("settings"); }},
+        {id:"student_reg", titleKey:"edu_student_profile", icon:"person_add", color:"emerald", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}},
+        {id:"simulados", titleKey:"edu_simulados", icon:"edit_note", color:"amber", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}}
+    ];
 
-                {/* BOTÕES FLUTUANTES (Movidos para o canto superior e inferior direito/esquerdo) */}
-                <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
-                    {isFloatingBtnVisible && (
-                        <button
-                            onClick={floatingAccessibilityClickHandler}
-                            className={floatingAccessibilityButtonClasses}
-                            aria-label="Botão de Acessibilidade Flutuante"
-                            title="Botão de Acessibilidade Flutuante"
-                        >
-                            <span className={`material-symbols-rounded text-xl mr-1`}>accessibility_new</span>
-                            <span className={`font-medium whitespace-nowrap overflow-hidden`}>Acessibilidade</span>
-                        </button>
-                    )}
+    return (
+        <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center flex-1 h-full">
+            {view === "home" && (
+                <div className="animate-fade-in-up text-center w-full">
+                    <h1 className="text-3xl font-extrabold mb-2">{t("app_title_portfolio")}</h1>
+                    <p className="text-slate-500 mb-8">Escolha um MiniApp</p>
+                    <div className="flex flex-wrap justify-center gap-6 max-w-3xl mx-auto">
+                        {MENU.map(item => <AppCard key={item.id} item={item} t={t} onClick={() => item.action(item)}/>)}
+                    </div>
                 </div>
+            )}
+            {view === "settings" && <SettingsScreen userData={userData} onAuth={() => setView("auth")} onOpenProfile={handleOpenProfile} goBack={() => setView("home")} t={t} currentLang={lang} onOpenLanguage={() => setView("language_select")} />}
+            {view === "auth" && <AuthScreen onLoginSuccess={handleLogin} goBack={() => setView("settings")} t={t} currentLang={lang} />}
+            {view === "language_select" && <LanguageSelectionScreen goBack={() => setView("settings")} currentLang={lang} setLang={setLang} t={t} />}
+            {view === "miniapp" && activeApp && <MiniAppScreen config={activeApp} goBack={() => setView("home")} t={t}/>}
+        </main>
+    );
+}
 
-                <div className="fixed bottom-4 left-4 z-40 flex flex-col items-start space-y-2">
-                    {isAlertsFloatingBtnVisible && (
-                        <button
-                            onClick={floatingAlertsClickHandler}
-                            className={floatingAlertsButtonClasses}
-                            aria-label="Abrir Central de Alertas"
-                            title="Abrir Central de Alertas"
-                        >
-                            <span className={`material-symbols-rounded text-xl mr-1`}>notifications</span>
-                            <span className={`font-medium whitespace-nowrap overflow-hidden`}>Alertas</span>
-                        </button>
-                    )}
-                </div>
-
-
-                <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 flex flex-col w-full justify-center">
-                    {renderActiveScreen()}
-                </main>
-            </div>
-        );
-    }
-
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-        const root = ReactDOM.createRoot(rootElement);
-        root.render(<App />);
-    } else {
-        console.error("ERRO: Elemento root não encontrado");
-    }
-    </script>
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+document.getElementById("initial-loader").remove();
+</script>
 </body>
 </html>
