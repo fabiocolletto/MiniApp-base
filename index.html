@@ -1189,7 +1189,7 @@ function App() {
     const MENU = [
         {id:"alerts", titleKey:"menu_alerts", icon:"notifications", color:"rose", action:handleOpenAlerts},
         {id:"settings", titleKey:"menu_settings", icon:"settings", color:"indigo", action:()=>{ setView("settings"); }},
-        {id:"student_reg", titleKey:"edu_student_profile", icon:"person_add", color:"emerald", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}},
+        {id:"student_reg", titleKey:"edu_student_profile", icon:"person_add", color:"emerald", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@mainsrc/components/user-panel.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/", action:(item)=>{setActiveApp(item); setView("home");}},
         {id:"simulados", titleKey:"edu_simulados", icon:"edit_note", color:"amber", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}}
     ];
 
