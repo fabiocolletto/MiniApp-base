@@ -65,7 +65,7 @@
     </style>
 </head>
 
-<body class="antialiased bg-slate-50 text-slate-900 min-h-screen selection:bg-indigo-200 flex flex-col">
+<body class="antialiased bg-slate-50 text-slate-900 selection:bg-indigo-200 flex flex-col">
 
 <div id="root" class="flex-1 flex flex-col relative">
     <div id="initial-loader" class="fixed inset-0 flex items-center justify-center bg-slate-50 text-slate-400 animate-pulse z-50">
@@ -698,7 +698,7 @@ const ScreenWrapper = ({ title, children, color="indigo", onBack, t }) => {
     const c = COLOR[color] || COLOR.indigo;
     return (
         <div className="w-full h-full flex flex-col bg-white rounded-2xl border border-slate-100 animate-fade-in-up overflow-hidden">
-            <div className="flex items-center gap-4 p-4 border-b border-slate-50 bg-white/50 backdrop-blur-sm sticky top-0 z-20">
+            <div className="flex items-center gap-4 p-4 border-b border-slate-50 bg-white/50 backdrop-blur-sm sticky z-20">
                 <BackButton color={color} onClick={onBack} title={t("back_to")}/>
                 <h2 className={`font-bold text-xl ${c.text900}`}>{title}</h2>
             </div>
