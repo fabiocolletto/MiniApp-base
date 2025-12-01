@@ -7,7 +7,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <!-- CORRIGIDO: Adicionado react-dom para que ReactDOM.createRoot funcione -->
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
@@ -31,12 +30,61 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        /* --- FALLBACK I18N (Necessário dentro do MiniApp) --- */
+        const FALLBACK_I18N = {
+            "pt-BR": {
+                section_profile: "Perfil",
+                msg_locked_title: "Acesso Restrito",
+                msg_locked_subtitle: "Faça login no menu principal para desbloquear seus dados reais.",
+                data_personal: "Dados Pessoais",
+                data_system: "Segurança & Sistema",
+                data_fullname: "Nome Completo",
+                data_phone: "Telefone",
+                data_phone_subtitle: "Usado como Login",
+                data_email: "E-mail",
+                data_id_hash: "ID Único (Hash)",
+                data_id_subtitle: "Toque para copiar",
+                data_json_raw: "JSON Bruto",
+                processing_photo: "Processando...",
+                profile_role_user: "Usuário",
+                profile_role_student: "Aluno",
+                alert_login_required: "Por favor, faça login no App principal para alterar a foto.",
+                alert_mobile_required: "A alteração de foto foi projetada para uso em dispositivos móveis (câmera).",
+                alert_copied: "Copiado!"
+            },
+            "en-US": {
+                section_profile: "Profile",
+                msg_locked_title: "Restricted Access",
+                msg_locked_subtitle: "Please log in on the main menu to unlock your real data.",
+                data_personal: "Personal Data",
+                data_system: "Security & System",
+                data_fullname: "Full Name",
+                data_phone: "Phone",
+                data_phone_subtitle: "Used as Login",
+                data_email: "E-mail",
+                data_id_hash: "Unique ID (Hash)",
+                data_id_subtitle: "Tap to copy",
+                data_json_raw: "Raw JSON",
+                processing_photo: "Processing...",
+                profile_role_user: "User",
+                profile_role_student: "Student",
+                alert_login_required: "Please log in to the main App to change the photo.",
+                alert_mobile_required: "Photo change is designed for use on mobile devices (camera).",
+                alert_copied: "Copied!"
+            }
+        };
+
+        const t = (key) => {
+            const lang = window.__app_lang || 'pt-BR'; // Assume pt-BR se não injetado
+            return FALLBACK_I18N[lang]?.[key] || FALLBACK_I18N['pt-BR'][key] || key;
+        };
+        
         /* --- DADOS FICTÍCIOS PARA O FUNDO (QUANDO BLOQUEADO) --- */
         const DUMMY_USER = {
-            name: "Nome do Usuário",
-            role: "Cargo",
+            name: t("data_fullname"),
+            role: t("profile_role_user"),
             phone: "+55 00 00000-0000",
-            email: "email@exemplo.com",
+            email: t("data_email"),
             id: "00000000000000000000000000000000"
         };
 
@@ -142,18 +190,17 @@
             }, [loading]);
 
             const copyToClipboard = (text) => {
-                navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
+                navigator.clipboard.writeText(text).then(() => alert(t('alert_copied')));
             };
 
-            // Nova lógica para o clique da foto: Verifica se está bloqueado ANTES de tentar processar.
             const handlePhotoClick = () => {
                 if (!isMobile) {
-                    alert("A alteração de foto foi projetada para uso em dispositivos móveis (câmera).");
+                    alert(t('alert_mobile_required'));
                     return;
                 }
                 
                 if (isLocked) {
-                    alert("Por favor, faça login no App principal para alterar a foto.");
+                    alert(t('alert_login_required'));
                     return;
                 }
                 
@@ -226,8 +273,8 @@
                                 <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 shadow-inner mx-auto">
                                     <span className="material-symbols-rounded text-3xl text-slate-400">lock</span>
                                 </div>
-                                <h2 className="text-lg font-bold text-slate-800 mb-2">Acesso Restrito</h2>
-                                <p className="text-slate-500 text-xs max-w-[200px] mx-auto leading-relaxed">Faça <strong>login</strong> no menu principal para desbloquear seus dados reais.</p>
+                                <h2 className="text-lg font-bold text-slate-800 mb-2">{t('msg_locked_title')}</h2>
+                                <p className="text-slate-500 text-xs max-w-[200px] mx-auto leading-relaxed">{t('msg_locked_subtitle')}</p>
                             </div>
                         </div>
                     )}
@@ -244,34 +291,34 @@
                                 
                                 {/* Botão de Editar Foto (SEMPRE RENDERIZADO, mas com estilo de desativação) */}
                                 <button 
-                                    onClick={handlePhotoClick} // A lógica de bloqueio está DENTRO de handlePhotoClick
+                                    onClick={handlePhotoClick}
                                     className={`absolute bottom-0 right-0 bg-white text-purple-600 rounded-full p-1.5 shadow-md border border-purple-100 transition flex items-center justify-center 
                                         ${isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 active:scale-95'}
                                         ${!isMobile ? 'opacity-50 cursor-not-allowed' : ''}
                                     `}
-                                    title={isMobile ? (isLocked ? "Faça login para alterar" : "Alterar Foto") : "Exclusivo para celular"}
+                                    title={isMobile ? (isLocked ? t('alert_login_required') : "Alterar Foto") : "Exclusivo para celular"}
                                 >
                                     <span className="material-symbols-rounded text-sm">photo_camera</span>
                                 </button>
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-slate-800">{displayUser.name}</h1>
-                                <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-100 capitalize">{displayUser.role || 'Usuário'}</span>
+                                <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-100 capitalize">{displayUser.role || t('profile_role_user')}</span>
                             </div>
                         </div>
 
                         {/* Lista de Dados */}
                         <div className="flex flex-col gap-3">
-                            <SectionTitle icon="badge" title="Dados Pessoais" color="purple" />
-                            <ConfigItem icon="person" title="Nome Completo" value={displayUser.name} color="purple" />
-                            <ConfigItem icon="call" title="Telefone" subtitle="Usado como Login" value={displayUser.phone} color="purple" />
-                            <ConfigItem icon="mail" title="E-mail" value={displayUser.email || "Não informado"} color="purple" />
-                            <SectionTitle icon="fingerprint" title="Segurança & Sistema" color="slate" />
-                            <ConfigItem icon="key" title="ID Único (Hash)" subtitle="Toque para copiar" color="slate" onClick={() => !isLocked && copyToClipboard(displayUser.id)} />
+                            <SectionTitle icon="badge" title={t('data_personal')} color="purple" />
+                            <ConfigItem icon="person" title={t('data_fullname')} value={displayUser.name} color="purple" />
+                            <ConfigItem icon="call" title={t('data_phone')} subtitle={t('data_phone_subtitle')} value={displayUser.phone} color="purple" />
+                            <ConfigItem icon="mail" title={t('data_email')} value={displayUser.email || "Não informado"} color="purple" />
+                            <SectionTitle icon="fingerprint" title={t('data_system')} color="slate" />
+                            <ConfigItem icon="key" title={t('data_id_hash')} subtitle={t('data_id_subtitle')} color="slate" onClick={() => !isLocked && copyToClipboard(displayUser.id)} />
                              <div className="mt-4 pt-4 border-t border-slate-100">
                                 <div onClick={() => !isLocked && setShowDebug(!showDebug)} className="flex items-center gap-2 cursor-pointer opacity-60 hover:opacity-100 transition">
                                     <span className="material-symbols-rounded text-slate-400 text-sm">terminal</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">JSON Bruto</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('data_json_raw')}</span>
                                     <span className="material-symbols-rounded text-slate-400 text-sm ml-auto">{showDebug ? 'expand_less' : 'expand_more'}</span>
                                 </div>
                                 {showDebug && <div className="mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-[10px] font-mono text-slate-500 break-all">{JSON.stringify(displayUser)}</div>}
