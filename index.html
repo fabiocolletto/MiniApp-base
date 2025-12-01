@@ -275,7 +275,7 @@ const FALLBACK_I18N = {
         menu_settings: "Configurações",
         menu_alerts: "Avisos",
         
-        // NOVO - Bem-Vindo
+        // Ecrã Boas-Vindas
         menu_welcome: "Boas-Vindas",
         welcome_title: "Seja Bem-Vindo(a)!",
         welcome_subtitle: "Para salvar seu progresso e sincronizar dados, faça seu cadastro único.",
@@ -298,23 +298,30 @@ const FALLBACK_I18N = {
         settings_title: "Configurações",
         section_profile: "Perfil",
         action_open_data_panel: "Painel de Dados",
+        data_panel_subtitle: "Gerenciar informações do usuário", // NOVO SUBTÍTULO
         section_backup: "Backup e Sincronização",
         section_system: "Sistema",
         section_admin: "Área Admin & Dev",
         section_accessibility: "Acessibilidade",
         settings_profile_visitor: "Visitante",
         action_manage_account: "Gerir Conta",
+        
+        // Autenticação
         auth_login: "Entrar",
         auth_register: "Cadastrar",
         auth_name_placeholder: "Nome Completo",
+        auth_error_name_invalid: "Por favor, insira seu nome completo (Nome e Sobrenome).", // NOVO
         auth_email_placeholder: "Seu E-mail",
+        auth_error_email_invalid: "Por favor, insira um e-mail válido.", // NOVO
         auth_phone_placeholder: "Telefone (ex: +55...)",
+        auth_error_phone_invalid: "O telefone deve estar em formato válido (ex: +55 11 99999-9999).", // NOVO
         auth_switch_to_login: "Já tem backup? Restaurar.",
         auth_switch_to_register: "Novo? Criar conta.",
         auth_welcome: "Bem-vindo!",
         auth_welcome_subtitle: "Seus dados de acesso geram sua chave única.",
         auth_btn_restore: "Restaurar da Nuvem",
         auth_btn_login_local: "Entrar Localmente",
+        
         settings_backup_cloud: "Backup na Nuvem",
         settings_backup_cloud_desc: "Requer configuração Firebase.",
         settings_sync_devices: "Restaurar da Nuvem",
@@ -339,6 +346,7 @@ const FALLBACK_I18N = {
         settings_language: "Idioma",
         
         // Alerta
+        app_menu_select: "Escolha um MiniApp", // NOVO
         alert_i18n_fallback_title: "Tradução Incompleta",
         alert_i18n_fallback_body: "Usando Português (PT-BR) como recurso de segurança. Atualize o idioma no menu de Configurações."
     },
@@ -353,7 +361,7 @@ const FALLBACK_I18N = {
         menu_settings: "Settings",
         menu_alerts: "Alerts",
         
-        // NOVO - Bem-Vindo
+        // Ecrã Boas-Vindas
         menu_welcome: "Welcome",
         welcome_title: "Welcome!",
         welcome_subtitle: "To save your progress and sync data, please complete your unique registration.",
@@ -376,23 +384,30 @@ const FALLBACK_I18N = {
         settings_title: "Settings",
         section_profile: "Profile",
         action_open_data_panel: "Data Panel",
+        data_panel_subtitle: "Manage user information", // NOVO SUBTÍTULO
         section_backup: "Backup & Sync",
         section_system: "System",
         section_admin: "Admin & Dev Area",
         section_accessibility: "Accessibility",
         settings_profile_visitor: "Visitor",
         action_manage_account: "Manage Account",
+        
+        // Autenticação
         auth_login: "Login",
         auth_register: "Register",
         auth_name_placeholder: "Full Name",
+        auth_error_name_invalid: "Please enter your full name (First and Last name).", // NOVO
         auth_email_placeholder: "Your Email",
+        auth_error_email_invalid: "Please enter a valid email address.", // NOVO
         auth_phone_placeholder: "Phone (e.g., +1...)",
+        auth_error_phone_invalid: "Phone must be in a valid format (e.g., +1 555 123 4567).", // NOVO
         auth_switch_to_login: "Have backup? Restore.",
         auth_switch_to_register: "New? Create account.",
         auth_welcome: "Welcome!",
         auth_welcome_subtitle: "Your credentials create your unique key.",
         auth_btn_restore: "Restore from Cloud",
         auth_btn_login_local: "Login Locally",
+        
         settings_backup_cloud: "Cloud Backup",
         settings_backup_cloud_desc: "Requires Firebase config.",
         settings_sync_devices: "Restore from Cloud",
@@ -417,6 +432,7 @@ const FALLBACK_I18N = {
         settings_language: "Language",
         
         // Alerta
+        app_menu_select: "Choose a MiniApp", // NOVO
         alert_i18n_fallback_title: "Incomplete Translation",
         alert_i18n_fallback_body: "Using Portuguese (PT-BR) as a safety fallback. Update language in Settings menu."
     }
@@ -657,16 +673,16 @@ const AuthScreen = ({ onLoginSuccess, goBack, t, currentLang }) => {
                 <form onSubmit={handleSubmit} className="w-full space-y-4">
                     {isRegistering && (
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500 ml-1 uppercase">Nome Completo</label>
+                            <label className="text-xs font-bold text-slate-500 ml-1 uppercase">{t('auth_name_placeholder')}</label>
                             <input type="text" placeholder={t('auth_name_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}/>
                         </div>
                     )}
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">E-mail</label>
+                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">{t('auth_email_placeholder')}</label>
                         <input type="email" placeholder={t('auth_email_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}/>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">Telefone</label>
+                        <label className="text-xs font-bold text-slate-500 ml-1 uppercase">{t('auth_phone_placeholder')}</label>
                         <input type="tel" placeholder={t('auth_phone_placeholder')} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 outline-none" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}/>
                     </div>
                     <button type="submit" disabled={loading} className={`w-full py-4 bg-purple-600 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-purple-700 transition-all mt-6 flex justify-center items-center ${loading ? 'opacity-70' : ''}`}>
@@ -781,7 +797,7 @@ const SettingsScreen = ({ userData, onAuth, onOpenProfile, goBack, t, currentLan
                     <ConfigItem 
                         icon="dashboard" 
                         title={t('action_open_data_panel')} 
-                        subtitle="Gerenciar informações do usuário"
+                        subtitle={t('data_panel_subtitle')}
                         color="purple" 
                         onClick={onOpenProfile} 
                         t={t} 
@@ -862,6 +878,7 @@ function MiniAppScreen({ config, goBack, t }) {
                     };
                 } else if (config.id === 'alerts_center') {
                     console.warn("Falha ao buscar MiniApp de Alertas via CDN.", e);
+                    // Não há fallback local para alerts, então apenas mostra o loader.
                 }
             }
             setLoading(false);
@@ -1001,7 +1018,7 @@ function App() {
             return (
                 <div className="animate-fade-in-up text-center w-full">
                     <h1 className="text-3xl font-extrabold mb-2">{t("app_title_portfolio")}</h1>
-                    <p className="text-slate-500 mb-8">Escolha um MiniApp</p>
+                    <p className="text-slate-500 mb-8">{t("app_menu_select")}</p>
                     <div className="flex flex-wrap justify-center gap-6 max-w-3xl mx-auto">
                         {MENU.map(item => <AppCard key={item.id} item={item} t={t} onClick={() => item.action(item)}/>)}
                     </div>
