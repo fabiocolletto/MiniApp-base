@@ -36,7 +36,7 @@
                     animation: { 
                         "fade-in-up": "fadeInUp .3s ease-out forwards",
                         "slide-in-left": "slideInLeft 0.5s ease-out forwards",
-                        "slide-out-left": "slideOutLeft 0.5s ease-in forwards" // Removido o delay fixo
+                        "slide-out-left": "slideOutLeft 0.5s ease-in forwards"
                     },
                     keyframes: {
                         fadeInUp: {
@@ -270,14 +270,23 @@ const FALLBACK_I18N = {
         back_to: "Voltar",
         coming_soon: "Em breve",
         
-        // Menu Principal - ATUALIZADO
+        // Menu Principal
         menu_education: "Educação",
         menu_settings: "Configurações",
-        menu_alerts: "Avisos", // Novo
+        menu_alerts: "Avisos",
+        
+        // NOVO - Bem-Vindo
+        menu_welcome: "Boas-Vindas",
+        welcome_title: "Seja Bem-Vindo(a)!",
+        welcome_subtitle: "Para salvar seu progresso e sincronizar dados, faça seu cadastro único.",
+        welcome_action_register: "Fazer Cadastro / Login",
+        welcome_action_continue: "Continuar como Visitante",
+        
+        // Apps
         edu_student_profile: "Matrícula",
         edu_simulados: "Simulados",
         
-        // Avisos - NOVAS CHAVES
+        // Avisos
         alerts_title: "Central de Avisos",
         alerts_none: "Nenhum aviso novo. Tudo lido!",
         alerts_read: "Marcado como Lido",
@@ -329,7 +338,7 @@ const FALLBACK_I18N = {
         settings_dark_mode: "Modo Escuro",
         settings_language: "Idioma",
         
-        // NOVA CHAVE PARA O ALERTA
+        // Alerta
         alert_i18n_fallback_title: "Tradução Incompleta",
         alert_i18n_fallback_body: "Usando Português (PT-BR) como recurso de segurança. Atualize o idioma no menu de Configurações."
     },
@@ -339,14 +348,23 @@ const FALLBACK_I18N = {
         back_to: "Back",
         coming_soon: "Coming Soon",
         
-        // Menu Principal - ATUALIZADO
+        // Menu Principal
         menu_education: "Education",
         menu_settings: "Settings",
-        menu_alerts: "Alerts", // Novo
+        menu_alerts: "Alerts",
+        
+        // NOVO - Bem-Vindo
+        menu_welcome: "Welcome",
+        welcome_title: "Welcome!",
+        welcome_subtitle: "To save your progress and sync data, please complete your unique registration.",
+        welcome_action_register: "Register / Login",
+        welcome_action_continue: "Continue as Guest",
+
+        // Apps
         edu_student_profile: "Registration",
         edu_simulados: "Simulations",
         
-        // Avisos - NOVAS CHAVES
+        // Avisos
         alerts_title: "Alert Center",
         alerts_none: "No new alerts. All clear!",
         alerts_read: "Marked as Read",
@@ -398,7 +416,7 @@ const FALLBACK_I18N = {
         settings_dark_mode: "Dark Mode",
         settings_language: "Language",
         
-        // NOVA CHAVE PARA O ALERTA
+        // Alerta
         alert_i18n_fallback_title: "Incomplete Translation",
         alert_i18n_fallback_body: "Using Portuguese (PT-BR) as a safety fallback. Update language in Settings menu."
     }
@@ -420,7 +438,7 @@ const COLOR = {
 
 const { useState, useEffect, useRef } = React;
 
-/* --- COMPONENTES --- */
+/* --- COMPONENTES UI REUTILIZÁVEIS --- */
 
 const BackButton = ({ onClick, color="indigo", title }) => {
     const c = COLOR[color] || COLOR.indigo;
@@ -522,6 +540,36 @@ function AppCard({ item, t, onClick }) {
         </div>
     );
 }
+
+// NOVO COMPONENTE: Ecrã de Boas-Vindas
+const WelcomeScreen = ({ onRegister, onContinue, t }) => {
+    return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-white rounded-2xl border border-slate-100 animate-fade-in-up max-w-lg mx-auto">
+            <div className="h-24 w-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-rounded text-6xl text-indigo-600">waving_hand</span>
+            </div>
+            <h1 className="text-3xl font-extrabold text-indigo-900 mb-2">{t('welcome_title')}</h1>
+            <p className="text-slate-600 mb-8">{t('welcome_subtitle')}</p>
+
+            <div className="w-full space-y-3">
+                <button 
+                    onClick={onRegister}
+                    className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-base shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex justify-center items-center"
+                >
+                    <span className="material-symbols-rounded text-xl mr-2">person_add</span>
+                    {t('welcome_action_register')}
+                </button>
+                <button 
+                    onClick={onContinue}
+                    className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-medium text-base hover:bg-slate-200 active:scale-95 transition-all flex justify-center items-center"
+                >
+                    <span className="material-symbols-rounded text-xl mr-2">visibility</span>
+                    {t('welcome_action_continue')}
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const AuthScreen = ({ onLoginSuccess, goBack, t, currentLang }) => {
     const [isRegistering, setIsRegistering] = useState(true);
@@ -803,18 +851,17 @@ function MiniAppScreen({ config, goBack, t }) {
                 };
             } catch(e) {
                 // Se o fetch falhar, usamos a URL local como fallback para desenvolvimento
-                if (config.id === 'profile_viewer') {
+                if (config.id === 'profile_viewer' && config.url.includes("user-panel.html")) {
                     console.warn("Falha ao buscar MiniApp de Perfil via CDN. Usando src direto como fallback (para desenvolvimento local).", e);
-                    iframeRef.current.src = config.url;
+                    // O caminho abaixo só funciona se o MiniApp de perfil estiver na mesma pasta ou subpasta relativa ao index.html
+                    iframeRef.current.src = "src/components/user-panel.html"; 
                     iframeRef.current.onload = () => {
                          if (iframeRef.current.contentWindow) {
                             iframeRef.current.contentWindow.__app_lang = t.getLanguage();
                         }
                     };
                 } else if (config.id === 'alerts_center') {
-                    // Falha no MiniApp de Alertas
                     console.warn("Falha ao buscar MiniApp de Alertas via CDN.", e);
-                    // Aqui pode-se injetar um MiniApp de erro, mas por enquanto mantemos o loading
                 }
             }
             setLoading(false);
@@ -836,7 +883,7 @@ function MiniAppScreen({ config, goBack, t }) {
 }
 
 function App() {
-    const [view, setView] = useState("home");
+    const [view, setView] = useState("loading"); // Começa em loading
     const [activeApp, setActiveApp] = useState(null);
     const [userData, setUserData] = useState(null);
     const [lang, setLang] = useState("pt-BR");
@@ -848,8 +895,6 @@ function App() {
         const repoVal = i18nData[lang]?.[key];
         const localVal = FALLBACK_I18N[lang]?.[key];
         
-        // Se a chave não for encontrada no repositório NEM no local, usamos PT-BR.
-        // O alerta será controlado pelo useEffect, não aqui, para evitar loops.
         if (!repoVal && !localVal && FALLBACK_I18N['pt-BR'][key]) {
             return FALLBACK_I18N['pt-BR'][key];
         }
@@ -862,7 +907,7 @@ function App() {
     const handleLogin = async (user) => {
         await db.user.put(user);
         setUserData(user);
-        setView("settings");
+        setView("home"); // Volta para home após o login
     };
 
     const handleOpenProfile = () => {
@@ -894,7 +939,13 @@ function App() {
         const init = async () => {
             await window.initializeFirebase();
             const users = await db.user.toArray();
-            if(users.length) setUserData(users[0]);
+            
+            if(users.length) {
+                 setUserData(users[0]);
+                 setView("home"); // Vai direto para Home se logado
+            } else {
+                 setView("welcome"); // Vai para o Welcome se não logado
+            }
 
             // 1. Fetch das traduções
             let ptData = {};
@@ -912,16 +963,12 @@ function App() {
                 if (isMounted) {
                     const enKeys = Object.keys(enData).length;
                     
-                    // Condição para alertar: Idioma não é PT-BR E o arquivo remoto falhou (ou tem poucas chaves)
                     if (lang !== 'pt-BR' && enKeys < 10) { 
-                         console.warn("I18n: Arquivo remoto incompleto ou falhou. Alerta de fallback ativado.");
                          setShowLanguageAlert(true);
-                         // Forçar a desativação após 10 segundos para debug
                          setTimeout(() => setShowLanguageAlert(false), 10000);
                     }
                 }
             } catch (e) { 
-                console.warn("Falha no fetch I18n. Alerta de fallback ativado.", e); 
                 if (isMounted && lang !== 'pt-BR') {
                     setShowLanguageAlert(true); 
                     setTimeout(() => setShowLanguageAlert(false), 10000);
@@ -931,18 +978,27 @@ function App() {
         init();
         
         return () => { isMounted = false; };
-    }, [lang]); // Depende do lang para re-avaliar o alerta após a mudança de idioma
+    }, [lang]);
 
     const MENU = [
-        {id:"alerts", titleKey:"menu_alerts", icon:"notifications", color:"rose", action:handleOpenAlerts}, // NOVO MENU ITEM
+        {id:"alerts", titleKey:"menu_alerts", icon:"notifications", color:"rose", action:handleOpenAlerts},
         {id:"settings", titleKey:"menu_settings", icon:"settings", color:"indigo", action:()=>{ setView("settings"); }},
         {id:"student_reg", titleKey:"edu_student_profile", icon:"person_add", color:"emerald", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}},
         {id:"simulados", titleKey:"edu_simulados", icon:"edit_note", color:"amber", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}}
     ];
 
-    return (
-        <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center flex-1 h-full">
-            {view === "home" && (
+    // Renderização Condicional
+    const renderContent = () => {
+        if (view === "loading") {
+            return <div className="animate-fade-in-up text-center w-full text-slate-500">A iniciar o sistema...</div>;
+        }
+        
+        if (view === "welcome") {
+            return <WelcomeScreen onRegister={() => setView("auth")} onContinue={() => setView("home")} t={t} />;
+        }
+        
+        if (view === "home") {
+            return (
                 <div className="animate-fade-in-up text-center w-full">
                     <h1 className="text-3xl font-extrabold mb-2">{t("app_title_portfolio")}</h1>
                     <p className="text-slate-500 mb-8">Escolha um MiniApp</p>
@@ -950,13 +1006,29 @@ function App() {
                         {MENU.map(item => <AppCard key={item.id} item={item} t={t} onClick={() => item.action(item)}/>)}
                     </div>
                 </div>
-            )}
-            {view === "settings" && <SettingsScreen userData={userData} onAuth={() => setView("auth")} onOpenProfile={handleOpenProfile} goBack={() => setView("home")} t={t} currentLang={lang} onOpenLanguage={() => setView("language_select")} />}
-            {view === "auth" && <AuthScreen onLoginSuccess={handleLogin} goBack={() => setView("settings")} t={t} currentLang={lang} />}
-            {view === "language_select" && <LanguageSelectionScreen goBack={() => setView("settings")} currentLang={lang} setLang={setLang} t={t} />}
-            {view === "miniapp" && activeApp && <MiniAppScreen config={activeApp} goBack={() => setView("home")} t={t}/>}
+            );
+        }
+
+        if (view === "settings") {
+            return <SettingsScreen userData={userData} onAuth={() => setView("auth")} onOpenProfile={handleOpenProfile} goBack={() => setView("home")} t={t} currentLang={lang} onOpenLanguage={() => setView("language_select")} />;
+        }
+        if (view === "auth") {
+            return <AuthScreen onLoginSuccess={handleLogin} goBack={() => setView("settings")} t={t} currentLang={lang} />;
+        }
+        if (view === "language_select") {
+            return <LanguageSelectionScreen goBack={() => setView("settings")} currentLang={lang} setLang={setLang} t={t} />;
+        }
+        if (view === "miniapp" && activeApp) {
+            return <MiniAppScreen config={activeApp} goBack={() => setView("home")} t={t}/>;
+        }
+
+        return <div className="text-center text-red-500">Erro: Rota não encontrada.</div>;
+    }
+
+    return (
+        <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center flex-1 h-full">
+            {renderContent()}
             
-            {/* NOVO: Alerta de Fallback de Idioma */}
             <LanguageFallbackAlert 
                 isVisible={showLanguageAlert} 
                 t={t} 
