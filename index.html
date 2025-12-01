@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniApps - Local & Cloud Backup</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <!-- Dexie.js para Banco de Dados Local -->
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
@@ -28,12 +28,12 @@
             color: #0f172a;
             min-height: 100vh;
         }
-        
+
         .dark body {
-            background-color: #1f2937; 
-            color: #f3f4f6; 
+            background-color: #1f2937;
+            color: #f3f4f6;
         }
-        
+
         .card-base {
             position: relative;
             border-radius: 1rem;
@@ -43,42 +43,42 @@
             border-width: 1px;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             width: 7rem;
             height: 7rem;
-            padding: 0.5rem; 
+            padding: 0.5rem;
         }
-        
+
         @media (min-width: 768px) {
             .card-base {
                 width: 8rem;
                 height: 8rem;
             }
         }
-        
+
         .card-base:hover {
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             transform: translateY(-0.25rem);
         }
-        
-        .app-grid-base-flexible { 
-            display: grid; 
+
+        .app-grid-base-flexible {
+            display: grid;
             gap: 1rem;
-            width: 100%; 
+            width: 100%;
             max-width: 1008px;
-            grid-template-columns: repeat(auto-fit, 8rem); 
+            grid-template-columns: repeat(auto-fit, 8rem);
             justify-content: center;
             justify-items: center;
-            padding: 0; 
+            padding: 0;
         }
 
         @media (min-width: 768px) {
              .app-grid-base-flexible {
-                gap: 4rem; 
-                grid-template-columns: repeat(auto-fit, 8rem); 
+                gap: 4rem;
+                grid-template-columns: repeat(auto-fit, 8rem);
             }
         }
-        
+
         .chip-button {
             border-width: 1px;
             transition: all 0.3s ease-in-out;
@@ -90,12 +90,12 @@
         }
 
         .chip-button:hover {
-            box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); 
+            box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
         .dark .chip-button.no-shadow:hover {
              box-shadow: none !important;
         }
-        
+
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -103,16 +103,16 @@
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        
+
         .accordion-content {
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
-        
+
         .menu-column-flow {
             flex-direction: column;
         }
-        
+
         /* NOVO: Estilo base para todas as telas (replaces modal container) */
         .screen-container {
             width: 100%;
@@ -125,6 +125,45 @@
             position: relative;
             padding-top: 5rem; /* Espaço para o botão voltar */
         }
+        
+        /* Tooltip para itens inativos */
+        .inactive-tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        .inactive-tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: #4b5563; /* Gray-600 */
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 10;
+            bottom: 100%; /* Position above the element */
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        .inactive-tooltip-container:hover .inactive-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Novo estilo para o campo de configuração inativo com toggle */
+        .inactive-field {
+            background-color: #f9fafb !important; /* slate-50 */
+            border-color: #e5e7eb !important; /* slate-200 */
+            color: #9ca3af !important; /* slate-400 */
+            pointer-events: none;
+            cursor: not-allowed;
+            box-shadow: none !important;
+        }
+        
     </style>
 </head>
 <body class="antialiased hide-scrollbar">
@@ -138,23 +177,23 @@
     <script>
         var db = new Dexie("MiniAppsDB");
         db.version(2).stores({
-            user: 'id, name, phone, school, email, createdAt', 
+            user: 'id, name, phone, school, email, createdAt',
             logs: '++id, date, action, details',
-            settings: 'key, value' 
+            settings: 'key, value'
         });
 
         window.prepareMiniAppHtml = function(htmlContent, appId, basePath) {
             let cleanHtml = htmlContent
-                .replace(/<header[\s\S]*?<\/header>/gi, '') 
-                .replace(/data-theme="dark"/g, 'data-theme="light"'); 
+                .replace(/<header[\s\S]*?<\/header>/gi, '')
+                .replace(/data-theme="dark"/g, 'data-theme="light"');
 
             var scriptTagOpen = '<script>';
-            var scriptTagClose = '<' + '/script>'; 
+            var scriptTagClose = '<' + '/script>';
             var styleTagOpen = '<style>';
             var styleTagClose = '<' + '/style>';
             var configScript = scriptTagOpen + 'window.__app_id = "' + appId + '";' + scriptTagClose;
             var baseTag = '<base href="' + basePath + '">';
-            var styleCleanContent = 'html, body {padding-bottom: 120px !important; background: transparent !important;} main {box-shadow: none !important; border: none !important; background-color: transparent !important; padding: 1.5rem !important; margin: 0 !important;}';
+            var styleCleanContent = 'html, body {padding-bottom: 1rem !important; background: transparent !important;} main {box-shadow: none !important; border: none !important; background-color: transparent !important; padding: 1.5rem !important; margin: 0 !important;}';
             var styleClean = styleTagOpen + styleCleanContent + styleTagClose;
 
             if (cleanHtml.indexOf('<head>') !== -1) {
@@ -169,157 +208,266 @@
     <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
-    const APP_ID = 'miniapps-app-id'; 
+    const APP_ID = 'miniapps-app-id';
     const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcxdROcnZID-bkrmhZ7kPBz_2fcVWv8JQBsWiYIlz38n0IyRjHrrvz7YAX9iKhHCQopQ/exec";
     
+    // CORREÇÃO: Definindo a variável JavaScript/React INACTIVE_FIELD_STYLE globalmente
+    const INACTIVE_FIELD_STYLE = 'inactive-field border-slate-200';
+
     // --- DEFINIÇÕES DE DADOS HIERÁRQUICOS SIMPLIFICADAS PARA SUB-MENU ---
-    
+
     const STUDENT_MENU_ITEMS = [
-        { id: 'student-profile', title: "Perfil", action: 'placeholder', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts" },
-        { id: 'simulados', title: "Simulados", action: 'placeholder', modalId: 'simulados', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note" },
-        { id: 'provas', title: "Provas", action: 'placeholder', color: "emerald", icon: "assignment" }, 
-        { id: 'agenda-aluno', title: "Agenda", action: 'placeholder', color: "emerald", icon: "event" },
+        { id: 'student-profile', title: "Perfil", action: 'modal', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "manage_accounts", parentTitle: "Aluno" },
+        { id: 'simulados', title: "Simulados", action: 'modal', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "emerald", icon: "edit_note", parentTitle: "Aluno" },
+        { id: 'provas', title: "Provas", action: 'placeholder', color: "emerald", icon: "assignment", parentTitle: "Aluno" },
+        { id: 'agenda-aluno', title: "Agenda", action: 'placeholder', color: "emerald", icon: "event", parentTitle: "Aluno" },
     ];
-    
+
     const EDUCATION_CATEGORIES = [
-        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person", submenu: STUDENT_MENU_ITEMS },
-        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", action: 'placeholder' }, 
-        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", action: 'placeholder' }, 
-        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", action: 'placeholder' }, 
+        { id: 'student', title: "Alunos", view: 'student-menu', color: "sky", icon: "person", submenu: STUDENT_MENU_ITEMS, parentTitle: "Educação" },
+        { id: 'responsible', title: "Responsáveis", view: 'responsible-menu', color: "violet", icon: "diversity_3", action: 'placeholder', parentTitle: "Educação" },
+        { id: 'tutors', title: "Tutores", view: 'tutor-menu', color: "amber", icon: "supervisor_account", action: 'placeholder', parentTitle: "Educação" },
+        { id: 'institution', title: "Instituições", view: 'institution-menu', color: "purple", icon: "apartment", action: 'placeholder', parentTitle: "Educação" },
     ];
 
     const MAIN_MENU_PORTFOLIO = [
-        { id: 'menu-central', title: "Configurações", action: 'modal', modalId: 'central-menu-modal', color: "indigo", icon: "settings" },
-        { id: 'notifications', title: "Notificações", action: 'modal', modalId: 'alerts-panel', color: "amber", icon: "notifications" },
-        { id: 'education', title: "Educação", action: 'modal', modalId: 'education-menu-modal', color: "emerald", icon: "cast_for_education" },
-        { id: 'finance', title: "Financeiro", action: 'placeholder', color: "lime", icon: "account_balance" }, 
-        { id: 'health', title: "Saúde", action: 'placeholder', color: "sky", icon: "health_and_safety" }, 
-        { id: 'tasks', title: "Tarefas", action: 'placeholder', color: "amber", icon: "calendar_month" }, 
+        { id: 'menu-central', title: "Configurações", action: 'screen', screenId: 'settings', color: "indigo", icon: "settings" },
+        { id: 'notifications', title: "Notificações", action: 'screen', screenId: 'alerts', color: "amber", icon: "notifications" },
+        { id: 'education', title: "Educação", action: 'screen', screenId: 'education', color: "emerald", icon: "cast_for_education" },
+        { id: 'finance', title: "Financeiro", action: 'placeholder', color: "lime", icon: "account_balance" },
+        { id: 'health', title: "Saúde", action: 'placeholder', color: "sky", icon: "health_and_safety" },
+        { id: 'tasks', title: "Tarefas", action: 'placeholder', color: "amber", icon: "calendar_month" },
     ];
 
     const VIEW_MAP = {
         'portfolio': { title: "Portfólio", data: MAIN_MENU_PORTFOLIO },
         'education-categories': { title: "Educação", data: EDUCATION_CATEGORIES, parent: 'portfolio' },
-        'finance-menu': { title: "Finanças", data: [], parent: 'portfolio' }, 
-        'health-menu': { title: "Saúde", data: [], parent: 'portfolio' }, 
-        'tasks-menu': { title: "Tarefas", data: [], parent: 'portfolio' },
         'student-menu': { title: "Aluno", data: STUDENT_MENU_ITEMS, parent: 'education-categories' },
-    };
-    
-    const SUB_MENU_MAP = {
-        'portfolio-root': { title: 'Portfólio', items: MAIN_MENU_PORTFOLIO },
-        'education-categories': { title: 'Educação', items: EDUCATION_CATEGORIES, parentId: 'portfolio-root' },
-        'student-menu': { title: 'Aluno', items: STUDENT_MENU_ITEMS, parentId: 'education-categories' }
     };
 
     const AUTH_ITEM_CONFIG = {
-        id: 'auth', 
-        title: "Entrar/Cadastrar", 
-        action: 'modal', 
-        modalId: 'auth-modal',
-        color: "purple", 
-        icon: "lock_open" 
-    };
-    
-    const initializeDarkMode = () => {
-        return false;
+        id: 'auth',
+        title: "Entrar/Cadastrar",
+        action: 'screen',
+        screenId: 'auth',
+        color: "purple",
+        icon: "lock_open"
     };
 
 
     // --- COMPONENTES AUXILIARES ---
-    
-    // NOVO: Componente Botão Voltar (Usado em todas as novas telas)
-    const BackButton = ({ onClick, themeColor = "indigo", title = "Voltar" }) => {
-        const colorClasses = `border-${themeColor}-500 bg-${themeColor}-100 text-${themeColor}-600 hover:bg-${themeColor}-200`;
+
+    /**
+     * Componente Tooltip para itens inativos ('placeholder').
+     * @param {object} children - O elemento a ser envolvido.
+     * @param {boolean} show - Se a tooltip deve ser exibida.
+     * @param {string} message - Mensagem da tooltip.
+     */
+    const InactiveTooltip = ({ children, show, message = "Em breve" }) => {
+        if (!show) return children;
+
         return (
-            <button 
-                onClick={onClick} 
-                className={`absolute top-4 left-4 z-10 h-10 w-10 rounded-lg shadow-md border ${colorClasses} flex items-center justify-center transition-transform duration-200 hover:scale-110`}
-                title={title}
+            <div className="inactive-tooltip-container">
+                {children}
+                <span className="inactive-tooltip">
+                    {message}
+                </span>
+            </div>
+        );
+    };
+
+    /**
+     * Componente Botão Voltar (Melhorado com título dinâmico).
+     * @param {function} onClick - Função a ser chamada ao clicar.
+     * @param {string} themeColor - Cor de destaque.
+     * @param {string} previousTitle - Título da tela anterior.
+     */
+    const BackButton = ({ onClick, themeColor = "indigo", previousTitle = "Portfólio" }) => {
+        const colorClasses = `border-${themeColor}-500 bg-${themeColor}-100 text-${themeColor}-600 hover:bg-${themeColor}-200`;
+        const titleText = `Voltar para ${previousTitle}`;
+
+        return (
+            <button
+                onClick={onClick}
+                className={`absolute top-4 left-4 z-20 h-10 w-10 rounded-lg shadow-md border ${colorClasses} flex items-center justify-center transition-transform duration-200 hover:scale-110`}
+                title={titleText}
+                aria-label={titleText}
             >
                 <span className="material-symbols-rounded text-xl">arrow_back</span>
             </button>
         );
     };
 
+    /**
+     * Componente Toggle Switch acessível.
+     * @param {boolean} isChecked - Estado atual (ligado/desligado).
+     * @param {function} onChange - Função de callback ao mudar o estado.
+     * @param {string} color - Cor de destaque.
+     */
+    const ToggleSwitch = ({ isChecked, onChange, color }) => {
+        const activeColor = color || 'indigo';
+        const toggleBg = isChecked ? `bg-${activeColor}-400` : 'bg-slate-400';
+        const togglePos = isChecked ? 'translate-x-4' : 'translate-x-0.5';
 
-    const SectionTitle = ({ icon, title, color, isSubMenu = false, onBack }) => (
-        <div className={`px-2 flex items-center mt-3 first:mt-0 ${isSubMenu ? 'pb-2 border-b border-indigo-200 mb-2' : ''}`}>
-            {isSubMenu && (
-                <button onClick={onBack} className="mr-2 p-1 rounded-full hover:bg-indigo-100 transition">
-                     <span className={`material-symbols-rounded text-lg text-${color}-600`}>arrow_back</span>
-                </button>
-            )}
+        return (
+            <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={onChange}
+                    className="sr-only peer"
+                    role="switch"
+                    aria-checked={isChecked}
+                />
+                <div className={`w-8 h-4 rounded-full transition-colors ${toggleBg} peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-${activeColor}-300`}>
+                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-200 ${togglePos}`}></div>
+                </div>
+            </label>
+        );
+    };
+
+    /**
+     * Componente padronizado para um Item de Configuração (Botão ou Campo de Alternância).
+     * Garante largura e padding uniformes.
+     * * @param {string} icon - Ícone do Material Symbols.
+     * @param {string} title - Título do item.
+     * @param {string} color - Cor de destaque (ex: 'amber', 'fuchsia').
+     * @param {boolean} isDisabled - Se o item está desativado (usa estilo 'inactive-field').
+     * @param {function} onClick - Função de clique (se for um botão).
+     * @param {React.ReactNode} children - O elemento do lado direito (ToggleSwitch, Indicador, etc.).
+     * @param {string} extraClasses - Classes CSS adicionais para o contêiner.
+     */
+    const ConfigItem = ({ icon, title, color, isDisabled, onClick, children, extraClasses = '' }) => {
+        const visualColor = color || 'indigo';
+        
+        const isInteractive = !!onClick; // É um botão se tiver onClick
+        const isPlaceholder = isDisabled && !isInteractive; // É apenas um campo de status/toggle inativo
+
+        let containerClasses;
+        let iconClasses;
+        let textClasses;
+        let wrapperProps = {};
+        
+        const baseClasses = "flex items-center justify-between w-full px-4 py-2.5 rounded-xl transition-all shadow-sm";
+
+        if (isPlaceholder) {
+            // Estilo para itens inativos (cinza, sem hover, sem clique)
+            containerClasses = `${baseClasses} ${INACTIVE_FIELD_STYLE} cursor-not-allowed ${extraClasses}`;
+            iconClasses = 'text-slate-500';
+            textClasses = 'text-slate-700';
+            wrapperProps = { 
+                role: 'status', 
+                'aria-disabled': 'true' 
+            }; 
+        } else if (isInteractive) {
+             // Estilo para botões ativos (com hover e clique)
+            containerClasses = `${baseClasses} bg-${visualColor}-50 border border-${visualColor}-300 text-${visualColor}-700 hover:bg-${visualColor}-100 hover:border-${visualColor}-400 cursor-pointer ${extraClasses}`;
+            iconClasses = `text-${visualColor}-600`;
+            textClasses = `text-${visualColor}-700`;
+            wrapperProps = { 
+                onClick: isDisabled ? () => {} : onClick, 
+                role: 'button',
+                disabled: isDisabled 
+            };
+        } else {
+             // Estilo para campos de alternância ATIVOS (sem hover de botão, mas com interação no toggle)
+            containerClasses = `${baseClasses} bg-${visualColor}-50 border border-${visualColor}-200 text-${visualColor}-700 ${extraClasses}`;
+            iconClasses = `text-${visualColor}-600`;
+            textClasses = `text-${visualColor}-700`;
+            wrapperProps = { 
+                role: 'group' 
+            }; 
+        }
+
+        const ItemContent = (
+             <div className={containerClasses} {...wrapperProps}>
+                {/* O primeiro div usa flex-grow para empurrar o conteúdo da direita */}
+                <div className="flex items-center flex-grow"> 
+                    <span className={`material-symbols-rounded mr-3 ${iconClasses}`}>{icon}</span>
+                    <span className={`font-semibold text-sm ${textClasses}`}>{title}</span>
+                </div>
+                {/* O conteúdo da direita (toggle/indicador) está alinhado automaticamente à direita */}
+                {children}
+            </div>
+        );
+        
+        // Aplica InactiveTooltip apenas se for um item inativo (placeholder)
+        return isPlaceholder ? (
+            <InactiveTooltip show={true} message="Em breve">
+                {ItemContent}
+            </InactiveTooltip>
+        ) : ItemContent;
+    };
+
+
+    const SectionTitle = ({ icon, title, color }) => (
+        // ALTERADO: Removido px-2 e usado pl-0 para alinhar o título com o padding do fieldset (p-4)
+        <legend className={`flex items-center mt-3 first:mt-0 mb-3 pl-0`}>
             <span className={`material-symbols-rounded text-lg mr-2 text-${color}-600`}>{icon}</span>
             <span className={`text-[11px] font-bold text-${color}-600 uppercase tracking-wider`}>{title}</span>
-        </div>
+        </legend>
     );
-    
+
     const RenderNavButton = ({ item, color, onClickOverride }) => {
         const isLogicallyInactive = item.action === 'placeholder';
-        const shouldShowInactiveStyle = isLogicallyInactive; 
-        
-        const isDisabled = isLogicallyInactive; 
-        
+        const shouldShowInactiveStyle = isLogicallyInactive;
+
+        const isDisabled = isLogicallyInactive;
+
         const themeColor = item.color || color;
         const visualColor = shouldShowInactiveStyle ? 'slate' : themeColor;
-        
+
         const INACTIVE_CHIP_CLASS = `
-            bg-slate-100 border-slate-300 text-slate-500 
+            bg-slate-100 border-slate-300 text-slate-500
             hover:bg-slate-100 hover:border-slate-400
         `;
-        
+
         const ACTIVE_CHIP_CLASS = (c) => `
-            chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all 
-            bg-${c}-50 border border-${c}-200 text-${c}-700 
+            chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all
+            bg-${c}-50 border border-${c}-200 text-${c}-700
             hover:bg-${c}-100 hover:border-${c}-300 hover:translate-x-1
         `;
 
         const classes = shouldShowInactiveStyle ? INACTIVE_CHIP_CLASS : ACTIVE_CHIP_CLASS(visualColor);
-        
-        const isSubMenuLink = item.action === 'submenu' || (item.submenu && item.submenu.length > 0);
-        
-        const handleClick = onClickOverride || (isDisabled ? () => {} : undefined); 
-        
-        const iconColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-500' : `text-${visualColor}-600`; 
+
+        const isSubMenuLink = item.action === 'submenu' || (item.submenu && item.submenu.length > 0) || item.view;
+
+        const handleClick = onClickOverride || (isDisabled ? () => {} : undefined);
+
+        const iconColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-500' : `text-${visualColor}-600`;
         const textColorClass = isDisabled && shouldShowInactiveStyle ? 'text-slate-700' : 'text-current';
-        
-        const opacityClass = '';
 
         return (
-            <button
-                onClick={handleClick}
-                className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${classes} ${opacityClass} ${isDisabled ? 'cursor-not-allowed' : ''}`}
-                disabled={isDisabled && !onClickOverride}
-            >
-                <div className="flex items-center">
-                    <span className={`material-symbols-rounded text-xl mr-3 ${iconColorClass}`}>{item.icon}</span>
-                    <span className={`font-semibold text-sm ${textColorClass} text-left`}>{item.title}</span>
-                </div>
-                {isSubMenuLink ? (
-                    <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>chevron_right</span>
-                ) : (
-                    <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>launch</span>
-                )}
-            </button>
+            <InactiveTooltip show={isDisabled} message="Em breve">
+                <button
+                    onClick={handleClick}
+                    className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${classes} ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                    disabled={isDisabled && !onClickOverride}
+                >
+                    <div className="flex items-center">
+                        <span className={`material-symbols-rounded text-xl mr-3 ${iconColorClass}`}>{item.icon}</span>
+                        <span className={`font-semibold text-sm ${textColorClass} text-left`}>{item.title}</span>
+                    </div>
+                    {isSubMenuLink ? (
+                        <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>chevron_right</span>
+                    ) : (
+                        <span className={`material-symbols-rounded text-base ${isDisabled && shouldShowInactiveStyle ? 'text-slate-400' : `text-${visualColor}-500`}`}>launch</span>
+                    )}
+                </button>
+            </InactiveTooltip>
         );
     };
 
     // --- CARTÃO PRINCIPAL DA TELA DE APPS ---
-    // MOVIDO PARA CIMA para ser acessível por RenderedView e EducationScreen
     const AppCard = ({ item, onClick }) => {
-        const isInactiveModeActive = true;
-        
         const isLogicallyInactive = item.action === 'placeholder';
-        const shouldShowInactiveStyle = isLogicallyInactive && isInactiveModeActive;
-        
+        const shouldShowInactiveStyle = isLogicallyInactive;
+
         // Determina a cor visual (slate se modo inativo e for placeholder, senão usa a cor do item)
         const visualColor = shouldShowInactiveStyle ? 'slate' : item.color;
-        
-        // --- REGRA GERAL DE INATIVIDADE ---
-        const opacity = ''; 
+
         const pointerEvents = isLogicallyInactive ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer';
-        
+
         // Classes de cor baseadas na visualColor
         const colorClass = `border-${visualColor}-500 bg-${visualColor}-500/20`;
         const iconColorClass = `text-${visualColor}-500`;
@@ -327,130 +475,143 @@
 
         // Se inativo, o clickHandler não faz nada.
         const clickHandler = isLogicallyInactive ? (e) => e.preventDefault() : onClick;
-        
-        return (
-            <div 
-                data-app-id={item.id} 
-                onClick={clickHandler} 
-                role="button" 
-                className={`card-base w-32 h-32 md:w-36 md:h-36 ${colorClass} ${opacity} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
+
+        const cardContent = (
+             <div
+                data-app-id={item.id}
+                onClick={clickHandler}
+                role="button"
+                className={`card-base w-32 h-32 md:w-36 md:h-36 ${colorClass} ${pointerEvents} hover:ring-2 hover:ring-${visualColor}-500 transition-all duration-300`}
             >
                 {/* ÍCONE GRANDE */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                    <span 
-                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }} 
+                    <span
+                        style={{ fontSize: '6.5rem', transform: 'translateY(-0.75rem)' }}
                         className={`material-symbols-rounded leading-none ${iconColorClass} opacity-30`}
                     >
                         {item.icon}
                     </span>
                 </div>
-                
+
                 {/* TÍTULO */}
                 <div className="relative z-10 flex flex-col justify-end h-full text-center pb-2">
                     <h2 className={`text-sm ${textColorClass} font-semibold leading-tight`}>{item.title}</h2>
                 </div>
             </div>
         );
+
+        return (
+            <InactiveTooltip show={isLogicallyInactive} message="Em breve">
+                {cardContent}
+            </InactiveTooltip>
+        );
     };
-    
+
     // RENOMEADO: EducationMenuModal -> EducationScreen (Para refletir a troca de telas)
-    const EducationScreen = ({ goToPortfolio, onAppClick }) => {
+    const EducationScreen = ({ goToPortfolio, onAppClick, goBack }) => {
         const [activeCategory, setActiveCategory] = useState(null);
         const modalRef = useRef(null);
-        
+
         const THEME_COLOR = "emerald";
-        
+
         const handleCategoryToggle = (id) => {
             setActiveCategory(activeCategory === id ? null : id);
         };
-        
+
         const handleSubItemClick = (item) => {
             if (item.action === "placeholder") {
                 return;
             }
-            onAppClick(item); 
+            onAppClick(item);
         };
-        
+
         const RenderSubMenuCards = ({ submenu }) => (
              <section className="app-grid-base-flexible mx-auto">
                 {submenu.map(item => (
-                    <AppCard 
+                    <AppCard
                         key={item.id}
-                        item={item} 
-                        onClick={() => handleSubItemClick(item)} 
+                        item={item}
+                        onClick={() => handleSubItemClick(item)}
                     />
                 ))}
             </section>
         );
 
-        const isInactiveModeActive = true; 
+        const INACTIVE_ACCORDION_CLASS = `
+            bg-slate-100 border-slate-300 text-slate-500
+            hover:bg-slate-100 cursor-not-allowed pointer-events-none
+            border border-slate-300
+        `;
 
         return (
-            <div ref={modalRef} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`}>
-                
-                <BackButton onClick={goToPortfolio} themeColor={THEME_COLOR} title="Voltar ao Portfólio" />
-                
+            <div ref={modalRef} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`} role="region" aria-label="Menu Educação">
+
+                <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
+
                 <div className="p-8 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
-                    
+
                     <div className="text-center mb-6">
                         <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Educação</h2>
                     </div>
-                    
-                    
+
+
                     <div className="space-y-4 flex-1">
                         {EDUCATION_CATEGORIES.map((category) => {
                             const isCategoryLogicallyInactive = category.action === 'placeholder';
                             const shouldCategoryShowInactiveStyle = isCategoryLogicallyInactive;
-                            
+
                             const categoryVisualColor = shouldCategoryShowInactiveStyle ? 'slate' : THEME_COLOR;
-                            
-                            const headerClasses = shouldCategoryShowInactiveStyle 
+
+                            const headerClasses = shouldCategoryShowInactiveStyle
                                 ? INACTIVE_ACCORDION_CLASS
-                                : (activeCategory === category.id 
-                                    ? `bg-${categoryVisualColor}-100 text-${categoryVisualColor}-800 border border-${categoryVisualColor}-200` 
+                                : (activeCategory === category.id
+                                    ? `bg-${categoryVisualColor}-100 text-${categoryVisualColor}-800 border border-${categoryVisualColor}-200`
                                     : `bg-${categoryVisualColor}-50 hover:bg-${categoryVisualColor}-100 text-${categoryVisualColor}-700 border border-${categoryVisualColor}-200`);
 
                             const categoryIconColor = `text-${categoryVisualColor}-600`;
                             const categoryTextColor = shouldCategoryShowInactiveStyle ? 'text-slate-700' : '';
-                            
+
                             const wrapperBorderClass = `border-${categoryVisualColor}-200`;
-                            
+
                             const isDisabled = isCategoryLogicallyInactive && !category.submenu;
-                            
-                            const INACTIVE_ACCORDION_CLASS = `
-                                bg-slate-100 border-slate-300 text-slate-500
-                                hover:bg-slate-100 cursor-not-allowed pointer-events-none
-                                border border-slate-300
-                            `;
+
+                            const contentHeight = activeCategory === category.id && category.submenu
+                                ? `${modalRef.current?.scrollHeight || 500}px`
+                                : '0px';
 
                             return (
-                                <div key={category.id} className={`w-full ${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
-                                    <button
-                                        onClick={() => handleCategoryToggle(category.id)}
-                                        className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
-                                        disabled={isDisabled}
-                                    >
-                                        <div className="flex items-center">
-                                            <span className={`material-symbols-rounded text-2xl mr-3 ${categoryIconColor}`}>{category.icon}</span>
-                                            <span className={`font-bold text-lg ${categoryTextColor}`}>{category.title}</span>
-                                        </div>
-                                        <span className={`material-symbols-rounded transition-transform duration-200 ${shouldCategoryShowInactiveStyle ? 'text-slate-500' : ''} ${activeCategory === category.id ? 'rotate-90' : 'rotate-0'}`}>chevron_right</span>
-                                    </button>
-
-                                    <div 
-                                        className="accordion-content transition-all duration-300" 
-                                        style={{ 
-                                            maxHeight: activeCategory === category.id && category.submenu ? `${modalRef.current?.scrollHeight || 500}px` : '0px', 
-                                            transition: `max-height ${activeCategory === category.id ? '0.5s' : '0.3s'} ease-in-out`
-                                        }}
-                                    >
-                                        {category.submenu && (
-                                            <div className={`p-4 border-t border-${THEME_COLOR}-100 bg-white`}>
-                                                <RenderSubMenuCards submenu={category.submenu} />
+                                <InactiveTooltip key={category.id} show={isDisabled} message="Em breve">
+                                    <div className={`w-full ${wrapperBorderClass} rounded-xl overflow-hidden shadow-sm`}>
+                                        <button
+                                            onClick={() => handleCategoryToggle(category.id)}
+                                            className={`w-full text-left p-4 flex items-center justify-between transition-colors duration-200 ${headerClasses}`}
+                                            disabled={isDisabled}
+                                            aria-expanded={activeCategory === category.id}
+                                            aria-controls={`collapse-${category.id}`}
+                                        >
+                                            <div className="flex items-center">
+                                                <span className={`material-symbols-rounded text-2xl mr-3 ${categoryIconColor}`}>{category.icon}</span>
+                                                <span className={`font-bold text-lg ${categoryTextColor}`}>{category.title}</span>
                                             </div>
-                                        )}
+                                            <span className={`material-symbols-rounded transition-transform duration-200 ${shouldCategoryShowInactiveStyle ? 'text-slate-500' : ''} ${activeCategory === category.id ? 'rotate-90' : 'rotate-0'}`}>chevron_right</span>
+                                        </button>
+
+                                        <div
+                                            id={`collapse-${category.id}`}
+                                            className="accordion-content transition-all duration-300"
+                                            style={{
+                                                maxHeight: contentHeight,
+                                                transition: `max-height ${activeCategory === category.id ? '0.5s' : '0.3s'} ease-in-out`
+                                            }}
+                                        >
+                                            {category.submenu && (
+                                                <div className={`p-4 border-t border-${THEME_COLOR}-100 bg-white`}>
+                                                    <RenderSubMenuCards submenu={category.submenu} />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </InactiveTooltip>
                             );
                         })}
                     </div>
@@ -458,26 +619,24 @@
             </div>
         );
     }
-    
+
     // RENOMEADO: SettingsMenuModal -> SettingsScreen
-    const SettingsScreen = ({ 
-        userData, 
-        onAuth, 
-        isFloatingBtnVisible, 
-        toggleAccessibility, 
-        backupToCloud, 
-        isSyncing, 
-        goToPortfolio, // NOVO
-        isAlertsFloatingBtnVisible, 
-        toggleAlertsFloatingButton 
+    const SettingsScreen = ({
+        userData,
+        onAuth,
+        isFloatingBtnVisible,
+        toggleAccessibility,
+        backupToCloud,
+        isSyncing,
+        goBack, // ATUALIZADO
+        isAlertsFloatingBtnVisible,
+        toggleAlertsFloatingButton
     }) => {
         const THEME_COLOR = "indigo";
         const PERFIL_COLOR = 'purple';
         const SEGURANCA_COLOR = 'amber';
-        const SISTEMA_COLOR = 'cyan'; 
+        const SISTEMA_COLOR = 'cyan';
         const ACESSIBILIDADE_COLOR = 'fuchsia';
-        
-        const isInactiveModeActive = true;
 
         const getInitials = (name) => {
             if (!name) return 'U';
@@ -485,263 +644,195 @@
             if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
             return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         };
-
-        const INACTIVE_CHIP_CLASS = `
-            bg-slate-50 border-slate-300 text-slate-500 
-            hover:bg-slate-100 hover:border-slate-400
-        `;
         
-        const SystemAccessibilityColumn = ({ 
-            isFloatingBtnVisible, 
-            toggleAccessibility,
-            isAlertsFloatingBtnVisible, 
-            toggleAlertsFloatingButton 
-        }) => { 
-            const systemStyle = useMemo(() => {
-                const INACTIVE_SLATE_STYLE = {
-                    baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
-                    iconColor: 'text-slate-500',
-                    textColor: 'text-slate-700',
-                    toggleBg: 'bg-slate-400',
-                    toggleOffPos: 'left-0.5',
-                    isDisabled: true,
-                };
-                return INACTIVE_SLATE_STYLE;
-            }, []);
-            
-            const accessibilityVisualStyle = useMemo(() => {
-                const activeColor = ACESSIBILIDADE_COLOR;
-                
-                const baseClasses = isFloatingBtnVisible 
-                    ? `bg-${activeColor}-100 border-${activeColor}-400 text-${activeColor}-700 hover:bg-${activeColor}-200 hover:border-${activeColor}-500`
-                    : `bg-${activeColor}-50 border-${activeColor}-300 text-${activeColor}-700 hover:bg-${activeColor}-100 hover:border-${activeColor}-400`;
-
-                const iconColor = isFloatingBtnVisible ? `text-${activeColor}-600` : 'text-slate-500'; 
-                const toggleBg = isFloatingBtnVisible ? `bg-${activeColor}-400` : 'bg-slate-400'; 
-                const togglePos = isFloatingBtnVisible ? 'right-0.5' : 'left-0.5'; 
-                
-                return {
-                    base: baseClasses,
-                    icon: iconColor,
-                    toggleBg: toggleBg,
-                    togglePos: togglePos,
-                    textColor: 'text-current' 
-                };
-            
-            }, [isFloatingBtnVisible]); 
-
-            const alertsFloatingBtnVisualStyle = useMemo(() => {
-                const activeColor = 'amber';
-                const isActive = isAlertsFloatingBtnVisible;
-                
-                const baseClasses = isActive 
-                    ? `bg-${activeColor}-100 border-${activeColor}-400 text-${activeColor}-700 hover:bg-${activeColor}-200 hover:border-${activeColor}-500`
-                    : `bg-${activeColor}-50 border-${activeColor}-300 text-${activeColor}-700 hover:bg-${activeColor}-100 hover:border-${activeColor}-400`;
-
-                const iconColor = isActive ? `text-${activeColor}-600` : 'text-slate-500'; 
-                const toggleBg = isActive ? `bg-${activeColor}-400` : 'bg-slate-400'; 
-                const togglePos = isActive ? 'right-0.5' : 'left-0.5'; 
-                
-                return {
-                    base: baseClasses,
-                    icon: iconColor,
-                    toggleBg: toggleBg,
-                    togglePos: togglePos,
-                    textColor: 'text-current' 
-                };
-            
-            }, [isAlertsFloatingBtnVisible]);
-
-
-            return (
-                <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
-                    {/* SEÇÃO: SISTEMA (CIANO) */}
-                    <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
-
-                    {/* NOVO BOTÃO: FLUTUANTE ALERTAS (INTEGRAÇÃO NO MENU) */}
-                    <button 
-                        onClick={() => toggleAlertsFloatingButton(!isAlertsFloatingBtnVisible)} 
-                        className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${alertsFloatingBtnVisualStyle.base}`}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${alertsFloatingBtnVisualStyle.icon}`}>notifications</span>
-                            <span className={`font-semibold text-sm ${alertsFloatingBtnVisualStyle.textColor}`}>Alertas Flutuante</span>
-                        </div>
-                        {/* TOGGLE SWITCH */}
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${alertsFloatingBtnVisualStyle.toggleBg}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${alertsFloatingBtnVisualStyle.togglePos}`}></div>
-                        </div>
-                    </button>
-                    
-                    {/* Botão Tema (Toggle) - Fixo como PLACEHOLDER */}
-                    <button 
-                        onClick={() => {}} 
-                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
-                        disabled={systemStyle.isDisabled}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>dark_mode</span>
-                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Tema</span> 
-                        </div>
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${systemStyle.toggleBg}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${systemStyle.toggleOffPos}`}></div>
-                        </div>
-                    </button>
-
-                    {/* LINGUAGEM (INATIVO, mas mantém o indicador) */}
-                    <button 
-                        onClick={() => {}} 
-                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${systemStyle.baseClasses}`}
-                        disabled={systemStyle.isDisabled}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${systemStyle.iconColor}`}>language</span>
-                            <span className={`font-semibold text-sm ${systemStyle.textColor}`}>Linguagem</span> 
-                        </div>
-                        {/* INDICADOR DE SELEÇÃO: PORTUGUÊS (BR) - Estilo cinza (slate) */}
-                        <div className="flex items-center">
-                             <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-sm">
-                                Português (BR)
-                            </span>
-                        </div>
-                    </button>
-
-
-                    {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Apenas o botão flutuante está ativo */}
-                    <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
-                    
-                    {/* Botão "Botões" (Funcional) - SEMPRE FUCHSIA, ÍCONE MUDA POR ESTADO INTERNO */}
-                    <button 
-                        onClick={() => toggleAccessibility(!isFloatingBtnVisible)} 
-                        className={`chip-button w-full mb-1 mt-2 px-4 py-2.5 rounded-xl flex items-center justify-between border transition-all ${accessibilityVisualStyle.base}`}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${accessibilityVisualStyle.icon}`}>accessibility_new</span>
-                            <span className={`font-semibold text-sm ${accessibilityVisualStyle.textColor}`}>Botões Flutuantes</span>
-                        </div>
-                        {/* TOGGLE SWITCH */}
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${accessibilityVisualStyle.toggleBg}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${accessibilityVisualStyle.togglePos}`}></div>
-                        </div>
-                    </button>
-                </div>
-            );
-        }; 
-
         const RenderProfileAndRootNavigation = ({ onAuth, backupToCloud, isSyncing, userData }) => {
             const profileColor = PERFIL_COLOR;
             const securityColor = SEGURANCA_COLOR;
-            
-            const INACTIVE_SLATE_STYLE = {
-                baseClasses: 'bg-slate-50 border border-slate-300 text-slate-500 hover:bg-slate-100 hover:border-slate-400 pointer-events-none cursor-not-allowed',
-                iconColor: 'text-slate-500',
-                textColor: 'text-slate-700',
-                isDisabled: true,
-            };
 
-            const isBackupDisabled = isSyncing || !userData; 
+            const isBackupDisabled = isSyncing || !userData;
 
             return (
                 <div className="flex flex-col gap-1 w-full relative">
-                    {/* SEÇÃO: PERFIL (ROXO) */}
-                    <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
+                    {/* SEÇÃO: PERFIL (ROXO) - Usando fieldset para agrupamento lógico */}
+                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
+                        <SectionTitle icon="account_circle" title="Perfil" color={profileColor} />
+                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
+                        <div className="w-full space-y-3">
+                            {/* ATUALIZADO: Usando o estilo padrão de botão de perfil que tem um layout complexo */}
+                            <button
+                                onClick={onAuth}
+                                className={`chip-button w-full px-4 py-3 rounded-xl flex items-center justify-start bg-white border border-slate-200 hover:bg-slate-50 transition-all text-left group shadow-md`}>
+                                <div className={`w-12 h-12 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-lg shrink-0 mr-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                                    {userData ? getInitials(userData.name) : <span className="material-symbols-rounded">person</span>}
+                                </div>
+                                <div className="flex flex-col text-gray-800">
+                                    <span className="text-lg font-bold leading-tight">
+                                        {userData ? userData.name.split(' ')[0] : 'Visitante'}
+                                    </span>
+                                    <span className={`text-sm font-semibold ${userData ? 'text-green-600' : 'text-purple-600'} flex items-center`}>
+                                        <span className={`material-symbols-rounded text-base mr-1`}>{userData ? 'check_circle' : 'lock_open'}</span>
+                                        {userData ? 'Conectado' : 'Login / Cadastro'}
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+                    </fieldset>
 
-                    <button 
-                        onClick={onAuth} 
-                        className={`chip-button w-full mb-1 mt-4 px-3 py-3 rounded-xl flex items-center justify-start bg-${profileColor}-50 border border-${profileColor}-200 text-${profileColor}-700 hover:bg-${profileColor}-100 transition-all text-left group`}>
-                        <div className={`w-10 h-10 rounded-full bg-${profileColor}-600 text-white flex items-center justify-center font-bold text-sm shrink-0 mr-3 shadow-sm group-hover:scale-110 transition-transform`}>
-                            {userData ? getInitials(userData.name) : <span className="material-symbols-rounded">person</span>}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold leading-tight">
-                                {userData ? userData.name.split(' ')[0] : 'Visitante'}
-                            </span>
-                            <span className="text-xs opacity-80">
-                                {userData ? 'Conectado' : 'Login'}
-                            </span>
-                        </div>
-                    </button>
-                    
-                    {/* SEÇÃO SEGURANÇA (AMBAR) */}
-                    <SectionTitle icon="security" title="Segurança" color={securityColor} />
-                    
-                    {/* BOTÃO 1: BACKUP */}
-                    <button 
-                        onClick={backupToCloud} 
-                        disabled={isBackupDisabled} 
-                        className={`chip-button w-full mt-2 px-4 py-2.5 rounded-xl flex items-center justify-start 
-                                    ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.baseClasses : `bg-${securityColor}-50 border border-${securityColor}-300 text-${securityColor}-700 hover:bg-${securityColor}-100`} 
-                                    transition-all ${isBackupDisabled ? 'cursor-not-allowed' : ''}`}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.iconColor : `text-${securityColor}-600`} ${isSyncing ? 'animate-spin' : ''}`}>
-                                {isSyncing ? 'sync' : 'cloud_upload'}
-                            </span>
-                            <span className={`font-semibold text-sm ${isBackupDisabled && !isSyncing ? INACTIVE_SLATE_STYLE.textColor : `text-${securityColor}-700`}`}>
-                                {isBackupDisabled && !userData ? 'Login para Backup' : (isSyncing ? 'Fazendo Backup' : 'Backup')}
-                            </span>
-                        </div>
-                    </button>
+                    {/* SEÇÃO SEGURANÇA (AMBAR) - Usando fieldset para agrupamento lógico */}
+                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
+                        <SectionTitle icon="security" title="Segurança" color={securityColor} />
+                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
+                        <div className="w-full space-y-3">
+                            {/* BOTÃO 1: BACKUP */}
+                            <ConfigItem 
+                                icon={isSyncing ? 'sync' : 'cloud_upload'} 
+                                title={isBackupDisabled && !userData ? 'Login para Backup' : (isSyncing ? 'Fazendo Backup' : 'Backup na Nuvem')}
+                                color={securityColor}
+                                isDisabled={isBackupDisabled}
+                                onClick={backupToCloud}
+                                extraClasses={isSyncing ? 'animate-pulse' : ''}
+                            >
+                                {isSyncing ? <span className="material-symbols-rounded animate-spin">sync</span> : null}
+                            </ConfigItem>
 
-                    {/* BOTÃO 2: TROCAR SENHA (INATIVO) */}
-                    <button 
-                        onClick={() => {}} 
-                        className={`chip-button w-full mb-1 px-4 py-2.5 rounded-xl flex items-center justify-start ${INACTIVE_SLATE_STYLE.baseClasses}`}
-                        disabled={INACTIVE_SLATE_STYLE.isDisabled}
-                    >
-                        <div className="flex items-center">
-                            <span className={`material-symbols-rounded mr-3 ${INACTIVE_SLATE_STYLE.iconColor}`}>vpn_key</span>
-                            <span className={`font-semibold text-sm ${INACTIVE_SLATE_STYLE.textColor}`}>Senha</span> 
+                            {/* BOTÃO 2: TROCAR SENHA (INATIVO) */}
+                            <ConfigItem 
+                                icon="vpn_key" 
+                                title="Senha" 
+                                color={securityColor}
+                                isDisabled={true}
+                                onClick={() => {}}
+                            />
                         </div>
-                    </button>
-                    
-                    {/* SEPARADOR para mobile */}
-                    <div className="h-px bg-slate-200 my-4 md:hidden"></div>
+                        {/* SEPARADOR para mobile (fora do div w-full space-y-3) */}
+                        <div className="h-px bg-slate-200 my-4 md:hidden"></div>
+                    </fieldset>
+                </div>
+            );
+        };
+        
+        const SystemAccessibilityColumn = ({
+            isFloatingBtnVisible,
+            toggleAccessibility,
+            isAlertsFloatingBtnVisible,
+            toggleAlertsFloatingButton
+        }) => {
+            
+            return (
+                <div className="flex flex-col gap-1 w-full lg:min-w-[12rem] lg:w-auto">
+                    {/* SEÇÃO: SISTEMA (CIANO) - Usando fieldset para agrupamento lógico */}
+                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
+                        <SectionTitle icon="build" title="Sistema" color={SISTEMA_COLOR} />
+                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
+                        <div className="w-full space-y-3"> 
+                            {/* NOVO BOTÃO: FLUTUANTE ALERTAS (INTEGRAÇÃO NO MENU) */}
+                            <ConfigItem 
+                                icon="notifications" 
+                                title="Alertas Flutuante" 
+                                color="amber"
+                                isDisabled={false}
+                                extraClasses="bg-amber-50"
+                            >
+                                <ToggleSwitch
+                                    isChecked={isAlertsFloatingBtnVisible}
+                                    onChange={() => toggleAlertsFloatingButton(!isAlertsFloatingBtnVisible)}
+                                    color="amber"
+                                />
+                            </ConfigItem>
+
+                            {/* Botão Tema (Toggle) - Fixo como PLACEHOLDER */}
+                            <ConfigItem 
+                                icon="dark_mode" 
+                                title="Tema" 
+                                color="cyan" 
+                                isDisabled={true}
+                            >
+                                <ToggleSwitch isChecked={false} onChange={() => {}} color="slate" />
+                            </ConfigItem>
+
+                            {/* LINGUAGEM (INATIVO, mas mantém o indicador) */}
+                            <ConfigItem 
+                                icon="language" 
+                                title="Linguagem" 
+                                color="cyan" 
+                                isDisabled={true}
+                            >
+                                {/* INDICADOR DE SELEÇÃO: PORTUGUÊS (BR) - Estilo cinza (slate) */}
+                                {/* ADICIONADO: ml-auto para forçar o alinhamento à direita */}
+                                <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-sm ml-auto">
+                                    Português (BR)
+                                </span>
+                            </ConfigItem>
+                        </div>
+                    </fieldset>
+
+
+                    {/* SEÇÃO: ACESSIBILIDADE (FÚCSIA) - Usando fieldset para agrupamento lógico */}
+                    <fieldset className={`p-4 rounded-xl mb-4 border border-slate-200`}> 
+                        <SectionTitle icon="accessibility_new" title="Acessibilidade" color={ACESSIBILIDADE_COLOR} />
+                        {/* Div que força a largura completa dos itens internos e mantém o espaçamento */}
+                        <div className="w-full space-y-3">
+                            {/* Botão "Botões" (Funcional) */}
+                            <ConfigItem 
+                                icon="accessibility_new" 
+                                title="Botões Flutuantes" 
+                                color={ACESSIBILIDADE_COLOR} 
+                                isDisabled={false}
+                                extraClasses={`bg-${ACESSIBILIDADE_COLOR}-50`}
+                            >
+                                <ToggleSwitch
+                                    isChecked={isFloatingBtnVisible}
+                                    onChange={() => toggleAccessibility(!isFloatingBtnVisible)}
+                                    color={ACESSIBILIDADE_COLOR}
+                                />
+                            </ConfigItem>
+                        </div>
+                    </fieldset>
                 </div>
             );
         };
 
 
         return (
-            <div id={`central-menu-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`}>
-                
-                <BackButton onClick={goToPortfolio} themeColor={THEME_COLOR} title="Voltar ao Portfólio" />
+            <div id={`central-menu-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-2xl mx-auto`} role="dialog" aria-modal="true" aria-label="Configurações da Aplicação">
+
+                <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
 
                 <div className="p-8 px-4 sm:px-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
-                        
+
                     <div className="text-center mb-6">
                         <h2 className={`text-3xl font-bold text-${THEME_COLOR}-700`}>Configurações</h2>
                     </div>
 
                     <div className="flex-1 flex flex-col sm:grid sm:grid-cols-2 sm:gap-4">
                         {/* COLUNA 1: Perfil e Segurança */}
-                        <RenderProfileAndRootNavigation 
-                            userData={userData} 
+                        <RenderProfileAndRootNavigation
+                            userData={userData}
                             onAuth={onAuth}
-                            backupToCloud={backupToCloud} 
-                            isSyncing={isSyncing} 
+                            backupToCloud={backupToCloud}
+                            isSyncing={isSyncing}
                         />
 
                         {/* COLUNA 2: Sistemas e Acessibilidade */}
-                        <SystemAccessibilityColumn 
-                            isFloatingBtnVisible={isFloatingBtnVisible} 
-                            toggleAccessibility={toggleAccessibility} 
-                            isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible} 
-                            toggleAlertsFloatingButton={toggleAlertsFloatingButton} 
+                        <SystemAccessibilityColumn
+                            isFloatingBtnVisible={isFloatingBtnVisible}
+                            toggleAccessibility={toggleAccessibility}
+                            isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible}
+                            toggleAlertsFloatingButton={toggleAlertsFloatingButton}
                         />
                     </div>
                 </div>
             </div>
         );
     };
-    
+
     // RENOMEADO: AlertsPanel -> AlertsScreen
-    const AlertsScreen = ({ userData, goToPortfolio }) => {
+    const AlertsScreen = ({ userData, goBack }) => {
         const THEME_COLOR = "amber";
         return (
-            <div id={`alerts-panel`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`}>
-                 <BackButton onClick={goToPortfolio} themeColor={THEME_COLOR} title="Voltar ao Portfólio" />
-                
+            <div id={`alerts-panel`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`} role="dialog" aria-modal="true" aria-label="Notificações e Alertas">
+                 <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
+
                 <div className="p-8 w-full px-4 sm:p-8 sm:px-8 pt-16">
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-amber-700">Notificações</h2>
@@ -755,7 +846,7 @@
                                 <p className="text-sm text-amber-700">Esta é a sua nova Central de Notificações.</p>
                             </div>
                         </div>
-                        
+
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-300 flex items-center opacity-70">
                             <span className="material-symbols-rounded text-2xl text-slate-500 mr-3">check_circle</span>
                             <div>
@@ -766,7 +857,7 @@
                     </div>
 
                     <div className="text-center pt-4">
-                        <button onClick={goToPortfolio} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Voltar</button>
+                        <button onClick={goBack} className="mt-2 text-amber-600 hover:text-amber-800 text-sm underline">Voltar</button>
                     </div>
                 </div>
             </div>
@@ -775,47 +866,46 @@
 
 
     // RENOMEADO: AuthPanel -> AuthScreen
-    const AuthScreen = ({ onLoginSuccess, goToPortfolio }) => {
+    const AuthScreen = ({ onLoginSuccess, goBack }) => {
         const [isRegistering, setIsRegistering] = useState(false);
         const [formData, setFormData] = useState({ phone: '', name: '', password: '' });
         const THEME_COLOR = "purple";
 
         const handleSubmit = async (e) => {
             e.preventDefault();
-            if (isRegistering && !formData.name) { 
-                console.error("Por favor, preencha o nome."); 
-                return; 
+            if (isRegistering && !formData.name) {
+                console.error("Por favor, preencha o nome.");
+                return;
             }
-            if (!formData.phone || formData.phone.length < 8) { 
-                console.error("Telefone inválido."); 
-                return; 
+            if (!formData.phone || formData.phone.length < 8) {
+                console.error("Telefone inválido.");
+                return;
             }
             onLoginSuccess({ phone: formData.phone, name: formData.name || 'Usuário', role: 'user' });
-            goToPortfolio();
         };
 
         return (
-            <div id={`auth-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`}>
-                 <BackButton onClick={goToPortfolio} themeColor={THEME_COLOR} title="Voltar ao Portfólio" />
+            <div id={`auth-modal`} className={`screen-container border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up w-full max-w-lg mx-auto`} role="dialog" aria-modal="true" aria-label={isRegistering ? 'Cadastro de Usuário' : 'Login de Usuário'}>
+                 <BackButton onClick={goBack} themeColor={THEME_COLOR} previousTitle="Portfólio" />
 
-                <div className="p-8 w-full px-4 sm:p-8 sm:px-8 pt-16"> 
+                <div className="p-8 w-full px-4 sm:p-8 sm:px-8 pt-16">
                     <div className="text-center mb-6">
                         <h2 className="text-2xl font-bold text-purple-700">{isRegistering ? 'Cadastro' : 'Login'}</h2>
                     </div>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {isRegistering && (
                             <div>
-                                <label className="block text-sm font-medium text-purple-700 mb-1">Nome Completo</label>
-                                <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="Seu nome" />
+                                <label htmlFor="auth-name" className="block text-sm font-medium text-purple-700 mb-1">Nome Completo</label>
+                                <input id="auth-name" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="Seu nome" />
                             </div>
                         )}
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-1">Telefone (ID)</label>
-                                <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="(99) 99999-9999" required />
+                            <label htmlFor="auth-phone" className="block text-sm font-medium text-purple-700 mb-1">Telefone (ID)</label>
+                                <input id="auth-phone" type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="(99) 99999-9999" required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-1">Senha</label>
-                            <input type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="******" required />
+                            <label htmlFor="auth-password" className="block text-sm font-medium text-purple-700 mb-1">Senha</label>
+                            <input id="auth-password" type="password" value={formData.password} onChange={(e) => setFormData({...formData.password, password: e.target.value})} className="w-full rounded-lg border border-purple-300 bg-purple-50 focus:bg-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2.5 transition-colors" placeholder="******" required />
                         </div>
                         <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:scale-[1.02]">{isRegistering ? 'Cadastrar' : 'Entrar'}</button>
                     </form>
@@ -830,12 +920,12 @@
     };
 
     // RENOMEADO: MiniAppModal -> MiniAppScreen
-    const MiniAppScreen = ({ screenConfig, goToPortfolio, loading, setLoading, appId }) => {
+    const MiniAppScreen = ({ screenConfig, goBack, loading, setLoading, appId }) => {
         const iframeRef = React.useRef(null);
-        const { modalId, url, basePath, color } = screenConfig; 
-        
+        const { id, title, url, basePath, color, parentTitle = "Educação" } = screenConfig;
+
         const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
-        
+
         const loadMiniAppContent = useCallback(async () => {
             if (!url || !iframeRef.current) return;
             setLoading(true);
@@ -847,23 +937,24 @@
                 if (window.prepareMiniAppHtml) {
                     const isDark = document.documentElement.classList.contains('dark');
                     processedHtml = window.prepareMiniAppHtml(htmlContent, appId, basePath);
-                    // Não usa dynamicHeight
-                    processedHtml = processedHtml.replace('padding-bottom: 120px !important;', 'padding-bottom: 1rem !important;'); 
-                    
+
                     if (isDark) {
                         processedHtml = processedHtml.replace('<html lang="pt-BR">', '<html lang="pt-BR" class="dark">');
                     }
-                    
+
                     iframeRef.current.srcdoc = processedHtml;
                 } else {
-                    iframeRef.current.srcdoc = htmlContent; 
+                    iframeRef.current.srcdoc = htmlContent;
                 }
                 iframeRef.current.onload = () => {
                     setLoading(false);
-                    // Não usa dynamicHeight
                 };
             } catch (error) {
-                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem;">Erro de Carregamento</div>`;
+                console.error("Erro ao carregar MiniApp:", error);
+                iframeRef.current.srcdoc = `<div style="text-align:center; padding:2rem; color: #ef4444;">
+                                                <h1 style="font-weight: bold; font-size: 1.5rem;">Erro de Carregamento</h1>
+                                                <p>Não foi possível carregar o MiniApp. Verifique a URL.</p>
+                                            </div>`;
                 setLoading(false);
             }
         }, [url, basePath, setLoading, appId]);
@@ -871,17 +962,25 @@
         useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
 
         return (
-             <div id={`${modalId}-screen`} className={`screen-container border ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up w-full min-h-screen`}>
-                
-                <BackButton onClick={goToPortfolio} themeColor={color} title="Voltar ao Portfólio" />
+             <div id={`${id}-screen`} className={`screen-container border ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up w-full min-h-screen`} role="application" aria-label={`Mini Aplicativo: ${title}`}>
+
+                <BackButton onClick={goBack} themeColor={color} previousTitle={parentTitle} />
 
                 {/* Título do App */}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-0 text-center">
-                    <h2 className={`text-xl font-bold text-${color}-700`}>{screenConfig.title}</h2>
+                    <h2 className={`text-xl font-bold text-${color}-700`}>{title}</h2>
                 </div>
-                
-                <iframe ref={iframeRef} className="w-full h-full border-0 hide-scrollbar" title={`App ${screenConfig.title || modalId}`}></iframe>
-                {loading && <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm"><p className="ml-3 text-sm font-semibold text-gray-700">Carregando...</p></div>}
+
+                <iframe ref={iframeRef} className="w-full h-full border-0 hide-scrollbar" title={`App ${title}`}></iframe>
+                {loading && (
+                    <div className="absolute inset-0 z-30 flex justify-center items-center bg-white/80 backdrop-blur-sm" role="alert" aria-live="assertive" aria-busy="true">
+                        <svg className={`animate-spin -ml-1 mr-3 h-8 w-8 text-${color}-600`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p className={`ml-3 text-sm font-semibold text-${color}-700`}>Carregando...</p>
+                    </div>
+                )}
             </div>
         );
     };
@@ -893,37 +992,67 @@
         const [isSyncing, setIsSyncing] = useState(false);
         const [currentView, setCurrentView] = useState('portfolio');
         const [history, setHistory] = useState([]);
-        
+
         // NOVO ESTADO: Armazena a tela secundária ativa
-        const [activeScreen, setActiveScreen] = useState(null); 
+        const [activeScreen, setActiveScreen] = useState(null);
         const [screenLoading, setScreenLoading] = useState(false);
-        
-        const isInactiveModeActive = true;
-        
-        const [isDarkMode, setIsDarkMode] = useState(false); 
+
+        // ESTADOS DE ACESSIBILIDADE E FLUTUANTES
+        const [isDarkMode, setIsDarkMode] = useState(false);
         const [isFloatingBtnVisible, setIsFloatingBtnVisible] = useState(true);
-        const [isAlertsFloatingBtnVisible, setIsAlertsFloatingBtnVisible] = useState(true); 
-        
+        const [isAlertsFloatingBtnVisible, setIsAlertsFloatingBtnVisible] = useState(true);
+
         const toggleAccessibility = (newState) => {
             setIsFloatingBtnVisible(newState);
         };
-        
+
         const toggleAlertsFloatingButton = (newState) => {
             setIsAlertsFloatingBtnVisible(newState);
         };
 
-        // NOVO: Função para voltar ao portfólio principal
-        const goToPortfolio = () => {
-            setActiveScreen(null);
-            // Certifique-se de que a visualização principal está no portfólio ao voltar
-            setCurrentView('portfolio');
-        };
+        // NOVO: Função para voltar à tela anterior no histórico
+        const goBack = useCallback(() => {
+            if (activeScreen) {
+                // Se estiver em uma tela secundária, volta para o portfólio
+                setActiveScreen(null);
+            } else if (history.length > 0) {
+                // Se estiver em uma sub-view do portfólio, usa o histórico
+                const previousView = history[history.length - 1];
+                setHistory(prev => prev.slice(0, -1));
+                setCurrentView(previousView);
+            } else {
+                // Caso contrário, fica no portfólio
+                setCurrentView('portfolio');
+            }
+        }, [activeScreen, history]);
+
+        // Efeito para lidar com navegação de teclado (Escape e Backspace/Alt+Left)
+        useEffect(() => {
+            const handleKeyDown = (event) => {
+                // Tecla ESCAPE: Fechar tela secundária (modal-like)
+                if (event.key === 'Escape' && activeScreen) {
+                    goBack();
+                }
+                // Tecla Backspace ou Alt + Seta Esquerda: Voltar
+                if (event.key === 'Backspace' || (event.altKey && event.key === 'ArrowLeft')) {
+                    // Evita que Backspace ative o 'voltar' no navegador se um input estiver focado
+                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                        event.preventDefault();
+                        goBack();
+                    }
+                }
+            };
+
+            document.addEventListener('keydown', handleKeyDown);
+            return () => document.removeEventListener('keydown', handleKeyDown);
+        }, [goBack, activeScreen]);
+
 
         useEffect(() => {
             const rootHtml = document.documentElement;
             rootHtml.classList.remove('dark');
         }, [isDarkMode]);
-        
+
         useEffect(() => {
             const loadData = async () => {
                 try {
@@ -937,49 +1066,34 @@
             loadData();
         }, []);
 
-        const saveAdminConfig = async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const newSheetId = form.sheetId.value;
-            const newSheetTab = form.sheetTab.value;
-            try {
-                await db.settings.put({ key: 'sheetId', value: newSheetId });
-                await db.settings.put({ key: 'sheetTab', value: newSheetTab });
-                setAdminConfig({ sheetId: newSheetId, sheetTab: newSheetTab });
-                console.log("Configurações salvas com sucesso!");
-                goToPortfolio(); // Volta ao portfólio
-            } catch (error) { 
-                console.error("Erro ao salvar configurações:", error); 
-            }
-        };
-
         const backupToCloud = async () => {
-            if (!userData) { 
-                console.error("ERRO DE BACKUP: Nenhum dado de utilizador para salvar. Por favor, faça login."); 
-                return; 
+            if (!userData) {
+                console.error("ERRO DE BACKUP: Nenhum dado de utilizador para salvar. Por favor, faça login.");
+                return;
             }
-            if (!adminConfig.sheetId) { 
-                console.error("ERRO DE BACKUP: Atenção: ID da Planilha não configurado no Painel Admin!"); 
-                return; 
+            if (!adminConfig.sheetId) {
+                console.error("ERRO DE BACKUP: Atenção: ID da Planilha não configurado no Painel Admin!");
+                return;
             }
             setIsSyncing(true);
             try {
                 const payload = { action: 'backup', user: userData, timestamp: new Date().toISOString(), targetSheetId: adminConfig.sheetId, targetTabName: adminConfig.sheetTab || 'users' };
+                // Usando fetch com 'no-cors' para simular a chamada ao Google Script
                 await fetch(DEFAULT_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 console.log("Backup enviado para a Planilha configurada!");
-            } catch (error) { 
-                console.error("ERRO DE CONEXÃO: Erro ao conectar:", error); 
+            } catch (error) {
+                console.error("ERRO DE CONEXÃO: Erro ao conectar:", error);
             } finally { setIsSyncing(false); }
         };
-        
+
         const handleNativeLogin = async (user) => {
             const newUser = { id: user.phone, phone: user.phone, name: user.name || 'Usuário', createdAt: new Date() };
             try {
                 await db.user.put(newUser);
                 setUserData(newUser);
-                goToPortfolio(); // Volta ao portfólio após login
-            } catch (e) { 
-                console.error("Erro ao salvar login localmente:", e); 
+                setActiveScreen(null); // Volta ao portfólio após login
+            } catch (e) {
+                console.error("Erro ao salvar login localmente:", e);
             }
         };
 
@@ -988,61 +1102,64 @@
             setCurrentView(newView);
         };
 
-        const goBack = () => {
-            if (history.length > 0) {
-                const previousView = history[history.length - 1];
-                setHistory(prev => prev.slice(0, -1));
-                setCurrentView(previousView);
-            } else { setCurrentView('portfolio'); }
-        };
-        
+
         // NOVO: Função para lidar com o clique em um cartão e ativar a tela
         const handleCardClick = (item) => {
             if (item.action === "placeholder") {
-                return; 
+                return;
             }
-            
-            // Mapeamento para telas de navegação (não MiniApps)
-            if (item.id === 'auth') { setActiveScreen({ type: 'auth', config: { title: item.title, color: item.color } }); return; }
-            if (item.modalId === 'education-menu-modal') { setActiveScreen({ type: 'education', config: { title: item.title, color: item.color } }); return; }
-            if (item.modalId === 'central-menu-modal') { setActiveScreen({ type: 'settings', config: { title: item.title, color: item.color } }); return; }
-            if (item.modalId === 'alerts-panel') { setActiveScreen({ type: 'alerts', config: { title: item.title, color: item.color } }); return; }
-            
-            // Mapeamento para telas MiniApp (IFrame)
-            if (item.action === 'modal') { 
+
+            // Mapeamento para Telas Secundárias (Screen)
+            if (item.action === 'screen' && item.screenId) {
+                 const screenMap = {
+                    'settings': SettingsScreen,
+                    'alerts': AlertsScreen,
+                    'education': EducationScreen,
+                    'auth': AuthScreen
+                };
+                if (screenMap[item.screenId]) {
+                    setActiveScreen({ type: item.screenId, config: item });
+                    return;
+                }
+            }
+
+            // Mapeamento para MiniApps (IFrame)
+            if (item.action === 'modal' && item.url) {
                 setActiveScreen({ type: 'miniapp', config: item });
                 setScreenLoading(true);
                 return;
-            } 
-            
-            // Mapeamento para navegação interna (mantido por segurança, mas o Portfólio é a única view)
+            }
+
+            // Mapeamento para navegação interna (View)
             if (item.view) { navigateTo(item.view); }
         };
-        
+
         // Função genérica para clique em App de dentro de uma tela (ex: EducationScreen)
         const handleAppClickFromScreen = (item) => {
              // Mapeamento MiniApp (IFrame)
-            if (item.action === 'modal' && item.url) { 
+            if (item.action === 'modal' && item.url) {
                 setActiveScreen({ type: 'miniapp', config: item });
                 setScreenLoading(true);
                 return;
-            } 
-            // Outros cliques internos que precisam trocar de tela:
-            if (item.modalId === 'auth-modal') { setActiveScreen({ type: 'auth', config: { title: item.title, color: item.color } }); }
-            else { console.error("Ação de App não mapeada:", item); }
+            }
+             // Mapeamento para tela de Auth (Login)
+            if (item.modalId === 'auth-modal') {
+                setActiveScreen({ type: 'auth', config: AUTH_ITEM_CONFIG });
+                return;
+            }
+            console.error("Ação de App não mapeada:", item);
         };
 
-        // A função openAuthModal agora apenas ativa a tela
         const openAuthModal = () => {
-            setActiveScreen({ type: 'auth', config: AUTH_ITEM_CONFIG });
+            handleCardClick(AUTH_ITEM_CONFIG);
         };
-        
-        const openAlertsPanel = () => handleCardClick({ id: 'notifications', title: "Notificações", action: 'modal', modalId: 'alerts-panel', color: "amber", icon: "notifications" });
+
+        const openAlertsPanel = () => handleCardClick(MAIN_MENU_PORTFOLIO.find(i => i.id === 'notifications'));
 
         const currentViewData = VIEW_MAP[currentView] || VIEW_MAP['portfolio'];
         const renderedItems = useMemo(() => currentViewData.data || [], [currentViewData.data]);
-        
-        
+
+
         const RenderedView = ({ title, items }) => (
             <div className="flex flex-col items-center">
                 <section className="mt-4 text-center w-full">
@@ -1051,10 +1168,10 @@
                 <div className="app-grid-container w-full max-w-5xl">
                     <section className="mt-6 app-grid-base-flexible mx-auto">
                         {items.map((item, index) => (
-                            <AppCard 
-                                key={item.id || index} 
-                                item={item} 
-                                onClick={() => handleCardClick(item)} 
+                            <AppCard
+                                key={item.id || index}
+                                item={item}
+                                onClick={() => handleCardClick(item)}
                             />
                         ))}
                     </section>
@@ -1067,64 +1184,74 @@
 
         const floatingAccessibilityButtonClasses = useMemo(() => {
             const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
-            const color = isInactiveModeActive
-                ? `bg-slate-100 border-slate-300 text-slate-500 cursor-not-allowed`
-                : `bg-fuchsia-100 border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-200 hover:border-fuchsia-600`;
-                
+            const color = `bg-fuchsia-100 border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-200 hover:border-fuchsia-600`;
+
             const compactStyle = 'w-auto px-4';
-                
+
             return `${base} ${color} ${compactStyle}`;
-        }, [isInactiveModeActive]);
-        
+        }, []);
+
         const floatingAlertsButtonClasses = useMemo(() => {
             const base = `${fixedButtonClasses} animate-fade-in-up no-shadow transition-all duration-300`;
-            const color = isInactiveModeActive
-                ? `bg-slate-100 border-slate-300 text-slate-500 cursor-not-allowed`
-                : `bg-amber-100 border-amber-500 text-amber-700 hover:bg-amber-200 hover:border-amber-600`;
-                
+            const color = `bg-amber-100 border-amber-500 text-amber-700 hover:bg-amber-200 hover:border-amber-600`;
+
             const compactStyle = 'w-auto px-4';
-                
+
             return `${base} ${color} ${compactStyle}`;
-        }, [isInactiveModeActive]);
-        
-        
-        const floatingAccessibilityClickHandler = isInactiveModeActive ? () => {} : () => toggleAccessibility(!isFloatingBtnVisible);
-        const floatingAlertsClickHandler = isInactiveModeActive ? () => {} : openAlertsPanel;
+        }, []);
+
+
+        const floatingAccessibilityClickHandler = () => toggleAccessibility(!isFloatingBtnVisible);
+        const floatingAlertsClickHandler = openAlertsPanel;
 
         // Renderiza a tela ativa ou o Portfólio
         const renderActiveScreen = () => {
             if (!activeScreen) {
+                // Se não há tela secundária ativa, renderiza a view principal (Portfólio/Educação/etc)
+                const currentData = VIEW_MAP[currentView];
+                if (currentData.parent) {
+                    // Se estiver em uma sub-view, renderiza a tela e o BackButton (apenas se for sub-view e não uma tela principal)
+                    return (
+                        <div className="flex flex-col w-full relative pt-16">
+                            <BackButton onClick={goBack} themeColor="indigo" previousTitle={VIEW_MAP[currentData.parent]?.title || 'Portfólio'} />
+                             <RenderedView title={currentData.title} items={currentData.data} />
+                        </div>
+                    );
+                }
                 return <RenderedView title={currentViewData.title} items={renderedItems} />;
             }
-            
+
             const { type, config } = activeScreen;
+
+            // Define o título da tela anterior para o BackButton
+            const previousTitle = currentViewData.title;
 
             switch (type) {
                 case 'auth':
-                    return <AuthScreen onLoginSuccess={handleNativeLogin} goToPortfolio={goToPortfolio} />;
+                    return <AuthScreen onLoginSuccess={handleNativeLogin} goBack={goBack} />;
                 case 'settings':
-                    return <SettingsScreen 
+                    return <SettingsScreen
                         userData={userData}
-                        onAuth={openAuthModal} 
-                        isFloatingBtnVisible={isFloatingBtnVisible} 
-                        toggleAccessibility={toggleAccessibility} 
-                        isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible} 
+                        onAuth={openAuthModal}
+                        isFloatingBtnVisible={isFloatingBtnVisible}
+                        toggleAccessibility={toggleAccessibility}
+                        isAlertsFloatingBtnVisible={isAlertsFloatingBtnVisible}
                         toggleAlertsFloatingButton={toggleAlertsFloatingButton}
                         backupToCloud={backupToCloud}
                         isSyncing={isSyncing}
-                        goToPortfolio={goToPortfolio}
+                        goBack={goBack}
                     />;
                 case 'alerts':
-                    return <AlertsScreen userData={userData} goToPortfolio={goToPortfolio} />;
+                    return <AlertsScreen userData={userData} goBack={goBack} />;
                 case 'education':
-                    return <EducationScreen goToPortfolio={goToPortfolio} onAppClick={handleAppClickFromScreen} />;
+                    return <EducationScreen goBack={goBack} onAppClick={handleAppClickFromScreen} />;
                 case 'miniapp':
                     // IFrame Screens (MiniAppScreen)
-                    return <MiniAppScreen 
-                        screenConfig={config} 
-                        goToPortfolio={goToPortfolio} 
-                        loading={screenLoading} 
-                        setLoading={setScreenLoading} 
+                    return <MiniAppScreen
+                        screenConfig={{...config, parentTitle: previousTitle}} // Passa o título da tela anterior
+                        goBack={goBack}
+                        loading={screenLoading}
+                        setLoading={setScreenLoading}
                         appId={APP_ID}
                     />;
                 default:
@@ -1135,14 +1262,15 @@
 
         return (
             <div className="antialiased flex flex-col min-h-screen">
-                
-                {/* BOTÕES FLUTUANTES (Não fazem mais parte da navegação principal) */}
+
+                {/* BOTÕES FLUTUANTES (Movidos para o canto superior e inferior direito/esquerdo) */}
                 <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
-                    {isFloatingBtnVisible && ( 
-                        <button 
-                            onClick={floatingAccessibilityClickHandler} 
+                    {isFloatingBtnVisible && (
+                        <button
+                            onClick={floatingAccessibilityClickHandler}
                             className={floatingAccessibilityButtonClasses}
-                            disabled={isInactiveModeActive}
+                            aria-label="Botão de Acessibilidade Flutuante"
+                            title="Botão de Acessibilidade Flutuante"
                         >
                             <span className={`material-symbols-rounded text-xl mr-1`}>accessibility_new</span>
                             <span className={`font-medium whitespace-nowrap overflow-hidden`}>Acessibilidade</span>
@@ -1151,11 +1279,12 @@
                 </div>
 
                 <div className="fixed bottom-4 left-4 z-40 flex flex-col items-start space-y-2">
-                    {isAlertsFloatingBtnVisible && ( 
-                        <button 
-                            onClick={floatingAlertsClickHandler} 
+                    {isAlertsFloatingBtnVisible && (
+                        <button
+                            onClick={floatingAlertsClickHandler}
                             className={floatingAlertsButtonClasses}
-                            disabled={false} 
+                            aria-label="Abrir Central de Alertas"
+                            title="Abrir Central de Alertas"
                         >
                             <span className={`material-symbols-rounded text-xl mr-1`}>notifications</span>
                             <span className={`font-medium whitespace-nowrap overflow-hidden`}>Alertas</span>
@@ -1167,8 +1296,6 @@
                 <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-8 flex flex-col w-full justify-center">
                     {renderActiveScreen()}
                 </main>
-                
-                {/* REMOVIDO: Todos os modais fixos foram substituídos pela renderização condicional acima */}
             </div>
         );
     }
