@@ -30,7 +30,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        /* --- FALLBACK I18N (Necessário dentro do MiniApp) --- */
+        // I18N Fallback (apenas as chaves necessárias)
         const FALLBACK_I18N = {
             "pt-BR": {
                 section_profile: "Perfil",
@@ -50,7 +50,8 @@
                 profile_role_student: "Aluno",
                 alert_login_required: "Por favor, faça login no App principal para alterar a foto.",
                 alert_mobile_required: "A alteração de foto foi projetada para uso em dispositivos móveis (câmera).",
-                alert_copied: "Copiado!"
+                alert_copied: "Copiado!",
+                alert_error_processing: "Erro ao processar imagem." // NOVO
             },
             "en-US": {
                 section_profile: "Profile",
@@ -70,15 +71,16 @@
                 profile_role_student: "Student",
                 alert_login_required: "Please log in to the main App to change the photo.",
                 alert_mobile_required: "Photo change is designed for use on mobile devices (camera).",
-                alert_copied: "Copied!"
+                alert_copied: "Copied!",
+                alert_error_processing: "Error processing image." // NOVO
             }
         };
 
         const t = (key) => {
-            const lang = window.__app_lang || 'pt-BR'; // Assume pt-BR se não injetado
+            const lang = window.__app_lang || 'pt-BR';
             return FALLBACK_I18N[lang]?.[key] || FALLBACK_I18N['pt-BR'][key] || key;
         };
-        
+
         /* --- DADOS FICTÍCIOS PARA O FUNDO (QUANDO BLOQUEADO) --- */
         const DUMMY_USER = {
             name: t("data_fullname"),
@@ -243,7 +245,7 @@
                     } catch (err) {
                         console.error(err);
                         setProcessingPhoto(false);
-                        alert("Erro ao processar imagem.");
+                        alert(t('alert_error_processing')); // AGORA TRADUZIDO
                     }
                 }
             };
@@ -296,7 +298,7 @@
                                         ${isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 active:scale-95'}
                                         ${!isMobile ? 'opacity-50 cursor-not-allowed' : ''}
                                     `}
-                                    title={isMobile ? (isLocked ? t('alert_login_required') : "Alterar Foto") : "Exclusivo para celular"}
+                                    title={isMobile ? (isLocked ? t('alert_login_required') : "Alterar Foto") : t('alert_mobile_required')}
                                 >
                                     <span className="material-symbols-rounded text-sm">photo_camera</span>
                                 </button>
