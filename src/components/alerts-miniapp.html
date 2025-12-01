@@ -22,6 +22,12 @@
         body { background-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fade-scale-in {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .fade-scale-in { animation: fade-scale-in 0.3s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -41,7 +47,10 @@
                 alerts_read_section: "Avisos Lidos",
                 alert_source_system: "Sistema",
                 alert_source_edu: "Educação",
-                alert_mark_as_read: "Marcar como Lido"
+                alert_mark_as_read: "Marcar como Lido",
+                alert_action_confirmed: "Ação Confirmada",
+                msg_loading: "Carregando avisos...", // NOVO
+                msg_error_processing: "Erro ao processar imagem." // NOVO
             },
             "en-US": {
                 alerts_title: "Alert Center",
@@ -52,13 +61,30 @@
                 alerts_read_section: "Read Alerts",
                 alert_source_system: "System",
                 alert_source_edu: "Education",
-                alert_mark_as_read: "Mark as Read"
+                alert_mark_as_read: "Mark as Read",
+                alert_action_confirmed: "Action Confirmed",
+                msg_loading: "Loading alerts...", // NOVO
+                msg_error_processing: "Error processing image." // NOVO
             }
         };
 
         const t = (key) => {
             const lang = window.__app_lang || 'pt-BR';
             return FALLBACK_I18N[lang]?.[key] || FALLBACK_I18N['pt-BR'][key] || key;
+        };
+        
+        // NOVO COMPONENTE: Confirmação Discreta
+        const ConfirmationOverlay = ({ isVisible, message }) => {
+            if (!isVisible) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-800/20 backdrop-blur-[2px] fade-scale-in">
+                    <div className="bg-white p-6 rounded-2xl shadow-2xl border border-slate-100 text-center flex flex-col items-center">
+                        <span className="material-symbols-rounded text-6xl text-emerald-500 mb-2 animate-bounce">check_circle</span>
+                        <p className="font-semibold text-slate-800">{message}</p>
+                    </div>
+                </div>
+            );
         };
 
         const AlertItem = ({ alert, onMarkAsRead }) => {
@@ -102,8 +128,8 @@
         function AlertsApp() {
             const [alerts, setAlerts] = useState([]);
             const [loading, setLoading] = useState(true);
+            const [showConfirmationOverlay, setShowConfirmationOverlay] = useState(false); // NOVO ESTADO
 
-            // Comunicação com o App Principal (Index.html)
             const sendRequest = (action, payload = {}, requestId = 'alerts_req') => {
                 return new Promise((resolve) => {
                     const listener = (event) => {
@@ -126,8 +152,11 @@
 
             const markAsRead = async (id) => {
                 await sendRequest('update_alert_status', { id, status: true }, `mark_${id}`);
-                // Atualiza o estado local
+                // Atualiza o estado local e dispara o overlay
                 setAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
+                
+                setShowConfirmationOverlay(true);
+                setTimeout(() => setShowConfirmationOverlay(false), 1000); // Esconde após 1s
             };
 
             const markAllAsRead = async () => {
@@ -135,11 +164,13 @@
                  const unreadAlerts = alerts.filter(a => !a.isRead);
                  if (unreadAlerts.length === 0) { setLoading(false); return; }
 
-                 // Marcar todos (simulação, idealmente faríamos uma bulk update na bridge)
                  for (const alert of unreadAlerts) {
                     await sendRequest('update_alert_status', { id: alert.id, status: true }, `mark_all_${alert.id}`);
                  }
-                 await fetchAlerts(); // Re-fetch para garantir
+                 await fetchAlerts(); 
+                 
+                 setShowConfirmationOverlay(true);
+                 setTimeout(() => setShowConfirmationOverlay(false), 1000); // Esconde após 1s
             };
 
             useEffect(() => {
@@ -147,13 +178,13 @@
 
                 // Simulação: Adicionar um alerta a cada 15 segundos (para testar o sistema)
                 const interval = setInterval(async () => {
-                    const alertCount = alerts.length + 1;
-                    if (alertCount % 3 === 0) {
-                        await sendRequest('push_alert', { title: `Aviso # ${alertCount}: Nova Prova!`, message: "Um novo simulado foi liberado na sua turma.", sourceAppId: "edu" }, `new_alert_${alertCount}`);
-                    } else {
-                         await sendRequest('push_alert', { title: `Aviso # ${alertCount}: Sistema`, message: "Seus dados foram sincronizados com sucesso.", sourceAppId: "system" }, `new_alert_${alertCount}`);
-                    }
-                    fetchAlerts(); // Re-fetch após injeção
+                    const alertCount = alerts.length + 1; 
+                    const source = alertCount % 3 === 0 ? "edu" : "system";
+                    const title = source === "edu" ? `Aviso # ${alertCount}: Nova Prova!` : `Aviso # ${alertCount}: Sistema`;
+                    const message = source === "edu" ? "Um novo simulado foi liberado na sua turma." : "Seus dados foram sincronizados com sucesso.";
+
+                    await sendRequest('push_alert', { title, message, sourceAppId: source }, `new_alert_${alertCount}`);
+                    fetchAlerts(); // Re-fetch para atualizar a lista
                 }, 15000); 
 
                 return () => clearInterval(interval);
@@ -163,13 +194,15 @@
             const readAlerts = alerts.filter(a => a.isRead);
 
             return (
-                <div className="p-6 w-full h-full flex flex-col">
+                <div className="relative p-6 w-full h-full flex flex-col">
+                    <ConfirmationOverlay isVisible={showConfirmationOverlay} message={t('alert_action_confirmed')} />
+                    
                     <h1 className="text-2xl font-bold text-slate-800 mb-6">{t('alerts_title')} ({unreadAlerts.length})</h1>
 
                     {loading ? (
                         <div className="flex items-center justify-center h-48 text-slate-400">
                             <span className="material-symbols-rounded animate-spin text-3xl mr-2">sync</span>
-                            <span>Carregando avisos...</span>
+                            <span>{t('msg_loading')}</span>
                         </div>
                     ) : alerts.length === 0 ? (
                          <div className="flex flex-col items-center justify-center h-48 text-slate-500 bg-slate-100 rounded-xl p-6">
