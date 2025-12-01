@@ -22,16 +22,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
 
-        /* NOVO: Classe para Small Viewport Height (svh) - Mais segura para min-height */
-        .min-h-svh {
-            min-height: 100vh; /* Fallback */
-            min-height: 100svh;
-        }
-        /* MANTIDO: Classe para Dynamic Viewport Height (dvh) - Ideal para modais */
-        .h-dvh {
-            height: 100vh; /* Fallback */
-            height: 100dvh;
-        }
+        /* REMOÇÃO DE SVH/DVH: Usando unidades padrão de ecrã (vh/screen) */
+        /* O h-screen é reintroduzido nos modais, e o body é deixado fluído */
 
         .hide-scrollbar {
             -ms-overflow-style: none;
@@ -45,6 +37,8 @@
             font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
             background-color: #f8fafc;
             color: #0f172a;
+            /* Garantir altura mínima para a cor de fundo funcionar */
+            min-height: 100vh;
         }
         
         .dark body {
@@ -124,8 +118,8 @@
         }
     </style>
 </head>
-<body class="min-h-svh antialiased hide-scrollbar">
-    <div id="root" class="min-h-svh flex flex-col">
+<body class="antialiased hide-scrollbar">
+    <div id="root" class="flex flex-col min-h-screen">
         <div class="fixed inset-0 flex items-center justify-center bg-slate-100 text-gray-500">
             Carregando aplicação...
         </div>
@@ -335,7 +329,7 @@
         const isInactiveModeActive = true; 
 
         return (
-            <div ref={modalRef} className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+            <div ref={modalRef} className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4">
                 <div onClick={(e) => e.stopPropagation()} className={`relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-${THEME_COLOR}-500 flex flex-col overflow-hidden animate-fade-in-up`}>
                     
                     <CloseButton onClick={closeModal} themeColor={THEME_COLOR} />
@@ -653,7 +647,7 @@
 
 
         return (
-            <div id={`central-menu-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+            <div id={`central-menu-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4">
                 <div onClick={(e) => e.stopPropagation()} 
                     className={`
                         relative w-screen h-screen sm:w-full sm:max-w-2xl sm:max-h-[90vh] bg-white rounded-none sm:rounded-2xl shadow-2xl 
@@ -843,7 +837,8 @@
         
         const borderColorClass = color ? `border-${color}-500` : 'border-indigo-500';
         
-        const containerClasses = customClass || `relative w-screen h-dvh sm:w-full sm:max-w-5xl sm:h-full bg-white rounded-none sm:rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up p-0 sm:p-0`;
+        // Uso de h-screen para o overlay e h-full para o iframe
+        const containerClasses = customClass || `relative w-screen h-screen sm:w-full sm:max-w-5xl sm:h-full bg-white rounded-none sm:rounded-2xl shadow-2xl ${borderColorClass} flex flex-col overflow-hidden animate-fade-in-up p-0 sm:p-0`;
 
         const loadMiniAppContent = useCallback(async () => {
             if (!url || !iframeRef.current) return;
@@ -885,7 +880,7 @@
         useEffect(() => { loadMiniAppContent(); }, [loadMiniAppContent]);
 
         return (
-            <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+            <div id={`${modalId}-modal-overlay`} tabIndex="-1" aria-hidden="true" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4">
                 <div onClick={(e) => e.stopPropagation()} className={containerClasses}>
                     <CloseButton onClick={closeModal} themeColor={color} /> 
                     <iframe ref={iframeRef} className="w-full h-full border-0 hide-scrollbar" title={`App ${modalConfig.title || modalId}`} style={dynamicHeight ? { minHeight: '300px' } : {}}></iframe>
@@ -1110,7 +1105,7 @@
 
 
         return (
-            <div className="min-h-svh antialiased flex flex-col">
+            <div className="antialiased flex flex-col min-h-screen">
                 
                 {/* BOTÕES FLUTUANTES DIREITA (ACESSIBILIDADE) */}
                 <div className="fixed top-4 right-4 z-40 flex flex-col items-end space-y-2">
@@ -1127,6 +1122,7 @@
                 </div>
 
                 {/* BOTÃO FLUTUANTE INFERIOR ESQUERDO (ALERTAS) */}
+                {/* POSICIONAMENTO SIMPLIFICADO: fixed bottom-4 left-4 */}
                 <div className="fixed bottom-4 left-4 z-40 flex flex-col items-start space-y-2">
                     {isAlertsFloatingBtnVisible && ( 
                         <button 
@@ -1169,7 +1165,7 @@
 
                 {/* MODAL ADMIN */}
                 {modalConfig && modalConfig.modalId === 'admin-modal' && (
-                    <div id="admin-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
+                    <div id="admin-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-slate-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                              <CloseButton onClick={closeModal} themeColor="slate" />
                             <div className="p-6 pt-12 px-0 sm:p-6 sm:pt-12 sm:px-6"> 
@@ -1198,7 +1194,7 @@
 
                 {/* MODAL AUTH */}
                 {showAuthModal && (
-                    <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
+                    <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-purple-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="purple" />
                             <AuthPanel onLoginSuccess={handleNativeLogin} onClose={closeModal} />
@@ -1208,7 +1204,7 @@
 
                 {/* MODAL: PAINEL DE NOTIFICAÇÕES (ALERTSPANEL) */}
                 {showAlertsPanelModal && (
-                    <div id="alerts-panel-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
+                    <div id="alerts-panel-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-amber-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="amber" />
                             <AlertsPanel userData={userData} closeModal={closeModal} />
@@ -1219,7 +1215,7 @@
 
                 {/* MODAL CONFIGURAÇÕES (SettingsPanel) */}
                 {showSettingsModal && (
-                    <div id="settings-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-dvh bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
+                    <div id="settings-modal-overlay" className="fixed inset-0 z-50 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-sm p-0 sm:p-4" onClick={closeModal}>
                         <div className="relative w-screen h-screen sm:w-full sm:max-w-lg sm:h-auto bg-white rounded-none sm:rounded-2xl shadow-2xl border border-cyan-500 flex flex-col overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                             <CloseButton onClick={closeModal} themeColor="cyan" />
                             <SettingsPanel userData={userData} />
@@ -1239,4 +1235,4 @@
     }
     </script>
 </body>
-    </html>
+</html>
