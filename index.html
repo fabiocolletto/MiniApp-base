@@ -263,6 +263,7 @@ window.prepareMiniAppHtml = function(html, appId, basePath) {
 };
 
 const LANG_REPO_BASE = "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/language/";
+const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES'];
 const FALLBACK_I18N = {
     "pt-BR": {
         app_title_portfolio: "Portfólio",
@@ -337,7 +338,11 @@ const FALLBACK_I18N = {
         settings_large_text: "Texto Grande",
         settings_dark_mode: "Modo Escuro",
         settings_language: "Idioma",
-        
+        lang_pt_br_name: "Português (Brasil)",
+        lang_en_us_name: "English (US)",
+        lang_es_es_name: "Español (España)",
+        lang_select_description: "Escolha o idioma de exibição da aplicação.",
+
         // Alerta
         alert_i18n_fallback_title: "Tradução Incompleta",
         alert_i18n_fallback_body: "Usando Português (PT-BR) como recurso de segurança. Atualize o idioma no menu de Configurações."
@@ -415,7 +420,11 @@ const FALLBACK_I18N = {
         settings_large_text: "Large Text",
         settings_dark_mode: "Dark Mode",
         settings_language: "Language",
-        
+        lang_pt_br_name: "Portuguese (Brazil)",
+        lang_en_us_name: "English (US)",
+        lang_es_es_name: "Spanish (Spain)",
+        lang_select_description: "Choose the application display language.",
+
         // Alerta
         alert_i18n_fallback_title: "Incomplete Translation",
         alert_i18n_fallback_body: "Using Portuguese (PT-BR) as a safety fallback. Update language in Settings menu."
@@ -685,9 +694,9 @@ const AuthScreen = ({ onLoginSuccess, goBack, t, currentLang }) => {
 
 const LanguageSelectionScreen = ({ goBack, currentLang, setLang, t }) => {
     const LANGUAGES = [
-        { code: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷' },
-        { code: 'en-US', label: 'English (US)', flag: '🇺🇸' },
-        { code: 'es-ES', label: 'Español (España)', flag: '🇪🇸', disabled: true }, 
+        { code: 'pt-BR', labelKey: 'lang_pt_br_name', flag: '🇧🇷' },
+        { code: 'en-US', labelKey: 'lang_en_us_name', flag: '🇺🇸' },
+        { code: 'es-ES', labelKey: 'lang_es_es_name', flag: '🇪🇸' },
         { code: 'fr-FR', label: 'Français', flag: '🇫🇷', disabled: true }
     ];
     return (
@@ -696,7 +705,7 @@ const LanguageSelectionScreen = ({ goBack, currentLang, setLang, t }) => {
                 {LANGUAGES.map(lang => (
                     <div key={lang.code} onClick={() => !lang.disabled && setLang(lang.code)} className={`relative flex items-center p-4 rounded-xl border transition-all ${lang.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md hover:border-cyan-300'} ${currentLang === lang.code ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'bg-white'}`}>
                         <span className="text-4xl mr-4">{lang.flag}</span>
-                        <div className="flex-1"><h3 className="font-bold text-slate-800">{lang.label}</h3></div>
+                        <div className="flex-1"><h3 className="font-bold text-slate-800">{lang.label || t(lang.labelKey)}</h3></div>
                     </div>
                 ))}
             </div>
@@ -948,29 +957,31 @@ function App() {
             }
 
             // 1. Fetch das traduções
-            let ptData = {};
-            let enData = {};
+            let loadedLanguages = {};
             try {
-                const [pt, en] = await Promise.all([
-                    fetch(LANG_REPO_BASE + 'pt-BR.json').then(r => r.ok ? r.json() : null),
-                    fetch(LANG_REPO_BASE + 'en-US.json').then(r => r.ok ? r.json() : null)
-                ]);
-                ptData = pt || {};
-                enData = en || {};
-                setI18nData({ "pt-BR": ptData, "en-US": enData });
+                const responses = await Promise.all(SUPPORTED_LANGUAGES.map(code =>
+                    fetch(LANG_REPO_BASE + `${code}.json`).then(r => r.ok ? r.json() : null).catch(() => null)
+                ));
+
+                SUPPORTED_LANGUAGES.forEach((code, idx) => {
+                    loadedLanguages[code] = responses[idx] || {};
+                });
+                setI18nData(loadedLanguages);
 
                 // 2. Lógica de Alerta de Fallback
                 if (isMounted) {
-                    const enKeys = Object.keys(enData).length;
-                    
-                    if (lang !== 'pt-BR' && enKeys < 10) { 
+                    const currentLangKeys = Object.keys(loadedLanguages[lang] || {}).length;
+
+                    if (lang !== 'pt-BR' && currentLangKeys < 10) {
                          setShowLanguageAlert(true);
                          setTimeout(() => setShowLanguageAlert(false), 10000);
+                    } else {
+                        setShowLanguageAlert(false);
                     }
                 }
-            } catch (e) { 
+            } catch (e) {
                 if (isMounted && lang !== 'pt-BR') {
-                    setShowLanguageAlert(true); 
+                    setShowLanguageAlert(true);
                     setTimeout(() => setShowLanguageAlert(false), 10000);
                 }
             }
