@@ -33,11 +33,23 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ["Inter", "sans-serif"] },
-                    animation: { "fade-in-up": "fadeInUp .3s ease-out forwards" },
+                    animation: { 
+                        "fade-in-up": "fadeInUp .3s ease-out forwards",
+                        "slide-in-left": "slideInLeft 0.5s ease-out forwards",
+                        "slide-out-left": "slideOutLeft 0.5s ease-in forwards" // Removido o delay fixo
+                    },
                     keyframes: {
                         fadeInUp: {
                             "0%": { opacity: "0", transform: "translateY(10px)" },
                             "100%": { opacity: "1", transform: "translateY(0)" }
+                        },
+                        slideInLeft: {
+                            "0%": { opacity: "0", transform: "translateX(-100%)" },
+                            "100%": { opacity: "1", transform: "translateX(0)" }
+                        },
+                        slideOutLeft: {
+                            "0%": { opacity: "1", transform: "translateX(0)" },
+                            "100%": { opacity: "0", transform: "translateX(-100%)" }
                         }
                     }
                 }
@@ -48,6 +60,8 @@
     <style>
         .hide-scrollbar { scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .slide-in { animation-name: slide-in-left; }
+        .slide-out { animation-name: slide-out-left; }
     </style>
 </head>
 
@@ -72,6 +86,8 @@ db.version(3).stores({
     students: 'id, name, classId',
     assessments: '++id, title, subject, date, type',
     results: '++id, studentId, assessmentId, score, date, synced',
+    // NOVA TABELA PARA AVISOS
+    alerts: '++id, timestamp, isRead, sourceAppId',
     sync_queue: '++id, table, data, action, timestamp' 
 });
 
@@ -105,7 +121,7 @@ window.initializeFirebase = async () => {
 };
 
 /* ============================================
-   API DE COMUNICAÇÃO (BRIDGE)
+   API DE COMUNICAÇÃO (BRIDGE) - ATUALIZADO
    ============================================ */
 window.addEventListener('message', async (event) => {
     const { type, payload, requestId } = event.data;
@@ -116,14 +132,28 @@ window.addEventListener('message', async (event) => {
             if (payload.action === 'get_user') {
                 const users = await db.user.toArray();
                 result = users[0];
-            } else if (payload.action === 'save_result') {
-                result = await db.results.add(payload.data);
             } else if (payload.action === 'update_user') {
                 if (payload.data && payload.data.id) {
                     await db.user.put(payload.data);
                     result = payload.data;
                 }
+            } else if (payload.action === 'push_alert') {
+                // Nova ação: Salvar novo aviso
+                const newAlert = {
+                    ...payload.data,
+                    timestamp: new Date().toISOString(),
+                    isRead: false
+                };
+                result = await db.alerts.add(newAlert);
+            } else if (payload.action === 'get_alerts') {
+                // Nova ação: Obter todos os avisos (do mais recente para o mais antigo)
+                result = await db.alerts.orderBy('timestamp').reverse().toArray();
+            } else if (payload.action === 'update_alert_status') {
+                // Nova ação: Marcar aviso como lido/não lido
+                await db.alerts.update(payload.id, { isRead: payload.status });
+                result = { success: true };
             }
+            
             const iframe = document.querySelector('iframe');
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage({ type: 'DB_RESPONSE', requestId, result }, '*');
@@ -165,6 +195,7 @@ window.getDbDump = async () => {
     return {
         user: await db.user.toArray(),
         settings: await db.settings.toArray(),
+        alerts: await db.alerts.toArray(), // Incluído na exportação
         assessments: await db.assessments.toArray(),
         results: await db.results.toArray(),
         timestamp: new Date().toISOString()
@@ -172,13 +203,15 @@ window.getDbDump = async () => {
 };
 
 window.restoreDbDump = async (data) => {
-    await db.transaction('rw', db.user, db.settings, db.assessments, db.results, async () => {
+    await db.transaction('rw', db.user, db.settings, db.alerts, db.assessments, db.results, async () => {
         await db.user.clear();
         await db.settings.clear();
+        await db.alerts.clear(); // Incluído na importação
         await db.assessments.clear();
         await db.results.clear();
         if(data.user) await db.user.bulkAdd(data.user);
         if(data.settings) await db.settings.bulkAdd(data.settings);
+        if(data.alerts) await db.alerts.bulkAdd(data.alerts);
         if(data.assessments) await db.assessments.bulkAdd(data.assessments);
         if(data.results) await db.results.bulkAdd(data.results);
     });
@@ -236,12 +269,26 @@ const FALLBACK_I18N = {
         app_title_language_select: "Selecione o Idioma",
         back_to: "Voltar",
         coming_soon: "Em breve",
+        
+        // Menu Principal - ATUALIZADO
         menu_education: "Educação",
         menu_settings: "Configurações",
+        menu_alerts: "Avisos", // Novo
         edu_student_profile: "Matrícula",
         edu_simulados: "Simulados",
+        
+        // Avisos - NOVAS CHAVES
+        alerts_title: "Central de Avisos",
+        alerts_none: "Nenhum aviso novo. Tudo lido!",
+        alerts_read: "Marcado como Lido",
+        alerts_mark_all: "Marcar todos como lido",
+        alerts_unread_section: "Avisos Não Lidos",
+        alerts_read_section: "Avisos Lidos",
+
+        // Configurações
         settings_title: "Configurações",
         section_profile: "Perfil",
+        action_open_data_panel: "Painel de Dados",
         section_backup: "Backup e Sincronização",
         section_system: "Sistema",
         section_admin: "Área Admin & Dev",
@@ -280,19 +327,37 @@ const FALLBACK_I18N = {
         msg_user_not_found_anywhere: "Usuário não encontrado nem localmente, nem na nuvem. Verifique seus dados.",
         settings_large_text: "Texto Grande",
         settings_dark_mode: "Modo Escuro",
-        settings_language: "Idioma"
+        settings_language: "Idioma",
+        
+        // NOVA CHAVE PARA O ALERTA
+        alert_i18n_fallback_title: "Tradução Incompleta",
+        alert_i18n_fallback_body: "Usando Português (PT-BR) como recurso de segurança. Atualize o idioma no menu de Configurações."
     },
     "en-US": {
         app_title_portfolio: "Portfolio",
         app_title_language_select: "Select Language",
         back_to: "Back",
         coming_soon: "Coming Soon",
+        
+        // Menu Principal - ATUALIZADO
         menu_education: "Education",
         menu_settings: "Settings",
+        menu_alerts: "Alerts", // Novo
         edu_student_profile: "Registration",
         edu_simulados: "Simulations",
+        
+        // Avisos - NOVAS CHAVES
+        alerts_title: "Alert Center",
+        alerts_none: "No new alerts. All clear!",
+        alerts_read: "Marked as Read",
+        alerts_mark_all: "Mark All as Read",
+        alerts_unread_section: "Unread Alerts",
+        alerts_read_section: "Read Alerts",
+
+        // Configurações
         settings_title: "Settings",
         section_profile: "Profile",
+        action_open_data_panel: "Data Panel",
         section_backup: "Backup & Sync",
         section_system: "System",
         section_admin: "Admin & Dev Area",
@@ -331,7 +396,11 @@ const FALLBACK_I18N = {
         msg_user_not_found_anywhere: "User not found locally or in cloud. Check credentials.",
         settings_large_text: "Large Text",
         settings_dark_mode: "Dark Mode",
-        settings_language: "Language"
+        settings_language: "Language",
+        
+        // NOVA CHAVE PARA O ALERTA
+        alert_i18n_fallback_title: "Incomplete Translation",
+        alert_i18n_fallback_body: "Using Portuguese (PT-BR) as a safety fallback. Update language in Settings menu."
     }
 };
 
@@ -350,6 +419,8 @@ const COLOR = {
 <script type="text/babel">
 
 const { useState, useEffect, useRef } = React;
+
+/* --- COMPONENTES --- */
 
 const BackButton = ({ onClick, color="indigo", title }) => {
     const c = COLOR[color] || COLOR.indigo;
@@ -415,6 +486,27 @@ const ScreenWrapper = ({ title, children, color="indigo", onBack, t }) => {
         </div>
     );
 };
+
+const LanguageFallbackAlert = ({ isVisible, t, onClose }) => {
+    if (!isVisible) return null;
+
+    // Usando slide-out-left para esconder e slide-in-left para mostrar
+    return (
+        <div className={`fixed bottom-4 left-4 z-50 transition-all shadow-xl rounded-xl bg-amber-50 border border-amber-200 p-4 max-w-sm slide-in ${!isVisible ? 'slide-out' : ''}`}>
+            <div className="flex items-start gap-3">
+                <span className="material-symbols-rounded text-amber-600 text-2xl mt-0.5">warning</span>
+                <div className="flex-1">
+                    <h3 className="font-bold text-sm text-amber-900 mb-1">{t('alert_i18n_fallback_title')}</h3>
+                    <p className="text-xs text-amber-800">{t('alert_i18n_fallback_body')}</p>
+                </div>
+                <button onClick={onClose} className="text-amber-500 hover:text-amber-700 transition">
+                    <span className="material-symbols-rounded text-lg">close</span>
+                </button>
+            </div>
+        </div>
+    );
+};
+
 
 function AppCard({ item, t, onClick }) {
     const c = COLOR[item.color] || COLOR.indigo;
@@ -640,7 +732,7 @@ const SettingsScreen = ({ userData, onAuth, onOpenProfile, goBack, t, currentLan
                     {/* Botão Extra para Abrir o Painel (Padronizado com ConfigItem) */}
                     <ConfigItem 
                         icon="dashboard" 
-                        title="Painel de Dados" 
+                        title={t('action_open_data_panel')} 
                         subtitle="Gerenciar informações do usuário"
                         color="purple" 
                         onClick={onOpenProfile} 
@@ -701,17 +793,28 @@ function MiniAppScreen({ config, goBack, t }) {
     useEffect(() => {
         (async () => {
             try {
-                // Se for o MiniApp de Perfil, não precisamos de fetch/srcdoc, pois ele tem lógica de comunicação complexa.
-                // Mas, para consistência, vamos tratá-lo com o fetch, usando a URL CDN.
                 const res = await fetch(config.url);
                 const text = await res.text();
-                // Assumindo que o MiniApp de perfil não precisa de basePath, passamos string vazia.
                 iframeRef.current.srcdoc = window.prepareMiniAppHtml(text, "APP", config.basePath || '');
-            } catch {
+                iframeRef.current.onload = () => {
+                    if (iframeRef.current.contentWindow) {
+                        iframeRef.current.contentWindow.__app_lang = t.getLanguage(); 
+                    }
+                };
+            } catch(e) {
                 // Se o fetch falhar, usamos a URL local como fallback para desenvolvimento
                 if (config.id === 'profile_viewer') {
-                    console.warn("Falha ao buscar MiniApp de Perfil via CDN. Usando src direto como fallback (para desenvolvimento local).");
+                    console.warn("Falha ao buscar MiniApp de Perfil via CDN. Usando src direto como fallback (para desenvolvimento local).", e);
                     iframeRef.current.src = config.url;
+                    iframeRef.current.onload = () => {
+                         if (iframeRef.current.contentWindow) {
+                            iframeRef.current.contentWindow.__app_lang = t.getLanguage();
+                        }
+                    };
+                } else if (config.id === 'alerts_center') {
+                    // Falha no MiniApp de Alertas
+                    console.warn("Falha ao buscar MiniApp de Alertas via CDN.", e);
+                    // Aqui pode-se injetar um MiniApp de erro, mas por enquanto mantemos o loading
                 }
             }
             setLoading(false);
@@ -738,12 +841,23 @@ function App() {
     const [userData, setUserData] = useState(null);
     const [lang, setLang] = useState("pt-BR");
     const [i18nData, setI18nData] = useState({});
+    const [showLanguageAlert, setShowLanguageAlert] = useState(false);
 
+    // Função de tradução aprimorada para controle de fallback
     const t = (key) => {
         const repoVal = i18nData[lang]?.[key];
         const localVal = FALLBACK_I18N[lang]?.[key];
+        
+        // Se a chave não for encontrada no repositório NEM no local, usamos PT-BR.
+        // O alerta será controlado pelo useEffect, não aqui, para evitar loops.
+        if (!repoVal && !localVal && FALLBACK_I18N['pt-BR'][key]) {
+            return FALLBACK_I18N['pt-BR'][key];
+        }
+
         return repoVal || localVal || key;
     };
+    
+    t.getLanguage = () => lang;
 
     const handleLogin = async (user) => {
         await db.user.put(user);
@@ -752,34 +866,75 @@ function App() {
     };
 
     const handleOpenProfile = () => {
-        // CORRIGIDO: Agora usa o caminho CDN, assumindo que user-panel.html será hospedado publicamente.
         const profileConfig = {
             id: "profile_viewer",
-            titleKey: "section_profile",
+            titleKey: "section_profile", 
             color: "purple",
-            // CDN path para consistência
             url: "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/user-panel.html"
         };
         setActiveApp(profileConfig);
         setView("miniapp");
     };
 
+    const handleOpenAlerts = () => {
+        const alertsConfig = {
+            id: "alerts_center",
+            titleKey: "alerts_title", 
+            color: "rose",
+            url: "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/alerts-miniapp.html"
+        };
+        setActiveApp(alertsConfig);
+        setView("miniapp");
+    };
+
+
     useEffect(() => {
-        (async () => {
+        let isMounted = true;
+        
+        const init = async () => {
             await window.initializeFirebase();
             const users = await db.user.toArray();
             if(users.length) setUserData(users[0]);
+
+            // 1. Fetch das traduções
+            let ptData = {};
+            let enData = {};
             try {
                 const [pt, en] = await Promise.all([
                     fetch(LANG_REPO_BASE + 'pt-BR.json').then(r => r.ok ? r.json() : null),
                     fetch(LANG_REPO_BASE + 'en-US.json').then(r => r.ok ? r.json() : null)
                 ]);
-                setI18nData({ "pt-BR": pt || {}, "en-US": en || {} });
-            } catch (e) { console.warn("Using fallback i18n", e); }
-        })();
-    }, []);
+                ptData = pt || {};
+                enData = en || {};
+                setI18nData({ "pt-BR": ptData, "en-US": enData });
+
+                // 2. Lógica de Alerta de Fallback
+                if (isMounted) {
+                    const enKeys = Object.keys(enData).length;
+                    
+                    // Condição para alertar: Idioma não é PT-BR E o arquivo remoto falhou (ou tem poucas chaves)
+                    if (lang !== 'pt-BR' && enKeys < 10) { 
+                         console.warn("I18n: Arquivo remoto incompleto ou falhou. Alerta de fallback ativado.");
+                         setShowLanguageAlert(true);
+                         // Forçar a desativação após 10 segundos para debug
+                         setTimeout(() => setShowLanguageAlert(false), 10000);
+                    }
+                }
+            } catch (e) { 
+                console.warn("Falha no fetch I18n. Alerta de fallback ativado.", e); 
+                if (isMounted && lang !== 'pt-BR') {
+                    setShowLanguageAlert(true); 
+                    setTimeout(() => setShowLanguageAlert(false), 10000);
+                }
+            }
+        };
+        init();
+        
+        return () => { isMounted = false; };
+    }, [lang]); // Depende do lang para re-avaliar o alerta após a mudança de idioma
 
     const MENU = [
+        {id:"alerts", titleKey:"menu_alerts", icon:"notifications", color:"rose", action:handleOpenAlerts}, // NOVO MENU ITEM
         {id:"settings", titleKey:"menu_settings", icon:"settings", color:"indigo", action:()=>{ setView("settings"); }},
         {id:"student_reg", titleKey:"edu_student_profile", icon:"person_add", color:"emerald", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}},
         {id:"simulados", titleKey:"edu_simulados", icon:"edit_note", color:"amber", url:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/simulados.html", basePath:"https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/", action:(item)=>{setActiveApp(item); setView("miniapp");}}
@@ -800,6 +955,13 @@ function App() {
             {view === "auth" && <AuthScreen onLoginSuccess={handleLogin} goBack={() => setView("settings")} t={t} currentLang={lang} />}
             {view === "language_select" && <LanguageSelectionScreen goBack={() => setView("settings")} currentLang={lang} setLang={setLang} t={t} />}
             {view === "miniapp" && activeApp && <MiniAppScreen config={activeApp} goBack={() => setView("home")} t={t}/>}
+            
+            {/* NOVO: Alerta de Fallback de Idioma */}
+            <LanguageFallbackAlert 
+                isVisible={showLanguageAlert} 
+                t={t} 
+                onClose={() => setShowLanguageAlert(false)} 
+            />
         </main>
     );
 }
