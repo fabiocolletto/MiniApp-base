@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <!-- CORRIGIDO: Adicionado react-dom para que ReactDOM.createRoot funcione -->
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
@@ -144,11 +145,18 @@
                 navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
             };
 
+            // Nova lógica para o clique da foto: Verifica se está bloqueado ANTES de tentar processar.
             const handlePhotoClick = () => {
                 if (!isMobile) {
                     alert("A alteração de foto foi projetada para uso em dispositivos móveis (câmera).");
                     return;
                 }
+                
+                if (isLocked) {
+                    alert("Por favor, faça login no App principal para alterar a foto.");
+                    return;
+                }
+                
                 fileInputRef.current.click();
             };
 
@@ -208,8 +216,10 @@
 
             return (
                 <div className="relative max-w-2xl mx-auto p-4 animate-[fadeInUp_0.3s_ease-out]">
+                    {/* Input de Arquivo (Sempre Oculto) */}
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
+                    {/* --- OVERLAY DE BLOQUEIO (Muito Transparente: 15%) --- */}
                     {isLocked && (
                         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-white/15 backdrop-blur-[1px] rounded-3xl transition-all">
                             <div className="bg-white/95 p-6 rounded-3xl shadow-lg border border-white/50 backdrop-blur-md animate-[fadeInUp_0.5s_ease-out]">
@@ -222,17 +232,27 @@
                         </div>
                     )}
 
+                    {/* --- CONTEÚDO PRINCIPAL --- */}
                     <div className={`transition-all duration-500 ${isLocked ? 'opacity-80 filter blur-[0.5px] pointer-events-none grayscale-[0.2]' : ''}`}>
+                        
+                        {/* Cabeçalho com Foto Editável */}
                         <div className="flex items-center gap-4 mb-8 px-2">
                             <div className="relative group">
                                 <div className="h-20 w-20 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg border-2 border-white overflow-hidden">
                                     {processingPhoto ? <span className="material-symbols-rounded animate-spin">sync</span> : userPhoto ? <img src={userPhoto} alt="Perfil" className="w-full h-full object-cover" /> : (displayUser.name ? displayUser.name.substring(0, 2).toUpperCase() : '??')}
                                 </div>
-                                {!isLocked && (
-                                    <button onClick={handlePhotoClick} className={`absolute bottom-0 right-0 bg-white text-purple-600 rounded-full p-1.5 shadow-md border border-purple-100 hover:scale-110 active:scale-95 transition flex items-center justify-center ${!isMobile ? 'opacity-50 cursor-not-allowed' : ''}`} title={isMobile ? "Alterar Foto" : "Edição disponível apenas no celular"}>
-                                        <span className="material-symbols-rounded text-sm">photo_camera</span>
-                                    </button>
-                                )}
+                                
+                                {/* Botão de Editar Foto (SEMPRE RENDERIZADO, mas com estilo de desativação) */}
+                                <button 
+                                    onClick={handlePhotoClick} // A lógica de bloqueio está DENTRO de handlePhotoClick
+                                    className={`absolute bottom-0 right-0 bg-white text-purple-600 rounded-full p-1.5 shadow-md border border-purple-100 transition flex items-center justify-center 
+                                        ${isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 active:scale-95'}
+                                        ${!isMobile ? 'opacity-50 cursor-not-allowed' : ''}
+                                    `}
+                                    title={isMobile ? (isLocked ? "Faça login para alterar" : "Alterar Foto") : "Exclusivo para celular"}
+                                >
+                                    <span className="material-symbols-rounded text-sm">photo_camera</span>
+                                </button>
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-slate-800">{displayUser.name}</h1>
@@ -240,6 +260,7 @@
                             </div>
                         </div>
 
+                        {/* Lista de Dados */}
                         <div className="flex flex-col gap-3">
                             <SectionTitle icon="badge" title="Dados Pessoais" color="purple" />
                             <ConfigItem icon="person" title="Nome Completo" value={displayUser.name} color="purple" />
