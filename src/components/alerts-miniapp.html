@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Avisos</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ["Inter", "sans-serif"] } } }
+        };
+    </script>
+    <style>
+        body { background-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // I18N Fallback (apenas as chaves necessárias)
+        const FALLBACK_I18N = {
+            "pt-BR": {
+                alerts_title: "Central de Avisos",
+                alerts_none: "Nenhum aviso novo. Tudo lido!",
+                alerts_read: "Marcado como Lido",
+                alerts_mark_all: "Marcar todos como lido",
+                alerts_unread_section: "Avisos Não Lidos",
+                alerts_read_section: "Avisos Lidos",
+                alert_source_system: "Sistema",
+                alert_source_edu: "Educação",
+                alert_mark_as_read: "Marcar como Lido"
+            },
+            "en-US": {
+                alerts_title: "Alert Center",
+                alerts_none: "No new alerts. All clear!",
+                alerts_read: "Marked as Read",
+                alerts_mark_all: "Mark All as Read",
+                alerts_unread_section: "Unread Alerts",
+                alerts_read_section: "Read Alerts",
+                alert_source_system: "System",
+                alert_source_edu: "Education",
+                alert_mark_as_read: "Mark as Read"
+            }
+        };
+
+        const t = (key) => {
+            const lang = window.__app_lang || 'pt-BR';
+            return FALLBACK_I18N[lang]?.[key] || FALLBACK_I18N['pt-BR'][key] || key;
+        };
+
+        const AlertItem = ({ alert, onMarkAsRead }) => {
+            const date = new Date(alert.timestamp).toLocaleDateString();
+            const time = new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let sourceLabel = alert.sourceAppId || t('alert_source_system');
+
+            // Tradução do sourceAppId (simples)
+            if (alert.sourceAppId === 'edu') sourceLabel = t('alert_source_edu');
+
+            const itemClasses = alert.isRead
+                ? 'bg-slate-50 text-slate-500 border-slate-200'
+                : 'bg-white text-slate-800 border-rose-200 hover:bg-rose-50 hover:border-rose-300 shadow-md';
+
+            return (
+                <div className={`p-4 rounded-xl border transition-all flex justify-between items-start mb-3 ${itemClasses}`}>
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className={`material-symbols-rounded text-lg ${alert.isRead ? 'text-slate-400' : 'text-rose-600'}`}>{alert.isRead ? 'check_circle' : 'notifications_active'}</span>
+                            <span className="font-semibold text-sm truncate">{alert.title}</span>
+                        </div>
+                        <p className={`text-xs ${alert.isRead ? 'text-slate-500' : 'text-slate-600'} mb-2`}>{alert.message}</p>
+                        <div className="flex text-[10px] text-slate-400 gap-3">
+                            <span>{date} {time}</span>
+                            <span className="font-medium text-slate-500">App: {sourceLabel}</span>
+                        </div>
+                    </div>
+                    {!alert.isRead && (
+                        <button
+                            onClick={() => onMarkAsRead(alert.id)}
+                            className="flex-shrink-0 ml-4 px-3 py-1 bg-rose-500 text-white text-xs font-medium rounded-lg hover:bg-rose-600 transition shadow-md active:scale-95"
+                        >
+                            {t('alert_mark_as_read')}
+                        </button>
+                    )}
+                </div>
+            );
+        };
+
+        function AlertsApp() {
+            const [alerts, setAlerts] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            // Comunicação com o App Principal (Index.html)
+            const sendRequest = (action, payload = {}, requestId = 'alerts_req') => {
+                return new Promise((resolve) => {
+                    const listener = (event) => {
+                        if (event.data.type === 'DB_RESPONSE' && event.data.requestId === requestId) {
+                            window.removeEventListener('message', listener);
+                            resolve(event.data.result);
+                        }
+                    };
+                    window.addEventListener('message', listener);
+                    window.parent.postMessage({ type: 'DB_REQUEST', requestId, payload: { action, ...payload } }, '*');
+                });
+            };
+
+            const fetchAlerts = async () => {
+                setLoading(true);
+                const allAlerts = await sendRequest('get_alerts', {}, 'fetch_alerts');
+                setAlerts(allAlerts || []);
+                setLoading(false);
+            };
+
+            const markAsRead = async (id) => {
+                await sendRequest('update_alert_status', { id, status: true }, `mark_${id}`);
+                // Atualiza o estado local
+                setAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
+            };
+
+            const markAllAsRead = async () => {
+                 setLoading(true);
+                 const unreadAlerts = alerts.filter(a => !a.isRead);
+                 if (unreadAlerts.length === 0) { setLoading(false); return; }
+
+                 // Marcar todos (simulação, idealmente faríamos uma bulk update na bridge)
+                 for (const alert of unreadAlerts) {
+                    await sendRequest('update_alert_status', { id: alert.id, status: true }, `mark_all_${alert.id}`);
+                 }
+                 await fetchAlerts(); // Re-fetch para garantir
+            };
+
+            useEffect(() => {
+                fetchAlerts();
+
+                // Simulação: Adicionar um alerta a cada 15 segundos (para testar o sistema)
+                const interval = setInterval(async () => {
+                    const alertCount = alerts.length + 1;
+                    if (alertCount % 3 === 0) {
+                        await sendRequest('push_alert', { title: `Aviso # ${alertCount}: Nova Prova!`, message: "Um novo simulado foi liberado na sua turma.", sourceAppId: "edu" }, `new_alert_${alertCount}`);
+                    } else {
+                         await sendRequest('push_alert', { title: `Aviso # ${alertCount}: Sistema`, message: "Seus dados foram sincronizados com sucesso.", sourceAppId: "system" }, `new_alert_${alertCount}`);
+                    }
+                    fetchAlerts(); // Re-fetch após injeção
+                }, 15000); 
+
+                return () => clearInterval(interval);
+            }, []); 
+
+            const unreadAlerts = alerts.filter(a => !a.isRead);
+            const readAlerts = alerts.filter(a => a.isRead);
+
+            return (
+                <div className="p-6 w-full h-full flex flex-col">
+                    <h1 className="text-2xl font-bold text-slate-800 mb-6">{t('alerts_title')} ({unreadAlerts.length})</h1>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center h-48 text-slate-400">
+                            <span className="material-symbols-rounded animate-spin text-3xl mr-2">sync</span>
+                            <span>Carregando avisos...</span>
+                        </div>
+                    ) : alerts.length === 0 ? (
+                         <div className="flex flex-col items-center justify-center h-48 text-slate-500 bg-slate-100 rounded-xl p-6">
+                            <span className="material-symbols-rounded text-5xl mb-3">notifications_off</span>
+                            <span className="font-semibold text-lg">{t('alerts_none')}</span>
+                        </div>
+                    ) : (
+                        <div className="flex-1 overflow-y-auto hide-scrollbar">
+                            {/* Seção de Não Lidos */}
+                            {unreadAlerts.length > 0 && (
+                                <>
+                                    <h2 className="text-sm font-bold text-rose-600 uppercase mb-3 flex justify-between items-center">
+                                        {t('alerts_unread_section')}
+                                        <button 
+                                            onClick={markAllAsRead} 
+                                            className="text-xs text-rose-500 hover:text-rose-700 underline font-normal transition"
+                                            disabled={loading}
+                                        >
+                                            {t('alerts_mark_all')}
+                                        </button>
+                                    </h2>
+                                    {unreadAlerts.map(alert => (
+                                        <AlertItem key={alert.id} alert={alert} onMarkAsRead={markAsRead} />
+                                    ))}
+                                </>
+                            )}
+                            
+                            {/* Seção de Lidos */}
+                            {readAlerts.length > 0 && (
+                                <>
+                                    <h2 className="text-sm font-bold text-slate-600 uppercase mt-8 mb-3 border-t border-slate-200 pt-4">
+                                        {t('alerts_read_section')} ({readAlerts.length})
+                                    </h2>
+                                    {readAlerts.map(alert => (
+                                        <AlertItem key={alert.id} alert={alert} onMarkAsRead={markAsRead} />
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AlertsApp />);
+    </script>
+</body>
+</html>
