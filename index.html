@@ -701,14 +701,19 @@ function MiniAppScreen({ config, goBack, t }) {
     useEffect(() => {
         (async () => {
             try {
-                if (!config.url && config.id === 'profile_viewer') {
-                    setLoading(false);
-                    return;
-                }
+                // Se for o MiniApp de Perfil, não precisamos de fetch/srcdoc, pois ele tem lógica de comunicação complexa.
+                // Mas, para consistência, vamos tratá-lo com o fetch, usando a URL CDN.
                 const res = await fetch(config.url);
                 const text = await res.text();
-                iframeRef.current.srcdoc = window.prepareMiniAppHtml(text, "APP", config.basePath);
-            } catch {}
+                // Assumindo que o MiniApp de perfil não precisa de basePath, passamos string vazia.
+                iframeRef.current.srcdoc = window.prepareMiniAppHtml(text, "APP", config.basePath || '');
+            } catch {
+                // Se o fetch falhar, usamos a URL local como fallback para desenvolvimento
+                if (config.id === 'profile_viewer') {
+                    console.warn("Falha ao buscar MiniApp de Perfil via CDN. Usando src direto como fallback (para desenvolvimento local).");
+                    iframeRef.current.src = config.url;
+                }
+            }
             setLoading(false);
         })();
     }, [config]);
@@ -716,18 +721,12 @@ function MiniAppScreen({ config, goBack, t }) {
     return (
         <ScreenWrapper title={t(config.titleKey)} color={color} onBack={goBack} t={t}>
             <div className="relative flex-1 flex flex-col h-full">
-                {config.id === 'profile_viewer' ? (
-                     <iframe src="src/components/user-panel.html" className="w-full h-full border-0 flex-1 min-h-[500px]" />
-                ) : (
-                    <>
-                        {loading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
-                                <span className={`material-symbols-rounded animate-spin text-3xl ${c.text700}`}>sync</span>
-                            </div>
-                        )}
-                        <iframe ref={iframeRef} className="w-full h-full border-0 flex-1 min-h-[500px]"/>
-                    </>
+                {loading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+                        <span className={`material-symbols-rounded animate-spin text-3xl ${c.text700}`}>sync</span>
+                    </div>
                 )}
+                <iframe ref={iframeRef} className="w-full h-full border-0 flex-1 min-h-[500px]"/>
             </div>
         </ScreenWrapper>
     );
@@ -753,11 +752,13 @@ function App() {
     };
 
     const handleOpenProfile = () => {
+        // CORRIGIDO: Agora usa o caminho CDN, assumindo que user-panel.html será hospedado publicamente.
         const profileConfig = {
             id: "profile_viewer",
             titleKey: "section_profile",
             color: "purple",
-            url: "src/components/user-panel.html" // Atualizado para o novo caminho
+            // CDN path para consistência
+            url: "https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/src/components/user-panel.html"
         };
         setActiveApp(profileConfig);
         setView("miniapp");
