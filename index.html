@@ -70,7 +70,7 @@
 <div id="root" class="flex-1 flex flex-col relative">
     <div id="initial-loader" class="fixed inset-0 flex items-center justify-center bg-slate-50 text-slate-400 animate-pulse z-50">
         <span class="material-symbols-rounded text-4xl animate-spin mr-2">donut_large</span>
-        <span class="font-semibold">Carregando...</span>
+        <span id="initial-loader-text" class="font-semibold"></span>
     </div>
 </div>
 
@@ -268,11 +268,22 @@ const FALLBACK_I18N = {
     "pt-BR": {
         app_title_portfolio: "Portfólio",
         app_title_language_select: "Selecione o Idioma",
+        loading_label: "Carregando...",
+        system_initializing: "A iniciar o sistema...",
         back_to: "Voltar",
+        action_back: "Voltar",
+        action_home: "Início",
+        action_close: "Fechar",
+        action_understood: "Entendido",
         coming_soon: "Em breve",
-        
+        home_choose_app: "Escolha um MiniApp",
+        error_route_not_found: "Erro: Rota não encontrada.",
+
         // Menu Principal
         menu_education: "Educação",
+        menu_finance: "Financeiro",
+        menu_health: "Saúde",
+        menu_tasks: "Tarefas",
         menu_settings: "Configurações",
         menu_alerts: "Avisos",
         
@@ -342,6 +353,32 @@ const FALLBACK_I18N = {
         lang_en_us_name: "English (US)",
         lang_es_es_name: "Español (España)",
         lang_select_description: "Escolha o idioma de exibição da aplicação.",
+        alert_panel_description: "O sistema de notificações via Planilha Google está ativo. Novas notificações aparecerão aqui após o login.",
+        alerts_current_user: "Usuário atual:",
+        status_not_logged: "Não Logado",
+        feature_in_development_title: "Recurso em Desenvolvimento",
+        feature_in_development_body: "Esta funcionalidade estará disponível em breve. Agradecemos sua paciência!",
+        loading_miniapp: "Carregando MiniApp...",
+        error_loading_title: "Erro de Carregamento",
+        error_loading_file_failure: "O arquivo {file} falhou ao carregar.",
+        portfolio_title_full: "Portfólio de Aplicações",
+        portfolio_subtitle: "Selecione o sistema que deseja acessar:",
+        education_categories_title: "Educação: Categorias",
+        education_categories_subtitle: "Selecione uma área para iniciar.",
+        finance_menu_title: "Finanças: Gestão",
+        finance_menu_subtitle: "Ferramentas para seu controle financeiro.",
+        health_menu_title: "Saúde: Categorias",
+        health_menu_subtitle: "Ferramentas de bem-estar e monitoramento.",
+        tasks_menu_title: "Tarefas e Produtividade",
+        tasks_menu_subtitle: "Gerencie seus compromissos e foco.",
+        student_area_title: "Área do Aluno",
+        student_area_subtitle: "Selecione o serviço desejado.",
+        auth_modal_cta: "Entrar/Cadastrar",
+        auth_modal_title: "Cadastro e Acesso",
+        tasks_weekly_planner: "Planejamento Semanal",
+        tasks_list: "Lista de Tarefas",
+        tasks_monthly_calendar: "Agenda (Mensal)",
+        tasks_tracking: "Acompanhamento",
 
         // Alerta
         alert_i18n_fallback_title: "Tradução Incompleta",
@@ -350,11 +387,22 @@ const FALLBACK_I18N = {
     "en-US": {
         app_title_portfolio: "Portfolio",
         app_title_language_select: "Select Language",
+        loading_label: "Loading...",
+        system_initializing: "Starting the system...",
         back_to: "Back",
+        action_back: "Back",
+        action_home: "Home",
+        action_close: "Close",
+        action_understood: "Understood",
         coming_soon: "Coming Soon",
-        
+        home_choose_app: "Choose a MiniApp",
+        error_route_not_found: "Error: Route not found.",
+
         // Menu Principal
         menu_education: "Education",
+        menu_finance: "Finance",
+        menu_health: "Health",
+        menu_tasks: "Tasks",
         menu_settings: "Settings",
         menu_alerts: "Alerts",
         
@@ -424,12 +472,159 @@ const FALLBACK_I18N = {
         lang_en_us_name: "English (US)",
         lang_es_es_name: "Spanish (Spain)",
         lang_select_description: "Choose the application display language.",
+        alert_panel_description: "The notification system via Google Sheets is active. New notifications will appear here after login.",
+        alerts_current_user: "Current user:",
+        status_not_logged: "Not Logged In",
+        feature_in_development_title: "Feature in Development",
+        feature_in_development_body: "This feature will be available soon. Thank you for your patience!",
+        loading_miniapp: "Loading MiniApp...",
+        error_loading_title: "Load Error",
+        error_loading_file_failure: "The file {file} failed to load.",
+        portfolio_title_full: "Application Portfolio",
+        portfolio_subtitle: "Select the system you want to access:",
+        education_categories_title: "Education: Categories",
+        education_categories_subtitle: "Select an area to start.",
+        finance_menu_title: "Finance: Management",
+        finance_menu_subtitle: "Tools for your financial control.",
+        health_menu_title: "Health: Categories",
+        health_menu_subtitle: "Well-being and monitoring tools.",
+        tasks_menu_title: "Tasks and Productivity",
+        tasks_menu_subtitle: "Manage your commitments and focus.",
+        student_area_title: "Student Area",
+        student_area_subtitle: "Select the desired service.",
+        auth_modal_cta: "Sign In / Register",
+        auth_modal_title: "Sign Up and Access",
+        tasks_weekly_planner: "Weekly Planner",
+        tasks_list: "Task List",
+        tasks_monthly_calendar: "Monthly Calendar",
+        tasks_tracking: "Tracking",
 
         // Alerta
         alert_i18n_fallback_title: "Incomplete Translation",
         alert_i18n_fallback_body: "Using Portuguese (PT-BR) as a safety fallback. Update language in Settings menu."
+    },
+    "es-ES": {
+        app_title_portfolio: "Portafolio",
+        app_title_language_select: "Catálogo de Idiomas",
+        loading_label: "Cargando...",
+        system_initializing: "Iniciando el sistema...",
+        back_to: "Volver a",
+        action_back: "Volver",
+        action_home: "Inicio",
+        action_close: "Cerrar",
+        action_understood: "Entendido",
+        coming_soon: "Próximamente",
+        home_choose_app: "Elija un MiniApp",
+        error_route_not_found: "Error: Ruta no encontrada.",
+
+        // Menu Principal
+        menu_education: "Educación",
+        menu_finance: "Finanzas",
+        menu_health: "Salud",
+        menu_tasks: "Tareas",
+        menu_settings: "Configuración",
+        menu_alerts: "Avisos",
+
+        // NOVO - Bem-Vindo
+        menu_welcome: "Bienvenida",
+        welcome_title: "¡Bienvenido!",
+        welcome_subtitle: "Para guardar tu progreso y sincronizar datos, realiza tu registro único.",
+        welcome_action_register: "Registrarse / Iniciar sesión",
+        welcome_action_continue: "Continuar como Visitante",
+
+        // Apps
+        edu_student_profile: "Perfil",
+        edu_simulados: "Simulacros",
+
+        // Avisos
+        alerts_title: "Centro de Avisos",
+        alerts_none: "No hay avisos nuevos. ¡Todo listo!",
+        alerts_read: "Marcado como leído",
+        alerts_mark_all: "Marcar todo como leído",
+        alerts_unread_section: "Avisos no leídos",
+        alerts_read_section: "Avisos leídos",
+
+        // Configurações
+        settings_title: "Configuración",
+        section_profile: "Perfil",
+        action_open_data_panel: "Panel de Datos",
+        section_backup: "Copia de Seguridad y Sincronización",
+        section_system: "Sistema",
+        section_admin: "Área de Administrador y Desarrollo",
+        section_accessibility: "Accesibilidad",
+        settings_profile_visitor: "Visitante",
+        action_manage_account: "Gestionar Cuenta",
+        auth_login: "Iniciar sesión",
+        auth_register: "Registrarse",
+        auth_name_placeholder: "Nombre Completo",
+        auth_email_placeholder: "Tu correo electrónico",
+        auth_phone_placeholder: "Teléfono (ej.: +34...)",
+        auth_switch_to_login: "¿Ya tienes copia? Restaurar.",
+        auth_switch_to_register: "¿Nuevo? Crear cuenta.",
+        auth_welcome: "¡Bienvenido!",
+        auth_welcome_subtitle: "Tus datos de acceso generan tu clave única.",
+        auth_btn_restore: "Restaurar desde la Nube",
+        auth_btn_login_local: "Iniciar localmente",
+        settings_backup_cloud: "Copia de seguridad en la Nube",
+        settings_backup_cloud_desc: "Requiere configuración de Firebase.",
+        settings_sync_devices: "Restaurar desde la Nube",
+        settings_sync_devices_desc: "Descargar datos y sustituir.",
+        settings_backup_local: "Copia de seguridad local (Archivo)",
+        msg_backup_success: "¡Éxito!",
+        msg_backup_error: "Error.",
+        msg_cloud_success: "¡Sincronizado con la nube!",
+        msg_cloud_restore_success: "¡Datos restaurados! Recargando...",
+        admin_firebase_config: "Configuración de Firebase (JSON)",
+        admin_save_config: "Guardar configuración",
+        admin_config_saved: "¡Configuración guardada! Recarga la página.",
+        admin_config_error: "JSON inválido.",
+        lang_select_footer: "Nuevos idiomas se añadirán pronto.",
+        status_active: "Activo",
+        msg_cloud_not_found: "No se encontró copia en la nube.",
+        msg_cloud_error_details: "Error en la nube:",
+        msg_login_local_success: "Iniciando sesión con datos locales...",
+        msg_user_not_found_anywhere: "Usuario no encontrado localmente ni en la nube. Verifica tus datos.",
+        settings_large_text: "Texto grande",
+        settings_dark_mode: "Modo oscuro",
+        settings_language: "Idioma",
+        lang_pt_br_name: "Portugués (Brasil)",
+        lang_en_us_name: "Inglés (EE.UU.)",
+        lang_es_es_name: "Español (España)",
+        lang_select_description: "Elige el idioma de visualización de la aplicación.",
+        alert_panel_description: "El sistema de notificaciones a través de Google Sheets está activo. Nuevas notificaciones aparecerán aquí después de iniciar sesión.",
+        alerts_current_user: "Usuario actual:",
+        status_not_logged: "No conectado",
+        feature_in_development_title: "Función en desarrollo",
+        feature_in_development_body: "Esta función estará disponible pronto. ¡Gracias por tu paciencia!",
+        loading_miniapp: "Cargando MiniApp...",
+        error_loading_title: "Error de carga",
+        error_loading_file_failure: "El archivo {file} no se pudo cargar.",
+        portfolio_title_full: "Portafolio de Aplicaciones",
+        portfolio_subtitle: "Seleccione el sistema al que desea acceder:",
+        education_categories_title: "Educación: Categorías",
+        education_categories_subtitle: "Seleccione un área para comenzar.",
+        finance_menu_title: "Finanzas: Gestión",
+        finance_menu_subtitle: "Herramientas para su control financiero.",
+        health_menu_title: "Salud: Categorías",
+        health_menu_subtitle: "Herramientas de bienestar y monitoreo.",
+        tasks_menu_title: "Tareas y Productividad",
+        tasks_menu_subtitle: "Gestiona tus compromisos y enfoque.",
+        student_area_title: "Área del Estudiante",
+        student_area_subtitle: "Seleccione el servicio deseado.",
+        auth_modal_cta: "Iniciar sesión / Registrarse",
+        auth_modal_title: "Registro y Acceso",
+        tasks_weekly_planner: "Planificador Semanal",
+        tasks_list: "Lista de Tareas",
+        tasks_monthly_calendar: "Agenda (Mensual)",
+        tasks_tracking: "Seguimiento",
+
+        // Alerta
+        alert_i18n_fallback_title: "Traducción Incompleta",
+        alert_i18n_fallback_body: "Usando Portugués (PT-BR) como recurso de seguridad. Actualice el idioma en el menú de Configuración."
     }
 };
+
+document.getElementById('initial-loader-text').textContent = FALLBACK_I18N['pt-BR'].loading_label;
 
 const COLOR = {
     indigo: { base:"indigo", bg50:"bg-indigo-50", bg100:"bg-indigo-100", text900:"text-indigo-900", text700:"text-indigo-700", border100:"border-indigo-100", border300:"border-indigo-300" },
@@ -1001,7 +1196,7 @@ function App() {
     // Renderização Condicional
     const renderContent = () => {
         if (view === "loading") {
-            return <div className="animate-fade-in-up text-center w-full text-slate-500">A iniciar o sistema...</div>;
+            return <div className="animate-fade-in-up text-center w-full text-slate-500">{t('system_initializing')}</div>;
         }
         
         if (view === "welcome") {
@@ -1012,7 +1207,7 @@ function App() {
             return (
                 <div className="animate-fade-in-up text-center w-full">
                     <h1 className="text-3xl font-extrabold mb-2">{t("app_title_portfolio")}</h1>
-                    <p className="text-slate-500 mb-8">Escolha um MiniApp</p>
+                    <p className="text-slate-500 mb-8">{t('home_choose_app')}</p>
                     <div className="flex flex-wrap justify-center gap-6 max-w-3xl mx-auto">
                         {MENU.map(item => <AppCard key={item.id} item={item} t={t} onClick={() => item.action(item)}/>)}
                     </div>
@@ -1033,7 +1228,7 @@ function App() {
             return <MiniAppScreen config={activeApp} goBack={() => setView("home")} t={t}/>;
         }
 
-        return <div className="text-center text-red-500">Erro: Rota não encontrada.</div>;
+        return <div className="text-center text-red-500">{t('error_route_not_found')}</div>;
     }
 
     return (
