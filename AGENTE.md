@@ -1,51 +1,186 @@
-# AGENTE.md — Guia Operacional do Codex
+# AGENT.md — Instruções Iniciais para o Codex
 
-## Objetivo
-Este arquivo define **como o Codex deve operar neste repositório**:
-- padrões de pastas/arquivos
-- fluxo seguro de implantação
-- regras de revisão antes de commit
-- limpeza de artefatos temporários
+**Documento oficial de orientação para execução automática dentro do repositório MiniApp.**
 
-## Fluxo padrão de implantação via TEMP_INBOX
-1. Receber um arquivo ZIP do usuário.
-2. Descompactar em `TEMP_INBOX/`.
-3. Validar:
-   - nomes de arquivos/pastas
-   - compatibilidade com tokens/estilos globais
-   - ausência de segredos/keys no código
-4. Mover **um a um** para o destino correto no repo.
-5. Ajustar imports/paths se necessário.
-6. Atualizar `CHANGELOG.md`.
-7. Excluir `TEMP_INBOX/` e qualquer artefato temporário.
-8. Criar commit com mensagem clara.
+Este repositório abriga o **projeto MiniApp**, uma plataforma modular que contém múltiplas aplicações internas (mini-apps), cada uma com sua estrutura, fluxos e arquivos próprios.
+O objetivo do Codex é **auxiliar na organização, padronização e manutenção técnica**, sempre respeitando as regras de segurança, legalidade e integridade documental.
 
-## Diretrizes específicas — Painel do Aluno
-- Subpáginas obrigatórias: `/painel-aluno`, `/painel-aluno/aulas`, `/painel-aluno/atividades`, `/painel-aluno/notas` e `/painel-aluno/configuracoes`, com navegação sincronizada (breadcrumb/estado ativo).
-- Cards devem ser totalmente clicáveis e direcionar para a rota configurada; não use botões internos como único alvo de clique.
-- Botões de ação flutuantes devem ocultar ao rolar para baixo e reaparecer ao rolar para cima; evite sobrepor conteúdo textual.
-- Respeite os tokens/classes globais de tema claro/escuro; não introduza paletas locais.
-- Checklist visual obrigatório: alinhamento de grid, contraste WCAG AA, estados hover/focus, responsividade mobile/desktop e conferência de legibilidade nos dois temas.
-- Sempre que alterar fluxos/UX do painel do aluno, registre a mudança em `CHANGELOG.md`.
+As instruções abaixo definem exatamente o que o Codex pode e deve fazer — e o que não pode fazer.
 
-## Convenções de pastas
-- Hubs compartilhados: `src/core/<hub>/`
-- Funcionalidades de alto nível: `src/modules/<modulo>/`
-- MiniApps plugáveis: `src/miniapps/<miniapp>/`
-- UI reutilizável: `src/ui/`
-- Assets públicos: `public/`
-- Home legada: `public/legacy/index-legacy.html` (não remover)
-- Novo index fonte: `src/app/index/` (raiz publica em `index.html`)
+---
 
-## Segurança
-- Nunca commitar `.env`, tokens, chaves.
-- Variáveis sensíveis devem ir para secrets no pipeline ou placeholders.
+# 📌 1. Escopo do Codex
 
-## Observações operacionais
-- Client IDs de backup (`window.GOOGLE_CLIENT_ID`, `window.MS_CLIENT_ID`) devem ser injetados apenas em tempo de execução (ex.: script inline configurado na plataforma de deploy) antes de carregar o index/páginas de backup.
+O Codex está autorizado unicamente a:
 
-## Fluxo de Backup — Google/OneDrive
-- Sempre usar OAuth disparado por interação do usuário (sem pré-autorização automática).
-- Tokens devem ser armazenados apenas em IndexedDB via `idb-keyval` e nunca em arquivos versionados.
-- Client IDs devem vir de variáveis globais injetadas em tempo de execução (`window.GOOGLE_CLIENT_ID`, `window.MS_CLIENT_ID` ou `window.__BACKUP_OAUTH__`).
-- Mantém o layout existente das telas; apenas conecte botões a fluxos reais de autenticação.
+* organizar estruturas de pastas e arquivos do repositório;
+* garantir consistência e limpeza dentro dos diretórios;
+* auxiliar na manutenção de padrões;
+* gerar logs e registrar alterações;
+* abrir pull requests clara e organizadamente;
+* executar internacionalização conforme solicitado.
+
+O Codex **não pode**:
+
+* alterar conteúdo autoral, dados originais, textos oficiais ou materiais protegidos;
+* modificar significado, interpretação ou contexto de qualquer arquivo;
+* executar tarefas fora deste documento.
+
+---
+
+# 📌 2. Estrutura de Pastas e Organização
+
+O Codex deve manter:
+
+### **Estrutura limpa**
+
+* excluir arquivos duplicados, obsoletos ou não referenciados **somente quando solicitado**;
+* evitar criação de estruturas paralelas que fujam do padrão;
+* sempre preservar arquivos essenciais.
+
+### **Padronização**
+
+* nomes de diretórios coerentes, em lowercase quando possível;
+* nomes de arquivos claros e previsíveis;
+* evitar espaços, caracteres especiais e abreviações ambíguas.
+
+### **Integridade**
+
+* nunca mover ou renomear arquivos que façam parte de funcionalidades principais sem instrução explícita;
+* jamais excluir conteúdos originais sem permissão.
+
+---
+
+# 📌 3. Manutenção do Repositório
+
+O Codex deve:
+
+* manter o repositório legível, organizado e livre de inconsistências;
+* validar que arquivos recém-criados estão no diretório correto;
+* padronizar formatação de JSON, Markdown e estruturas simples;
+* registrar toda alteração em um log incluído no PR.
+
+Cada PR deve conter:
+
+* descrição objetiva do que foi feito;
+* resumo das modificações;
+* justificativa técnica;
+* logs automáticos quando aplicável.
+
+---
+
+# 📌 4. Internacionalização — Processo Simplificado
+
+Quando eu solicitar:
+**“internacionalizar esta pasta”**
+ou instrução equivalente,
+
+o Codex deve seguir este procedimento:
+
+### **4.1 Identificar o arquivo de origem (idioma nativo)**
+
+* sempre o arquivo **sem sufixo de idioma**
+  exemplo: `2026.json`
+
+### **4.2 Identificar todos os arquivos de tradução**
+
+* arquivos com sufixo do tipo:
+
+  * `*.en-US.json`
+  * `*.es-ES.json`
+  * `*.it-IT.json`
+  * etc.
+* pode existir qualquer quantidade de idiomas; o Codex deve lidar com todos.
+
+### **4.3 Sincronizar estrutura**
+
+O Codex deve garantir que cada tradução:
+
+* tenha a **mesma estrutura** do arquivo original;
+* possua todas as chaves novas adicionadas;
+* remova chaves que não existem mais no original;
+* mantenha **todos os valores já traduzidos**, sem alteração textual;
+* mantenha o arquivo original totalmente intacto.
+
+### ⚠ O Codex NÃO traduz textos
+
+Ele **apenas replica estrutura**.
+Todo significado, enunciado, frase, conteúdo ou texto deve permanecer inalterado.
+
+### **4.4 Criação de novos idiomas**
+
+Se existir:
+
+```
+arquivo.xx-XX.json
+```
+
+→ o Codex deve incluí-lo automaticamente na rotina.
+
+Se estiver vazio:
+→ o Codex cria apenas a estrutura, sem inserir textos.
+
+### **4.5 Log obrigatório**
+
+O Codex deve registrar:
+
+* arquivos sincronizados
+* idiomas atualizados
+* campos adicionados
+* campos removidos
+* horário da operação
+* resumo da ação
+
+E incluir o log no PR.
+
+---
+
+# 📌 5. Segurança, Legalidade e Responsabilidade
+
+Para evitar problemas legais, institucionais e de integridade:
+
+### O Codex é proibido de:
+
+* alterar conteúdo autoral dos arquivos originais;
+* alterar conteúdo textual traduzido;
+* reescrever textos de qualquer idioma;
+* contextualizar textos para outros países;
+* ajustar ou adaptar significados;
+* acessar URLs externas não autorizadas;
+* gerar conteúdo novo no lugar do original;
+* omitir ou suprimir dados sem permissão.
+
+Conteúdos originais devem permanecer **invioláveis**.
+
+---
+
+# 📌 6. Execução Condicional
+
+O Codex **só deve executar ações quando solicitado explicitamente**, como por exemplo:
+
+* “organizar pastas”
+* “limpar este diretório”
+* “internacionalizar esta pasta”
+* “sincronizar esta estrutura”
+* “validar arquivos desta área”
+* “gerar PR desta revisão”
+
+Se não houver solicitação clara, o Codex não deve agir.
+
+---
+
+# 📌 7. Conclusão
+
+Este documento define todas as permissões e limitações iniciais do Codex dentro do repositório MiniApp.
+
+Ele deve:
+
+* manter a ordem,
+* manter integridade,
+* manter traduções sincronizadas,
+* manter logs,
+* e sempre operar com segurança.
+
+---
+
+**Fim do AGENT.md simplificado**
