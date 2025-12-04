@@ -36,23 +36,36 @@
         
         // Definição do Menu (Minimalista - apenas o suficiente para renderizar os cartões)
         const PORTFOLIO_MENU_ITEMS = [
-            { id: "alerts", titleKey: "menu_alerts", icon: "notifications", color: "rose", isMFE: true }, 
+            { id: "alerts", titleKey: "menu_alerts", icon: "notifications", color: "rose", isMFE: true },
             { id: "settings", titleKey: "menu_settings", icon: "settings", color: "indigo", isMFE: false, viewName: "settings" },
             { id: "student_reg", titleKey: "edu_student_profile", icon: "person_add", color: "emerald", isMFE: true },
-            { id: "simulados", titleKey: "edu_simulados", icon: "edit_note", color: "amber", isMFE: true }
+            {
+                id: "simulados",
+                titleKey: "edu_simulados",
+                icon: "edit_note",
+                color: "amber",
+                isMFE: true,
+                targetUrl: "products/educacao/app-quiz/index.html",
+                basePath: "products/educacao/app-quiz/"
+            }
         ];
 
         // FUNÇÃO DE COMUNICAÇÃO (BRIDGE) - Solicita navegação ao Host
-        const requestNavigation = (appId, viewName) => {
+        const requestNavigation = (item) => {
             if (window.parent) {
                 // Envia o comando para o Host
                 window.parent.postMessage({
                     type: 'MFE_NAV_REQUEST',
                     payload: {
                         action: 'OPEN_APP', // Indica que queremos abrir um app/view
-                        appId: appId || viewName // Envia o ID ou nome da view
+                        appId: item?.id || item?.viewName, // Envia o ID ou nome da view
+                        targetUrl: item?.targetUrl || null,
+                        basePath: item?.basePath || null
                     }
                 }, '*');
+            } else if (item?.targetUrl) {
+                // Fallback local: abre o MiniApp diretamente quando não há Host
+                window.location.href = item.targetUrl;
             } else {
                 console.error("Não é possível comunicar com o Host (parent window não encontrada).");
             }
@@ -114,11 +127,7 @@
             // Envia o comando de navegação ao Host
             const handleCardClick = (item) => {
                 // Verifica se é uma tela nativa do Host ('settings') ou um MiniApp a ser carregado
-                if (item.viewName) {
-                     requestNavigation(null, item.viewName); // Navega para a view nativa
-                } else {
-                     requestNavigation(item.id, null); // Abre o MiniApp
-                }
+                requestNavigation(item);
             };
             
             // Usa isLoading para mostrar o loader.
