@@ -1,34 +1,29 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'https://esm.sh/react@18';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 // ==================================================================================
 // 1. SISTEMA DE DESIGN & CONFIGURAÇÃO (Theme Engine - APENAS CONSTANTES DECLARATIVAS)
 // ==================================================================================
 
-// 1.1. PALETA DE CORES PURAS (Catálogo Hexadecimal - Cores agrupadas)
-// Tokens atômicos de cor.
-// @to: 1.5. SUBJECT_THEMES
-const PALETTE = {
-    PURPLE: { PRIMARY: '#9333EA', BG: '#faf5ff', TEXT: '#581C87' },
-    CYAN: { PRIMARY: '#0891B2', BG: '#f0f9ff', TEXT: '#134E4A' },
-    GREEN_DEEP: { PRIMARY: '#059691', BG: '#ecfdf5', TEXT: '#065F46' },
-    ORANGE_DEEP: { PRIMARY: '#D97706', BG: '#fefce8', TEXT: '#92400E' },
-    INDIGO: { PRIMARY: '#4F46E5', BG: '#eef2ff', TEXT: '#3730A3' },
-    ORANGE_LIGHT: { PRIMARY: '#F5998E', BG: '#fffbeb', TEXT: '#B45309' }, // Corrigido para ser mais claro
-    YELLOW: { PRIMARY: '#EAB308', TEXT: '#A16207' },
-    VIOLET_DEEP: { PRIMARY: '#6D28D9', BG: '#f5f3ff', TEXT: '#4C1D95' },
-    GREEN_LIGHT: { PRIMARY: '#22C55E', BG: '#f0fdf4', TEXT: '#15803D' },
-    PINK: { PRIMARY: '#EC4899', BG: '#fdf2f8', TEXT: '#BE185D' },
-    RED: { PRIMARY: '#DC2626', BG: '#fef2f2', TEXT: '#991B1B' },
-    VIOLET_LIGHT: { PRIMARY: '#7C3AED', BG: '#faf5ff', TEXT: '#6D28D9' },
-    NEUTRAL: { PRIMARY: '#64748B', BG: '#f8fafc', TEXT: '#334155' },
-};
+// 1.1. PALETA DE CORES PURAS (SIMPLIFICADA)
+// Definindo APENAS as cores necessárias (Primária, Feedback, Neutra).
 
-// NOVO: Definição da cor principal do aplicativo (Esmeralda)
-const APP_PRIMARY_COLOR = PALETTE.GREEN_DEEP.PRIMARY;
+// NOVO: Definição da cor principal do aplicativo (Esmeralda - Foco Único)
+const APP_PRIMARY_COLOR = '#059691';
+// Cor de fundo padrão (usando a cor de fundo do tema principal)
+const APP_PRIMARY_BG_RAW = '#ecfdf5'; // bg-emerald-50
+// Cor do texto padrão
+const APP_PRIMARY_TEXT = '#065F46'; // text-emerald-800
+
+// CORES ESSENCIAIS PARA FEEDBACK E ESTADOS
+const FEEDBACK_COLORS = {
+    RED_PRIMARY: '#DC2626', // Vermelho para Errado
+    RED_BG: '#fef2f2', // Fundo Vermelho
+    NEUTRAL_PRIMARY: '#64748B', // Cinza para Neutro/Não Respondido
+    NEUTRAL_BG: '#f8fafc', // Fundo Neutro
+};
 
 // 1.2. TOKENS DE ESTILO PRIMITIVOS (Classes CSS Atômicas)
 // Tokens atômicos do Tailwind CSS.
-// @to: 1.4. TOKENS COMPOSICIONAIS GLOBAIS
 const PRIMITIVE_STYLES = {
     // Cores de Texto e Fundo Genéricas
     TEXT_SLATE_800: 'text-slate-800',
@@ -69,58 +64,35 @@ const PRIMITIVE_STYLES = {
 };
 
 // 1.3. ÍCONES DO SISTEMA (Tokens para Google Material Symbols)
-// Tokens atômicos de ícones.
-// @to: 1.5. SUBJECT_THEMES
 const SYSTEM_ICONS = {
-    SCIENCE: 'science',
-    ROCKET: 'rocket_launch',
-    BIOTECH: 'biotech',
-    HISTORY: 'history_edu',
-    PUBLIC: 'public',
-    GROUPS: 'groups',
-    PSYCHOLOGY: 'psycho',
-    BOOK: 'book',
-    MENU_BOOK: 'menu_book',
-    TRANSLATE: 'translate',
-    CALCULATE: 'calculate',
-    EDIT: 'edit_square',
-    CODE: 'code',
-    TIMER: 'timer',
-    PREMIUM: 'workspace_premium',
+    // Ícone Genérico Principal (Substitui todos os ícones de matéria)
+    ROCKET: 'rocket_launch', 
+    
     // Ícones de metadados
     LIGHTBULB: 'lightbulb',
-    ARROW_FORWARD: 'arrow_forward',
-    // NOVO ÍCONE DE PERGUNTA:
     HELP_OUTLINE: 'help_outline', 
-    // FIM NOVO ÍCONE DE PERGUNTA
     APPS: 'apps',
     DESCRIPTION: 'description',
     MAP: 'map',
     BOLT: 'bolt',
     MATH_FUNCTIONS: 'functions',
-    // Novos tokens gráficos padronizados
     BAR_CHART: 'bar_chart',
-    LINE_CHART: 'ssid_chart', // Representação de gráfico de linha/tendência
-    // Ícone de Finalização
+    LINE_CHART: 'ssid_chart',
     DONE_ALL: 'done_all', 
     LOCK: 'lock',
     SEND: 'send',
     REFRESH: 'refresh',
     RATE_REVIEW: 'rate_review',
-    // Ícone para as Opções de Resposta
     LIST_ALT: 'list_alt',
-    // Emojis/Ícones de Status (Corrigidos para Material Symbols, mantendo o conceito de 'check' e 'close')
-    CHECK: 'check_circle', // Cor verde: Correta
-    CLOSE: 'cancel',       // Cor vermelha/laranja: Incorreta
-    // Emojis para o Status Final (Usando texto simples para emojis visuais se necessário)
+    
+    // Status e Feedback
+    CHECK: 'check_circle', 
+    CLOSE: 'cancel',       
     EMOJI_CORRECT: '✅',
     EMOJI_INCORRECT: '❌',
 };
 
 // 1.4. TOKENS COMPOSICIONAIS GLOBAIS (Montado a partir de 1.2)
-// Combinação de classes atômicas para formar estilos reutilizáveis.
-// @from: 1.2. TOKENS DE ESTILO PRIMITIVOS
-// @to: Componentes (5.x, 6.x, 8.x)
 const COMPOSITIONAL_STYLES = {
     // ATUALIZADO: Retornando ao text-base (16px) padrão para o corpo principal, agora que o simulador tem o tamanho padrão (390px)
     TEXT_BODY: `${PRIMITIVE_STYLES.TEXT_SLATE_800} ${PRIMITIVE_STYLES.FONT_BASE} ${PRIMITIVE_STYLES.LEADING_RELAXED} ${PRIMITIVE_STYLES.FONT_NORMAL}`,
@@ -128,20 +100,12 @@ const COMPOSITIONAL_STYLES = {
     TITLE_LABEL: `${PRIMITIVE_STYLES.TEXT_SLATE_800} ${PRIMITIVE_STYLES.TEXT_XL} ${PRIMITIVE_STYLES.FONT_BOLD}`,
     METADATA_TEXT: `${PRIMITIVE_STYLES.TEXT_XS} ${PRIMITIVE_STYLES.FONT_MEDIUM} ${PRIMITIVE_STYLES.TEXT_SLATE_500} ${PRIMITIVE_STYLES.MARGIN_TOP_1}`,
     
-    // ALTERAÇÃO: Removendo fundo (bg-slate-50), borda (border-slate-200, border) e sombra
-    // O VisualComponent (Chart/Image) agora é o responsável por sua própria estilização interna.
     VISUAL_CONTAINER: `${PRIMITIVE_STYLES.FLEX} ${PRIMITIVE_STYLES.JUSTIFY_CENTER}`,
-    
-    // Novo token para garantir borda circular no wrapper do ícone
     ICON_WRAPPER_CIRCLE: `p-2 ${PRIMITIVE_STYLES.ROUNDED_FULL}`, 
-
-    // Novo token para o texto dentro do badge (padronizado com os títulos de metadados)
-    // Usaremos a combinação text-sm font-medium
     BADGE_TEXT_STYLE: `${PRIMITIVE_STYLES.TEXT_SM} ${PRIMITIVE_STYLES.FONT_MEDIUM}`, 
 
-    // Agregação dos estilos de Componente Badged
+    // Agregação dos estilos de Componente Badged - Mantidos para o caso de uso futuro, mas não usados.
     Badged: {
-        // CORREÇÃO APLICADA: Voltando para text-xs font-bold (compacto e visível) para badges de metadados.
         BADGE_BASE: `${PRIMITIVE_STYLES.FLEX} ${PRIMITIVE_STYLES.ITEMS_CENTER} ${PRIMITIVE_STYLES.GAP_1} ${PRIMITIVE_STYLES.TEXT_XS} ${PRIMITIVE_STYLES.FONT_BOLD} ${PRIMITIVE_STYLES.PADDING_X_2} ${PRIMITIVE_STYLES.PADDING_Y_1} ${PRIMITIVE_STYLES.ROUNDED_FULL} ${PRIMITIVE_STYLES.TEXT_WHITE} ${PRIMITIVE_STYLES.SHADOW_SM}`,
         BADGE_TIMER: `${PRIMITIVE_STYLES.BG_SLATE_500}`,
         BADGE_DIFFICULTY_EASY: `${PRIMITIVE_STYLES.BG_EMERALD_500}`,
@@ -149,62 +113,29 @@ const COMPOSITIONAL_STYLES = {
         BADGE_DIFFICULTY_HARD: `${PRIMITIVE_STYLES.BG_ROSE_500}`,
     },
     
-    // Token para botões de navegação secundários (Cor Neutra)
-    // ATUALIZADO: Usando tons de cinza mais escuros para o texto e hover mais suave.
     ACTION_BUTTON_SECONDARY: `border border-slate-300 bg-white text-slate-700 hover:bg-slate-100`,
-
-    // Token para o botão principal (Cor Sólida Primária)
-    // ATUALIZADO: Incluindo sombra para distinção visual
     ACTION_BUTTON_PRIMARY_SOLID: `bg-indigo-600 text-white font-bold shadow-lg`,
-    
-    // Token para o botão de Ênfase (Cor Sólida Secundária)
-    // ATUALIZADO: Fundo sólido verde para o botão de ação principal (Próximo/Finalizar)
     ACTION_BUTTON_EMPHASIS_SOLID: `bg-emerald-600 text-white font-bold shadow-md hover:bg-emerald-700`,
 };
 
-// 1.5. MÁSCARA SEMÂNTICA POR MATÉRIA (SUBJECT_THEMES)
-// Extrai e agrega tokens semânticos (cor/ícone) diretamente da PALETTE e SYSTEM_ICONS.
-// @from: 1.1. PALETTE, 1.3. SYSTEM_ICONS
-// @to: Componentes React (4.x, 5.x, 6.x, 7.x, 8.x) - Acesso direto
-const SUBJECT_THEMES = {
-    'Chemistry': { primary: PALETTE.PURPLE.PRIMARY, bgRaw: PALETTE.PURPLE.BG, text: PALETTE.PURPLE.TEXT, icon: SYSTEM_ICONS.SCIENCE }, 
-    'Physics': { primary: PALETTE.CYAN.PRIMARY, bgRaw: PALETTE.CYAN.BG, text: PALETTE.CYAN.TEXT, icon: SYSTEM_ICONS.ROCKET }, 
-    'Biology': { primary: PALETTE.GREEN_DEEP.PRIMARY, bgRaw: PALETTE.GREEN_DEEP.BG, text: PALETTE.GREEN_DEEP.TEXT, icon: SYSTEM_ICONS.BIOTECH }, 
-    'History': { primary: PALETTE.ORANGE_DEEP.PRIMARY, bgRaw: PALETTE.ORANGE_DEEP.BG, text: PALETTE.ORANGE_DEEP.TEXT, icon: SYSTEM_ICONS.HISTORY }, 
-    'Geography': { primary: PALETTE.INDIGO.PRIMARY, bgRaw: PALETTE.INDIGO.BG, text: PALETTE.INDIGO.TEXT, icon: SYSTEM_ICONS.PUBLIC }, 
-    'Sociology': { primary: PALETTE.ORANGE_LIGHT.PRIMARY, bgRaw: PALETTE.ORANGE_LIGHT.BG, text: PALETTE.ORANGE_LIGHT.TEXT, icon: SYSTEM_ICONS.GROUPS }, 
-    'Philosophy': { primary: PALETTE.VIOLET_DEEP.PRIMARY, bgRaw: PALETTE.VIOLET_DEEP.BG, text: PALETTE.VIOLET_DEEP.TEXT, icon: SYSTEM_ICONS.PSYCHOLOGY }, 
-    'Portuguese': { primary: PALETTE.GREEN_LIGHT.PRIMARY, bgRaw: PALETTE.GREEN_LIGHT.BG, text: PALETTE.GREEN_LIGHT.TEXT, icon: SYSTEM_ICONS.BOOK }, 
-    'Literature': { primary: PALETTE.YELLOW.PRIMARY, bgRaw: PALETTE.ORANGE_LIGHT.BG, text: PALETTE.YELLOW.TEXT, icon: SYSTEM_ICONS.MENU_BOOK }, 
-    'English': { primary: PALETTE.PINK.PRIMARY, bgRaw: PALETTE.PINK.BG, text: PALETTE.PINK.TEXT, icon: SYSTEM_ICONS.TRANSLATE }, 
-    'Mathematics': { primary: PALETTE.RED.PRIMARY, bgRaw: PALETTE.RED.BG, text: PALETTE.RED.TEXT, icon: SYSTEM_ICONS.CALCULATE }, 
-    'Writing': { primary: PALETTE.VIOLET_LIGHT.PRIMARY, bgRaw: PALETTE.VIOLET_LIGHT.BG, text: PALETTE.VIOLET_LIGHT.TEXT, icon: SYSTEM_ICONS.EDIT }, 
-    'default': { primary: PALETTE.NEUTRAL.PRIMARY, bgRaw: PALETTE.NEUTRAL.BG, text: PALETTE.NEUTRAL.TEXT, icon: SYSTEM_ICONS.CODE },
+// 1.5. TEMA GLOBAL (Padronizado)
+const GLOBAL_THEME = { 
+    primary: APP_PRIMARY_COLOR, 
+    bgRaw: APP_PRIMARY_BG_RAW, 
+    text: APP_PRIMARY_TEXT, 
+    icon: SYSTEM_ICONS.ROCKET 
 };
-
-
-// 1.2. TOKENS DE ESTILO PRIMITIVOS (Classes CSS Atômicas)
-// ... (PRIMITIVE_STYLES block is defined above)
-
-// 1.3. ÍCONES DO SISTEMA (Tokens para Google Material Symbols)
-// ... (SYSTEM_ICONS block is defined above)
-
-// 1.4. TOKENS COMPOSICIONAIS GLOBAIS (Montado a partir de 1.2)
-// ... (COMPOSITIONAL_STYLES block is defined above)
-
-// 1.5. MÁSCARA SEMÂNTICA POR MATÉRIA (SUBJECT_THEMES)
-// ... (SUBJECT_THEMES block is defined above)
 
 
 // ==================================================================================
 // 2. MODELO UNIVERSAL DE QUESTÃO (Esquema de Dados e Metadados de UI)
 // ==================================================================================
 
-// 2.1. TEMPLATE DE MODELO UNIVERSAL (Contrato de Dados)
+// 2.1. TEMPLATE DE MODELO UNIVERSAL (Contrato de Dados) - Mantido para documentação
 const UNIVERSAL_MODEL_TEMPLATE = {
     id: null, 
     type: 'text', 
-    subject: 'default', 
+    subject: 'Geral', // PADRONIZADO
     topic: 'Assunto Padrão',
     preview: 'Descrição curta do conteúdo',
     courseEdition: 'Edição Padrão',
@@ -228,23 +159,16 @@ const MODEL_METADATA = {
     // Títulos principais do Quiz e Seções
     SECTION_TITLE: {
         CONTEXT: { title: "Contexto", icon: SYSTEM_ICONS.LIGHTBULB },
-        // NOVO: Substituindo ARROW_FORWARD por HELP_OUTLINE
         QUESTION: { title: "Pergunta", icon: SYSTEM_ICONS.HELP_OUTLINE },
-        // NOVO: Seção para as Opções de Resposta
-        RESPONSE_OPTIONS: { title: "Opções de Resposta", icon: SYSTEM_ICONS.LIST_ALT }, 
-        // TÍTULO ATUALIZADO: De Mapa de Modelos para Escolha um Tema
-        MAP_VIEW: { title: "Escolha um Tema", icon: SYSTEM_ICONS.MAP },
-        // Atualizado para usar a cor principal do APP
-        APP_TITLE: { title: "Laboratório de Modelos ENEM", icon: SYSTEM_ICONS.BOLT, color: APP_PRIMARY_COLOR },
-        APP_SUBTITLE: "Catálogo de protótipos visuais de questões. Visualize um modelo por vez no formato de celular.",
+        RESPONSE_OPTIONS: { title: "Options de Resposta", icon: SYSTEM_ICONS.LIST_ALT }, 
+        MAP_VIEW: { title: "Catálogo de Cursos", icon: SYSTEM_ICONS.MAP },
+        APP_TITLE: { title: "Simulado Inteligente | Preparatório ENEM", icon: SYSTEM_ICONS.BOLT, color: APP_PRIMARY_COLOR },
+        APP_SUBTITLE: "Sua plataforma completa de simulação para o ENEM e Cursos Preparatórios.",
     },
     // Rótulos de metadados da questão (Badge Headers)
     QUESTION_LABELS: {
-        COURSE: { title: "CURSO", icon: SYSTEM_ICONS.BOOK },
-        SUBJECT: { title: "MATÉRIA", icon: SYSTEM_ICONS.APPS },
+        SUBJECT: { title: "TEMA", icon: SYSTEM_ICONS.APPS }, // Renomeado para TEMA
         TOPIC: { title: "ASSUNTO", icon: SYSTEM_ICONS.DESCRIPTION },
-        TIME: { title: "min", icon: SYSTEM_ICONS.TIMER },
-        PREMIUM: { title: "DIFFICULTY", icon: SYSTEM_ICONS.PREMIUM },
         METRIC: "Questão",
     },
     // Rótulos de Feedback
@@ -265,17 +189,14 @@ const MODEL_METADATA = {
 // 3. DADOS (Data Layer)
 // ==================================================================================
 
-// 3.1. CATÁLOGO DE MODELOS (Instâncias de Dados)
-// Estes dados seguem o contrato definido no Nível 2.
-// ATUALIZADO: Contém apenas UM modelo (o quiz único Enem 2023)
-// @to: Componentes React (7.x, 8.x)
-const MODEL_CATALOG = [
-    // O ÚNICO MODELO: O quiz único Enem 2023
+// 3.1. CATÁLOGO DE PERGUNTAS (Instâncias de Dados)
+const CATALOGO_DE_PERGUNTAS = [
+    // MODELO 1: História (ENEM 2023) - subject padronizado para 'Geral'
     { 
-        id: 1, type: 'text', interactionType: 'multiple-choice', subject: 'History', 
-        topic: 'Iluminismo e Cidadania', // Tema Específico
+        id: 1, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'História: Iluminismo', 
         preview: 'Interpretação de Texto sobre Contratualismo', 
-        courseEdition: 'ENEM 2023', // Curso Principal
+        courseEdition: 'ENEM 2023', 
         durationMinutes: 3, difficulty: 'Média',
         content: { 
             text: "O conceito de 'separação dos poderes' de Montesquieu foi fundamental para o desenvolvimento das democracias liberais modernas, buscando evitar a tirania através da distribuição de autoridade em esferas independentes.",
@@ -283,7 +204,200 @@ const MODEL_CATALOG = [
         },
         question: "Qual princípio iluminista a separação dos poderes busca concretizar?",
         options: ["Soberania Popular", "Liberalismo Econômico", "Contratualismo", "Igualdade Jurídica"], 
-        answer: "Soberania Popular", // Resposta ajustada para ser interpretativa
+        answer: "Soberania Popular", 
+    },
+    // MODELO 2: Matemática (ENEM 2023) - subject padronizado para 'Geral'
+    { 
+        id: 2, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'Matemática: Geometria Espacial', 
+        preview: 'Cálculo de volume de sólidos', 
+        courseEdition: 'ENEM 2023', 
+        durationMinutes: 4, difficulty: 'Difícil',
+        content: { 
+            text: "Uma piscina tem formato de paralelepípedo com 10 metros de comprimento, 5 metros de largura e 2 metros de profundidade. Para calcular seu volume, usamos a fórmula $V = c \\cdot l \\cdot p$.",
+            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
+        },
+        question: "Qual é o volume máximo de água que ela pode comportar em metros cúbicos?",
+        options: ["100 m³", "50 m³", "20 m³", "10 m³"], 
+        answer: "100 m³", 
+    },
+    // MODELO 3: Química (ENEM 2023) - subject padronizado para 'Geral'
+    { 
+        id: 3, 
+        type: 'chart-bar', // ALTERADO: Agora é um gráfico de barras
+        interactionType: 'multiple-choice', 
+        subject: 'Geral', 
+        topic: 'Química: Eletroquímica e Baterias',
+        preview: 'Cálculo de Potencial Padrão de Célula', 
+        courseEdition: 'ENEM 2023', 
+        durationMinutes: 5, 
+        difficulty: 'Difícil',
+        content: { 
+            text: "O gráfico de barras abaixo representa os potenciais padrão de redução ($E^0$) para o Zinco e o Cobre. O potencial de célula é dado por $E^0_{célula} = E^0_{maior} - E^0_{menor}$.",
+            chartData: {
+                labels: ["$Zn^{2+} / Zn$", "$Cu^{2+} / Cu$"],
+                values: [-0.76, 0.34],
+                backgroundColor: ["#f87171", "#34d399"], // Rosa (Zn) e Verde (Cu)
+                label: "Potencial Padrão de Redução (V)"
+            },
+            pyramidData: null, 
+            imageURL: null, 
+            imageAlt: null
+        },
+        question: "Qual o potencial padrão de célula (em volts) para a reação de zinco e cobre?",
+        options: ["-1.10 V", "+0.42 V", "+1.10 V", "-0.42 V"], 
+        answer: "+1.10 V", 
+    },
+    // MODELO 4: Biologia (ENEM 2023) - subject padronizado para 'Geral'
+    { 
+        id: 4, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'Biologia: Genética e Alelos',
+        preview: 'Interpretação de Herança Genética', 
+        courseEdition: 'ENEM 2023', 
+        durationMinutes: 3, difficulty: 'Média',
+        content: { 
+            text: "A cor de uma flor é determinada por um único gene com dois alelos: 'A' (dominante, flor vermelha) e 'a' (recessivo, flor branca). Cruzando-se duas plantas heterozigotas (Aa), qual a probabilidade de nascerem flores brancas?",
+            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
+        },
+        question: "Qual a probabilidade (em %) de nascerem flores brancas do cruzamento Aa x Aa?",
+        options: ["25%", "50%", "75%", "100%"], 
+        answer: "25%", 
+    },
+    // MODELO 5: Português (ENEM 2023) - subject padronizado para 'Geral'
+    { 
+        id: 5, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'Português: Funções da Linguagem',
+        preview: 'Análise de texto jornalístico', 
+        courseEdition: 'ENEM 2023', 
+        durationMinutes: 2, difficulty: 'Fácil',
+        content: { 
+            text: "Um editorial de jornal foca primariamente em convencer o leitor a adotar uma determinada posição sobre um tema político, utilizando argumentos e um tom persuasivo.",
+            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
+        },
+        question: "Qual a função da linguagem predominante em um editorial de jornal?",
+        options: ["Referencial", "Emotiva", "Conativa", "Metalinguística"], 
+        answer: "Conativa", 
+    },
+    // MODELO 6: Física (ENEM 2023) - subject padronizado para 'Geral'
+    { 
+        id: 6, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'Física: Leis de Newton',
+        preview: 'Aplicação da Segunda Lei da Dinâmica', 
+        courseEdition: 'ENEM 2023', 
+        durationMinutes: 4, difficulty: 'Média',
+        content: { 
+            text: "Um objeto de massa $m=5kg$ é empurrado por uma força resultante constante de $F=20N$ em uma superfície sem atrito. A Segunda Lei de Newton é dada por $F = m \\cdot a$.",
+            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
+        },
+        // CORRIGIDO: Agora usando a notação $m \cdot s^{-2}$ para garantir a renderização correta do expoente,
+        // alinhada com as melhores práticas de LaTeX e a precisão técnica da unidade de aceleração.
+        question: "Qual a aceleração do objeto em $m \cdot s^{-2}$?",
+        options: ["1 $m \cdot s^{-2}$", "4 $m \cdot s^{-2}$", "15 $m \cdot s^{-2}$", "25 $m \cdot s^{-2}$"], 
+        answer: "4 $m \cdot s^{-2}$", 
+    },
+    // MODELO 7: Biologia (ENEM 2024 - Adicionado para testar escalabilidade) - subject padronizado para 'Geral'
+    { 
+        id: 7, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
+        topic: 'Biologia: Ecologia e Cadeias Tróficas',
+        preview: 'Análise de impacto ambiental', 
+        courseEdition: 'ENEM 2024', 
+        durationMinutes: 3, difficulty: 'Média',
+        content: { 
+            text: "Em um ecossistema aquático, o aumento excessivo de algas (produtores) devido ao excesso de nutrientes (eutrofização) leva à diminuição do oxigênio dissolvido, afetando peixes (consumidores secundários).",
+            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
+        },
+        question: "Qual o impacto imediato do consumo de oxigênio pelas algas (após a morte) no ecossistema?",
+        options: ["Aumento da biodiversidade", "Morte dos organismos aeróbicos", "Elevação do pH da água", "Diminuição da temperatura"], 
+        answer: "Morte dos organismos aeróbicos", 
+    },
+    // NOVO MODELO 8: Gráfico de Rosca (Doughnut Chart) - PARA TESTE DE EXIBIÇÃO (Q1 Simulado Teste)
+    { 
+        id: 8, 
+        type: 'chart-donut', 
+        interactionType: 'multiple-choice', 
+        subject: 'Geral', 
+        topic: 'Análise Estatística',
+        preview: 'Distribuição de Frequência de Votos', 
+        courseEdition: 'Simulado Teste', 
+        durationMinutes: 3, difficulty: 'Média',
+        content: { 
+            text: "O gráfico de rosca abaixo representa a distribuição percentual de votos em uma eleição simulada entre os candidatos A, B e C. As porcentagens são mostradas nativamente dentro das fatias.",
+            chartData: {
+                labels: ["Candidato A", "Candidato B", "Candidato C", "Abstenções"],
+                values: [45, 30, 15, 10], 
+                colors: ["#3b82f6", "#ef4444", "#10b981", "#64748B"] // Azul, Vermelho, Verde, Cinza
+            }, 
+            pyramidData: null, 
+            imageURL: null, 
+            imageAlt: null
+        },
+        question: "Qual candidato obteve a maior proporção de votos?",
+        options: ["Candidato A", "Candidato B", "Candidato C", "Abstenções"], 
+        answer: "Candidato A", 
+    },
+    // NOVO MODELO 9: Gráfico de Linha (Line Chart) - SEGUNDA PERGUNTA NO CURSO TESTE (Q2 Simulado Teste)
+    { 
+        id: 9, 
+        type: 'chart-line', 
+        interactionType: 'multiple-choice', 
+        subject: 'Geral', 
+        topic: 'Física: Termodinâmica',
+        preview: 'Análise de Variação de Temperatura', 
+        courseEdition: 'Simulado Teste', 
+        durationMinutes: 4, 
+        difficulty: 'Média',
+        content: { 
+            text: "O gráfico de linha abaixo mostra a variação da temperatura ($T$) de um corpo em função do tempo ($t$) durante um experimento de aquecimento e resfriamento.",
+            chartData: {
+                labels: ["t=0 min", "t=1 min", "t=2 min", "t=3 min", "t=4 min"],
+                values: [20, 35, 40, 30, 25], 
+                backgroundColor: "#3b82f6", // Azul
+                label: "Temperatura ($^\circ C$)"
+            }, 
+            pyramidData: null, 
+            imageURL: null, 
+            imageAlt: null
+        },
+        question: "Em qual intervalo de tempo a taxa de variação da temperatura foi negativa?",
+        options: [
+            "Entre $t=0$ e $t=1$ min", 
+            "Entre $t=1$ e $t=2$ min", 
+            "Entre $t=2$ e $t=4$ min", // Resposta Correta: T de 40 para 25
+            "Em $t=0$ min"
+        ], 
+        answer: "Entre $t=2$ e $t=4$ min", 
+    },
+    // NOVO MODELO 10: Gráfico de Barras (Bar Chart) - TERCEIRA PERGUNTA NO CURSO TESTE (Q3 Simulado Teste)
+    { 
+        id: 10, 
+        type: 'chart-bar', 
+        interactionType: 'multiple-choice', 
+        subject: 'Geral', 
+        topic: 'Matemática: Probabilidade',
+        preview: 'Interpretação de Frequência e Probabilidade', 
+        courseEdition: 'Simulado Teste', 
+        durationMinutes: 3, 
+        difficulty: 'Média',
+        content: { 
+            text: "O gráfico de barras abaixo mostra a frequência de resultados obtidos após 50 lançamentos de um dado de 6 faces (não viciado). A probabilidade de obter um resultado ímpar é dada por $P(ímpar) = \\frac{n_{impar}}{n_{total}}$, onde $n_{impar}$ é a soma das frequências de ocorrência das faces ímpares.",
+            chartData: {
+                labels: ["Face 1", "Face 2", "Face 3", "Face 4", "Face 5", "Face 6"],
+                values: [7, 8, 9, 10, 6, 10], 
+                backgroundColor: "#fcd34d", // Amarelo (laranja-400)
+                label: "Frequência de Ocorrência"
+            }, 
+            pyramidData: null, 
+            imageURL: null, 
+            imageAlt: null
+        },
+        question: "Qual é a probabilidade experimental de o resultado ser um número ímpar?",
+        options: [
+            "11/25", // (7+9+6)/50 = 22/50 = 11/25
+            "28/50", 
+            "2/5", 
+            "20/50"
+        ], 
+        answer: "11/25", 
     },
 ];
 
@@ -291,7 +405,7 @@ const MODEL_CATALOG = [
 // 4. COMPONENTES UTILITÁRIOS (Visualização de Dados)
 // ==================================================================================
 
-// Componente DEPRECATED, mas mantido para a pirâmide
+// Componente DEPRECATED, mas mantido para a pirâmide, pois ainda é referenciado.
 const FoodPyramidDiagram = ({ data }) => {
     // CLÁUSULA DE GUARDA ADICIONADA
     if (!data || !data.levels || data.levels.length === 0) {
@@ -439,7 +553,7 @@ const ChartJSRenderer = ({ type, data, isLoaded }) => {
             legendPosition = 'bottom';
         }
 
-        return {
+        const baseOptions = {
             responsive: true,
             maintainAspectRatio: false, // Permite que o contêiner React controle o tamanho
             plugins: {
@@ -450,7 +564,7 @@ const ChartJSRenderer = ({ type, data, isLoaded }) => {
                         // NOVO: Usa estilo de ponto (círculo) para o indicador
                         usePointStyle: true,
                         pointStyle: 'circle',
-                        // ADIÇÃO SOLICITADA: Reduz o tamanho da área do marcador na legenda (boxWidth)
+                        // ADIÇÃO SOLICITADA: Reduz o tamanho do tamanho do marcador na legenda (boxWidth)
                         boxWidth: 12, 
                         font: {
                             family: 'Inter',
@@ -461,20 +575,52 @@ const ChartJSRenderer = ({ type, data, isLoaded }) => {
                 tooltip: {
                     titleFont: { family: 'Inter', size: 10, weight: 'bold' },
                     bodyFont: { family: 'Inter', size: 10 },
-                }
+                },
+                // REINTRODUZIDO: Configuração do datalabels (apenas para Doughnut Chart)
+                datalabels: {
+                    display: chartType === 'doughnut',
+                    color: '#fff', // Cor do texto branco
+                    font: {
+                        weight: 'bold',
+                        size: 14,
+                    },
+                    textAlign: 'center',
+                    // Formatação para exibir a porcentagem
+                    formatter: (value, context) => {
+                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        if (total === 0) return '0%';
+                        const percentage = ((value / total) * 100).toFixed(0);
+                        return value > 0 ? `${percentage}%` : ''; 
+                    },
+                    anchor: 'center', 
+                    align: 'center',
+                },
             },
             scales: chartType !== 'doughnut' ? {
                 x: {
                     ticks: { font: { size: 10, family: 'Inter' } },
-                    title: { display: true, text: chartType === 'line' ? 'Tempo' : 'Categoria', font: { size: 10, family: 'Inter' } }
+                    title: { display: true, text: chartType === 'line' ? 'Tempo (min)' : 'Categoria', font: { size: 10, family: 'Inter' } }
                 },
                 y: {
                     ticks: { font: { size: 10, family: 'Inter' } },
-                    title: { display: true, text: chartType === 'line' ? 'Valor' : 'Frequência', font: { size: 10, family: 'Inter' } }
+                    title: { display: true, text: chartType === 'line' ? 'Temperatura ($^\circ C$)' : 'Frequência', font: { size: 10, family: 'Inter' } }
                 }
             } : {}
         };
-    }, [chartType]);
+
+        // Customização de Títulos de Eixos para a Questão 10 (Gráfico de Barras - Frequência)
+        if (chartType === 'bar' && data.label === "Frequência de Ocorrência") {
+             baseOptions.scales.x.title.text = 'Face do Dado';
+             baseOptions.scales.y.title.text = 'Contagem (Frequência)';
+        }
+        
+        // Remove 'datalabels' da lista de plugins para outros tipos de gráfico
+        if (chartType !== 'doughnut') {
+            baseOptions.plugins.datalabels = { display: false };
+        }
+        
+        return baseOptions;
+    }, [chartType, data]);
 
 
     useEffect(() => {
@@ -492,11 +638,21 @@ const ChartJSRenderer = ({ type, data, isLoaded }) => {
         // CORREÇÃO 3: Se getChartData retornar null (dados incompletos), não tenta criar o gráfico.
         if (!chartData) return;
 
+        // REINTRODUZIDO: Lógica de adição do plugin datalabels ao Chart.js
+        const plugins = [];
+        if (window.ChartDataLabels) {
+             plugins.push(window.ChartDataLabels);
+        } else {
+             console.warn("ChartDataLabels plugin not found globally. Check CDN loading.");
+        }
+
+
         // Cria a nova instância do gráfico
         chartRef.current = new window.Chart(canvasRef.current, {
             type: chartType,
             data: chartData,
             options: options,
+            plugins: plugins // Adiciona o plugin aqui
         });
 
         // Limpeza: destrói o gráfico ao desmontar o componente
@@ -528,17 +684,10 @@ const ChartJSRenderer = ({ type, data, isLoaded }) => {
     );
 };
 
-// REMOVIDO: BrazilMapSVG (Antiga Questão 5)
-
 
 // Componente para renderizar imagens ou SVGs simulados
 const ImageRenderer = ({ url, alt }) => {
     
-    // REMOVIDO: A lógica de renderização do SVG do Brasil
-    // if (url === 'RENDER_BRAZIL_MAP_SVG') {
-    //     return <BrazilMapSVG alt={alt} />;
-    // }
-
     return (
         // ATUALIZADO: Usando w-full e h-auto para garantir a área útil máxima e o esticamento vertical.
         // Removido o padding desnecessário do componente ChartJSRenderer.
@@ -625,31 +774,6 @@ const TitleSection = ({ color, iconName, title, value, children, mtClass = 'pt-1
     </>
 );
 
-// 5.4. BadgeIndicator: Componente para exibir indicadores fixos de status (Dificuldade/Tempo).
-const BadgeIndicator = ({ value, iconName, isTimer, difficulty }) => {
-    let colorClass = '';
-    
-    // Acesso direto ao COMPOSITIONAL_STYLES.Badged
-    if (isTimer) {
-        colorClass = COMPOSITIONAL_STYLES.Badged.BADGE_TIMER;
-    } else {
-        if (difficulty === 'Fácil') colorClass = COMPOSITIONAL_STYLES.Badged.BADGE_DIFFICULTY_EASY;
-        else if (difficulty === 'Média') colorClass = COMPOSITIONAL_STYLES.Badged.BADGE_DIFFICULTY_MEDIUM;
-        else if (difficulty === 'Difícil') colorClass = COMPOSITIONAL_STYLES.Badged.BADGE_DIFFICULTY_HARD;
-    }
-
-    // items-center garante alinhamento vertical centralizado.
-    // Base class agora usa COMPOSITIONAL_STYLES.Badged.BADGE_BASE, que está configurado com text-xs font-bold
-    const baseClass = `${COMPOSITIONAL_STYLES.Badged.BADGE_BASE} flex items-center`; 
-    
-    return (
-        <div className={`${baseClass} ${colorClass}`}>
-            {/* Ícone reduzido para w-3 h-3, que é o menor tamanho padrão, alinhado com o texto */}
-            <IconToken iconName={iconName} color='white' sizeClass="w-3 h-3" />
-            {value}
-        </div>
-    );
-};
 
 // 5.5. ActionButton: Componente padronizado para botões de navegação/ação no rodapé.
 const ActionButton = ({ label, onClick, styleClass, isDisabled, basePaddingClass, refProp }) => {
@@ -662,7 +786,6 @@ const ActionButton = ({ label, onClick, styleClass, isDisabled, basePaddingClass
     let stateClass = '';
     if (isDisabled) {
         // Estado Inativo: Aplica opacidade e desabilita interações de hover/cursor
-        // Removido hover:bg-transparent e adicionado cursor-not-allowed
         stateClass = 'cursor-not-allowed opacity-70'; 
     } 
     // Otherwise, we let the styleClass determine the hover behavior.
@@ -691,10 +814,10 @@ const ActionButton = ({ label, onClick, styleClass, isDisabled, basePaddingClass
 // ==================================================================================
 
 const QuestionContentRenderer = ({ model, isChartJSEnabled }) => {
-    const { type, content, subject } = model;
+    const { type, content } = model;
     
-    // Lógica de acesso ao tema embutida: SUBJECT_THEMES[subject] || SUBJECT_THEMES['default']
-    const currentTheme = SUBJECT_THEMES[subject] || SUBJECT_THEMES['default'];
+    // Lógica de acesso ao tema Padrão
+    const currentTheme = GLOBAL_THEME;
     
     let VisualComponent;
     
@@ -783,66 +906,61 @@ const QuestionContentRenderer = ({ model, isChartJSEnabled }) => {
 // 7. COMPONENTES DO LABORATÓRIO (Map View - Cartões de Navegação)
 // ==================================================================================
 
-const ModelCard = ({ model, onClick, isActive }) => {
-    // Lógica de acesso ao tema embutida: SUBJECT_THEMES[model.subject] || SUBJECT_THEMES['default']
-    const currentTheme = SUBJECT_THEMES[model.subject] || SUBJECT_THEMES['default'];
+/**
+ * Componente que renderiza um cartão representando uma edição de curso agrupada (ex: ENEM 2023).
+ * Substitui o antigo ModelCard.
+ */
+const CourseCard = ({ course, onClick }) => {
+    // Styling é genérico, pois representa um curso inteiro
+    const themeColor = APP_PRIMARY_COLOR;
+    // Icone padronizado globalmente
+    const cardIconName = GLOBAL_THEME.icon; 
     
-    // Ícone para representar o tema/curso, em vez do ícone da matéria
-    const CardIconName = SYSTEM_ICONS.MENU_BOOK; 
-    
-    // REMOVIDO: TypeIconName e TypeIcon não são mais usados neste modo de visualização.
-
-    const isModelActive = isActive;
-    // Simplificado para manter o fundo branco e apenas o hover cinza (visualmente menos intrusivo)
-    // O ModelCard agora usa border (1px) em vez de border-2.
+    // Estilos de base
     const bgClasses = 'bg-white hover:bg-slate-50'; 
-    const neutralTextColor = 'rgb(100 116 139)';
-
+    const neutralTextColor = 'rgb(71 85 105)'; // slate-600
+    
+    // Novo: Padronizando o tema da matéria para 'Geral'
+    const subjectLabel = "TEMA: Geral";
 
     return (
         <div 
-            onClick={() => onClick(model)}
+            // O onClick agora passa a edição para ser filtrada
+            onClick={() => onClick(course.firstModel)}
             className={`
                 w-full rounded-xl border p-4 cursor-pointer 
                 transition-colors duration-200 
                 ${bgClasses}
             `}
             style={{ 
-                // Alterado de border-2 para border (1px)
-                borderColor: currentTheme.primary,
-                // REMOVIDO: backgroundColor: isModelActive ? currentTheme.bgRaw : 'transparent',
+                borderColor: themeColor,
             }}
         >
-            <div className="flex items-center gap-3">
-                {/* ÍCONE GRANDE: Representa o Curso/Tema (Menu Book) */}
-                <div className={COMPOSITIONAL_STYLES.ICON_WRAPPER_CIRCLE} style={{ 
-                    // Removido preenchimento de fundo para simplificar a visualização
-                    backgroundColor: 'transparent', 
-                    // MUDANÇA: Borda reduzida para 1px
-                    border: `1px solid ${currentTheme.primary}` 
-                }}>
-                    <IconToken 
-                        iconName={CardIconName} // Ícone de Curso/Tema (MENU_BOOK)
-                        // Cor do ícone agora é a cor primária, não branca
-                        color={currentTheme.primary} 
-                        sizeClass="w-8 h-8" // Aumentado o ícone para 8x8 (grande)
-                    />
-                </div>
+            <div className="flex items-start gap-3">
+                {/* ÍCONE GRANDE */}
+                <IconToken 
+                    iconName={cardIconName} 
+                    color={themeColor} 
+                    sizeClass="w-10 h-10" // Icone grande
+                />
                 
-                <div className="flex flex-col flex-1">
-                    {/* TÍTULO PRINCIPAL: Curso/Edição (ENEM 2023) */}
-                    <h3 className="text-xl font-extrabold leading-tight mb-0.5" style={{ color: currentTheme.primary }}> {/* Aumentado para text-xl e font-extrabold */}
-                        {model.courseEdition} 
+                <div className="flex flex-col flex-1 min-w-0">
+                    {/* TÍTULO PRINCIPAL: Edição do Curso */}
+                    <h3 className="text-xl font-extrabold leading-tight mb-1 truncate" style={{ color: themeColor }}>
+                        {course.edition} 
                     </h3>
                     
-                    {/* SUBTÍTULO: Tema Específico e Matéria (Iluminismo e Cidadania - History) */}
-                    <p className="text-sm font-medium flex items-center gap-1" style={{ color: neutralTextColor }}>
-                        <span className="font-semibold">{model.topic}</span>
-                        <span className="text-xs text-slate-400">({model.subject})</span> {/* Matéria em cinza claro/menor */}
+                    {/* METADADOS: Contagem de Questões */}
+                    <p className="text-sm font-medium leading-tight text-slate-700">
+                        {course.count} Questões Cadastradas
+                    </p>
+                    
+                    {/* METADADOS: Assuntos Envolvidos (Com truncamento se muito longo) - ATUALIZADO */}
+                     <p className="text-xs text-slate-500 mt-1 leading-normal">
+                        {subjectLabel} ({course.subjectCount} Tópicos)
                     </p>
                 </div>
             </div>
-            {/* DESCRIÇÃO/PREVIEW REMOVIDO PARA MÁXIMA SIMPLIFICAÇÃO */}
         </div>
     );
 };
@@ -852,59 +970,42 @@ const ModelCard = ({ model, onClick, isActive }) => {
 // 8. COMPONENTES DE INTERAÇÃO (Interation Engine)
 // =================================================================================E
 
-// NOVO: Função de utilidade para embaralhar um array (Fisher-Yates)
-const shuffleArray = (array) => {
-    // Cria uma cópia superficial do array original para não modificar o estado diretamente
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-};
-
 // 8.1. Renderer para Múltipla Escolha
 const MultipleChoiceRenderer = React.memo(({ model, selectedOption, isAnswered, handleSubmit }) => {
     const { options, answer } = model;
 
-    // NOVO ESTADO: Armazena as opções embaralhadas
-    const [shuffledOptions, setShuffledOptions] = useState([]);
+    // NOVO ESTADO: Armazena as opções (AGORA SEM EMBARALHAMENTO)
+    const [displayOptions, setDisplayOptions] = useState(options);
 
     // REFERÊNCIAS E ESTADO PARA ALTURA IGUAL
     const buttonRefs = useRef([]);
     // REVERTIDO: Voltando ao min-h padrão
     const minHeightClass = 'min-h-[56px]'; 
     
-    // Efeito para embaralhar opções quando o modelo muda (activeModel.id)
+    // Efeito para definir opções (sem embaralhar) quando o modelo muda
     useEffect(() => {
-        // Se a questão já foi respondida, usamos as opções salvas (se existirem)
-        // Por simplificação, o estado de resposta é gerenciado externamente, mas o embaralhamento é local.
-        
-        // Se for a primeira vez que vemos a questão, embaralha:
-        if (!isAnswered) {
-             setShuffledOptions(shuffleArray(options));
-        } else {
-             // Se já foi respondida, usaremos as opções originais.
-             setShuffledOptions(options);
-        }
-    }, [model.id, options, isAnswered]);
+        // Simplesmente define as opções na ordem em que vieram do modelo
+        setDisplayOptions(options);
+    }, [model.id, options]); // Depende do model.id para re-executar
 
-
-    // Efeito para calcular e aplicar a altura máxima (roda após o shuffle)
+    // Efeito para calcular e aplicar a altura máxima (roda após a definição das opções)
     useEffect(() => {
-        // Garante que o array de refs esteja sincronizado com o número de opções (embaralhadas ou não)
-        buttonRefs.current = buttonRefs.current.slice(0, shuffledOptions.length);
+        // Garante que o array de refs esteja sincronizado com o número de opções
+        buttonRefs.current = buttonRefs.current.slice(0, displayOptions.length);
         
-        if (buttonRefs.current.length === shuffledOptions.length) {
+        if (buttonRefs.current.length === displayOptions.length) {
             let maxHeight = 0;
             
             // 1. Resetar alturas para calcular altura natural máxima
-            buttonRefs.current.forEach(btn => {
+            // CORREÇÃO: Alterado de forEach para for...of para permitir o uso de 'break'.
+            for (const btn of buttonRefs.current) {
                 if (btn) {
                     btn.style.height = 'auto'; 
                     maxHeight = Math.max(maxHeight, btn.offsetHeight);
+                    // Otimização: se um botão atingir a altura mínima (56px) ou mais, ele serve como base
+                    if (maxHeight >= 56) break; // CORREÇÃO: 'break' é permitido aqui.
                 }
-            });
+            }
             
             // 2. Aplicar altura máxima a todos os botões
             if (maxHeight > 0) {
@@ -917,11 +1018,11 @@ const MultipleChoiceRenderer = React.memo(({ model, selectedOption, isAnswered, 
                 });
             }
         }
-    // Depende das opções embaralhadas para garantir que a medição ocorra após o shuffle
-    }, [shuffledOptions, isAnswered]); 
+    // Depende das opções (agora não embaralhadas)
+    }, [displayOptions, isAnswered]); 
 
-    // Se o shuffle ainda não ocorreu, renderiza com as opções originais como fallback (embora o useEffect deva ser rápido)
-    const displayOptions = shuffledOptions.length > 0 ? shuffledOptions : options;
+    // Se a lista de exibição não estiver pronta (embora o useEffect garanta que esteja), usa o original como fallback
+    // const displayOptions = shuffledOptions.length > 0 ? shuffledOptions : options;
     
     return (
         // ATUALIZADO: Usando px-4 py-4 para padding consistente.
@@ -930,38 +1031,34 @@ const MultipleChoiceRenderer = React.memo(({ model, selectedOption, isAnswered, 
                 const isCorrect = opt === answer;
                 const isSelected = opt === selectedOption;
                 
+                // --- NOVO: ESTILOS BASE ---
                 let btnClass = "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100";
-
+                let textClass = 'font-medium text-sm'; 
+                
                 // Lógica de Feedback Simplificada: Se isAnswered é true, mostre o feedback.
                 const isFeedbackVisible = isAnswered;
 
-                // REVERTIDO: Voltando para 'text-sm'
-                let textClass = 'font-medium text-sm'; 
-                
-                // Adicionando desativação visual após resposta para evitar cliques adicionais
-                // Se a resposta foi dada, desabilita a interação com as opções
+                // Desativação visual após resposta
                 const disabledClass = isAnswered ? 'pointer-events-none opacity-80' : 'hover:bg-slate-100';
 
-
                 if (isFeedbackVisible) {
+                    // 1. Mostrar o botão CORRETO em VERDE, independente de ter sido clicado.
                     if (isCorrect) {
-                        // Resposta correta
                         btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800";
-                        // REVERTIDO: Voltando para 'text-sm'
                         textClass = 'font-bold text-sm'; 
-                    } else if (isSelected) {
-                        // Resposta incorreta escolhida pelo usuário
-                        btnClass = "bg-orange-50 border-orange-300 text-orange-800 opacity-80";
-                        // REVERTIDO: Voltando para 'text-sm'
+                    } 
+                    // 2. Marcar o botão CLICADO (Selecionado) com o estilo NEUTRO de destaque.
+                    else if (isSelected) {
+                        // Aplica o estilo neutro de seleção (roxo suave)
+                        btnClass = "bg-indigo-50 border-indigo-300 text-indigo-700 opacity-80";
                         textClass = 'font-medium text-sm'; 
-                    } else if (isCorrect) {
-                        // Resposta correta (quando o usuário errou, mas queremos mostrar a correta)
-                        btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800 opacity-80";
-                        // REVERTIDO: Voltando para 'text-sm'
-                        textClass = 'font-bold text-sm'; 
-                    }
-                } else if (isSelected) {
-                    // Estado de seleção antes de responder (o usuário não deve ver esse estado aqui, pois o submit é imediato)
+                        // Nota: Se o botão clicado for o correto, ele cai na condição 1, que tem prioridade.
+                    } 
+                    // 3. Os botões não clicados e incorretos mantêm o estilo base 'bg-white border-slate-200'
+                } 
+                // Estado antes de responder:
+                else if (isSelected) {
+                    // Estado de seleção antes de responder
                     btnClass = "bg-indigo-50 border-indigo-300 text-indigo-700 font-medium";
                 }
 
@@ -1034,13 +1131,13 @@ const OpenAnswerRenderer = React.memo(({ model, userText, isAnswered, handleText
 
 
 // 8.3. FinalResultsScreen: Componente para exibir os resultados finais (Tela embutida no fluxo)
-const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBackToQuiz, isPartial }) => {
+const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBackToQuiz, isPartial, onSelectNewCourse }) => { // <--- NOVO PROP: onSelectNewCourse
     // DESESTRUTURAÇÃO COMPLETA: Inclui detailedReviewData
     const { correctCount, totalAnswered, totalQuestions, scorePercentage, detailedReviewData } = score;
     
     // Cor verde para >= 50% de acertos, laranja para menos.
-    const themeColor = scorePercentage >= 50 ? PALETTE.GREEN_DEEP.PRIMARY : PALETTE.ORANGE_DEEP.PRIMARY; 
-    const themeTextColor = scorePercentage >= 50 ? 'text-emerald-700' : 'text-amber-700';
+    const themeColor = scorePercentage >= 50 ? APP_PRIMARY_COLOR : FEEDBACK_COLORS.RED_PRIMARY; 
+    const themeTextColor = scorePercentage >= 50 ? 'text-emerald-700' : 'text-red-700';
 
     const { CHECK, CLOSE, LOCK, EMOJI_CORRECT, EMOJI_INCORRECT } = SYSTEM_ICONS; // Usando EMOJI_CORRECT/INCORRECT
     
@@ -1052,7 +1149,8 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
             totalAnswered - correctCount, 
             totalQuestions - totalAnswered
         ],
-        colors: [PALETTE.GREEN_DEEP.PRIMARY, PALETTE.RED.PRIMARY, PALETTE.NEUTRAL.PRIMARY] 
+        // Usando as constantes globais de cor
+        colors: [APP_PRIMARY_COLOR, FEEDBACK_COLORS.RED_PRIMARY, FEEDBACK_COLORS.NEUTRAL_PRIMARY] 
     };
 
     // Helper para obter o status da questão
@@ -1080,7 +1178,7 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
                     {isPartial ? 'Resultados Parciais' : 'Quiz Finalizado!'}
                 </h2>
                 
-                {/* --- SEÇÃO 1: INDICADORES GERAIS (Simulando CONTEXTO) --- */}
+                {/* --- SEÇÃO 1: INDICADORES GERAIS (Simplificada) --- */}
                 <TitleSection 
                     // CORREÇÃO: Usando APP_PRIMARY_COLOR
                     color={APP_PRIMARY_COLOR} 
@@ -1089,31 +1187,14 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
                     value=""
                     mtClass='pt-4'
                 >
-                    {/* Score Geral com fundo para destaque */}
-                    <div className="flex justify-around items-center my-4 p-4 border rounded-xl bg-slate-50">
-                        <div className="text-center">
-                            <p className="text-4xl font-extrabold" style={{ color: themeColor }}>
-                                {Math.round(scorePercentage)}%
-                            </p>
-                            <p className="text-base text-slate-500 mt-1">Acertos</p> {/* REVERTIDO: text-sm para text-base */}
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-slate-700">
-                                {correctCount} / {totalQuestions}
-                            </p>
-                            <p className="text-base text-slate-500 mt-1">Corretas</p> {/* REVERTIDO: text-sm para text-base */}
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-slate-700">
-                                {totalAnswered} / {totalQuestions}
-                            </p>
-                            <p className="text-base text-slate-500 mt-1">Respondidas</p> {/* REVERTIDO: text-sm para text-base */}
-                        </div>
-                    </div>
+                    {/* Texto descritivo simples para manter o fluxo textual antes do gráfico (Substitui o bloco de porcentagem) */}
+                    <p className="text-base text-slate-500 mb-2">
+                        A distribuição das suas respostas está detalhada no gráfico de rosca abaixo:
+                    </p>
                     
                     {/* Gráfico de Rosca */}
                     {isChartJSEnabled && (
-                        <div className='mt-4 pt-4 border-t border-slate-100'>
+                        <div className='mt-2'>
                             <ChartJSRenderer 
                                 type="chart-donut" 
                                 data={{
@@ -1130,7 +1211,7 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
             </div>
         
             
-            {/* --- SEÇÃO 2: RESUMO DAS QUESTÕES (Simulando PERGUNTA) --- */}
+            {/* --- SEÇÃO 2: RESUMO DAS QUESTÕES --- */}
             <div className="px-4 pt-0 flex flex-col gap-4 bg-white">
                 <TitleSection 
                     // CORREÇÃO: Usando APP_PRIMARY_COLOR
@@ -1146,15 +1227,16 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
                     </div>
                 </TitleSection>
 
-                {/* Resumo Detalhado Linha a Linha (Scorecard) - LIMPEZA DE ESTILOS */}
-                {/* Removido borda, sombra e header estático para incorporar a tabela ao fluxo */}
+                {/* Resumo Detalhado Linha a Linha (Scorecard) */}
                 <div className="flex-1 overflow-y-auto -mt-3">
                     
-                    {/* Header da Tabela Limpa */}
+                    {/* Header da Tabela Limpa - REMOVIDO PARA OCULTAR O TÍTULO */}
+                    {/*
                     <div className="flex justify-between items-center text-base font-bold text-slate-700 p-2 border-b border-slate-200 sticky top-0 bg-white z-10">
                         <span>Questão / Tópico</span>
                         <span className='w-8 text-right'>Status</span>
                     </div>
+                    */}
                     
                     <div className='divide-y divide-slate-100'>
                         {detailedReviewData.map((item, index) => {
@@ -1213,14 +1295,21 @@ const FinalResultsScreen = ({ score, onReview, onRestart, isChartJSEnabled, onBa
                             label="Recomeçar Quiz"
                             onClick={onRestart}
                             styleClass={COMPOSITIONAL_STYLES.ACTION_BUTTON_EMPHASIS_SOLID}
-                            basePaddingClass="px-4 py-2 w-1/2" 
+                            basePaddingClass="px-4 py-2 w-1/3" // <--- Alterado para w-1/3
                         />
                         
                         <ActionButton
                             label="Revisar Questões"
                             onClick={onReview} 
                             styleClass={COMPOSITIONAL_STYLES.ACTION_BUTTON_SECONDARY}
-                            basePaddingClass="px-4 py-2 w-1/2" 
+                            basePaddingClass="px-4 py-2 w-1/3" // <--- Alterado para w-1/3
+                        />
+                         {/* NOVO: Botão para ir para a tela de mapa/catálogo */}
+                        <ActionButton
+                            label="Outro Curso"
+                            onClick={onSelectNewCourse} 
+                            styleClass={COMPOSITIONAL_STYLES.ACTION_BUTTON_SECONDARY}
+                            basePaddingClass="px-4 py-2 w-1/3" // <--- Novo botão, largura w-1/3
                         />
                     </>
                 )}
@@ -1250,17 +1339,18 @@ const QuizReviewScreen = ({ reviewData, onBack }) => {
 
             <div className="flex flex-col gap-8">
                 {reviewData.map((item, index) => {
-                    const theme = SUBJECT_THEMES[item.subject] || SUBJECT_THEMES['default'];
+                    // Tema padronizado globalmente
+                    const theme = GLOBAL_THEME; 
                     const isCorrect = item.userResponse.isCorrect;
                     const statusIcon = isCorrect ? CHECK : CLOSE;
-                    const statusColor = isCorrect ? '#059669' : '#DC2626';
-                    const statusBg = isCorrect ? 'bg-emerald-50' : 'bg-red-50';
+                    const statusColor = isCorrect ? APP_PRIMARY_COLOR : FEEDBACK_COLORS.RED_PRIMARY;
+                    const statusBg = isCorrect ? 'bg-emerald-50' : FEEDBACK_COLORS.RED_BG;
 
                     return (
                         <div key={item.id} className={`p-4 rounded-xl border-l-4 ${statusBg}`} style={{ borderColor: statusColor }}>
                             <div className="flex justify-between items-start mb-3">
                                 <h3 className="text-lg font-bold" style={{ color: theme.text }}>
-                                    {index + 1}. {item.topic} ({item.subject})
+                                    {index + 1}. {item.topic} (TEMA: Geral)
                                 </h3>
                                 <div className="flex items-center gap-1">
                                     <IconToken iconName={statusIcon} color={statusColor} sizeClass="w-5 h-5" />
@@ -1321,28 +1411,45 @@ const QuizReviewScreen = ({ reviewData, onBack }) => {
 
 // 8.5. Componente: WelcomeScreen (Tela Inicial)
 // RENOMEADO para ser mais descritivo e mais simples, pois será renderizado dentro do MobileQuizSimulation
-const WelcomeDisplayCard = () => {
+const WelcomeDisplayCard = ({ onBackToMap }) => { // Recebe onBackToMap como prop
     // Usando a estrutura de seção principal
-    const { APP_TITLE } = MODEL_METADATA.SECTION_TITLE;
+    const { APP_TITLE, APP_SUBTITLE } = MODEL_METADATA.SECTION_TITLE; // Usando APP_SUBTITLE aqui
     
+    // NOVO: Componente do botão único
+    const SelectCourseButton = () => (
+        <ActionButton
+            label="Selecionar Curso"
+            onClick={onBackToMap} // Chama a função que leva para o mapa
+            // Usando o estilo de ênfase (verde sólido)
+            styleClass={COMPOSITIONAL_STYLES.ACTION_BUTTON_EMPHASIS_SOLID + " shadow-xl hover:shadow-2xl"}
+            // Aumentando o padding para dar mais destaque
+            basePaddingClass="px-8 py-3 w-4/5 text-lg" 
+            // Não precisa de refProp aqui
+        />
+    );
+
     return (
         <div className="p-4 flex flex-col items-center justify-center bg-white h-full min-h-[400px]">
             
             <IconToken iconName={SYSTEM_ICONS.ROCKET} color={APP_PRIMARY_COLOR} sizeClass="w-16 h-16" />
             
             <h2 className="text-3xl font-extrabold mt-4 mb-2 text-slate-800 text-center">
+                {/* NOVO TÍTULO */}
                 {APP_TITLE.title}
             </h2>
             <p className="text-center text-slate-600 mb-6 max-w-sm text-lg">
-                Seja bem-vindo(a) ao Laboratório de Questões do ENEM.
+                {/* NOVO SUBTÍTULO (Descrição de Boas-Vindas) */}
+                {APP_SUBTITLE}
             </p>
             {/* REVERTIDO: text-sm para text-base */}
             <p className="text-center text-slate-500 mb-8 max-w-md text-base">
-                Explore a variedade de modelos de questões visuais e interativos criados para aprimorar sua preparação. Clique abaixo para iniciar o quiz com o primeiro modelo ou navegue pelo **Mapa de Modelos** para selecionar um assunto.
+                {/* NOVO TEXTO DE CHAMADA PARA AÇÃO */}
+                Escolha uma edição de prova ou curso para iniciar um quiz focado em questões interativas e modelos visuais.
             </p>
             
-            {/* O botão de iniciar não é mais renderizado aqui, mas sim na barra de navegação. 
-               Aqui fica apenas o conteúdo visual. */}
+            {/* NOVO BOTÃO ÚNICO DE AÇÃO */}
+            <SelectCourseButton />
+            
         </div>
     );
 };
@@ -1351,10 +1458,10 @@ const WelcomeDisplayCard = () => {
 // 9. COMPONENTES DA APLICAÇÃO (Quiz Simulation - A Engrenagem Principal)
 // ==================================================================================
 
-// Removido onScrollToTop das props pois não será mais usado
-const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, isChartJSEnabled, onRestartQuiz, viewMode, onStartQuiz, onBackToMap, onBackToWelcome, onBackFromMap, onHandleModelSelect, MAP_VIEW, MODEL_CATALOG }) => {
-    // Lógica de acesso ao tema embutida: SUBJECT_THEMES[activeModel.subject] || SUBJECT_THEMES['default']
-    const currentTheme = SUBJECT_THEMES[activeModel?.subject || 'default'] || SUBJECT_THEMES['default'];
+// Adicionado onSelectNewCourse nas props.
+const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, isChartJSEnabled, onRestartQuiz, viewMode, onStartQuiz, onBackToMap, onBackToWelcome, onBackFromMap, onHandleModelSelect, MAP_VIEW, fullCatalog, quizQuestions, onSelectNewCourse, userResponsesRef }) => { // <--- userResponsesRef adicionado
+    // Lógica de acesso ao tema Padrão
+    const currentTheme = GLOBAL_THEME;
     
     // CORREÇÃO 1: Desestruturação das constantes de FEEDBACK, SYSTEM_ICONS e QUESTION_LABELS
     const { PREV, NEXT, CONTINUE, CORRECT_ICON, INCORRECT_ICON } = MODEL_METADATA.FEEDBACK;
@@ -1362,8 +1469,8 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     const { METRIC } = MODEL_METADATA.QUESTION_LABELS; 
 
     // Variável 'let' para a cor do ícone anterior (pode ser modificada)
-    // Se hasPrev for falso, prevIconColor será um tom de cinza, caso contrário, será o primário neutro (deve ser o mesmo)
-    let prevIconColor = hasPrev ? PALETTE.NEUTRAL.TEXT : PALETTE.NEUTRAL.PRIMARY; 
+    // Cor Neutra agora vem da constante FEEDBACK_COLORS
+    let prevIconColor = hasPrev ? FEEDBACK_COLORS.NEUTRAL_PRIMARY : FEEDBACK_COLORS.NEUTRAL_PRIMARY; 
     
     // CLASSE BASE PARA AJUSTE PROPORCIONAL DE TAMANHOS DE BOTÃO NO NOVO VIEWPORT (70%)
     // REVERTIDO: Voltando aos paddings originais
@@ -1371,11 +1478,39 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     const prevButtonStyle = COMPOSITIONAL_STYLES.ACTION_BUTTON_SECONDARY;
     
 
+    // ========================================================================
+    // Lógica de Agrupamento de Questões por Edição de Curso (useMemo) - USA fullCatalog
+    // ========================================================================
+    const groupedCourses = useMemo(() => {
+        const groups = {};
+        // Usa o catálogo COMPLETO para agrupar as edições
+        fullCatalog.forEach(model => {
+            const edition = model.courseEdition;
+            if (!groups[edition]) {
+                groups[edition] = {
+                    edition: edition,
+                    count: 0,
+                    subjects: new Set(),
+                    firstModel: model, // Guarda a primeira questão da edição para ser selecionada
+                };
+            }
+            groups[edition].count++;
+            // Agora adicionamos o tópico, não a matéria (subject), para exibir no cartão
+            groups[edition].subjects.add(model.topic.split(':')[0].trim());
+        });
+        
+        // Converte para array e formata a lista de matérias
+        return Object.values(groups).map(group => ({
+            ...group,
+            subjects: Array.from(group.subjects).join(', '),
+            subjectCount: group.subjects.size // Contagem de tópicos
+        }));
+    }, [fullCatalog]);
 
     // Estados para Múltipla Escolha
     const [selectedOption, setSelectedOption] = useState(null);
-    // Armazena a resposta: { id: { type: 'multiple-choice', option: '...', isCorrect: true/false } }
-    const userResponsesRef = useRef({}); 
+    // userResponsesRef AGORA É PASSADO VIA PROP, ONDE É INICIALIZADO.
+    
     // MANTIDO: Usamos este estado para alternar entre tela de questão e tela de resultado final
     const [isQuizFinished, setIsQuizFinished] = useState(false); 
     
@@ -1393,7 +1528,9 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     // Estado para Resposta Dissertativa
     const [userAnswerText, setUserAnswerText] = useState('');
     
-    const currentIndex = activeModel ? MODEL_CATALOG.findIndex(m => m.id === activeModel.id) : -1;
+    // O currentIndex E o total de questões agora dependem de quizQuestions (lista filtrada)
+    const currentIndex = activeModel ? quizQuestions.findIndex(m => m.id === activeModel.id) : -1;
+    // As props hasNext/hasPrev são passadas do App, que usa quizQuestions.length para cálculo.
 
     const feedbackTimeoutRef = useRef(null);
 
@@ -1410,14 +1547,13 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     // NOVO: Ref para o contêiner de conteúdo do quiz (para rolagem vertical)
     const quizContentRef = useRef(null);
 
-    // REMOVIDA A FUNÇÃO handleMapScroll POIS NÃO É MAIS NECESSÁRIA COM A NATIVE SCROLL
-
 
     const getQuizMetrics = useCallback(() => {
         let correctCount = 0;
         let totalAnswered = 0;
         
-        const detailedReviewData = MODEL_CATALOG.map(model => {
+        // Usa quizQuestions para as métricas
+        const detailedReviewData = quizQuestions.map(model => {
             const response = userResponsesRef.current[model.id];
             
             if (response) {
@@ -1435,11 +1571,11 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
             };
         });
         
-        const totalQuestions = MODEL_CATALOG.length;
+        const totalQuestions = quizQuestions.length; // Usa a lista filtrada
         const scorePercentage = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
         
         return { correctCount, totalAnswered, totalQuestions, scorePercentage, detailedReviewData };
-    }, []);
+    }, [quizQuestions, userResponsesRef]); // <--- userResponsesRef adicionado como dependência
 
 
     // Efeito para rolar a tela para o topo do quizContentRef ao mudar o modelo
@@ -1472,7 +1608,7 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
             clearTimeout(feedbackTimeoutRef.current);
             feedbackTimeoutRef.current = null;
         }
-    }, [activeModel?.id]);
+    }, [activeModel?.id, userResponsesRef]);
 
     // Handler de submissão para Múltipla Escolha
     const handleChoiceSubmit = useCallback((option) => {
@@ -1491,15 +1627,15 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
         // Força re-renderização para mostrar o feedback 
         setSelectedOption(option);
         
-    }, [activeModel]); // Depende de activeModel para ter acesso a activeModel.answer
-    
+    }, [activeModel, userResponsesRef]); // Depende de activeModel e userResponsesRef
+
     // Handler para mudança de texto (apenas para Open Answer)
     const handleTextChange = useCallback((e) => {
         // Se já foi submetida, ignora
         if (userResponsesRef.current[activeModel.id]) return;
         
         setUserAnswerText(e.target.value);
-    }, [activeModel?.id]);
+    }, [activeModel?.id, userResponsesRef]);
 
     // Handler de submissão para Resposta Dissertativa 
     const handleOpenAnswerSubmit = useCallback(() => {
@@ -1517,7 +1653,7 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
         setUserAnswerText(userAnswerText.trim());
         return true; // Sucesso na submissão
         
-    }, [userAnswerText, activeModel?.id]);
+    }, [userAnswerText, activeModel?.id, userResponsesRef]);
     
     // NOVO: Função para entrar no modo de visualização de resultados (parcial/final)
     const handleViewResults = () => {
@@ -1624,15 +1760,15 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
         
         // 2. Determina próxima ação: FINALIZAR ou NAVEGAR
         if (!hasNext) {
-             // Se é a última questão, FINALIZA o quiz (desde que esteja respondida - ver getUnifiedButtonAction)
-             if (isAnswered) {
-                 setIsQuizFinished(true); 
-                 setShowPartialResults(false); 
-             }
-        } else {
-             // Caso contrário, navega para a próxima questão, MESMO QUE NÃO TENHA RESPONDIDO.
-             onNext();
-        }
+                 // Se é a última questão, FINALIZA o quiz (desde que esteja respondida)
+                 if (isAnswered) {
+                     setIsQuizFinished(true); 
+                     setShowPartialResults(false); 
+                 }
+            } else {
+                 // Caso contrário, navega para a próxima questão, MESMO QUE NÃO TENHA RESPONDIDO.
+                 onNext();
+            }
     };
     
     // --- DEFINIÇÃO DO NOVO ESTILO NEUTRO SEM EFEITOS ---
@@ -1642,7 +1778,7 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
 
 
     // Lógica para o Botão de Ação Unificado (Próximo / Finalizar)
-    const getUnifiedButtonAction = () => {
+    const getUnifiedAction = () => { // Renomeado para evitar conflito com getUnifiedButtonAction
         
         // Variáveis desestruturadas corretamente
         let label = hasNext ? 'Próximo' : 'Finalizar Quiz'; 
@@ -1713,55 +1849,14 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     // --- MODO: TELA DE BOAS-VINDAS ---
     if (viewMode === 'welcome') {
         activeScreen = (
+            // Passa onBackToMap para o WelcomeDisplayCard para acionar o mapa
             <div className="w-full h-full flex items-start justify-center pt-8 pb-4">
-                <WelcomeDisplayCard />
+                <WelcomeDisplayCard onBackToMap={onBackToMap} /> 
             </div>
         );
         
-        // NAV BAR CUSTOMIZADA PARA WELCOME
-        navBarContent = (
-             // REMOVIDO: padding p-3. MANTIDO: Borda superior de 2px.
-             <div 
-                className="flex justify-around items-center bg-white border-t-2" 
-                style={{ borderColor: APP_PRIMARY_COLOR }}
-            > 
-                {/* Coluna 1: Botão MAPA (ATIVO) - REQUISITO DO USUÁRIO: ABRIR O MAPA AQUI */}
-                <div className="flex-1 flex justify-center">
-                    <ActionButton 
-                        label="Ver Mapa"
-                        onClick={onBackToMap} // Chama a função para mudar para a view 'map'
-                        isDisabled={false} 
-                        styleClass={STYLE_NEUTRAL}
-                        basePaddingClass="px-2 py-3 w-full"
-                        refProp={el => navButtonRefs.current[0] = el}
-                    />
-                </div>
-                
-                {/* Separador 1 */}
-                <div className="h-6 w-px mx-2" style={{ backgroundColor: APP_PRIMARY_COLOR }}></div>
-
-                {/* Coluna 2 (CENTRAL): Botão INICIAR */}
-                <div className="flex-1 flex justify-center">
-                    <ActionButton
-                        label="Iniciar Quiz"
-                        onClick={onStartQuiz}
-                        // ALTERADO: Usando o estilo NEUTRO para 100% de consistência
-                        styleClass={STYLE_NEUTRAL}
-                        // CORREÇÃO: Padding interno minimo
-                        basePaddingClass="px-2 py-3 w-full"
-                        refProp={el => navButtonRefs.current[1] = el}
-                    />
-                </div>
-
-                {/* Separador 2 */}
-                <div className="h-6 w-px mx-2" style={{ backgroundColor: APP_PRIMARY_COLOR }}></div> 
-
-                {/* Coluna 3: Botão Próximo Inativo (PLACEHOLDER) */}
-                <div className="flex-1 flex justify-center">
-                    {InactiveNextButton}
-                </div>
-            </div>
-        );
+        // NAV BAR SIMPLIFICADA PARA WELCOME (AGORA SEM BOTÕES)
+        navBarContent = null;
         
     } 
     // --- MODO: MAPA DE MODELOS (PADRONIZADO) ---
@@ -1772,8 +1867,8 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
              <div className="flex flex-col gap-4 p-4 bg-white relative">
                  <h3 className={COMPOSITIONAL_STYLES.TITLE_LABEL + " border-b pb-2 flex items-center gap-2 text-xl"} style={{ color: APP_PRIMARY_COLOR }}>
                     <IconToken iconName={MAP_VIEW.icon} sizeClass="w-5 h-5" color={APP_PRIMARY_COLOR} />
-                    {/* Título Atualizado */}
-                    {MAP_VIEW.title} ({MODEL_CATALOG.length} Modelo)
+                    {/* TÍTULO ATUALIZADO: Usando Catálogo de Cursos ENEM */}
+                    {MAP_VIEW.title} ({groupedCourses.length} Edições)
                  </h3>
                  
                  {/* Lista de Modelos Vertical (agora usa flex-col e rolagem vertical) */}
@@ -1784,12 +1879,12 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
                          ref={mapContentRef} 
                          className="flex flex-col gap-3 pb-4 max-h-[570px] overflow-y-auto custom-scrollbar-hidden" 
                      >
-                         {MODEL_CATALOG.map((model, index) => (
-                             <ModelCard 
-                                 key={index}
-                                 model={model}
-                                 // isActive não é mais necessário, mas mantido
-                                 isActive={activeModel && activeModel.id === model.id} 
+                         {/* ALTERADO: Mapeando sobre os cursos agrupados */}
+                         {groupedCourses.map((course) => ( 
+                             <CourseCard 
+                                 key={course.edition}
+                                 course={course}
+                                 // Ao clicar no card, seleciona o primeiro modelo daquela edição
                                  onClick={onHandleModelSelect} 
                              />
                          ))}
@@ -1856,9 +1951,17 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
         const handleRestart = () => {
             setIsQuizFinished(false);
             setShowPartialResults(false);
-            userResponsesRef.current = {};
+            // userResponsesRef é limpo pelo componente App (resetQuizState)
             onRestartQuiz();
         };
+        
+        // NOVO: Handler para o botão "Outro Curso"
+        const handleSelectNewCourseAction = () => {
+            onSelectNewCourse(); // Chama a função de limpeza e navegação no App
+            setIsQuizFinished(false); // Garante que a tela de resultados saia
+            setShowPartialResults(false);
+        };
+
 
         // Redefinindo estilos para os botões de ação na tela de resultados (usando os estilos anteriores para manter contraste)
         const resultsBtnSecondary = COMPOSITIONAL_STYLES.ACTION_BUTTON_SECONDARY;
@@ -1872,6 +1975,7 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
                 isChartJSEnabled={isChartJSEnabled} 
                 onBackToQuiz={handleBackToQuiz} 
                 isPartial={showPartialResults} 
+                onSelectNewCourse={handleSelectNewCourseAction} // <--- Usando o novo handler
             />
         );
         navBarContent = null; 
@@ -1879,6 +1983,8 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     // --- MODO: QUESTÃO NORMAL ---
     else if (activeModel) {
         // ... (Corpo da Questão)
+        const totalQuestionsInQuiz = quizQuestions.length; // Usa a lista filtrada
+
         activeScreen = (
             <>
                 <div 
@@ -1894,8 +2000,8 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
                             color={currentTheme.text} 
                             sizeClass="w-4 h-4" 
                         />
-                        {/* Contador de Questões */}
-                        {METRIC} {currentIndex + 1} / {MODEL_CATALOG.length}
+                        {/* Contador de Questões - AGORA REFLETE APENAS O CURSO SELECIONADO */}
+                        {METRIC} {currentIndex + 1} / {totalQuestionsInQuiz}
                     </div>
                     
                 </div>
@@ -1917,18 +2023,26 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
         );
         
         // Lógica dos botões de navegação
-        const unifiedButton = getUnifiedButtonAction();
+        const unifiedButton = getUnifiedAction();
         
+        // NOVO: Handler para o botão "Catálogo" na primeira questão
+        const handleBackToMapAction = () => {
+             // 1. Limpa as respostas (as "memórias")
+             userResponsesRef.current = {};
+             // 2. Navega para o mapa
+             onBackToMap();
+        };
+
         
         let PrevButton;
 
-        // ** LÓGICA DE SUBSTITUIÇÃO DO BOTÃO 'ANTERIOR' / 'BOAS-VINDAS' **
+        // ** LÓGICA DE SUBSTITUIÇÃO DO BOTÃO 'ANTERIOR' / 'CATÁLOGO' **
         if (currentIndex === 0 && viewMode === 'quiz') {
-            // Questão 1: Botão Boas-Vindas
+            // Questão 1: Botão Catálogo (Volta ao Mapa)
             PrevButton = (
                 <ActionButton 
-                    label="Boas-Vindas"
-                    onClick={onBackToWelcome}
+                    label="Catálogo" // RÓTULO ALTERADO AQUI
+                    onClick={handleBackToMapAction} // <--- USANDO NOVO HANDLER COM RESET
                     isDisabled={false} // Sempre ativo
                     // CORREÇÃO: Usando estilo NEUTRO
                     styleClass={STYLE_NEUTRAL} 
@@ -2022,7 +2136,7 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
     // FIM DA LÓGICA DE RENDERIZAÇÃO DA TELA ATIVA
 
     // Determina se a barra de navegação inferior deve ser exibida
-    const showNavBar = viewMode === 'welcome' || viewMode === 'map' || (!isQuizFinished && !isReviewMode && !showPartialResults && activeModel);
+    const showNavBar = viewMode === 'quiz' && (!isQuizFinished && !isReviewMode && !showPartialResults && activeModel);
     
     // Dimensões da tela do simulador (390x780)
     const SIM_WIDTH = '390px';
@@ -2080,15 +2194,21 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
 
 
 export default function App() {
-    // Inicializa activeModel com o primeiro
-    const [activeModel, setActiveModel] = useState(MODEL_CATALOG[0]);
+    // 1. ESTADOS DE CONTROLE DE FILTRO E NAVEGAÇÃO
+    
+    // Estado para o filtro de edição de curso selecionado
+    const [selectedCourseEdition, setSelectedCourseEdition] = useState(null);
+
+    // Inicializa activeModel com o primeiro modelo do catálogo completo (ou null se estiver vazio)
+    const [activeModel, setActiveModel] = useState(CATALOGO_DE_PERGUNTAS.length > 0 ? CATALOGO_DE_PERGUNTAS[0] : null);
+    
     // NOVO ESTADO: Controla a tela principal ('welcome', 'map' ou 'quiz')
     const [viewMode, setViewMode] = useState('welcome'); 
     // NOVO ESTADO: Armazena a tela anterior para voltar do mapa
     const [previousViewMode, setPreviousViewMode] = useState('welcome');
     
-    // ATUALIZADO: O carrossel (Ref) e a função de scroll ficam no App e são passados para a simulação
-    const carouselRef = useRef(null);
+    // Ref para armazenar as respostas do usuário, mantendo-as consistentes entre re-renderizações
+    const userResponsesRef = useRef({}); // <--- O Ref é o dono da memória das respostas
     
     // ESTADO DE CONTROLE: Rastreia se a biblioteca KaTeX está pronta
     const [isKatexLoaded, setIsKatexLoaded] = useState(false); 
@@ -2097,17 +2217,54 @@ export default function App() {
     
     // Consumo do MODEL_METADATA.SECTION_TITLE
     const { APP_TITLE, APP_SUBTITLE, MAP_VIEW } = MODEL_METADATA.SECTION_TITLE;
+    
+    // 2. LÓGICA DE FILTRAGEM (MEMOIZED)
+    const filteredQuestions = useMemo(() => {
+        if (!selectedCourseEdition) {
+            // Se nenhum curso selecionado, retorna o catálogo completo como fallback
+            return CATALOGO_DE_PERGUNTAS; 
+        }
+        // Filtra as questões pela edição selecionada
+        return CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === selectedCourseEdition);
+    }, [selectedCourseEdition]);
+
+    // 3. LÓGICA DE NAVEGAÇÃO (BASEADA NA LISTA FILTRADA)
+    const currentIndex = activeModel ? filteredQuestions.findIndex(m => m.id === activeModel.id) : -1;
+    const hasNext = currentIndex !== -1 && currentIndex < filteredQuestions.length - 1;
+    const hasPrev = currentIndex > 0;
+    
+    // NOVO: Função central de reset para limpar as respostas salvas
+    const resetQuizState = useCallback(() => {
+        userResponsesRef.current = {}; // Limpa a memória das respostas
+        // Opcional, mas útil: Força a redefinição de estados visuais se o usuário estava na tela de resultados.
+        // Isso é tratado na função handleRestartQuiz e handleSelectNewCourse.
+    }, []); // Dependências vazias, pois só manipula o Ref.
+
 
     // Função para selecionar o modelo e iniciar o quiz com ele
     const handleModelSelect = (model) => {
-        setActiveModel(model);
-        setViewMode('quiz'); // Mudar para quiz
-        setPreviousViewMode('map'); // Sair do mapa vai para o quiz
+        const edition = model.courseEdition;
+        setSelectedCourseEdition(edition); // Define o filtro
+        
+        // ** GARANTE O RESET DAS RESPOSTAS AO INICIAR UM NOVO CURSO **
+        resetQuizState(); 
+        
+        // A lista filtrada (filteredQuestions) será calculada no próximo render,
+        // mas podemos calcular a primeira questão agora.
+        const newFilteredList = CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === edition);
+        
+        if (newFilteredList.length > 0) {
+            setActiveModel(newFilteredList[0]); // Define a primeira questão do curso
+            setViewMode('quiz'); // Mudar para quiz
+            setPreviousViewMode('map'); // Sair do mapa vai para o quiz
+        }
     };
     
     // Função para iniciar o quiz (a partir do WelcomeScreen)
     const handleStartQuiz = () => {
-        setActiveModel(MODEL_CATALOG[0]); 
+        // Ao iniciar o quiz sem selecionar um curso, usamos o catálogo completo (filtro nulo)
+        setSelectedCourseEdition(null); 
+        setActiveModel(CATALOGO_DE_PERGUNTAS[0]); 
         setViewMode('quiz'); // Mudar para quiz
     };
 
@@ -2125,50 +2282,54 @@ export default function App() {
 
     // NOVO: Handler para voltar para a tela de Boas-Vindas
     const handleBackToWelcome = () => {
+        setSelectedCourseEdition(null); // Limpa o filtro
         setViewMode('welcome');
     };
 
 
     // Função para voltar para a tela do mapa (do Quiz)
     const handleBackToMap = () => {
+        // Não precisamos resetar aqui, pois a navegação já foi resolvida no componente filho (MobileQuizSimulation)
+        // O MobileQuizSimulation (Botão Catálogo) chama o reset e o onBackToMap
         setViewMode('map');
     };
     
-    // ATUALIZADO: Função de scroll que manipula a Ref do carrossel
-    // OBS: Essa função não é mais usada para o Mapa, mas é mantida por segurança.
-    const handleScroll = (direction) => {
-        if (carouselRef.current) {
-            const scrollAmount = 280;
-            carouselRef.current.scrollLeft += direction === 'right' ? scrollAmount : -scrollAmount;
-        }
-    };
     
-    const currentIndex = activeModel ? MODEL_CATALOG.findIndex(m => m.id === activeModel.id) : -1;
-    const hasNext = currentIndex < MODEL_CATALOG.length - 1;
-    const hasPrev = currentIndex > 0;
-
     const handleNext = () => {
         if (hasNext) {
-            const nextModel = MODEL_CATALOG[currentIndex + 1];
+            const nextModel = filteredQuestions[currentIndex + 1]; // Usa filteredQuestions
             setActiveModel(nextModel);
         } else {
-             // Opcional: Se clica em "Próximo" na última questão e já finalizou, reinicia para o primeiro modelo (loop)
-             console.log("Fim do Quiz! Retornando ao primeiro modelo."); 
-             setActiveModel(MODEL_CATALOG[0]);
+             // Se é a última questão, retorna para a primeira da lista FILTRADA
+             console.log("Fim do Quiz! Retornando ao primeiro modelo da edição selecionada."); 
+             setActiveModel(filteredQuestions[0]); 
         }
     };
 
     const handlePrev = () => {
         if (hasPrev) {
-            const prevModel = MODEL_CATALOG[currentIndex - 1];
+            const prevModel = filteredQuestions[currentIndex - 1]; // Usa filteredQuestions
             setActiveModel(prevModel);
         }
     };
     
-    // NOVO: Função para reiniciar o quiz
+    // NOVO: Função para reiniciar o quiz (Reinicia no PRIMEIRO modelo da edição selecionada)
     const handleRestartQuiz = useCallback(() => {
-        setActiveModel(MODEL_CATALOG[0]);
-    }, []);
+        // ** GARANTE O RESET DAS RESPOSTAS AO RECOMECAR O QUIZ **
+        resetQuizState(); 
+        // Garante que o quiz reinicie na primeira questão da lista filtrada
+        setActiveModel(filteredQuestions[0] || CATALOGO_DE_PERGUNTAS[0]);
+    }, [filteredQuestions, resetQuizState]);
+
+    // NOVO: Função para selecionar novo curso (leva para o mapa)
+    const handleSelectNewCourse = () => {
+         // 1. **GARANTE O RESET DAS RESPOSTAS AO ESCOLHER NOVO CURSO**
+         resetQuizState(); 
+         // 2. Navega para o mapa
+         setViewMode('map');
+         // 3. Opcional: Remove o filtro de curso atual para o mapa exibir todos (embora o mapa já use o catálogo completo)
+         setSelectedCourseEdition(null);
+    };
 
 
     // Função segura para renderizar o KaTeX
@@ -2206,6 +2367,8 @@ export default function App() {
         const katexScriptId = 'katex-script';
         const katexLinkId = 'katex-style';
         const chartJSScriptId = 'chartjs-script';
+        // NOVO: ID para o plugin datalabels
+        const datalabelsScriptId = 'datalabels-script'; 
 
         // 1. Carregar CSS do KaTeX
         if (!document.getElementById(katexLinkId)) {
@@ -2230,20 +2393,38 @@ export default function App() {
         }
         
         // 3. Carregar Script JS do Chart.js
-        if (!document.getElementById(chartJSScriptId)) {
-            const script = document.createElement('script');
-            script.id = chartJSScriptId;
-            // Usando a versão CDN mais recente
-            script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"; 
-            script.onload = () => {
-                setIsChartJSEnabled(true); 
-            };
-            document.head.appendChild(script);
-        } else if (typeof window.Chart !== 'undefined') {
-            setIsChartJSEnabled(true);
-        }
+        // Criamos um contêiner para rastrear o carregamento de ambos os scripts
+        const chartLoaded = new Promise(resolve => {
+            if (document.getElementById(chartJSScriptId) && typeof window.Chart !== 'undefined') {
+                resolve();
+            } else if (!document.getElementById(chartJSScriptId)) {
+                const script = document.createElement('script');
+                script.id = chartJSScriptId;
+                script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"; 
+                script.onload = resolve; // Resolve quando o Chart.js carregar
+                document.head.appendChild(script);
+            } else {
+                 resolve(); // Já existe, assumimos que está carregado se o if inicial falhar.
+            }
+        });
+
+        // 4. Carregar Script JS do Plugin Datalabels (DEVE vir APÓS o Chart.js)
+        chartLoaded.then(() => {
+            if (!document.getElementById(datalabelsScriptId)) {
+                 const pluginScript = document.createElement('script');
+                 pluginScript.id = datalabelsScriptId;
+                 pluginScript.src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0";
+                 // Habilita o Charting APENAS DEPOIS que o plugin (e, por extensão, o Chart.js) carregar.
+                 pluginScript.onload = () => {
+                     setIsChartJSEnabled(true); 
+                 };
+                 document.head.appendChild(pluginScript);
+            } else if (typeof window.ChartDataLabels !== 'undefined') {
+                 setIsChartJSEnabled(true); // Se já estiver no DOM e o plugin for conhecido
+            }
+        });
         
-        // 4. CARREGAR CSS DO GOOGLE MATERIAL SYMBOLS ICONS (Já estava aqui)
+        // 5. CARREGAR CSS DO GOOGLE MATERIAL SYMBOLS ICONS (Já estava aqui)
         const linkId = 'google-icons-style';
         if (!document.getElementById(linkId)) {
             const link = document.createElement('link');
@@ -2253,7 +2434,7 @@ export default function App() {
             document.head.appendChild(link);
         }
 
-        // 5. Injetar CSS para esconder a barra de rolagem customizada
+        // 6. Injetar CSS para esconder a barra de rolagem customizada
         const scrollbarStyleId = 'custom-scrollbar-style';
         if (!document.getElementById(scrollbarStyleId)) {
             const style = document.createElement('style');
@@ -2294,19 +2475,6 @@ export default function App() {
         // As visualizações 'welcome', 'quiz' e 'map' agora são manipuladas pelo MobileQuizSimulation
         return (
             <div className="flex flex-col gap-6">
-                
-                {/* Botão de Volta ao Mapa (REMOVIDO, já que não há mais navegação direta do quiz) */}
-                {/* O botão abaixo foi removido:
-                {viewMode === 'quiz' && currentIndex > 0 && (
-                    <ActionButton 
-                        onClick={handleViewMap} // Muda para viewMode='map'
-                        label="Voltar ao Mapa de Modelos"
-                        styleClass={COMPOSITIONAL_STYLES.ACTION_BUTTON_SECONDARY}
-                        // REVERTIDO: Voltando ao padding original (px-4 py-2)
-                        basePaddingClass="px-4 py-2 self-start" 
-                    />
-                )}
-                */}
 
                 {/* Simulação Principal (Contém todas as telas internas: Welcome, Quiz, Map, Results) */}
                 <MobileQuizSimulation 
@@ -2314,22 +2482,22 @@ export default function App() {
                     activeModel={activeModel} 
                     onNext={handleNext} 
                     onPrev={handlePrev} 
-                    hasNext={MODEL_CATALOG.length > 1 && currentIndex < MODEL_CATALOG.length - 1} 
-                    hasPrev={MODEL_CATALOG.length > 1 && currentIndex > 0} 
+                    hasNext={hasNext} // Passa o status de navegação atualizado
+                    hasPrev={hasPrev} // Passa o status de navegação atualizado
                     isChartJSEnabled={isChartJSEnabled}
                     onRestartQuiz={handleRestartQuiz} // Passa a função de reiniciar
-                    // onScrollToTop removido
                     onStartQuiz={handleStartQuiz} // Handler para iniciar o quiz (vai para viewMode='quiz')
                     onBackToWelcome={handleBackToWelcome} // Handler para voltar ao Welcome
                     onBackToMap={handleViewMap} // Mudar para viewMode='map'
                     onBackFromMap={handleBackFromMap} // Handler para fechar mapa e voltar
                     
-                    // PROPS ADICIONAIS NECESSÁRIAS PARA O MAPA DENTRO DA SIMULAÇÃO
-                    // onHandleScroll={handleScroll} // REMOVIDO: Não é mais usado para o layout vertical
-                    // carouselRef={carouselRef} // REMOVIDO: Não é mais usado para o layout vertical
-                    onHandleModelSelect={handleModelSelect}
+                    // PROPS ADICIONAIS PARA FILTRAGEM
+                    onHandleModelSelect={handleModelSelect} // Usado pelo CourseCard para selecionar um curso
                     MAP_VIEW={MAP_VIEW}
-                    MODEL_CATALOG={MODEL_CATALOG} // Passa o catálogo de dados
+                    fullCatalog={CATALOGO_DE_PERGUNTAS} // Catálogo completo para a lógica de agrupamento do mapa
+                    quizQuestions={filteredQuestions} // Lista FILTRADA para o QUIZ e MÉTRICAS
+                    onSelectNewCourse={handleSelectNewCourse} // <--- Novo prop passado
+                    userResponsesRef={userResponsesRef} // <--- Passando o Ref de Respostas
                 />
             </div>
         );
@@ -2346,4 +2514,4 @@ export default function App() {
             {/* REMOVIDO: FOOTER */}
         </div>
     );
-}
+        }
