@@ -1,0 +1,131 @@
+/* =============================================================
+   CSS GLOBAL DO SHELL – MINIAPP 5 HORAS
+   Seguindo boas práticas single-spa
+   Este arquivo deve ser salvo como:
+   docs/global/shell.css
+   ============================================================= */
+
+/* ----------------------------
+   RESET BASE (mínimo e seguro)
+   ---------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background: var(--bg-app, #f5f5f5);
+  color: var(--text-default, #222);
+}
+
+/* ----------------------------
+   TOKENS DE DESIGN
+   ---------------------------- */
+:root {
+  /* cores */
+  --color-primary: #0057ff;
+  --color-primary-hover: #0047d9;
+  --color-surface: #ffffff;
+  --color-border: #e0e0e0;
+  --color-muted: #666;
+
+  /* espaçamentos */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* tipografia escalável */
+  --text-sm: clamp(12px, 2vw, 14px);
+  --text-md: clamp(14px, 2.2vw, 16px);
+  --text-lg: clamp(18px, 3vw, 22px);
+  --text-title: clamp(22px, 4vw, 30px);
+
+  /* largura máxima do conteúdo */
+  --container-max: 1200px;
+}
+
+/* ----------------------------
+   LAYOUT GLOBAL DO SHELL
+   ---------------------------- */
+body.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* container onde os microapps renderizam */
+#app-root {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 80px auto 0 auto; /* respeita header fixo */
+  padding: var(--space-md);
+}
+
+/* ----------------------------
+   HEADER GLOBAL (fixo)
+   ---------------------------- */
+header.shell-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--color-surface);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--color-border);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  z-index: 1000;
+}
+
+header.shell-header button {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: 6px;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  font-size: var(--text-md);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+header.shell-header button:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ----------------------------
+   RESPONSIVIDADE GLOBAL
+   ---------------------------- */
+@media (max-width: 768px) {
+  header.shell-header {
+    gap: var(--space-sm);
+    padding: 0 var(--space-sm);
+  }
+
+  header.shell-header button {
+    font-size: var(--text-sm);
+    padding: var(--space-xs) var(--space-sm);
+  }
+}
+
+/* ----------------------------
+   UTILITÁRIOS GLOBAIS
+   ---------------------------- */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden {
+  display: none !important;
+}
