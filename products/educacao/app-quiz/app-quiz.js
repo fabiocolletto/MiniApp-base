@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'https://esm.sh/react@18';
 
 // ==================================================================================
 // 1. SISTEMA DE DESIGN & CONFIGURAÇÃO (Theme Engine - APENAS CONSTANTES DECLARATIVAS)
