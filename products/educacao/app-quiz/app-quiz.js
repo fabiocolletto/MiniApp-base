@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { fetchExams, fetchExamQuestions } from './enem-data-service.js';
 
 // ==================================================================================
 // 1. SISTEMA DE DESIGN & CONFIGURAÇÃO (Theme Engine - APENAS CONSTANTES DECLARATIVAS)
@@ -189,217 +190,8 @@ const MODEL_METADATA = {
 // 3. DADOS (Data Layer)
 // ==================================================================================
 
-// 3.1. CATÁLOGO DE PERGUNTAS (Instâncias de Dados)
-const CATALOGO_DE_PERGUNTAS = [
-    // MODELO 1: História (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 1, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'História: Iluminismo', 
-        preview: 'Interpretação de Texto sobre Contratualismo', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 3, difficulty: 'Média',
-        content: { 
-            text: "O conceito de 'separação dos poderes' de Montesquieu foi fundamental para o desenvolvimento das democracias liberais modernas, buscando evitar a tirania através da distribuição de autoridade em esferas independentes.",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        question: "Qual princípio iluminista a separação dos poderes busca concretizar?",
-        options: ["Soberania Popular", "Liberalismo Econômico", "Contratualismo", "Igualdade Jurídica"], 
-        answer: "Soberania Popular", 
-    },
-    // MODELO 2: Matemática (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 2, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'Matemática: Geometria Espacial', 
-        preview: 'Cálculo de volume de sólidos', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 4, difficulty: 'Difícil',
-        content: { 
-            text: "Uma piscina tem formato de paralelepípedo com 10 metros de comprimento, 5 metros de largura e 2 metros de profundidade. Para calcular seu volume, usamos a fórmula $V = c \\cdot l \\cdot p$.",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        question: "Qual é o volume máximo de água que ela pode comportar em metros cúbicos?",
-        options: ["100 m³", "50 m³", "20 m³", "10 m³"], 
-        answer: "100 m³", 
-    },
-    // MODELO 3: Química (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 3, 
-        type: 'chart-bar', // ALTERADO: Agora é um gráfico de barras
-        interactionType: 'multiple-choice', 
-        subject: 'Geral', 
-        topic: 'Química: Eletroquímica e Baterias',
-        preview: 'Cálculo de Potencial Padrão de Célula', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 5, 
-        difficulty: 'Difícil',
-        content: { 
-            text: "O gráfico de barras abaixo representa os potenciais padrão de redução ($E^0$) para o Zinco e o Cobre. O potencial de célula é dado por $E^0_{célula} = E^0_{maior} - E^0_{menor}$.",
-            chartData: {
-                labels: ["$Zn^{2+} / Zn$", "$Cu^{2+} / Cu$"],
-                values: [-0.76, 0.34],
-                backgroundColor: ["#f87171", "#34d399"], // Rosa (Zn) e Verde (Cu)
-                label: "Potencial Padrão de Redução (V)"
-            },
-            pyramidData: null, 
-            imageURL: null, 
-            imageAlt: null
-        },
-        question: "Qual o potencial padrão de célula (em volts) para a reação de zinco e cobre?",
-        options: ["-1.10 V", "+0.42 V", "+1.10 V", "-0.42 V"], 
-        answer: "+1.10 V", 
-    },
-    // MODELO 4: Biologia (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 4, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'Biologia: Genética e Alelos',
-        preview: 'Interpretação de Herança Genética', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 3, difficulty: 'Média',
-        content: { 
-            text: "A cor de uma flor é determinada por um único gene com dois alelos: 'A' (dominante, flor vermelha) e 'a' (recessivo, flor branca). Cruzando-se duas plantas heterozigotas (Aa), qual a probabilidade de nascerem flores brancas?",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        question: "Qual a probabilidade (em %) de nascerem flores brancas do cruzamento Aa x Aa?",
-        options: ["25%", "50%", "75%", "100%"], 
-        answer: "25%", 
-    },
-    // MODELO 5: Português (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 5, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'Português: Funções da Linguagem',
-        preview: 'Análise de texto jornalístico', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 2, difficulty: 'Fácil',
-        content: { 
-            text: "Um editorial de jornal foca primariamente em convencer o leitor a adotar uma determinada posição sobre um tema político, utilizando argumentos e um tom persuasivo.",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        question: "Qual a função da linguagem predominante em um editorial de jornal?",
-        options: ["Referencial", "Emotiva", "Conativa", "Metalinguística"], 
-        answer: "Conativa", 
-    },
-    // MODELO 6: Física (ENEM 2023) - subject padronizado para 'Geral'
-    { 
-        id: 6, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'Física: Leis de Newton',
-        preview: 'Aplicação da Segunda Lei da Dinâmica', 
-        courseEdition: 'ENEM 2023', 
-        durationMinutes: 4, difficulty: 'Média',
-        content: { 
-            text: "Um objeto de massa $m=5kg$ é empurrado por uma força resultante constante de $F=20N$ em uma superfície sem atrito. A Segunda Lei de Newton é dada por $F = m \\cdot a$.",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        // CORRIGIDO: Agora usando a notação $m \cdot s^{-2}$ para garantir a renderização correta do expoente,
-        // alinhada com as melhores práticas de LaTeX e a precisão técnica da unidade de aceleração.
-        question: "Qual a aceleração do objeto em $m \cdot s^{-2}$?",
-        options: ["1 $m \cdot s^{-2}$", "4 $m \cdot s^{-2}$", "15 $m \cdot s^{-2}$", "25 $m \cdot s^{-2}$"], 
-        answer: "4 $m \cdot s^{-2}$", 
-    },
-    // MODELO 7: Biologia (ENEM 2024 - Adicionado para testar escalabilidade) - subject padronizado para 'Geral'
-    { 
-        id: 7, type: 'text', interactionType: 'multiple-choice', subject: 'Geral', 
-        topic: 'Biologia: Ecologia e Cadeias Tróficas',
-        preview: 'Análise de impacto ambiental', 
-        courseEdition: 'ENEM 2024', 
-        durationMinutes: 3, difficulty: 'Média',
-        content: { 
-            text: "Em um ecossistema aquático, o aumento excessivo de algas (produtores) devido ao excesso de nutrientes (eutrofização) leva à diminuição do oxigênio dissolvido, afetando peixes (consumidores secundários).",
-            chartData: null, pyramidData: null, imageURL: null, imageAlt: null
-        },
-        question: "Qual o impacto imediato do consumo de oxigênio pelas algas (após a morte) no ecossistema?",
-        options: ["Aumento da biodiversidade", "Morte dos organismos aeróbicos", "Elevação do pH da água", "Diminuição da temperatura"], 
-        answer: "Morte dos organismos aeróbicos", 
-    },
-    // NOVO MODELO 8: Gráfico de Rosca (Doughnut Chart) - PARA TESTE DE EXIBIÇÃO (Q1 Simulado Teste)
-    { 
-        id: 8, 
-        type: 'chart-donut', 
-        interactionType: 'multiple-choice', 
-        subject: 'Geral', 
-        topic: 'Análise Estatística',
-        preview: 'Distribuição de Frequência de Votos', 
-        courseEdition: 'Simulado Teste', 
-        durationMinutes: 3, difficulty: 'Média',
-        content: { 
-            text: "O gráfico de rosca abaixo representa a distribuição percentual de votos em uma eleição simulada entre os candidatos A, B e C. As porcentagens são mostradas nativamente dentro das fatias.",
-            chartData: {
-                labels: ["Candidato A", "Candidato B", "Candidato C", "Abstenções"],
-                values: [45, 30, 15, 10], 
-                colors: ["#3b82f6", "#ef4444", "#10b981", "#64748B"] // Azul, Vermelho, Verde, Cinza
-            }, 
-            pyramidData: null, 
-            imageURL: null, 
-            imageAlt: null
-        },
-        question: "Qual candidato obteve a maior proporção de votos?",
-        options: ["Candidato A", "Candidato B", "Candidato C", "Abstenções"], 
-        answer: "Candidato A", 
-    },
-    // NOVO MODELO 9: Gráfico de Linha (Line Chart) - SEGUNDA PERGUNTA NO CURSO TESTE (Q2 Simulado Teste)
-    { 
-        id: 9, 
-        type: 'chart-line', 
-        interactionType: 'multiple-choice', 
-        subject: 'Geral', 
-        topic: 'Física: Termodinâmica',
-        preview: 'Análise de Variação de Temperatura', 
-        courseEdition: 'Simulado Teste', 
-        durationMinutes: 4, 
-        difficulty: 'Média',
-        content: { 
-            text: "O gráfico de linha abaixo mostra a variação da temperatura ($T$) de um corpo em função do tempo ($t$) durante um experimento de aquecimento e resfriamento.",
-            chartData: {
-                labels: ["t=0 min", "t=1 min", "t=2 min", "t=3 min", "t=4 min"],
-                values: [20, 35, 40, 30, 25], 
-                backgroundColor: "#3b82f6", // Azul
-                label: "Temperatura ($^\circ C$)"
-            }, 
-            pyramidData: null, 
-            imageURL: null, 
-            imageAlt: null
-        },
-        question: "Em qual intervalo de tempo a taxa de variação da temperatura foi negativa?",
-        options: [
-            "Entre $t=0$ e $t=1$ min", 
-            "Entre $t=1$ e $t=2$ min", 
-            "Entre $t=2$ e $t=4$ min", // Resposta Correta: T de 40 para 25
-            "Em $t=0$ min"
-        ], 
-        answer: "Entre $t=2$ e $t=4$ min", 
-    },
-    // NOVO MODELO 10: Gráfico de Barras (Bar Chart) - TERCEIRA PERGUNTA NO CURSO TESTE (Q3 Simulado Teste)
-    { 
-        id: 10, 
-        type: 'chart-bar', 
-        interactionType: 'multiple-choice', 
-        subject: 'Geral', 
-        topic: 'Matemática: Probabilidade',
-        preview: 'Interpretação de Frequência e Probabilidade', 
-        courseEdition: 'Simulado Teste', 
-        durationMinutes: 3, 
-        difficulty: 'Média',
-        content: { 
-            text: "O gráfico de barras abaixo mostra a frequência de resultados obtidos após 50 lançamentos de um dado de 6 faces (não viciado). A probabilidade de obter um resultado ímpar é dada por $P(ímpar) = \\frac{n_{impar}}{n_{total}}$, onde $n_{impar}$ é a soma das frequências de ocorrência das faces ímpares.",
-            chartData: {
-                labels: ["Face 1", "Face 2", "Face 3", "Face 4", "Face 5", "Face 6"],
-                values: [7, 8, 9, 10, 6, 10], 
-                backgroundColor: "#fcd34d", // Amarelo (laranja-400)
-                label: "Frequência de Ocorrência"
-            }, 
-            pyramidData: null, 
-            imageURL: null, 
-            imageAlt: null
-        },
-        question: "Qual é a probabilidade experimental de o resultado ser um número ímpar?",
-        options: [
-            "11/25", // (7+9+6)/50 = 22/50 = 11/25
-            "28/50", 
-            "2/5", 
-            "20/50"
-        ], 
-        answer: "11/25", 
-    },
-];
+// 3.1. CATÁLOGO DE PERGUNTAS (Carregado dinamicamente via serviço)
+// Os dados são buscados a partir dos arquivos JSON do repositório no momento da interação.
 
 // ==================================================================================
 // 4. COMPONENTES UTILITÁRIOS (Visualização de Dados)
@@ -905,6 +697,76 @@ const QuestionContentRenderer = ({ model, isChartJSEnabled }) => {
 // ==================================================================================
 // 7. COMPONENTES DO LABORATÓRIO (Map View - Cartões de Navegação)
 // ==================================================================================
+
+const FilterControls = ({
+    exams,
+    selectedYear,
+    selectedDiscipline,
+    selectedLanguage,
+    onYearChange,
+    onDisciplineChange,
+    onLanguageChange,
+    isLoading,
+    error,
+}) => {
+    const selectedExam = exams.find((exam) => exam.year === selectedYear) || exams[0] || {};
+    const disciplines = selectedExam?.disciplines || [];
+    const languages = selectedExam?.languages || [];
+
+    return (
+        <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <div className="grid grid-cols-1 gap-3">
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-slate-700">Ano</label>
+                    <select
+                        className="border border-slate-300 rounded-md p-2 text-sm"
+                        value={selectedYear ?? ''}
+                        onChange={(e) => onYearChange(Number(e.target.value))}
+                    >
+                        {exams.map((exam) => (
+                            <option key={exam.year} value={exam.year}>{exam.title}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-slate-700">Disciplina</label>
+                    <select
+                        className="border border-slate-300 rounded-md p-2 text-sm"
+                        value={selectedDiscipline}
+                        onChange={(e) => onDisciplineChange(e.target.value)}
+                    >
+                        {disciplines.map((disc) => (
+                            <option key={disc.value} value={disc.value}>{disc.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-slate-700">Idioma</label>
+                    <select
+                        className="border border-slate-300 rounded-md p-2 text-sm"
+                        value={selectedLanguage}
+                        onChange={(e) => onLanguageChange(e.target.value)}
+                    >
+                        <option value="">Todos</option>
+                        {languages.map((lang) => (
+                            <option key={lang.value} value={lang.value}>{lang.label}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {isLoading && (
+                <div className="text-sm text-emerald-700 font-medium">Carregando questões...</div>
+            )}
+
+            {error && (
+                <div className="text-sm text-red-600 font-medium">{error}</div>
+            )}
+        </div>
+    );
+};
 
 /**
  * Componente que renderiza um cartão representando uma edição de curso agrupada (ex: ENEM 2023).
@@ -1459,7 +1321,7 @@ const WelcomeDisplayCard = ({ onBackToMap }) => { // Recebe onBackToMap como pro
 // ==================================================================================
 
 // Adicionado onSelectNewCourse nas props.
-const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, isChartJSEnabled, onRestartQuiz, viewMode, onStartQuiz, onBackToMap, onBackToWelcome, onBackFromMap, onHandleModelSelect, MAP_VIEW, fullCatalog, quizQuestions, onSelectNewCourse, userResponsesRef }) => { // <--- userResponsesRef adicionado
+const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, isChartJSEnabled, onRestartQuiz, viewMode, onStartQuiz, onBackToMap, onBackToWelcome, onBackFromMap, onHandleModelSelect, MAP_VIEW, fullCatalog, quizQuestions, onSelectNewCourse, userResponsesRef, exams, selectedYear, selectedDiscipline, selectedLanguage, onYearChange, onDisciplineChange, onLanguageChange, isLoadingQuestions, loadingError }) => { // <--- userResponsesRef adicionado
     // Lógica de acesso ao tema Padrão
     const currentTheme = GLOBAL_THEME;
     
@@ -1870,24 +1732,40 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
                     {/* TÍTULO ATUALIZADO: Usando Catálogo de Cursos ENEM */}
                     {MAP_VIEW.title} ({groupedCourses.length} Edições)
                  </h3>
-                 
+
+                 <FilterControls
+                    exams={exams}
+                    selectedYear={selectedYear}
+                    selectedDiscipline={selectedDiscipline}
+                    selectedLanguage={selectedLanguage}
+                    onYearChange={onYearChange}
+                    onDisciplineChange={onDisciplineChange}
+                    onLanguageChange={onLanguageChange}
+                    isLoading={isLoadingQuestions}
+                    error={loadingError}
+                 />
+
                  {/* Lista de Modelos Vertical (agora usa flex-col e rolagem vertical) */}
                  <div className="relative">
-                     
+
                     {/* A rolagem agora é feita de forma nativa pela div abaixo. */}
-                    <div 
-                         ref={mapContentRef} 
-                         className="flex flex-col gap-3 pb-4 max-h-[570px] overflow-y-auto custom-scrollbar-hidden" 
+                    <div
+                         ref={mapContentRef}
+                         className="flex flex-col gap-3 pb-4 max-h-[570px] overflow-y-auto custom-scrollbar-hidden"
                      >
                          {/* ALTERADO: Mapeando sobre os cursos agrupados */}
-                         {groupedCourses.map((course) => ( 
-                             <CourseCard 
+                         {groupedCourses.map((course) => (
+                             <CourseCard
                                  key={course.edition}
                                  course={course}
                                  // Ao clicar no card, seleciona o primeiro modelo daquela edição
-                                 onClick={onHandleModelSelect} 
+                                 onClick={onHandleModelSelect}
                              />
                          ))}
+
+                         {!isLoadingQuestions && !loadingError && groupedCourses.length === 0 && (
+                            <div className="text-sm text-slate-600">Nenhuma questão encontrada para os filtros selecionados.</div>
+                         )}
                      </div>
                  </div>
              </div>
@@ -2195,12 +2073,21 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
 
 export default function App() {
     // 1. ESTADOS DE CONTROLE DE FILTRO E NAVEGAÇÃO
-    
+
+    const [exams, setExams] = useState([]);
+    const [questionCatalog, setQuestionCatalog] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(null);
+    const [selectedDiscipline, setSelectedDiscipline] = useState('');
+    const [selectedLanguage, setSelectedLanguage] = useState('');
+
+    const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+    const [loadingError, setLoadingError] = useState(null);
+
     // Estado para o filtro de edição de curso selecionado
     const [selectedCourseEdition, setSelectedCourseEdition] = useState(null);
 
     // Inicializa activeModel com o primeiro modelo do catálogo completo (ou null se estiver vazio)
-    const [activeModel, setActiveModel] = useState(CATALOGO_DE_PERGUNTAS.length > 0 ? CATALOGO_DE_PERGUNTAS[0] : null);
+    const [activeModel, setActiveModel] = useState(null);
     
     // NOVO ESTADO: Controla a tela principal ('welcome', 'map' ou 'quiz')
     const [viewMode, setViewMode] = useState('welcome'); 
@@ -2214,25 +2101,58 @@ export default function App() {
     const [isKatexLoaded, setIsKatexLoaded] = useState(false); 
     // NOVO ESTADO: Rastreia se a biblioteca Chart.js está pronta
     const [isChartJSEnabled, setIsChartJSEnabled] = useState(false);
-    
+
     // Consumo do MODEL_METADATA.SECTION_TITLE
     const { APP_TITLE, APP_SUBTITLE, MAP_VIEW } = MODEL_METADATA.SECTION_TITLE;
+
+    useEffect(() => {
+        const loadExams = async () => {
+            try {
+                const examList = await fetchExams();
+                setExams(examList);
+
+                if (examList.length > 0) {
+                    setSelectedYear(examList[0].year);
+                    setSelectedDiscipline(examList[0].disciplines?.[0]?.value || '');
+                    setSelectedLanguage('');
+                }
+            } catch (error) {
+                setLoadingError(error.message || 'Erro ao carregar provas disponíveis.');
+            }
+        };
+
+        loadExams();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedYear) return;
+        const exam = exams.find((item) => item.year === selectedYear);
+        if (!exam) return;
+
+        if (selectedDiscipline && !exam.disciplines?.some((disc) => disc.value === selectedDiscipline)) {
+            setSelectedDiscipline(exam.disciplines?.[0]?.value || '');
+        }
+
+        if (selectedLanguage && !exam.languages?.some((lang) => lang.value === selectedLanguage)) {
+            setSelectedLanguage('');
+        }
+    }, [exams, selectedDiscipline, selectedLanguage, selectedYear]);
     
     // 2. LÓGICA DE FILTRAGEM (MEMOIZED)
     const filteredQuestions = useMemo(() => {
         if (!selectedCourseEdition) {
             // Se nenhum curso selecionado, retorna o catálogo completo como fallback
-            return CATALOGO_DE_PERGUNTAS; 
+            return questionCatalog;
         }
         // Filtra as questões pela edição selecionada
-        return CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === selectedCourseEdition);
-    }, [selectedCourseEdition]);
+        return questionCatalog.filter(q => q.courseEdition === selectedCourseEdition);
+    }, [questionCatalog, selectedCourseEdition]);
 
     // 3. LÓGICA DE NAVEGAÇÃO (BASEADA NA LISTA FILTRADA)
     const currentIndex = activeModel ? filteredQuestions.findIndex(m => m.id === activeModel.id) : -1;
     const hasNext = currentIndex !== -1 && currentIndex < filteredQuestions.length - 1;
     const hasPrev = currentIndex > 0;
-    
+
     // NOVO: Função central de reset para limpar as respostas salvas
     const resetQuizState = useCallback(() => {
         userResponsesRef.current = {}; // Limpa a memória das respostas
@@ -2240,32 +2160,69 @@ export default function App() {
         // Isso é tratado na função handleRestartQuiz e handleSelectNewCourse.
     }, []); // Dependências vazias, pois só manipula o Ref.
 
+    useEffect(() => {
+        if (!selectedYear || !selectedDiscipline) return;
+
+        const loadQuestions = async () => {
+            setIsLoadingQuestions(true);
+            setLoadingError(null);
+            setQuestionCatalog([]);
+            setActiveModel(null);
+            try {
+                const questions = await fetchExamQuestions({
+                    year: selectedYear,
+                    discipline: selectedDiscipline,
+                    language: selectedLanguage || null,
+                });
+
+                resetQuizState();
+                setQuestionCatalog(questions);
+                const edition = `ENEM ${selectedYear}`;
+                setSelectedCourseEdition(edition);
+                setActiveModel(questions[0] || null);
+                setViewMode('map');
+            } catch (error) {
+                setLoadingError(error.message || 'Erro ao carregar questões.');
+                setQuestionCatalog([]);
+                setActiveModel(null);
+                setSelectedCourseEdition(null);
+                setViewMode('welcome');
+            } finally {
+                setIsLoadingQuestions(false);
+            }
+        };
+
+        loadQuestions();
+    }, [resetQuizState, selectedDiscipline, selectedLanguage, selectedYear]);
+
 
     // Função para selecionar o modelo e iniciar o quiz com ele
     const handleModelSelect = (model) => {
         const edition = model.courseEdition;
         setSelectedCourseEdition(edition); // Define o filtro
-        
+
         // ** GARANTE O RESET DAS RESPOSTAS AO INICIAR UM NOVO CURSO **
-        resetQuizState(); 
-        
+        resetQuizState();
+
         // A lista filtrada (filteredQuestions) será calculada no próximo render,
         // mas podemos calcular a primeira questão agora.
-        const newFilteredList = CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === edition);
-        
+        const newFilteredList = questionCatalog.filter(q => q.courseEdition === edition);
+
         if (newFilteredList.length > 0) {
             setActiveModel(newFilteredList[0]); // Define a primeira questão do curso
             setViewMode('quiz'); // Mudar para quiz
             setPreviousViewMode('map'); // Sair do mapa vai para o quiz
         }
     };
-    
+
     // Função para iniciar o quiz (a partir do WelcomeScreen)
     const handleStartQuiz = () => {
         // Ao iniciar o quiz sem selecionar um curso, usamos o catálogo completo (filtro nulo)
-        setSelectedCourseEdition(null); 
-        setActiveModel(CATALOGO_DE_PERGUNTAS[0]); 
-        setViewMode('quiz'); // Mudar para quiz
+        setSelectedCourseEdition(null);
+        if (filteredQuestions.length > 0) {
+            setActiveModel(filteredQuestions[0]);
+            setViewMode('quiz'); // Mudar para quiz
+        }
     };
 
     // NOVO: Função para alternar para a visualização do mapa
@@ -2316,9 +2273,9 @@ export default function App() {
     // NOVO: Função para reiniciar o quiz (Reinicia no PRIMEIRO modelo da edição selecionada)
     const handleRestartQuiz = useCallback(() => {
         // ** GARANTE O RESET DAS RESPOSTAS AO RECOMECAR O QUIZ **
-        resetQuizState(); 
+        resetQuizState();
         // Garante que o quiz reinicie na primeira questão da lista filtrada
-        setActiveModel(filteredQuestions[0] || CATALOGO_DE_PERGUNTAS[0]);
+        setActiveModel(filteredQuestions[0] || null);
     }, [filteredQuestions, resetQuizState]);
 
     // NOVO: Função para selecionar novo curso (leva para o mapa)
@@ -2490,14 +2447,23 @@ export default function App() {
                     onBackToWelcome={handleBackToWelcome} // Handler para voltar ao Welcome
                     onBackToMap={handleViewMap} // Mudar para viewMode='map'
                     onBackFromMap={handleBackFromMap} // Handler para fechar mapa e voltar
-                    
+
                     // PROPS ADICIONAIS PARA FILTRAGEM
                     onHandleModelSelect={handleModelSelect} // Usado pelo CourseCard para selecionar um curso
                     MAP_VIEW={MAP_VIEW}
-                    fullCatalog={CATALOGO_DE_PERGUNTAS} // Catálogo completo para a lógica de agrupamento do mapa
+                    fullCatalog={questionCatalog} // Catálogo completo para a lógica de agrupamento do mapa
                     quizQuestions={filteredQuestions} // Lista FILTRADA para o QUIZ e MÉTRICAS
                     onSelectNewCourse={handleSelectNewCourse} // <--- Novo prop passado
                     userResponsesRef={userResponsesRef} // <--- Passando o Ref de Respostas
+                    exams={exams}
+                    selectedYear={selectedYear}
+                    selectedDiscipline={selectedDiscipline}
+                    selectedLanguage={selectedLanguage}
+                    onYearChange={setSelectedYear}
+                    onDisciplineChange={setSelectedDiscipline}
+                    onLanguageChange={setSelectedLanguage}
+                    isLoadingQuestions={isLoadingQuestions}
+                    loadingError={loadingError}
                 />
             </div>
         );
@@ -2506,12 +2472,12 @@ export default function App() {
 
     return (
         <div className="w-full mx-auto flex flex-col gap-8 max-w-7xl p-6 font-sans bg-slate-50 overflow-x-hidden">
-            
+
             {/* REMOVIDO: HEADER */}
-            
+
             {renderActiveView()}
 
             {/* REMOVIDO: FOOTER */}
         </div>
     );
-        }
+}
