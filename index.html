@@ -1,54 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>5 Horas – MiniApp</title>
-  <link rel="stylesheet" href="./docs/global/shell.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@latest/lib/esm/single-spa.min.js"
-    }
-  }
-  </script>
+
+  <link rel="stylesheet" href="https://fabiocolletto.github.io/miniapp/docs/global/shell.css">
 </head>
 <body class="shell">
   <header class="shell-header">
-    <button onclick="navegar('/home')">Home</button>
-    ...
+    <button onclick="mostrar('home')">Home</button>
+    <button onclick="mostrar('educacao')">Educação</button>
+    <button onclick="mostrar('catalogo')">Catálogo</button>
+    <button onclick="mostrar('perfil')">Perfil</button>
   </header>
-  <div id="app-root">Carregando aplicação...</div>
+
+  <div id="app-root"></div>
 
   <script>
-    function navegar(path) {
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-  </script>
+    // Telas internas — tudo em um único arquivo simplificado
+    const telas = {
+      home: `<div><h1>Home</h1><p>Bem-vindo à tela inicial!</p><p><a href=\"https://github.com/fabiocolletto/miniapp/blob/596abdb38c86c7e3448fd64a7e28ffdc2b850d4f/docs/microapps/home/Home.js\" target=\"_blank\">Abrir Home.js no GitHub</a></p></div>`,
+      educacao: `<div><h1>Educação</h1><p>Conteúdos e cursos.</p><p><a href=\"https://github.com/fabiocolletto/miniapp/blob/596abdb38c86c7e3448fd64a7e28ffdc2b850d4f/docs/microapps/educacao/Educacao.js\" target=\"_blank\">Abrir Educacao.js no GitHub</a></p></div>`,
+      catalogo: `<div><h1>Catálogo</h1><p>Lista de produtos e serviços.</p><p><a href=\"https://github.com/fabiocolletto/miniapp/blob/596abdb38c86c7e3448fd64a7e28ffdc2b850d4f/docs/microapps/catalogo/Catalogo.js\" target=\"_blank\">Abrir Catalogo.js no GitHub</a></p></div>`,
 
-  <script type="module">
-    import { registerApplication, start } from 'single-spa';
-
-    // Altere BASE conforme a estrutura real do repo:
-    const BASE = './miniapps'; // <-- <--- ajuste conforme necessário
-
-    const loader = async (relPath) => {
-      const localUrl = `${BASE}/${relPath}`;
-      const cdnUrl = `https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp/${BASE}/${relPath}`;
-
-      try {
-        console.log('[5H] tentando local:', localUrl);
-        return await import(localUrl);
-      } catch (e1) {
-        console.warn('[5H] local falhou, tentando CDN:', cdnUrl, e1);
-        return await import(cdnUrl);
-      }
+      perfil: `<div><h1>Perfil</h1><p>Configurações do usuário.</p><p><a href=\"https://github.com/fabiocolletto/miniapp/blob/596abdb38c86c7e3448fd64a7e28ffdc2b850d4f/docs/microapps/perfil/Perfil.js\" target=\"_blank\">Abrir Perfil.js no GitHub</a></p></div>`
     };
 
-    registerApplication({ name: '5horas-home', app: () => loader('home/Home.js'), activeWhen: loc => loc.pathname === '/' || loc.pathname === '/home' });
-    // ... outros apps ...
+    function mostrar(nome) {
+      document.getElementById('app-root').innerHTML = telas[nome] || `<h1>Tela não encontrada</h1>`;
+    }
 
-    start();
+    // Carrega Home por padrão
+    mostrar('home');
   </script>
 </body>
 </html>
