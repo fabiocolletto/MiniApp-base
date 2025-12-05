@@ -432,10 +432,47 @@
       ]
     },
     {
+      "title": "Questão 11 - ENEM 2023",
       "index": 11,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "linguagens",
+      "language": null,
+      "year": 2023,
+      "context": "Maio foi colorido de amarelo, e o foi porque mundialmente amarelo é a cor convencionada para as advertências. No trânsito, essas advertências têm sido fatais. A estimativa, caso nada seja feito, é a de que se atinjam assustadoras 2,4 milhões de mortes no trânsito em 2030 em todo o mundo.  \nA pressa constante, o sentimento de invencibilidade, a certeza de invulnerabilidade, a necessidade de poder, a falta de civilidade, a certeza de impunidade, a ausência de solidariedade, a inexistência de compaixão e o desrespeito por si próprio são circunstâncias reais que, não raro, concorrem para o comportamento violento no trânsito.  \nO Maio Amarelo, que preconiza a atenção pela vida, é uma das iniciativas nesse sentido. E é precisamente a atenção pela vida que está esquecida. Essa atenção, por certo, requer menos pressa, mais civilidade, limites assegurados, consciência de vulnerabilidade, solidariedade, compaixão e respeito por si e pelo outro. Reafirmar e praticar esses princípios e valores talvez seja um caminho mais seguro e menos violento, que garanta a vida e não celebre a morte.\n\nDisponível em: http://portaldotransito.com.br. Acesso em: 11 dez. 2018 (adaptado).",
+      "files": [],
+      "correctAlternative": "D",
+      "alternativesIntroduction": "Considerando os procedimentos argumentativos utilizados, infere-se que o objetivo desse texto é",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Enumerar as causas determinantes da violência no trânsito.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Contextualizar a campanha de advertência no cenário mundial.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Divulgar dados numéricos alarmantes sobre acidentes de trânsito.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Sensibilizar o público para a importância de uma direção responsável.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "E",
+          "text": "Restringir os problemas da violência no trânsito a aspectos emocionais.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 12 - ENEM 2023",
@@ -868,10 +905,47 @@
       ]
     },
     {
+      "title": "Questão 22 - ENEM 2023",
       "index": 22,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "linguagens",
+      "language": null,
+      "year": 2023,
+      "context": "Alguém muito recentemente cortara o mato, que na época das chuvas crescia e rodeava a casa da mãe de Ponciá Vicêncio e de Luandi. Havia também vestígios de que a terra fora revolvida, como se ali fosse plantar uma pequena roça. Luandi sorriu. A mãe devia estar bastante forte, pois ainda labutava a terra. Cantou alto uma cantiga que aprendera com o pai, quando eles trabalhavam na terra dos brancos. Era uma canção que os negros mais velhos ensinavam aos mais novos. Eles diziam ser uma cantiga de voltar, que os homens, lá na África, entoavam sempre, quando estavam regressando da pesca, da caça ou de algum lugar. O pai de Luandi, no dia em que queria agradar à mulher, costumava entoar aquela cantiga ao se aproximar de casa. Luandi não entendia as palavras do canto; sabia, porém, que era uma língua que alguns negros falavam ainda, principalmente os velhos. Era uma cantiga alegre. Luandi, além de cantar, acompanhava o ritmo batendo com as palmas das mãos em um atabaque imaginário. Estava de regresso à terra. Voltava em casa. Chegava cantando, dançando a doce e vitoriosa cantiga de regressar.\n\nEVARISTO, C. **Ponciá Vicêncio**. Rio de Janeiro: Pallas, 2018.",
+      "files": [],
+      "correctAlternative": "C",
+      "alternativesIntroduction": "A leitura do texto permite reconhecer a “cantiga de voltar” como patrimônio linguístico que",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Representa a memória de uma língua africana extinta.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Exalta a rotina executada por jovens afrodescendentes.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Preserva a ancestralidade africana por meio da tradição oral.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "D",
+          "text": "Resgata a musicalidade africana por meio de palavras inteligíveis",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Remonta à tristeza dos negros mais velhos com saudade da África.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 23 - ENEM 2023",
@@ -1351,16 +1425,47 @@
       ]
     },
     {
-      "index": 34,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
+      "title": "Questão 35 - ENEM 2023",
       "index": 35,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "linguagens",
+      "language": null,
+      "year": 2023,
+      "context": "A indústria do esporte eletrônico é um mercado que está crescendo em um ritmo mais rápido do que a economia mundial. Sua popularidade cresceu muito e no Brasil não é diferente. De acordo com os dados de uma pesquisa, mais de 64% dos brasileiros que jogam videogame já ouviram falar de esporte eletrônico. No entanto, o que chama a atenção é o crescimento superior a 10% do público praticante comparado ao ano anterior, que subiu de 44,7% para 55,4%. Trata-se de um percentual expressivo, já que o Brasil está no top 3 dentre os países que têm maior número de espectadores de esporte eletrônico do mundo. Comparado ao ano anterior, em 2020, o Brasil teve um marco de crescimento de 20% na audiência. Mundo afora, a árdua dedicação de grandes gamers contribuiu para o reconhecimento do Comitê Olímpico Internacional, aliado a outras cinco federações esportivas e suas desenvolvedoras de jogos, que direcionaram um olhar mais atento ao assunto, permitindo dar o primeiro passo para concretizar, pela primeira vez na história dos jogos eletrônicos, um evento olímpico oficial.\n\nDisponível em: https://chicoterra.com. Acesso em: 15 nov. 2021 (adaptado).",
+      "files": [],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "O contexto em que o esporte eletrônico é apresentado no texto demonstra o(a)",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Condição favorável à expansão dessa modalidade.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "Promoção dessa prática por jogadores profissionais.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Impulsionamento de um processo de marketing.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Favorecimento de fabricantes dos jogos.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Modificação da audiência televisiva.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 36 - ENEM 2023",
@@ -1881,10 +1986,47 @@
       ]
     },
     {
+      "title": "Questão 48 - ENEM 2023",
       "index": 48,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": null,
+      "files": [],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "No Cerrado, o conhecimento local está sendo cada vez mais subordinado à lógica do agronegócio. De um lado, o capital impõe os conhecimentos biotecnológicos, como mecanismo de universalização de práticas agrícolas e de novas tecnologias, e de outro, o modelo capitalista subordina homens e mulheres à lógica do mercado. Assim, as águas, as sementes, os minerais, as terras (bens comuns) tornam-se propriedade privada. Além do mais, há outros fatores negativos, como a mecanização pesada, a “pragatização” dos seres humanos e não humanos, a violência simbólica, a superexploração, as chuvas de veneno e a violência contra a pessoa.\nCALAÇA, M.; SILVA, E. B.; JESUS, J. N. Territorialização do agronegócio e subordinação\ndo campesinato no Cerrado, Élisée, Rev. Geo. ÚEG, n. 1, jan.-jun. 2021 (adaptado).\nOs elementos descritos no texto, a respeito da territorialização da produção, demonstram que há um:",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Cerco aos camponeses, inviabilizando a manutenção das condições para a vida.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "Descaso aos latifundiários, impactando a plantação de alimentos para a exportação.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Desprezo ao assalariado, afetando o engajamento dos sindicatos para o trabalhador.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Desrespeito aos governantes, comprometendo a criação de empregos para o lavrador.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Assédio ao empresariado, dificultando o investimento de maquinários para a produção.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 49 - ENEM 2023",
@@ -1924,6 +2066,49 @@
         {
           "letter": "E",
           "text": "Assegurar a integridade territorial.",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "title": "Questão 50 - ENEM 2023",
+      "index": 50,
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": null,
+      "files": [],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "Superar a história da escravidão como principal marca da trajetória do negro no país tem sido uma tônica daqueles que se dedicam a pesquisar as heranças de origem afro à cultura brasileira. A esse esforço de reconstrução da própria história do país, alia-se agora a criação da plataforma digital Ancestralidades. “A história do negro no Brasil vai continuar sendo contada, e cada passo que a gente dá para trás é um passo que a gente avança”, diz Márcio Black, idealizador da plataforma, sobre o estudo de figuras ainda encobertas pela perspectiva histórica imposta pelos colonizadores da América.\nFIORATI, G. Projeto joga luz sobre negros e revê perspectiva histórica Disponivel em: www1.folha.uol.com.br. Acesso em: 10 nov. 2021 (adaptado)\nEm relação ao conhecimento sobre a formação cultural brasileira, iniciativas como a descrita no texto favorecem o(a)",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Recuperação do tradicionalismo.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Estímulo ao antropocentrismo.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Reforço do etnocentrismo.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Resgate do teocentrismo.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Crítica ao eurocentrismo.",
           "file": null,
           "isCorrect": true
         }
@@ -2360,10 +2545,47 @@
       ]
     },
     {
+      "title": "Questão 60 - ENEM 2023",
       "index": 60,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": "Negar o pedido por dinheiro indispensável para necessidades pessoais ou comprar bens usando o nome da pessoa sem o consentimento dela. Ameaçar o corte de recursos dependendo de atitudes pessoais, esconder documentos ou trocar senhas do banco sem avisar. Ou, ainda, proibir a pessoa de trabalhar ou destruir seus pertences. As histórias são comuns, mas às vezes não são reconhecidas como abuso. Mas é uma das cinco formas de conduta contra a mulher previstas na Lei Maria da Penha.\n\nLEWGOY. J. **Conduta quase invisível destrói a vida de mulheres**. Disponível em: https://valorinveste.globo.com. Acesso em: 23 out. 2021 (adaptado).",
+      "files": [],
+      "correctAlternative": "D",
+      "alternativesIntroduction": "O texto apresenta tipos de conduta sujeitos a punição, conforme previsto na Lei Maria da Penha, porque consistem em formas de",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Ação difamatória.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Desvio comportamental.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Expressão preconceituosa.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Violência patrimonial.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "E",
+          "text": "Desentendimento matrimonial.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 61 - ENEM 2023",
@@ -2796,10 +3018,47 @@
       ]
     },
     {
+      "title": "Questão 71 - ENEM 2023",
       "index": 71,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": "Alternativas logísticas estão servindo de instrumentos que ativam os mercados especuladores de terras nas diferentes regiões da Amazônia e constituem em indicadores utilizados por diferentes atores para defender ou denunciar o avanço da cultura da soja na região e, com ela, a retomada do desmatamento. É evidente que o crescimento do desmatamento tem a ver também com a expansão da soja, porém atribuir a ela o fator principal parece não totalmente correto. Parto da compreensão central de que a lógica que gera o desmatamento está articulada pelo tripé grileiros, madeireiros e pecuaristas.\n\nOLIVEIRA, A. U. A Amazônia e a nova geografia da produção da soja. **Terra Livre**, n. 26, jan.-jun. 2006 (adaptado).",
+      "files": [],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "Na visão do autor, o problema central da situação descrita é desencadeado pela",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Apropriação de áreas devolutas.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "Sonegação de impostos federais.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Incorporação de exportação ilegal.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Desoneração de setores produtivos.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Flexibilização de legislação ambiental.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 72 - ENEM 2023",
@@ -3279,10 +3538,47 @@
       ]
     },
     {
+      "title": "Questão 83 - ENEM 2023",
       "index": 83,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": "Diversos são os fatores causadores da degradação do solo, atuando de forma direta ou indireta, mas quase sempre a grande maioria das terras degradadas inicia esse processo com o desmatamento, que pode ser seguido por diversas formas de ocupação desordenada, como: corte de taludes para a construção de casas, rodovias e ferrovias, agricultura, com uso da queimada, vários tipos de mineração, irrigação excessiva, crescimento desordenado das cidades, superpastoreio, uso do solo para diversos tipos de despejos industriais e domésticos, sem tratamento da área que recebe esses despejos; enfim, de uma forma ou de outra, os solos tornam-se degradados, sendo muitas vezes difícil, ou quase impossível, a sua recuperação.\n\nGUERRA, A. T. Degradação dos solos: conceitos e temas. In: GUERRA, A. T.; JORGE, M. C. O. (Org.). **Degradação dos solos no Brasil**. Rio de Janeiro: Difel, 2018.",
+      "files": [],
+      "correctAlternative": "C",
+      "alternativesIntroduction": "A partir da ocupação desordenada exporta no texto, o que impede a recuperação do recurso natural destacado é a",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Elevação da biomassa.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Redução da salinização.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Diminuição da fertilidade.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "D",
+          "text": "Ampliação da microfauna.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Decomposição do substrato.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 84 - ENEM 2023",
@@ -3717,10 +4013,49 @@
       ]
     },
     {
+      "title": "Questão 94 - ENEM 2023",
       "index": 94,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": "Em uma indústria, o controle da dureza da água é importante quando ela é utilizada em caldeiras, uma vez que sais pouco solúveis, formados a partir de sulfatos e carbonatos, podem acumular-se no interior das tubulações, causando obstruções. Para avaliar a água utilizada nessa indústria, foram realizados testes de qualidade que consideraram os seauintes parâmetros:\n\n![](https://enem.dev/2023/questions/94/429989c0-d615-4e19-a5e6-838e81a6039c.png)",
+      "files": [
+        "https://enem.dev/2023/questions/94/429989c0-d615-4e19-a5e6-838e81a6039c.png"
+      ],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "Qual teste deve ser considerado para controlar a formação desse tipo de obstrução de tubulações?",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "1",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "2",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "3",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "4",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "5",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 95 - ENEM 2023",
@@ -3983,6 +4318,51 @@
       ]
     },
     {
+      "title": "Questão 100 - ENEM 2023",
+      "index": 100,
+      "discipline": "ciencias-natureza",
+      "language": null,
+      "year": 2023,
+      "context": "Um professor lança uma esfera verticalmente para cima, a qual retorna, depois de alguns segundos, ao ponto de lançamento. Em seguida, lista em um quadro todas as possibilidades para as grandezas cinemáticas.\n\n![](https://enem.dev/2023/questions/100/92848aa5-da82-4c66-9945-7051120a42c9.jpg)",
+      "files": [
+        "https://enem.dev/2023/questions/100/92848aa5-da82-4c66-9945-7051120a42c9.jpg"
+      ],
+      "correctAlternative": "C",
+      "alternativesIntroduction": "Ele solicita aos alunos que analisem as grandezas cinemáticas no instante em que a esfera atinge a altura máxima, escolhendo uma combinação para os módulos e sentidos da velocidade e da aceleração. A escolha que corresponde à combinação correta é",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "V = 0 e a ≠ 0 para cima.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "V ≠ 0 para cima e a = 0",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "V = 0 e a ≠ 0 para baixo.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "D",
+          "text": "V ≠ 0 para cima e a ≠ 0 para cima.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "V ≠ 0 para baixo e a ≠ 0 para baixo.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
+    },
+    {
       "title": "Questão 101 - ENEM 2023",
       "index": 101,
       "discipline": "ciencias-natureza",
@@ -4155,10 +4535,47 @@
       ]
     },
     {
+      "title": "Questão 105 - ENEM 2023",
       "index": 105,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-natureza",
+      "language": null,
+      "year": 2023,
+      "context": "Barbatimão é o nome popular de uma árvore cuja casca e utilizada para fins medicinais. Essa casca é constituída principalmente de dois tecidos vegetais: periderme e floema. A extração da casca tem levado à morte muitos indivíduos dessa espécie, quando o corte retira um anel completo ao longo da circunferência do tronco. Aqueles que têm parte da casca retirada sem completar essa circunferência podem sobreviver.",
+      "files": [],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "A morte desses indivíduos, decorrente da retirada do anel completo da casca, é provocada pela interrupção da",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Fotossíntese.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Transpiração.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Troca de gases.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Formação de brotos.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Nutrição das raízes.",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
     },
     {
       "title": "Questão 106 - ENEM 2023",
@@ -4688,10 +5105,49 @@
       ]
     },
     {
+      "title": "Questão 118 - ENEM 2023",
       "index": 118,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-natureza",
+      "language": null,
+      "year": 2023,
+      "context": "A gasolina é uma mistura de hidrocarbonetos de cadeias saturadas contendo de 8 a 12 átomos de carbono. Além disso, a gasolina de alto desempenho deve conter elevados teores de hidrocarbonetos de cadeias ramificadas, de forma a resistir à compressão e entrar em ignição apenas quando a vela aciona uma centelha elétrica no motor. No quadro, estão apresentados compostos que podem ser utilizados como combustíveis.\n\n![](https://enem.dev/2023/questions/118/5d656ef9-cabd-499e-bd98-51993ccb6c1c.png)",
+      "files": [
+        "https://enem.dev/2023/questions/118/5d656ef9-cabd-499e-bd98-51993ccb6c1c.png"
+      ],
+      "correctAlternative": "C",
+      "alternativesIntroduction": "Entre esses compostos, aquele que conferirá maior desempenho como combustível é o",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "I.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "II.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "III.",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "D",
+          "text": "IV.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "V.",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 119 - ENEM 2023",
@@ -5138,10 +5594,47 @@
       ]
     },
     {
+      "title": "Questão 129 - ENEM 2023",
       "index": 129,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "matematica",
+      "language": null,
+      "year": 2023,
+      "context": "O Aldrin é um inseticida agrícola organoclorado sintético de baixa polaridade, cuja estrutura molecular simétrica, de fórmula ![](https://enem.dev/broken-image.svg), está representada na figura. Introduzido na agricultura a partir da década de 1950, esse composto apresenta alta persistência no meio ambiente e acumulação nos organismos, sendo danoso para a saúde.\n\n![](https://enem.dev/broken-image.svg)\n\nVIEGAS JÚNIOR, C. Terpenos com atividade inseticida: uma alternativa para o controle químico de insetos. **Química Nova**, v. 26, n. 3, 2003 (adaptado).\n\nUm pesquisador coletou fluidos biológicos de indivíduos de uma população contaminada por esse inseticida agrícola. Ele analisou amostras de saliva, sangue, lágrima, urina e leite quanto à presença dessa substância.",
+      "files": [],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "Em qual dos fluidos o pesquisador provavelmente encontrou a maior concentração dessa substância?",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "Saliva, por consequência da atividade de enzimas.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Sangue, em função das hemácias e leucócitos.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "Lágrima, em razão da concentração de sais.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "Urina, pela presenca de moléculas de ureia.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "Leite, por causa do alto teor de gorduras.",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
     },
     {
       "title": "Questão 130 - ENEM 2023",
@@ -5675,10 +6168,47 @@
       ]
     },
     {
+      "title": "Questão 142 - ENEM 2023",
       "index": 142,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "matematica",
+      "language": null,
+      "year": 2023,
+      "context": null,
+      "files": [],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "Qual é a quantidade mínima de água, em litro, que cada morador, em média, deverá economizar por dia, de modo que o reservatório não fique sem água nos próximos 10 dias?",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "50",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "60",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "80",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "140",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "150",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
     },
     {
       "title": "Questão 143 - ENEM 2023",
@@ -6036,6 +6566,49 @@
       ]
     },
     {
+      "title": "Questão 150 - ENEM 2023",
+      "index": 150,
+      "discipline": "matematica",
+      "language": null,
+      "year": 2023,
+      "context": "Dirigir após ingerir bebidas alcoólicas é uma atitude extremamente perigosa, uma vez que, a partir da primeira dose, a pessoa já começa a ter perda de sensibilidade de movimentos e de reflexos. Apesar de a eliminação e absorção do álcool depender de cada pessoa e de como o organismo consegue metabolizar a substância, ao final da primeira hora após a ingestão, a concentração de álcool (C) no sangue corresponde a aproximadamente 90% da quantidade (q) de álcool ingerida, e a eliminação total dessa concentração pode demorar até 12 horas.\n\nDisponível em: http://g1.globo.com. Acesso em: 1 dez. 2018 (adaptado).",
+      "files": [],
+      "correctAlternative": "A",
+      "alternativesIntroduction": "Nessas condições, ao final da primeira hora após a ingestão da quantidade q de álcool, a concentração C dessa substância no sangue é expressa algebricamente por",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "C = 0,9q",
+          "file": null,
+          "isCorrect": true
+        },
+        {
+          "letter": "B",
+          "text": "C = 0,1q",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "C = 1 − 0,1q",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "C = 1 − 0,9q",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "C = q − 10",
+          "file": null,
+          "isCorrect": false
+        }
+      ]
+    },
+    {
       "title": "Questão 151 - ENEM 2023",
       "index": 151,
       "discipline": "matematica",
@@ -6129,10 +6702,47 @@
       ]
     },
     {
+      "title": "Questão 153 - ENEM 2023",
       "index": 153,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "ciencias-humanas",
+      "language": null,
+      "year": 2023,
+      "context": "Um supermercado conta com cinco caixas disponíveis para pagamento. Foram instaladas telas que apresentam o tempo médio gasto por cada caixa para iniciar e finalizar o atendimento de cada cliente, e o número de pessoas presentes na fila de cada caixa em tempo real. Um cliente, na hora de passar sua compra, sabendo que cada um dos cinco caixas iniciará um novo atendimento naquele momento, pretende gastar o menor tempo possível de espera na fila. Ele observa que as telas apresentavam as informações a seguir.  \n• Caixa I: atendimento 12 minutos, 5 pessoas na fila.  \n• Caixa II: atendimento 6 minutos, 9 pessoas na fila.  \n• Caixa III: atendimento 5 minutos, 6 pessoas na fila.  \n• Caixa IV: atendimento 15 minutos, 2 pessoas na fila.  \n• Caixa V: atendimento 9 minutos, 3 pessoas na fila.",
+      "files": [],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "Para alcançar seu objetivo, o cliente deverá escolher o caixa",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "I.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "II.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "III.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "IV.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "V.",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
     },
     {
       "title": "Questão 154 - ENEM 2023",
@@ -6622,10 +7232,49 @@
       ]
     },
     {
+      "title": "Questão 165 - ENEM 2023",
       "index": 165,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "matematica",
+      "language": null,
+      "year": 2023,
+      "context": "A figura representa uma escada com três degraus, construída em concreto maciço, com suas medidas especificadas.\n\n![](https://enem.dev/2023/questions/165/bf369224-eb93-4bba-98c4-ff7d1e17df36.png)\n\nNessa escada, pisos e espelhos têm formato retangular, e as paredes laterais têm formato de um polígono cujos lados adjacentes são perpendiculares. Pisos, espelhos e paredes laterais serão revestidos em cerâmica.",
+      "files": [
+        "https://enem.dev/2023/questions/165/bf369224-eb93-4bba-98c4-ff7d1e17df36.png"
+      ],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "A área a ser revestida em cerâmica, em metro quadrado, mede",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "1,20.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "1,35.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "1,65.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "1,80.",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "1,95.",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
     },
     {
       "title": "Questão 166 - ENEM 2023",
@@ -6985,12 +7634,6 @@
       ]
     },
     {
-      "index": 174,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
       "title": "Questão 175 - ENEM 2023",
       "index": 175,
       "discipline": "matematica",
@@ -7034,10 +7677,49 @@
       ]
     },
     {
+      "title": "Questão 176 - ENEM 2023",
       "index": 176,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
+      "discipline": "matematica",
+      "language": null,
+      "year": 2023,
+      "context": "Os números figurados pentagonais provavelmente foram introduzidos pelos pitagóricos por volta do século V a.C. As figuras ilustram como obter os seis primeiros deles, sendo os demais obtidos seguindo o mesmo padrão geométrico.\n\n![](https://enem.dev/2023/questions/176/d21e916b-a5fc-441e-b782-d2d4aca3522b.png)",
+      "files": [
+        "https://enem.dev/2023/questions/176/d21e916b-a5fc-441e-b782-d2d4aca3522b.png"
+      ],
+      "correctAlternative": "E",
+      "alternativesIntroduction": "O oitavo número pentagonal é",
+      "alternatives": [
+        {
+          "letter": "A",
+          "text": "59",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "83",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "C",
+          "text": "86",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "D",
+          "text": "89",
+          "file": null,
+          "isCorrect": false
+        },
+        {
+          "letter": "E",
+          "text": "92",
+          "file": null,
+          "isCorrect": true
+        }
+      ]
     },
     {
       "title": "Questão 177 - ENEM 2023",
@@ -7214,120 +7896,6 @@
           "isCorrect": false
         }
       ]
-    },
-    {
-      "index": 181,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 182,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 183,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 184,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 185,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 186,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 187,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 188,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 189,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 190,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 191,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 192,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 193,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 194,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 195,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 196,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 197,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 198,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
-    },
-    {
-      "index": 199,
-      "error": true,
-      "message": "Falha ao carregar a questão.",
-      "raw": null
     }
   ]
-          }
+}
