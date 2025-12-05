@@ -58,13 +58,13 @@
             "title": "Questão 3 - ENEM 2023",
             "index": 3,
             "discipline": "linguagens",
-            "language": "ingles"
+            "language": "espanhol"
         },
         {
             "title": "Questão 3 - ENEM 2023",
             "index": 3,
             "discipline": "linguagens",
-            "language": "espanhol"
+            "language": "ingles"
         },
         {
             "title": "Questão 4 - ENEM 2023",
@@ -255,6 +255,12 @@
         {
             "title": "Questão 33 - ENEM 2023",
             "index": 33,
+            "discipline": "linguagens",
+            "language": null
+        },
+        {
+            "title": "Questão 34 - ENEM 2023",
+            "index": 34,
             "discipline": "linguagens",
             "language": null
         },
@@ -1089,6 +1095,12 @@
         {
             "title": "Questão 173 - ENEM 2023",
             "index": 173,
+            "discipline": "matematica",
+            "language": null
+        },
+        {
+            "title": "Questão 174 - ENEM 2023",
+            "index": 174,
             "discipline": "matematica",
             "language": null
         },
