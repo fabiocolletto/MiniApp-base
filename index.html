@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>5 Horas – MiniApp</title>
-
-  <!-- CSS global do shell (design system e responsividade base) -->
   <link rel="stylesheet" href="./docs/global/shell.css">
-
-  <!-- Import map para resolver o módulo "single-spa" como ES module -->
   <script type="importmap">
   {
     "imports": {
@@ -18,20 +13,12 @@
   </script>
 </head>
 <body class="shell">
-  <!-- Header — primeiras peças da estrutura -->
   <header class="shell-header">
     <button onclick="navegar('/home')">Home</button>
-    <button onclick="navegar('/educacao')">Educação</button>
-    <button onclick="navegar('/catalogo')">Catálogo</button>
-    <button onclick="navegar('/perfil')">Perfil</button>
+    ...
   </header>
+  <div id="app-root">Carregando aplicação...</div>
 
-  <!-- Container onde os microapps aparecem -->
-  <div id="app-root">
-    Carregando aplicação...
-  </div>
-
-  <!-- Função simples de navegação -->
   <script>
     function navegar(path) {
       window.history.pushState({}, '', path);
@@ -39,71 +26,29 @@
     }
   </script>
 
-  <!-- Root-config INLINE: orquestra os microapps usando single-spa -->
   <script type="module">
     import { registerApplication, start } from 'single-spa';
 
-    // BASE relativo ao index.html (funciona local e no GitHub Pages)
-    const BASE = './docs/microapps';
+    // Altere BASE conforme a estrutura real do repo:
+    const BASE = './miniapps'; // <-- <--- ajuste conforme necessário
 
-    // Loader com tratamento de erro e log visível
-    const loader = async (relativePath) => {
-      const url = `${BASE}/${relativePath}`;
+    const loader = async (relPath) => {
+      const localUrl = `${BASE}/${relPath}`;
+      const cdnUrl = `https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp/${BASE}/${relPath}`;
+
       try {
-        const module = await import(url);
-        console.log('[5 Horas] Módulo carregado com sucesso:', url);
-        return module;
-      } catch (err) {
-        console.error('[5 Horas] Falha ao carregar módulo:', url, err);
-        const root = document.getElementById('app-root');
-        if (root) {
-          root.innerText = `Erro ao carregar módulo: ${url}`;
-        }
-        throw err;
+        console.log('[5H] tentando local:', localUrl);
+        return await import(localUrl);
+      } catch (e1) {
+        console.warn('[5H] local falhou, tentando CDN:', cdnUrl, e1);
+        return await import(cdnUrl);
       }
     };
 
-    // HOME
-    registerApplication({
-      name: '5horas-home',
-      app: () => loader('home/Home.js'),
-      activeWhen: (loc) => loc.pathname === '/' || loc.pathname === '/home'
-    });
+    registerApplication({ name: '5horas-home', app: () => loader('home/Home.js'), activeWhen: loc => loc.pathname === '/' || loc.pathname === '/home' });
+    // ... outros apps ...
 
-    // EDUCAÇÃO
-    registerApplication({
-      name: '5horas-educacao',
-      app: () => loader('educacao/Educacao.js'),
-      activeWhen: (loc) => loc.pathname.startsWith('/educacao')
-    });
-
-    // CATÁLOGO
-    registerApplication({
-      name: '5horas-catalogo',
-      app: () => loader('catalogo/Catalogo.js'),
-      activeWhen: (loc) => loc.pathname.startsWith('/catalogo')
-    });
-
-    // PERFIL
-    registerApplication({
-      name: '5horas-perfil',
-      app: () => loader('perfil/Perfil.js'),
-      activeWhen: (loc) => loc.pathname.startsWith('/perfil')
-    });
-
-    // Inicia o "maestro" single-spa
     start();
-
-    // Teste de sanidade: tentar importar Home.js diretamente via caminho RELATIVO estático
-    (async () => {
-      try {
-        const testUrl = './docs/microapps/home/Home.js';
-        await import(testUrl);
-        console.log('[5 Horas][TEST] Home.js importável em:', testUrl);
-      } catch (e) {
-        console.error('[5 Horas][TEST] Falha ao importar Home.js diretamente em ./docs/microapps/home/Home.js', e);
-      }
-    })();
   </script>
 </body>
 </html>
