@@ -64,8 +64,7 @@
     }
   </script>
 
-  <!-- Carrega o single-spa e depois nosso root-config -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/single-spa/lib/system/single-spa.min.js"></script>
-  <script type="module" src="./docs/root-config/index.js"></script>
+  <!-- Carrega apenas o nosso root-config (que por sua vez importa o single-spa via ES modules) -->
+  <script type="module" src="https://fabiocolletto.github.io/miniapp-app/docs/root-config/index.js"></script>
 </body>
 </html>
