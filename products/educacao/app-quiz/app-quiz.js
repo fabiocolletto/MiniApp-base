@@ -401,6 +401,68 @@ const CATALOGO_DE_PERGUNTAS = [
     },
 ];
 
+// 3.2. UTILITÁRIOS DE INTEGRAÇÃO COM BANCO DE DADOS DE QUESTÕES
+const sanitizeMarkdownImages = (text = '') => text.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim();
+
+const extractImageUrl = (question = {}) => {
+    const fromFiles = Array.isArray(question.files) && question.files.length > 0 ? question.files[0] : null;
+    if (fromFiles) return fromFiles;
+
+    if (typeof question.context === 'string') {
+        const match = question.context.match(/!\[[^\]]*\]\(([^)]+)\)/);
+        return match ? match[1] : null;
+    }
+
+    return null;
+};
+
+const mapDatabaseQuestion = (question) => {
+    if (!question) return null;
+
+    const options = (question.alternatives || []).map((alt) => {
+        const optionLabel = alt.text || `Alternativa ${alt.letter || ''}`.trim();
+        return `${alt.letter ? `${alt.letter}) ` : ''}${optionLabel}`.trim();
+    });
+
+    const correctAlternative = (question.alternatives || []).find(
+        (alt) => alt.letter === question.correctAlternative
+    );
+
+    const courseEdition = question.year ? `ENEM ${question.year}` : 'ENEM';
+    const cleanedContext = sanitizeMarkdownImages(question.context || '');
+    const prompt = question.alternativesIntroduction || question.title || 'Selecione a alternativa correta.';
+
+    return {
+        id: `${question.year || 'db'}-${question.index || question.title || Math.random().toString(36).slice(2)}`,
+        type: 'text',
+        interactionType: 'multiple-choice',
+        subject: question.discipline || 'Geral',
+        topic: question.language ? `${question.discipline || 'Geral'}: ${question.language}` : (question.discipline || 'Geral'),
+        preview: question.title || prompt,
+        courseEdition,
+        durationMinutes: 3,
+        difficulty: 'Média',
+        content: {
+            text: [cleanedContext, prompt].filter(Boolean).join('\n\n'),
+            chartData: null,
+            pyramidData: null,
+            imageURL: extractImageUrl(question),
+            imageAlt: question.title || 'Contexto da questão',
+        },
+        question: prompt,
+        options: options.length > 0 ? options : ['Alternativa A', 'Alternativa B'],
+        answer: correctAlternative
+            ? `${correctAlternative.letter ? `${correctAlternative.letter}) ` : ''}${correctAlternative.text || ''}`.trim()
+            : null,
+        modelAnswer: null,
+    };
+};
+
+const buildCatalogFromDatabase = (payload) => {
+    if (!payload || !Array.isArray(payload.questions)) return [];
+    return payload.questions.map(mapDatabaseQuestion).filter(Boolean);
+};
+
 // ==================================================================================
 // 4. COMPONENTES UTILITÁRIOS (Visualização de Dados)
 // ==================================================================================
@@ -2195,9 +2257,11 @@ const MobileQuizSimulation = ({ activeModel, onNext, onPrev, hasNext, hasPrev, i
 
 export default function App() {
     // 1. ESTADOS DE CONTROLE DE FILTRO E NAVEGAÇÃO
-    
+
     // Estado para o filtro de edição de curso selecionado
     const [selectedCourseEdition, setSelectedCourseEdition] = useState(null);
+    const [catalogQuestions, setCatalogQuestions] = useState(CATALOGO_DE_PERGUNTAS);
+    const [isCatalogLoading, setIsCatalogLoading] = useState(false);
 
     // Inicializa activeModel com o primeiro modelo do catálogo completo (ou null se estiver vazio)
     const [activeModel, setActiveModel] = useState(CATALOGO_DE_PERGUNTAS.length > 0 ? CATALOGO_DE_PERGUNTAS[0] : null);
@@ -2217,21 +2281,47 @@ export default function App() {
     
     // Consumo do MODEL_METADATA.SECTION_TITLE
     const { APP_TITLE, APP_SUBTITLE, MAP_VIEW } = MODEL_METADATA.SECTION_TITLE;
-    
+
     // 2. LÓGICA DE FILTRAGEM (MEMOIZED)
     const filteredQuestions = useMemo(() => {
         if (!selectedCourseEdition) {
             // Se nenhum curso selecionado, retorna o catálogo completo como fallback
-            return CATALOGO_DE_PERGUNTAS; 
+            return catalogQuestions;
         }
         // Filtra as questões pela edição selecionada
-        return CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === selectedCourseEdition);
-    }, [selectedCourseEdition]);
+        return catalogQuestions.filter(q => q.courseEdition === selectedCourseEdition);
+    }, [catalogQuestions, selectedCourseEdition]);
 
     // 3. LÓGICA DE NAVEGAÇÃO (BASEADA NA LISTA FILTRADA)
     const currentIndex = activeModel ? filteredQuestions.findIndex(m => m.id === activeModel.id) : -1;
     const hasNext = currentIndex !== -1 && currentIndex < filteredQuestions.length - 1;
     const hasPrev = currentIndex > 0;
+
+    // 2.1. Carrega catálogo do banco de dados externo
+    useEffect(() => {
+        const fetchQuestionsFromDatabase = async () => {
+            setIsCatalogLoading(true);
+            try {
+                const response = await fetch('./courses/enem/2023/questions.js');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const payload = await response.json();
+                const mappedCatalog = buildCatalogFromDatabase(payload);
+
+                if (mappedCatalog.length > 0) {
+                    setCatalogQuestions(mappedCatalog);
+                    setActiveModel(mappedCatalog[0]);
+                    setSelectedCourseEdition(null);
+                }
+            } catch (error) {
+                console.error('Falha ao carregar banco de dados de questões:', error);
+            } finally {
+                setIsCatalogLoading(false);
+            }
+        };
+
+        fetchQuestionsFromDatabase();
+    }, []);
     
     // NOVO: Função central de reset para limpar as respostas salvas
     const resetQuizState = useCallback(() => {
@@ -2251,7 +2341,7 @@ export default function App() {
         
         // A lista filtrada (filteredQuestions) será calculada no próximo render,
         // mas podemos calcular a primeira questão agora.
-        const newFilteredList = CATALOGO_DE_PERGUNTAS.filter(q => q.courseEdition === edition);
+        const newFilteredList = catalogQuestions.filter(q => q.courseEdition === edition);
         
         if (newFilteredList.length > 0) {
             setActiveModel(newFilteredList[0]); // Define a primeira questão do curso
@@ -2264,7 +2354,7 @@ export default function App() {
     const handleStartQuiz = () => {
         // Ao iniciar o quiz sem selecionar um curso, usamos o catálogo completo (filtro nulo)
         setSelectedCourseEdition(null); 
-        setActiveModel(CATALOGO_DE_PERGUNTAS[0]); 
+        setActiveModel(catalogQuestions[0]);
         setViewMode('quiz'); // Mudar para quiz
     };
 
@@ -2318,8 +2408,8 @@ export default function App() {
         // ** GARANTE O RESET DAS RESPOSTAS AO RECOMECAR O QUIZ **
         resetQuizState(); 
         // Garante que o quiz reinicie na primeira questão da lista filtrada
-        setActiveModel(filteredQuestions[0] || CATALOGO_DE_PERGUNTAS[0]);
-    }, [filteredQuestions, resetQuizState]);
+        setActiveModel(filteredQuestions[0] || catalogQuestions[0]);
+    }, [catalogQuestions, filteredQuestions, resetQuizState]);
 
     // NOVO: Função para selecionar novo curso (leva para o mapa)
     const handleSelectNewCourse = () => {
@@ -2471,7 +2561,15 @@ export default function App() {
 
     // Renderiza a tela ativa
     const renderActiveView = () => {
-        
+
+        if (isCatalogLoading && catalogQuestions.length === 0) {
+            return (
+                <div className="p-6 bg-white rounded-xl shadow-sm text-center text-slate-600">
+                    Carregando banco de dados de questões...
+                </div>
+            );
+        }
+
         // As visualizações 'welcome', 'quiz' e 'map' agora são manipuladas pelo MobileQuizSimulation
         return (
             <div className="flex flex-col gap-6">
@@ -2494,7 +2592,7 @@ export default function App() {
                     // PROPS ADICIONAIS PARA FILTRAGEM
                     onHandleModelSelect={handleModelSelect} // Usado pelo CourseCard para selecionar um curso
                     MAP_VIEW={MAP_VIEW}
-                    fullCatalog={CATALOGO_DE_PERGUNTAS} // Catálogo completo para a lógica de agrupamento do mapa
+                    fullCatalog={catalogQuestions} // Catálogo completo para a lógica de agrupamento do mapa
                     quizQuestions={filteredQuestions} // Lista FILTRADA para o QUIZ e MÉTRICAS
                     onSelectNewCourse={handleSelectNewCourse} // <--- Novo prop passado
                     userResponsesRef={userResponsesRef} // <--- Passando o Ref de Respostas
