@@ -1,0 +1,20 @@
+{
+    "title": "Questão 1 - ENEM 2024",
+    "index": 1,
+    "year": 2024,
+    "language": null,
+    "discipline": "linguagens",
+    "context": "Substitua este texto pelo enunciado completo da questão. Use \\n\\n para separar parágrafos e descreva links ou imagens no corpo do texto quando necessário.",
+    "files": [
+        "https://exemplo.com/asset.png"
+    ],
+    "correctAlternative": "A",
+    "alternativesIntroduction": "Texto introdutório antes das alternativas.",
+    "alternatives": [
+        { "letter": "A", "text": "Alternativa A", "file": null, "isCorrect": true },
+        { "letter": "B", "text": "Alternativa B", "file": null, "isCorrect": false },
+        { "letter": "C", "text": "Alternativa C", "file": null, "isCorrect": false },
+        { "letter": "D", "text": "Alternativa D", "file": null, "isCorrect": false },
+        { "letter": "E", "text": "Alternativa E", "file": null, "isCorrect": false }
+    ]
+}
