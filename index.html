@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>5 Horas – MiniApp</title>
 
-  <!-- Estilo simples para começarmos a estrutura -->
-  <link rel="stylesheet" href="https://fabiocolletto.github.io/miniapp/docs/global/shell.css">
+  <!-- CSS global do shell (design system e responsividade base) -->
+  <link rel="stylesheet" href="./docs/global/shell.css">
+
+  <!-- Import map para resolver o módulo "single-spa" como ES module -->
+  <script type="importmap">
+  {
+    "imports": {
+      "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@latest/lib/esm/single-spa.min.js"
+    }
+  }
+  </script>
 </head>
 <body class="shell">
   <!-- Header — primeiras peças da estrutura -->
@@ -30,7 +39,71 @@
     }
   </script>
 
-  <!-- Carrega apenas o nosso root-config (que por sua vez importa o single-spa via ES modules) -->
-  <script type="module" src="https://fabiocolletto.github.io/miniapp-app/docs/root-config/index.js"></script>
+  <!-- Root-config INLINE: orquestra os microapps usando single-spa -->
+  <script type="module">
+    import { registerApplication, start } from 'single-spa';
+
+    // BASE relativo ao index.html (funciona local e no GitHub Pages)
+    const BASE = './docs/microapps';
+
+    // Loader com tratamento de erro e log visível
+    const loader = async (relativePath) => {
+      const url = `${BASE}/${relativePath}`;
+      try {
+        const module = await import(url);
+        console.log('[5 Horas] Módulo carregado com sucesso:', url);
+        return module;
+      } catch (err) {
+        console.error('[5 Horas] Falha ao carregar módulo:', url, err);
+        const root = document.getElementById('app-root');
+        if (root) {
+          root.innerText = `Erro ao carregar módulo: ${url}`;
+        }
+        throw err;
+      }
+    };
+
+    // HOME
+    registerApplication({
+      name: '5horas-home',
+      app: () => loader('home/Home.js'),
+      activeWhen: (loc) => loc.pathname === '/' || loc.pathname === '/home'
+    });
+
+    // EDUCAÇÃO
+    registerApplication({
+      name: '5horas-educacao',
+      app: () => loader('educacao/Educacao.js'),
+      activeWhen: (loc) => loc.pathname.startsWith('/educacao')
+    });
+
+    // CATÁLOGO
+    registerApplication({
+      name: '5horas-catalogo',
+      app: () => loader('catalogo/Catalogo.js'),
+      activeWhen: (loc) => loc.pathname.startsWith('/catalogo')
+    });
+
+    // PERFIL
+    registerApplication({
+      name: '5horas-perfil',
+      app: () => loader('perfil/Perfil.js'),
+      activeWhen: (loc) => loc.pathname.startsWith('/perfil')
+    });
+
+    // Inicia o "maestro" single-spa
+    start();
+
+    // Teste de sanidade: tentar importar Home.js diretamente via caminho RELATIVO estático
+    (async () => {
+      try {
+        const testUrl = './docs/microapps/home/Home.js';
+        await import(testUrl);
+        console.log('[5 Horas][TEST] Home.js importável em:', testUrl);
+      } catch (e) {
+        console.error('[5 Horas][TEST] Falha ao importar Home.js diretamente em ./docs/microapps/home/Home.js', e);
+      }
+    })();
+  </script>
 </body>
 </html>
