@@ -23,7 +23,7 @@ const EDUCATION_CATEGORIES = [
 
 const STUDENT_MENU_ITEMS = [
     { titleKey: "edu_student_profile", action: 'modal', modalId: 'registration', url: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/student-registration.html', basePath: 'https://cdn.jsdelivr.net/gh/fabiocolletto/miniapp@main/products/educacao/', color: "blue", icon: "app_registration" },
-    { titleKey: "edu_simulados", action: 'modal', modalId: 'simulados', url: 'products/educacao/app-quiz/index.html', basePath: 'products/educacao/app-quiz/', color: "pink", icon: "edit_note" },
+    { titleKey: "edu_simulados", action: 'modal', modalId: 'simulados', url: 'products/educacao/app-quiz/index.html', basePath: 'products/educacao/app-quiz/', color: "pink", icon: "quiz" },
     { titleKey: "edu_agenda", action: 'placeholder', color: "teal", icon: "event", statusKey: "coming_soon", isComingSoon: true },
 ];
 
