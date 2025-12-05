@@ -1,82 +1,133 @@
-// =============================================================
-// Tela de Perfil — versão completa, seguindo práticas single-spa
-// =============================================================
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniApp Conta – 5 Horas</title>
 
-import Dexie from 'https://cdn.jsdelivr.net/npm/dexie@latest/dist/dexie.mjs';
+  <link rel="stylesheet" href="https://fabiocolletto.github.io/miniapp/docs/global/shell.css" />
+</head>
+<body class="shell">
+  <header class="shell-header">
+    <button onclick="mostrar('dados')">Dados pessoais</button>
+    <button onclick="mostrar('preferencias')">Preferências</button>
+    <button onclick="mostrar('produtos')">Produtos</button>
+    <button onclick="mostrar('seguranca')">Segurança</button>
+  </header>
 
-let container = null;
-let db;
+  <div id="app-root"></div>
 
-// -------------------------------------------------------------
-// BOOTSTRAP — inicializa banco Dexie
-// -------------------------------------------------------------
-export function bootstrap() {
-  db = new Dexie('perfilDB');
-  db.version(1).stores({
-    usuario: '++id, nome, email'
-  });
-  return Promise.resolve();
-}
+  <script>
+    // BANCO SIMPLES (pode virar Dexie depois)
+    const contaStore = {
+      nome: localStorage.getItem('conta_nome') || '',
+      email: localStorage.getItem('conta_email') || '',
+      telefone: localStorage.getItem('conta_telefone') || '',
+      tema: localStorage.getItem('conta_tema') || 'claro',
+      contato: localStorage.getItem('conta_contato') || 'whatsapp'
+    };
 
-// -------------------------------------------------------------
-// MOUNT — monta UI da tela e ativa comportamentos
-// -------------------------------------------------------------
-export async function mount() {
-  container = document.getElementById('app-root');
+    function salvar() {
+      localStorage.setItem('conta_nome', contaStore.nome);
+      localStorage.setItem('conta_email', contaStore.email);
+      localStorage.setItem('conta_telefone', contaStore.telefone);
+      localStorage.setItem('conta_tema', contaStore.tema);
+      localStorage.setItem('conta_contato', contaStore.contato);
+      alert('Dados salvos com sucesso!');
+    }
 
-  const dados = await db.usuario.toArray();
-  const usuario = dados[0] || { nome: '', email: '' };
+    const telas = {
+      dados: `
+        <div style="padding:24px; max-width:600px; margin:auto;">
+          <h1>Dados pessoais</h1>
 
-  container.innerHTML = `
-    <div style="padding:24px; font-family:Inter; max-width:500px; margin:auto;">
-      <h1 style="margin-bottom:20px;">Perfil</h1>
+          <label>Nome<br>
+            <input id="nome" value="${contaStore.nome}" style="width:100%; padding:10px; margin-bottom:10px;">
+          </label>
 
-      <label style="display:block; margin-bottom:12px;">
-        <span style="font-size:14px; color:#555;">Nome</span>
-        <input id="perfil-nome" 
-               value="${usuario.nome}" 
-               placeholder="Seu nome" 
-               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-top:4px;">
-      </label>
+          <label>Email<br>
+            <input id="email" value="${contaStore.email}" style="width:100%; padding:10px; margin-bottom:10px;">
+          </label>
 
-      <label style="display:block; margin-bottom:20px;">
-        <span style="font-size:14px; color:#555;">Email</span>
-        <input id="perfil-email" 
-               value="${usuario.email}" 
-               placeholder="email@exemplo.com" 
-               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-top:4px;">
-      </label>
+          <label>Telefone<br>
+            <input id="telefone" value="${contaStore.telefone}" style="width:100%; padding:10px; margin-bottom:20px;">
+          </label>
 
-      <button id="perfil-salvar" 
-              style="padding:12px 20px; background:#0057ff; color:#fff; border:none; border-radius:6px; cursor:pointer; width:100%;">
-        Salvar
-      </button>
+          <button onclick="atualizarDados()" style="padding:10px 20px;">Salvar</button>
+        </div>
+      `,
 
-      <p id="perfil-status" style="margin-top:16px; font-size:14px; color:green;"></p>
-    </div>
-  `;
+      preferencias: `
+        <div style="padding:24px; max-width:600px; margin:auto;">
+          <h1>Preferências</h1>
 
-  // -----------------------------------------------------------
-  // EVENTO DE SALVAR
-  // -----------------------------------------------------------
-  document.getElementById("perfil-salvar").onclick = async () => {
-    const nome = document.getElementById("perfil-nome").value.trim();
-    const email = document.getElementById("perfil-email").value.trim();
+          <label>Tema<br>
+            <select id="tema" style="width:100%; padding:10px; margin-bottom:20px;">
+              <option value="claro" ${contaStore.tema === 'claro' ? 'selected' : ''}>Claro</option>
+              <option value="escuro" ${contaStore.tema === 'escuro' ? 'selected' : ''}>Escuro</option>
+            </select>
+          </label>
 
-    // Limpa tabela e salva um único registro
-    await db.usuario.clear();
-    await db.usuario.add({ nome, email });
+          <label>Preferência de contato<br>
+            <select id="contato" style="width:100%; padding:10px; margin-bottom:20px;">
+              <option value="whatsapp" ${contaStore.contato === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
+              <option value="email" ${contaStore.contato === 'email' ? 'selected' : ''}>Email</option>
+            </select>
+          </label>
 
-    document.getElementById("perfil-status").innerText = "Dados salvos!";
-  };
+          <button onclick="atualizarPreferencias()" style="padding:10px 20px;">Salvar</button>
+        </div>
+      `,
 
-  return Promise.resolve();
-}
+      produtos: `
+        <div style="padding:24px; max-width:600px; margin:auto;">
+          <h1>Produtos ativos</h1>
 
-// -------------------------------------------------------------
-// UNMOUNT — desmonta a tela, limpa eventos e UI
-// -------------------------------------------------------------
-export function unmount() {
-  if (container) container.innerHTML = '';
-  return Promise.resolve();
-}
+          <ul style="line-height:2; font-size:18px;">
+            <li>Assistente Marco — <strong>Ativo</strong></li>
+            <li>Bot Pesquisa — <strong>Ativo</strong></li>
+            <li>Bot Cerimonial — <strong>Ativo</strong></li>
+          </ul>
+        </div>
+      `,
+
+      seguranca: `
+        <div style="padding:24px; max-width:600px; margin:auto;">
+          <h1>Segurança</h1>
+
+          <p>Gerencie privacidade e dados da sua conta.</p>
+          <button onclick="limparDados()" style="padding:10px 20px; background:red; color:white; border:none;">Limpar dados locais</button>
+        </div>
+      `
+    };
+
+    function mostrar(nome) {
+      document.getElementById('app-root').innerHTML = telas[nome];
+    }
+
+    function atualizarDados() {
+      contaStore.nome = document.getElementById('nome').value;
+      contaStore.email = document.getElementById('email').value;
+      contaStore.telefone = document.getElementById('telefone').value;
+      salvar();
+    }
+
+    function atualizarPreferencias() {
+      contaStore.tema = document.getElementById('tema').value;
+      contaStore.contato = document.getElementById('contato').value;
+      salvar();
+    }
+
+    function limparDados() {
+      localStorage.removeItem('conta_nome');
+      localStorage.removeItem('conta_email');
+      localStorage.removeItem('conta_telefone');
+      localStorage.removeItem('conta_tema');
+      localStorage.removeItem('conta_contato');
+      alert('Dados apagados! Recarregue a página.');
+    }
+
+    mostrar('dados');
+  </script>
+</body>
+</html>
