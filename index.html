@@ -6,45 +6,11 @@
   <title>5 Horas – MiniApp</title>
 
   <!-- Estilo simples para começarmos a estrutura -->
-  <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      background: #f5f5f5;
-    }
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: #ffffffaa;
-      backdrop-filter: blur(6px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      border-bottom: 1px solid #e0e0e0;
-      z-index: 100;
-    }
-    header button {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: #0057ff;
-      color: white;
-      font-size: 14px;
-    }
-    #app-root {
-      margin-top: 80px;
-      padding: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="https://fabiocolletto.github.io/miniapp-app/docs/global/shell.css">
 </head>
-<body>
+<body class="shell">
   <!-- Header — primeiras peças da estrutura -->
-  <header>
+  <header class="shell-header">
     <button onclick="navegar('/home')">Home</button>
     <button onclick="navegar('/educacao')">Educação</button>
     <button onclick="navegar('/catalogo')">Catálogo</button>
