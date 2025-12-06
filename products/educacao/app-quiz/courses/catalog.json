@@ -11,7 +11,12 @@
         { "id": "matematica", "label": "Matemática" },
         { "id": "ciencias-natureza", "label": "Ciências da Natureza" },
         { "id": "ciencias-humanas", "label": "Ciências Humanas" }
-      ]
+      ],
+      "questionBanks": {
+        "2023": "products/educacao/app-quiz/courses/enem/2023/questions.json",
+        "2022": "products/educacao/app-quiz/courses/enem/2022/questions.json",
+        "2021": "products/educacao/app-quiz/courses/enem/2021/questions.json"
+      }
     }
   ]
 }
