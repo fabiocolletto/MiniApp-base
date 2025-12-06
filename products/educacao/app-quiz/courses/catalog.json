@@ -1,0 +1,17 @@
+{
+  "baseDir": "courses",
+  "courses": [
+    {
+      "id": "enem",
+      "label": "ENEM",
+      "description": "Exame Nacional do Ensino Médio",
+      "years": [2023, 2022, 2021],
+      "disciplines": [
+        { "id": "linguagens", "label": "Linguagens" },
+        { "id": "matematica", "label": "Matemática" },
+        { "id": "ciencias-natureza", "label": "Ciências da Natureza" },
+        { "id": "ciencias-humanas", "label": "Ciências Humanas" }
+      ]
+    }
+  ]
+}
