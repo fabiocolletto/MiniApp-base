@@ -183,4 +183,16 @@ Ele deve:
 
 ---
 
+## 📖 Roteiro rápido para manutenção de cursos do App Quiz
+
+Quando a tarefa for **manter, editar ou remover um curso** do App Quiz, siga este fluxo direto:
+
+1. Parta do caminho `products/educacao/app-quiz/courses` e abra o `README.md` da pasta.
+2. Lá estão os detalhes sobre como atualizar o `catalog.json`, ajustar disciplinas e validar a estrutura.
+3. Para exclusões, siga o checklist de remoção descrito nesse README e confirme que o catálogo reflete exatamente os diretórios remanescentes.
+
+Assim garantimos que qualquer interventor chegue rapidamente às instruções específicas sem perder detalhes essenciais.
+
+---
+
 **Fim do AGENT.md simplificado**
