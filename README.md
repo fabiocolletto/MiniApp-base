@@ -1,436 +1,392 @@
-# AGENT.md – Guia Oficial do Projeto Miniapp Familiar
+# AGENT.md – Diretrizes Oficiais do Repositório 5Horas PWA / Miniapps
 
-Este documento é a referência central para qualquer pessoa que vá atuar no repositório. Ele descreve a arquitetura, padrões, responsabilidades e regras essenciais para manter o projeto organizado, escalável e seguro. **Todos os colaboradores devem ler este documento antes de contribuir.**
-
----
-
-## 1. Visão Geral do Projeto
-
-O Miniapp Familiar é um **PWA modular**, baseado em **MFE (Micro Frontend Architecture)**, criado para hospedar miniapps independentes dentro de um ecossistema unificado. O objetivo é permitir que famílias utilizem ferramentas para educação, tarefas, finanças, rotina e gestão familiar em vários dispositivos, com sincronização e acesso seguro.
-
-A visão do projeto é manter um núcleo leve (App Shell) e permitir que miniapps adicionem funcionalidades sem aumentar a complexidade da base.
+Documento mestre para todos os desenvolvedores, designers e contribuidores do ecossistema **5Horas Miniapps + PWA Familiar**. Aqui estão todas as regras, padrões, estruturas e políticas que regem o funcionamento do repositório.
 
 ---
 
-## 2. Arquitetura Central
+# 1. Propósito do Projeto
 
-A arquitetura é composta por quatro pilares fundamentais:
+Este repositório abriga a **plataforma PWA Familiar**, um sistema modular baseado em **Miniapps (MFE)**, capaz de atender múltiplos produtos:
 
-### 2.1 App Shell
+* Educação
+* Financeiro
+* Saúde
+* Tarefas
+* Outros módulos futuros
 
-O coração do PWA. Carrega:
+O projeto segue três princípios:
 
-* inicialização global
-* WebAuthn
-* IndexedDB
-* Supabase
-* estado do usuário e da família
-* orquestrador de telas
-
-Arquivo: `src/core/layout/AppShell.jsx`
-
-### 2.2 Orquestrador de Telas
-
-Controla a navegação interna entre telas sem rotas externas. Ele decide que tela renderizar com base no estado do usuário e permissões.
-
-Arquivo: `src/core/orchestrator/ScreenOrchestrator.jsx`
-
-### 2.3 Infraestrutura (Core)
-
-Responsável por tudo que é compartilhado pelo ecossistema:
-
-* banco local: `src/core/db/indexdb.js`
-* autenticação: `src/core/auth/webauthn.js`
-* API familiar: `src/core/api/supabase.js`
-
-### 2.4 Miniapps
-
-Cada miniapp vive isolado na pasta:
-
-```
-products/<categoria>/<miniapp>/index.html
-```
-
-Eles usam apenas o App Shell e APIs expostas.
+* **Simplicidade** – mínimo código, máximo efeito
+* **Padronização** – todos os miniapps seguem a mesma estrutura
+* **Escalabilidade** – adicionar produtos sem reescrever o sistema
 
 ---
 
-## 3. Padrões de Código e Importações
+# 2. Estrutura Obrigatória do Repositório
 
-Para garantir consistência, todos os arquivos do projeto seguem o mesmo padrão:
-
-### 3.1 Uso obrigatório de caminhos relativos
-
-Todo import deve começar com `./` ou `../`.
-
-Ex.:
-
-```jsx
-import AppShell from "./core/layout/AppShell.jsx";
-```
-
-### 3.2 Nunca usar aliases (@, ~ etc.)
-
-Isso garante portabilidade entre miniapps e compatibilidade com GitHub Pages.
-
-### 3.3 Nunca usar caminhos absolutos (/src/...)
-
-Sempre usar `./src/...` no index.html.
-
-### 3.4 Extensões completas
-
-Sempre incluir `.jsx` ou `.js` no final dos imports.
-
-### 3.5 Componentes React
-
-* apenas **funções** (não classes)
-* sem estilos inline excessivos
-* UI base futura será Ionic (MVP usa HTML básico)
-
----
-
-## 4. Estrutura Obrigatória do Repositório
-
-A estrutura abaixo é **obrigatória**. Toda pessoa que atuar no repositório deve manter este formato. Alterações só podem ser feitas mediante consenso e atualização deste documento.
-
-```
-miniapp/
-  src/
-    core/
-      layout/          # AppShell
-      orchestrator/    # Navegação interna
-      db/              # IndexedDB
-      auth/            # WebAuthn
-      api/             # Supabase
-
-    screens/           # Telas oficiais do app
-      Auth.jsx
-      Home.jsx
-      Perfil.jsx
-      Master.jsx
-      Miniapps.jsx
-      Loader.jsx
-      Settings.jsx
-      Error.jsx
-
-  products/            # Miniapps independentes
-    educacao/
-      app-quiz/
-        index.html
-    financas/
-    tarefas/
-
-  public/
-    manifest.webmanifest
-    icons/
-
-  index.html           # Entrada do PWA
-  vite.config.js       # Configuração do Vite + PWA
-  package.json         # Dependências e scripts
-  README.md
-  AGENT.md             # Este documento
-```
-
-### Explicação Detalhada
-
-* **src/core/** → contém toda a infraestrutura do sistema. Nada aqui pode ser alterado sem revisão.
-* **src/screens/** → telas oficiais. São parte do App Shell.
-* **products/** → miniapps independentes. Cada miniapp vive isolado.
-* **public/** → arquivos estáticos do PWA.
-* **index.html** → entrada única. Sempre usa caminhos relativos.
-* **vite.config.js** → ativa PWA e bundling.
-* **AGENT.md** → regras do repositório.
-* **README.md** → explicações gerais para novos colaboradores.
+A árvore do repositório deve sempre seguir este formato:
 
 ```
 src/
   core/
-    layout/          # AppShell
-    orchestrator/    # Navegação interna
-    db/              # IndexedDB
-    auth/            # WebAuthn
-    api/             # Supabase
+    layout/         → AppShell.jsx
+    orchestrator/   → ScreenOrchestrator.jsx
+    db/             → indexdb.js
+    auth/           → webauthn.js
+    api/            → supabase.js
 
-  screens/           # Telas principais do app
+  screens/          → telas internas essenciais
 
-products/             # Miniapps independentes
-  educacao/
-  financas/
-  tarefas/
+products/
+  <categoria>/
+    <miniapp>/
+      index.html     → arquivo OBRIGATÓRIO
+      assets/...     → quando necessário
 
 public/
   manifest.webmanifest
-  icons/
+  icons/...          → ícones 72–512 px
 ```
 
-Cada pasta possui papel definido e **não deve** ser reorganizada sem consenso da equipe.
+### Regras:
+
+* Nenhuma outra estrutura é permitida.
+* Cada miniapp deve viver isolado em sua pasta.
+* Apenas arquivos **atuais** e **necessários** podem permanecer.
+* Ao alterar algo, executar **processo de limpeza** (ver item 11).
 
 ---
 
-## 5. Telas Oficiais do MVP
+# 3. Arquitetura MFE (Micro-Frontends)
 
-As telas mínimas que o PWA deve ter:
+O sistema utiliza uma arquitetura baseada em:
 
-1. Auth – autenticação e onboarding
-2. Home – dashboard familiar
-3. Perfil – dados do usuário
-4. Master – gestão dos membros da família
-5. Miniapps – lista de miniapps carregáveis
-6. Loader – carregamento de miniapp (MFE)
-7. Settings – configurações
-8. Error – fallback
+### **AppShell**
 
-Todas estão em: `src/screens/`
+Carregado via `src/core/layout/AppShell.jsx`.
+É o núcleo que provê:
 
----
+* IndexedDB
+* WebAuthn
+* Supabase
+* Navegação
+* Carregamento de Miniapps
 
-## 6. Regras de Segurança
+### **Loader de Miniapps**
 
-### 6.1 WebAuthn obrigatório
+Carrega `products/<categoria>/<miniapp>/index.html` em sandbox leve.
 
-Todo usuário deve autenticar-se via biometria (quando o dispositivo permitir).
+### **ScreenOrchestrator**
 
-### 6.2 Usuário Master
+Função única que monta qualquer tela da plataforma.
 
-* controla família
-* controla menores
-* aprova permissões
+### Regras principais:
 
-### 6.3 Offline-first seguro
-
-Nenhum dado sensível é enviado sem criptografia ou Supabase com RLS ativa.
+* Miniapps **não podem acessar o núcleo diretamente**.
+* Toda comunicação passa pelo AppShell.
+* Miniapps usam apenas caminhos relativos `./`.
+* Nenhum miniapp pode registrar rotas internas.
 
 ---
 
-## 7. IndexedDB – Estrutura Local
+# 4. Banco Local – IndexedDB
 
-Tabelas oficiais:
+Arquivo: `src/core/db/indexdb.js`
 
-* `family`
-* `members`
-* `permissions`
-* `session`
-* `sharedData`
-* `logs`
+### Deve conter:
 
-Nenhum miniapp deve criar novas stores.
+* dados do usuário
+* perfis
+* vínculos
+* assinaturas
+* cache dos miniapps
+* notificações pendentes
 
----
-
-## 8. Supabase – Sincronização
-
-Usos permitidos:
-
-* baixar dados de família
-* salvar permissões
-* enviar logs
-* receber eventos realtime
-
-Não usamos login do Supabase.
-Tudo é controlado pelo App Shell.
+### IndexedDB é o modo **offline completo** do app.
 
 ---
 
-## 9. Miniapps – Regras
+# 5. Backend – Supabase
 
-Miniapps são módulos desacoplados hospedados em:
+Arquivo: `src/core/api/supabase.js`
 
-```
-products/<categoria>/<miniapp>/index.html
-```
+Usado para:
 
-Eles são carregados dinamicamente pelo Loader.
-
-### 9.1 Ao adicionar um novo miniapp
-
-* criar a pasta no formato:
-
-```
-products/<categoria>/<nome-do-miniapp>/
-```
-
-* arquivo obrigatório: `index.html`
-* deve ser independente e autocontido
-* usar apenas importações relativas `./`
-* não registrar novas rotas nem telas no core
-* não acessar IndexedDB diretamente
-* comunicar ações apenas via:
-
-  * Supabase (registerAction)
-  * sharedData (via API do App Shell)
-* atualizar README e AGENT.md se for um novo módulo oficial
-
-### 9.2 Ao editar um miniapp existente
-
-* manter compatibilidade com o Loader
-* nunca alterar estrutura do App Shell
-* mudanças que afetam múltiplos miniapps devem ser discutidas via issue
-* não adicionar dependências externas sem aprovação
-* manter o miniapp isolado sem impacto no resto do sistema
-
-### 9.3 Ao remover um miniapp
-
-* excluir apenas a pasta do miniapp
-* remover apenas referências diretas nos locais necessários
-* nunca apagar código do núcleo ou de outro miniapp
-* criar registro no changelog descrevendo a remoção
-* atualizar documentação (lista de miniapps disponíveis)
-
-### 9.4 Como manter versões e histórico dos miniapps
-
-* cada miniapp deve ter seu próprio versionamento interno (comentário ou JSON simples)
-* mudanças maiores devem aparecer no CHANGELOG raiz
-* commits devem seguir padrão:
-
-```
-feat(miniapp-nome): descrição
-fix(miniapp-nome): correção
-refactor(miniapp-nome): melhoria
-```
-
-* caso miniapps compartilhem componentes futuros, estes devem ir para `/src/shared/`
+* sincronização familiar
+* salvar perfis
+* salvar vínculos
+* notificações
+* assinaturas (Mercado Pago)
+* permissões e acessos
 
 ---
 
-## 14. Regras para Manutenção do Repositório
+# 6. Autenticação – WebAuthn
 
-### 14.1 Estrutura do repositório
+Arquivo: `src/core/auth/webauthn.js`
 
-A estrutura descrita neste documento é fixa e não deve ser alterada sem consenso da equipe.
+É a camada padrão de biometria para acesso ao app.
+Substitui login tradicional.
 
-### 14.2 Registros obrigatórios em mudanças estruturais
+---
 
-Toda modificação deve registrar:
+# 7. Perfis do Produto Educação
 
-* o que mudou
-* por quê mudou
-* impacto em miniapps
-* impacto no App Shell
-* impacto no Loader
+Um usuário pode ter múltiplos perfis simultaneamente.
+Cada perfil vive como uma entidade separada.
 
-### 14.3 Organização e limpeza contínua
+## Perfis oficiais
 
-* remover código morto
+* **Aluno**
+* **Responsável**
+* **Tutor**
+* **Instituição**
 
-* evitar arquivos duplicados
+## Cada perfil tem:
 
-* garantir consistência no uso de `./`
+* seus próprios dados
+* suas próprias permissões
+* seu próprio código `XXX-XXX-XXX`
+* pode ser renovado
+* pode ser compartilhado
+* pode ser vinculado a qualquer outro perfil permitidos
 
-* revisar imports quebrados antes de PR
+## Dados mínimos por perfil
 
-* **após qualquer alteração, executar processo de limpeza:**
+### Aluno
 
-  * apagar arquivos antigos, versões obsoletas e componentes que não são mais usados
-  * remover assets desnecessários em `public/`
-  * excluir miniapps que foram substituídos ou migrados
-  * revisar pastas para garantir que apenas arquivos atuais e necessários permaneçam
-  * garantir que cada pasta contenha somente o que pertence a ela
-  * validar que não existem restos de testes, temporários, rascunhos ou protótipos no repositório
+* nome
+* nascimento
+* nível escolar
+* histórico
+* preferências
+* código `XXX-XXX-XXX`
 
-* remover código morto
+### Responsável
 
-* evitar arquivos duplicados
+* nome
+* relação com aluno
+* contato
+* permissões de relatórios
+* código
 
-* garantir consistência no uso de `./`
+### Tutor
 
-* revisar imports quebrados antes de PR
+* nome
+* áreas
+* níveis atendidos
+* disponibilidade
+* código
 
-### 14.4 Proteção do núcleo
+### Instituição
 
-As pastas abaixo só podem ser editadas após análise:
+* nome
+* tipo
+* identificação oficial
+* responsáveis
+* código
+
+---
+
+# 8. Fluxo de Vínculos (Perfil ↔ Perfil)
+
+### 1. Perfil A gera código.
+
+### 2. Perfil B digita código.
+
+### 3. Sistema retorna **dados mascarados**:
+
+* nome parcial
+* tipo de perfil
+* idade aproximada
+
+### 4. Perfil B valida:
+
+* **Enviar solicitação**
+* **Editar código**
+* **Cancelar**
+
+### 5. Perfil A recebe notificação e decide:
+
+* **Aceitar** → vínculo fica *active*
+* **Rejeitar** → vínculo fica *rejected*
+
+### 6. Ambos podem quebrar vínculo.
+
+* Vínculo vira *removed*.
+* Ambos recebem notificação.
+
+---
+
+# 9. Notificações
+
+Sempre registradas no Supabase e replicadas no IndexedDB.
+
+Formato:
 
 ```
-src/core/
-src/screens/
+{
+  id: "uuid",
+  to: "userId",
+  type: "vinculo",
+  payload: {
+    fromProfile: "aluno",
+    toProfile: "responsavel",
+    action: "pendente"
+  },
+  createdAt: "...",
+  read: false
+}
 ```
 
-Estas pastas definem o funcionamento geral do sistema.
-
-Miniapps nunca devem alterar estas pastas.
-
-### 14.5 Regra de compatibilidade
-
-Qualquer alteração deve ser reversível e não pode quebrar:
-
-* o App Shell
-* o Loader
-* miniapps existentes
-* sincronização com Supabase
-* funcionamento offline
-
-### 14.6 Checklist antes de aceitar PR
-
-* [ ] imports relativos corretos
-* [ ] nenhuma alteração indevida no core
-* [ ] nenhum miniapp quebrado
-* [ ] build rodando localmente
-* [ ] App Shell funcionando
-* [ ] Loader funcionando
-
 ---
 
-Miniapps são:
+# 10. Assinaturas por Produto (Mercado Pago)
 
-* independentes
-* isolados
-* livres para usar UI própria
-* carregados via Loader
+### Cada produto tem:
 
-Eles **não** podem:
+* seu próprio `mpSubscriptionId`
+* seu próprio status (`active`, `inactive`, `paused`)
+* seu ciclo de cobrança mensal
 
-* acessar DB diretamente
-* registrar telas novas no core
+### Regras:
 
-Eles **podem**:
+* Primeiro usuário paga valor cheio.
+* Usuários adicionais têm desconto.
+* Alterações só refletem na virada do mês.
+* Durante o mês, apenas o status muda.
 
-* usar APIs expostas (Supabase, actions)
-* armazenar dados em `sharedData`
-
----
-
-## 10. Commits e Colaboração
-
-### 10.1 Padrão de commit
+### Estrutura
 
 ```
-feat: nova funcionalidade
-fix: correção
-refactor: melhoria
-style: ajustes visuais
-docs: documentação
-chore: tarefas gerais
+subscriptions: [
+  {
+    product: "educacao",
+    mpSubscriptionId: "sub_xxx",
+    status: "active",
+    nextBilling: "...",
+    lastSync: "..."
+  }
+]
 ```
 
-### 10.2 Pull requests
+---
 
-Todos os PRs devem:
+# 11. Processo de Limpeza Obrigatório
 
-* seguir este documento
-* não quebrar miniapps
-* explicar impactos
+Toda alteração no repositório exige limpeza:
+
+* remover arquivos antigos
+* excluir protótipos
+* apagar duplicados
+* garantir apenas arquivos atuais
+* validar imports
+* limpar assets não usados
+* revisar cada pasta
+* não deixar restos de miniapps removidos
+
+É estritamente proibido deixar lixo no repo.
 
 ---
 
-## 11. Deploy
+# 12. Regras para Miniapps
 
-O deploy acontece via **GitHub Pages**.
-Caminhos relativos garantem compatibilidade.
+## Ao adicionar
+
+* criar pasta em `products/<categoria>/<miniapp>/`
+* incluir apenas `index.html` + assets necessários
+* usar apenas `./` nos caminhos
+* miniapp deve ser autocontido
+
+## Ao editar
+
+* manter compatibilidade com Loader
+* não alterar o núcleo
+* não adicionar dependências externas
+
+## Ao remover
+
+* excluir única pasta do miniapp
+* atualizar CHANGELOG
+* remover referências internas
 
 ---
 
-## 12. Filosofia Geral do Projeto
+# 13. Commits e Versionamento
 
-* simplicidade acima de tudo
-* modularidade acima de complexidade
-* app shell enxuto
-* miniapps independentes
-* segurança herdada do sistema
-* código limpo, legível e reutilizável
+### Padrão de commit:
+
+```
+feat(miniapp-nome):
+fix(miniapp-nome):
+refactor(miniapp-nome):
+chore(core):
+```
+
+### Versionamento:
+
+* Miniapps podem ter versão interna
+* Core segue versionamento centralizado
 
 ---
 
-## 15. Contato
+# 14. JSON Oficial do Usuário
 
-Dúvidas e discussões técnicas devem ser feitas via issues.
+```
+{
+  "userId": "u-uuid",
+  "familyId": "f-uuid",
+  "isMaster": false,
+  "profiles": [
+    {
+      "type": "aluno",
+      "code": "ABC-123-XYZ",
+      "data": {}
+    }
+  ],
+  "financial": {
+    "isFinancialAdmin": false,
+    "autoLinkedToEducation": true
+  },
+  "links": [],
+  "notifications": {
+    "allow": true,
+    "pushToken": ""
+  },
+  "security": {
+    "webauthnRegistered": true,
+    "devices": []
+  },
+  "meta": {
+    "version": 1
+  }
+}
+```
 
-**Este documento deve ser atualizado sempre que mudanças estruturais forem feitas no projeto.**
+---
+
+# 15. Telas Essenciais
+
+1. Dashboard Familiar
+2. Autenticação (WebAuthn)
+3. Perfil do Usuário
+4. Gestão da Família (Master)
+5. Lista de Miniapps
+6. Loader de Miniapps
+7. Configurações
+8. Alertas
+9. Offline / Erro
+
+---
+
+# 16. Padrão de Código
+
+* Sempre usar caminhos relativos `./`
+* Componentes React limpos
+* Evitar duplicação
+* Padrão único de UI via Ionic
+
+---
+
+**Este documento governa TODO o repositório.**
+Qualquer divergência deve ser corrigida para alinhar ao padrão oficial.
