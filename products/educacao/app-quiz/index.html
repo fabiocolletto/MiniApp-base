@@ -1,30 +1,1282 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>App Quiz</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  <meta charset="UTF-8" />
+  <title>MiniApp Educação – Banco de Cursos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Configuração do Tailwind para usar a fonte Inter -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+          },
         }
-    </style>
+      }
+    }
+  </script>
+  <!-- Fonte Inter do Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+  <!-- React 18 + ReactDOM 18 + Babel via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Estilos globais para reset e fonte */
+    * {
+      box-sizing: border-box;
+    }
+    html, body, #root {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-50">
-    <div id="root" class="min-h-screen"></div>
+<body>
+  <!-- Container principal onde o app React será renderizado -->
+  <div id="root"></div>
 
-    <script type="module">
-        import React from 'https://esm.sh/react@18';
-        import { createRoot } from 'https://esm.sh/react-dom@18/client';
-        import App from './app-quiz.js';
+  <!-- Script principal do aplicativo React -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-        const rootElement = document.getElementById('root');
-        createRoot(rootElement).render(React.createElement(App));
-    </script>
+    // =========================================================
+    // 1. CONFIGURAÇÃO DO REPOSITÓRIO E CONSTANTES
+    // =========================================================
+    const REPO_OWNER = "fabiocolletto";
+    const REPO_NAME = "miniapp";
+    const REPO_BRANCH = "main";
+    const REPO_BASE_PATH = "products/educacao/app-quiz/"; // raiz deste app dentro do repo
+    const MAX_QUESTIONS = 10; // limite máximo de questões por sessão de quiz
+
+    // =========================================================
+    // 2. HELPERS DE CAMINHO (LOCAL E JSDELIVR)
+    // =========================================================
+    function toLocalPath(repoPath) {
+      if (!repoPath) return null;
+      const prefix = REPO_BASE_PATH;
+      if (repoPath.startsWith(prefix)) {
+        // Ex.: products/educacao/app-quiz/courses/enem/2023/questions.json
+        // vira ./courses/enem/2023/questions.json (relativo ao index.html atual)
+        return "./" + repoPath.slice(prefix.length);
+      }
+      return repoPath;
+    }
+
+    function toJsDelivrUrl(repoPath) {
+      if (!repoPath) return null;
+      const clean = repoPath.replace(/^\/+/ , "");
+      return `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@${REPO_BRANCH}/${clean}`;
+    }
+
+    // =========================================================
+    // 3. CATÁLOGO EMBUTIDO (FALLBACK PARA SANDBOX / DEV)
+    // =========================================================
+    const embeddedCatalog = {
+      baseDir: "courses",
+      courses: [
+        {
+          id: "enem",
+          label: "ENEM",
+          description: "Exame Nacional do Ensino Médio",
+          years: [2023, 2022, 2021],
+          disciplines: [
+            { id: "linguagens", label: "Linguagens" },
+            { id: "matematica", label: "Matemática" },
+            { id: "ciencias-natureza", label: "Ciências da Natureza" },
+            { id: "ciencias-humanas", label: "Ciências Humanas" }
+          ],
+          questionBanks: {
+            "2023": "products/educacao/app-quiz/courses/enem/2023/questions.json",
+            "2022": "products/educacao/app-quiz/courses/enem/2022/questions.json",
+            "2021": "products/educacao/app-quiz/courses/enem/2021/questions.json"
+          }
+        }
+      ]
+    };
+
+    // =========================================================
+    // 4. SERVIÇO DE CATÁLOGO
+    // =========================================================
+    async function loadCatalog() {
+      const repoCatalogPath = REPO_BASE_PATH + "courses/catalog.json";
+      const localUrl = toLocalPath(repoCatalogPath); // ./courses/catalog.json
+
+      // 1) tentativa local
+      try {
+        const res = await fetch(localUrl);
+        if (res.ok) {
+          const json = await res.json();
+          return { data: json, source: "local", usedFallback: false };
+        }
+        console.warn("Catálogo local retornou status", res.status);
+      } catch (errLocal) {
+        console.warn("Falha ao carregar catálogo local", errLocal);
+      }
+
+      // 2) tentativa jsDelivr
+      try {
+        const cdnUrl = toJsDelivrUrl(repoCatalogPath);
+        const res = await fetch(cdnUrl);
+        if (res.ok) {
+          const json = await res.json();
+          return { data: json, source: "jsdelivr", usedFallback: false };
+        }
+        console.warn("Catálogo jsDelivr retornou status", res.status);
+      } catch (errCdn) {
+        console.warn("Falha ao carregar catálogo via jsDelivr", errCdn);
+      }
+
+      // 3) fallback embutido
+      console.warn("Usando catálogo embutido de desenvolvimento.");
+      return { data: embeddedCatalog, source: "embedded", usedFallback: true };
+    }
+
+    // =========================================================
+    // 5. SERVIÇO DE BANCO DE QUESTÕES
+    // =========================================================
+    async function loadQuestionBankFromUrl(url, disciplineFilter) {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("Falha ao carregar o banco de questões (" + res.status + ")");
+      }
+      const data = await res.json();
+      let qs = data.questions || data.questoes || [];
+
+      if (!Array.isArray(qs) || !qs.length) {
+        throw new Error("Banco de dados sem questões.");
+      }
+
+      if (disciplineFilter && disciplineFilter.length) {
+        const normalizedFilter = disciplineFilter.map((d) => String(d).toLowerCase());
+        const filtered = qs.filter((q) => {
+          const d =
+            q.disciplineId ||
+            q.disciplina ||
+            q.discipline || // ENEM 2023
+            q.area ||
+            q.materia;
+          if (!d) return true;
+          const value = String(d).toLowerCase();
+          return normalizedFilter.some((f) => value.includes(f));
+        });
+
+        if (filtered.length) {
+          qs = filtered;
+        }
+      }
+
+      return qs;
+    }
+
+    // =========================================================
+    // 6. NORMALIZAÇÃO DE QUESTÕES E ALTERNATIVAS
+    // =========================================================
+    function getOptionsObject(q) {
+      if (!q) return null;
+      return (
+        (q.options && !Array.isArray(q.options) && q.options) ||
+        (q.alternatives && !Array.isArray(q.alternatives) && q.alternatives) ||
+        (q.alternativas && !Array.isArray(q.alternativas) && q.alternativas) ||
+        q.opcoes ||
+        null
+      );
+    }
+
+    function getOptionsFromQuestion(q) {
+      if (!q) return [];
+      // 1) ENEM 2023: array "alternatives": [{ letter, text, file, isCorrect }, ...]
+      if (Array.isArray(q.alternatives)) {
+        return q.alternatives.map((alt, idx) => {
+          const letter =
+            alt.letter ||
+            alt.letra ||
+            alt.id ||
+            String.fromCharCode(65 + idx);
+          const text = alt.text || alt.texto || alt.label || "";
+          return [String(letter).toUpperCase(), text];
+        });
+      }
+
+      // 2) Array de alternativas em português: "alternativas"
+      if (Array.isArray(q.alternativas)) {
+        return q.alternativas.map((alt, idx) => {
+          const letter =
+            alt.letter ||
+            alt.letra ||
+            alt.id ||
+            String.fromCharCode(65 + idx);
+          const text = alt.texto || alt.text || alt.label || "";
+          return [String(letter).toUpperCase(), text];
+        });
+      }
+
+      // 3) Array genérico "options": [{ letter, text, file, isCorrect }, ...]
+      if (Array.isArray(q.options)) {
+        return q.options.map((opt, idx) => {
+          const letter =
+            opt.letter ||
+            opt.id ||
+            String.fromCharCode(65 + idx);
+          const text = opt.text || opt.texto || opt.label || "";
+          return [String(letter).toUpperCase(), text];
+        });
+      }
+
+      // 4) Objeto de alternativas: { "A": "texto" } ou { "A": { text, file, ... } }
+      const objOptions = getOptionsObject(q);
+      if (objOptions && typeof objOptions === "object") {
+        return Object.entries(objOptions).map(([key, value]) => {
+          if (value && typeof value === "object") {
+            const letter =
+              value.letter ||
+              value.letra ||
+              value.id ||
+              key;
+            const text =
+              value.text ||
+              value.texto ||
+              value.label ||
+              "";
+            return [String(letter).toUpperCase(), text];
+          }
+          return [String(key).toUpperCase(), String(value)];
+        });
+      }
+
+      return [];
+    }
+
+    function getCorrectLetter(q) {
+      if (!q) return null;
+
+      // Campos diretos
+      if (q.correctAlternative) {
+        return String(q.correctAlternative).toUpperCase();
+      }
+      if (q.correta) return String(q.correta).toUpperCase();
+      if (q.correct) return String(q.correct).toUpperCase();
+      if (q.resposta) return String(q.resposta).toUpperCase();
+
+      // Array de options: [{ letter, isCorrect }, ...]
+      if (Array.isArray(q.options)) {
+        for (const opt of q.options) {
+          if (opt && opt.isCorrect) {
+            const letter = opt.letter || opt.id;
+            if (letter) return String(letter).toUpperCase();
+          }
+        }
+      }
+
+      // ENEM 2023: array "alternatives" com isCorrect
+      if (Array.isArray(q.alternatives)) {
+        for (const alt of q.alternatives) {
+          if (alt && alt.isCorrect) {
+            const letter = alt.letter || alt.id;
+            if (letter) return String(letter).toUpperCase();
+          }
+        }
+      }
+
+      // Objeto de options / alternativas com isCorrect
+      const objOptions = getOptionsObject(q);
+      if (objOptions && typeof objOptions === "object") {
+        for (const [key, value] of Object.entries(objOptions)) {
+          if (value && typeof value === "object" && value.isCorrect) {
+            const letter =
+              value.letter ||
+              value.letra ||
+              value.id ||
+              key;
+            return String(letter).toUpperCase();
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function getQuestionText(q) {
+      if (!q) return "";
+      const title = q.title || q.titulo || "";
+      const main =
+        q.text ||
+        q.enunciado ||
+        q.pergunta ||
+        q.question ||
+        q.context ||
+        "";
+      const intro = q.alternativesIntroduction || "";
+      return [title, main, intro].filter(Boolean).join("\n\n");
+    }
+
+    // =========================================================
+    // 7. ENGINE DE QUIZ (EMBARALHAMENTO E SESSÃO)
+    // =========================================================
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function buildQuizSession(allQuestions, maxQuestions = MAX_QUESTIONS) {
+      if (!Array.isArray(allQuestions) || allQuestions.length === 0) {
+        return [];
+      }
+      const pool = shuffleArray(allQuestions);
+      if (!maxQuestions || maxQuestions <= 0) {
+        return pool;
+      }
+      return pool.slice(0, Math.min(maxQuestions, pool.length));
+    }
+
+    // =========================================================
+    // 8. OBJETOS DE SERVIÇO (PONTO DE EXTRAÇÃO FUTURA)
+    // =========================================================
+    const CatalogService = { loadCatalog };
+    const QuestionBankService = { loadQuestionBankFromUrl };
+    const QuizNormalizer = {
+      getOptionsObject,
+      getOptionsFromQuestion,
+      getCorrectLetter,
+      getQuestionText
+    };
+    const QuizEngine = { shuffleArray, buildQuizSession };
+
+    // =========================================================
+    // 9. COMPONENTES DE UI
+    // =========================================================
+    function SelectButton({ active, icon, title, subtitle, onClick }) {
+      return (
+        <button
+          onClick={onClick}
+          className={
+            "w-full flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200 shadow-sm " +
+            (active
+              ? "border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-500/50"
+              : "border-gray-200 bg-white text-gray-800 hover:border-blue-300 hover:shadow-md")
+          }
+        >
+          <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-sm bg-blue-100 text-blue-600 font-bold">
+            <span>{icon}</span>
+          </div>
+          <div className="flex-1 text-left">
+            <div className="font-semibold leading-snug">{title}</div>
+            {subtitle && (
+              <div className="text-xs text-gray-500 leading-tight">{subtitle}</div>
+            )}
+          </div>
+        </button>
+      );
+    }
+    
+    // Componente de botão principal para o footer
+    function FooterButton({ icon, label, active, onClick, disabled }) {
+      const baseClass = "flex-1 flex flex-col items-center justify-center px-1 text-xs transition-colors";
+      const colorClass = active ? "text-blue-600" : (disabled ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:text-blue-500");
+      return (
+        <button
+          className={`${baseClass} ${colorClass}`}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          <span className="text-xl">{icon}</span>
+          <span className="mt-0.5 font-medium">{label}</span>
+        </button>
+      );
+    }
+
+
+    // =========================================================
+    // 10. APP PRINCIPAL
+    // =========================================================
+
+    function AppQuiz() {
+      const [catalog, setCatalog] = useState(null);
+      const [loadingCatalog, setLoadingCatalog] = useState(true);
+      const [catalogError, setCatalogError] = useState(null);
+      const [catalogSource, setCatalogSource] = useState(null); // local | jsdelivr | embedded
+      const [usingFallback, setUsingFallback] = useState(false);
+      const [quizMode, setQuizMode] = useState(null); // null | "custom" | "random"
+      const [selectedCourseId, setSelectedCourseId] = useState(null);
+      const [selectedYears, setSelectedYears] = useState([]); // multi seleção de anos
+      const [selectedDisciplineIds, setSelectedDisciplineIds] = useState([]); // multi seleção de disciplinas
+      const [stage, setStage] = useState("home"); // "home" | "select" | "list" | "quiz"
+      const [savedQuizzes, setSavedQuizzes] = useState([]);
+      const [questionBankUrl, setQuestionBankUrl] = useState(null);
+      const [questions, setQuestions] = useState([]);
+      const [loadingQuestions, setLoadingQuestions] = useState(false);
+      const [questionsError, setQuestionsError] = useState(null);
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [selectedOption, setSelectedOption] = useState(null);
+      const [revealCorrect, setRevealCorrect] = useState(false);
+
+      // Conveniência: atalhos para normalização
+      const {
+        getOptionsFromQuestion,
+        getCorrectLetter,
+        getQuestionText
+      } = QuizNormalizer;
+
+      useEffect(() => {
+        // Tenta travar em modo retrato em contextos que suportam a API
+        try {
+          if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
+            window.screen.orientation.lock("portrait").catch(() => {});
+          }
+        } catch (e) {
+          // silencioso: alguns navegadores não permitem lock fora de PWA/fullscreen
+        }
+        setLoadingCatalog(true);
+        setCatalogError(null);
+        CatalogService.loadCatalog()
+          .then(({ data, source, usedFallback }) => {
+            setCatalog(data);
+            setCatalogSource(source);
+            setUsingFallback(usedFallback);
+            setLoadingCatalog(false);
+          })
+          .catch((err) => {
+            console.error(err);
+            setCatalogError(err.message || "Falha ao carregar o catálogo.");
+            setLoadingCatalog(false);
+          });
+      }, []);
+
+      const courses = catalog?.courses || [];
+      const selectedCourse = courses.find((c) => c.id === selectedCourseId) || null;
+
+      // Verifica se a configuração atual do quiz está pronta para prosseguir/iniciar
+      const readyToContinue =
+        quizMode === "custom"
+          ? !!(
+              selectedCourse &&
+              selectedYears.length > 0 &&
+              selectedDisciplineIds.length > 0
+            )
+          : quizMode === "random"
+          ? !!selectedCourse
+          : false;
+
+      const currentQuestion = questions[currentIndex] || null;
+
+      function handleSelectMode(mode) {
+        setQuizMode((prev) => (prev === mode ? null : mode));
+        setSelectedYears([]);
+        setSelectedDisciplineIds([]);
+        setStage("select");
+        setQuestionBankUrl(null);
+        setQuestions([]);
+        setQuestionsError(null);
+        setCurrentIndex(0);
+        setSelectedOption(null);
+        setRevealCorrect(false);
+      }
+
+      function handleSelectCourse(id) {
+        setSelectedCourseId((prev) => (prev === id ? null : id));
+        setSelectedYears([]);
+        setSelectedDisciplineIds([]);
+        setStage("select");
+        setQuestionBankUrl(null);
+        setQuestions([]);
+        setQuestionsError(null);
+        setCurrentIndex(0);
+        setSelectedOption(null);
+        setRevealCorrect(false);
+      }
+
+      function toggleYear(year) {
+        setSelectedYears((prev) =>
+          prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+        );
+      }
+
+      function toggleDiscipline(id) {
+        setSelectedDisciplineIds((prev) =>
+          prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+        );
+      }
+
+      async function fetchQuestions(repoPathOrPaths, disciplineIds) {
+        setStage("quiz");
+        setLoadingQuestions(true);
+        setQuestionsError(null);
+        setQuestions([]);
+        setCurrentIndex(0);
+        setSelectedOption(null);
+        setRevealCorrect(false);
+
+        try {
+          const pathsArray = Array.isArray(repoPathOrPaths)
+            ? repoPathOrPaths.filter(Boolean)
+            : repoPathOrPaths
+            ? [repoPathOrPaths]
+            : [];
+
+          if (!pathsArray.length) {
+            throw new Error("Nenhum banco de questões selecionado.");
+          }
+
+          const disciplineFilter = Array.isArray(disciplineIds)
+            ? disciplineIds
+            : disciplineIds
+            ? [disciplineIds]
+            : null;
+
+          let allQuestions = [];
+          let lastUrlUsed = null;
+
+          // Tenta carregar os bancos de questões
+          for (const repoPath of pathsArray) {
+            let qs = null;
+            let chosenUrl = null;
+            const localUrl = toLocalPath(repoPath);
+
+            // 1. Tenta carregar localmente
+            try {
+              qs = await QuestionBankService.loadQuestionBankFromUrl(
+                localUrl,
+                disciplineFilter || []
+              );
+              chosenUrl = localUrl;
+            } catch (errLocal) {
+              console.warn("Falha ao carregar banco local", repoPath, errLocal);
+            }
+
+            // 2. Se falhar, tenta carregar via CDN (jsDelivr)
+            if (!qs) {
+              const cdnUrl = toJsDelivrUrl(repoPath);
+              try {
+                qs = await QuestionBankService.loadQuestionBankFromUrl(
+                  cdnUrl,
+                  disciplineFilter || []
+                );
+                chosenUrl = cdnUrl;
+              } catch (errCdn) {
+                console.error("Falha ao carregar banco via jsDelivr", repoPath, errCdn);
+              }
+            }
+
+            // Adiciona as questões carregadas (se houver)
+            if (qs && qs.length) {
+              allQuestions = allQuestions.concat(qs);
+              lastUrlUsed = chosenUrl || repoPath;
+            }
+          }
+
+          if (!allQuestions.length) {
+            throw new Error("Nenhuma questão encontrada nos bancos selecionados.");
+          }
+
+          // Monta a sessão do quiz (embaralha e limita ao MAX_QUESTIONS)
+          const limited = QuizEngine.buildQuizSession(allQuestions);
+
+          setQuestionBankUrl(lastUrlUsed);
+          setQuestions(limited);
+
+        } catch (err) {
+          console.error(err);
+          setQuestionsError(err.message || "Erro desconhecido ao carregar as questões.");
+        } finally {
+          setLoadingQuestions(false);
+        }
+      }
+
+      function handleContinue() {
+        if (!selectedCourse || !quizMode) return;
+
+        const questionBanks = selectedCourse.questionBanks || {};
+        let yearsToUse = [];
+        let disciplinesToUse = null;
+
+        if (quizMode === "custom") {
+          if (!(selectedYears.length > 0 && selectedDisciplineIds.length > 0)) {
+            return;
+          }
+          yearsToUse = selectedYears;
+          disciplinesToUse = selectedDisciplineIds;
+        } else if (quizMode === "random") {
+          // No modo aleatório, se não houver anos selecionados, usa todos os anos do curso.
+          yearsToUse =
+            selectedYears.length > 0
+              ? selectedYears
+              : selectedCourse.years || [];
+          disciplinesToUse = null;
+        } else {
+          return;
+        }
+
+        // Converte os anos/cursos selecionados em paths de repositório
+        const paths = yearsToUse.map((year) => {
+          const key = String(year);
+          // Tenta usar o path customizado se existir (do catalog.json)
+          if (questionBanks[key]) {
+            return questionBanks[key];
+          }
+          // Monta o path padrão
+          return `${REPO_BASE_PATH}courses/${selectedCourse.id}/${key}/questions.json`;
+        });
+
+        fetchQuestions(paths, disciplinesToUse);
+      }
+
+      // Função para salvar a configuração do quiz atual para refazer depois
+      function handleCreateQuiz() {
+        if (!selectedCourse || quizMode !== "custom") return;
+        if (!(selectedYears.length > 0 && selectedDisciplineIds.length > 0)) {
+          return;
+        }
+
+        const course = selectedCourse;
+        const years = [...selectedYears].sort();
+        const disciplineIds = [...selectedDisciplineIds];
+        const disciplineLabels =
+          course.disciplines
+            ?.filter((d) => disciplineIds.includes(d.id))
+            .map((d) => d.label) || [];
+
+        const newQuiz = {
+          id: Date.now(),
+          mode: quizMode,
+          courseId: course.id,
+          courseLabel: course.label,
+          years,
+          disciplineIds,
+          disciplineLabels,
+          createdAt: new Date().toISOString()
+        };
+
+        setSavedQuizzes((prev) => [newQuiz, ...prev]);
+        setStage("list"); // Vai para a lista de quizzes salvos
+      }
+
+      // Função para iniciar um quiz salvo
+      function handleStartQuizFromConfig(quiz) {
+        if (!quiz) return;
+        const course = courses.find((c) => c.id === quiz.courseId);
+        if (!course) return;
+
+        const questionBanks = course.questionBanks || {};
+        const yearsToUse =
+          quiz.years && quiz.years.length ? quiz.years : course.years || [];
+        const disciplinesToUse =
+          quiz.mode === "custom" ? quiz.disciplineIds || [] : null;
+
+        const paths = yearsToUse.map((year) => {
+          const key = String(year);
+          if (questionBanks[key]) {
+            return questionBanks[key];
+          }
+          return `${REPO_BASE_PATH}courses/${course.id}/${key}/questions.json`;
+        });
+
+        // Define o estado atual para refletir a configuração do quiz salvo
+        setQuizMode(quiz.mode);
+        setSelectedCourseId(course.id);
+        setSelectedYears(yearsToUse);
+        setSelectedDisciplineIds(disciplinesToUse || []);
+
+        fetchQuestions(paths, disciplinesToUse); // Inicia a busca e o quiz
+      }
+
+      function handleOptionClick(letter) {
+        if (!currentQuestion) return;
+        if (selectedOption) return; // Não permite mudar a resposta
+        
+        setSelectedOption(letter);
+        
+        // Revela a resposta correta após um pequeno delay
+        setTimeout(() => {
+          setRevealCorrect(true);
+        }, 500);
+      }
+
+      function handleNextQuestion() {
+        if (currentIndex < questions.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+          setSelectedOption(null);
+          setRevealCorrect(false);
+        }
+      }
+
+      function handlePreviousQuestion() {
+        if (currentIndex > 0) {
+          setCurrentIndex(currentIndex - 1);
+          setSelectedOption(null);
+          setRevealCorrect(false);
+        }
+      }
+
+      function renderCatalogSource() {
+        if (!catalogSource) return null;
+        if (catalogSource === "local") return "local";
+        if (catalogSource === "jsdelivr") return "jsDelivr";
+        if (catalogSource === "embedded") return "embutido";
+        return catalogSource;
+      }
+
+      // =========================================================
+      // 11. TELAS DO APP
+      // =========================================================
+
+      function renderHomeScreen() {
+        const hasSaved = savedQuizzes.length > 0;
+        const defaultCourse = courses[0] || null;
+
+        return (
+          <div className="space-y-6 text-sm">
+            <div>
+              <div className="text-2xl font-bold mb-1 text-blue-800">Educação 5Horas</div>
+              <div className="text-sm text-gray-600">
+                Monte quizzes de até 10 questões para estudar em família.
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 shadow-inner">
+              <div className="font-semibold mb-2 flex items-center gap-2">
+                <span className="text-base">💡</span> Como funciona
+              </div>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>Escolha o curso e o tipo de quiz.</li>
+                <li>Cada sessão tem até {MAX_QUESTIONS} questões sorteadas.</li>
+                <li>Você pode refazer quantas vezes quiser.</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <button
+                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white text-base font-semibold shadow-lg shadow-blue-500/50 hover:bg-blue-700 transition duration-150"
+                onClick={() => {
+                  if (!defaultCourse) {
+                    setStage("select");
+                    return;
+                  }
+                  setSelectedCourseId(defaultCourse.id);
+                  setSelectedYears([]);
+                  setSelectedDisciplineIds([]);
+                  setQuizMode(null);
+                  setStage("select");
+                }}
+              >
+                Começar a Estudar
+              </button>
+              {hasSaved && (
+                <button
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 font-medium hover:bg-gray-50 transition duration-150"
+                  onClick={() => setStage("list")}
+                >
+                  Ver meus quizzes salvos ({savedQuizzes.length})
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      function renderSelectScreen() {
+        if (!catalog) return null;
+
+        // Título dinâmico da tela de seleção
+        let mainTitle = "Configurar Seu Quiz";
+        if (quizMode === "random" && selectedCourse) {
+          mainTitle = `Quiz Aleatório - ${selectedCourse.label}`;
+        } else if (quizMode === "custom" && selectedCourse) {
+          mainTitle = `Quiz Personalizado - ${selectedCourse.label}`;
+        }
+
+
+        return (
+          <div className="space-y-6 text-sm">
+            {/* Título */}
+            <h2 className="text-xl font-bold text-gray-800">{mainTitle}</h2>
+
+            {/* Passo 1: tipo de quiz */}
+            <div>
+              <div className="font-semibold mb-2 text-gray-700">1. Como você quer estudar?</div>
+              <div className="grid grid-cols-1 gap-3">
+                <SelectButton
+                  active={quizMode === "custom"}
+                  icon="📝"
+                  title="Personalizado (Com Foco)"
+                  subtitle="Escolha anos específicos e suas disciplinas"
+                  onClick={() => handleSelectMode("custom")}
+                />
+                <SelectButton
+                  active={quizMode === "random"}
+                  icon="🔄"
+                  title="Aleatório (Revisão Geral)"
+                  subtitle="Mistura todas as questões do curso para você"
+                  onClick={() => handleSelectMode("random")}
+                />
+              </div>
+            </div>
+
+            {/* Passo 2: curso (aparece depois de escolher o modo) */}
+            {quizMode && (
+              <div>
+                <div className="font-semibold mb-2 text-gray-700">2. Qual curso você vai usar?</div>
+                <div className="grid grid-cols-1 gap-3">
+                  {courses.map((course) => {
+                    const active = course.id === selectedCourseId;
+                    return (
+                      <SelectButton
+                        key={course.id}
+                        active={active}
+                        icon={course.label?.charAt(0).toUpperCase() || "C"}
+                        title={course.label}
+                        subtitle={course.description}
+                        onClick={() => handleSelectCourse(course.id)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Passo 3 (modo Personalizado): anos → depois disciplinas */}
+            {quizMode === "custom" && selectedCourse && (
+              <>
+                <div>
+                  <div className="font-semibold mb-2 text-gray-700">3. Selecione o(s) Ano(s) da prova</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedCourse.years.map((year) => {
+                      const active = selectedYears.includes(year);
+                      return (
+                        <SelectButton
+                          key={year}
+                          active={active}
+                          icon="📅"
+                          title={String(year)}
+                          subtitle="Ano da prova"
+                          onClick={() => toggleYear(year)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedYears.length > 0 && (
+                  <div>
+                    <div className="font-semibold mb-2 text-gray-700">4. Selecione a(s) Disciplina(s)</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedCourse.disciplines.map((disc) => {
+                        const active = selectedDisciplineIds.includes(disc.id);
+                        return (
+                          <SelectButton
+                            key={disc.id}
+                            active={active}
+                            icon="🧠"
+                            title={disc.label}
+                            subtitle={disc.id}
+                            onClick={() => toggleDiscipline(disc.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="mt-3 p-3 bg-yellow-50 text-yellow-800 rounded-xl text-xs">
+                      Serão sorteadas até {MAX_QUESTIONS} questões entre todos os critérios selecionados (Anos + Disciplinas).
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Mensagem modo aleatório */}
+            {quizMode === "random" && selectedCourse && (
+              <div className="p-3 bg-green-50 text-green-800 rounded-xl text-xs">
+                Perfeito! O quiz aleatório usará todas as questões disponíveis do {selectedCourse.label} de todos os anos e disciplinas.
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function renderQuizScreen() {
+        if (loadingQuestions) {
+            return (
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <div className="text-base text-gray-600 font-medium">Carregando questões...</div>
+                </div>
+            );
+        }
+        
+        if (questionsError) {
+          return (
+            <div className="p-4 bg-red-100 border border-red-300 rounded-xl text-red-800 text-sm">
+              <div className="font-semibold mb-1">Erro ao carregar o quiz:</div>
+              {questionsError}
+            </div>
+          );
+        }
+
+        if (!questions.length || !currentQuestion) {
+          return (
+            <div className="text-sm text-gray-600 p-4 border border-gray-300 rounded-xl bg-gray-50">
+              Nenhuma questão foi carregada. Por favor, volte e selecione um curso e critérios.
+            </div>
+          );
+        }
+
+        const options = getOptionsFromQuestion(currentQuestion);
+        const correctLetter = getCorrectLetter(currentQuestion);
+        const hasReachedEnd = currentIndex === questions.length - 1;
+
+        return (
+          <div className="space-y-4 text-sm">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span className="font-semibold text-blue-600">
+                Questão {currentIndex + 1} de {questions.length}
+              </span>
+              {questionBankUrl && (
+                <span className="truncate max-w-[140px] text-right" title={questionBankUrl}>
+                  Fonte: {catalogSource}
+                </span>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-lg">
+              <div className="mb-4 whitespace-pre-line text-gray-900 leading-relaxed font-medium">
+                {getQuestionText(currentQuestion)}
+              </div>
+              
+              <div className="space-y-3">
+                {options.map(([letter, text]) => {
+                  const isCorrect = revealCorrect && letter === correctLetter;
+                  const isSelected = letter === selectedOption;
+                  const isDisabled = !!selectedOption;
+                  
+                  let baseClasses =
+                    "w-full flex items-start gap-3 rounded-lg border-2 px-3 py-3 text-left transition-all duration-300 shadow-sm";
+
+                  if (isCorrect) {
+                    baseClasses += " border-green-500 bg-green-100 ring-2 ring-green-400";
+                  } else if (revealCorrect && isSelected && !isCorrect) {
+                    baseClasses += " border-red-500 bg-red-100 ring-2 ring-red-400";
+                  } else if (isSelected) {
+                    baseClasses += " border-blue-500 bg-blue-100";
+                  } else if (isDisabled) {
+                    baseClasses += " border-gray-100 bg-gray-50 opacity-70";
+                  } else {
+                    baseClasses += " border-gray-200 bg-white hover:border-blue-300";
+                  }
+
+                  return (
+                    <button
+                      key={letter}
+                      className={baseClasses}
+                      onClick={() => handleOptionClick(letter)}
+                      disabled={isDisabled}
+                    >
+                      <span className={`font-extrabold min-w-[1.5rem] ${isCorrect ? 'text-green-700' : (revealCorrect && isSelected ? 'text-red-700' : 'text-gray-800')}`}>
+                        {letter}.
+                      </span>
+                      <span className={`text-gray-800 flex-1 ${isDisabled ? 'opacity-80' : ''}`}>{text}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Feedback após a resposta */}
+              {revealCorrect && (
+                <div className={`mt-4 p-3 rounded-lg text-sm font-medium ${selectedOption === correctLetter ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {selectedOption === correctLetter ? '✅ Resposta Correta!' : `❌ Resposta Incorreta. A correta era a letra ${correctLetter}.`}
+                </div>
+              )}
+            </div>
+
+            {hasReachedEnd && (
+              <div className="text-center p-3 text-xs text-gray-500 bg-gray-100 rounded-lg">
+                Você chegou ao fim deste quiz de {questions.length} questões!
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function renderQuizListScreen() {
+        if (!savedQuizzes.length) {
+          return (
+            <div className="text-sm text-gray-600 p-4 border border-gray-300 rounded-xl bg-gray-50">
+              <div className="font-semibold mb-1">Nenhum Quiz Salvo</div>
+              Você ainda não criou ou salvou nenhuma configuração de quiz. Use a opção "Personalizado" na tela de seleção para montar o primeiro.
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-4 text-sm">
+            <h2 className="text-xl font-bold text-gray-800">Seus Quizzes Salvos</h2>
+
+            {savedQuizzes.map((quiz) => {
+              const parts = [];
+              if (quiz.years && quiz.years.length) {
+                const anos = quiz.years.join(", ");
+                parts.push(
+                  quiz.years.length === 1 ? `Ano ${anos}` : `Anos ${anos}`
+                );
+              }
+              if (quiz.disciplineLabels && quiz.disciplineLabels.length) {
+                parts.push(quiz.disciplineLabels.join(" · "));
+              }
+              const subtitle = parts.join(" · ");
+
+              return (
+                <div
+                  key={quiz.id}
+                  className="border border-gray-200 rounded-xl p-4 bg-white flex items-center justify-between gap-3 shadow-md"
+                >
+                  <div className="flex-1">
+                    <div className="text-xs uppercase text-blue-500 font-medium">
+                      {quiz.mode === "custom" ? "Personalizado" : "Aleatório"}
+                    </div>
+                    <div className="text-base font-bold text-gray-800 mt-0.5">
+                      {quiz.courseLabel || "Quiz"}
+                    </div>
+                    {subtitle && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {subtitle}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white shadow-md hover:bg-blue-700 transition duration-150"
+                    onClick={() => handleStartQuizFromConfig(quiz)}
+                  >
+                    Iniciar
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+
+      // =========================================================
+      // 12. CABEÇALHO E BARRA INFERIOR (NAVEGAÇÃO)
+      // =========================================================
+
+      // Título e subtítulo do header
+      let headerTitle = "Educação – Banco de Cursos";
+      if (stage === "select") headerTitle = "Configurar Quiz";
+      else if (stage === "list") headerTitle = "Quizzes Salvos";
+      else if (stage === "quiz") headerTitle = "Sessão de Quiz";
+      else if (stage === "home") headerTitle = "Educação 5Horas";
+
+      let headerSubtitle = "Selecione o curso e modo";
+      if (selectedCourse) {
+        const parts = [selectedCourse.label];
+        if (selectedYears.length === 1) {
+          parts.push(String(selectedYears[0]));
+        } else if (selectedYears.length > 1) {
+          parts.push(`${selectedYears.length} anos`);
+        }
+        if (selectedDisciplineIds.length === 1) {
+          parts.push("1 disciplina");
+        } else if (selectedDisciplineIds.length > 1) {
+          parts.push(`${selectedDisciplineIds.length} disciplinas`);
+        }
+        headerSubtitle = parts.join(" · ");
+      }
+
+      // Lógica da barra inferior de navegação
+      const hasQuizSession = questions.length > 0;
+      const hasSavedQuizzes = savedQuizzes.length > 0;
+      const isFirst = currentIndex <= 0;
+      const isLast = hasQuizSession && currentIndex >= questions.length - 1;
+      const canAdvance = stage === "quiz" && hasQuizSession && !isLast && revealCorrect;
+
+      return (
+        <div className="min-h-screen flex justify-center items-stretch bg-slate-100">
+          <div className="w-full max-w-md flex flex-col bg-white border-x border-gray-200 shadow-2xl">
+            {/* Header */}
+            <header className="flex-shrink-0 h-16 flex items-center justify-between px-4 border-b border-gray-200 bg-white shadow-sm">
+              <div>
+                <div className="text-lg font-bold text-gray-800">{headerTitle}</div>
+                <div className="text-xs text-gray-500">{headerSubtitle}</div>
+              </div>
+              {/* Informação da fonte do catálogo (Dev/Debug) */}
+              {catalogSource && (
+                <div className="text-[10px] text-gray-400 text-right">
+                  Catálogo: {renderCatalogSource()}
+                  {usingFallback && catalogSource === "embedded" && " (dev)"}
+                </div>
+              )}
+            </header>
+
+            {/* Painel central */}
+            <main className="flex-1 overflow-y-auto px-4 py-6 bg-gray-50">
+              {loadingCatalog && (
+                <div className="text-sm text-gray-600 p-4">Carregando catálogo...</div>
+              )}
+              {catalogError && !loadingCatalog && (
+                <div className="text-sm text-red-600 p-4">{catalogError}</div>
+              )}
+              {!loadingCatalog && !catalogError && (
+                <>
+                  {stage === "home" && renderHomeScreen()}
+                  {stage === "select" && renderSelectScreen()}
+                  {stage === "list" && renderQuizListScreen()}
+                  {stage === "quiz" && renderQuizScreen()}
+                </>
+              )}
+            </main>
+
+            {/* Barra inferior de navegação */}
+            <nav className="flex-shrink-0 h-16 border-t border-gray-200 flex bg-white shadow-xl">
+              
+              {/* HOME / INÍCIO */}
+              <FooterButton
+                icon="🏠"
+                label="Início"
+                active={stage === "home"}
+                onClick={() => setStage("home")}
+              />
+
+              {/* CURSO / CONFIGURAÇÃO */}
+              <FooterButton
+                icon="⚙️"
+                label="Configurar"
+                active={stage === "select"}
+                onClick={() => setStage("select")}
+              />
+
+              {/* AÇÃO PRINCIPAL: CRIAR / INICIAR / REFAZER */}
+              <button
+                className={`flex-1 flex flex-col items-center justify-center -translate-y-2 transform transition duration-150 rounded-t-full pt-2 shadow-2xl ${readyToContinue && !loadingQuestions
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+                disabled={!readyToContinue || loadingQuestions}
+                onClick={() => {
+                  if (!readyToContinue || loadingQuestions) return;
+                  if (stage === "select" && quizMode === "custom") {
+                    handleCreateQuiz();
+                  } else {
+                    handleContinue(); // Inicia o quiz
+                  }
+                }}
+              >
+                <span className="text-2xl mb-0.5">{quizMode === "custom" && stage === "select" ? "💾" : "🚀"}</span>
+                <span className="text-xs font-semibold">
+                  {quizMode === "custom" && stage === "select"
+                    ? "Criar Quiz"
+                    : questions.length > 0
+                    ? "Refazer"
+                    : "Iniciar Quiz"}
+                </span>
+              </button>
+
+              {/* LISTA DE QUIZZES SALVOS */}
+              <FooterButton
+                icon="📚"
+                label="Meus Quizzes"
+                active={stage === "list"}
+                onClick={() => setStage("list")}
+                disabled={!hasSavedQuizzes}
+              />
+
+              {/* PRÓXIMA / ANTERIOR (Apenas na tela de Quiz) */}
+              {stage === "quiz" ? (
+                <>
+                  {/* ANTERIOR */}
+                  <FooterButton
+                    icon="⬅️"
+                    label="Anterior"
+                    active={false}
+                    onClick={handlePreviousQuestion}
+                    disabled={isFirst || !hasQuizSession}
+                  />
+                  {/* PRÓXIMA */}
+                  <FooterButton
+                    icon="➡️"
+                    label="Próxima"
+                    active={false}
+                    onClick={handleNextQuestion}
+                    disabled={!canAdvance}
+                  />
+                </>
+              ) : (
+                <>
+                  {/* Placeholder para manter o layout no modo não-quiz */}
+                  <div className="flex-1"></div>
+                  <div className="flex-1"></div>
+                </>
+              )}
+            </nav>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================
+    // 13. TESTES RÁPIDOS DE DESENVOLVIMENTO (SANITY CHECKS)
+    // =========================================================
+
+    (function devSanityChecks() {
+      try {
+        const sampleQuestions = [
+          { id: 1 },
+          { id: 2 },
+          { id: 3 },
+          { id: 4 },
+          { id: 5 },
+          { id: 6 },
+          { id: 7 },
+          { id: 8 },
+          { id: 9 },
+          { id: 10 },
+          { id: 11 }
+        ];
+        // Testa o limite de questões
+        const session = QuizEngine.buildQuizSession(sampleQuestions, 10);
+        console.assert(
+          Array.isArray(session) && session.length === 10,
+          "QuizEngine.buildQuizSession deve limitar a 10 questões"
+        );
+        // Testa a normalização de questão
+        const qObj = {
+          alternatives: [
+            { letter: "A", text: "Alt A", isCorrect: false },
+            { letter: "B", text: "Alt B", isCorrect: true }
+          ]
+        };
+        const opts = QuizNormalizer.getOptionsFromQuestion(qObj);
+        const correct = QuizNormalizer.getCorrectLetter(qObj);
+        console.assert(
+          opts.length === 2,
+          "QuizNormalizer.getOptionsFromQuestion deve mapear 2 alternativas"
+        );
+        console.assert(
+          correct === "B",
+          "QuizNormalizer.getCorrectLetter deve identificar a alternativa correta"
+        );
+      } catch (e) {
+        console.warn("Dev sanity checks falharam:", e);
+      }
+    })();
+
+    // =========================================================
+    // 14. MONTAGEM DO APP
+    // =========================================================
+
+    // Monta o componente principal no elemento com id="root"
+    ReactDOM.createRoot(document.getElementById("root")).render(<AppQuiz />);
+
+  </script>
 </body>
 </html>
