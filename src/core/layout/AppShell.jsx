@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import { IonApp, IonContent } from "@ionic/react";
 
 // Infraestrutura central
-import { initDB } from "../db/indexdb";
-import { initWebAuthn } from "../auth/webauthn";
-import { supabase } from "../api/supabase";
+import { initDB } from "../db/indexdb.js";
+import { initWebAuthn } from "../auth/webauthn.js";
+import { supabase } from "../api/supabase.js";
 
 // Orquestrador que monta telas (a ser criado depois)
-import ScreenOrchestrator from "../orchestrator/ScreenOrchestrator";
+import ScreenOrchestrator from "../orchestrator/ScreenOrchestrator.jsx";
 
 export default function AppShell() {
   // Estado global mínimo

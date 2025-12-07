@@ -2,14 +2,14 @@
 import React, { useState, useEffect } from "react";
 
 // Telas do app (cada uma será um componente simples)
-import Home from "../../screens/Home";
-import Auth from "../../screens/Auth";
-import Perfil from "../../screens/Perfil";
-import Master from "../../screens/Master";
-import Miniapps from "../../screens/Miniapps";
-import Loader from "../../screens/Loader";
-import Settings from "../../screens/Settings";
-import ErrorScreen from "../../screens/Error";
+import Home from "../../screens/Home.jsx";
+import Auth from "../../screens/Auth.jsx";
+import Perfil from "../../screens/Perfil.jsx";
+import Master from "../../screens/Master.jsx";
+import Miniapps from "../../screens/Miniapps.jsx";
+import Loader from "../../screens/Loader.jsx";
+import Settings from "../../screens/Settings.jsx";
+import ErrorScreen from "../../screens/Error.jsx";
 
 // Permissões básicas
 const SCREENS = {
