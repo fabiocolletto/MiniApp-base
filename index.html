@@ -149,7 +149,28 @@ const Renderer = {
     try {
       const resp = await fetch(caminho);
       const html = await resp.text();
-      this.expressar(html);
+
+      // Parsear o HTML para preservar scripts e executá-los corretamente
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const conteudo = doc.body.innerHTML;
+
+      // Monta o conteúdo visual da célula
+      this.expressar(conteudo);
+
+      // Executa scripts presentes na célula (incluindo modules)
+      const scripts = doc.querySelectorAll("script");
+      scripts.forEach((oldScript) => {
+        const novoScript = document.createElement("script");
+        // Copia atributos relevantes (ex.: type="module", src, async)
+        Array.from(oldScript.attributes).forEach((attr) => {
+          novoScript.setAttribute(attr.name, attr.value);
+        });
+        if (!oldScript.src) {
+          novoScript.textContent = oldScript.textContent;
+        }
+        document.body.appendChild(novoScript);
+      });
     } catch (e) {
       this.expressar(`<p style='color:red'>Erro ao carregar célula: ${caminho}</p>`);
     }
