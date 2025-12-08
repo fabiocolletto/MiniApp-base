@@ -1,2 +1,192 @@
 # PWAO – Progressive Web App Orgânico
-Documentação principal.
+
+Bem-vindo ao repositório oficial do **PWAO**, o primeiro organismo digital vivo construído com Genoma, Células, Órgãos e OPP (Organic Progressive Package). 
+
+O PWAO não é um PWA tradicional, nem um aplicativo. Ele é uma nova categoria: **um organismo digital que cresce, aprende e evolui por meio de um ecossistema de módulos independentes, descobertos dinamicamente**.
+
+Este arquivo apresenta:
+- O conceito do PWAO
+- A estrutura oficial do repositório
+- Como o organismo funciona internamente
+- Como instalar e rodar
+- Como contribuir
+
+---
+
+# 🌱 1. O que é o PWAO?
+
+O **PWAO (Progressive Web App Orgânico)** é um organismo digital inspirado na biologia. Ele possui:
+
+- **Genoma** – o núcleo do organismo (`index.html`)
+- **Células** – módulos independentes (como telas, apps, funcionalidades)
+- **Órgãos** – motores funcionais que alimentam cada célula
+- **Memória Orgânica** – sistema de registro e estado persistente (IndexedDB)
+- **Narrador** – canal interno de eventos
+- **OPP – Organic Progressive Package** – pacote instalável (manifest + service worker)
+
+O PWAO cresce por meio de **autodiscovery**, aprendendo novas células automaticamente sem que o Genoma seja alterado.
+
+---
+
+# 🧬 2. Arquitetura Geral
+
+A arquitetura é formada por quatro blocos principais:
+
+### **Genoma**
+Arquivo raiz. Controla:
+- Inicialização do organismo
+- Descoberta de células
+- Renderização
+- Registro do OPP
+- Ciclo de vida
+
+### **Células**
+Unidades de interface + lógica. Cada célula contém:
+- `index.html`
+- órgãos (`orgao-*.js`)
+- datasets locais
+- manifesto celular
+
+### **Órgãos**
+Scripts isolados que contêm a lógica funcional.
+
+### **OPP**
+Pacote instalável do PWAO:
+- `manifest.webmanifest`
+- `service-worker.js`
+- ícones
+
+---
+
+# 🗂️ 3. Estrutura Oficial do Repositório
+
+```
+pwao/
+│
+├── index.html                 ← Genoma do organismo
+│
+├── opp/                       ← Organic Progressive Package
+│   ├── manifest.webmanifest
+│   ├── service-worker.js
+│   ├── icon-192.png
+│   └── icon-512.png
+│
+├── celulas/                   ← Células vivas do organismo
+│   ├── educacao/
+│   │   └── quiz/
+│   │       ├── index.html
+│   │       ├── orgao-quiz.js
+│   │       └── datasets/
+│   │           ├── cursos.json
+│   │           └── enem/2021/questions.json
+│   │
+│   └── sistema/
+│       ├── auth/
+│       └── admin/
+│
+├── README.md
+├── AGENT.md
+├── ARCHITECTURE.md
+├── CONTRIBUTING.md
+├── STYLEGUIDE.md
+├── SECURITY.md
+└── ROADMAP.md
+```
+
+---
+
+# 🚀 4. Como o Organismo Funciona
+
+### **Autodiscovery**
+Quando o Genoma inicia, ele lê a Memória Orgânica e descobre todas as células já registradas.
+
+### **Manifesto Celular**
+Cada célula se registra via:
+```js
+window.PWAO_RegistrarCelula({...})
+```
+
+### **Expressão de Células**
+Células são exibidas via Narrador:
+```js
+Narrador.emitir({ tipo: "celula.expressar", nome: "educacao.quiz" })
+```
+
+### **OPP & Instalação**
+O service worker torna o PWAO instalável e offline.
+
+---
+
+# 📦 5. Instalação (Local e Produção)
+
+## **Local**
+Apenas abra o arquivo `index.html` em um servidor local:
+```
+npx serve
+```
+
+## **Produção**
+O PWAO funciona perfeitamente no GitHub Pages:
+- Basta publicar na branch principal
+- O Genoma será carregado automaticamente
+- O OPP ativará instalação e cache offline
+
+---
+
+# 🛠️ 6. Desenvolvimento
+
+### Criar nova célula
+```
+celulas/<dominio>/<nome>/
+  index.html
+  orgao-<função>.js
+  datasets/
+```
+
+Criar manifesto:
+```js
+window.PWAO_RegistrarCelula({...})
+```
+
+### Importante
+- Células devem ser autocontidas
+- Órgãos devem rodar como ES Modules
+- Caminhos sempre relativos
+
+---
+
+# 🔐 7. Segurança
+
+- Service worker só registra em HTTPS ou localhost
+- Nenhuma célula pode acessar outra
+- Dados permanentes residem na Memória Orgânica
+
+Mais detalhes em `SECURITY.md`.
+
+---
+
+# 🤝 8. Como Contribuir
+Leia primeiro:
+- AGENT.md
+- ARCHITECTURE.md
+- CONTRIBUTING.md
+
+Depois siga o fluxo de PR descrito no `CONTRIBUTING.md`.
+
+---
+
+# 🧭 9. Roadmap
+Veja o documento `ROADMAP.md` para próximos passos:
+- Genoma V4.3
+- Células do sistema (auth, admin)
+- Evolução orgânica automatizada
+
+---
+
+# 📄 10. Licença
+A definir pelo mantenedor do projeto.
+
+---
+
+# 🌿 Versão
+README v1.0 – Estrutura inicial do repositório PWAO
