@@ -36,8 +36,14 @@ export default function ScreenOrchestrator({ familyId, userId }) {
 
       // Busca permissões localmente (IndexedDB)
       try {
+        if (!window.familyDB) {
+          console.error("IndexedDB familyDB ausente; verificando bootstrap e autenticação");
+          setCurrentScreen(userId ? "error" : "auth");
+          return;
+        }
+
         const db = await window.familyDB;
-        const member = await db.members.get(userId);
+        const member = await db.get("members", userId);
 
         if (member && member.role) {
           setRole(member.role);
@@ -47,7 +53,7 @@ export default function ScreenOrchestrator({ familyId, userId }) {
         setCurrentScreen("home");
 
       } catch (err) {
-        console.error("Erro ao recuperar role:", err);
+        console.error("Erro ao recuperar role via IndexedDB:", err);
         setCurrentScreen("error");
       }
     }
