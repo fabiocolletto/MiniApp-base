@@ -1,1 +1,31 @@
-<h1>Admin Panel</h1>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin</title>
+  <script>
+    // Bootstrap mínimo da célula PWAO
+    async function init() {
+      try {
+        // A célula tenta obter o admin no IndexedDB via AppShell
+        const admin = await window.AppShell?.getAdmin?.();
+        if (!admin) {
+          document.getElementById('status').innerText = 'Administrador não encontrado.';
+          return;
+        }
+        document.getElementById('status').innerText = 'Administrador carregado com sucesso';
+        document.getElementById('adminName').innerText = admin.nome || 'Sem nome';
+      } catch (err) {
+        document.getElementById('status').innerText = 'Erro ao carregar dados do administrador';
+      }
+    }
+    window.onload = init;
+  </script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h1>Painel do Administrador</h1>
+  <p id="status">Carregando...</p>
+  <p><strong>Nome:</strong> <span id="adminName">...</span></p>
+</body>
+</html>
