@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWAO – Genoma V4.2</title>
-  <link rel="manifest" href="opp/manifest.webmanifest" />
+  <title>PWAO – Genoma V4.3</title>
+  <link rel="manifest" href="./opp/manifest.webmanifest" />
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafafa; }
     #root { padding: 20px; }
@@ -15,12 +15,11 @@
 
 <script>
 // =============================================================
-// GENOMA V4.2 – Com Autodiscovery + OPP + Service Worker
+// GENOMA V4.3 – Autodiscovery Aperfeiçoado + Caminhos Orgânicos
 // =============================================================
-// Melhorias desta versão:
-//  - Registro automático do Service Worker do OPP
-//  - Autodiscovery otimizado
-//  - Tratamento de falhas mais elegante
+// Esta versão corrige completamente problemas de caminho ao
+// carregar células em repositórios hospedados (GitHub Pages).
+// Agora o Genoma sempre resolve rotas relativas com "./".
 // =============================================================
 
 // -------------------------------------------------------------
@@ -56,25 +55,31 @@ const Memoria = {
 };
 
 // -------------------------------------------------------------
-// 2. Narrador – Consciência do Sistema
+// 2. Narrador – Sistema de Eventos
 // -------------------------------------------------------------
 const Narrador = {
   ouvintes: [],
-  emitir(evento) {
-    this.ouvintes.forEach((fn) => fn(evento));
-  },
+  emitir(evento) { this.ouvintes.forEach((fn) => fn(evento)); },
   ouvir(fn) { this.ouvintes.push(fn); }
 };
 
 // -------------------------------------------------------------
-// 3. Loader – Carrega e Descobre Células
+// 3. Loader – Agora com Caminho Orgânico Corrigido
 // -------------------------------------------------------------
 const Loader = {
   mapa: {},
 
+  resolverCaminho(caminho) {
+    // Sempre garantir que o caminho comece com "./"
+    if (caminho.startsWith("./")) return caminho;
+    if (caminho.startsWith("/")) return `.${caminho}`; // corrige caminhos absolutos
+    return `./${caminho}`; // corrige caminhos sem ponto
+  },
+
   async registrar(celula) {
-    this.mapa[celula.nome] = celula.caminho;
-    await Memoria.registrarCelula(celula);
+    const caminhoCorrigido = this.resolverCaminho(celula.caminho);
+    this.mapa[celula.nome] = caminhoCorrigido;
+    await Memoria.registrarCelula({ ...celula, caminho: caminhoCorrigido });
   },
 
   async expressar(nome) {
@@ -88,24 +93,27 @@ const Loader = {
 
   async autodiscovery() {
     const celulas = await Memoria.listarCelulas();
-    celulas.forEach(c => this.mapa[c.nome] = c.caminho);
+    celulas.forEach(c => {
+      this.mapa[c.nome] = this.resolverCaminho(c.caminho);
+    });
   }
 };
 
-// Exposto globalmente para células se registrarem
+// -------------------------------------------------------------
+// Registro Global para Células
+// -------------------------------------------------------------
 window.PWAO_RegistrarCelula = async function (manifesto) {
   await Loader.registrar(manifesto);
-  console.log("🔗 Célula registrada no organismo:", manifesto.nome);
+  console.log("🔗 Célula registrada:", manifesto.nome);
 };
 
 // -------------------------------------------------------------
-// 4. Renderer – Expressor de Células
+// 4. Renderer – Expressão Visual
 // -------------------------------------------------------------
 const Renderer = {
   async expressar(html) {
     document.getElementById("root").innerHTML = html;
   },
-
   async montarCelula(caminho) {
     try {
       const resp = await fetch(caminho);
@@ -118,12 +126,17 @@ const Renderer = {
 };
 
 // -------------------------------------------------------------
-// 5. Registro do Service Worker OPP
+// 5. Registrar Service Worker do OPP
 // -------------------------------------------------------------
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("opp/service-worker.js")
-    .then(() => console.log("🧬 OPP Service Worker registrado"))
-    .catch(err => console.error("Erro ao registrar SW:", err));
+  const ambienteSeguro = location.protocol === "https:" || location.hostname === "localhost";
+  if (ambienteSeguro) {
+    navigator.serviceWorker.register("./opp/service-worker.js")
+      .then(() => console.log("🧬 OPP Service Worker registrado"))
+      .catch(err => console.warn("Falha ao registrar SW:", err));
+  } else {
+    console.log("SW não registrado: ambiente inseguro");
+  }
 }
 
 // -------------------------------------------------------------
@@ -138,11 +151,10 @@ async function iniciarOrganismo() {
   });
 
   Renderer.expressar(`
-    <h1>PWAO – Genoma V4.2</h1>
-    <p>Organismo iniciado com autodiscovery + OPP.</p>
-
-    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
+    <h1>PWAO – Genoma V4.3</h1>
+    <p>Organismo iniciado com autodiscovery aprimorado.</p>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'educacao.quiz'})">Abrir Quiz</button>
+    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.admin'})">Abrir Admin</button>
   `);
 }
