@@ -119,6 +119,10 @@ Usado para:
 * assinaturas (Mercado Pago)
 * permissões e acessos
 
+### Variáveis de ambiente
+
+O cliente do Supabase depende das variáveis `SUPABASE_URL` e `SUPABASE_KEY`, que devem estar definidas no ambiente de execução para que o app possa se conectar com segurança.
+
 ---
 
 # 6. Autenticação – WebAuthn
