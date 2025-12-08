@@ -126,7 +126,14 @@ const CelulasNativas = [
     caminho: "./celulas/sistema/admin/index.html",
     orgao: "sistema",
     versao: "1.0.0",
-    descricao: "Painel administrativo do sistema"
+    descricao: "Painel administrativodosistema"
+  },
+  {
+    nome: "sistema.page.family",
+    caminho: "./celulas/sistema/pages/family/index.html",
+    orgao: "sistema",
+    versao: "1.0.0",
+    descricao: "Pagina inicial app family"
   }
 ];
 
@@ -215,6 +222,7 @@ async function iniciarOrganismo() {
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'educacao.quiz'})">Abrir Quiz</button>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.admin'})">Abrir Admin</button>
+    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.pages.family'})">Abrir app family</button>
   `);
 }
 
