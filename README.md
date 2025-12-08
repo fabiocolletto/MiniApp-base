@@ -1,400 +1,202 @@
-# AGENT.md – Diretrizes Oficiais do Repositório 5Horas PWA / Miniapps
+# 🌐 PWAO – Progressive Web App Orgânico
 
-Documento mestre para todos os desenvolvedores, designers e contribuidores do ecossistema **5Horas Miniapps + PWA Familiar**. Aqui estão todas as regras, padrões, estruturas e políticas que regem o funcionamento do repositório.
+O PWAO é o primeiro modelo de aplicativo verdadeiramente orgânico.
+Não é um PWA clássico, não é um MFE, não é um app modular tradicional.
+É um organismo digital que nasce, cresce, expressa funções e evolui.
 
-> **Processo obrigatório:** toda alteração deve ser registrada no `change.md` na raiz do repositório.
-
----
-
-# 1. Propósito do Projeto
-
-Este repositório abriga a **plataforma PWA Familiar**, um sistema modular baseado em **Miniapps (MFE)**, capaz de atender múltiplos produtos:
-
-* Educação
-* Financeiro
-* Saúde
-* Tarefas
-* Outros módulos futuros
-
-O projeto segue três princípios:
-
-* **Simplicidade** – mínimo código, máximo efeito
-* **Padronização** – todos os miniapps seguem a mesma estrutura
-* **Escalabilidade** – adicionar produtos sem reescrever o sistema
+Este repositório representa o Núcleo do Organismo — o Genoma.
+Tudo aqui é essencial para que o PWAO exista e se expresse.
 
 ---
 
-# 2. Estrutura Obrigatória do Repositório
+# 🧬 O que é o PWAO?
 
-A árvore do repositório deve sempre seguir este formato:
+O PWAO é um sistema biológico digital organizado em quatro níveis:
 
-```
-src/
-  core/
-    layout/         → AppShell.jsx
-    orchestrator/   → ScreenOrchestrator.jsx
-    db/             → indexdb.js
-    auth/           → webauthn.js
-    api/            → supabase.js
+### 1. Genoma — o DNA
 
-  screens/          → telas internas essenciais
+É o núcleo imutável do organismo.
+Responsável por comportamento, lógica, consciência e expressão.
 
-products/
-  <categoria>/
-    <miniapp>/
-      index.html     → arquivo OBRIGATÓRIO
-      assets/...     → quando necessário
+O Genoma contém:
 
-public/
-  manifest.webmanifest
-  icons/...          → ícones 72–512 px
-```
+* Loader orgânico (expressa células)
+* Narrador (consciência interpretativa)
+* Genes essenciais (auth, admin, memória, cenas)
+* Renderer (expressão de células internas e externas)
+* Estrutura mínima para a vida
 
-### Regras:
+### 2. Células — unidades funcionais externas
 
-* Nenhuma outra estrutura é permitida.
-* Cada miniapp deve viver isolado em sua pasta.
-* Apenas arquivos **atuais** e **necessários** podem permanecer.
-* Ao alterar algo, executar **processo de limpeza** (ver item 11).
+São arquivos independentes, carregados sob demanda pelo Genoma.
+Cada célula executa uma função específica:
 
----
-
-# 3. Arquitetura MFE (Micro-Frontends)
-
-O sistema utiliza uma arquitetura baseada em:
-
-### **AppShell**
-
-Carregado via `src/core/layout/AppShell.jsx`.
-É o núcleo que provê:
-
-* IndexedDB
-* WebAuthn
-* Supabase
-* Navegação
-* Carregamento de Miniapps
-
-### **Loader de Miniapps**
-
-Carrega `products/<categoria>/<miniapp>/index.html` em sandbox leve.
-
-### **ScreenOrchestrator**
-
-Função única que monta qualquer tela da plataforma.
-
-### Regras principais:
-
-* Miniapps **não podem acessar o núcleo diretamente**.
-* Toda comunicação passa pelo AppShell.
-* Miniapps usam apenas caminhos relativos `./`.
-* Nenhum miniapp pode registrar rotas internas.
-
----
-
-# 4. Banco Local – IndexedDB
-
-Arquivo: `src/core/db/indexdb.js`
-
-### Deve conter:
-
-* dados do usuário
+* cadastro
 * perfis
-* vínculos
-* assinaturas
-* cache dos miniapps
-* notificações pendentes
+* administração
+* educação
+* finanças
+* funções sociais (família)
 
-### IndexedDB é o modo **offline completo** do app.
+### 3. Órgãos — grupos naturais de células
 
----
+Exemplos:
 
-# 5. Backend – Supabase
+* família (perfis, vínculos, notificações)
+* educação (quiz, trilhas, filtros)
+* financeiro (fluxos, assinaturas, saldo)
 
-Arquivo: `src/core/api/supabase.js`
+Órgãos são apenas conceitos: o Genoma não conhece "sistemas".
+Ele apenas expressa células.
 
-Usado para:
+### 4. Organismo — o PWAO
 
-* sincronização familiar
-* salvar perfis
-* salvar vínculos
-* notificações
-* assinaturas (Mercado Pago)
-* permissões e acessos
-
-### Variáveis de ambiente
-
-O cliente do Supabase depende das variáveis `SUPABASE_URL` e `SUPABASE_KEY`, que devem estar definidas no ambiente de execução para que o app possa se conectar com segurança.
-
-Em máquinas de desenvolvimento onde essas variáveis não estão configuradas, o bootstrap ignora o health-check e o app continua operando no modo offline-first (IndexedDB), permitindo testar a experiência local sem Supabase.
+A soma de Genoma, Células, Órgãos e Memória.
+Esse repositório é o organismo completo.
 
 ---
 
-# 6. Autenticação – WebAuthn
-
-Arquivo: `src/core/auth/webauthn.js`
-
-É a camada padrão de biometria para acesso ao app.
-Substitui login tradicional.
-
----
-
-# 7. Perfis do Produto Educação
-
-Um usuário pode ter múltiplos perfis simultaneamente.
-Cada perfil vive como uma entidade separada.
-
-## Perfis oficiais
-
-* **Aluno**
-* **Responsável**
-* **Tutor**
-* **Instituição**
-
-## Cada perfil tem:
-
-* seus próprios dados
-* suas próprias permissões
-* seu próprio código `XXX-XXX-XXX`
-* pode ser renovado
-* pode ser compartilhado
-* pode ser vinculado a qualquer outro perfil permitidos
-
-## Dados mínimos por perfil
-
-### Aluno
-
-* nome
-* nascimento
-* nível escolar
-* histórico
-* preferências
-* código `XXX-XXX-XXX`
-
-### Responsável
-
-* nome
-* relação com aluno
-* contato
-* permissões de relatórios
-* código
-
-### Tutor
-
-* nome
-* áreas
-* níveis atendidos
-* disponibilidade
-* código
-
-### Instituição
-
-* nome
-* tipo
-* identificação oficial
-* responsáveis
-* código
-
----
-
-# 8. Fluxo de Vínculos (Perfil ↔ Perfil)
-
-### 1. Perfil A gera código.
-
-### 2. Perfil B digita código.
-
-### 3. Sistema retorna **dados mascarados**:
-
-* nome parcial
-* tipo de perfil
-* idade aproximada
-
-### 4. Perfil B valida:
-
-* **Enviar solicitação**
-* **Editar código**
-* **Cancelar**
-
-### 5. Perfil A recebe notificação e decide:
-
-* **Aceitar** → vínculo fica *active*
-* **Rejeitar** → vínculo fica *rejected*
-
-### 6. Ambos podem quebrar vínculo.
-
-* Vínculo vira *removed*.
-* Ambos recebem notificação.
-
----
-
-# 9. Notificações
-
-Sempre registradas no Supabase e replicadas no IndexedDB.
-
-Formato:
+# 🏗 Estrutura do Repositório (100% PWAO)
 
 ```
-{
-  id: "uuid",
-  to: "userId",
-  type: "vinculo",
-  payload: {
-    fromProfile: "aluno",
-    toProfile: "responsavel",
-    action: "pendente"
-  },
-  createdAt: "...",
-  read: false
-}
+/
+├── index.html                 → Genoma (AppShell do organismo)
+├── README.md                  → Este documento
+└── celulas/
+     └── sistema/
+          ├── auth/
+          │    └── index.html  → Célula de cadastro
+          └── admin/
+               └── painel.html → Célula reguladora do organismo
+```
+
+A pasta `celulas/` funciona como um tecido.
+Cada subpasta representa uma célula viva, independente.
+
+---
+
+# 🧠 Funcionamento do PWAO
+
+1. O usuário acessa o PWAO.
+2. O Genoma inicializa.
+3. O Narrador assume a consciência ativa.
+4. Eventos orgânicos começam a ocorrer:
+
+   * estímulos do usuário
+   * expressões celulares
+   * decisões do narrador
+5. O Renderer expressa a cena adequada.
+6. A memória evolui no IndexedDB.
+7. O organismo se adapta em tempo real.
+
+Não existem rotas fixas, builds ou páginas tradicionais.
+O PWAO é expressão contínua.
+
+---
+
+# 🩺 Célula Administrativa (Reguladora)
+
+O PWAO possui uma célula especial: o Administrador do Organismo.
+Ele não pertence à família nem ao usuário comum.
+É um regulador estrutural.
+
+Permite:
+
+* visualizar usuários
+* visualizar perfis
+* ler logs do Narrador
+* expressar células específicas
+* rodar diagnóstico interno
+* observar o estado geral do organismo
+
+Localização:
+
+```
+celulas/sistema/admin/painel.html
 ```
 
 ---
 
-# 10. Assinaturas por Produto (Mercado Pago)
+# 🔧 Criando novas Células
 
-### Cada produto tem:
+Para expandir o organismo:
 
-* seu próprio `mpSubscriptionId`
-* seu próprio status (`active`, `inactive`, `paused`)
-* seu ciclo de cobrança mensal
+1. Crie uma pasta em `celulas/<orgao>/<nome>/`
+2. Adicione um arquivo `index.html`
+3. Insira HTML, JS e lógica independente
+4. O Genoma será capaz de expressá-la sob demanda
 
-### Regras:
-
-* Primeiro usuário paga valor cheio.
-* Usuários adicionais têm desconto.
-* Alterações só refletem na virada do mês.
-* Durante o mês, apenas o status muda.
-
-### Estrutura
-
-```
-subscriptions: [
-  {
-    product: "educacao",
-    mpSubscriptionId: "sub_xxx",
-    status: "active",
-    nextBilling: "...",
-    lastSync: "..."
-  }
-]
-```
+Células nunca alteram o Genoma.
+Elas ampliam o organismo.
 
 ---
 
-# 11. Processo de Limpeza Obrigatório
+# 🧬 Memória do Organismo
 
-Toda alteração no repositório exige limpeza:
+Todas as informações do PWAO são armazenadas no IndexedDB:
 
-* remover arquivos antigos
-* excluir protótipos
-* apagar duplicados
-* garantir apenas arquivos atuais
-* validar imports
-* limpar assets não usados
-* revisar cada pasta
-* não deixar restos de miniapps removidos
+* usuários
+* perfis
+* administradores
+* histórico de cenas
+* expressões celulares
+* estado do organismo
 
-É estritamente proibido deixar lixo no repo.
+A memória é independente do Genoma e persiste entre sessões.
 
 ---
 
-# 12. Regras para Miniapps
+# 📡 Expressão de Células
 
-## Ao adicionar
+O Genoma não navega entre páginas.
+Ele expressa células.
 
-* criar pasta em `products/<categoria>/<miniapp>/`
-* incluir apenas `index.html` + assets necessários
-* usar apenas `./` nos caminhos
-* miniapp deve ser autocontido
-
-## Ao editar
-
-* manter compatibilidade com Loader
-* não alterar o núcleo
-* não adicionar dependências externas
-
-## Ao remover
-
-* excluir única pasta do miniapp
-* atualizar CHANGELOG
-* remover referências internas
-
----
-
-# 13. Commits e Versionamento
-
-### Padrão de commit:
+Exemplo:
 
 ```
-feat(miniapp-nome):
-fix(miniapp-nome):
-refactor(miniapp-nome):
-chore(core):
+Narrador.emitir({ tipo: "celula.expressar", nome: "sistema.auth" })
 ```
 
-### Versionamento:
-
-* Miniapps podem ter versão interna
-* Core segue versionamento centralizado
-
----
-
-# 14. JSON Oficial do Usuário
+Evento orgânico:
 
 ```
-{
-  "userId": "u-uuid",
-  "familyId": "f-uuid",
-  "isMaster": false,
-  "profiles": [
-    {
-      "type": "aluno",
-      "code": "ABC-123-XYZ",
-      "data": {}
-    }
-  ],
-  "financial": {
-    "isFinancialAdmin": false,
-    "autoLinkedToEducation": true
-  },
-  "links": [],
-  "notifications": {
-    "allow": true,
-    "pushToken": ""
-  },
-  "security": {
-    "webauthnRegistered": true,
-    "devices": []
-  },
-  "meta": {
-    "version": 1
-  }
-}
+Narrador.emitir({ tipo: "perfil.criar", especie: "responsavel" })
 ```
 
 ---
 
-# 15. Telas Essenciais
+# 🔮 Por que o PWAO é diferente?
 
-1. Dashboard Familiar
-2. Autenticação (WebAuthn)
-3. Perfil do Usuário
-4. Gestão da Família (Master)
-5. Lista de Miniapps
-6. Loader de Miniapps
-7. Configurações
-8. Alertas
-9. Offline / Erro
+* não usa rotas
+* não usa páginas
+* não depende de árvore fixa de componentes
+* não exige build para atualizar células
+* mantém estado ao mudar de função
+* cresce organicamente
+* evolui sem modificar o núcleo
 
----
-
-# 16. Padrão de Código
-
-* Sempre usar caminhos relativos `./`
-* Componentes React limpos
-* Evitar duplicação
-* Padrão único de UI via Ionic
+O PWAO é o primeiro sistema verdadeiramente vivo da web.
+Ele se comporta mais como um organismo do que como um aplicativo.
 
 ---
 
-**Este documento governa TODO o repositório.**
-Qualquer divergência deve ser corrigida para alinhar ao padrão oficial.
+# 🚀 Ecossistema 5 Horas
+
+O PWAO é a base dos produtos:
+
+* família
+* educação
+* financeiro
+* saúde
+* pesquisa
+* futuras células
+
+Novas funções são novas células.
+O Genoma permanece estável — ele evolui, não é substituído.
+
+---
+
+# ✨ Criado pelo Projeto Marco e pelo Nivero PWAO
+
+Este é o repositório oficial do organismo digital que substituirá PWAs tradicionais.
+Bem-vindo à nova forma de construir sistemas: orgânica, viva, modular e evolutiva.
