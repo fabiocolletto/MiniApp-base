@@ -1,53 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Célula – Quiz Educacional (PWAO)</title>
-
-  <!-- Tailwind CSS (leve, CDN, isolado) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    body {
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Célula Quiz</title>
+<style>
+body {
+margin: 0;
+padding: 0;
+font-family: Arial, sans-serif;
+background: #fafafa;
+}
+#quiz-root {
+padding: 20px;
+}
+</style>
 </head>
-
-<body class="p-4">
-
-  <!-- Root onde o órgão expressará o quiz -->
-  <div id="quiz-root" class="max-w-xl mx-auto text-center text-slate-600">
-    Carregando Quiz…
-  </div>
-
-  <!-- Órgão (motor real do quiz) -->
-  <script type="module" src="./orgao-quiz.js"></script>
-
-  <!-- ========================================================= -->
-  <!-- MANIFESTO CELULAR – PWAO                                   -->
-  <!-- ========================================================= -->
-  <script>(function registrarAuth() {
-      function tentar() {
-        if (window.PWAO_RegistrarCelula) {
-          window.PWAO_RegistrarCelula({
-            nome: "educacao.quiz",
-            caminho: "celulas/educacao/quiz/index.html",
-            orgao: "sistema",
-            versao: "1.0.0",
-            descricao: "Célula de Autenticação do sistema"
-          });
-          return;
-        }
-        setTimeout(tentar, 60);
-      }
-      tentar();
-    })();
-  </script>
-
+<body>
+<div id="quiz-root">Carregando Quiz...</div>
+<script src="./celula.js"></script>
 </body>
 </html>
