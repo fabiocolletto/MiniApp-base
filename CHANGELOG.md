@@ -18,8 +18,28 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
-# 🧬 [V4.2] – 2025-02-XX
-### **Status: Atual (Genoma V4.2)**
+# 🧬 [V4.3.1] – Atualização do OPP e Manifesto
+### **Status: Atual (Genoma V4.3.1)**
+
+#### Added
+- Novo `manifest.webmanifest` para o OPP 5Horas.
+- Inclusão dos campos modernos (`id`, `categories`, `lang`, `dir`).
+- Ícones atualizados: raio laranja com fundo transparente.
+
+#### Changed
+- `start_url` e `scope` ajustados para repositórios GitHub Pages.
+- Nome oficial consolidado como **5Horas**.
+- `theme_color` atualizado para o laranja da marca (#FF7A00).
+
+#### Fixed
+- Caminhos relativos incorretos que impediam a instalação do PWA.
+
+#### Security
+- Manifesto validado segundo diretrizes do OPP.
+
+---
+
+# 🧬 [V4.2] – Autodiscovery, OPP e Melhorias do Genoma
 
 #### Added
 - Registro automático do Service Worker do OPP.
@@ -30,11 +50,11 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 #### Changed
 - Caminho do service worker alterado para `/opp/service-worker.js`.
 - Validação de ambiente seguro antes do registro do SW.
-- Tratamento mais elegante para células inexistentes.
+- Tratamento aprimorado para células inexistentes.
 
 #### Security
 - Bloqueio de registro de SW fora de HTTPS/localhost.
-- Prevenção contra fetch de células de origem externa.
+- Prevenção contra fetch de células remotas.
 
 ---
 
@@ -78,21 +98,6 @@ Não são compatíveis com o PWAO.
 - Primeiros experimentos com load dinâmico.
 - Estruturação manual de telas.
 - Origem da ideia do organismo digital.
-
----
-
-# 🧭 Próximas versões esperadas
-## **V4.3 – Painel Admin + Logs Orgânicos**
-- Célula `sistema.admin`
-- Célula `sistema.auth`
-- Logs internos persistentes
-- Diagnósticos do organismo
-
-## **V5.0 – Mutação Estrutural**
-- Scheduler de células
-- Permissões biológicas
-- Carregamento incremental
-- Sandboxing de células externas
 
 ---
 
