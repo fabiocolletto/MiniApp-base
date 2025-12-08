@@ -1,99 +1,68 @@
-// =============================================================
-// SERVICE-WORKER.JS – OPP (Organic Progressive Package)
-// =============================================================
-// Este service worker foi projetado para o PWAO.
-// Ele sabe lidar com:
-//  - cache do Genoma
-//  - cache de Células
-//  - cache de Órgãos
-//  - cache de Datasets externos
-//  - atualização orgânica
-// =============================================================
+// opp/service-worker.js – Versão atualizada para PWAO
+// -------------------------------------------------------
+// Este Service Worker segue o modelo orgânico do PWAO:
+// • Cache inteligente das células e órgãos
+// • Cache do Genoma
+// • Página personalizada de falha (fail.html)
+// • Atualização suave
+// • Caminhos relativos compatíveis com GitHub Pages
+// -------------------------------------------------------
 
-const CACHE_NAME = "opp-cache-v1";
+const CACHE_NAME = "pwao-opp-v2";
 
-// LISTA INICIAL DE ARQUIVOS QUE DEVEM SER SEMPRE CACHEADOS
-const FILES_TO_CACHE = [
-  "/index.html",            // Genoma
-  "/opp/manifest.webmanifest",
-  "/opp/icon-192.png",
-  "/opp/icon-512.png"
+// Arquivos essenciais para o organismo iniciar offline
+const CORE_ASSETS = [
+  "../index.html",
+  "./manifest.webmanifest",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./fail.html" // Página personalizada de erro
 ];
 
-// =============================================================
-// INSTALAÇÃO – PREPARA O AMBIENTE
-// =============================================================
+// Instalação do SW
 self.addEventListener("install", (event) => {
-  console.log("📦 OPP Service Worker: instalado");
-
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
   );
-
   self.skipWaiting();
 });
 
-// =============================================================
-// ATIVAÇÃO – LIMPA CACHES ANTIGOS
-// =============================================================
+// Ativação e limpeza de caches antigos
 self.addEventListener("activate", (event) => {
-  console.log("🔄 OPP Service Worker: ativado");
-
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log("🧹 Removendo cache antigo:", key);
-            return caches.delete(key);
-          }
-        })
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
       );
     })
   );
-
   self.clients.claim();
 });
 
-// =============================================================
-// ESTRATÉGIA DE BUSCA – CACHE DINÂMICO ORGÂNICO
-// =============================================================
+// Estratégia de busca orgânica
 self.addEventListener("fetch", (event) => {
-  const url = event.request.url;
+  const req = event.request;
 
-  // Ignora chamadas externas (Google, CDN etc.)
-  const mesmaOrigem = url.startsWith(self.location.origin);
-  if (!mesmaOrigem) {
-    return;
-  }
+  // Ignorar chamadas externas para evitar riscos
+  if (!req.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // ✔ Encontrado no cache – retorna rápido
-        console.log("📚 Cache hit:", url);
-        return cachedResponse;
-      }
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
 
-      // ❌ Não está em cache – busca na rede e salva
-      return fetch(event.request)
-        .then((networkResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            // Só cacheia respostas válidas
-            if (networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          });
+      return fetch(req)
+        .then((resp) => {
+          if (resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+          return resp;
         })
         .catch(() => {
-          // ❗ Caso offline e não esteja no cache
-          return new Response(
-            "<h1>Offline</h1><p>O conteúdo ainda não foi sincronizado.</p>",
-            { headers: { "Content-Type": "text/html" } }
-          );
+          // fallback automático ao fail.html quando houver falha de rede
+          if (req.mode === "navigate") {
+            return caches.match("./fail.html");
+          }
         });
     })
   );
