@@ -1,0 +1,7 @@
+{
+  "enem": {
+    "2021": "./datasets/enem/2021/questions.json",
+    "2022": "./datasets/enem/2022/questions.json",
+    "2023": "./datasets/enem/2023/questions.json"
+  }
+}
