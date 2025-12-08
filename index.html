@@ -100,6 +100,37 @@ const Loader = {
 };
 
 // -------------------------------------------------------------
+// Catálogo Orgânico: sementes mínimas
+// -------------------------------------------------------------
+// Para evitar botões quebrados em ambientes onde nenhuma célula
+// foi registrada previamente, definimos um conjunto mínimo de
+// células nativas. Elas são registradas apenas se ainda não
+// estiverem na Memória Orgânica.
+const CelulasNativas = [
+  {
+    nome: "educacao.quiz",
+    caminho: "celulas/educacao/quiz/index.html",
+    orgao: "educacao",
+    versao: "1.0.0",
+    descricao: "Célula de Quiz Educacional (órgão: orgao-quiz.js)"
+  },
+  {
+    nome: "sistema.auth",
+    caminho: "celulas/sistema/auth/index.html",
+    orgao: "sistema",
+    versao: "1.0.0",
+    descricao: "Célula de Autenticação do sistema"
+  },
+  {
+    nome: "sistema.admin",
+    caminho: "celulas/sistema/admin/index.html",
+    orgao: "sistema",
+    versao: "1.0.0",
+    descricao: "Painel administrativo do sistema"
+  }
+];
+
+// -------------------------------------------------------------
 // Registro Global para Células
 // -------------------------------------------------------------
 window.PWAO_RegistrarCelula = async function (manifesto) {
@@ -145,6 +176,13 @@ if ("serviceWorker" in navigator) {
 async function iniciarOrganismo() {
   await Memoria.init();
   await Loader.autodiscovery();
+
+  // Registrar células nativas caso ainda não estejam disponíveis
+  for (const celula of CelulasNativas) {
+    if (!Loader.mapa[celula.nome]) {
+      await Loader.registrar(celula);
+    }
+  }
 
   Narrador.ouvir((evento) => {
     if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);

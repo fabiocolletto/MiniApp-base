@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Célula – Admin (sistema)</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 24px; background: #f7f7f7; }
+    .painel { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; color: #0f172a; }
+    p { color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="painel">
+    <h1>Admin Panel</h1>
+    <p>Bem-vindo ao painel administrativo do organismo.</p>
+  </div>
+
+  <script>
+    (function registrarAdmin() {
+      function tentar() {
+        if (window.PWAO_RegistrarCelula) {
+          window.PWAO_RegistrarCelula({
+            nome: "sistema.admin",
+            caminho: "celulas/sistema/admin/index.html",
+            orgao: "sistema",
+            versao: "1.0.0",
+            descricao: "Painel administrativo do sistema"
+          });
+          return;
+        }
+        setTimeout(tentar, 60);
+      }
+      tentar();
+    })();
+  </script>
+</body>
+</html>
