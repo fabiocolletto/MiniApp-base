@@ -4,7 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PWAO – Genoma V3 FIX2</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js">// 🧬 Gene Admin – registro e carregamento do painel externo
+  Admin: {
+    criar: async (dados) => {
+      await Genoma.DB.salvar("admins", dados);
+      window.__perfilAdminExistente = true;
+      Narrador.emitir({ tipo: "admin.registrado", dados });
+    }
+  },
+
+  </script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,9 +48,10 @@
         return new Promise((resolve, reject) => {
           const req = indexedDB.open("GenomaDB", 1);
           req.onupgradeneeded = (ev) => {
-            const db = ev.target.result;
-            if (!db.objectStoreNames.contains("users")) {
-              db.createObjectStore("users", { keyPath: "id" });
+          const db = ev.target.result;
+          if (!db.objectStoreNames.contains("users")) db.createObjectStore("users", { keyPath: "id" });
+          if (!db.objectStoreNames.contains("admins")) db.createObjectStore("admins", { keyPath: "id" });
+        }("users", { keyPath: "id" });
             }
           };
           req.onsuccess = () => { Genoma.DB._db = req.result; resolve(req.result); };
@@ -67,6 +77,12 @@
         <p className="opacity-70 mb-4">Escolha qual perfil deseja criar agora.</p>
 
         <div className="flex flex-col gap-3 max-w-sm mx-auto">
+          {(!window.__perfilAdminExistente) && (
+            <button className="bg-red-700 text-white py-2 rounded" onClick={() => Narrador.emitir({ tipo: "perfil.criar", perfil: "admin" })}>
+              Administrador do PWAO
+            </button>
+          )}
+
           <button className="bg-blue-600 text-white py-2 rounded" onClick={() => Narrador.emitir({ tipo: "perfil.criar", perfil: "aluno" })}>Aluno</button>
           <button className="bg-green-600 text-white py-2 rounded" onClick={() => Narrador.emitir({ tipo: "perfil.criar", perfil: "responsavel" })}>Responsável</button>
           <button className="bg-purple-600 text-white py-2 rounded" onClick={() => Narrador.emitir({ tipo: "perfil.criar", perfil: "tutor" })}>Tutor</button>
@@ -109,6 +125,28 @@
             "https://raw.githubusercontent.com/fabiocolletto/miniapp/main/products/sistema/auth/index.html"
           );
           break;
+
+        case "auth.registrar":
+          Genoma.Auth.registrar(evento.dados);
+          break;
+
+        case "auth.registrado":
+          this.cenaAtual = "criarPerfil";
+          Renderer.atualizar();
+          break;
+
+        case "perfil.criar":
+          if (evento.perfil === "admin") {
+            Genoma.Admin.criar({ id: "admin-"+Date.now(), criadoEm: Date.now() });
+          }
+          break;
+
+        case "admin.registrado":
+          Genoma.Loader.carregarHTML(
+            "https://raw.githubusercontent.com/fabiocolletto/miniapp/main/products/sistema/admin/painel.html"
+          );
+          break;
+      }
         case "auth.registrar":
           Genoma.Auth.registrar(evento.dados);
           break;
