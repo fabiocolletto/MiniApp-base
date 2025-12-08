@@ -24,25 +24,49 @@ const SCREENS = {
 };
 
 export default function ScreenOrchestrator({ familyId, userId }) {
-  const [currentScreen, setCurrentScreen] = useState("auth");
+  const [currentScreen, setCurrentScreen] = useState("loader");
   const [role, setRole] = useState("guest"); // guest, adult, minor, master
 
   useEffect(() => {
+    let timeoutId;
+    let intervalId;
+    let canceled = false;
+
+    function waitForFamilyDB() {
+      setCurrentScreen("loader");
+
+      return new Promise((resolve, reject) => {
+        if (window.familyDB) {
+          resolve(window.familyDB);
+          return;
+        }
+
+        timeoutId = setTimeout(() => {
+          clearInterval(intervalId);
+          reject(new Error("familyDB bootstrap timeout"));
+        }, 2000);
+
+        intervalId = setInterval(() => {
+          if (window.familyDB) {
+            clearTimeout(timeoutId);
+            clearInterval(intervalId);
+            resolve(window.familyDB);
+          }
+        }, 100);
+      });
+    }
+
     async function determineRole() {
       if (!familyId || !userId) {
         setCurrentScreen("auth");
         return;
       }
 
-      // Busca permissões localmente (IndexedDB)
       try {
-        if (!window.familyDB) {
-          console.error("IndexedDB familyDB ausente; verificando bootstrap e autenticação");
-          setCurrentScreen(userId ? "error" : "auth");
-          return;
-        }
+        const dbPromise = await waitForFamilyDB();
+        if (canceled) return;
 
-        const db = await window.familyDB;
+        const db = await dbPromise;
         const member = await db.get("members", userId);
 
         if (member && member.role) {
@@ -54,11 +78,19 @@ export default function ScreenOrchestrator({ familyId, userId }) {
 
       } catch (err) {
         console.error("Erro ao recuperar role via IndexedDB:", err);
-        setCurrentScreen("error");
+        if (!canceled) {
+          setCurrentScreen("error");
+        }
       }
     }
 
     determineRole();
+
+    return () => {
+      canceled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [familyId, userId]);
 
   // 🔒 Permissões automáticas (básico do MVP)
