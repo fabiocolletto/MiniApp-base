@@ -19,12 +19,23 @@
       text-align: center;
     }
 
+    /* PROPORÇÃO TRAVADA DA LOGO */
+    .logo-container {
+      width: 180px; /* Proporção fixa, somente escala */
+      aspect-ratio: 3 / 1; /* Mantém proporção estável */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
     .logo {
       font-size: 42px;
       font-weight: bold;
       color: #FF7A00;
-      margin-bottom: 20px;
       letter-spacing: 1px;
+      width: 100%;
+      text-align: center;
     }
 
     .container {
@@ -65,8 +76,10 @@
 </head>
 <body>
 
-  <!-- LOGO ESCRITA DIRETO NO HTML -->
-  <div class="logo">5Horas ⚡</div>
+  <!-- LOGO COM PROPORÇÃO FIXA PARA ESCALAR SEM DISTORCER -->
+  <div class="logo-container">
+    <div class="logo">5Horas ⚡</div>
+  </div>
 
   <div class="container">
     <div class="msg">
