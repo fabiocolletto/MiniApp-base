@@ -18,6 +18,14 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.3] – Execução orgânica de células carregadas
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Fixed
+- Renderer passa a reexecutar scripts das células carregadas, garantindo que botões da tela inicial ativem corretamente os órgãos e manifestos.
+
+---
+
 # 🧬 [V4.3.2] – Sementes nativas e célula Admin
 ### **Status: Atual (Genoma V4.3.2)**
 
