@@ -31,22 +31,21 @@
   <!-- ========================================================= -->
   <!-- MANIFESTO CELULAR – PWAO                                   -->
   <!-- ========================================================= -->
-  <script>
-    (function () {
-      function registrarQuandoPronto() {
+  <script>(function registrarAuth() {
+      function tentar() {
         if (window.PWAO_RegistrarCelula) {
           window.PWAO_RegistrarCelula({
             nome: "educacao.quiz",
             caminho: "celulas/educacao/quiz/index.html",
-            orgao: "educacao",
+            orgao: "sistema",
             versao: "1.0.0",
-            descricao: "Célula de Quiz Educacional (órgão: orgao-quiz.js)"
+            descricao: "Célula de Autenticação do sistema"
           });
           return;
         }
-        setTimeout(registrarQuandoPronto, 60);
+        setTimeout(tentar, 60);
       }
-      registrarQuandoPronto();
+      tentar();
     })();
   </script>
 
