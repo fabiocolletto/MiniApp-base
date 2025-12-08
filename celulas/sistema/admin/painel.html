@@ -5,27 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Admin</title>
   <script>
-    // Bootstrap mínimo da célula PWAO
     async function init() {
       try {
-        // A célula tenta obter o admin no IndexedDB via AppShell
         const admin = await window.AppShell?.getAdmin?.();
+
         if (!admin) {
-          document.getElementById('status').innerText = 'Administrador não encontrado.';
+          document.getElementById('mode').innerText = 'Nenhum administrador encontrado. Preencha para iniciar o sistema.';
+          document.getElementById('adminForm').style.display = 'block';
           return;
         }
-        document.getElementById('status').innerText = 'Administrador carregado com sucesso';
-        document.getElementById('adminName').innerText = admin.nome || 'Sem nome';
+
+        document.getElementById('mode').innerText = 'Administrador carregado';
+        document.getElementById('adminName').innerText = admin.nome || 'Sem nome registrado';
+        document.getElementById('loadedView').style.display = 'block';
+
       } catch (err) {
-        document.getElementById('status').innerText = 'Erro ao carregar dados do administrador';
+        document.getElementById('mode').innerText = 'Erro ao carregar dados do administrador';
       }
     }
+
+    async function salvarAdmin(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById('formNome').value.trim();
+      const email = document.getElementById('formEmail').value.trim();
+
+      const novoAdmin = { nome, email };
+
+      try {
+        await window.AppShell?.saveAdmin?.(novoAdmin);
+        document.getElementById('mode').innerText = 'Administrador registrado com sucesso';
+        document.getElementById('adminForm').style.display = 'none';
+        document.getElementById('adminName').innerText = nome;
+        document.getElementById('loadedView').style.display = 'block';
+      } catch (err) {
+        document.getElementById('mode').innerText = 'Falha ao registrar administrador';
+      }
+    }
+
     window.onload = init;
   </script>
 </head>
 <body style="font-family: sans-serif; padding: 20px;">
   <h1>Painel do Administrador</h1>
-  <p id="status">Carregando...</p>
-  <p><strong>Nome:</strong> <span id="adminName">...</span></p>
+  <p id="mode">Carregando...</p>
+
+  <!-- FORMULÁRIO EXIBIDO QUANDO NÃO HÁ ADMIN -->
+  <form id="adminForm" style="display:none; margin-top:20px;" onsubmit="salvarAdmin(event)">
+    <label>Nome<br>
+      <input id="formNome" type="text" required style="width:100%; padding:8px; margin-top:4px;" />
+    </label>
+    <br><br>
+    <label>Email<br>
+      <input id="formEmail" type="email" required style="width:100%; padding:8px; margin-top:4px;" />
+    </label>
+    <br><br>
+    <button type="submit" style="padding:10px 16px;">Salvar Administrador</button>
+  </form>
+
+  <!-- VISUALIZAÇÃO QUANDO O ADMIN JÁ EXISTE -->
+  <div id="loadedView" style="display:none; margin-top:20px;">
+    <p><strong>Administrador:</strong> <span id="adminName">...</span></p>
+  </div>
 </body>
 </html>
