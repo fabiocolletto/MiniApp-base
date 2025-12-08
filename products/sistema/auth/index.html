@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PWAO – Cadastro</title>
+
+  <!-- Tailwind opcional via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: #f6f6f6;
+      font-family: system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body class="p-6">
+
+  <div class="max-w-md mx-auto bg-white shadow p-6 rounded-lg">
+    <h1 class="text-xl font-bold mb-4 text-center">Criar Conta</h1>
+
+    <label class="block mb-3">
+      <span class="text-gray-700">Nome</span>
+      <input id="nome" class="mt-1 w-full px-3 py-2 border rounded" placeholder="Seu nome" />
+    </label>
+
+    <label class="block mb-4">
+      <span class="text-gray-700">E-mail</span>
+      <input id="email" type="email" class="mt-1 w-full px-3 py-2 border rounded" placeholder="seu@email.com" />
+    </label>
+
+    <button
+      id="btnCadastrar"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold">
+      Cadastrar
+    </button>
+  </div>
+
+
+  <script>
+    // Quando carregado como miniapp dentro do PWAO,
+    // o Shell expõe Narrador no escopo global.
+    document.getElementById("btnCadastrar").onclick = () => {
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      if (!nome || !email) {
+        alert("Preencha todos os campos!");
+        return;
+      }
+
+      // Emitimos para o Genoma processar o cadastro
+      if (window.Narrador) {
+        window.Narrador.emitir({
+          tipo: "auth.registrar",
+          dados: {
+            id: "u-" + Date.now(),
+            nome,
+            email
+          }
+        });
+      } else {
+        alert("Erro: Narrador não encontrado (miniapp rodando isolado).");
+      }
+    };
+  </script>
+
+</body>
+</html>
