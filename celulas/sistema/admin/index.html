@@ -1,39 +1,147 @@
+<!-- salvar em: celulas/sistema/admin/index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Célula – Admin (sistema)</title>
-  <style>
-    body { font-family: sans-serif; margin: 0; padding: 24px; background: #f7f7f7; }
-    .painel { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    h1 { margin-top: 0; color: #0f172a; }
-    p { color: #475569; }
-  </style>
-</head>
-<body>
-  <div class="painel">
-    <h1>Admin Panel</h1>
-    <p>Bem-vindo ao painel administrativo do organismo.</p>
-  </div>
+  <title>Painel Admin</title>
+
+  <!-- Dexie para persistência local -->
+  <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
   <script>
-    (function registrarAdmin() {
-      function tentar() {
+    // Banco local Dexie
+    const db = new Dexie('pwao_admin');
+    db.version(1).stores({ admin: '++id,nome,email' });
+
+    // Registro com o AppShell para que o sistema visualize a existência do administrador
+    async function registrarNoSistema(admin) {
+      try {
         if (window.PWAO_RegistrarCelula) {
           window.PWAO_RegistrarCelula({
             nome: "sistema.admin",
             caminho: "celulas/sistema/admin/index.html",
             orgao: "sistema",
             versao: "1.0.0",
-            descricao: "Painel administrativo do sistema"
+            descricao: "Painel administrativo do sistema",
+            estado: admin
           });
-          return;
         }
-        setTimeout(tentar, 60);
+      } catch (e) {
+        console.warn('Falha ao enviar registro ao AppShell:', e);
       }
-      tentar();
-    })();
+    }
+
+    async function init() {
+      const lista = await db.admin.toArray();
+
+      if (lista.length === 0) {
+        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
+        document.getElementById('adminForm').style.display = 'block';
+
+        registrarNoSistema({ existe: false, total: 0 });
+        return;
+      }
+
+      renderLista(lista);
+      registrarNoSistema({ existe: true, total: lista.length });
+    }
+
+    function renderLista(lista) {
+      document.getElementById('mode').innerText = 'Administradores cadastrados';
+      const box = document.getElementById('lista');
+      box.innerHTML = '';
+      document.getElementById('listaView').style.display = 'block';
+
+      lista.forEach(item => {
+        const linha = document.createElement('div');
+        linha.style.margin = '10px 0';
+        linha.innerHTML = `
+          <strong>${item.nome}</strong> (${item.email})<br>
+          <button onclick="editar(${item.id})">Editar</button>
+          <button onclick="excluir(${item.id})">Excluir</button>
+        `;
+        box.appendChild(linha);
+      });
+    }
+
+    async function salvar(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById('formNome').value.trim();
+      const email = document.getElementById('formEmail').value.trim();
+      const id = document.getElementById('formId').value;
+
+      let objeto;
+      if (id) {
+        objeto = { nome, email };
+        await db.admin.update(Number(id), objeto);
+      } else {
+        objeto = { nome, email };
+        await db.admin.add(objeto);
+      }
+
+      const lista = await db.admin.toArray();
+      registrarNoSistema({ existe: true, total: lista.length, ultimo: objeto });
+
+      document.getElementById('adminForm').reset();
+      document.getElementById('adminForm').style.display = 'none';
+      renderLista(lista);
+    }
+
+    async function editar(id) {
+      const item = await db.admin.get(id);
+      document.getElementById('formId').value = item.id;
+      document.getElementById('formNome').value = item.nome;
+      document.getElementById('formEmail').value = item.email;
+      document.getElementById('adminForm').style.display = 'block';
+    }
+
+    async function excluir(id) {
+      await db.admin.delete(id);
+      const lista = await db.admin.toArray();
+
+      if (lista.length === 0) {
+        document.getElementById('listaView').style.display = 'none';
+        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
+        document.getElementById('adminForm').style.display = 'block';
+
+        registrarNoSistema({ existe: false, total: 0 });
+        return;
+      }
+
+      registrarNoSistema({ existe: true, total: lista.length });
+      renderLista(lista);
+    }
+
+    window.onload = init;
   </script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h1>Painel Administrativo</h1>
+  <p id="mode">Carregando…</p>
+
+  <!-- Formulário de cadastro/edição -->
+  <form id="adminForm" style="display:none; margin-top:20px;" onsubmit="salvar(event)">
+    <input type="hidden" id="formId" />
+
+    <label>Nome<br>
+      <input id="formNome" type="text" required style="width:100%; padding:8px; margin-top:4px;" />
+    </label>
+    <br><br>
+
+    <label>Email<br>
+      <input id="formEmail" type="email" required style="width:100%; padding:8px; margin-top:4px;" />
+    </label>
+    <br><br>
+
+    <button type="submit" style="padding:10px 16px;">Salvar</button>
+  </form>
+
+  <!-- Lista de administradores -->
+  <div id="listaView" style="display:none; margin-top:20px;">
+    <h3>Administradores cadastrados</h3>
+    <div id="lista"></div>
+  </div>
 </body>
 </html>
