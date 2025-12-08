@@ -15,22 +15,22 @@
     db.version(1).stores({ admin: '++id,nome,email' });
 
     // Registro com o AppShell para que o sistema visualize a existência do administrador
-    async function registrarNoSistema(admin) {
-      try {
+(function registrarAuth() {
+      function tentar() {
         if (window.PWAO_RegistrarCelula) {
           window.PWAO_RegistrarCelula({
-            nome: "sistema.admin",
-            caminho: "celulas/sistema/admin/index.html",
+            nome: "admin.auth",
+            caminho: "celulas/sistema/auth/index.html",
             orgao: "sistema",
             versao: "1.0.0",
-            descricao: "Painel administrativo do sistema",
-            estado: admin
+            descricao: "Célula de Autenticação do sistema"
           });
+          return;
         }
-      } catch (e) {
-        console.warn('Falha ao enviar registro ao AppShell:', e);
+        setTimeout(tentar, 60);
       }
-    }
+      tentar();
+    })();
 
     async function init() {
       const lista = await db.admin.toArray();
