@@ -1,2 +1,117 @@
-<!-- Genoma PWAO v1 -->
-<html><body><script>console.log('Genoma carregado');</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWAO – Genoma V4</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #fafafa; }
+    #root { padding: 20px; }
+  </style>
+</head>
+<body>
+  <div id="root">Carregando organismo…</div>
+
+<script>
+// ==============================
+// GENOMA V4 – PWA ORGÂNICO
+// ==============================
+
+// Memória Orgânica (IndexedDB mínima)
+const Memoria = {
+  db: null,
+  async init() {
+    return new Promise((resolve) => {
+      const req = indexedDB.open("pwao_memoria", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings");
+        if (!db.objectStoreNames.contains("users")) db.createObjectStore("users", { keyPath: "id" });
+      };
+      req.onsuccess = (e) => { this.db = e.target.result; resolve(); };
+    });
+  },
+  async set(store, key, value) {
+    return new Promise((resolve) => {
+      const tx = this.db.transaction([store], "readwrite");
+      tx.objectStore(store).put(value, key);
+      tx.oncomplete = resolve;
+    });
+  },
+  async get(store, key) {
+    return new Promise((resolve) => {
+      const tx = this.db.transaction([store], "readonly");
+      const req = tx.objectStore(store).get(key);
+      req.onsuccess = () => resolve(req.result);
+    });
+  }
+};
+
+// =========================================
+// NARRADOR – consciência interpretativa
+// =========================================
+const Narrador = {
+  ouvintes: [],
+  emitir(evento) {
+    this.ouvintes.forEach((fn) => fn(evento));
+  },
+  ouvir(fn) {
+    this.ouvintes.push(fn);
+  }
+};
+
+// =========================================
+// RENDERER – expressor de células
+// =========================================
+const Renderer = {
+  async expressar(html) {
+    document.getElementById("root").innerHTML = html;
+  },
+  async montarCelula(caminho) {
+    try {
+      const resp = await fetch(caminho);
+      const html = await resp.text();
+      this.expressar(html);
+    } catch (e) {
+      this.expressar(`<p>Falha ao carregar célula: ${caminho}</p>`);
+    }
+  }
+};
+
+// =========================================
+// LOADER – carrega células sob demanda
+// =========================================
+const Loader = {
+  mapa: {
+    "sistema.auth": "./celulas/sistema/auth/index.html",
+    "sistema.admin": "./celulas/sistema/admin/painel.html"
+  },
+  async carregar(nome) {
+    const caminho = this.mapa[nome];
+    Renderer.montarCelula(caminho);
+  }
+};
+
+// =========================================
+// CICLO DE VIDA DO GENOMA V4
+// =========================================
+async function iniciarOrganismo() {
+  await Memoria.init();
+
+  Narrador.ouvir((evento) => {
+    if (evento.tipo === "celula.expressar") Loader.carregar(evento.nome);
+  });
+
+  // Cena inicial
+  Renderer.expressar(`
+    <h1>PWAO – Genoma V4</h1>
+    <p>Organismo Iniciado.</p>
+    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
+    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.admin'})">Abrir Admin</button>
+  `);
+}
+
+iniciarOrganismo();
+</script>
+</body>
+</html>
