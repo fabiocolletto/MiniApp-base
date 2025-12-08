@@ -196,6 +196,35 @@ O Genoma permanece estável — ele evolui, não é substituído.
 
 ---
 
+# 🔗 Integrações Externas do PWAO
+
+O PWAO mantém seu Genoma totalmente isolado de serviços externos.
+Todas as integrações vivem como **células especializadas** ou como **processos metabólicos externos** (Make.com), nunca no núcleo.
+
+Atualmente, o repositório já possui variáveis sensíveis configuradas no ambiente GitHub Pages, usadas apenas por células reguladoras e pelo ecossistema externo:
+
+### 🔐 Secrets configurados no ambiente `github-pages`:
+
+* `API_5HORAS` → endpoint público no Make.com (webhook central para chamadas externas)
+* `USER_MASTER_ID` → identificador do administrador externo (acesso privilegiado)
+* `USER_MASTER_SECRET` → chave secreta do administrador externo
+
+Esses valores **nunca são expostos no Genoma** e só podem ser acessados por fluxos autorizados.
+
+### Como o PWAO usa essas integrações
+
+* Células administrativas podem solicitar validação ao ambiente externo.
+* Células de assinatura (futuras) usarão `API_5HORAS` para consultar o status via Make.com.
+* O acesso administrativo pode ser controlado pelo par `USER_MASTER_ID` e `USER_MASTER_SECRET`.
+* O Genoma apenas recebe **eventos orgânicos** resultantes das integrações externas, mantendo-se imutável e seguro.
+
+### Princípio de segurança
+
+> O Genoma **nunca** contém chaves, URLs sensíveis ou lógica de integração.
+> Apenas células e o ambiente metabólico externo interagem com sistemas como o Mercado Pago.
+
+---
+
 # ✨ Criado pelo Projeto Marco e pelo Nivero PWAO
 
 Este é o repositório oficial do organismo digital que substituirá PWAs tradicionais.
