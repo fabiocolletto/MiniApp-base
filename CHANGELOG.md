@@ -18,6 +18,19 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.2] – Sementes nativas e célula Admin
+### **Status: Atual (Genoma V4.3.2)**
+
+#### Added
+- Registro automático das células nativas (quiz, auth, admin) ao iniciar o Genoma.
+- Manifesto celular para `sistema.admin` com interface mínima para o painel.
+- Manifesto celular para `sistema.auth` garantindo autodiscovery orgânico.
+
+#### Fixed
+- Botão "Abrir Admin" agora encontra a célula `sistema.admin` imediatamente.
+
+---
+
 # 🧬 [V4.3.1] – Atualização do OPP e Manifesto
 ### **Status: Atual (Genoma V4.3.1)**
 
