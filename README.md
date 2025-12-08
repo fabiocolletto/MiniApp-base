@@ -2,6 +2,8 @@
 
 Documento mestre para todos os desenvolvedores, designers e contribuidores do ecossistema **5Horas Miniapps + PWA Familiar**. Aqui estão todas as regras, padrões, estruturas e políticas que regem o funcionamento do repositório.
 
+> **Processo obrigatório:** toda alteração deve ser registrada no `change.md` na raiz do repositório.
+
 ---
 
 # 1. Propósito do Projeto
@@ -122,6 +124,8 @@ Usado para:
 ### Variáveis de ambiente
 
 O cliente do Supabase depende das variáveis `SUPABASE_URL` e `SUPABASE_KEY`, que devem estar definidas no ambiente de execução para que o app possa se conectar com segurança.
+
+Em máquinas de desenvolvimento onde essas variáveis não estão configuradas, o bootstrap ignora o health-check e o app continua operando no modo offline-first (IndexedDB), permitindo testar a experiência local sem Supabase.
 
 ---
 
