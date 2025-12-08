@@ -4,68 +4,114 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Admin</title>
+
+  <!-- Dexie para persistência local -->
+  <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
   <script>
+    // Banco local Dexie
+    const db = new Dexie('pwao_admin');
+    db.version(1).stores({ admin: '++id,nome,email' });
+
     async function init() {
-      try {
-        const admin = await window.AppShell?.getAdmin?.();
+      const lista = await db.admin.toArray();
 
-        if (!admin) {
-          document.getElementById('mode').innerText = 'Nenhum administrador encontrado. Preencha para iniciar o sistema.';
-          document.getElementById('adminForm').style.display = 'block';
-          return;
-        }
-
-        document.getElementById('mode').innerText = 'Administrador carregado';
-        document.getElementById('adminName').innerText = admin.nome || 'Sem nome registrado';
-        document.getElementById('loadedView').style.display = 'block';
-
-      } catch (err) {
-        document.getElementById('mode').innerText = 'Erro ao carregar dados do administrador';
+      if (lista.length === 0) {
+        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
+        document.getElementById('adminForm').style.display = 'block';
+        return;
       }
+
+      renderLista(lista);
     }
 
-    async function salvarAdmin(event) {
+    function renderLista(lista) {
+      document.getElementById('mode').innerText = 'Administradores cadastrados';
+      const box = document.getElementById('lista');
+      box.innerHTML = '';
+      document.getElementById('listaView').style.display = 'block';
+
+      lista.forEach(item => {
+        const linha = document.createElement('div');
+        linha.style.margin = '10px 0';
+        linha.innerHTML = `
+          <strong>${item.nome}</strong> (${item.email})<br>
+          <button onclick="editar(${item.id})">Editar</button>
+          <button onclick="excluir(${item.id})">Excluir</button>
+        `;
+        box.appendChild(linha);
+      });
+    }
+
+    async function salvar(event) {
       event.preventDefault();
 
       const nome = document.getElementById('formNome').value.trim();
       const email = document.getElementById('formEmail').value.trim();
+      const id = document.getElementById('formId').value;
 
-      const novoAdmin = { nome, email };
-
-      try {
-        await window.AppShell?.saveAdmin?.(novoAdmin);
-        document.getElementById('mode').innerText = 'Administrador registrado com sucesso';
-        document.getElementById('adminForm').style.display = 'none';
-        document.getElementById('adminName').innerText = nome;
-        document.getElementById('loadedView').style.display = 'block';
-      } catch (err) {
-        document.getElementById('mode').innerText = 'Falha ao registrar administrador';
+      if (id) {
+        await db.admin.update(Number(id), { nome, email });
+      } else {
+        await db.admin.add({ nome, email });
       }
+
+      const lista = await db.admin.toArray();
+      document.getElementById('adminForm').reset();
+      document.getElementById('adminForm').style.display = 'none';
+      renderLista(lista);
+    }
+
+    async function editar(id) {
+      const item = await db.admin.get(id);
+      document.getElementById('formId').value = item.id;
+      document.getElementById('formNome').value = item.nome;
+      document.getElementById('formEmail').value = item.email;
+      document.getElementById('adminForm').style.display = 'block';
+    }
+
+    async function excluir(id) {
+      await db.admin.delete(id);
+      const lista = await db.admin.toArray();
+
+      if (lista.length === 0) {
+        document.getElementById('listaView').style.display = 'none';
+        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
+        document.getElementById('adminForm').style.display = 'block';
+        return;
+      }
+
+      renderLista(lista);
     }
 
     window.onload = init;
   </script>
 </head>
 <body style="font-family: sans-serif; padding: 20px;">
-  <h1>Painel do Administrador</h1>
-  <p id="mode">Carregando...</p>
+  <h1>Painel Administrativo</h1>
+  <p id="mode">Carregando…</p>
 
-  <!-- FORMULÁRIO EXIBIDO QUANDO NÃO HÁ ADMIN -->
-  <form id="adminForm" style="display:none; margin-top:20px;" onsubmit="salvarAdmin(event)">
+  <!-- Formulário de cadastro/edição -->
+  <form id="adminForm" style="display:none; margin-top:20px;" onsubmit="salvar(event)">
+    <input type="hidden" id="formId" />
+
     <label>Nome<br>
       <input id="formNome" type="text" required style="width:100%; padding:8px; margin-top:4px;" />
     </label>
     <br><br>
+
     <label>Email<br>
       <input id="formEmail" type="email" required style="width:100%; padding:8px; margin-top:4px;" />
     </label>
     <br><br>
-    <button type="submit" style="padding:10px 16px;">Salvar Administrador</button>
+
+    <button type="submit" style="padding:10px 16px;">Salvar</button>
   </form>
 
-  <!-- VISUALIZAÇÃO QUANDO O ADMIN JÁ EXISTE -->
-  <div id="loadedView" style="display:none; margin-top:20px;">
-    <p><strong>Administrador:</strong> <span id="adminName">...</span></p>
+  <!-- Lista de administradores -->
+  <div id="listaView" style="display:none; margin-top:20px;">
+    <h3>Administradores cadastrados</h3>
+    <div id="lista"></div>
   </div>
 </body>
 </html>
