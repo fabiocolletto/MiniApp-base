@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWAO – Genoma V4</title>
+  <title>PWAO – Genoma V4.1</title>
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafafa; }
     #root { padding: 20px; }
@@ -13,11 +13,20 @@
   <div id="root">Carregando organismo…</div>
 
 <script>
-// ==============================
-// GENOMA V4 – PWA ORGÂNICO
-// ==============================
+// =============================================================
+// GENOMA V4.1 – Com Autodiscovery de Células PWAO
+// =============================================================
+// Este Genoma é capaz de:
+// - Carregar células externas
+// - Descobrir células automaticamente via Manifesto
+// - Registrar células dinamicamente
+// - Expressar cenas sob demanda
+// - Manter o núcleo imutável
+// =============================================================
 
-// Memória Orgânica (IndexedDB mínima)
+// -------------------------------------------------------------
+// 1. Memória Orgânica
+// -------------------------------------------------------------
 const Memoria = {
   db: null,
   async init() {
@@ -26,87 +35,108 @@ const Memoria = {
       req.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings");
-        if (!db.objectStoreNames.contains("users")) db.createObjectStore("users", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("cells")) db.createObjectStore("cells", { keyPath: "nome" });
       };
       req.onsuccess = (e) => { this.db = e.target.result; resolve(); };
     });
   },
-  async set(store, key, value) {
+  async registrarCelula(celula) {
     return new Promise((resolve) => {
-      const tx = this.db.transaction([store], "readwrite");
-      tx.objectStore(store).put(value, key);
+      const tx = this.db.transaction(["cells"], "readwrite");
+      tx.objectStore("cells").put(celula);
       tx.oncomplete = resolve;
     });
   },
-  async get(store, key) {
+  async listarCelulas() {
     return new Promise((resolve) => {
-      const tx = this.db.transaction([store], "readonly");
-      const req = tx.objectStore(store).get(key);
-      req.onsuccess = () => resolve(req.result);
+      const tx = this.db.transaction(["cells"], "readonly");
+      const req = tx.objectStore("cells").getAll();
+      req.onsuccess = () => resolve(req.result || []);
     });
   }
 };
 
-// =========================================
-// NARRADOR – consciência interpretativa
-// =========================================
+// -------------------------------------------------------------
+// 2. Narrador – Consciência do Sistema
+// -------------------------------------------------------------
 const Narrador = {
   ouvintes: [],
   emitir(evento) {
     this.ouvintes.forEach((fn) => fn(evento));
   },
-  ouvir(fn) {
-    this.ouvintes.push(fn);
+  ouvir(fn) { this.ouvintes.push(fn); }
+};
+
+// -------------------------------------------------------------
+// 3. Loader – Carrega e Descobre Células
+// -------------------------------------------------------------
+const Loader = {
+  mapa: {}, // preenchido com autodiscovery
+
+  async registrar(celula) {
+    this.mapa[celula.nome] = celula.caminho;
+    await Memoria.registrarCelula(celula);
+  },
+
+  async expressar(nome) {
+    const caminho = this.mapa[nome];
+    if (!caminho) {
+      Renderer.expressar(`<p>❌ Célula não encontrada: ${nome}</p>`);
+      return;
+    }
+    Renderer.montarCelula(caminho);
+  },
+
+  // AUTODISCOVERY: recebe manifestos de qualquer célula externa
+  async autodiscovery() {
+    const celulas = await Memoria.listarCelulas();
+    celulas.forEach(c => this.mapa[c.nome] = c.caminho);
   }
 };
 
-// =========================================
-// RENDERER – expressor de células
-// =========================================
+// Exposto globalmente para as células se registrarem
+window.PWAO_RegistrarCelula = async function (manifesto) {
+  await Loader.registrar(manifesto);
+  console.log("🔗 Célula registrada no organismo:", manifesto.nome);
+};
+
+// -------------------------------------------------------------
+// 4. Renderer – Expressor de Células
+// -------------------------------------------------------------
 const Renderer = {
   async expressar(html) {
     document.getElementById("root").innerHTML = html;
   },
+
   async montarCelula(caminho) {
     try {
       const resp = await fetch(caminho);
       const html = await resp.text();
       this.expressar(html);
     } catch (e) {
-      this.expressar(`<p>Falha ao carregar célula: ${caminho}</p>`);
+      this.expressar(`<p>Erro ao carregar célula: ${caminho}</p>`);
     }
   }
 };
 
-// =========================================
-// LOADER – carrega células sob demanda
-// =========================================
-const Loader = {
-  mapa: {
-    "sistema.auth": "./celulas/sistema/auth/index.html",
-    "sistema.admin": "./celulas/sistema/admin/painel.html"
-  },
-  async carregar(nome) {
-    const caminho = this.mapa[nome];
-    Renderer.montarCelula(caminho);
-  }
-};
-
-// =========================================
-// CICLO DE VIDA DO GENOMA V4
-// =========================================
+// -------------------------------------------------------------
+// 5. Ciclo de Vida do Organismo
+// -------------------------------------------------------------
 async function iniciarOrganismo() {
   await Memoria.init();
+  await Loader.autodiscovery(); // carrega células registradas previamente
 
   Narrador.ouvir((evento) => {
-    if (evento.tipo === "celula.expressar") Loader.carregar(evento.nome);
+    if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);
   });
 
-  // Cena inicial
+  // Cena inicial do organismo
   Renderer.expressar(`
-    <h1>PWAO – Genoma V4</h1>
-    <p>Organismo Iniciado.</p>
+    <h1>PWAO – Genoma V4.1</h1>
+    <p>Organismo iniciado com autodiscovery.</p>
+
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
+    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'educacao.quiz'})">Abrir Quiz</button>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.admin'})">Abrir Admin</button>
   `);
 }
