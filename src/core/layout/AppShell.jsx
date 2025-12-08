@@ -5,7 +5,7 @@ import { IonApp, IonContent } from "@ionic/react";
 // Infraestrutura central
 import { initDB } from "../db/indexdb.js";
 import { initWebAuthn } from "../auth/webauthn.js";
-import { supabase } from "../api/supabase.js";
+import { getSupabaseClient } from "../api/supabase.js";
 
 // Orquestrador que monta telas (a ser criado depois)
 import ScreenOrchestrator from "../orchestrator/ScreenOrchestrator.jsx";
@@ -33,7 +33,12 @@ export default function AppShell() {
         if (localUserId) setUserId(localUserId);
 
         // 4. Testar conexão leve com Supabase (opcional)
-        supabase.channel("health-check");
+        // Obs: em ambientes locais sem variáveis do Supabase, o app segue
+        // offline-first e apenas pula esta etapa.
+        const supabase = getSupabaseClient();
+        if (supabase) {
+          supabase.channel("health-check");
+        }
 
         // 5. App pronto
         setReady(true);
