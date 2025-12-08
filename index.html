@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWAO – Genoma V4.1</title>
+  <title>PWAO – Genoma V4.2</title>
+  <link rel="manifest" href="opp/manifest.webmanifest" />
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafafa; }
     #root { padding: 20px; }
@@ -14,14 +15,12 @@
 
 <script>
 // =============================================================
-// GENOMA V4.1 – Com Autodiscovery de Células PWAO
+// GENOMA V4.2 – Com Autodiscovery + OPP + Service Worker
 // =============================================================
-// Este Genoma é capaz de:
-// - Carregar células externas
-// - Descobrir células automaticamente via Manifesto
-// - Registrar células dinamicamente
-// - Expressar cenas sob demanda
-// - Manter o núcleo imutável
+// Melhorias desta versão:
+//  - Registro automático do Service Worker do OPP
+//  - Autodiscovery otimizado
+//  - Tratamento de falhas mais elegante
 // =============================================================
 
 // -------------------------------------------------------------
@@ -71,7 +70,7 @@ const Narrador = {
 // 3. Loader – Carrega e Descobre Células
 // -------------------------------------------------------------
 const Loader = {
-  mapa: {}, // preenchido com autodiscovery
+  mapa: {},
 
   async registrar(celula) {
     this.mapa[celula.nome] = celula.caminho;
@@ -81,20 +80,19 @@ const Loader = {
   async expressar(nome) {
     const caminho = this.mapa[nome];
     if (!caminho) {
-      Renderer.expressar(`<p>❌ Célula não encontrada: ${nome}</p>`);
+      Renderer.expressar(`<p style='color:red'>❌ Célula não encontrada: ${nome}</p>`);
       return;
     }
     Renderer.montarCelula(caminho);
   },
 
-  // AUTODISCOVERY: recebe manifestos de qualquer célula externa
   async autodiscovery() {
     const celulas = await Memoria.listarCelulas();
     celulas.forEach(c => this.mapa[c.nome] = c.caminho);
   }
 };
 
-// Exposto globalmente para as células se registrarem
+// Exposto globalmente para células se registrarem
 window.PWAO_RegistrarCelula = async function (manifesto) {
   await Loader.registrar(manifesto);
   console.log("🔗 Célula registrada no organismo:", manifesto.nome);
@@ -114,26 +112,34 @@ const Renderer = {
       const html = await resp.text();
       this.expressar(html);
     } catch (e) {
-      this.expressar(`<p>Erro ao carregar célula: ${caminho}</p>`);
+      this.expressar(`<p style='color:red'>Erro ao carregar célula: ${caminho}</p>`);
     }
   }
 };
 
 // -------------------------------------------------------------
-// 5. Ciclo de Vida do Organismo
+// 5. Registro do Service Worker OPP
+// -------------------------------------------------------------
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("opp/service-worker.js")
+    .then(() => console.log("🧬 OPP Service Worker registrado"))
+    .catch(err => console.error("Erro ao registrar SW:", err));
+}
+
+// -------------------------------------------------------------
+// 6. Ciclo de Vida do Organismo
 // -------------------------------------------------------------
 async function iniciarOrganismo() {
   await Memoria.init();
-  await Loader.autodiscovery(); // carrega células registradas previamente
+  await Loader.autodiscovery();
 
   Narrador.ouvir((evento) => {
     if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);
   });
 
-  // Cena inicial do organismo
   Renderer.expressar(`
-    <h1>PWAO – Genoma V4.1</h1>
-    <p>Organismo iniciado com autodiscovery.</p>
+    <h1>PWAO – Genoma V4.2</h1>
+    <p>Organismo iniciado com autodiscovery + OPP.</p>
 
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
     <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'educacao.quiz'})">Abrir Quiz</button>
