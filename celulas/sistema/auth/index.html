@@ -3,30 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Célula – Auth (sistema)</title>
+  <title>Painel Administrativo – Célula</title>
+
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 24px; background: #eef2ff; }
-    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-    h1 { margin-top: 0; color: #0f172a; }
-    p { color: #334155; }
+    :root {
+      /* Tokens visuais — DNA do sistema */
+      --primary: #0f172a;
+      --secondary: #334155;
+      --accent: #3b82f6;
+      --card-bg: #ffffff;
+      --bg: #f8fafc;
+
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: system-ui, sans-serif;
+      color: var(--primary);
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 32px;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+
+    p {
+      margin: 0 0 16px;
+      color: var(--secondary);
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    ul {
+      padding-left: 18px;
+      color: var(--secondary);
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>Auth Cell</h1>
-    <p>Célula base para autenticação de usuários do sistema.</p>
+  <div class="page">
+
+    <h1>Painel Administrativo</h1>
+    <p>Console interno do organismo PWAO. Esta célula exibe informações de sistema, tokens, assinaturas, perfis e vínculos.</p>
+
+    <div class="card">
+      <h2>Tokens — DNA do Sistema</h2>
+      <p>Aqui estão os tokens fundamentais que definem o comportamento visual e estrutural do ecossistema.</p>
+
+      <h3>Cores</h3>
+      <ul>
+        <li><strong>Primário</strong> — var(--primary)</li>
+        <li><strong>Secundário</strong> — var(--secondary)</li>
+        <li><strong>Acento</strong> — var(--accent)</li>
+        <li><strong>Fundo</strong> — var(--bg)</li>
+        <li><strong>Card</strong> — var(--card-bg)</li>
+      </ul>
+
+      <h3>Raio</h3>
+      <p>Raio padrão dos componentes: <strong>var(--radius)</strong></p>
+
+      <h3>Sombras</h3>
+      <p>Shadow suave e consistente: <strong>var(--shadow)</strong></p>
+    </div>
+
   </div>
 
+  <!-- Placeholder do registrador da célula -->
   <script>
-    (function registrarAuth() {
+    (function registrar() {
       function tentar() {
         if (window.PWAO_RegistrarCelula) {
           window.PWAO_RegistrarCelula({
-            nome: "sistema.auth",
-            caminho: "celulas/sistema/auth/index.html",
+            nome: "sistema.admin",
+            caminho: "/celulas/sistema/admin/index.html",
             orgao: "sistema",
             versao: "1.0.0",
-            descricao: "Célula de Autenticação do sistema"
+            descricao: "Painel administrativo do organismo"
           });
           return;
         }
@@ -35,5 +112,6 @@
       tentar();
     })();
   </script>
+
 </body>
 </html>
