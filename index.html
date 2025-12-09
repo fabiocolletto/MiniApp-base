@@ -7,10 +7,16 @@
   <link rel="manifest" href="./opp/manifest.webmanifest" />
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafafa; }
+    #painel-genoma { display: flex; gap: 8px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e9e9e9; }
+    #painel-genoma button { cursor: pointer; padding: 8px 14px; border-radius: 8px; border: 1px solid #ff7a00; background: #ff7a00; color: #fff; font-weight: 600; }
+    #painel-genoma button:hover { filter: brightness(0.95); }
     #root { padding: 20px; }
   </style>
 </head>
 <body>
+  <div id="painel-genoma" aria-label="Painel de lançamento de células">
+    <button id="btn-family" data-celula="sistema.page.family">Abrir app family</button>
+  </div>
   <div id="root">Carregando organismo…</div>
 
 <script>
@@ -95,6 +101,21 @@ const Loader = {
     const celulas = await Memoria.listarCelulas();
     celulas.forEach(c => {
       this.mapa[c.nome] = this.resolverCaminho(c.caminho);
+    });
+  }
+};
+
+// -------------------------------------------------------------
+// Painel Genoma – Lançador rápido de células
+// -------------------------------------------------------------
+const PainelGenoma = {
+  inicializar() {
+    const botaoFamily = document.querySelector('#btn-family');
+    if (!botaoFamily) return;
+
+    botaoFamily.addEventListener('click', () => {
+      const nome = botaoFamily.dataset.celula;
+      Narrador.emitir({ tipo: "celula.expressar", nome });
     });
   }
 };
@@ -216,6 +237,7 @@ async function iniciarOrganismo() {
     if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);
   });
 
+  PainelGenoma.inicializar();
   Narrador.emitir({ tipo: "celula.expressar", nome: "sistema.page.family" });
 
   Renderer.expressar(`
