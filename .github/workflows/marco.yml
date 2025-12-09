@@ -1,4 +1,4 @@
-name: Deploy Marco
+name: Deploy Marco via gh-pages
 
 on:
   push:
@@ -29,8 +29,9 @@ jobs:
         env:
           API_5HORAS: ${{ secrets.API_5HORAS }}
 
-      - name: Publicar no GitHub Pages
+      - name: Publicar na branch gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
           publish_dir: build
