@@ -143,6 +143,25 @@
   </footer>
 
   <script>
+    
+    (function registrarAdmin() {
+      function tentar() {
+        if (window.PWAO_RegistrarCelula) {
+          window.PWAO_RegistrarCelula({
+            nome: "sistema.admin",
+            caminho: "./celulas/sistema/pages/family/index.html",
+            orgao: "sistema",
+            versao: "1.0.0",
+            descricao: "Célula administrativa e de tokens OPP"
+          });
+          return;
+        }
+        setTimeout(tentar, 60);
+      }
+      tentar();
+    })();
+
+    renderCell("tokens");
     function renderWelcome() {
       document.getElementById("header-title").textContent = "";
       document.getElementById("app-body").innerHTML = `
