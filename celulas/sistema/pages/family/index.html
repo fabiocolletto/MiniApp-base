@@ -3,37 +3,223 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Célula – Family (sistema)</title>
+  <title>App Família – 5Horas</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 24px; background: #eef2ff; }
-    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-    h1 { margin-top: 0; color: #0f172a; }
-    p { color: #334155; }
+    :root {
+      --color-primary: #2563eb;
+      --color-muted: #6b7280;
+      --color-bg: #f5f7fa;
+      --color-card-bg: #ffffff;
+      --color-border: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      background: var(--color-card-bg);
+      font-family: "Inter", sans-serif;
+    }
+
+    /* MINI TAILWIND */
+    .u-flex { display:flex; }
+    .u-flex-col { flex-direction:column; }
+    .u-items-center { align-items:center; }
+    .u-justify-center { justify-content:center; }
+    .u-justify-between { justify-content:space-between; }
+    .u-p4 { padding:16px; }
+    .u-p3 { padding:12px; }
+    .u-p2 { padding:8px; }
+    .u-gap2 { gap:8px; }
+    .u-gap3 { gap:12px; }
+    .u-text-center { text-align:center; }
+    .u-text-muted { color:var(--color-muted); }
+    .u-rounded { border-radius:14px; }
+    .u-rounded-lg { border-radius:20px; }
+    .u-w-full { width:100%; }
+    .u-h-full { height:100%; }
+    .u-m3 { margin:12px; }
+
+    .app-header {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:56px;
+      backdrop-filter:blur(10px);
+      background: var(--color-card-bg);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:16px;
+    }
+
+    .app-body {
+      padding:56px 16px 70px;
+    }
+
+    .app-footer {
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      height:70px;
+      background: var(--color-card-bg);
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      backdrop-filter:blur(8px);
+    }
+
+    .footer-btn,
+    .header-btn {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      font-size:0.75rem;
+      color:var(--color-muted);
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .footer-btn.active,
+    .header-btn.active {
+      color:var(--color-primary);
+    }
+
+    .btn {
+      background: var(--color-primary);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--color-card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      padding: 16px;
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>family Cell</h1>
-    <p>Pagina inicial do app Family.</p>
-  </div>
+
+  <header class="app-header">
+    <div class="header-btn" data-cell="menu">
+      <span class="material-icons">menu</span>
+      <div>Menu</div>
+    </div>
+    <div id="header-title"></div>
+    <div class="header-btn" data-cell="perfil">
+      <span class="material-icons">account_circle</span>
+      <div>Perfil</div>
+    </div>
+  </header>
+
+  <main id="app-body" class="app-body"></main>
+
+  <footer class="app-footer">
+    <div class="footer-btn active" data-cell="inicio">
+      <span class="material-icons">home</span>
+      Início
+    </div>
+    <div class="footer-btn" data-cell="familia">
+      <span class="material-icons">group</span>
+      Família
+    </div>
+    <div class="footer-btn" data-cell="avisos">
+      <span class="material-icons">notifications</span>
+      Avisos
+    </div>
+    <div class="footer-btn" data-cell="config">
+      <span class="material-icons">settings</span>
+      Configurações
+    </div>
+  </footer>
 
   <script>
-    (function registrarAuth() {
-      function tentar() {
-        if (window.PWAO_RegistrarCelula) {
-          window.PWAO_RegistrarCelula({
-            nome: "sistema.pages.family",
-            caminho: "./celulas/sistema/pages/family/home.js",
-            orgao: "sistema",
-            versao: "1.0.0",
-            descricao: "App Familia - Home Page"
-          });
-          return;
-        }
-        setTimeout(tentar, 60);
+    function renderWelcome() {
+      document.getElementById("header-title").textContent = "";
+      document.getElementById("app-body").innerHTML = `
+        <div class="u-flex u-flex-col u-justify-center u-items-center u-text-center u-p4" style="height:calc(100vh - 126px)">
+          <div style="font-size:1.6rem;font-weight:600;color:var(--color-primary);">Bem-vindo ao App Família</div>
+          <p class="u-text-muted">Gerencie perfis, vínculos e permissões.</p>
+          <button class="btn u-m3" data-cell="inicio">Acessar</button>
+        </div>`;
+
+      document.querySelector("button.btn").onclick = () => renderCell("inicio");
+    }
+
+    function renderHome() {
+      document.getElementById("header-title").textContent = "Início";
+      document.getElementById("app-body").innerHTML = `
+        <div class="u-flex u-flex-col u-gap3 u-p4">
+          <div class="card">Conteúdo da Home</div>
+        </div>`;
+    }
+
+    function renderFamilia() {
+      document.getElementById("header-title").textContent = "Família";
+      document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Tela Família em construção</div>`;
+    }
+
+    function renderAvisos() {
+      document.getElementById("header-title").textContent = "Avisos";
+      document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Lista de Avisos</div>`;
+    }
+
+    function renderConfig() {
+      document.getElementById("header-title").textContent = "Configurações";
+      document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Opções de Configuração</div>`;
+    }
+
+    function renderPerfil() {
+      document.getElementById("header-title").textContent = "Perfil";
+      document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Perfil do Usuário</div>`;
+    }
+
+    /* ORQUESTRADOR */
+    document.querySelectorAll('[data-cell]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cell = btn.dataset.cell;
+        renderCell(cell);
+        document
+          .querySelectorAll('.footer-btn, .header-btn')
+          .forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function renderCell(name) {
+      switch (name) {
+        case "inicio":
+          return renderHome();
+        case "familia":
+          return renderFamilia();
+        case "avisos":
+          return renderAvisos();
+        case "config":
+          return renderConfig();
+        case "perfil":
+          return renderPerfil();
+        case "menu":
+          return; /* futuro menu lateral */
+        default:
+          document.getElementById("app-body").innerHTML = `
+            <div class='u-p4 u-text-center'>
+              <strong>Erro:</strong> célula <strong>${name}</strong> não encontrada.<br>
+              Verifique o arquivo <strong>Appfamily Index Html - Revised</strong> na função <strong>renderCell(name)</strong>.
+            </div>`;
       }
-      tentar();
-    })();
+    }
+
+    renderWelcome();
   </script>
+
 </body>
 </html>
