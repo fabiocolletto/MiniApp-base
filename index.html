@@ -216,13 +216,11 @@ async function iniciarOrganismo() {
     if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);
   });
 
+  Narrador.emitir({ tipo: "celula.expressar", nome: "sistema.page.family" });
+
   Renderer.expressar(`
     <h1>PWAO – Genoma V4.3</h1>
-    <p>Organismo iniciado com autodiscovery aprimorado.</p>
-    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'educacao.quiz'})">Abrir Quiz</button>
-    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.auth'})">Abrir Auth</button>
-    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.admin'})">Abrir Admin</button>
-    <button onclick="Narrador.emitir({tipo: 'celula.expressar', nome: 'sistema.pages.family'})">Abrir app family</button>
+    <p>Organismo iniciado com autodiscovery aprimorado. Célula padrão sendo carregada...</p>
   `);
 }
 
