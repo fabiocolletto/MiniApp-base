@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.5] – Correção do app Family
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Fixed
+- Botão "Abrir app family" do Genoma agora emite o identificador `sistema.page.family`, alinhado ao manifesto registrado.
+- Confirmada a ausência de referências ao identificador incorreto `sistema.pages.family`.
+
+---
+
 # 🧬 [V4.3.4] – Manutenção da célula Admin
 ### **Status: Em evolução (Genoma V4.3.3)**
 
