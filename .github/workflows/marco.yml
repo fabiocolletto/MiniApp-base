@@ -24,8 +24,7 @@ jobs:
           cp -R ./* ./build/ || true
 
       - name: Injetar variável API_5HORAS
-        run: |
-          find build -type f -name "*.html" -exec sed -i "s|__API_5HORAS__|${API_5HORAS}|g" {} + \}\}|${API_5HORAS}|g" {} +
+        run: find build -type f -name "*.html" -exec sed -i "s|__API_5HORAS__|${API_5HORAS}|g" {} +
         env:
           API_5HORAS: ${{ secrets.API_5HORAS }}
 
