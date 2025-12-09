@@ -1,156 +1,374 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WARP – Autenticação Marco</title>
+  <title>OPP v2 – Núcleo 5Horas</title>
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
   <style>
     :root {
-      --warp-bg: #f3f4f6;
-      --warp-card: #ffffff;
-      --warp-border: #cbd5e1;
-      --warp-primary: #111827;
-      --warp-accent: #2563eb;
+      --opp-primary: #111827;
+      --opp-secondary: #1f2937;
+      --opp-accent: #2563eb;
+      --opp-muted: #9ca3af;
+      --opp-bg: #f3f4f6;
+      --opp-card: #ffffff;
+      --opp-border: #94a3b8;
+
       --radius: 16px;
-      --shadow: 0 4px 18px rgba(0,0,0,0.08);
+      --radius-lg: 22px;
+      --shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
     body {
       margin: 0;
-      background: var(--warp-bg);
+      background: var(--opp-bg);
       font-family: "Inter", sans-serif;
-      color: var(--warp-primary);
+      color: var(--opp-primary);
     }
 
-    .warp-btn-auth {
-      position: fixed;
-      top: 14px;
-      right: 20px;
-      background: var(--warp-accent);
-      padding: 10px 16px;
-      border-radius: var(--radius);
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 2000;
+    .u-flex{display:flex;} .u-col{flex-direction:column;} .u-center{justify-content:center;align-items:center;}
+    .u-p2{padding:8px;} .u-p3{padding:12px;} .u-p4{padding:16px;} .u-m2{margin:8px;} .u-m3{margin:12px;}
+    .u-card{background:var(--opp-card);border-radius:var(--radius-lg);padding:16px;border:2px solid var(--opp-border);}    
+    .u-title{font-size:1.4rem;font-weight:600;} .u-muted{color:var(--opp-muted);} .u-text-center{text-align:center;}
+
+    .opp-header{
+      position:fixed;
+      top:0;left:0;right:0;
+      height:60px;
+      background:var(--opp-card);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0 20px;
+      border-bottom:2px solid var(--opp-border);
+      z-index:1000;
     }
 
-    .warp-modal-bg {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 3000;
-    }
+    .opp-btn{display:flex;flex-direction:column;align-items:center;font-size:0.75rem;color:var(--opp-muted);cursor:pointer;}
+    .opp-btn.active{color:var(--opp-accent);}
 
-    .warp-modal {
-      background: var(--warp-card);
-      border-radius: var(--radius);
-      width: 360px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      animation: fadeIn 0.25s ease;
-    }
+    .opp-body{
+      transition: margin-left 0.3s ease;
+padding:80px 20px 40px;}
 
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-
-    .warp-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .opp-sidebar{
+      position:fixed;
+      left:0;top:0;bottom:0;
+      width:260px;
+      background: var(--opp-bg);
+      color: var(--opp-primary);
+      padding:20px;
+      transform:translateX(-100%);
+      transition:0.3s ease;
+      border-right:3px solid var(--opp-border);
+      z-index:999;
     }
+    .opp-sidebar.open{transform:translateX(0);} 
+    .opp-sidebar.open ~ .opp-body{margin-left:260px; width: calc(100% - 260px);}    
 
-    .warp-input {
-      width: 100%;
-      padding: 10px;
-      border-radius: var(--radius);
-      border: 2px solid var(--warp-border);
-      margin: 8px 0 16px;
-    }
-
-    .warp-link {
-      font-size: 0.85rem;
-      color: var(--warp-accent);
-      cursor: pointer;
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    .warp-btn-action {
-      width: 100%;
-      padding: 12px;
-      text-align: center;
-      background: var(--warp-accent);
-      color: #fff;
-      border-radius: var(--radius);
-      margin-top: 8px;
-      cursor: pointer;
-    }
+    .opp-sidebar-title{font-size:1.2rem;font-weight:600;margin-bottom:12px;}
+    .opp-sidebar-item{padding:12px 0;border-bottom:2px solid rgba(255,255,255,0.35);cursor:pointer;}
+    
+    table th, table td { border:2px solid var(--opp-border) !important; padding:8px; }
   </style>
 </head>
 
 <body>
-  <div class="warp-btn-auth" id="warpAuthBtn">
-    <span class="material-icons">person</span> Entrar
-  </div>
 
-  <div class="warp-modal-bg" id="warpModalBg">
-    <div class="warp-modal" id="warpModal"></div>
-  </div>
+  <aside id="oppSidebar" class="opp-sidebar">
+    <div class="opp-sidebar-title">Núcleo OPP v2</div>
+    <div class="opp-sidebar-item" data-cell="tokens">1️⃣ Tokens (DNA do Sistema)</div>
+  </aside>
+
+  <header class="opp-header">
+    <div class="opp-btn" id="sidebarToggle"><span class="material-icons">menu</span>Menu</div>
+    <div id="oppTitle" class="u-title"></div>
+    <div class="opp-btn" data-cell="admin"><span class="material-icons">admin_panel_settings</span>Admin</div>
+  </header>
+
+  <main id="opp-body" class="opp-body"></main>
 
   <script>
-    const modalBg = document.getElementById("warpModalBg");
-    const modal = document.getElementById("warpModal");
-    const btn = document.getElementById("warpAuthBtn");
 
-    btn.onclick = () => {
-      modalBg.style.display = "flex";
-      renderLogin();
+// ===============================
+// Persistência Local OPP (IndexedDB)
+// ===============================
+let oppDB;
+const DB_NAME = "opp5horasDB";
+const STORE_NAME = "adminData";
+
+function initDB() {
+  const request = indexedDB.open(DB_NAME, 1);
+
+  request.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    if (!db.objectStoreNames.contains(STORE_NAME)) {
+      db.createObjectStore(STORE_NAME, { keyPath: "id" });
+    }
+  };
+
+  request.onsuccess = (event) => {
+    oppDB = event.target.result;
+  };
+
+  request.onerror = () => console.error("Erro ao abrir IndexedDB OPP.");
+}
+
+initDB();
+
+function saveAdminData(data) {
+  return new Promise((resolve, reject) => {
+    const tx = oppDB.transaction([STORE_NAME], "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.put({ id: 1, ...data });
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject("Erro ao salvar dados.");
+  });
+}
+
+function loadAdminData() {
+  return new Promise((resolve) => {
+    const tx = oppDB.transaction([STORE_NAME], "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(1);
+
+    req.onsuccess = () => resolve(req.result || {});
+    req.onerror = () => resolve({});
+  });
+}
+
+    const oppTitle = document.getElementById('oppTitle');
+    const oppBody  = document.getElementById('opp-body');
+
+    document.getElementById('sidebarToggle').onclick = () => {
+      document.getElementById('oppSidebar').classList.toggle('open');
     };
 
-    modalBg.onclick = (e) => {
-      if (e.target === modalBg) modalBg.style.display = "none";
+    document.querySelectorAll('[data-cell]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        renderCell(btn.dataset.cell);
+        /* auto-close removed */ // document.getElementById('oppSidebar').classList.remove('open');
+      });
+    });
+
+    function renderCell(name){
+      switch(name){
+        case "dashboard": return renderDashboard();
+        case "organismos": return renderOrganismos();
+        case "classes": return renderClasses();
+        case "funcoes": return renderFuncoes();
+        case "tokens": return renderTokens();
+        case "diagnostico": return renderDiagnostico();
+        case "admin": return renderAdmin();
+        default:
+          oppBody.innerHTML = `<div class='u-card'>Célula <strong>${name}</strong> não encontrada.</div>`;
+      }
+    }
+
+    function renderDashboard(){
+      oppTitle.textContent = "Dashboard";
+      oppBody.innerHTML = `
+        <div class='u-card u-text-center'>
+          <h2 class='u-title u-m2'>OPP v2</h2>
+          <p class='u-muted'>Escolha um item no menu para navegar pelo núcleo.</p>
+        </div>`;
+    }
+
+    function renderOrganismos(){
+      oppTitle.textContent = "Organismos";
+      const list = window.organismosDB || (window.organismosDB = [
+        { nome: "OrganismoFamilyAuth", desc: "Gerencia autenticação e vínculos no App Família." },
+        { nome: "OrganismoFamilyStorage", desc: "Camada Dexie/IndexedDB para o App Família." }
+      ]);
+
+      oppBody.innerHTML = `
+        <div class='u-card'>
+          <h3 class='u-title u-m2'>Organismos Registrados</h3>
+          <table style='width:100%; border-collapse:collapse;'>
+            <thead>
+              <tr>
+                <th>ID</th><th>Nome</th><th>Descrição</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((o,i)=>`
+                <tr>
+                  <td>${i+1}</td>
+                  <td>${o.nome}</td>
+                  <td>${o.desc}</td>
+                  <td><button onclick='renderOrganismoDetails(${i})'>Detalhes</button></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    window.organismoDetails = {
+      OrganismoFamilyAuth: {
+        versao: "1.0.0",
+        status: "Ativo",
+        herda: ["OrganismoBaseSeguranca"],
+        depende: ["OrganismoFamilyStorage"],
+        escopo: "Global",
+        variaveis: ["currentUser", "linkedProfiles"],
+        constantes: ["AUTH_VERSION = '1.0.0'"],
+        metodos: ["login()", "logout()", "validateLink()"],
+        codigo: "function login(){ /* ... */ }",
+        notas: "Organismo central para vínculos familiares.",
+        historico: ["v1.0.0 – criação inicial"]
+      },
+
+      OrganismoFamilyStorage: {
+        versao: "1.0.0",
+        status: "Ativo",
+        herda: [],
+        depende: [],
+        escopo: "Global",
+        variaveis: ["db", "stores"],
+        constantes: ["DB_VERSION = 3"],
+        metodos: ["save()", "load()", "reset()"],
+        codigo: "const db = new Dexie('familyDB');",
+        notas: "Camada estável de armazenamento.",
+        historico: ["v1.0.0 – criação inicial"]
+      }
     };
 
-    function renderLogin(){
-      modal.innerHTML = `
-        <div class="warp-title">Entrar</div>
-        <input class="warp-input" id="loginEmail" placeholder="E-mail" />
-        <input class="warp-input" id="loginPass" type="password" placeholder="Senha" />
-        <div class="warp-btn-action">Entrar</div>
-        <div class="warp-link" onclick="renderCreate()">Criar conta</div>
-        <div class="warp-link" onclick="renderRecover()">Recuperar acesso</div>
-      `;
+    function renderOrganismoDetails(i){
+      const item = window.organismosDB[i];
+      const det = window.organismoDetails[item.nome] || {};
+
+      oppTitle.textContent = item.nome + " – Detalhes";
+
+      oppBody.innerHTML = `
+        <div class='u-card'>
+          <h2 class='u-title u-m2'>${item.nome}</h2>
+          <p class='u-muted'>Ficha completa do organismo.</p>
+
+          <h3 class='u-title u-m2'>Identidade</h3>
+          <pre>${JSON.stringify(det, null, 2)}</pre>
+
+          <button onclick='renderOrganismos()'>Voltar</button>
+        </div>`;
     }
 
-    function renderCreate(){
-      modal.innerHTML = `
-        <div class="warp-title">Criar conta</div>
-        <input class="warp-input" id="criarNome" placeholder="Seu nome" />
-        <input class="warp-input" id="criarEmail" placeholder="E-mail" />
-        <input class="warp-input" id="criarPass" type="password" placeholder="Senha" />
-        <div class="warp-btn-action">Registrar</div>
-        <div class="warp-link" onclick="renderLogin()">Já tenho conta</div>
-      `;
+    function renderTokens(){
+      oppTitle.textContent = "Tokens (DNA)";
+      oppBody.innerHTML = `
+        <div class='u-card'>
+          <h2 class='u-title u-m2'>Tokens – DNA do Sistema</h2>
+          <p class='u-muted u-m2'>Aqui estão os tokens fundamentais que definem o comportamento visual imutável do ecossistema 5Horas.</p>
+
+          <h3 class='u-title u-m2'>Cores</h3>
+          <div class='u-flex u-m2' style='gap:12px; flex-wrap:wrap;'>
+            ${renderColorToken("Primário", "--opp-primary")}
+            ${renderColorToken("Secundário", "--opp-secondary")}
+            ${renderColorToken("Acento", "--opp-accent")}
+            ${renderColorToken("Muted", "--opp-muted")}
+            ${renderColorToken("Fundo", "--opp-bg")}
+            ${renderColorToken("Card", "--opp-card")}
+            ${renderColorToken("Borda", "--opp-border")}
+          </div>
+
+          <h3 class='u-title u-m2'>Raios</h3>
+          <pre class='u-card'>radius: var(--radius) = 16px
+radius-lg: var(--radius-lg) = 22px</pre>
+
+          <h3 class='u-title u-m2'>Sombras</h3>
+          <pre class='u-card'>shadow: var(--shadow) = 0 2px 10px rgba(0,0,0,0.08)</pre>
+
+          <h3 class='u-title u-m2'>Tipografia</h3>
+          <pre class='u-card'>Fonte padrão: Inter
+Cor padrão: var(--opp-primary)</pre>
+        </div>`;
     }
 
-    function renderRecover(){
-      modal.innerHTML = `
-        <div class="warp-title">Recuperar acesso</div>
-        <input class="warp-input" id="recEmail" placeholder="E-mail associado" />
-        <div class="warp-btn-action">Enviar link</div>
-        <div class="warp-link" onclick="renderLogin()">Voltar ao login</div>
-      `;
+
+    function renderColorToken(label, variable){
+      const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+      return `
+        <div class='u-card u-text-center' style='width:120px;'>
+          <div style='width:100%;height:50px;background:${value};border-radius:var(--radius);'></div>
+          <div class='u-m2'>${label}</div>
+          <div class='u-muted' style='font-size:0.75rem;'>${variable}</div>
+          <div class='u-muted' style='font-size:0.75rem;'>${value}</div>
+        </div>`;
     }
-      /* CONFIG :: API dinâmica injetada pelo pipeline */
-    const API_5HORAS = "__API_5HORAS__";
+
+    function renderElementos(){
+      oppTitle.textContent = "Elementos Imutáveis";
+      oppBody.innerHTML = `<div class='u-card'>Elementos estruturais base do PWAO.</div>`;
+    }
+
+    function renderClasses(){
+      oppTitle.textContent = "Classes Base";
+      oppBody.innerHTML = `<div class='u-card'>Lista de classes fundamentais do núcleo.</div>`;
+    }
+
+    function renderCelulas(){
+      oppTitle.textContent = "Células";
+      oppBody.innerHTML = `<div class='u-card'>Células do ecossistema serão listadas aqui.</div>`;
+    }
+
+    function renderMiniapps(){
+      oppTitle.textContent = "Miniapps";
+      oppBody.innerHTML = `<div class='u-card'>Miniapps do ecossistema 5Horas.</div>`;
+    }
+
+    function renderFuncoes(){
+      oppTitle.textContent = "Funções Globais";
+      oppBody.innerHTML = `<div class='u-card'>Funções utilitárias do sistema.</div>`;
+    }
+
+    function renderDiagnostico(){
+      oppTitle.textContent = "Diagnóstico";
+      oppBody.innerHTML = `<div class='u-card'>Ferramentas de diagnóstico do núcleo.</div>`;
+    }
+
+    async function renderAdmin(){
+  oppTitle.textContent = "Admin – Meus Dados";
+
+  const dados = await loadAdminData();
+
+  oppBody.innerHTML = `
+    <div class='u-card'>
+      <h2 class='u-title u-m2'>Meus Dados</h2>
+      <p class='u-muted u-m2'>Edite aqui suas informações administrativas.</p>
+
+      <label class='u-m2'>Nome<br>
+        <input id='admNome' value='${dados.nome || ""}' type='text' style='width:100%;padding:8px;border:2px solid var(--opp-border);border-radius:var(--radius);'>
+      </label>
+
+      <label class='u-m2'>Email<br>
+        <input id='admEmail' value='${dados.email || ""}' type='email' style='width:100%;padding:8px;border:2px solid var(--opp-border);border-radius:var(--radius);'>
+      </label>
+
+      <label class='u-m2'>Telefone<br>
+        <input id='admFone' value='${dados.telefone || ""}' type='text' style='width:100%;padding:8px;border:2px solid var(--opp-border);border-radius:var(--radius);'>
+      </label>
+
+      <button id='admSalvar' style='margin-top:16px;padding:10px 16px;background:var(--opp-accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;'>Salvar</button>
+    </div>`;
+
+  document.getElementById('admSalvar').onclick = async () => {
+    const data = {
+      nome: document.getElementById('admNome').value,
+      email: document.getElementById('admEmail').value,
+      telefone: document.getElementById('admFone').value
+    };
+
+    await saveAdminData(data);
+
+    oppBody.innerHTML = `<div class='u-card u-text-center'>Dados salvos com sucesso!<br><br>
+      <strong>Nome:</strong> ${data.nome}<br>
+      <strong>Email:</strong> ${data.email}<br>
+      <strong>Telefone:</strong> ${data.telefone}</div>`;
+  };
+}
+
   </script>
 </body>
 </html>
