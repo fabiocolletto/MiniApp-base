@@ -13,12 +13,18 @@
       --color-bg: #f5f7fa;
       --color-card-bg: #ffffff;
       --color-border: #e5e7eb;
+      --header-height: 56px;
+      --footer-height: 70px;
+      --content-padding: 16px;
+      --content-available: calc(100vh - var(--header-height) - var(--footer-height));
     }
 
     body {
       margin: 0;
       background: var(--color-card-bg);
       font-family: "Inter", sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
     /* MINI TAILWIND */
@@ -45,17 +51,24 @@
       top:0;
       left:0;
       right:0;
-      height:56px;
+      height:var(--header-height);
       backdrop-filter:blur(10px);
       background: var(--color-card-bg);
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding:16px;
+      padding:var(--content-padding);
+      box-sizing: border-box;
     }
 
     .app-body {
-      padding:56px 16px 70px;
+      box-sizing: border-box;
+      margin-top: var(--header-height);
+      margin-bottom: var(--footer-height);
+      min-height: var(--content-available);
+      max-height: var(--content-available);
+      overflow-y: auto;
+      padding: var(--content-padding);
     }
 
     .app-footer {
@@ -63,7 +76,7 @@
       bottom:0;
       left:0;
       right:0;
-      height:70px;
+      height:var(--footer-height);
       background: var(--color-card-bg);
       display:flex;
       justify-content:space-around;
@@ -165,7 +178,7 @@
     function renderWelcome() {
       document.getElementById("header-title").textContent = "";
       document.getElementById("app-body").innerHTML = `
-        <div class="u-flex u-flex-col u-justify-center u-items-center u-text-center u-p4" style="height:calc(100vh - 126px)">
+        <div class="u-flex u-flex-col u-justify-center u-items-center u-text-center u-p4" style="min-height:var(--content-available)">
           <div style="font-size:1.6rem;font-weight:600;color:var(--color-primary);">Bem-vindo ao App Família</div>
           <p class="u-text-muted">Gerencie perfis, vínculos e permissões.</p>
           <button class="btn u-m3" data-cell="inicio">Acessar</button>

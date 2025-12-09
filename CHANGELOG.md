@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.7] – Rolagem isolada do App Family
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Fixed
+- Área central da célula `sistema.admin` agora respeita automaticamente o espaço entre header e footer, ativando rolagem própria quando o conteúdo excede a altura disponível.
+- Alturas e espaçamentos do App Family foram simplificados com variáveis, evitando ajustes manuais de preenchimento.
+
+---
+
 # 🧬 [V4.3.6] – Renderização em tela cheia do App Family
 ### **Status: Atual (Genoma V4.3.3)**
 
