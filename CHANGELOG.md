@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.6] – Renderização em tela cheia do App Family
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Fixed
+- O Genoma agora injeta estilos declarados no `<head>` das células antes de renderizá-las, mantendo layout e tipografia originais do App Family.
+- Área de expressão `#root` passa a ocupar toda a altura da viewport e sem recuo padrão, permitindo que o App Family use toda a largura e altura previstas.
+
+---
+
 # 🧬 [V4.3.5] – Correção do app Family
 ### **Status: Atual (Genoma V4.3.3)**
 
