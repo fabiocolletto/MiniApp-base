@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.4] – Manutenção da célula Admin
+### **Status: Em evolução (Genoma V4.3.3)**
+
+#### Fixed
+- Manifesto da célula `sistema.admin` agora registra automaticamente e define renderização inicial para autodiscovery imediato.
+- Persistência do painel Admin aguarda a abertura do IndexedDB e trata falhas, evitando erros ao carregar ou salvar dados locais.
+
+---
+
 # 🧬 [V4.3.3] – Execução orgânica de células carregadas
 ### **Status: Atual (Genoma V4.3.3)**
 
