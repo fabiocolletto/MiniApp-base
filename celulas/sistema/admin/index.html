@@ -1,147 +1,156 @@
-<!-- salvar em: celulas/sistema/admin/index.html -->
+<!-- Arquivo: celulas/sistema/admin/index.html (Warp Base) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Admin</title>
+  <title>WARP – Autenticação Marco</title>
 
-  <!-- Dexie para persistência local -->
-  <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <style>
+    :root {
+      --warp-bg: #f3f4f6;
+      --warp-card: #ffffff;
+      --warp-border: #cbd5e1;
+      --warp-primary: #111827;
+      --warp-accent: #2563eb;
+      --radius: 16px;
+      --shadow: 0 4px 18px rgba(0,0,0,0.08);
+    }
+
+    body {
+      margin: 0;
+      background: var(--warp-bg);
+      font-family: "Inter", sans-serif;
+      color: var(--warp-primary);
+    }
+
+    .warp-btn-auth {
+      position: fixed;
+      top: 14px;
+      right: 20px;
+      background: var(--warp-accent);
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 2000;
+    }
+
+    .warp-modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    .warp-modal {
+      background: var(--warp-card);
+      border-radius: var(--radius);
+      width: 360px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+    .warp-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .warp-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: 2px solid var(--warp-border);
+      margin: 8px 0 16px;
+    }
+
+    .warp-link {
+      font-size: 0.85rem;
+      color: var(--warp-accent);
+      cursor: pointer;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .warp-btn-action {
+      width: 100%;
+      padding: 12px;
+      text-align: center;
+      background: var(--warp-accent);
+      color: #fff;
+      border-radius: var(--radius);
+      margin-top: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="warp-btn-auth" id="warpAuthBtn">
+    <span class="material-icons">person</span> Entrar
+  </div>
+
+  <div class="warp-modal-bg" id="warpModalBg">
+    <div class="warp-modal" id="warpModal"></div>
+  </div>
 
   <script>
-    // Banco local Dexie
-    const db = new Dexie('pwao_admin');
-    db.version(1).stores({ admin: '++id,nome,email' });
+    const modalBg = document.getElementById("warpModalBg");
+    const modal = document.getElementById("warpModal");
+    const btn = document.getElementById("warpAuthBtn");
 
-    // Registro com o AppShell para que o sistema visualize a existência do administrador
-(function registrarAuth() {
-      function tentar() {
-        if (window.PWAO_RegistrarCelula) {
-          window.PWAO_RegistrarCelula({
-            nome: "sistema.admin",
-            caminho: "celulas/sistema/admin/index.html",
-            orgao: "sistema",
-            versao: "1.0.0",
-            descricao: "Célula de Autenticação do sistema"
-          });
-          return;
-        }
-        setTimeout(tentar, 60);
-      }
-      tentar();
-    })();
+    btn.onclick = () => {
+      modalBg.style.display = "flex";
+      renderLogin();
+    };
 
-    async function init() {
-      const lista = await db.admin.toArray();
+    modalBg.onclick = (e) => {
+      if (e.target === modalBg) modalBg.style.display = "none";
+    };
 
-      if (lista.length === 0) {
-        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
-        document.getElementById('adminForm').style.display = 'block';
-
-        registrarNoSistema({ existe: false, total: 0 });
-        return;
-      }
-
-      renderLista(lista);
-      registrarNoSistema({ existe: true, total: lista.length });
+    function renderLogin(){
+      modal.innerHTML = `
+        <div class="warp-title">Entrar</div>
+        <input class="warp-input" id="loginEmail" placeholder="E-mail" />
+        <input class="warp-input" id="loginPass" type="password" placeholder="Senha" />
+        <div class="warp-btn-action">Entrar</div>
+        <div class="warp-link" onclick="renderCreate()">Criar conta</div>
+        <div class="warp-link" onclick="renderRecover()">Recuperar acesso</div>
+      `;
     }
 
-    function renderLista(lista) {
-      document.getElementById('mode').innerText = 'Administradores cadastrados';
-      const box = document.getElementById('lista');
-      box.innerHTML = '';
-      document.getElementById('listaView').style.display = 'block';
-
-      lista.forEach(item => {
-        const linha = document.createElement('div');
-        linha.style.margin = '10px 0';
-        linha.innerHTML = `
-          <strong>${item.nome}</strong> (${item.email})<br>
-          <button onclick="editar(${item.id})">Editar</button>
-          <button onclick="excluir(${item.id})">Excluir</button>
-        `;
-        box.appendChild(linha);
-      });
+    function renderCreate(){
+      modal.innerHTML = `
+        <div class="warp-title">Criar conta</div>
+        <input class="warp-input" id="criarNome" placeholder="Seu nome" />
+        <input class="warp-input" id="criarEmail" placeholder="E-mail" />
+        <input class="warp-input" id="criarPass" type="password" placeholder="Senha" />
+        <div class="warp-btn-action">Registrar</div>
+        <div class="warp-link" onclick="renderLogin()">Já tenho conta</div>
+      `;
     }
 
-    async function salvar(event) {
-      event.preventDefault();
-
-      const nome = document.getElementById('formNome').value.trim();
-      const email = document.getElementById('formEmail').value.trim();
-      const id = document.getElementById('formId').value;
-
-      let objeto;
-      if (id) {
-        objeto = { nome, email };
-        await db.admin.update(Number(id), objeto);
-      } else {
-        objeto = { nome, email };
-        await db.admin.add(objeto);
-      }
-
-      const lista = await db.admin.toArray();
-      registrarNoSistema({ existe: true, total: lista.length, ultimo: objeto });
-
-      document.getElementById('adminForm').reset();
-      document.getElementById('adminForm').style.display = 'none';
-      renderLista(lista);
+    function renderRecover(){
+      modal.innerHTML = `
+        <div class="warp-title">Recuperar acesso</div>
+        <input class="warp-input" id="recEmail" placeholder="E-mail associado" />
+        <div class="warp-btn-action">Enviar link</div>
+        <div class="warp-link" onclick="renderLogin()">Voltar ao login</div>
+      `;
     }
-
-    async function editar(id) {
-      const item = await db.admin.get(id);
-      document.getElementById('formId').value = item.id;
-      document.getElementById('formNome').value = item.nome;
-      document.getElementById('formEmail').value = item.email;
-      document.getElementById('adminForm').style.display = 'block';
-    }
-
-    async function excluir(id) {
-      await db.admin.delete(id);
-      const lista = await db.admin.toArray();
-
-      if (lista.length === 0) {
-        document.getElementById('listaView').style.display = 'none';
-        document.getElementById('mode').innerText = 'Nenhum administrador cadastrado.';
-        document.getElementById('adminForm').style.display = 'block';
-
-        registrarNoSistema({ existe: false, total: 0 });
-        return;
-      }
-
-      registrarNoSistema({ existe: true, total: lista.length });
-      renderLista(lista);
-    }
-
-    window.onload = init;
+      /* CONFIG :: API dinâmica injetada pelo pipeline */
+    const API_5HORAS = "__API_5HORAS__";
   </script>
-</head>
-<body style="font-family: sans-serif; padding: 20px;">
-  <h1>Painel Administrativo</h1>
-  <p id="mode">Carregando…</p>
-
-  <!-- Formulário de cadastro/edição -->
-  <form id="adminForm" style="display:none; margin-top:20px;" onsubmit="salvar(event)">
-    <input type="hidden" id="formId" />
-
-    <label>Nome<br>
-      <input id="formNome" type="text" required style="width:100%; padding:8px; margin-top:4px;" />
-    </label>
-    <br><br>
-
-    <label>Email<br>
-      <input id="formEmail" type="email" required style="width:100%; padding:8px; margin-top:4px;" />
-    </label>
-    <br><br>
-
-    <button type="submit" style="padding:10px 16px;">Salvar</button>
-  </form>
-
-  <!-- Lista de administradores -->
-  <div id="listaView" style="display:none; margin-top:20px;">
-    <h3>Administradores cadastrados</h3>
-    <div id="lista"></div>
-  </div>
 </body>
 </html>
