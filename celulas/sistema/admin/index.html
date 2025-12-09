@@ -101,26 +101,39 @@ const DB_NAME = "opp5horasDB";
 const STORE_NAME = "adminData";
 
 function initDB() {
-  const request = indexedDB.open(DB_NAME, 1);
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
 
-  request.onupgradeneeded = (event) => {
-    const db = event.target.result;
-    if (!db.objectStoreNames.contains(STORE_NAME)) {
-      db.createObjectStore(STORE_NAME, { keyPath: "id" });
-    }
-  };
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+    };
 
-  request.onsuccess = (event) => {
-    oppDB = event.target.result;
-  };
+    request.onsuccess = (event) => {
+      oppDB = event.target.result;
+      resolve(oppDB);
+    };
 
-  request.onerror = () => console.error("Erro ao abrir IndexedDB OPP.");
+    request.onerror = () => {
+      console.error("Erro ao abrir IndexedDB OPP.");
+      reject(new Error("indexeddb-open-failed"));
+    };
+  });
 }
 
-initDB();
+const dbReady = initDB();
 
-function saveAdminData(data) {
+async function saveAdminData(data) {
+  await dbReady;
+
   return new Promise((resolve, reject) => {
+    if (!oppDB) {
+      reject("IndexedDB indisponível");
+      return;
+    }
+
     const tx = oppDB.transaction([STORE_NAME], "readwrite");
     const store = tx.objectStore(STORE_NAME);
     store.put({ id: 1, ...data });
@@ -130,8 +143,15 @@ function saveAdminData(data) {
   });
 }
 
-function loadAdminData() {
+async function loadAdminData() {
+  await dbReady;
+
   return new Promise((resolve) => {
+    if (!oppDB) {
+      resolve({});
+      return;
+    }
+
     const tx = oppDB.transaction([STORE_NAME], "readonly");
     const store = tx.objectStore(STORE_NAME);
     const req = store.get(1);
@@ -331,7 +351,13 @@ Cor padrão: var(--opp-primary)</pre>
     async function renderAdmin(){
   oppTitle.textContent = "Admin – Meus Dados";
 
-  const dados = await loadAdminData();
+  let dados = {};
+
+  try {
+    dados = await loadAdminData();
+  } catch (error) {
+    console.warn("Falha ao carregar IndexedDB", error);
+  }
 
   oppBody.innerHTML = `
     <div class='u-card'>
@@ -360,7 +386,11 @@ Cor padrão: var(--opp-primary)</pre>
       telefone: document.getElementById('admFone').value
     };
 
-    await saveAdminData(data);
+    try {
+      await saveAdminData(data);
+    } catch (error) {
+      console.warn("Falha ao salvar dados", error);
+    }
 
     oppBody.innerHTML = `<div class='u-card u-text-center'>Dados salvos com sucesso!<br><br>
       <strong>Nome:</strong> ${data.nome}<br>
@@ -369,6 +399,26 @@ Cor padrão: var(--opp-primary)</pre>
   };
 }
 
+  </script>
+  <script>
+    (function registrarAdmin() {
+      function tentar() {
+        if (window.PWAO_RegistrarCelula) {
+          window.PWAO_RegistrarCelula({
+            nome: "sistema.admin",
+            caminho: "celulas/sistema/admin/index.html",
+            orgao: "sistema",
+            versao: "1.0.0",
+            descricao: "Célula administrativa e de tokens OPP"
+          });
+          return;
+        }
+        setTimeout(tentar, 60);
+      }
+      tentar();
+    })();
+
+    renderCell("tokens");
   </script>
 </body>
 </html>
