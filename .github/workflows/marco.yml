@@ -1,4 +1,4 @@
-name: Deploy Marco via gh-pages
+name: Injetar variável API_5HORAS
 
 on:
   push:
