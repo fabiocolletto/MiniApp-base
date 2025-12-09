@@ -25,7 +25,7 @@ jobs:
 
       - name: Injetar variável API_5HORAS
         run: |
-          find build -type f -name "*.html" -exec sed -i "s|\${{ secrets.API_5HORAS }}|${API_5HORAS}|g" {} +
+          find build -type f -name "*.html" -exec sed -i "s|\$\{\{ secrets.API_5HORAS \}\}|${API_5HORAS}|g" {} +
         env:
           API_5HORAS: ${{ secrets.API_5HORAS }}
 
