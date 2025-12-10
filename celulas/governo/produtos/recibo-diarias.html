@@ -1,2584 +1,668 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Relatório de Viagem - Modelo Paraná</title>
-    <!-- Inclusão da biblioteca html2pdf.js via CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Plus, X, Truck, Utensils, Bed, BarChart3, Clipboard, Check, AlertTriangle, Loader2, User } from 'lucide-react';
 
-    <style>
-        :root {
-            --primary-color: #004a99; /* Azul institucional */
-            --secondary-color: #f4f4f4;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --highlight-bg: #e8f4fd;
-            --warning-color: #ffc107;
-        }
+const PRIMARY_COLOR = '#004a99';
+const HIGHLIGHT_BG = '#f0f7ff';
+const DB_KEY = 'prestacaoContasDB';
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #e9ecef;
-            color: #333;
-        }
+const formatarMoeda = (value) => {
+    return (parseFloat(value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, style: 'currency', currency: 'BRL' });
+};
 
-        /* --- ESTILOS DO FORMULÁRIO --- */
-        .container-form {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+const loadData = async () => {
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+    try {
+        const json = localStorage.getItem(DB_KEY);
+        if (json) {
+            console.log("Dados carregados com sucesso.");
+            return JSON.parse(json);
         }
+        return null;
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        return null;
+    }
+};
 
-        h1 { 
-            color: var(--primary-color);
-            margin-top: 0;
-            font-size: 1.8rem;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        /* --- ESTILOS DE BLOCOS --- */
-        .form-section-box {
-            background-color: #f8f9fa; 
-            padding: 20px; 
-            border-radius: 5px; 
-            border: 1px solid #e9ecef; 
-            margin-bottom: 25px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: box-shadow 0.3s;
-        }
-
-        .form-section-box:hover {
-            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-            border-color: #dbe4eb;
-        }
-
-        .form-section-title {
-            margin-bottom: 15px; 
-            display: block; 
-            color: var(--primary-color);
-            font-weight: 700;
-            font-size: 1.1rem;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* --- INPUTS E CONTROLES --- */
-        .form-group { 
-            margin-bottom: 15px; 
-            position: relative; 
-        }
-
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 0.9rem; }
-        
-        .form-group input[type="text"], 
-        .form-group input[type="number"], 
-        .form-group input[type="datetime-local"],
-        .form-group select, 
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            background-color: #fff;
-            height: 48px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        /* Classe de validação ruim */
-        .input-error {
-            border: 2px solid var(--error-color) !important;
-            box-shadow: 0 0 5px rgba(220, 53, 69, 0.5) !important;
-        }
-
-        .form-group textarea { height: auto; }
-        
-        /* Estilo para input file */
-        .form-group input[type="file"] {
-            padding: 10px;
-            height: auto;
-            background: white;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
-        }
-        /* Estilos para campos desabilitados por sync */
-        .form-group select[disabled], .form-group input[disabled] {
-            background-color: #e9ecef;
-            cursor: not-allowed;
-            color: #6c757d;
-        }
-
-        /* --- ASSISTENTE DE REDAÇÃO --- */
-        .helper-options { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; }
-        .radio-card { flex: 1; min-width: 140px; border: 1px solid #ccc; border-radius: 4px; padding: 10px; background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .radio-card:hover { background-color: #f0f8ff; border-color: var(--primary-color); }
-        .radio-card input { margin: 0; }
-
-        /* --- LISTAS DINÂMICAS (COMPROVANTES E PARADAS) --- */
-        .list-item {
-            display: flex;
-            align-items: center;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-        }
-        .list-info { flex: 1; }
-        .list-info strong { display: block; color: #333; }
-        .list-info span { font-size: 0.9rem; color: #666; }
-        .btn-remove {
-            background: #ffebeb;
-            color: #cc0000;
-            border: 1px solid #ffcccc;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
-        .btn-remove:hover { background: #ffcccc; }
-        
-        /* Botões de Ação Específicos para Roteiro */
-        .btn-roteiro-action {
-            padding: 5px 10px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold;
-            transition: all 0.2s;
-            margin-left: 5px;
-            font-size: 0.8rem;
-        }
-        .btn-roteiro-action.edit {
-            background-color: #007bff;
-            color: white;
-        }
-        .btn-roteiro-action.edit:hover {
-            background-color: #0056b3;
-        }
-        .btn-roteiro-action.add-main {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .comprovante-thumb {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-right: 15px;
-        }
-        
-        /* Área de inserção de dados do comprovante */
-        #dados_comprovante_container {
-            border: 1px dashed #004a99;
-            background: #f0f7ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 10px;
-            display: none; /* Escondido até selecionar arquivo */
-        }
-
-        /* Estilo para totalizador */
-        #totalizador_anexos, #totalizador_outras_despesas {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 4px;
-            font-weight: bold;
-            color: #155724;
-            text-align: right;
-        }
-
-        /* --- FEEDBACK VISUAL --- */
-        .feedback-tooltip {
-            position: absolute;
-            top: 100%; left: 0; margin-top: 4px; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; color: #fff; opacity: 0; transform: translateY(-5px); transition: opacity 0.3s ease, transform 0.3s ease; z-index: 100; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap;
-        }
-        .feedback-tooltip.show { opacity: 1; transform: translateY(0); }
-        .feedback-success { background-color: var(--success-color); }
-        .feedback-error { background-color: var(--error-color); }
-
-        .form-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .form-col { flex: 1; min-width: 200px; }
-
-        .buttons-container {
-            display: flex; justify-content: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;
-        }
-
-        button.btn-success {
-            padding: 16px 40px; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: 700; background-color: var(--success-color); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
-        }
-        
-        button.btn-add {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        button.btn-cancel {
-            background-color: #6c757d; /* Cinza */
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            margin-right: 10px;
-        }
-        
-        button:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,0,0,0.15); }
-        button:active { transform: translateY(0); }
-
-        #status-msg { text-align: center; margin-top: 15px; font-weight: bold; color: var(--primary-color); display: none; }
-        
-        /* Estilo para a área de inserção de custos (que fica escondida) */
-        #dados_custo_transporte_container, #dados_alimentacao_container, #dados_hospedagem_container {
-            border: 1px dashed #004a99;
-            background: #f0f7ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        
-        /* REORGANIZADO: Lista de custos de transporte agora fica no topo da seção 2 */
-        #lista_custos_transporte_visual, #lista_outras_despesas_visual {
-            margin-top: 5px;
-        }
-
-        /* Estilo para totalizador de Custos de Transporte */
-        #totalizador_custos_transporte {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #fff3cd; /* Cor de destaque para o transporte */
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
-            font-weight: bold;
-            color: #856404;
-            text-align: right;
-            margin-bottom: 25px; /* Adicionado margem para separar do formulário de adição */
-        }
-        
-        /* Estilo para o contêiner de dados pessoais que será oculto/mostrado */
-        #dados_pessoais_ocultos_container {
-             border: 1px dashed #ccc;
-             background: #fdfdff;
-             padding: 15px;
-             border-radius: 4px;
-             margin-top: 15px;
-        }
-        
-        /* NOVO: Estilo para o resumo final */
-        .resumo-final-card {
-            background-color: #d1ecf1; /* Cor de informação/resumo */
-            border: 2px solid #bee5eb;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 15px;
-        }
-
-        .resumo-final-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px dashed #a2d2d8;
-            font-weight: bold;
-            color: #0c5460;
-        }
-
-        .resumo-final-total {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 2px solid #0c5460;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
+const saveData = async (data) => {
+    await new Promise(resolve => setTimeout(resolve, 50)); 
+    try {
+        const json = JSON.stringify(data);
+        localStorage.setItem(DB_KEY, json);
+        console.log("Dados salvos automaticamente.");
+    } catch (error) {
+        console.error("Erro ao salvar dados:", error);
+    }
+};
 
 
-        /* --- PDF OCULTO --- */
-        #report-container {
-            position: fixed; left: -9999px; top: 0; width: 210mm; min-height: 297mm; padding: 15mm; background: white; font-family: 'Times New Roman', serif; font-size: 12pt; color: #000; box-sizing: border-box; line-height: 1.3;
-        }
-        .report-header { text-align: center; margin-bottom: 20px; text-transform: uppercase; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .report-section-title { background-color: #e0e0e0; border: 1px solid #000; padding: 5px; font-weight: bold; margin-top: 15px; font-size: 11pt; text-transform: uppercase; }
-        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10pt; }
-        .report-table td, .report-table th { border: 1px solid #000; padding: 6px; vertical-align: middle; }
-        .report-table th { background-color: #f0f0f0; }
-        .td-label { font-weight: bold; background-color: #f9f9f9; width: 20%; font-size: 9pt; text-transform: uppercase; }
-        .td-value { font-size: 10pt; }
-        .narrative-box { border: 1px solid #000; padding: 10px; min-height: 150px; text-align: justify; line-height: 1.5; font-size: 11pt; margin-bottom: 15px; }
-        .signatures-block { margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-        .signature-line { width: 45%; text-align: center; border-top: 1px solid #000; padding-top: 5px; font-size: 10pt; }
-        .footer-integrity { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; font-size: 8pt; text-align: center; border-top: 1px solid #ccc; padding-top: 5px; color: #666; }
+const ComprovanteTempList = ({ comprovantes, onRemove }) => {
+    if (comprovantes.length === 0) {
+        return <p className="text-sm text-gray-500 text-center py-4">Nenhum comprovante anexado a este item.</p>;
+    }
 
-        /* Estilo para comprovantes no PDF */
-        .pdf-comprovante-box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 15px;
-            page-break-inside: avoid; /* Tenta não quebrar a imagem no meio da página */
-            display: flex;
-            align-items: flex-start;
-        }
-        .pdf-comprovante-img {
-            width: 45%;
-            max-height: 300px;
-            object-fit: contain;
-            border: 1px solid #000;
-            margin-right: 15px;
-        }
-        .pdf-comprovante-data {
-            flex: 1;
-        }
-        
-        /* Novo estilo para a lista de custos de transporte */
-        .cost-list-item {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-        }
-        .cost-list-item strong { color: var(--primary-color); display: block; }
-        .cost-list-item span { font-size: 0.9em; color: #6c757d; }
-    </style>
-</head>
-<body>
-
-    <!-- ================================================================== -->
-    <!-- ÁREA VISÍVEL: O FORMULÁRIO SIMPLIFICADO -->
-    <!-- ================================================================== -->
-    <div class="container-form" id="mainForm">
-        <h1>Prestação de Contas - Diárias</h1>
-        
-        <!-- 1. BLOCO DE DADOS PESSOAIS E BANCÁRIOS -->
-        <div class="form-section-box">
-            <label class="form-section-title">1. Quem é você? (Dados Pessoais e Bancários)</label>
-            
-            <div class="form-group">
-                <label>1.1 Nome Completo:</label>
-                <!-- Mantido visível como identificador principal -->
-                <input type="text" id="inp_nome" placeholder="Digite seu nome aqui..." onblur="validarCampo(this, validarNomeCompleto)">
-            </div>
-
-            <!-- BOTÃO DE TRIGGER: Dados Pessoais -->
-            <div id="trigger_detalhes_pessoais" style="margin-bottom: 15px; text-align: center;">
-                <button class="btn-add" onclick="mostrarFormularioPessoais()">+ Visualizar/Editar Detalhes do Servidor e Bancários</button>
-            </div>
-
-            <!-- ÁREA PARA DADOS PESSOAIS E BANCÁRIOS (OCULTA POR PADRÃO) -->
-            <div id="dados_pessoais_ocultos_container" style="display: none;">
-                
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>1.2 Matrícula:</label>
-                        <input type="text" id="inp_matricula" placeholder="Ex: 12345">
+    return (
+        <div className="space-y-1">
+            {comprovantes.map((item, index) => (
+                <div key={item.id} className="flex items-center bg-white p-2 rounded shadow-sm border border-gray-200">
+                    <div className="flex-1">
+                        <strong className="text-sm text-blue-700">{item.tipoDespesa}</strong>
+                        <span className="block text-xs font-bold text-green-600">{formatarMoeda(item.valor)}</span>
                     </div>
-                    <div class="form-col form-group">
-                        <label>1.2 CPF (apenas números):</label>
-                        <input type="text" id="inp_cpf" placeholder="000.000.000-00" maxlength="14" onblur="validarCampo(this, validarCPF)">
-                    </div>
+                    <button
+                        onClick={() => onRemove(index)}
+                        className="bg-red-100 text-red-700 p-1 rounded-full hover:bg-red-200 transition"
+                        title="Remover Comprovante"
+                    >
+                        <X size={14} />
+                    </button>
                 </div>
-                
-                <!-- Linha de seleção de cargo e lotação -->
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>1.3 Cargo:</label>
-                        <select id="inp_cargo" onchange="verificarCargoManual(this.value)">
-                            <option value="">Selecione seu cargo...</option>
-                            <option value="Motorista">Motorista</option>
-                            <option value="Agente Administrativo">Agente Administrativo</option>
-                            <option value="Enfermeiro(a)">Enfermeiro(a)</option>
-                            <option value="Médico(a)">Médico(a)</option>
-                            <option value="Professor(a)">Professor(a)</option>
-                            <option value="Auxiliar de Serviços">Auxiliar de Serviços</option>
-                            <option value="OUTRO">OUTRO (Especificar...)</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Coluna de Seleção de Lotação (Onde você trabalha?) -->
-                    <div class="form-col form-group">
-                        <label>1.3 Lotação (Onde trabalha):</label>
-                        <select id="inp_lotacao" onchange="verificarLotacaoManual(this.value)">
-                            <option value="">Selecione a lotação...</option>
-                            <option value="Hospital Municipal">Hospital Municipal</option>
-                            <option value="Secretaria Municipal de Saúde">Secretaria Municipal de Saúde</option>
-                            <option value="Secretaria Municipal de Educação">Secretaria Municipal de Educação</option>
-                            <option value="Setor de Frota / Garagem">Setor de Frota / Garagem</option>
-                            <option value="UBS Central">UBS Central</option>
-                            <option value="UBS/PSF">UBS/PSF (Especificar Bairro/Nome)</option>
-                            <option value="OUTRO">OUTRO Setor (Especificar...)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Campo manual para a opção "Outro" de Cargo (100% de largura) -->
-                <div id="div_cargo_manual" style="display:none;" class="form-group">
-                    <label>Especifique seu Cargo:</label>
-                    <input type="text" id="inp_cargo_manual" placeholder="Ex: Técnico em Informática, Coordenador de Projetos">
-                </div>
-                
-                <!-- Campo manual para Lotação - Outro Setor (100% de largura) -->
-                <div id="div_lotacao_manual" style="display:none;" class="form-group">
-                    <label>Especifique o Setor/Lotação (Ex: Setor de Compras, Defesa Civil):</label>
-                    <input type="text" id="inp_lotacao_manual" placeholder="Nome do setor...">
-                </div>
-
-                <!-- NOVO CAMPO DE OBSERVAÇÃO ADICIONAL (Checkbox para detalhar Lotação ou Cargo) -->
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="radio-card" style="width: fit-content;">
-                        <input type="checkbox" id="check_obs_adicional" onchange="alternarObsAdicional(this.checked)"> 
-                        <span>**Observação Adicional sobre o Servidor/Lotação?**</span>
-                    </label>
-                </div>
-                
-                <!-- Campo de Texto Livre para Observação Adicional -->
-                <div id="div_obs_adicional" style="display:none;" class="form-group">
-                    <label>Detalhes Adicionais (Ex: Bairro da UBS, Convênio, etc.):</label>
-                    <textarea id="inp_obs_adicional" rows="2" placeholder="Digite aqui informações complementares, como 'UBS Bairro Novo' ou 'Convênio com a 10ª Regional de Saúde'."></textarea>
-                </div>
-                
-                <!-- DADOS BANCÁRIOS (ITEM 1.4) -->
-                <label class="form-section-title" style="margin-top: 25px;">1.4 Dados Bancários (Onde depositar o valor?)</label>
-                <div class="form-row">
-                    <div class="form-col form-group" style="flex: 2;">
-                        <label>Banco:</label>
-                        <select id="inp_banco_nome">
-                            <option value="">Selecione...</option>
-                            <option value="Banco do Brasil">Banco do Brasil</option>
-                            <option value="Caixa Econômica">Caixa Econômica</option>
-                            <option value="Itaú">Itaú</option>
-                            <option value="Bradesco">Bradesco</option>
-                            <option value="Santander">Santander</option>
-                            <option value="Sicoob">Sicoob</option>
-                            <option value="Sicredi">Sicredi</option>
-                        </select>
-                    </div>
-                    <div class="form-col form-group">
-                        <label>Agência:</label>
-                        <input type="text" id="inp_agencia" placeholder="0000-X">
-                    </div>
-                    <div class="form-col form-group">
-                        <label>Conta:</label>
-                        <input type="text" id="inp_conta" placeholder="00000-0">
-                    </div>
-                </div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-                     <!-- Botão para ocultar de volta -->
-                    <button class="btn-cancel" onclick="ocultarFormularioPessoais()">CONCLUIR EDIÇÃO</button>
-                </div>
-            </div>
+            ))}
         </div>
-        
-        <!-- 2. CUSTOS DE TRANSPORTE E ROTA -->
-        <div class="form-section-box">
-            <label class="form-section-title">2. Custos de Transporte (Viagem, KM ou Passagem)</label>
-            
-            <!-- Lista de custos de transporte já adicionados (MOVIDO PARA CIMA) -->
-            <div id="lista_custos_transporte_visual" style="margin-top: 5px;">
-                <!-- Itens serão inseridos aqui via JS -->
-            </div>
-            
-            <!-- TOTALIZADOR EM TEMPO REAL (MOVIDO PARA CIMA) -->
-            <div id="totalizador_custos_transporte" style="display: none; margin-bottom: 25px;">
-                Total de Custos de Transporte: <span id="valor_total_custos_transporte">R$ 0,00</span>
-            </div>
+    );
+};
 
-            <!-- NOVO BOTÃO DE TRIGGER: Se não houver custos, ele aparece. -->
-            <div id="trigger_adicionar_custo" style="margin-bottom: 25px; text-align: center;">
-                <button class="btn-add" onclick="mostrarFormularioCusto()">+ Adicionar Trecho/Custo de Transporte</button>
-            </div>
-            
-            <!-- ÁREA PARA ADICIONAR NOVO CUSTO DE TRANSPORTE -->
-            <div id="dados_custo_transporte_container" style="display: none;">
-                
-                <!-- 2.1 MODAL DE TRANSPORTE -->
-                <div class="form-group">
-                    <label>2.1 Modalidade de Transporte Utilizada:</label>
-                    <select id="inp_modalidade" onchange="verificarModalidade(this.value)">
-                        <option value="">Selecione o modo de transporte...</option>
-                        <option value="CARRO_OFICIAL">Carro Oficial (Frota)</option>
-                        <option value="VEICULO_PROPRIO">Veículo Próprio (Reembolso KM)</option>
-                        <option value="ONIBUS_RODOVIARIO">Ônibus Rodoviário</option>
-                        <option value="PASSAGEM_AEREA">Avião (Passagem Aérea)</option>
-                        <option value="TRANSPORTE_APP">Táxi / Transporte por Aplicativo</option>
-                        <option value="OUTRO">Outro (Especifique na descrição)</option>
-                    </select>
-                </div>
-                
-                <!-- 2.2 TIPO DE VIAGEM (NOVO LOCAL) -->
-                <div class="form-group" style="margin-top: 10px;">
-                    <label>2.2 Tipo de Rota (para este custo):</label>
-                    <select id="inp_tipo_viagem_custo" onchange="alternarCamposCusto()">
-                        <option value="">Selecione o tipo de rota...</option>
-                        <option value="IDA_E_VOLTA">Ida e Volta</option>
-                        <option value="SO_IDA">Só de Ida</option>
-                        <option value="MULTIPLO">Múltiplos Destinos / Parcial</option>
-                    </select>
-                </div>
+const ComprovanteInput = ({ onAdd, tipoOptions, totalItem, totalLabel }) => {
+    const [tipo, setTipo] = useState('');
+    const [valor, setValor] = useState('');
+    const [arquivo, setArquivo] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-                <!-- Opções de Detalhamento do Custo (KM ou Passagem/Custo) -->
-                <div id="detalhes_custo_dinamico">
-                    <!-- Detalhes do modal de transporte (Km/Placa ou Passagem/Custo) serão injetados aqui via JS -->
-                </div>
-                
-                <!-- Campos OBRIGATÓRIOS para ORIGEM/DESTINO específicos deste CUSTO -->
-                <label class="form-section-title" style="font-size: 0.9rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 15px;">2.3 Roteiro Específico (OBRIGATÓRIO)</label>
-                
-                <!-- Origem (UF/Cidade) -->
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>Origem do Custo (UF):</label>
-                        <!-- Removido o pré-select de PR -->
-                        <select id="inp_custo_origem_uf" onchange="carregarCidadesPorUF('inp_custo_origem_uf', 'inp_custo_origem_select', 'Selecione...')"><option value="">Selecione...</option></select>
-                    </div>
-                    <div class="form-col form-group">
-                        <label>Origem do Custo (Cidade):</label>
-                        <!-- Adicionado disabled -->
-                        <select id="inp_custo_origem_select" disabled><option value="">Selecione...</option></select>
-                    </div>
-                </div>
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-                <!-- Destino (UF/Cidade) -->
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>Destino do Custo (UF):</label>
-                        <!-- Removido o pré-select de PR -->
-                        <select id="inp_custo_destino_uf" onchange="carregarCidadesPorUF('inp_custo_destino_uf', 'inp_custo_destino_select', 'Selecione...')"><option value="">Selecione...</option></select>
-                    </div>
-                    <div class="form-col form-group">
-                        <label>Destino do Custo (Cidade):</label>
-                        <!-- Adicionado disabled -->
-                        <select id="inp_custo_destino_select" disabled><option value="">Selecione...</option></select>
-                    </div>
-                </div>
-
-                <!-- NOVO: 2.4 Comprovantes Múltiplos para este trecho -->
-                <label class="form-section-title" style="font-size: 0.9rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 15px;">2.4 Comprovantes do Trecho (OBRIGATÓRIO)</label>
-
-                <div id="comprovantes_custo_temp_list" style="margin-bottom: 15px;">
-                    <!-- Lista temporária de comprovantes para este custo (injetada via JS) -->
-                </div>
-
-                <div style="border: 1px dashed var(--primary-color); padding: 15px; border-radius: 4px; background: #fdfdff;">
-                    <label class="form-section-title" style="font-size: 0.9rem; border: none; padding: 0; margin-bottom: 10px;">Adicionar Novo Comprovante:</label>
-                    
-                    <div class="form-row">
-                        <div class="form-col form-group">
-                            <label>Tipo da Despesa:</label>
-                            <select id="inp_custo_tipo_despesa">
-                                <option value="">Selecione...</option>
-                                <option value="Combustível">Combustível / Abastecimento</option>
-                                <option value="Pedágio">Pedágio</option>
-                                <option value="Estacionamento">Estacionamento</option>
-                                <option value="Passagem (Ônibus/App)">Passagem (Ônibus/App)</option>
-                                <option value="Outro (Transporte)">Outro (Transporte)</option>
-                            </select>
-                        </div>
-                        <div class="form-col form-group">
-                            <label>Valor (R$):</label>
-                            <input type="number" id="inp_custo_valor_temp" step="0.01" placeholder="0,00">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Anexar Comprovante (Imagem/PDF):</label>
-                        <input type="file" id="input_custo_arquivo_temp" accept="image/*, application/pdf" onchange="previewCustoAnexoTemp(event)">
-                    </div>
-                    <div id="preview_custo_anexo_temp_container" style="text-align: center; margin-bottom: 10px; display: none;">
-                        <img id="preview_custo_img_temp" src="" style="max-height: 100px; border: 1px solid #ccc; border-radius: 4px; display: none;">
-                        <p id="preview_custo_text_temp" style="font-size: 0.8rem; color: #555; margin-top: 5px;"></p>
-                    </div>
-                    <div style="text-align: right;">
-                        <button type="button" class="btn-add" onclick="adicionarComprovanteCusto()" style="padding: 8px 15px; font-size: 0.9rem;">+ ADICIONAR COMPROVANTE</button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px; padding: 10px; border: 1px solid var(--primary-color); background: var(--highlight-bg); font-weight: bold; text-align: right;">
-                    Total Reembolsável Deste Trecho: <span id="total_reembolsavel_trecho">R$ 0,00</span>
-                </div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-                    <!-- NOVO BOTÃO DE CANCELAR -->
-                    <button class="btn-cancel" onclick="ocultarFormularioCusto()">CANCELAR</button>
-                    <button class="btn-add" onclick="adicionarCustoTransporte()">+ CONFIRMAR TRECHO E ADICIONAR À LISTA</button>
-                </div>
-            </div>
-
-            
-        </div>
-        
-        <!-- NOVO ITEM 3: DESPESAS DE ALIMENTAÇÃO -->
-        <div class="form-section-box">
-            <label class="form-section-title">3. Despesas de Alimentação (Diárias)</label>
-            
-            <!-- Lista de despesas já adicionadas -->
-            <div id="lista_outras_despesas_visual" style="margin-top: 5px;">
-                <!-- Itens serão inseridos aqui via JS -->
-            </div>
-            
-            <!-- TOTALIZADOR EM TEMPO REAL -->
-            <div id="totalizador_outras_despesas" style="display: none; margin-bottom: 25px;">
-                Total de Diárias (Alimentação e Hospedagem): <span id="valor_total_outras_despesas">R$ 0,00</span>
-            </div>
-
-            <!-- BOTÃO DE TRIGGER: Adicionar Despesa de Alimentação -->
-            <div id="trigger_adicionar_alimentacao" style="margin-bottom: 25px; text-align: center;">
-                <button class="btn-add" onclick="mostrarFormularioAlimentacao()">+ Adicionar Despesa de Alimentação</button>
-            </div>
-            
-            <!-- ÁREA PARA ADICIONAR NOVA DESPESA DE ALIMENTAÇÃO (AJUSTADO PARA MÚLTIPLOS COMPROVANTES) -->
-            <div id="dados_alimentacao_container" style="display: none;">
-                
-                <p style="font-size: 0.9rem; font-weight: bold;">Categoria do Item: ALIMENTAÇÃO (Diária)</p>
-
-                <!-- 3.1 DETALHE DA DESPESA -->
-                <div class="form-group">
-                    <label>3.1 Detalhe do Gasto (Opcional - Ex: Almoço 05/10/2024, Restaurante Bom Sabor):</label>
-                    <input type="text" id="inp_detalhe_alimentacao" placeholder="Ex: Almoço, Jantar, Lanches do dia 05/10/2024">
-                </div>
-
-                <!-- 3.2 COMPROVANTES MÚLTIPLOS -->
-                <label class="form-section-title" style="font-size: 0.9rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 15px;">3.2 Comprovantes do Item (OBRIGATÓRIO)</label>
-                
-                <div id="comprovantes_alimentacao_temp_list" style="margin-bottom: 15px;">
-                    <!-- Lista temporária de comprovantes para este custo (injetada via JS) -->
-                </div>
-
-
-                <div style="border: 1px dashed var(--primary-color); padding: 15px; border-radius: 4px; background: #fdfdff;">
-                    <label class="form-section-title" style="font-size: 0.9rem; border: none; padding: 0; margin-bottom: 10px;">Adicionar Novo Comprovante:</label>
-                    
-                    <div class="form-row">
-                        <div class="form-col form-group">
-                            <label>Descrição do Comprovante:</label>
-                            <select id="inp_alimentacao_tipo_despesa_temp">
-                                <option value="">Selecione...</option>
-                                <option value="Almoço">Almoço</option>
-                                <option value="Jantar">Jantar</option>
-                                <option value="Lanche">Lanche / Café</option>
-                                <option value="OutroAlimentacao">Outro (Alimentação)</option>
-                            </select>
-                        </div>
-                        <div class="form-col form-group">
-                            <label>Valor (R$):</label>
-                            <input type="number" id="inp_alimentacao_valor_temp" step="0.01" placeholder="0,00">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Anexar Comprovante (Imagem/PDF):</label>
-                        <input type="file" id="input_alimentacao_arquivo_temp" accept="image/*, application/pdf" onchange="previewAlimentacaoAnexoTemp(event)">
-                    </div>
-                    
-                    <div id="preview_alimentacao_anexo_temp_container" style="text-align: center; margin-bottom: 10px; display: none;">
-                        <img id="preview_alimentacao_img_temp" src="" style="max-height: 100px; border: 1px solid #ccc; border-radius: 4px; display: none;">
-                        <p id="preview_alimentacao_text_temp" style="font-size: 0.8rem; color: #555; margin-top: 5px;"></p>
-                    </div>
-
-                    <div style="text-align: right;">
-                        <button type="button" class="btn-add" onclick="adicionarComprovanteAlimentacao()" style="padding: 8px 15px; font-size: 0.9rem;">+ ANEXAR COMPROVANTE</button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px; padding: 10px; border: 1px solid var(--primary-color); background: var(--highlight-bg); font-weight: bold; text-align: right;">
-                    Total Reembolsável Deste Item: <span id="total_reembolsavel_alimentacao">R$ 0,00</span>
-                </div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-                    <button class="btn-cancel" onclick="ocultarFormularioAlimentacao()">CANCELAR</button>
-                    <button class="btn-add" onclick="adicionarDespesaAlimentacao()">+ CONFIRMAR ITEM DE ALIMENTAÇÃO</button>
-                </div>
-            </div>
-            
-        </div>
-        
-        <!-- NOVO ITEM 4: DESPESAS DE HOSPEDAGEM E OUTROS -->
-        <div class="form-section-box">
-            <label class="form-section-title">4. Despesas de Hospedagem e Outros Anexos</label>
-
-            <!-- Lista de despesas já adicionadas -->
-            <div id="lista_outras_despesas_visual_hosp" style="margin-top: 5px;">
-                <!-- Itens serão inseridos aqui via JS (Apenas a lista de hospedagem/outros) -->
-            </div>
-
-            <!-- BOTÃO DE TRIGGER: Adicionar Despesa de Hospedagem/Outros -->
-            <div id="trigger_adicionar_hospedagem" style="margin-bottom: 25px; text-align: center;">
-                <button class="btn-add" onclick="mostrarFormularioHospedagem()">+ Adicionar Hospedagem ou Outros</button>
-            </div>
-            
-            <!-- ÁREA PARA ADICIONAR NOVA DESPESA DE HOSPEDAGEM/OUTROS (AJUSTADO PARA MÚLTIPLOS COMPROVANTES) -->
-            <div id="dados_hospedagem_container" style="display: none;">
-                
-                <!-- 4.1 TIPO DE DESPESA PRINCIPAL -->
-                <div class="form-group">
-                    <label>4.1 Categoria Principal:</label>
-                    <select id="inp_tipo_despesa_hosp_outros">
-                        <option value="">Selecione a Categoria...</option>
-                        <option value="HOSPEDAGEM">Hospedagem / Hotel (Diária)</option>
-                        <option value="OUTRO_ANEXO">Outro Gasto Comprovado</option>
-                    </select>
-                </div>
-                
-                <!-- 4.2 DETALHE DA DESPESA -->
-                <div class="form-group">
-                    <label>4.2 Detalhe/Período (Opcional - Ex: Nome do hotel, Taxa de Inscrição):</label>
-                    <input type="text" id="inp_detalhe_hospedagem" placeholder="Ex: Hotel Primavera (Diária de 05/10), Taxa de Inscrição em Congresso">
-                </div>
-
-                <!-- 4.3 COMPROVANTES MÚLTIPLOS -->
-                <label class="form-section-title" style="font-size: 0.9rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 15px;">4.3 Comprovantes do Item (OBRIGATÓRIO)</label>
-
-                <div id="comprovantes_hospedagem_temp_list" style="margin-bottom: 15px;">
-                    <!-- Lista temporária de comprovantes para este custo (injetada via JS) -->
-                </div>
-
-                <div style="border: 1px dashed var(--primary-color); padding: 15px; border-radius: 4px; background: #fdfdff;">
-                    <label class="form-section-title" style="font-size: 0.9rem; border: none; padding: 0; margin-bottom: 10px;">Adicionar Novo Comprovante:</label>
-                    
-                    <div class="form-row">
-                        <div class="form-col form-group">
-                            <label>Descrição do Comprovante:</label>
-                            <select id="inp_hospedagem_tipo_despesa_temp">
-                                <option value="">Selecione...</option>
-                                <option value="NotaHotel">Nota Fiscal do Hotel</option>
-                                <option value="TaxaEvento">Taxa de Evento/Inscrição</option>
-                                <option value="Reembolso">Reembolso Diversos</option>
-                                <option value="OutroGeral">Outro (Geral)</option>
-                            </select>
-                        </div>
-                        <div class="form-col form-group">
-                            <label>Valor (R$):</label>
-                            <input type="number" id="inp_hospedagem_valor_temp" step="0.01" placeholder="0,00">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Anexar Comprovante (Imagem/PDF):</label>
-                        <input type="file" id="input_hospedagem_arquivo_temp" accept="image/*, application/pdf" onchange="previewHospedagemAnexoTemp(event)">
-                    </div>
-                    
-                    <div id="preview_hospedagem_anexo_temp_container" style="text-align: center; margin-bottom: 10px; display: none;">
-                        <img id="preview_hospedagem_img_temp" src="" style="max-height: 100px; border: 1px solid #ccc; border-radius: 4px; display: none;">
-                        <p id="preview_hospedagem_text_temp" style="font-size: 0.8rem; color: #555; margin-top: 5px;"></p>
-                    </div>
-                    
-                    <div style="text-align: right; margin-top: 10px;">
-                        <button type="button" class="btn-add" onclick="adicionarComprovanteHospedagem()" style="padding: 8px 15px; font-size: 0.9rem;">+ ANEXAR COMPROVANTE</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px; padding: 10px; border: 1px solid var(--primary-color); background: var(--highlight-bg); font-weight: bold; text-align: right;">
-                    Total Reembolsável Deste Item: <span id="total_reembolsavel_hospedagem">R$ 0,00</span>
-                </div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-                    <button class="btn-cancel" onclick="ocultarFormularioHospedagem()">CANCELAR</button>
-                    <button class="btn-add" onclick="adicionarDespesaHospedagem()">+ CONFIRMAR ITEM DE HOSPEDAGEM/OUTROS</button>
-                </div>
-            </div>
-            
-        </div>
-        
-        <!-- NOVO ITEM 5: RESUMO FINAL E TOTALIZAÇÃO (Substituindo o antigo Item 5) -->
-        <div class="form-section-box">
-            <label class="form-section-title">5. Resumo Final da Prestação de Contas</label>
-            
-            <div class="resumo-final-card">
-                <p style="font-size: 0.9rem; margin-top: 0;">Totalização de todos os custos declarados antes de gerar o relatório oficial.</p>
-                
-                <div class="resumo-final-item">
-                    <span>Total de Custos de Transporte (Item 2):</span>
-                    <span id="resumo_total_transporte">R$ 0,00</span>
-                </div>
-                
-                <div class="resumo-final-item">
-                    <span>Total de Alimentação (Item 3):</span>
-                    <span id="resumo_total_alimentacao">R$ 0,00</span>
-                </div>
-                
-                <div class="resumo-final-item">
-                    <span>Total de Hospedagem e Outros (Item 4):</span>
-                    <span id="resumo_total_hospedagem_outros">R$ 0,00</span>
-                </div>
-                
-                <div class="resumo-final-total">
-                    <span>SALDO FINAL (TOTAL REEMBOLSÁVEL):</span>
-                    <span id="resumo_saldo_final">R$ 0,00</span>
-                </div>
-
-                <p style="font-size: 0.8rem; color: var(--error-color); margin-top: 10px; display: none;" id="aviso_zerado">
-                    ⚠️ Atenção: O saldo final está zerado ou negativo. Certifique-se de que todos os comprovantes foram adicionados corretamente.
-                </p>
-                <p style="font-size: 0.8rem; color: var(--warning-color); margin-top: 10px; display: none;" id="aviso_pendente">
-                    🟡 Pendência: Nenhum custo foi adicionado nos itens 2, 3 e 4.
-                </p>
-            </div>
-        </div>
-
-
-        <!-- BOTÃO FINAL -->
-        <div class="buttons-container">
-            <!-- Chamada para a nova função de validação principal -->
-            <button class="btn-success" onclick="validarFormularioCompleto()">&#128196; GERAR E BAIXAR DOCUMENTO</button>
-        </div>
-        <div id="status-msg">Gerando seu PDF... Aguarde.</div>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- PDF OCULTO (TEMPLATE A4) -->
-    <!-- O número da seção de Dados Bancários no PDF foi corrigido para 3. -->
-    <!-- ================================================================== -->
-    <div id="report-container">
-        <div class="report-header">
-            <div class="brasao-placeholder">BRASÃO</div>
-            <div style="font-size: 14pt;">ESTADO DO PARANÁ</div>
-            <div style="font-size: 12pt; font-weight: normal;">PREFEITURA MUNICIPAL DE EXEMPLO</div>
-            <div style="margin-top: 15px; font-size: 16pt;">RELATÓRIO DE VIAGEM E PRESTAÇÃO DE CONTAS</div>
-            <div style="font-size: 10pt; font-weight: normal; margin-top: 5px;">(Conforme Decreto Municipal e Normas TCE-PR)</div>
-        </div>
-
-        <div class="report-section-title">1. IDENTIFICAÇÃO DO SERVIDOR</div>
-        <table class="report-table">
-            <tr>
-                <td class="td-label">Nome:</td>
-                <td class="td-value" colspan="3"><span id="out_nome"></span></td>
-            </tr>
-            <tr>
-                <td class="td-label">Matrícula:</td>
-                <td class="td-value"><span id="out_matricula"></span></td>
-                <td class="td-label">CPF:</td>
-                <td class="td-value"><span id="out_cpf"></span></td>
-            </tr>
-            <tr>
-                <td class="td-label">Cargo:</td>
-                <td class="td-value"><span id="out_cargo"></span></td>
-                <td class="td-label">Lotação:</td>
-                <td class="td-value"><span id="out_lotacao"></span></td>
-            </tr>
-        </table>
-        
-        <div class="report-section-title">2. DADOS DO DESLOCAMENTO E APURAÇÃO FINANCEIRA</div>
-        <table class="report-table">
-            <!-- Dados de Roteiro - Simulação para o PDF já que foi removido -->
-            <tr><td class="td-label">Roteiro Principal:</td><td class="td-value" colspan="3">NÃO DISPONÍVEL (Dados de Rota Removidos do Formulário)</td></tr>
-            <tr>
-                <td class="td-label">Período:</td><td class="td-value">NÃO DISPONÍVEL</td>
-                <td class="td-label">Km Total Estimado:</td><td class="td-value"><span id="out_km_total">N/A</span></td>
-            </tr>
-            <tr><td class="td-label">Finalidade:</td><td class="td-value" colspan="3">NÃO DISPONÍVEL (Relatório Removido)</td></tr>
-        </table>
-        
-        <div class="report-section-title" style="margin-top: 20px;">DETALHAMENTO FINANCEIRO</div>
-        <table class="report-table">
-            <tr><th>Descrição</th><th style="text-align: center;">Qtd</th><th style="text-align: right;">Valor Unit.</th><th style="text-align: right;">Total</th></tr>
-            <!-- Diárias (zerado no formulário) -->
-            <tr>
-                <td>Diárias</td>
-                <td style="text-align: center;"><span id="out_qtd_diaria">0</span></td>
-                <td style="text-align: right;">R$ <span id="out_vlr_diaria">0,00</span></td>
-                <td style="text-align: right;">R$ <span id="out_total_diarias">0,00</span></td>
-            </tr>
-            
-            <!-- BLOCO: CUSTOS DE TRANSPORTE LISTADOS -->
-            <tr>
-                <td colspan="4" style="text-align: left; font-weight: bold; background-color: #fff3cd; color: #856404;">(+) Detalhamento do Custo de Transporte:</td>
-            </tr>
-            <tbody id="out_custos_transporte_tabela">
-                <!-- Linhas de custo dinâmicas serão injetadas aqui -->
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #666; font-style: italic;">Nenhum custo de transporte adicionado.</td>
-                </tr>
-            </tbody>
-            
-            <!-- LINHA DE TOTAL DO TRANSPORTE -->
-            <tr>
-                <td colspan="3" style="text-align: right; font-weight: bold; background-color: #fff3cd;">SUBTOTAL TRANSPORTE:</td>
-                <td style="text-align: right; font-weight: bold; background-color: #fff3cd;">R$ <span id="out_total_custos_transporte_pdf">0,00</span></td>
-            </tr>
-            
-            <!-- BLOCO: OUTRAS DESPESAS (ALIMENTAÇÃO) -->
-            <tr>
-                <td colspan="4" style="text-align: left; font-weight: bold; background-color: #e8f4fd; color: #004a99; border-top: 1px solid #ccc;">(+) Detalhamento de Alimentação:</td>
-            </tr>
-            <tbody id="out_alimentacao_tabela">
-                <!-- Linhas de alimentação serão injetadas aqui -->
-            </tbody>
-
-            <!-- BLOCO: OUTRAS DESPESAS (HOSPEDAGEM E OUTROS) -->
-            <tr>
-                <td colspan="4" style="text-align: left; font-weight: bold; background-color: #f0f7ff; color: #004a99; border-top: 1px solid #ccc;">(+) Detalhamento de Hospedagem e Outros:</td>
-            </tr>
-            <tbody id="out_hospedagem_outros_tabela">
-                <!-- Linhas de hospedagem/outros serão injetadas aqui -->
-            </tbody>
-
-            <!-- LINHA DE TOTAL DE OUTRAS DESPESAS -->
-            <tr>
-                <td colspan="3" style="text-align: right; font-weight: bold; background-color: #e6f7ff;">SUBTOTAL DIÁRIAS/OUTROS:</td>
-                <td style="text-align: right; font-weight: bold; background-color: #e6f7ff;">R$ <span id="out_total_outras_despesas_pdf">0,00</span></td>
-            </tr>
-            
-            <!-- Linha Vazia para manter a estrutura -->
-            <tr>
-                <td colspan="3" style="text-align: right; font-weight: bold; background-color: #e6f7ff;">(+) Outras Despesas Comprovadas (Anexos):</td>
-                <td style="text-align: right; font-weight: bold; background-color: #e6f7ff;">R$ <span id="out_total_anexos_pdf">0,00</span></td>
-            </tr>
-
-            
-            <!-- Adiantamento (zerado no formulário) -->
-            <tr><td colspan="3" style="text-align: right;">(-) Adiantamento:</td><td style="text-align: right; color: #cc0000;">(R$ <span id="out_adiantamento">0,00</span>)</td></tr>
-            <tr style="background-color: #f0f0f0;"><td colspan="3" style="text-align: right; font-weight: bold;">SALDO FINAL (A PAGAR/DEVOLVER):</td><td style="text-align: right; font-weight: bold;">R$ <span id="out_saldo_final">0,00</span></td></tr>
-        </table>
-        
-        <!-- ITEM 3: DADOS BANCÁRIOS (Corrigido para 3) -->
-        <div class="report-section-title">3. DADOS BANCÁRIOS PARA REEMBOLSO</div>
-        <table class="report-table">
-            <tr>
-                <td class="td-label">Banco/Agência/CC:</td>
-                <td class="td-value" colspan="3"><span id="out_banco"></span></td>
-            </tr>
-        </table>
-
-        <!-- ANEXOS (CUSTO DE TRANSPORTE + OUTRAS DESPESAS) -->
-        <div id="container_anexos_pdf" style="display: none;">
-            <div class="report-section-title" style="page-break-before: always;">4. ANEXOS / COMPROVANTES DIGITALIZADOS (TRANSPORTE E OUTRAS DESPESAS)</div>
-            <div id="lista_anexos_pdf_conteudo"></div>
-        </div>
-        
-        <!-- Bloco para Observação Adicional no PDF (Se preenchida) -->
-        <div id="container_obs_adicional_pdf" style="margin-top: 15px; display: none; page-break-inside: avoid;">
-            <div class="report-section-title" style="font-size: 10pt;">OBSERVAÇÕES ADICIONAIS DO SERVIDOR</div>
-            <div class="narrative-box" style="min-height: 50px;"><span id="out_obs_adicional" style="white-space: pre-wrap; font-size: 10pt;"></span></div>
-        </div>
-
-        <div class="signatures-block">
-            <div class="signature-line"><br><span id="out_assinatura_nome"></span><br>Assinatura do Servidor</div>
-            <div class="signature-line"><br><br>Chefia Imediata</div>
-        </div>
-
-        <div class="footer-integrity">Gerado em <span id="out_data_geracao"></span>. Hash: <span id="out_hash"></span></div>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- JAVASCRIPT -->
-    <!-- ================================================================== -->
-    <script>
-        // --- VARIÁVEIS GLOBAIS ---
-        let listaCustosTransporte = []; // Item 2
-        let comprovantesCustoTemp = []; // Lista temporária para um trecho de transporte (Item 2.4)
-        let imagemCustoTempBase64 = ""; // Base64 temporária para 1 comprovante de CUSTO
-        
-        // NOVAS VARIÁVEIS PARA MÚLTIPLOS COMPROVANTES (ITENS 3 e 4)
-        let listaOutrasDespesas = []; // Lista principal de despesas (Alimentação, Hospedagem, Outros)
-        let comprovantesAlimentacaoTemp = []; // Lista temporária para 1 item de Alimentação
-        let imagemAlimentacaoComprovanteTempBase64 = ""; // Base64 temporária para 1 comprovante de ALIMENTAÇÃO
-        let comprovantesHospedagemTemp = []; // Lista temporária para 1 item de Hospedagem/Outros
-        let imagemHospedagemComprovanteTempBase64 = ""; // Base64 temporária para 1 comprovante de HOSPEDAGEM/OUTROS
-        
-        // Variáveis antigas (removidas do fluxo) mantidas para referência, mas vazias
-        let listaComprovantes = []; 
-        let listaParadas = [];      
-        let imagemOutroTempBase64 = ""; 
-        
-        // Estrutura de dados estática para Marcas e Modelos
-        const dadosVeiculos = {
-            "SELECIONE": [],
-            "FIAT": ["Uno", "Palio", "Argo", "Strada", "Toro", "OUTRO"],
-            "VOLKSWAGEN": ["Gol", "Voyage", "Polo", "Nivus", "T-Cross", "OUTRO"],
-            "CHEVROLET": ["Celta", "Onix", "Prisma", "Spin", "S10", "OUTRO"],
-            "FORD": ["Ka", "Fiesta", "EcoSport", "Ranger", "OUTRO"],
-            "RENAULT": ["Kwid", "Sandero", "Duster", "OUTRO"],
-            "OUTRO": [] // Flag to enable manual input
+        setLoading(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setArquivo({
+                file: file,
+                base64: reader.result,
+                mimeType: file.type
+            });
+            setLoading(false);
         };
+        reader.readAsDataURL(file);
+    };
 
-        // ==================================================================
-        // --- FUNÇÕES DE VALIDAÇÃO GERAIS ---
-        // ==================================================================
-
-        function validarCampo(inputElement, validationFunction) {
-            const isValid = validationFunction(inputElement.value);
-            if (isValid) {
-                inputElement.classList.remove('input-error');
-            } else {
-                inputElement.classList.add('input-error');
-            }
-            return isValid;
+    const handleAdd = () => {
+        if (!tipo || parseFloat(valor) <= 0 || !arquivo) {
+            alert("Preencha o tipo, valor e anexe um comprovante válido.");
+            return;
         }
 
-        function validarNomeCompleto(nome) {
-            if (!nome || nome.length < 5) return false;
-            const partes = nome.trim().split(/\s+/);
-            return partes.length >= 2;
-        }
-
-        function validarCPF(cpf) {
-            if (!cpf) return false;
-            cpf = cpf.replace(/[^\d]/g, '');
-            if (cpf.length !== 11) return false;
-            if (/^(\d)\1{10}$/.test(cpf)) return false;
-
-            let soma;
-            let resto;
-            let i;
-
-            soma = 0;
-            for (i = 1; i <= 9; i++) {
-                soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
-            }
-            resto = (soma * 10) % 11;
-            if ((resto === 10) || (resto === 11)) {
-                resto = 0;
-            }
-            if (resto !== parseInt(cpf.substring(9, 10))) return false;
-
-            soma = 0;
-            for (i = 1; i <= 10; i++) {
-                soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
-            }
-            resto = (soma * 10) % 11;
-
-            if ((resto === 10) || (resto === 11)) {
-                resto = 0;
-            }
-            if (resto !== parseInt(cpf.substring(10, 11))) return false;
-
-            return true;
-        }
-
-        // ==================================================================
-        // --- LÓGICA DO FORMULÁRIO (ITEM 1 - PESSOAL/BANCÁRIO) ---
-        // ==================================================================
-        
-        /**
-         * Controla a exibição dos campos detalhados do Item 1 (Pessoais e Bancários)
-         */
-        function mostrarFormularioPessoais() {
-            document.getElementById('trigger_detalhes_pessoais').style.display = 'none';
-            document.getElementById('dados_pessoais_ocultos_container').style.display = 'block';
-            document.getElementById('inp_matricula').focus();
-        }
-
-        function ocultarFormularioPessoais() {
-             document.getElementById('dados_pessoais_ocultos_container').style.display = 'none';
-             document.getElementById('trigger_detalhes_pessoais').style.display = 'block';
-        }
-
-        function verificarCargoManual(valorSelecionado) {
-            const divManual = document.getElementById('div_cargo_manual');
-            const inpManual = document.getElementById('inp_cargo_manual');
-            
-            if (valorSelecionado === 'OUTRO') {
-                divManual.style.display = 'block';
-                inpManual.focus();
-            } else {
-                divManual.style.display = 'none';
-                inpManual.value = ""; 
-            }
-        }
-        
-        function verificarLotacaoManual(valorSelecionado) {
-            const divManual = document.getElementById('div_lotacao_manual');
-            const inpManual = document.getElementById('inp_lotacao_manual');
-            
-            if (valorSelecionado === 'OUTRO' || valorSelecionado === 'UBS/PSF') {
-                divManual.style.display = 'block';
-                inpManual.focus();
-                
-                if (valorSelecionado === 'UBS/PSF') {
-                     document.querySelector('#div_lotacao_manual label').textContent = 'Especifique o Bairro ou Nome da UBS/PSF:';
-                     inpManual.placeholder = 'Ex: UBS Bairro Novo, PSF Primavera';
-                } else {
-                     document.querySelector('#div_lotacao_manual label').textContent = 'Especifique o Setor/Lotação (Ex: Setor de Compras, Defesa Civil):';
-                     inpManual.placeholder = 'Nome do setor...';
-                }
-                
-            } else {
-                divManual.style.display = 'none';
-                inpManual.value = ""; 
-            }
-        }
-        
-        function alternarObsAdicional(isChecked) {
-            const divObs = document.getElementById('div_obs_adicional');
-            if (isChecked) {
-                divObs.style.display = 'block';
-                document.getElementById('inp_obs_adicional').focus();
-            } else {
-                divObs.style.display = 'none';
-                document.getElementById('inp_obs_adicional').value = "";
-            }
-        }
-        
-        // ==================================================================
-        // --- LÓGICA DE CUSTOS DE TRANSPORTE (ITEM 2) ---
-        // ==================================================================
-
-        function mostrarFormularioCusto() {
-            document.getElementById('trigger_adicionar_custo').style.display = 'none';
-            document.getElementById('dados_custo_transporte_container').style.display = 'block';
-        }
-        
-        function ocultarFormularioCusto() {
-             // Limpa o estado temporário
-            comprovantesCustoTemp = [];
-            renderizarComprovantesCustoTemp(); 
-            document.getElementById('detalhes_custo_dinamico').innerHTML = '';
-            document.getElementById('inp_modalidade').value = '';
-            document.getElementById('inp_tipo_viagem_custo').value = '';
-            
-            // Re-esconde o formulário
-            document.getElementById('dados_custo_transporte_container').style.display = 'none';
-            // Re-exibe o botão de trigger
-            document.getElementById('trigger_adicionar_custo').style.display = 'block';
-
-            // Limpa selects de roteiro 2.3
-            const custoOrigemUF = document.getElementById('inp_custo_origem_uf');
-            const custoOrigemCidade = document.getElementById('inp_custo_origem_select');
-            const custoDestinoUF = document.getElementById('inp_custo_destino_uf');
-            const custoDestinoCidade = document.getElementById('inp_custo_destino_select');
-            custoOrigemUF.value = '';
-            custoOrigemCidade.innerHTML = '<option value="">Selecione...</option>';
-            custoOrigemCidade.disabled = true;
-            custoDestinoUF.value = '';
-            custoDestinoCidade.innerHTML = '<option value="">Selecione...</option>';
-            custoDestinoCidade.disabled = true;
-        }
-
-        function aplicarMascaraPlaca(elementId) {
-            const input = document.getElementById(elementId);
-            if (input) {
-                input.addEventListener('input', function(e) {
-                    let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"");
-                    if(v.length>3) v=v.substring(0,3)+"-"+v.substring(3);
-                    if(v.length>8) v=v.substring(0,8);
-                    e.target.value=v;
-                });
-            }
-        }
-        
-        function carregarModelos() {
-            const marcaSelect = document.getElementById('inp_custo_marca');
-            const modeloSelect = document.getElementById('inp_custo_modelo');
-            const divManual = document.getElementById('div_marca_modelo_manual');
-            const inputManual = document.getElementById('inp_custo_marca_modelo_manual');
-            const marcaSelecionada = marcaSelect.value;
-            
-            divManual.style.display = 'none';
-            inputManual.value = '';
-            
-            modeloSelect.innerHTML = '<option value="">Selecione o Modelo...</option>';
-            modeloSelect.disabled = true;
-
-            if (marcaSelecionada === 'SELECIONE') {
-                return;
-            }
-
-            if (marcaSelecionada === 'OUTRO') {
-                divManual.style.display = 'block';
-                inputManual.placeholder = "Especifique Marca e Modelo (Ex: Mercedes-Benz Sprinter 313)...";
-                inputManual.focus();
-                return;
-            }
-
-            const modelos = dadosVeiculos[marcaSelecionada];
-            if (modelos && modelos.length > 0) {
-                modeloSelect.disabled = false;
-                modelos.forEach(modelo => {
-                    const option = document.createElement('option');
-                    option.value = modelo;
-                    option.textContent = modelo;
-                    modeloSelect.appendChild(option);
-                });
-                
-                modeloSelect.onchange = function() {
-                    if (this.value === 'OUTRO') {
-                        divManual.style.display = 'block';
-                        inputManual.placeholder = `Especifique o Modelo da Marca ${marcaSelecionada}...`;
-                        inputManual.focus();
-                    } else {
-                        divManual.style.display = 'none';
-                        inputManual.value = '';
-                    }
-                };
-            }
-        }
-
-
-        function previewCustoAnexoTemp(event) {
-            const file = event.target.files[0];
-            const container = document.getElementById('preview_custo_anexo_temp_container');
-            const img = document.getElementById('preview_custo_img_temp');
-            const text = document.getElementById('preview_custo_text_temp');
-            imagemCustoTempBase64 = "";
-
-            if (!file) {
-                container.style.display = 'none';
-                return;
-            }
-
-            if (file.type.startsWith('image/')) {
-                img.style.display = 'block';
-                text.style.display = 'none';
-                text.textContent = '';
-                
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    imagemCustoTempBase64 = evt.target.result;
-                    img.src = imagemCustoTempBase64;
-                    container.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else if (file.type === 'application/pdf') {
-                img.style.display = 'none';
-                text.style.display = 'block';
-                text.textContent = `Arquivo PDF carregado: ${file.name}`;
-                
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    imagemCustoTempBase64 = evt.target.result;
-                    container.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-
-            } else {
-                 alert("Tipo de arquivo não suportado. Use Imagem ou PDF.");
-                 event.target.value = '';
-                 container.style.display = 'none';
-            }
-        }
-
-        function calcularKmTotal() {
-            const i = parseFloat(document.getElementById('inp_custo_km_ini')?.value) || 0;
-            const f = parseFloat(document.getElementById('inp_custo_km_fim')?.value) || 0;
-            const kmTotal = (f - i) > 0 ? (f - i) : 0;
-            
-            return { kmTotal };
-        }
-
-
-        function verificarModalidade(modalidade) {
-            const container = document.getElementById('detalhes_custo_dinamico');
-            container.innerHTML = '';
-            
-            let htmlCarro = `
-                <label class="form-section-title" style="font-size: 0.95rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 5px;">Detalhes do Veículo e Quilometragem</label>
-                
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>Marca:</label>
-                        <select id="inp_custo_marca" onchange="carregarModelos()">
-                            <option value="SELECIONE">Selecione a Marca...</option>
-                            ${Object.keys(dadosVeiculos).filter(k => k !== 'SELECIONE').map(marca => `<option value="${marca}">${marca}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-col form-group">
-                        <label>Modelo:</label>
-                        <select id="inp_custo_modelo" disabled>
-                            <option value="">Selecione o Modelo...</option>
-                        </select>
-                    </div>
-                </div>
-            
-                <!-- Campo manual para Marca e Modelo (Invisível por padrão) -->
-                <div id="div_marca_modelo_manual" style="display:none;" class="form-group">
-                    <label>Especifique Marca e Modelo:</label>
-                    <input type="text" id="inp_custo_marca_modelo_manual" placeholder="Ex: Mercedes-Benz Sprinter 313">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-col form-group"><label>Placa:</label><input type="text" id="inp_custo_placa" placeholder="ABC-1234" maxlength="8"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-col form-group"><label>Km Inicial:</label><input type="number" id="inp_custo_km_ini" placeholder="0"></div>
-                    <div class="form-col form-group"><label>Km Final:</label><input type="number" id="inp_custo_km_fim" placeholder="0"></div>
-                    <!-- KM TOTAL continua sendo calculado no ADICIONAR e é READONLY -->
-                    <div class="form-col form-group"><label>Total Km (Calculado):</label><input type="text" id="inp_custo_km_total" readonly style="background: #eee;"></div>
-                </div>
-            `;
-            
-            let htmlOutros = `
-                <label class="form-section-title" style="font-size: 0.95rem; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 5px;">Detalhes da Passagem/Custo</label>
-                <div class="form-row">
-                    <div class="form-col form-group">
-                        <label>Empresa/App/Cia. Aérea:</label>
-                        <input type="text" id="inp_custo_empresa_app" placeholder="Ex: Viação Catarinense, Uber, LATAM">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Detalhes/ID (Opcional):</label>
-                    <input type="text" id="inp_custo_detalhe" placeholder="Ex: Bilhete Nº 1234, ID Viagem">
-                </div>
-            `;
-
-            if (modalidade === 'CARRO_OFICIAL' || modalidade === 'VEICULO_PROPRIO') {
-                container.innerHTML = htmlCarro;
-                aplicarMascaraPlaca('inp_custo_placa'); 
-            } else if (modalidade !== '') {
-                container.innerHTML = htmlOutros;
-            }
-        }
-        
-        function alternarCamposCusto() {
-            const modalidade = document.getElementById('inp_modalidade').value;
-            verificarModalidade(modalidade);
-        }
-
-        // --- LÓGICA DE COMPROVANTES TEMPORÁRIOS (ITEM 2.4) ---
-
-        function calcularTotalComprovantesCustoTemp() {
-            const total = comprovantesCustoTemp.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-            document.getElementById('total_reembolsavel_trecho').textContent = `R$ ${formatarMoeda(total)}`;
-            return total;
-        }
-
-        function renderizarComprovantesCustoTemp() {
-            const container = document.getElementById('comprovantes_custo_temp_list');
-            container.innerHTML = "";
-
-            if (comprovantesCustoTemp.length === 0) {
-                container.innerHTML = `<p style="font-size: 0.9em; color: #888; text-align: center;">Nenhum comprovante adicionado a este trecho.</p>`;
-                calcularTotalComprovantesCustoTemp();
-                return;
-            }
-
-            comprovantesCustoTemp.forEach((item, index) => {
-                let thumbHtml = '';
-                if (item.mimeType.startsWith('image/')) {
-                    thumbHtml = `<img src="${item.imagemBase64}" class="comprovante-thumb" style="width: 40px; height: 40px;">`;
-                } else if (item.mimeType === 'application/pdf') {
-                    thumbHtml = `<div class="comprovante-thumb" style="width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; background-color: #e6f7ff; font-size: 8px; color: var(--primary-color);">PDF</div>`;
-                }
-                
-                const div = document.createElement('div');
-                div.className = 'list-item'; 
-                div.style.backgroundColor = '#fff';
-                div.innerHTML = `
-                    ${thumbHtml}
-                    <div class="list-info">
-                        <strong style="font-size: 0.9rem;">${item.tipoDespesa}</strong>
-                        <span style="font-weight: bold; color: var(--success-color);">R$ ${formatarMoeda(item.valor)}</span>
-                    </div>
-                    <button class="btn-remove" onclick="removerComprovanteCustoTemp(${index})">Remover</button>
-                `;
-                container.appendChild(div);
-            });
-            
-            calcularTotalComprovantesCustoTemp();
-        }
-
-        function removerComprovanteCustoTemp(index) {
-            comprovantesCustoTemp.splice(index, 1);
-            renderizarComprovantesCustoTemp();
-        }
-
-
-        function adicionarComprovanteCusto() {
-            const tipoDespesaSelect = document.getElementById('inp_custo_tipo_despesa');
-            const valorInput = document.getElementById('inp_custo_valor_temp');
-            const arquivoInput = document.getElementById('input_custo_arquivo_temp');
-
-            if (!tipoDespesaSelect.value) {
-                alert("Selecione o Tipo da Despesa.");
-                tipoDespesaSelect.focus();
-                return;
-            }
-            if ((parseFloat(valorInput.value) || 0) <= 0) {
-                 alert("O Valor do comprovante deve ser maior que zero.");
-                 valorInput.focus();
-                 return;
-            }
-            if (!imagemCustoTempBase64 || !arquivoInput.files[0]) {
-                 alert("É obrigatório anexar o comprovante (Imagem ou PDF).");
-                 arquivoInput.focus();
-                 return;
-            }
-            if (imagemCustoTempBase64.length < 50) {
-                 alert("O arquivo ainda está carregando. Por favor, aguarde e clique novamente.");
-                 return;
-            }
-
-
-            const novoComprovante = {
-                id: Date.now(),
-                tipoDespesa: tipoDespesaSelect.options[tipoDespesaSelect.selectedIndex].text,
-                valor: parseFloat(valorInput.value),
-                imagemBase64: imagemCustoTempBase64,
-                mimeType: arquivoInput.files[0].type
-            };
-
-            comprovantesCustoTemp.push(novoComprovante);
-
-            // Reset campos de adição
-            tipoDespesaSelect.value = '';
-            valorInput.value = '';
-            arquivoInput.value = '';
-            imagemCustoTempBase64 = '';
-            document.getElementById('preview_custo_anexo_temp_container').style.display = 'none';
-
-            renderizarComprovantesCustoTemp();
-        }
-
-        function adicionarCustoTransporte() {
-            const modalidadeSelect = document.getElementById('inp_modalidade');
-            const tipoViagemSelect = document.getElementById('inp_tipo_viagem_custo');
-            
-            const custoOrigemUF = document.getElementById('inp_custo_origem_uf');
-            const custoOrigemCidade = document.getElementById('inp_custo_origem_select');
-            const custoDestinoUF = document.getElementById('inp_custo_destino_uf');
-            const custoDestinoCidade = document.getElementById('inp_custo_destino_select');
-
-            // 1. Validação dos selects principais
-            if (!modalidadeSelect.value) {
-                alert("Por favor, selecione a Modalidade de Transporte (Item 2.1).");
-                return;
-            }
-            if (!tipoViagemSelect.value) {
-                alert("Por favor, selecione o Tipo de Rota (Item 2.2).");
-                return;
-            }
-            
-            // 2. Validação dos Comprovantes (Item 2.4)
-            const valorTotalTrecho = calcularTotalComprovantesCustoTemp();
-            if (comprovantesCustoTemp.length === 0 || valorTotalTrecho <= 0) {
-                 alert("Pelo menos um comprovante (com valor maior que zero) deve ser anexado para este trecho (Item 2.4). O valor total é R$ 0,00.");
-                 document.getElementById('inp_custo_tipo_despesa').focus();
-                 return;
-            }
-            
-            // 3. Validação do Roteiro Específico (2.3 OBRIGATÓRIO)
-            if (!custoOrigemUF.value || !custoOrigemCidade.value || !custoDestinoUF.value || !custoDestinoCidade.value) {
-                alert("Por favor, preencha todos os campos do Roteiro Específico (Item 2.3 - UF e Cidade de Origem/Destino) para este custo.");
-                return;
-            }
-
-            const modalidadeValue = modalidadeSelect.value;
-            const modalidade = modalidadeSelect.options[modalidadeSelect.selectedIndex].text;
-            const tipoViagem = tipoViagemSelect.options[tipoViagemSelect.selectedIndex].text;
-            
-            // Formata roteiro 2.3
-            const custoOrigem = `${custoOrigemCidade.value}/${custoOrigemUF.value}`;
-            const custoDestino = `${custoDestinoCidade.value}/${custoDestinoUF.value}`;
-            let detalhes = `${tipoViagem} (${custoOrigem} -> ${custoDestino})`;
-            
-            // 4. TRATAMENTO DE DETALHES ESPECÍFICOS
-            if (modalidadeValue === 'CARRO_OFICIAL' || modalidadeValue === 'VEICULO_PROPRIO') {
-                
-                const calculos = calcularKmTotal();
-                const kmTotal = calculos.kmTotal; 
-
-                const inpKmTotal = document.getElementById('inp_custo_km_total');
-                if (inpKmTotal) {
-                    inpKmTotal.value = kmTotal.toFixed(2);
-                }
-
-                if (kmTotal <= 0) {
-                     alert("A Quilometragem Final deve ser maior que a Inicial para calcular a KM Total.");
-                     document.getElementById('inp_custo_km_ini').focus();
-                     return;
-                }
-                
-                const placa = document.getElementById('inp_custo_placa').value;
-                const marca = document.getElementById('inp_custo_marca').value;
-                const modelo = document.getElementById('inp_custo_modelo').value;
-                const manual = document.getElementById('inp_custo_marca_modelo_manual')?.value.trim() || '';
-
-                let marcaModeloFinal = '';
-                if (manual) {
-                    marcaModeloFinal = manual; // Manual always overrides
-                } else if (marca === 'OUTRO') {
-                    alert("Por favor, especifique a Marca e Modelo no campo manual.");
-                    document.getElementById('inp_custo_marca_modelo_manual').focus();
-                    return;
-                } else if (modelo === 'OUTRO') {
-                    alert("Por favor, especifique o Modelo no campo manual.");
-                    document.getElementById('inp_custo_marca_modelo_manual').focus();
-                    return;
-                } else if (marca === 'SELECIONE') {
-                    alert("Por favor, selecione a Marca do veículo.");
-                    document.getElementById('inp_custo_marca').focus();
-                    return;
-                } else if (modelo === '') {
-                    alert("Por favor, selecione o Modelo do veículo.");
-                    document.getElementById('inp_custo_modelo').focus();
-                    return;
-                } else if (marca && modelo) {
-                    marcaModeloFinal = `${marca} ${modelo}`;
-                } 
-
-                detalhes += ` | ${kmTotal.toFixed(2)} Km | Veículo: ${placa} - ${marcaModeloFinal}`;
-                
-            } else {
-                 // Modalidades que usam detalhes avulsos
-                const empresaApp = document.getElementById('inp_custo_empresa_app')?.value || '';
-                const detalheCusto = document.getElementById('inp_custo_detalhe')?.value || '';
-                detalhes += ` | Empresa: ${empresaApp}` + (detalheCusto ? ` | ${detalheCusto}` : '');
-            }
-
-            // 5. CRIAÇÃO DO ITEM
-            const novoItem = {
-                id: Date.now(),
-                modalidade: modalidade,
-                detalhes: detalhes,
-                valor: valorTotalTrecho,
-                comprovantes: [...comprovantesCustoTemp],
-                tipo: 'Transporte'
-            };
-
-            listaCustosTransporte.push(novoItem);
-            
-            // Limpa o formulário de adição
-            document.getElementById('detalhes_custo_dinamico').innerHTML = '';
-            
-            custoOrigemUF.value = '';
-            custoOrigemCidade.innerHTML = '<option value="">Selecione...</option>';
-            custoOrigemCidade.disabled = true;
-            custoDestinoUF.value = '';
-            custoDestinoCidade.innerHTML = '<option value="">Selecione...</option>';
-            custoDestinoCidade.disabled = true;
-            
-            modalidadeSelect.value = '';
-            tipoViagemSelect.value = '';
-            
-            comprovantesCustoTemp = [];
-            renderizarComprovantesCustoTemp(); 
-
-            renderizarListaCustosTransporte();
-            
-            document.getElementById('dados_custo_transporte_container').style.display = 'none';
-            document.getElementById('trigger_adicionar_custo').style.display = 'block';
-        }
-
-        function removerCustoTransporte(index) {
-            listaCustosTransporte.splice(index, 1);
-            renderizarListaCustosTransporte();
-        }
-
-        function calcularTotalCustosTransporte() {
-            const total = listaCustosTransporte.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-            
-            const elTotal = document.getElementById('totalizador_custos_transporte');
-            document.getElementById('valor_total_custos_transporte').textContent = `R$ ${formatarMoeda(total)}`;
-            
-            if (total > 0) {
-                elTotal.style.display = 'block';
-            } else {
-                elTotal.style.display = 'none';
-            }
-            
-            // Atualiza o resumo
-            atualizarResumoFinal();
-            
-            return total;
-        }
-
-        function renderizarListaCustosTransporte() {
-            const container = document.getElementById('lista_custos_transporte_visual');
-            container.innerHTML = "";
-
-            listaCustosTransporte.forEach((item, index) => {
-                
-                const comprovantesResumo = item.comprovantes.map(c => 
-                    `${c.tipoDespesa} (R$ ${formatarMoeda(c.valor)})`
-                ).join('; ');
-
-                const div = document.createElement('div');
-                div.className = 'cost-list-item list-item'; 
-                div.innerHTML = `
-                    <div class="list-info">
-                        <strong>${item.modalidade.toUpperCase()}</strong>
-                        <span>${item.detalhes}</span>
-                        <span style="font-size: 0.8em; color: #888; margin-top: 5px; display: block;">Comprovantes: ${comprovantesResumo}</span>
-                        <span style="font-weight: 700; color: var(--primary-color); margin-top: 5px; display: block;">Valor Total Trecho: R$ ${formatarMoeda(item.valor)}</span>
-                    </div>
-                    <button class="btn-remove" onclick="removerCustoTransporte(${index})">Remover</button>
-                `;
-                container.appendChild(div);
-            });
-            
-            calcularTotalCustosTransporte();
-        }
-        
-        // ==================================================================
-        // --- LÓGICA DE OUTRAS DESPESAS (ITENS 3 e 4) ---
-        // ==================================================================
-        
-        // --- FUNÇÕES GERAIS DE PREVIEW PARA ITENS 3 E 4 ---
-        
-        /**
-         * Função genérica para pré-visualização de anexo, agora usando variáveis globais específicas para 3 e 4.
-         */
-        function previewAnexoGenerico(event, containerId, imgId, textId, base64VarName) {
-            const file = event.target.files[0];
-            const container = document.getElementById(containerId);
-            const img = document.getElementById(imgId);
-            const text = document.getElementById(textId);
-            
-            // Limpa a variável global correta
-            window[base64VarName] = ""; 
-
-            if (!file) {
-                container.style.display = 'none';
-                return;
-            }
-
-            if (file.type.startsWith('image/')) {
-                img.style.display = 'block';
-                text.style.display = 'none';
-                
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    window[base64VarName] = evt.target.result;
-                    img.src = window[base64VarName];
-                    container.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else if (file.type === 'application/pdf') {
-                img.style.display = 'none';
-                text.style.display = 'block';
-                text.textContent = `Arquivo PDF carregado: ${file.name}`;
-                
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    window[base64VarName] = evt.target.result;
-                    container.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-
-            } else {
-                 alert("Tipo de arquivo não suportado. Use Imagem ou PDF.");
-                 event.target.value = '';
-                 container.style.display = 'none';
-            }
-        }
-        
-        // ------------------------------------------------------------------
-        // ITEM 3: ALIMENTAÇÃO (Totalmente adaptado ao modelo Item 2)
-        // ------------------------------------------------------------------
-        
-        function mostrarFormularioAlimentacao() {
-             document.getElementById('trigger_adicionar_alimentacao').style.display = 'none';
-             document.getElementById('dados_alimentacao_container').style.display = 'block';
-             document.getElementById('inp_detalhe_alimentacao').focus();
-        }
-        
-        function ocultarFormularioAlimentacao() {
-             // Limpa o formulário principal
-             document.getElementById('inp_detalhe_alimentacao').value = '';
-             
-             // Limpa e reseta a lista temporária de comprovantes
-             comprovantesAlimentacaoTemp = [];
-             renderizarComprovantesAlimentacaoTemp(); // Redraws list and resets total
-             
-             // Reseta o formulário de adição de comprovante
-             document.getElementById('inp_alimentacao_tipo_despesa_temp').value = '';
-             document.getElementById('inp_alimentacao_valor_temp').value = '';
-             document.getElementById('input_alimentacao_arquivo_temp').value = '';
-             imagemAlimentacaoComprovanteTempBase64 = '';
-             document.getElementById('preview_alimentacao_anexo_temp_container').style.display = 'none';
-
-
-             document.getElementById('dados_alimentacao_container').style.display = 'none';
-             document.getElementById('trigger_adicionar_alimentacao').style.display = 'block';
-        }
-        
-        function previewAlimentacaoAnexoTemp(event) {
-            previewAnexoGenerico(event, 'preview_alimentacao_anexo_temp_container', 'preview_alimentacao_img_temp', 'preview_alimentacao_text_temp', 'imagemAlimentacaoComprovanteTempBase64');
-        }
-        
-        function calcularTotalComprovantesAlimentacaoTemp() {
-            const total = comprovantesAlimentacaoTemp.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-            document.getElementById('total_reembolsavel_alimentacao').textContent = `R$ ${formatarMoeda(total)}`;
-            return total;
-        }
-        
-        function renderizarComprovantesAlimentacaoTemp() {
-            const container = document.getElementById('comprovantes_alimentacao_temp_list');
-            container.innerHTML = "";
-
-            if (comprovantesAlimentacaoTemp.length === 0) {
-                container.innerHTML = `<p style="font-size: 0.9em; color: #888; text-align: center;">Nenhum comprovante de alimentação anexado.</p>`;
-                calcularTotalComprovantesAlimentacaoTemp();
-                return;
-            }
-
-            comprovantesAlimentacaoTemp.forEach((item, index) => {
-                let thumbHtml = '';
-                if (item.mimeType.startsWith('image/')) {
-                    thumbHtml = `<img src="${item.imagemBase64}" class="comprovante-thumb" style="width: 40px; height: 40px;">`;
-                } else if (item.mimeType === 'application/pdf') {
-                    thumbHtml = `<div class="comprovante-thumb" style="width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; background-color: #e8f4fd; font-size: 8px; color: #007bff;">PDF</div>`;
-                }
-                
-                const div = document.createElement('div');
-                div.className = 'list-item'; 
-                div.style.backgroundColor = '#fff';
-                div.innerHTML = `
-                    ${thumbHtml}
-                    <div class="list-info">
-                        <strong style="font-size: 0.9rem; color: #007bff;">${item.tipoDespesa}</strong>
-                        <span style="font-weight: bold; color: var(--success-color);">R$ ${formatarMoeda(item.valor)}</span>
-                    </div>
-                    <button class="btn-remove" onclick="removerComprovanteAlimentacaoTemp(${index})">Remover</button>
-                `;
-                container.appendChild(div);
-            });
-            
-            calcularTotalComprovantesAlimentacaoTemp();
-        }
-        
-        function removerComprovanteAlimentacaoTemp(index) {
-             comprovantesAlimentacaoTemp.splice(index, 1);
-             renderizarComprovantesAlimentacaoTemp();
-        }
-
-        function adicionarComprovanteAlimentacao() {
-            const tipoDespesaSelect = document.getElementById('inp_alimentacao_tipo_despesa_temp');
-            const valorInput = document.getElementById('inp_alimentacao_valor_temp');
-            const arquivoInput = document.getElementById('input_alimentacao_arquivo_temp');
-
-            if (!tipoDespesaSelect.value) {
-                alert("Selecione a Descrição do Comprovante (Ex: Almoço).");
-                tipoDespesaSelect.focus();
-                return;
-            }
-            if ((parseFloat(valorInput.value) || 0) <= 0) {
-                 alert("O Valor do comprovante deve ser maior que zero.");
-                 valorInput.focus();
-                 return;
-            }
-            if (!imagemAlimentacaoComprovanteTempBase64 || !arquivoInput.files[0]) {
-                 alert("É obrigatório anexar o comprovante (Imagem ou PDF).");
-                 arquivoInput.focus();
-                 return;
-            }
-            if (imagemAlimentacaoComprovanteTempBase64.length < 50) {
-                 alert("O arquivo ainda está carregando. Por favor, aguarde e clique novamente.");
-                 return;
-            }
-
-
-            const novoComprovante = {
-                id: Date.now(),
-                tipoDespesa: tipoDespesaSelect.options[tipoDespesaSelect.selectedIndex].text,
-                valor: parseFloat(valorInput.value),
-                imagemBase64: imagemAlimentacaoComprovanteTempBase64,
-                mimeType: arquivoInput.files[0].type
-            };
-
-            comprovantesAlimentacaoTemp.push(novoComprovante);
-
-            // Reset campos de adição
-            tipoDespesaSelect.value = '';
-            valorInput.value = '';
-            arquivoInput.value = '';
-            imagemAlimentacaoComprovanteTempBase64 = '';
-            document.getElementById('preview_alimentacao_anexo_temp_container').style.display = 'none';
-
-            renderizarComprovantesAlimentacaoTemp();
-        }
-
-
-        function adicionarDespesaAlimentacao() {
-             const detalheInput = document.getElementById('inp_detalhe_alimentacao');
-             const totalItem = calcularTotalComprovantesAlimentacaoTemp();
-             
-             // 1. Validação
-             if (comprovantesAlimentacaoTemp.length === 0 || totalItem <= 0) {
-                 alert("Adicione pelo menos um comprovante válido de Alimentação (com valor maior que zero) para confirmar este item.");
-                 document.getElementById('inp_alimentacao_tipo_despesa_temp').focus();
-                 return;
-             }
-
-             let descricaoCompleta = 'Alimentação (Diária)';
-             if (detalheInput.value.trim()) {
-                  descricaoCompleta += ` (${detalheInput.value.trim()})`;
-             }
-
-             const novaDespesa = {
-                id: Date.now(),
-                categoria: 'ALIMENTACAO', 
-                descricao: descricaoCompleta,
-                valor: totalItem,
-                comprovantes: [...comprovantesAlimentacaoTemp], // Adiciona a lista de comprovantes
-                tipo: 'Diarias/Outros'
-             };
-
-             listaOutrasDespesas.push(novaDespesa);
-             
-             ocultarFormularioAlimentacao();
-             renderizarListaOutrasDespesas();
-        }
-        
-        // ------------------------------------------------------------------
-        // ITEM 4: HOSPEDAGEM E OUTROS (Totalmente adaptado ao modelo Item 2)
-        // ------------------------------------------------------------------
-
-        function mostrarFormularioHospedagem() {
-             document.getElementById('trigger_adicionar_hospedagem').style.display = 'none';
-             document.getElementById('dados_hospedagem_container').style.display = 'block';
-             document.getElementById('inp_tipo_despesa_hosp_outros').focus();
-        }
-        
-        function ocultarFormularioHospedagem() {
-             // Limpa o formulário principal
-             document.getElementById('inp_tipo_despesa_hosp_outros').value = '';
-             document.getElementById('inp_detalhe_hospedagem').value = '';
-             
-             // Limpa e reseta a lista temporária de comprovantes
-             comprovantesHospedagemTemp = [];
-             renderizarComprovantesHospedagemTemp(); // Redraws list and resets total
-             
-             // Reseta o formulário de adição de comprovante
-             document.getElementById('inp_hospedagem_tipo_despesa_temp').value = '';
-             document.getElementById('inp_hospedagem_valor_temp').value = '';
-             document.getElementById('input_hospedagem_arquivo_temp').value = '';
-             imagemHospedagemComprovanteTempBase64 = '';
-             document.getElementById('preview_hospedagem_anexo_temp_container').style.display = 'none';
-
-
-             document.getElementById('dados_hospedagem_container').style.display = 'none';
-             document.getElementById('trigger_adicionar_hospedagem').style.display = 'block';
-        }
-        
-        function previewHospedagemAnexoTemp(event) {
-            previewAnexoGenerico(event, 'preview_hospedagem_anexo_temp_container', 'preview_hospedagem_img_temp', 'preview_hospedagem_text_temp', 'imagemHospedagemComprovanteTempBase64');
-        }
-        
-        function calcularTotalComprovantesHospedagemTemp() {
-            const total = comprovantesHospedagemTemp.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-            document.getElementById('total_reembolsavel_hospedagem').textContent = `R$ ${formatarMoeda(total)}`;
-            return total;
-        }
-
-        function renderizarComprovantesHospedagemTemp() {
-            const container = document.getElementById('comprovantes_hospedagem_temp_list');
-            container.innerHTML = "";
-
-            if (comprovantesHospedagemTemp.length === 0) {
-                container.innerHTML = `<p style="font-size: 0.9em; color: #888; text-align: center;">Nenhum comprovante anexado a este item.</p>`;
-                calcularTotalComprovantesHospedagemTemp();
-                return;
-            }
-
-            comprovantesHospedagemTemp.forEach((item, index) => {
-                let thumbHtml = '';
-                if (item.mimeType.startsWith('image/')) {
-                    thumbHtml = `<img src="${item.imagemBase64}" class="comprovante-thumb" style="width: 40px; height: 40px;">`;
-                } else if (item.mimeType === 'application/pdf') {
-                    thumbHtml = `<div class="comprovante-thumb" style="width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; background-color: #f0f7ff; font-size: 8px; color: #004a99;">PDF</div>`;
-                }
-                
-                const div = document.createElement('div');
-                div.className = 'list-item'; 
-                div.style.backgroundColor = '#fff';
-                div.innerHTML = `
-                    ${thumbHtml}
-                    <div class="list-info">
-                        <strong style="font-size: 0.9rem; color: #004a99;">${item.tipoDespesa}</strong>
-                        <span style="font-weight: bold; color: var(--success-color);">R$ ${formatarMoeda(item.valor)}</span>
-                    </div>
-                    <button class="btn-remove" onclick="removerComprovanteHospedagemTemp(${index})">Remover</button>
-                `;
-                container.appendChild(div);
-            });
-            
-            calcularTotalComprovantesHospedagemTemp();
-        }
-        
-        function removerComprovanteHospedagemTemp(index) {
-             comprovantesHospedagemTemp.splice(index, 1);
-             renderizarComprovantesHospedagemTemp();
-        }
-
-        function adicionarComprovanteHospedagem() {
-            const tipoDespesaSelect = document.getElementById('inp_hospedagem_tipo_despesa_temp');
-            const valorInput = document.getElementById('inp_hospedagem_valor_temp');
-            const arquivoInput = document.getElementById('input_hospedagem_arquivo_temp');
-
-            if (!tipoDespesaSelect.value) {
-                alert("Selecione a Descrição do Comprovante.");
-                tipoDespesaSelect.focus();
-                return;
-            }
-            if ((parseFloat(valorInput.value) || 0) <= 0) {
-                 alert("O Valor do comprovante deve ser maior que zero.");
-                 valorInput.focus();
-                 return;
-            }
-            if (!imagemHospedagemComprovanteTempBase64 || !arquivoInput.files[0]) {
-                 alert("É obrigatório anexar o comprovante (Imagem ou PDF).");
-                 arquivoInput.focus();
-                 return;
-            }
-            if (imagemHospedagemComprovanteTempBase64.length < 50) {
-                 alert("O arquivo ainda está carregando. Por favor, aguarde e clique novamente.");
-                 return;
-            }
-
-
-            const novoComprovante = {
-                id: Date.now(),
-                tipoDespesa: tipoDespesaSelect.options[tipoDespesaSelect.selectedIndex].text,
-                valor: parseFloat(valorInput.value),
-                imagemBase64: imagemHospedagemComprovanteTempBase64,
-                mimeType: arquivoInput.files[0].type
-            };
-
-            comprovantesHospedagemTemp.push(novoComprovante);
-
-            // Reset campos de adição
-            tipoDespesaSelect.value = '';
-            valorInput.value = '';
-            arquivoInput.value = '';
-            imagemHospedagemComprovanteTempBase64 = '';
-            document.getElementById('preview_hospedagem_anexo_temp_container').style.display = 'none';
-
-            renderizarComprovantesHospedagemTemp();
-        }
-
-        function adicionarDespesaHospedagem() {
-             const tipoDespesaSelect = document.getElementById('inp_tipo_despesa_hosp_outros');
-             const detalheInput = document.getElementById('inp_detalhe_hospedagem');
-             const totalItem = calcularTotalComprovantesHospedagemTemp();
-             
-             // 1. Validação de Categoria e Comprovantes
-             if (!tipoDespesaSelect.value) {
-                 alert("Selecione a Categoria Principal (Item 4.1).");
-                 tipoDespesaSelect.focus();
-                 return;
-             }
-             if (comprovantesHospedagemTemp.length === 0 || totalItem <= 0) {
-                 alert("Adicione pelo menos um comprovante válido (com valor maior que zero) para confirmar este item.");
-                 document.getElementById('inp_hospedagem_tipo_despesa_temp').focus();
-                 return;
-             }
-
-
-             const categoria = tipoDespesaSelect.value;
-             const tipoPrincipal = tipoDespesaSelect.options[tipoDespesaSelect.selectedIndex].text;
-             let descricaoCompleta = tipoPrincipal;
-             
-             if (detalheInput.value.trim()) {
-                  descricaoCompleta += ` (${detalheInput.value.trim()})`;
-             }
-
-             const novaDespesa = {
-                id: Date.now(),
-                categoria: categoria, 
-                descricao: descricaoCompleta,
-                valor: totalItem,
-                comprovantes: [...comprovantesHospedagemTemp], // Adiciona a lista de comprovantes
-                tipo: 'Diarias/Outros'
-             };
-
-             listaOutrasDespesas.push(novaDespesa);
-             
-             ocultarFormularioHospedagem();
-             renderizarListaOutrasDespesas();
-        }
-
-
-        
-        /**
-         * Remove uma despesa de diária/outros da lista.
-         */
-        function removerOutraDespesa(index) {
-            listaOutrasDespesas.splice(index, 1);
-            renderizarListaOutrasDespesas();
-        }
-
-        /**
-         * Calcula o total de outras despesas e atualiza o display.
-         */
-        function calcularTotalOutrasDespesas() {
-            const total = listaOutrasDespesas.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-            
-            const elTotal = document.getElementById('totalizador_outras_despesas');
-            document.getElementById('valor_total_outras_despesas').textContent = `R$ ${formatarMoeda(total)}`;
-            
-            if (total > 0) {
-                elTotal.style.display = 'block';
-            } else {
-                elTotal.style.display = 'none';
-            }
-            
-            // Atualiza o resumo
-            atualizarResumoFinal();
-            
-            return total;
-        }
-        
-        /**
-         * NOVO: Atualiza o bloco de resumo final (Item 5)
-         */
-        function atualizarResumoFinal() {
-            // Separação de categorias para o resumo
-            const alimentacao = listaOutrasDespesas.filter(d => d.categoria === 'ALIMENTACAO');
-            const hospedagemOutros = listaOutrasDespesas.filter(d => d.categoria !== 'ALIMENTACAO');
-            
-            const totalTransp = listaCustosTransporte.reduce((sum, item) => sum + item.valor, 0);
-            const totalAlim = alimentacao.reduce((sum, item) => sum + item.valor, 0);
-            const totalHospOutros = hospedagemOutros.reduce((sum, item) => sum + item.valor, 0);
-            
-            const saldoFinal = totalTransp + totalAlim + totalHospOutros;
-            
-            // Atualiza os valores no Item 5
-            document.getElementById('resumo_total_transporte').textContent = `R$ ${formatarMoeda(totalTransp)}`;
-            document.getElementById('resumo_total_alimentacao').textContent = `R$ ${formatarMoeda(totalAlim)}`;
-            document.getElementById('resumo_total_hospedagem_outros').textContent = `R$ ${formatarMoeda(totalHospOutros)}`;
-            document.getElementById('resumo_saldo_final').textContent = `R$ ${formatarMoeda(saldoFinal)}`;
-            
-            // Controle de avisos
-            const avisoZerado = document.getElementById('aviso_zerado');
-            const avisoPendente = document.getElementById('aviso_pendente');
-
-            if (saldoFinal === 0 && (totalTransp > 0 || totalAlim > 0 || totalHospOutros > 0)) {
-                 avisoZerado.style.display = 'block';
-                 avisoPendente.style.display = 'none';
-            } else if (saldoFinal === 0 && totalTransp === 0 && totalAlim === 0 && totalHospOutros === 0) {
-                 avisoPendente.style.display = 'block';
-                 avisoZerado.style.display = 'none';
-            } else {
-                 avisoZerado.style.display = 'none';
-                 avisoPendente.style.display = 'none';
-            }
-
-        }
-
-        /**
-         * Renderiza a lista de outras despesas na interface do usuário (lista combinada).
-         */
-        function renderizarListaOutrasDespesas() {
-            const container = document.getElementById('lista_outras_despesas_visual');
-            container.innerHTML = "";
-
-            // Separa as despesas em Alimentação e Hospedagem/Outros
-            const alimentacao = listaOutrasDespesas.filter(d => d.categoria === 'ALIMENTACAO');
-            const hospedagemOutros = listaOutrasDespesas.filter(d => d.categoria !== 'ALIMENTACAO');
-            
-            
-            // Funções para renderizar os blocos específicos de lista (Item 3 e Item 4)
-            function renderizarBloco(items, title, containerId, bgColor, mainColor) {
-                const container = document.getElementById(containerId);
-                let html = `
-                    <p style="font-size: 0.9rem; font-weight: 700; color: ${mainColor}; margin-top: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
-                        ${title} (${items.length} Item(s) Anexado(s)):
-                    </p>
-                `;
-
-                if (items.length === 0) {
-                    html += `<p style="font-size: 0.9em; color: #888; text-align: center;">Nenhum item adicionado.</p>`;
-                    container.innerHTML = html;
-                    return;
-                }
-
-                items.forEach((item, index) => {
-                    // Soma dos comprovantes para mostrar na lista
-                    const totalComprovantes = item.comprovantes.reduce((sum, c) => sum + c.valor, 0);
-                    
-                    const comprovantesResumo = item.comprovantes.map(c => 
-                        `${c.tipoDespesa} (R$ ${formatarMoeda(c.valor)})`
-                    ).join('; ');
-
-                    const div = document.createElement('div');
-                    div.className = 'cost-list-item list-item'; 
-                    div.style.backgroundColor = bgColor;
-                    
-                    // Encontra o índice na lista principal para remoção
-                    const indexPrincipal = listaOutrasDespesas.findIndex(d => d.id === item.id);
-                    
-                    div.innerHTML = `
-                        <div class="list-info">
-                            <strong style="font-size: 0.9rem; color: ${mainColor};">
-                                ${item.descricao.split('(')[0].trim().toUpperCase()}
-                            </strong>
-                            <span style="font-size: 0.8em; color: #666; margin-top: 2px; display: block;">
-                                Detalhe: ${item.descricao.includes('(') ? item.descricao.split('(')[1].replace(')', '') : 'N/A'}
-                            </span>
-                            <span style="font-size: 0.8em; color: #888; margin-top: 5px; display: block;">
-                                Comprovantes (${item.comprovantes.length}): ${comprovantesResumo}
-                            </span>
-                            <span style="font-weight: 700; color: var(--success-color); margin-top: 5px; display: block;">
-                                Valor Total Item: R$ ${formatarMoeda(item.valor)}
-                            </span>
-                        </div>
-                        <button class="btn-remove" onclick="removerOutraDespesa(${indexPrincipal})">Remover</button>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-            
-            // Renderiza Alimentação no contêiner principal de Item 3
-            renderizarBloco(alimentacao, 'Items de Alimentação Adicionados', 'lista_outras_despesas_visual', '#e8f4fd', '#007bff');
-            
-            // Renderiza Hospedagem/Outros no contêiner específico de Item 4
-            const containerHosp = document.getElementById('lista_outras_despesas_visual_hosp');
-            containerHosp.innerHTML = "";
-            renderizarBloco(hospedagemOutros, 'Items de Hospedagem/Outros Adicionados', 'lista_outras_despesas_visual_hosp', '#f0f7ff', '#004a99');
-
-
-            // O totalizador global permanece no Item 3
-            calcularTotalOutrasDespesas();
-        }
-
-
-        // ==================================================================
-        // --- FUNÇÃO DE VALIDAÇÃO PRINCIPAL ---
-        // ==================================================================
-        
-        function validarFormularioCompleto() {
-            let formValido = true;
-            
-            // ... (Validações de Item 1 - Dados Pessoais e Bancários) ...
-            const nomeInput = document.getElementById('inp_nome');
-            const cpfInput = document.getElementById('inp_cpf');
-            const cargoSelect = document.getElementById('inp_cargo');
-            const cargoManualInput = document.getElementById('inp_cargo_manual');
-            const lotacaoSelect = document.getElementById('inp_lotacao');
-            const lotacaoManualInput = document.getElementById('inp_lotacao_manual');
-            
-            // Validações principais visíveis (Nome)
-            if (!validarCampo(nomeInput, validarNomeCompleto)) {
-                alert("Por favor, insira o Nome Completo (nome e sobrenome) no Item 1.");
-                mostrarFormularioPessoais(); // Abre a seção para o usuário ver
-                nomeInput.focus();
-                formValido = false;
-            }
-            
-            // Validações dos campos ocultos (agora checados se estiverem preenchidos/visíveis)
-            const detalhesVisiveis = document.getElementById('dados_pessoais_ocultos_container').style.display !== 'none';
-
-            if (!detalhesVisiveis) {
-                 // Se os detalhes estiverem ocultos, mas o Nome for válido, forçamos a abertura para verificar o restante
-                 mostrarFormularioPessoais();
-                 alert("Por favor, preencha os detalhes do servidor e bancários no Item 1.");
-                 document.getElementById('inp_matricula').focus();
-                 formValido = false;
-            }
-
-            if (detalhesVisiveis && formValido) {
-                // Checagem completa se a seção estiver aberta
-                if (!validarCampo(cpfInput, validarCPF)) {
-                    alert("O número de CPF é inválido ou incompleto (Item 1.2).");
-                    cpfInput.focus();
-                    formValido = false;
-                }
-                else if (cargoSelect.value === 'OUTRO') {
-                    if (cargoManualInput.value.trim().length < 3) {
-                        alert("Selecione 'OUTRO', você deve especificar o cargo (Item 1.3).");
-                        cargoManualInput.classList.add('input-error');
-                        cargoManualInput.focus();
-                        formValido = false;
-                    } else { cargoManualInput.classList.remove('input-error'); }
-                } else if (cargoSelect.value === '') {
-                     alert("Por favor, selecione seu cargo (Item 1.3).");
-                     cargoSelect.classList.add('input-error');
-                     cargoSelect.focus();
-                     formValido = false;
-                }
-                else if (lotacaoSelect.value === 'OUTRO' || lotacaoSelect.value === 'UBS/PSF') {
-                    if (lotacaoManualInput.value.trim().length < 3) {
-                        alert(`Selecione '${lotacaoSelect.value}', você deve especificar os detalhes da lotação (Item 1.3).`);
-                        lotacaoManualInput.classList.add('input-error');
-                        lotacaoManualInput.focus();
-                        formValido = false;
-                    } else { lotacaoManualInput.classList.remove('input-error'); }
-                } else if (lotacaoSelect.value === '') {
-                     alert("Por favor, selecione a sua lotação (onde trabalha) (Item 1.3).");
-                     lotacaoSelect.classList.add('input-error');
-                     lotacaoSelect.focus();
-                     formValido = false;
-                }
-                // Validação mínima de dados bancários
-                const banco = document.getElementById('inp_banco_nome').value;
-                const agencia = document.getElementById('inp_agencia').value;
-                const conta = document.getElementById('inp_conta').value;
-
-                if (!banco || !agencia || !conta) {
-                     alert("Por favor, preencha todos os Dados Bancários (Item 1.4).");
-                     document.getElementById('inp_banco_nome').focus();
-                     formValido = false;
-                }
-            }
-            
-            // A validação de custos é opcional, mas a falta de tudo é um aviso.
-            if (listaCustosTransporte.length === 0 && listaOutrasDespesas.length === 0 && formValido) {
-                 const confirmar = window.confirm("Nenhum custo (Transporte, Alimentação ou Hospedagem/Outros) foi adicionado. Deseja gerar o relatório de prestação de contas mesmo assim?");
-                 if (!confirmar) {
-                     formValido = false;
-                 }
-            }
-
-
-            if (formValido) {
-                // Remove a marcação de erro se o formulário for válido para os campos principais
-                cargoSelect.classList.remove('input-error');
-                lotacaoSelect.classList.remove('input-error');
-                gerarPDFFinal();
-            }
-        }
-
-
-        // --- DEMAIS FUNÇÕES (IBGE, FORMATOS) ---
-        
-        window.addEventListener('load', function() {
-            // Máscara CPF
-             document.getElementById('inp_cpf').addEventListener('input', function(e) {
-                e.target.classList.remove('input-error'); 
-                let v = e.target.value.replace(/\D/g,""); 
-                if(v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-                else if(v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{3})/, "$1.$2.$3");
-                else if(v.length > 3) v = v.replace(/(\d{3})(\d{3})/, "$1.$2");
-                else if(v.length > 0) v = v.replace(/(\d{3})/, "$1");
-                e.target.value = v;
-            });
-            
-            carregarEstados(); // Carrega todos os selects de UF
-            
-            // Inicializa selects de custo de transporte (Item 2.3)
-            carregarCidadesPorUF('inp_custo_origem_uf', 'inp_custo_origem_select');
-            carregarCidadesPorUF('inp_custo_destino_uf', 'inp_custo_destino_select');
-            
-            // Inicializa listas de custos e comprovantes temporários
-            calcularTotalCustosTransporte();
-            renderizarListaCustosTransporte();
-            renderizarComprovantesCustoTemp();
-            
-            // Inicializa Outras Despesas e suas listas temporárias
-            calcularTotalOutrasDespesas();
-            renderizarListaOutrasDespesas();
-            renderizarComprovantesAlimentacaoTemp(); // Garante o total zero inicial
-            renderizarComprovantesHospedagemTemp(); // Garante o total zero inicial
-            
-            // Inicializa o Resumo Final (Item 5)
-            atualizarResumoFinal();
-            
-            // Oculta detalhes do modal ao iniciar
-            verificarModalidade(''); 
+        const tipoDespesa = tipoOptions.find(o => o.value === tipo)?.label || 'Outro';
+
+        onAdd({
+            id: Date.now(),
+            tipoDespesa,
+            valor: parseFloat(valor),
+            imagemBase64: arquivo.base64,
+            mimeType: arquivo.mimeType,
         });
 
-        function carregarEstados() {
-            fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-            .then(r=>r.json()).then(e=>{
-                e.sort((a,b)=>a.sigla.localeCompare(b.sigla));
-                // Atualiza APENAS os selects de UF para CUSTOS DE TRANSPORTE
-                ['inp_custo_origem_uf', 'inp_custo_destino_uf'].forEach(id => {
-                    let s = document.getElementById(id);
-                    s.innerHTML=""; 
-                    s.add(new Option('Selecione...', ''));
-                    e.forEach(uf=>{
-                        let opt=new Option(uf.sigla, uf.sigla); 
-                        s.add(opt);
-                    });
-                     s.value = ''; // Começa sem seleção
-                });
-            });
-        }
-        
-        function carregarCidadesPorUF(idUF, idCid, def="") {
-            let uf = document.getElementById(idUF).value;
-            let s = document.getElementById(idCid); 
+        setTipo('');
+        setValor('');
+        setArquivo(null);
+        document.getElementById('file-input-reset').value = '';
+    };
+
+    return (
+        <div className="border border-dashed border-blue-700 p-4 rounded-md bg-white/70 mt-4">
+            <h4 className="text-sm font-bold text-blue-700 mb-3 border-b border-gray-300 pb-1">Adicionar Novo Comprovante</h4>
             
-            // Desabilita e limpa o select de cidade se nenhuma UF for selecionada
-            if (uf === "") {
-                s.innerHTML = '<option value="">Selecione...</option>';
-                s.disabled = true; 
-                return;
-            }
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-600 mb-1">Tipo da Despesa:</label>
+                    <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="p-2 border rounded text-sm focus:border-blue-500">
+                        <option value="">Selecione...</option>
+                        {tipoOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-600 mb-1">Valor (R$):</label>
+                    <input type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="0,00" className="p-2 border rounded text-sm focus:border-blue-500" />
+                </div>
+            </div>
             
-            s.innerHTML='<option value="">Carregando...</option>';
-            s.disabled = false; // Habilita o campo de cidade
+            <div className="flex flex-col mb-4">
+                <label className="text-xs font-semibold text-gray-600 mb-1">Anexar Comprovante (Imagem/PDF):</label>
+                <input id="file-input-reset" type="file" accept="image/*, application/pdf" onChange={handleFileChange} className="p-1 border rounded text-sm bg-white" />
+                {loading && <p className="text-xs text-gray-500 mt-1">Carregando arquivo...</p>}
+                {arquivo && (
+                    <div className="mt-2 p-1 border border-green-300 rounded bg-green-50 text-xs text-green-700 flex items-center">
+                        <Check size={14} className="mr-1"/>
+                        Arquivo anexado: {arquivo.file.name}
+                    </div>
+                )}
+            </div>
             
-            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-            .then(r=>r.json()).then(c=>{
-                s.innerHTML=""; s.add(new Option(def || "Selecione...", ""));
-                c.sort((a,b)=>a.nome.localeCompare(b.nome));
-                c.forEach(cid=>s.add(new Option(cid.nome, cid.nome)));
-            });
-        }
-        
-        function formatarDataHora(d) { if(!d)return""; return new Date(d).toLocaleString('pt-BR').slice(0,16).replace(',',''); }
-        function formatarMoeda(v) { return parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2}); }
-
-        // --- GERAR PDF FINAL ---
-        function gerarPDFFinal() {
-            document.getElementById('status-msg').style.display = 'block';
+            <div className="text-right">
+                <button
+                    onClick={handleAdd}
+                    className="bg-blue-700 text-white px-3 py-1 text-sm font-semibold rounded hover:bg-blue-800 transition"
+                >
+                    <Plus size={14} className="inline mr-1" /> ADICIONAR COMPROVANTE
+                </button>
+            </div>
             
-            // 1. DADOS PESSOAIS
-            const cargoSelect = document.getElementById('inp_cargo');
-            let cargoFinal = (cargoSelect.value === 'OUTRO') ? document.getElementById('inp_cargo_manual').value : cargoSelect.value;
-            const lotacaoSelect = document.getElementById('inp_lotacao');
-            let lotacaoFinal = (lotacaoSelect.value === 'OUTRO' || lotacaoSelect.value === 'UBS/PSF') ? 
-                                (lotacaoSelect.value === 'UBS/PSF' ? `UBS/PSF: ${document.getElementById('inp_lotacao_manual').value}` : document.getElementById('inp_lotacao_manual').value) : 
-                                lotacaoSelect.value;
-            const obsAdicional = document.getElementById('inp_obs_adicional').value.trim();
+            <div className="mt-4 p-2 bg-yellow-100 border border-yellow-400 rounded text-right font-bold text-sm text-yellow-800">
+                {totalLabel}: {formatarMoeda(totalItem)}
+            </div>
+        </div>
+    );
+};
 
-            // 2. CUSTOS DE TRANSPORTE (SUMÁRIO)
-            let kmTotalViagem = 0;
-            
-            listaCustosTransporte.forEach(c => {
-                 const matchKm = c.detalhes.match(/\| (\d+(\.\d+)?) Km/);
-                 if (matchKm) {
-                     kmTotalViagem += parseFloat(matchKm[1]);
-                 }
-            });
-            
-            let kmTotal = kmTotalViagem > 0 ? `${kmTotalViagem.toFixed(2)} Km` : 'N/A';
-            
-            // PREENCHE OS CAMPOS DO PDF
-            document.getElementById('out_nome').textContent = document.getElementById('inp_nome').value.toUpperCase();
-            document.getElementById('out_assinatura_nome').textContent = document.getElementById('inp_nome').value.toUpperCase();
-            document.getElementById('out_matricula').textContent = document.getElementById('inp_matricula').value;
-            document.getElementById('out_cpf').textContent = document.getElementById('inp_cpf').value;
-            document.getElementById('out_cargo').textContent = cargoFinal; 
-            document.getElementById('out_lotacao').textContent = lotacaoFinal; 
-            
-            let bancoStr = `${document.getElementById('inp_banco_nome').value} Ag:${document.getElementById('inp_agencia').value} CC:${document.getElementById('inp_conta').value}`;
-            document.getElementById('out_banco').textContent = bancoStr; 
-            
-            const containerObsPdf = document.getElementById('container_obs_adicional_pdf');
-            if (obsAdicional) {
-                document.getElementById('out_obs_adicional').textContent = obsAdicional;
-                containerObsPdf.style.display = 'block';
-            } else {
-                containerObsPdf.style.display = 'none';
-            }
+const CostList = ({ items, onRemove, title, mainColor }) => {
+    if (items.length === 0) {
+        return (
+            <p className="text-sm text-gray-500 text-center py-4">Nenhum item de {title.toLowerCase()} adicionado.</p>
+        );
+    }
 
-            document.getElementById('out_km_total').textContent = kmTotal;
-
-            // VALORES FINANCEIROS
-            let totalAnexos = 0; 
-            let totalCustosTransporte = calcularTotalCustosTransporte();
-            let totalOutrasDespesas = calcularTotalOutrasDespesas(); // Total geral
-
-            // Separação de categorias para o PDF
-            const alimentacao = listaOutrasDespesas.filter(d => d.categoria === 'ALIMENTACAO');
-            const hospedagemOutros = listaOutrasDespesas.filter(d => d.categoria !== 'ALIMENTACAO');
-            
-            const totalAlimentacao = alimentacao.reduce((sum, item) => sum + item.valor, 0);
-            const totalHospedagemOutros = hospedagemOutros.reduce((sum, item) => sum + item.valor, 0);
-
-            
-            // Zerar diárias fixas
-            document.getElementById('out_qtd_diaria').textContent = 0;
-            document.getElementById('out_vlr_diaria').textContent = formatarMoeda(0);
-            document.getElementById('out_total_diarias').textContent = formatarMoeda(0);
-            
-            // Tabela de Detalhe de Custos de Transporte no PDF
-            const tabelaCustosTransporte = document.getElementById('out_custos_transporte_tabela');
-            if (listaCustosTransporte.length > 0) {
-                 tabelaCustosTransporte.innerHTML = listaCustosTransporte.map((item, index) => {
-                     // Lista de comprovantes dentro do item de transporte
-                     const comprovantesHtml = item.comprovantes.map(c => `
-                        <tr style="border-top: 1px dashed #ccc;">
-                            <td style="font-size: 8pt; padding-left: 20px;">- ${c.tipoDespesa}</td>
-                            <td style="text-align: center; font-size: 8pt;">1</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                        </tr>
-                     `).join('');
-
-                     return `
-                        <tr>
-                            <td colspan="4" style="background-color: #f7f7f7; font-weight: bold; border-top: 2px solid #ccc; font-size: 9pt;">
-                                Trecho ${index + 1}: ${item.modalidade} (${item.detalhes.split('|')[0].trim()})
-                            </td>
-                        </tr>
-                        ${comprovantesHtml}
-                        <tr>
-                            <td colspan="3" style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #fff3cd;">SUBTOTAL TRECHO:</td>
-                            <td style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #fff3cd;">R$ ${formatarMoeda(item.valor)}</td>
-                        </tr>
-                     `;
-                 }).join('');
-            } else {
-                 tabelaCustosTransporte.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: #666; font-style: italic; border: 0; padding-top: 5px; padding-bottom: 5px;">Nenhum custo de transporte adicionado.</td>
-                    </tr>
-                `;
-            }
-
-            // Tabela de Detalhe de ALIMENTAÇÃO no PDF
-            const tabelaAlimentacao = document.getElementById('out_alimentacao_tabela');
-            if (alimentacao.length > 0) {
-                tabelaAlimentacao.innerHTML = alimentacao.map((item, index) => {
-                    // Lista de comprovantes dentro do item de alimentação
-                    const comprovantesHtml = item.comprovantes.map(c => `
-                        <tr style="border-top: 1px dashed #ccc;">
-                            <td style="font-size: 8pt; padding-left: 20px;">- ${c.tipoDespesa} (Comprovante)</td>
-                            <td style="text-align: center; font-size: 8pt;">1</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                        </tr>
-                    `).join('');
-
-                    return `
-                        <tr>
-                            <td colspan="4" style="background-color: #f7f7f7; font-weight: bold; border-top: 2px solid #ccc; font-size: 9pt;">
-                                Item ${index + 1}: ${item.descricao.split('(')[0].trim()}
-                            </td>
-                        </tr>
-                        ${comprovantesHtml}
-                        <tr>
-                            <td colspan="3" style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #e8f4fd;">TOTAL ITEM ALIMENTAÇÃO:</td>
-                            <td style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #e8f4fd;">R$ ${formatarMoeda(item.valor)}</td>
-                        </tr>
-                    `;
-                 }).join('');
-                 
-            } else {
-                 tabelaAlimentacao.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: #666; font-style: italic; border: 0; padding-top: 5px; padding-bottom: 5px;">Nenhuma despesa de alimentação adicionada.</td>
-                    </tr>
-                `;
-            }
-
-            // Tabela de Detalhe de HOSPEDAGEM E OUTROS no PDF
-            const tabelaHospedagemOutros = document.getElementById('out_hospedagem_outros_tabela');
-            if (hospedagemOutros.length > 0) {
-                tabelaHospedagemOutros.innerHTML = hospedagemOutros.map((item, index) => {
-                    // Lista de comprovantes dentro do item de hospedagem
-                    const comprovantesHtml = item.comprovantes.map(c => `
-                        <tr style="border-top: 1px dashed #ccc;">
-                            <td style="font-size: 8pt; padding-left: 20px;">- ${c.tipoDespesa} (Comprovante)</td>
-                            <td style="text-align: center; font-size: 8pt;">1</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                            <td style="text-align: right; font-size: 8pt;">R$ ${formatarMoeda(c.valor)}</td>
-                        </tr>
-                    `).join('');
-
-                    return `
-                        <tr>
-                            <td colspan="4" style="background-color: #f7f7f7; font-weight: bold; border-top: 2px solid #ccc; font-size: 9pt;">
-                                Item ${index + 1}: ${item.descricao.split('(')[0].trim()}
-                            </td>
-                        </tr>
-                        ${comprovantesHtml}
-                        <tr>
-                            <td colspan="3" style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #f0f7ff;">TOTAL ITEM HOSPEDAGEM/OUTROS:</td>
-                            <td style="text-align: right; font-weight: bold; font-size: 9pt; background-color: #f0f7ff;">R$ ${formatarMoeda(item.valor)}</td>
-                        </tr>
-                    `;
-                 }).join('');
-            } else {
-                 tabelaHospedagemOutros.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: #666; font-style: italic; border: 0; padding-top: 5px; padding-bottom: 5px;">Nenhuma despesa de hospedagem ou outra despesa adicionada.</td>
-                    </tr>
-                `;
-            }
-
-            // Totalização no rodapé da tabela principal
-            document.getElementById('out_total_custos_transporte_pdf').textContent = formatarMoeda(totalCustosTransporte); 
-            document.getElementById('out_total_outras_despesas_pdf').textContent = formatarMoeda(totalAlimentacao + totalHospedagemOutros); // Soma A + H/O
-            document.getElementById('out_total_anexos_pdf').textContent = formatarMoeda(totalAnexos); // R$ 0,00
-
-            let saldoFinal = totalCustosTransporte + totalOutrasDespesas + totalAnexos; 
-
-            document.getElementById('out_adiantamento').textContent = formatarMoeda(0);
-            document.getElementById('out_saldo_final').textContent = formatarMoeda(saldoFinal);
-
-            document.getElementById('out_data_geracao').textContent = new Date().toLocaleString();
-            document.getElementById('out_hash').textContent = Math.random().toString(36).substring(7).toUpperCase();
-
-            // COLETANDO TODOS ANEXOS
-            let todosAnexos = [];
-            
-            // 1. Anexos de CUSTO DE TRANSPORTE
-            listaCustosTransporte.forEach((custo, custoIndex) => {
-                custo.comprovantes.forEach(comprovante => {
-                    todosAnexos.push({
-                        descricao: `${comprovante.tipoDespesa} (Trecho ${custoIndex + 1}: ${custo.detalhes.split('|')[0].trim()})`,
-                        valor: comprovante.valor,
-                        imagem: comprovante.imagemBase64,
-                        mimeType: comprovante.mimeType,
-                        tipo: 'Transporte'
-                    });
-                });
-            });
-            
-            // 2. Anexos de OUTRAS DESPESAS (ITENS 3 e 4)
-            listaOutrasDespesas.forEach(item => {
-                const itemCategoria = item.categoria === 'ALIMENTACAO' ? 'Alimentação' : (item.categoria === 'HOSPEDAGEM' ? 'Hospedagem' : 'Outros');
+    return (
+        <div className="space-y-2 mt-4">
+             <p className="text-sm font-bold border-b border-dashed pb-1" style={{ color: mainColor }}>
+                {title} Adicionados ({items.length} Item(s)):
+            </p>
+            {items.map((item, index) => {
+                const comprovantesCount = item.comprovantes.length;
+                const comprovantesTotal = item.comprovantes.reduce((sum, c) => sum + c.valor, 0);
                 
-                item.comprovantes.forEach((comprovante, index) => {
-                     todosAnexos.push({
-                        descricao: `${comprovante.tipoDespesa} - ${item.descricao}`,
-                        valor: comprovante.valor,
-                        imagem: comprovante.imagemBase64,
-                        mimeType: comprovante.mimeType,
-                        tipo: `${itemCategoria} (C. ${index+1})`
-                    });
-                });
-            });
-
-            // RENDERIZA LISTA DE TODOS ANEXOS NO HTML DO PDF
-            const containerPdf = document.getElementById('lista_anexos_pdf_conteudo');
-            const sectionPdf = document.getElementById('container_anexos_pdf');
-            containerPdf.innerHTML = "";
-            
-            if (todosAnexos.length > 0) {
-                sectionPdf.style.display = 'block';
-                todosAnexos.forEach((item, index) => {
-                    let imageContent;
-                    
-                    if (item.mimeType.startsWith('image/')) {
-                         imageContent = `<img src="${item.imagem}" class="pdf-comprovante-img">`;
-                    } else if (item.mimeType.includes('pdf')) {
-                        imageContent = `<div class="pdf-comprovante-img" style="display: flex; align-items: center; justify-content: center; height: 150px; background-color: #f7f7f7; border: 1px dashed #999;">
-                                           <span style="font-size: 10pt;">[PDF Anexo: ${index + 1} - ${item.tipo}] Conteúdo Digitalizado.</span>
-                                        </div>`;
-                    } else {
-                         imageContent = `<div class="pdf-comprovante-img" style="display: flex; align-items: center; justify-content: center; height: 150px; background-color: #ffcccc; border: 1px dashed #999;">
-                                           <span style="font-size: 10pt; color: #cc0000;">[Arquivo Não Suportado]</span>
-                                        </div>`;
-                    }
-
-                    const div = document.createElement('div');
-                    div.className = 'pdf-comprovante-box';
-                    div.innerHTML = `
-                        ${imageContent}
-                        <div class="pdf-comprovante-data">
-                            <p><strong>Despesa:</strong> ${item.descricao}</p>
-                            <p><strong>Tipo:</strong> ${item.tipo}</p>
-                            <p><strong>Valor Declarado:</strong> R$ ${formatarMoeda(item.valor)}</p>
+                return (
+                    <div key={item.id} className="cost-list-item flex items-center bg-white border border-gray-300 p-3 rounded-md shadow-sm">
+                        <div className="flex-1">
+                            <strong className="text-base" style={{ color: mainColor }}>{item.descricao.toUpperCase()}</strong>
+                            <span className="block text-xs text-gray-600">{item.detalhes}</span>
+                            <span className="block text-xs text-gray-500 mt-1">
+                                Comprovantes: {comprovantesCount} ({formatarMoeda(comprovantesTotal)})
+                            </span>
+                            <span className="block text-sm font-bold text-blue-700 mt-1">
+                                Valor Total Item: {formatarMoeda(item.valor)}
+                            </span>
                         </div>
-                    `;
-                    containerPdf.appendChild(div);
-                });
-            } else {
-                sectionPdf.style.display = 'none';
-            }
+                        <button
+                            onClick={() => onRemove(item.id)}
+                            className="btn-remove bg-red-100 text-red-700 px-2 py-1 text-xs rounded hover:bg-red-200 transition"
+                        >
+                            <X size={12} className="inline mr-1" /> Remover
+                        </button>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
-            // GERA PDF
-            html2pdf().set({ margin:10, filename:'Prestacao_Contas.pdf', image:{type:'jpeg',quality:0.95}, html2canvas:{scale:2, useCORS:true}, jsPDF:{unit:'mm',format:'a4'} })
-                .from(document.getElementById('report-container')).save()
-                .then(()=> document.getElementById('status-msg').innerHTML="PDF Baixado com Sucesso!");
+
+const GenericExpenseSection = ({ 
+    list, 
+    onAdd, 
+    onRemove, 
+    title, 
+    icon: Icon, 
+    category, 
+    itemOptions, 
+    comprovanteOptions,
+    totalDisplayBg,
+    mainPlaceholder
+}) => {
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    
+    const [detalhe, setDetalhe] = useState('');
+    const [comprovantesTemp, setComprovantesTemp] = useState([]);
+    const [tipoPrincipal, setTipoPrincipal] = useState(itemOptions.length > 0 ? itemOptions[0].value : '');
+    
+    const totalItem = comprovantesTemp.reduce((sum, item) => sum + item.valor, 0);
+
+    const handleAddComprovante = useCallback((newComprovante) => {
+        setComprovantesTemp(prev => [...prev, newComprovante]);
+    }, []);
+
+    const handleRemoveComprovante = useCallback((index) => {
+        setComprovantesTemp(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleConfirm = () => {
+        if (!detalhe) {
+             alert("Por favor, preencha o campo de Detalhe.");
+             return;
         }
-    </script>
-</body>
-</html>
+        if (comprovantesTemp.length === 0 || totalItem <= 0) {
+             alert("Pelo menos um comprovante válido (com valor maior que zero) deve ser anexado.");
+             return;
+        }
+        
+        const tipoLabel = itemOptions.find(o => o.value === tipoPrincipal)?.label || mainPlaceholder;
+        let descricaoCompleta = `${tipoLabel}`;
+        if (detalhe) {
+            descricaoCompleta += ` (${detalhe})`;
+        }
+
+        const novoItem = {
+            id: Date.now(),
+            categoria: category,
+            descricao: descricaoCompleta,
+            detalhes: detalhe,
+            valor: totalItem,
+            comprovantes: comprovantesTemp,
+            tipo: 'Diarias/Outros'
+        };
+
+        onAdd(novoItem);
+        
+        setDetalhe('');
+        setComprovantesTemp([]);
+        setTipoPrincipal(itemOptions.length > 0 ? itemOptions[0].value : '');
+        setIsFormOpen(false);
+    };
+    
+    const sectionList = useMemo(() => list.filter(d => d.categoria === category), [list, category]);
+    const totalSection = useMemo(() => sectionList.reduce((sum, item) => sum + item.valor, 0), [sectionList]);
+
+
+    return (
+        <div className="form-section-box">
+            <h3 className="form-section-title flex items-center">
+                <Icon size={20} className="mr-2" /> {title}
+            </h3>
+            
+            <CostList 
+                items={sectionList} 
+                onRemove={onRemove} 
+                title={mainPlaceholder} 
+                mainColor={PRIMARY_COLOR} 
+            />
+            
+            {totalSection > 0 && (
+                <div className={`mt-4 p-2 rounded font-bold text-right text-sm`} style={{ background: totalDisplayBg, border: `1px solid ${PRIMARY_COLOR}` }}>
+                    Total {title}: <span className="text-base">{formatarMoeda(totalSection)}</span>
+                </div>
+            )}
+            
+            {/* PADRONIZADO: Botão de Trigger */}
+            {!isFormOpen && (
+                <div className="text-center mt-6">
+                    <button className="btn-add bg-blue-700 text-white px-4 py-2 text-sm font-semibold rounded hover:bg-blue-800 transition" onClick={() => setIsFormOpen(true)}>
+                         <Plus size={16} className="inline mr-1" /> Adicionar Novo Item
+                    </button>
+                </div>
+            )}
+
+            {isFormOpen && (
+                <div id={`dados_${category.toLowerCase()}_container`} className="mt-4 p-4 rounded-md shadow-inner" style={{ border: `1px solid ${PRIMARY_COLOR}`, background: HIGHLIGHT_BG }}>
+                    <h4 className="text-lg font-bold text-blue-800 mb-3">Adicionar {mainPlaceholder}</h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        {itemOptions.length > 1 && (
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-700 mb-1">Tipo de Item:</label>
+                                <select value={tipoPrincipal} onChange={(e) => setTipoPrincipal(e.target.value)} className="p-2 border rounded focus:border-blue-500">
+                                    {itemOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                </select>
+                            </div>
+                        )}
+                        
+                        <div className={`flex flex-col ${itemOptions.length === 1 ? 'col-span-1 sm:col-span-2' : ''}`}>
+                            <label className="text-sm font-semibold text-gray-700 mb-1">Detalhe (Ex: Roteiro, Nome do Restaurante/Hotel):</label>
+                            <input type="text" value={detalhe} onChange={(e) => setDetalhe(e.target.value)} placeholder="Detalhe/Período" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-blue-700 mb-2 border-b border-gray-400 pb-1 mt-4">Comprovantes do Item (OBRIGATÓRIO)</h4>
+                    <ComprovanteTempList 
+                        comprovantes={comprovantesTemp} 
+                        onRemove={handleRemoveComprovante} 
+                    />
+                    
+                    <ComprovanteInput
+                        onAdd={handleAddComprovante}
+                        tipoOptions={comprovanteOptions}
+                        totalItem={totalItem}
+                        totalLabel="Total Reembolsável Deste Item"
+                    />
+
+                    <div className="text-right mt-4 pt-3 border-t border-gray-300">
+                        <button className="btn-cancel bg-gray-600 text-white px-3 py-1 text-sm font-semibold rounded hover:bg-gray-700 transition mr-2" onClick={() => setIsFormOpen(false)}>
+                            FECHAR FORMULÁRIO
+                        </button>
+                        <button className="btn-add bg-blue-700 text-white px-3 py-1 text-sm font-semibold rounded hover:bg-blue-800 transition" onClick={handleConfirm}>
+                             <Check size={16} className="inline mr-1" /> CONFIRMAR ITEM
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// NOVO: Componente dedicado para a Seção de Dados Pessoais (Item 1)
+const PersonalDataSection = ({ nome, setNome, matricula, setMatricula, cpf, setCpf, banco, setBanco, agencia, setAgencia, conta, setConta, isPersonalFormOpen, setIsPersonalFormOpen }) => {
+    
+    // Verifica se os dados principais estão preenchidos
+    const isDataConfigured = !!nome && !!cpf && !!banco;
+
+    return (
+        <div className="form-section-box">
+            <h3 className="form-section-title flex items-center">
+                <User size={20} className="mr-2" /> 1. Quem é você? (Dados Pessoais e Bancários)
+            </h3>
+
+            {/* Visualização de Status ou Mensagem de Item Vazio */}
+            {!isPersonalFormOpen && (
+                <>
+                    {isDataConfigured ? (
+                        <div className="mb-4 p-3 border rounded border-green-300 bg-green-50 text-sm">
+                            <p className="font-semibold text-green-800">Dados do Servidor Configurados:</p>
+                            <p className="text-green-700">Nome: {nome} | Matrícula: {matricula || 'N/A'} | Banco: {banco || 'N/A'}</p>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-500 text-center py-4">Nenhum dado pessoal configurado. Clique em "Adicionar Novo Item" para iniciar.</p>
+                    )}
+                    
+                    {/* Botão de Trigger Padronizado */}
+                    <div className="text-center mt-6">
+                        <button 
+                            className="btn-add bg-blue-700 text-white px-4 py-2 text-sm font-semibold rounded hover:bg-blue-800 transition"
+                            onClick={() => setIsPersonalFormOpen(true)}
+                        >
+                            <Plus size={16} className="inline mr-1" /> Adicionar Novo Item
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {/* Área de Detalhes (Formulário) */}
+            {isPersonalFormOpen && (
+                <div id="dados_pessoais_ocultos_container" className="mt-4 p-4 rounded-md shadow-inner" style={{ border: `1px solid ${PRIMARY_COLOR}`, background: HIGHLIGHT_BG }}>
+                    
+                    <h4 className="text-lg font-bold text-blue-800 mb-3">Detalhes do Servidor</h4>
+
+                    {/* 1.1 Nome Completo */}
+                    <div className="text-sm mb-4">
+                        <label className="font-semibold text-gray-700">1.1 Nome Completo:</label>
+                        <input 
+                            type="text" 
+                            value={nome} 
+                            onChange={(e) => setNome(e.target.value)} 
+                            className="w-full p-2 border rounded focus:border-blue-500 mt-1"
+                            placeholder="Nome Completo do Servidor"
+                        />
+                    </div>
+
+                    {/* 1.2 CPF e Matrícula - Responsivo */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-700 mb-1">1.2 Matrícula:</label>
+                            <input type="text" value={matricula} onChange={(e) => setMatricula(e.target.value)} placeholder="Ex: 12345" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-700 mb-1">1.2 CPF (apenas números):</label>
+                            <input type="text" value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                    </div>
+                    
+                    <h4 className="text-lg font-bold text-blue-800 mb-3 mt-6 border-t pt-3 border-gray-300">Dados Bancários</h4>
+
+                    {/* 1.3 Banco, Agência, Conta - Responsivo em 3 colunas */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-700 mb-1">1.3 Banco:</label>
+                            <input type="text" value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="Nome do Banco" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-700 mb-1">1.3 Agência:</label>
+                            <input type="text" value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="0000-X" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-700 mb-1">1.3 Conta:</label>
+                            <input type="text" value={conta} onChange={(e) => setConta(e.target.value)} placeholder="00000-0" className="p-2 border rounded focus:border-blue-500" />
+                        </div>
+                    </div>
+
+                    <div className="text-right mt-4 pt-3 border-t border-gray-300">
+                        <button 
+                            className="btn-cancel bg-gray-600 text-white px-3 py-1 text-sm font-semibold rounded hover:bg-gray-700 transition"
+                            onClick={() => setIsPersonalFormOpen(false)}
+                        >
+                            FECHAR FORMULÁRIO
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+const App = () => {
+    const [nome, setNome] = useState('');
+    const [matricula, setMatricula] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [banco, setBanco] = useState('');
+    const [agencia, setAgencia] = useState('');
+    const [conta, setConta] = useState('');
+    const [isPersonalFormOpen, setIsPersonalFormOpen] = useState(false);
+    
+    const [listaCustosTransporte, setListaCustosTransporte] = useState([]);
+    const [listaOutrasDespesas, setListaOutrasDespesas] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const totals = useMemo(() => {
+        const totalTransp = listaCustosTransporte.reduce((sum, item) => sum + item.valor, 0);
+        const totalAlim = listaOutrasDespesas.filter(d => d.categoria === 'ALIMENTACAO').reduce((sum, item) => sum + item.valor, 0);
+        const totalHospOutros = listaOutrasDespesas.filter(d => d.categoria !== 'ALIMENTACAO').reduce((sum, item) => sum + item.valor, 0);
+        const saldoFinal = totalTransp + totalAlim + totalHospOutros;
+        
+        return { totalTransp, totalAlim, totalHospOutros, saldoFinal };
+    }, [listaCustosTransporte, listaOutrasDespesas]);
+
+
+    useEffect(() => {
+        const fetchSavedData = async () => {
+            const savedData = await loadData();
+            if (savedData) {
+                // Carrega dados pessoais e bancários
+                setNome(savedData.nome || '');
+                setMatricula(savedData.matricula || '');
+                setCpf(savedData.cpf || '');
+                setBanco(savedData.banco || '');
+                setAgencia(savedData.agencia || '');
+                setConta(savedData.conta || '');
+                
+                // Carrega listas de despesas
+                setListaCustosTransporte(savedData.custosTransporte || []);
+                setListaOutrasDespesas(savedData.despesasDiarias || []);
+            } else {
+                 setNome('');
+            }
+            setIsLoading(false);
+        };
+        fetchSavedData();
+    }, []);
+
+
+    useEffect(() => {
+        if (isLoading) return;
+
+        const jsonReportModel = {
+            // Novos campos de dados pessoais
+            nome: nome,
+            matricula: matricula,
+            cpf: cpf,
+            banco: banco,
+            agencia: agencia,
+            conta: conta,
+            
+            dataGeracao: new Date().toISOString(),
+            custosTransporte: listaCustosTransporte,
+            despesasDiarias: listaOutrasDespesas,
+            totais: totals
+        };
+
+        const timeoutId = setTimeout(() => {
+            saveData(jsonReportModel);
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [nome, matricula, cpf, banco, agencia, conta, listaCustosTransporte, listaOutrasDespesas, totals, isLoading]);
+
+
+    const handleAddTransporte = useCallback((newCost) => {
+        setListaCustosTransporte(prev => [...prev, newCost]);
+    }, []);
+
+    const handleRemoveTransporte = useCallback((id) => {
+        setListaCustosTransporte(prev => prev.filter(item => item.id !== id));
+    }, []);
+
+    const handleAddOutraDespesa = useCallback((newExpense) => {
+        setListaOutrasDespesas(prev => [...prev, newExpense]);
+    }, []);
+
+    const handleRemoveOutraDespesa = useCallback((id) => {
+        setListaOutrasDespesas(prev => prev.filter(item => item.id !== id));
+    }, []);
+    
+    
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 text-center pt-20">
+                <Loader2 size={48} className="animate-spin text-blue-500 mx-auto" />
+                <p className="mt-4 text-lg font-semibold text-gray-700">Carregando dados salvos...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+            <h1 className="text-2xl font-bold text-center mb-6" style={{ color: PRIMARY_COLOR }}>
+                Prestação de Contas - Diárias (React)
+            </h1>
+
+            <p className="text-xs text-center mb-4 text-green-600 font-medium flex items-center justify-center">
+                 <Check size={14} className="mr-1"/> O progresso é salvo automaticamente a cada alteração.
+            </p>
+
+             {/* ITEM 1: DADOS PESSOAIS E BANCÁRIOS (AGORA COM O NOVO COMPONENTE) */}
+             <PersonalDataSection
+                nome={nome} setNome={setNome}
+                matricula={matricula} setMatricula={setMatricula}
+                cpf={cpf} setCpf={setCpf}
+                banco={banco} setBanco={setBanco}
+                agencia={agencia} setAgencia={setAgencia}
+                conta={conta} setConta={setConta}
+                isPersonalFormOpen={isPersonalFormOpen} setIsPersonalFormOpen={setIsPersonalFormOpen}
+             />
+
+            {/* ITEM 2: Transporte */}
+            <GenericExpenseSection
+                list={listaCustosTransporte}
+                onAdd={handleAddTransporte}
+                onRemove={handleRemoveTransporte}
+                title="2. Custos de Transporte (Viagem, KM ou Passagem)"
+                icon={Truck}
+                category="TRANSPORTE"
+                mainPlaceholder="Trecho de Transporte"
+                totalDisplayBg="#fff3cd"
+                itemOptions={[
+                    { value: 'CARRO_OFICIAL', label: 'Carro Oficial (Frota)' },
+                    { value: 'VEICULO_PROPRIO', label: 'Veículo Próprio (Reembolso KM)' },
+                    { value: 'ONIBUS_RODOVIARIO', label: 'Ônibus Rodoviário' },
+                ]}
+                comprovanteOptions={[
+                    { value: 'Combustível', label: 'Combustível / Abastecimento' },
+                    { value: 'Pedágio', label: 'Pedágio' },
+                    { value: 'Passagem', label: 'Passagem (Ônibus/App)' },
+                ]}
+            />
+
+            {/* ITEM 3: Alimentação */}
+            <GenericExpenseSection 
+                list={listaOutrasDespesas}
+                onAdd={handleAddOutraDespesa}
+                onRemove={handleRemoveOutraDespesa}
+                title="3. Despesas de Alimentação (Diárias)"
+                icon={Utensils}
+                category="ALIMENTACAO"
+                mainPlaceholder="Item de Alimentação"
+                totalDisplayBg="#e6f7ff"
+                itemOptions={[{ value: 'ALIMENTACAO', label: 'Diária de Alimentação' }]}
+                comprovanteOptions={[
+                    { value: 'Almoço', label: 'Almoço' },
+                    { value: 'Jantar', label: 'Jantar' },
+                    { value: 'Lanche', label: 'Lanche / Café' },
+                ]}
+            />
+            
+            {/* ITEM 4: Hospedagem e Outros */}
+            <GenericExpenseSection 
+                list={listaOutrasDespesas}
+                onAdd={handleAddOutraDespesa}
+                onRemove={handleRemoveOutraDespesa}
+                title="4. Despesas de Hospedagem e Outros Anexos"
+                icon={Bed}
+                category="HOSPEDAGEM_OUTROS"
+                mainPlaceholder="Hospedagem ou Gasto Extra"
+                totalDisplayBg="#e6f7ff"
+                itemOptions={[
+                    { value: 'HOSPEDAGEM', label: 'Hospedagem / Hotel (Diária)' },
+                    { value: 'OUTRO_ANEXO', label: 'Outro Gasto Comprovado' },
+                ]}
+                comprovanteOptions={[
+                    { value: 'NotaHotel', label: 'Nota Fiscal do Hotel' },
+                    { value: 'TaxaEvento', label: 'Taxa de Evento/Inscrição' },
+                    { value: 'OutroGeral', label: 'Outro (Geral)' },
+                ]}
+            />
+
+             <div className="form-section-box">
+                <h3 className="form-section-title flex items-center">
+                    <BarChart3 size={20} className="mr-2" /> 5. Resumo Final da Prestação de Contas
+                </h3>
+                
+                <div className="resumo-final-card p-4 rounded-md shadow-md" style={{ background: HIGHLIGHT_BG, border: `1px solid ${PRIMARY_COLOR}` }}>
+                    <p className="text-sm text-gray-700 mb-3">Totalização de todos os custos declarados:</p>
+                    
+                    <div className="space-y-1">
+                        <div className="flex justify-between border-b border-dashed pb-1">
+                            <span className="font-semibold text-gray-700">Total de Custos de Transporte (Item 2):</span>
+                            <span className="font-bold text-blue-700">{formatarMoeda(totals.totalTransp)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-dashed pb-1">
+                            <span className="font-semibold text-gray-700">Total de Alimentação (Item 3):</span>
+                            <span className="font-bold text-blue-700">{formatarMoeda(totals.totalAlim)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-dashed pb-1">
+                            <span className="font-semibold text-gray-700">Total de Hospedagem e Outros (Item 4):</span>
+                            <span className="font-bold text-blue-700">{formatarMoeda(totals.totalHospOutros)}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="resumo-final-total mt-4 pt-3 border-t-2 font-extrabold text-lg text-right" style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}>
+                        <span>SALDO FINAL: {formatarMoeda(totals.saldoFinal)}</span>
+                    </div>
+
+                    {totals.saldoFinal === 0 && (
+                        <p className="text-xs mt-2 font-semibold text-red-600 flex items-center">
+                            <AlertTriangle size={14} className="mr-1" /> O saldo está R$ 0,00. Confirme se os dados estão corretos.
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            <div className="buttons-container pt-6 border-t border-gray-300 mt-6">
+                <button 
+                    className="btn-success bg-green-600 text-white px-8 py-3 text-lg font-bold rounded-md hover:bg-green-700 transition shadow-lg"
+                    onClick={() => alert(`Gerando PDF para ${nome} com saldo de ${formatarMoeda(totals.saldoFinal)}. Verifique o console para o modelo JSON salvo!`)}
+                >
+                    <Clipboard size={20} className="inline mr-2" /> GERAR E BAIXAR DOCUMENTO
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default App;
