@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.10] – Recibo orgânico de diárias
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Added
+- Nova célula `governo.produtos.recibo-diarias.organico` com manifesto próprio e fluxo simplificado de diárias no padrão PWAO.
+- Cartão dedicado na aba Governo do App Família para abrir o recibo orgânico direto do stage do Genoma.
+
+---
+
 # 🧬 [V4.3.9] – Produto de Recibo na Linha Governo
 ### **Status: Atual (Genoma V4.3.3)**
 
