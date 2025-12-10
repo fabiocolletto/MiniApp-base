@@ -178,6 +178,15 @@
       tentar();
     })();
 
+    const produtosGoverno = [
+      {
+        nome: "governo.produtos.recibo-diarias",
+        caminho: "./celulas/governo/produtos/recibo-diarias.html",
+        descricao: "Recibo de diárias e prestação de contas",
+        titulo: "Recibo de Diárias"
+      }
+    ];
+
     renderCell("tokens");
     function renderWelcome() {
       document.getElementById("header-title").textContent = "";
@@ -212,10 +221,43 @@
             <div style='font-size:1.2rem;font-weight:600;color:var(--color-primary);'>Linha Governo</div>
             <p class='u-text-muted'>Produtos públicos para servidores e órgãos governamentais.</p>
           </div>
-          <div class='card u-text-center'>
-            <div class='u-text-muted'>Tela Governo em construção</div>
+          <div class='card' data-produto-governo='governo.produtos.recibo-diarias' style='cursor:pointer;'>
+            <div class='u-flex u-justify-between u-items-center u-gap2'>
+              <div class='u-text-left'>
+                <div style='font-size:1rem;font-weight:600;color:var(--color-primary);'>Recibo de Diárias</div>
+                <p class='u-text-muted'>Abrir modelo de prestação de contas e recibos em PDF.</p>
+              </div>
+              <span class='material-icons' style='color:var(--color-primary);'>open_in_new</span>
+            </div>
           </div>
         </div>`;
+
+      document.querySelectorAll('[data-produto-governo]').forEach(card => {
+        card.addEventListener('click', () => {
+          abrirProdutoGoverno(card.dataset.produtoGoverno);
+        });
+      });
+    }
+
+    async function abrirProdutoGoverno(nomeProduto) {
+      const produto = produtosGoverno.find(item => item.nome === nomeProduto);
+      if (!produto) return;
+
+      if (window.PWAO_RegistrarCelula) {
+        await window.PWAO_RegistrarCelula({
+          nome: produto.nome,
+          caminho: produto.caminho,
+          orgao: "governo",
+          versao: "1.0.0",
+          descricao: produto.descricao
+        });
+      }
+
+      if (window.Narrador) {
+        window.Narrador.emitir({ tipo: "celula.expressar", nome: produto.nome });
+      } else {
+        window.location.href = produto.caminho;
+      }
     }
 
     function renderAvisos() {
