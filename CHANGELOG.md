@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.12] – Stage híbrido para células JS
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Added
+- Renderer agora identifica caminhos `.js`, reescreve imports para CDNs (React, ReactDOM, Dexie e Lucide) e ativa automaticamente células JavaScript sem exigir HTML auxiliar.
+- Suporte nativo a componentes React exportados por padrão ou renderizadores customizados (`render(root)`) diretamente no stage orgânico.
+
+---
+
 # 🧬 [V4.3.11] – Stage unificado para células
 ### **Status: Atual (Genoma V4.3.3)**
 
