@@ -18,6 +18,14 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.8] – Navegação Governo no App Família
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Added
+- Botão "Governo" no rodapé da célula `sistema.admin` para acessar produtos públicos direcionados a servidores e órgãos governamentais, incluindo tela dedicada com placeholder da linha Governo.
+
+---
+
 # 🧬 [V4.3.7] – Rolagem isolada do App Family
 ### **Status: Atual (Genoma V4.3.3)**
 
