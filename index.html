@@ -171,6 +171,69 @@ window.PWAO_RegistrarCelula = async function (manifesto) {
 // -------------------------------------------------------------
 const Renderer = {
   headNodes: [],
+  importMap: {
+    react: "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.451.0",
+    dexie: "https://esm.sh/dexie@3.2.4"
+  },
+
+  ajustarDependencias(codigo) {
+    return codigo.replace(/from\s+["']([^"']+)["']/g, (original, dep) => {
+      const mapeado = this.importMap[dep];
+      return mapeado ? `from "${mapeado}"` : original;
+    });
+  },
+
+  async montarCelulaJs(caminho, codigo) {
+    const root = document.getElementById("root");
+    root.innerHTML = "<div style='padding:20px;font-size:16px;'>Ativando célula JS…</div>";
+
+    const codigoPreparado = this.ajustarDependencias(codigo);
+    const urlModulo = URL.createObjectURL(new Blob([codigoPreparado], { type: "application/javascript" }));
+
+    const modulo = await import(urlModulo).catch((erro) => {
+      console.error(erro);
+      root.innerHTML = `<p style='color:red;padding:20px;'>Erro ao importar célula JS: ${caminho}</p>`;
+      return null;
+    });
+
+    if (!modulo) {
+      URL.revokeObjectURL(urlModulo);
+      return;
+    }
+
+    try {
+      if (typeof modulo.render === "function") {
+        modulo.render(root);
+        return;
+      }
+
+      if (typeof modulo.default === "function") {
+        try {
+          const React = await import(this.importMap.react);
+          const ReactDOMClient = await import(this.importMap["react-dom/client"]);
+          ReactDOMClient.createRoot(root).render(React.createElement(modulo.default));
+          return;
+        } catch (erroReact) {
+          console.warn("Falha ao renderizar como React, aplicando fallback HTML:", erroReact);
+          const resultado = modulo.default(root);
+          if (typeof resultado === "string") {
+            root.innerHTML = resultado;
+          }
+          return;
+        }
+      }
+
+      root.innerHTML = `<p style='padding:20px;color:#d14343;'>Arquivo JS carregado, mas não expôs um renderizador conhecido (${caminho}).</p>`;
+    } catch (e) {
+      console.error(e);
+      root.innerHTML = `<p style='color:red;padding:20px;'>Erro ao montar célula JS: ${caminho}</p>`;
+    } finally {
+      URL.revokeObjectURL(urlModulo);
+    }
+  },
 
   limparCabecalho() {
     this.headNodes.forEach((node) => node.remove());
@@ -197,11 +260,16 @@ const Renderer = {
   async montarCelula(caminho) {
     try {
       const resp = await fetch(caminho);
-      const html = await resp.text();
+      const contentType = resp.headers.get("content-type") || "";
+      const htmlOuJs = await resp.text();
+
+      if (caminho.endsWith(".js") || contentType.includes("javascript")) {
+        return this.montarCelulaJs(caminho, htmlOuJs);
+      }
 
       // Parsear o HTML para preservar scripts e executá-los corretamente
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+      const doc = parser.parseFromString(htmlOuJs, "text/html");
       const conteudo = doc.body.innerHTML;
 
       this.injetarCabecalho(doc.head);
