@@ -5,7 +5,7 @@ export function mount(root, Orchestrator, GENOMA) {
   if (!root) return;
 
   root.innerHTML = `
-    <div id="pwao-shell" style="width:100%;height:100vh;display:flex;flex-direction:column;background:#ffffff;color:#000;overflow:hidden;font-family:system-ui, sans-serif;">
+    <div id="pwao-shell" style="width:100%;min-height:100vh;display:flex;flex-direction:column;background:#f3f6fb;color:#000;overflow:hidden;font-family:system-ui, sans-serif;">
 
       <header id="pwao-header" style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#ffffff;border-bottom:1px solid #e5e5e5;">
         <div id="menu-button" style="font-size:22px;cursor:pointer;">☰</div>
@@ -15,8 +15,8 @@ export function mount(root, Orchestrator, GENOMA) {
         <div style="font-size:26px;cursor:pointer;">👤</div>
       </header>
 
-      <main id="pwao-stage" style="flex:1;overflow:auto;background:#ffffff;padding:16px;">
-        <div style="text-align:center;opacity:0.6;margin-top:32px;font-size:16px;">
+      <main id="pwao-stage" style="flex:1 0 auto;display:flex;flex-direction:column;align-items:stretch;overflow:visible;background:#f3f6fb;">
+        <div style="text-align:center;opacity:0.6;margin:32px auto;font-size:16px;padding:0 16px;">
           Selecione um MiniApp no menu.
         </div>
       </main>

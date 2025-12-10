@@ -18,6 +18,15 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.11] – Stage unificado para células
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Changed
+- Stage do AppShell agora usa altura orgânica, fundo contínuo e alinhamento flex para que header, stage e footer formem um único elemento visual.
+- Célula `governo.produtos.recibo-diarias.organico` ajustada para ocupar todo o espaço central com layout flexível e responsivo.
+
+---
+
 # 🧬 [V4.3.10] – Recibo orgânico de diárias
 ### **Status: Atual (Genoma V4.3.3)**
 
