@@ -18,6 +18,14 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.3.9] – Produto de Recibo na Linha Governo
+### **Status: Atual (Genoma V4.3.3)**
+
+#### Added
+- Link dedicado ao produto de recibo de diárias na aba Governo da célula `sistema.page.family`, acionando o stage do Genoma para renderizar o modelo `celulas/governo/produtos/recibo-diarias.html`.
+
+---
+
 # 🧬 [V4.3.8] – Navegação Governo no App Família
 ### **Status: Atual (Genoma V4.3.3)**
 
