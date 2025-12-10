@@ -3,7 +3,7 @@
   "short_name": "5Horas",
   "description": "Opp 5Horas - Miniapps para que você tenha mais tempo para o que importa.",
   
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
