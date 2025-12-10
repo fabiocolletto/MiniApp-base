@@ -145,6 +145,10 @@
       <span class="material-icons">group</span>
       Família
     </div>
+    <div class="footer-btn" data-cell="governo">
+      <span class="material-icons">account_balance</span>
+      Governo
+    </div>
     <div class="footer-btn" data-cell="avisos">
       <span class="material-icons">notifications</span>
       Avisos
@@ -200,6 +204,20 @@
       document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Tela Família em construção</div>`;
     }
 
+    function renderGoverno() {
+      document.getElementById("header-title").textContent = "Governo";
+      document.getElementById("app-body").innerHTML = `
+        <div class='u-flex u-flex-col u-gap3 u-p4'>
+          <div class='card u-text-center'>
+            <div style='font-size:1.2rem;font-weight:600;color:var(--color-primary);'>Linha Governo</div>
+            <p class='u-text-muted'>Produtos públicos para servidores e órgãos governamentais.</p>
+          </div>
+          <div class='card u-text-center'>
+            <div class='u-text-muted'>Tela Governo em construção</div>
+          </div>
+        </div>`;
+    }
+
     function renderAvisos() {
       document.getElementById("header-title").textContent = "Avisos";
       document.getElementById("app-body").innerHTML = `<div class='u-p4 u-text-center'>Lista de Avisos</div>`;
@@ -233,6 +251,8 @@
           return renderHome();
         case "familia":
           return renderFamilia();
+        case "governo":
+          return renderGoverno();
         case "avisos":
           return renderAvisos();
         case "config":
