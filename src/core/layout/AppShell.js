@@ -1,127 +1,88 @@
-// AppShell.js — PWAO Genoma V4
-// Monta a estrutura visual global do PWAO e carrega MiniApps no stage.
+// AppShell.js – Novo estilo unificado baseado no App Família
+// Estrutura limpa, moderna e preparada para receber MiniApps renderizados pelo Orchestrator.
 
-export function mount(root, Orchestrator) {
-  if (!root) return console.error("[AppShell] Root inválido");
+export function mount(root, Orchestrator, GENOMA) {
+  if (!root) return;
 
-  // Criar estrutura base
   root.innerHTML = `
-    <div id="pwao-shell" style="width:100%;height:100vh;display:flex;flex-direction:column;background:var(--pwao-bg);color:var(--pwao-text);">
+    <div id="pwao-shell" style="width:100%;height:100vh;display:flex;flex-direction:column;background:#ffffff;color:#000;overflow:hidden;font-family:system-ui, sans-serif;">
 
-      <!-- HEADER -->
-      <header id="pwao-header" style="
-        height:56px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        padding:0 16px;
-        background:var(--pwao-surface);
-        border-bottom:1px solid rgba(255,255,255,0.08);
-      ">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div id="pwao-menu-button" style="cursor:pointer;font-size:22px;">☰</div>
+      <header id="pwao-header" style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#ffffff;border-bottom:1px solid #e5e5e5;">
+        <div id="menu-button" style="font-size:22px;cursor:pointer;">☰</div>
 
-          <!-- DROPDOWN -->
-          <div id="pwao-dropdown-wrapper" style="position:relative;">
-            <div id="pwao-dropdown-trigger" style="cursor:pointer;font-size:16px;">
-              MiniApps ▼
-            </div>
+        <div id="pwao-title" style="font-size:18px;font-weight:600;">MiniApps</div>
 
-            <div id="pwao-dropdown" style="
-              display:none;
-              position:absolute;
-              top:26px;
-              left:0;
-              background:var(--pwao-surface);
-              border:1px solid rgba(255,255,255,0.1);
-              border-radius:var(--pwao-radius);
-              min-width:160px;
-              padding:6px 0;
-              z-index:50;
-            "></div>
-          </div>
-        </div>
-
-        <div style="font-size:28px;cursor:pointer;">👤</div>
+        <div style="font-size:26px;cursor:pointer;">👤</div>
       </header>
 
-      <!-- ÁREA CENTRAL (STAGE) -->
-      <main id="pwao-stage" style="flex:1;overflow:auto;padding:16px;">
-        <div style="text-align:center;opacity:0.6;margin-top:32px;">
-          <h2>Bem-vindo ao ecossistema PWAO</h2>
-          <p>Selecione um MiniApp no menu acima.</p>
+      <main id="pwao-stage" style="flex:1;overflow:auto;background:#ffffff;padding:16px;">
+        <div style="text-align:center;opacity:0.6;margin-top:32px;font-size:16px;">
+          Selecione um MiniApp no menu.
         </div>
       </main>
 
-      <!-- FOOTER ADMIN -->
-      <footer id="pwao-footer" style="
-        height:50px;
-        background:var(--pwao-surface);
-        border-top:1px solid rgba(255,255,255,0.08);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:12px;
-        opacity:0.5;
-      ">
-        PWAO Genoma V4 • Modo Admin
+      <footer id="pwao-footer" style="height:52px;background:#ffffff;border-top:1px solid #e5e5e5;display:flex;align-items:center;justify-content:center;font-size:13px;color:#777;">
+        Opp 5Horas – PWAO
       </footer>
     </div>
   `;
 
-  // ===============================
-  // POPULAR DROPDOWN COM MINIAPPS
-  // ===============================
+  const stage = root.querySelector('#pwao-stage');
+  const title = root.querySelector('#pwao-title');
+  const menuBtn = root.querySelector('#menu-button');
 
-  const dropdown = root.querySelector("#pwao-dropdown");
-  const trigger = root.querySelector("#pwao-dropdown-trigger");
+  const menuPanel = document.createElement('div');
+  menuPanel.id = 'pwao-menu-panel';
+  menuPanel.style.cssText = `
+    position:fixed;
+    top:0;left:0;
+    width:240px;height:100vh;
+    background:#ffffff;
+    box-shadow:2px 0 8px rgba(0,0,0,0.1);
+    transform:translateX(-260px);
+    transition:0.25s ease;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    z-index:100;
+  `;
 
-  trigger.onclick = () => {
-    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-  };
-
-  // Se clicar fora, fecha
-  document.addEventListener("click", (e) => {
-    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.style.display = "none";
-    }
-  });
-
-  // Alimenta com os MiniApps carregados do GENOMA
-  Object.values(window.GENOMA?.MEMBERS || {}).forEach(member => {
-    const btn = document.createElement("div");
+  Object.values(GENOMA.MEMBERS).forEach(member => {
+    const btn = document.createElement('button');
     btn.textContent = member.nome;
     btn.style.cssText = `
-      padding:10px 14px;
+      padding:12px;
+      background:#f5f5f5;
+      border:none;
+      border-radius:12px;
+      font-size:15px;
+      text-align:left;
       cursor:pointer;
       transition:0.2s;
     `;
-    btn.onmouseover = () => (btn.style.background = "rgba(255,255,255,0.06)");
-    btn.onmouseout  = () => (btn.style.background = "transparent");
+    btn.onmouseover = () => btn.style.background='#ececec';
+    btn.onmouseout = () => btn.style.background='#f5f5f5';
 
-    btn.onclick = () => {
-      dropdown.style.display = "none";
-      loadMiniApp(member);
+    btn.onclick = async () => {
+      menuPanel.style.transform = 'translateX(-260px)';
+      title.textContent = member.nome;
+      stage.innerHTML = `<div style='padding:20px;font-size:16px;opacity:0.7;'>Carregando ${member.nome}…</div>`;
+      try {
+        await Orchestrator.load(member, stage);
+      } catch (e) {
+        stage.innerHTML = `<div style='padding:20px;color:red;'>Erro ao carregar.</div>`;
+        console.error(e);
+      }
     };
 
-    dropdown.appendChild(btn);
+    menuPanel.appendChild(btn);
   });
 
-  // ===============================
-  // FUNÇÃO PARA CARREGAR MINIAPP
-  // ===============================
+  document.body.appendChild(menuPanel);
 
-  async function loadMiniApp(member) {
-    const stage = root.querySelector("#pwao-stage");
-    stage.innerHTML = `<p style="opacity:0.7">Carregando ${member.nome}…</p>`;
-
-    try {
-      await Orchestrator.load(member.entry, stage);
-    } catch (err) {
-      stage.innerHTML = `<p style="color:red;">Erro ao carregar ${member.nome}.</p>`;
-      console.error("[PWAO][AppShell] Falha ao carregar MiniApp:", err);
-    }
-  }
-
-  console.log("[AppShell] Shell montado.");
+  menuBtn.onclick = () => {
+    const isOpen = menuPanel.style.transform === 'translateX(0px)';
+    menuPanel.style.transform = isOpen ? 'translateX(-260px)' : 'translateX(0px)';
+  };
 }
