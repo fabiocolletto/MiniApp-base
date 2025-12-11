@@ -1,343 +1,1234 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWAO – Genoma V4.3</title>
-  <link rel="manifest" href="./opp/manifest.webmanifest" />
-  <style>
-    body { margin: 0; font-family: sans-serif; background: #fafafa; }
-    #painel-genoma { display: flex; gap: 8px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e9e9e9; }
-    #painel-genoma button { cursor: pointer; padding: 8px 14px; border-radius: 8px; border: 1px solid #ff7a00; background: #ff7a00; color: #fff; font-weight: 600; }
-    #painel-genoma button:hover { filter: brightness(0.95); }
-    #root { padding: 0; min-height: 100vh; }
-  </style>
+    <meta charset="UTF-8">
+    <!-- Essencial para que a visualização seja responsiva em dispositivos móveis -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Mobile: Navegação Multi-Nível</title>
+    <!-- Carregamento do Tailwind CSS para classes utilitárias -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Conexão com Google Material Symbols para ícones modernos -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <style>
+        /* Estilização base para o corpo da página */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+        }
+        /* Estilos globais para os ícones Material Symbols */
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 48; /* Define o tamanho óptico para ser grande e impactante */
+        }
+    </style>
 </head>
 <body>
-  <div id="painel-genoma" aria-label="Painel de lançamento de células">
-    <button id="btn-family" data-celula="sistema.page.family">Abrir app family</button>
-  </div>
-  <div id="root">Carregando organismo…</div>
 
-<script>
-// =============================================================
-// GENOMA V4.3 – Autodiscovery Aperfeiçoado + Caminhos Orgânicos
-// =============================================================
-// Esta versão corrige completamente problemas de caminho ao
-// carregar células em repositórios hospedados (GitHub Pages).
-// Agora o Genoma sempre resolve rotas relativas com "./".
-// =============================================================
+    <!-- CONTAINER ÚNICO: Simula o componente raiz do App. Todo o conteúdo será injetado aqui. -->
+    <div id="app-root" class="min-h-screen">
+        <!-- Conteúdo injetado via JavaScript -->
+    </div>
 
-// -------------------------------------------------------------
-// 1. Memória Orgânica
-// -------------------------------------------------------------
-const Memoria = {
-  db: null,
-  async init() {
-    return new Promise((resolve) => {
-      const req = indexedDB.open("pwao_memoria", 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings");
-        if (!db.objectStoreNames.contains("cells")) db.createObjectStore("cells", { keyPath: "nome" });
-      };
-      req.onsuccess = (e) => { this.db = e.target.result; resolve(); };
-    });
-  },
-  async registrarCelula(celula) {
-    return new Promise((resolve) => {
-      const tx = this.db.transaction(["cells"], "readwrite");
-      tx.objectStore("cells").put(celula);
-      tx.oncomplete = resolve;
-    });
-  },
-  async listarCelulas() {
-    return new Promise((resolve) => {
-      const tx = this.db.transaction(["cells"], "readonly");
-      const req = tx.objectStore("cells").getAll();
-      req.onsuccess = () => resolve(req.result || []);
-    });
-  }
-};
+    <script>
+        const appRoot = document.getElementById('app-root');
 
-// -------------------------------------------------------------
-// 2. Narrador – Sistema de Eventos
-// -------------------------------------------------------------
-const Narrador = {
-  ouvintes: [],
-  emitir(evento) { this.ouvintes.forEach((fn) => fn(evento)); },
-  ouvir(fn) { this.ouvintes.push(fn); }
-};
+        // --- Variáveis de Estado de Navegação ---
+        const navigationHistory = []; // Tracks previous view IDs (used for 'back')
+        let currentViewId = 'welcome'; // Tracks the currently displayed view ID
 
-// -------------------------------------------------------------
-// 3. Loader – Agora com Caminho Orgânico Corrigido
-// -------------------------------------------------------------
-const Loader = {
-  mapa: {},
+        // =========================================================================
+        // SIMULAÇÃO DE DADOS E ESTADO
+        // =========================================================================
+        
+        /**
+         * Lista de usuários fictícios que serão carregados na primeira inserção de dados.
+         * O ID 1001 é sempre o Usuário Principal.
+         */
+        const INITIAL_MOCK_USERS = [
+            { id: 1001, name: "Usuário Principal (Admin)", role: "Administrador", icon: "badge", email: "admin@app.com" },
+            { id: 1002, name: "Prof. Ana Souza", role: "Professor", icon: "person", email: "ana.souza@app.com" },
+            { id: 1003, name: "Estudante Marcos", role: "Estudante", icon: "school", email: "marcos@app.com" },
+        ];
 
-  resolverCaminho(caminho) {
-    // Sempre garantir que o caminho comece com "./"
-    if (caminho.startsWith("./")) return caminho;
-    if (caminho.startsWith("/")) return `.${caminho}`; // corrige caminhos absolutos
-    return `./${caminho}`; // corrige caminhos sem ponto
-  },
-
-  async registrar(celula) {
-    const caminhoCorrigido = this.resolverCaminho(celula.caminho);
-    this.mapa[celula.nome] = caminhoCorrigido;
-    await Memoria.registrarCelula({ ...celula, caminho: caminhoCorrigido });
-  },
-
-  async expressar(nome) {
-    const caminho = this.mapa[nome];
-    if (!caminho) {
-      Renderer.expressar(`<p style='color:red'>❌ Célula não encontrada: ${nome}</p>`);
-      return;
-    }
-    Renderer.montarCelula(caminho);
-  },
-
-  async autodiscovery() {
-    const celulas = await Memoria.listarCelulas();
-    celulas.forEach(c => {
-      this.mapa[c.nome] = this.resolverCaminho(c.caminho);
-    });
-  }
-};
-
-// -------------------------------------------------------------
-// Painel Genoma – Lançador rápido de células
-// -------------------------------------------------------------
-const PainelGenoma = {
-  inicializar() {
-    const botaoFamily = document.querySelector('#btn-family');
-    if (!botaoFamily) return;
-
-    botaoFamily.addEventListener('click', () => {
-      const nome = botaoFamily.dataset.celula;
-      Narrador.emitir({ tipo: "celula.expressar", nome });
-    });
-  }
-};
-
-// -------------------------------------------------------------
-// Catálogo Orgânico: sementes mínimas
-// -------------------------------------------------------------
-// Para evitar botões quebrados em ambientes onde nenhuma célula
-// foi registrada previamente, definimos um conjunto mínimo de
-// células nativas. Elas são registradas apenas se ainda não
-// estiverem na Memória Orgânica.
-const CelulasNativas = [
-  {
-    nome: "educacao.quiz",
-    caminho: "./celulas/educacao/quiz/celulas.js",
-    orgao: "educacao",
-    versao: "1.0.0",
-    descricao: "Célula de Quiz Educacional (órgão: orgao-quiz.js)"
-  },
-  {
-    nome: "sistema.auth",
-    caminho: "./celulas/sistema/auth/index.html",
-    orgao: "sistema",
-    versao: "1.0.0",
-    descricao: "Célula de Autenticação do sistema"
-  },
-  {
-    nome: "sistema.admin",
-    caminho: "./celulas/sistema/admin/index.html",
-    orgao: "sistema",
-    versao: "1.0.0",
-    descricao: "Painel administrativodosistema"
-  },
-  {
-    nome: "sistema.page.family",
-    caminho: "./celulas/sistema/pages/family/index.html",
-    orgao: "sistema",
-    versao: "1.0.0",
-    descricao: "Pagina inicial app family"
-  }
-];
-
-// -------------------------------------------------------------
-// Registro Global para Células
-// -------------------------------------------------------------
-window.PWAO_RegistrarCelula = async function (manifesto) {
-  await Loader.registrar(manifesto);
-  console.log("🔗 Célula registrada:", manifesto.nome);
-};
-
-// -------------------------------------------------------------
-// 4. Renderer – Expressão Visual
-// -------------------------------------------------------------
-const Renderer = {
-  headNodes: [],
-  importMap: {
-    react: "https://esm.sh/react@18.3.1",
-    "react-dom": "https://esm.sh/react-dom@18.3.1",
-    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.451.0",
-    dexie: "https://esm.sh/dexie@3.2.4"
-  },
-
-  ajustarDependencias(codigo) {
-    return codigo.replace(/from\s+["']([^"']+)["']/g, (original, dep) => {
-      const mapeado = this.importMap[dep];
-      return mapeado ? `from "${mapeado}"` : original;
-    });
-  },
-
-  async montarCelulaJs(caminho, codigo) {
-    const root = document.getElementById("root");
-    root.innerHTML = "<div style='padding:20px;font-size:16px;'>Ativando célula JS…</div>";
-
-    const codigoPreparado = this.ajustarDependencias(codigo);
-    const urlModulo = URL.createObjectURL(new Blob([codigoPreparado], { type: "application/javascript" }));
-
-    const modulo = await import(urlModulo).catch((erro) => {
-      console.error(erro);
-      root.innerHTML = `<p style='color:red;padding:20px;'>Erro ao importar célula JS: ${caminho}</p>`;
-      return null;
-    });
-
-    if (!modulo) {
-      URL.revokeObjectURL(urlModulo);
-      return;
-    }
-
-    try {
-      if (typeof modulo.render === "function") {
-        modulo.render(root);
-        return;
-      }
-
-      if (typeof modulo.default === "function") {
-        try {
-          const React = await import(this.importMap.react);
-          const ReactDOMClient = await import(this.importMap["react-dom/client"]);
-          ReactDOMClient.createRoot(root).render(React.createElement(modulo.default));
-          return;
-        } catch (erroReact) {
-          console.warn("Falha ao renderizar como React, aplicando fallback HTML:", erroReact);
-          const resultado = modulo.default(root);
-          if (typeof resultado === "string") {
-            root.innerHTML = resultado;
-          }
-          return;
+        // Simulação de Usuários Cadastrados: Agora, pré-carregamos os mocks para testar a renderização da lista.
+        let REGISTERED_USERS = [...INITIAL_MOCK_USERS]; 
+        
+        /**
+         * Simula a checagem se há algum usuário principal já cadastrado no sistema.
+         */
+        function hasRegisteredUsers() {
+            // Se fosse um sistema real, checaríamos a contagem na base de dados.
+            return REGISTERED_USERS.length > 0; 
         }
-      }
 
-      root.innerHTML = `<p style='padding:20px;color:#d14343;'>Arquivo JS carregado, mas não expôs um renderizador conhecido (${caminho}).</p>`;
-    } catch (e) {
-      console.error(e);
-      root.innerHTML = `<p style='color:red;padding:20px;'>Erro ao montar célula JS: ${caminho}</p>`;
-    } finally {
-      URL.revokeObjectURL(urlModulo);
-    }
-  },
+        // Simulação de Conexões de Rede (separada dos usuários cadastrados)
+        const NETWORK_CONNECTIONS = [
+             { id: 2001, name: "Joana Silva", role: "Gestora Educacional", status: "Ativo", icon: "person", destination: "connection_detail_2001" }, 
+             { id: 2002, name: "Ricardo Mendes", role: "Suporte Financeiro", status: "Inativo", icon: "person", destination: "connection_detail_2000" },
+             { id: 2003, name: "Equipe de TI", role: "Administrador de Sistema", status: "Ativo", icon: "admin_panel_settings", destination: "connection_detail_2003" },
+        ];
+        
+        /**
+         * Lista completa de todas as notificações possíveis no sistema.
+         */
+        const ALL_NOTIFICATIONS = [
+            { 
+                id: 999, 
+                title: "CONFIGURAÇÃO NECESSÁRIA", 
+                message: "Por favor, cadastre o Usuário Principal para liberar o acesso total ao sistema. Acesse 'Usuários > Gerenciar Cadastro'.", 
+                time: "AGORA", 
+                icon: "manage_accounts", 
+                color: "red", 
+                category: "SETUP" 
+            },
+            { id: 1, title: "Nova Avaliação", message: "A avaliação de Matemática do 9º ano foi liberada e deve ser concluída até sexta-feira.", time: "5 minutos atrás", icon: "assignment", color: "blue", category: "Educação" },
+            { id: 2, title: "Novo Acesso", message: "O professor João Silva foi cadastrado e agora tem acesso ao módulo de gestão de turmas.", time: "1 hora atrás", icon: "person_check", color: "green", category: "Usuários" },
+            { id: 3, title: "Manutenção Agendada", message: "O sistema passará por uma manutenção programada na próxima quarta-feira.", time: "Ontem", icon: "warning", color: "yellow", category: "Sistema" },
+        ];
 
-  limparCabecalho() {
-    this.headNodes.forEach((node) => node.remove());
-    this.headNodes = [];
-  },
 
-  injetarCabecalho(doc) {
-    this.limparCabecalho();
-    const fragmento = document.createDocumentFragment();
-
-    doc.querySelectorAll("style, link[rel='stylesheet']").forEach((tag) => {
-      const copia = tag.cloneNode(true);
-      copia.setAttribute("data-pwao-origem", "celula");
-      fragmento.appendChild(copia);
-      this.headNodes.push(copia);
-    });
-
-    document.head.appendChild(fragmento);
-  },
-
-  async expressar(html) {
-    document.getElementById("root").innerHTML = html;
-  },
-  async montarCelula(caminho) {
-    try {
-      const resp = await fetch(caminho);
-      const contentType = resp.headers.get("content-type") || "";
-      const htmlOuJs = await resp.text();
-
-      if (caminho.endsWith(".js") || contentType.includes("javascript")) {
-        return this.montarCelulaJs(caminho, htmlOuJs);
-      }
-
-      // Parsear o HTML para preservar scripts e executá-los corretamente
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlOuJs, "text/html");
-      const conteudo = doc.body.innerHTML;
-
-      this.injetarCabecalho(doc.head);
-
-      // Monta o conteúdo visual da célula
-      this.expressar(conteudo);
-
-      // Executa scripts presentes na célula (incluindo modules)
-      const scripts = doc.querySelectorAll("script");
-      scripts.forEach((oldScript) => {
-        const novoScript = document.createElement("script");
-        // Copia atributos relevantes (ex.: type="module", src, async)
-        Array.from(oldScript.attributes).forEach((attr) => {
-          novoScript.setAttribute(attr.name, attr.value);
-        });
-        if (!oldScript.src) {
-          novoScript.textContent = oldScript.textContent;
+        /**
+         * Simula a busca de dados de notificação de um backend.
+         */
+        function fetchNotifications() {
+            if (!hasRegisteredUsers()) {
+                // Se nenhum usuário foi cadastrado, retorna APENAS a notificação de setup.
+                return [ALL_NOTIFICATIONS.find(n => n.id === 999)]; 
+            }
+            
+            // Se o usuário principal já está cadastrado, retorna as notificações normais (filtrando o setup).
+            return ALL_NOTIFICATIONS.filter(n => n.id !== 999);
         }
-        document.body.appendChild(novoScript);
-      });
-    } catch (e) {
-      this.expressar(`<p style='color:red'>Erro ao carregar célula: ${caminho}</p>`);
-    }
-  }
-};
 
-// -------------------------------------------------------------
-// 5. Registrar Service Worker do OPP
-// -------------------------------------------------------------
-if ("serviceWorker" in navigator) {
-  const ambienteSeguro = location.protocol === "https:" || location.hostname === "localhost";
-  if (ambienteSeguro) {
-    navigator.serviceWorker.register("./opp/service-worker.js")
-      .then(() => console.log("🧬 OPP Service Worker registrado"))
-      .catch(err => console.warn("Falha ao registrar SW:", err));
-  } else {
-    console.log("SW não registrado: ambiente inseguro");
-  }
-}
+        /**
+         * Retorna a contagem atual de notificações.
+         */
+        function getNotificationCount() {
+            return fetchNotifications().length;
+        }
+        
+        // Simulação do estado de ativação dos canais de notificação (para a nova tela de Configuração)
+        let notificationChannels = {
+            'dashboard': true, 'users': true, 'notifications': true, 'settings': true,
+            'government': true, 'education': true, 'health': false, 'finance': false,
+            'work': true, 'leisure': true, 'news': true, 'assistant': true,
+            'accessibility_settings': true, 'system_info': true, 'notif_list': true,
+            'notif_config': true, 'user_register': true, 'connections': true,
+            'student_register': true, 'courses_list': true, 'assessments_page': true,
+            'library_access': true, 'schedule_appointment': true, 'my_appointments': true,
+            'history': true, 'statement': true, 'transfers': true, 'local_law': true, 
+            'task_manager': true, 'reports': true, 'booking': true, 'events': true,
+            'local_news': true, 'global_updates': true, 'ai_chat': true, 'quick_actions': true,
+        };
 
-// -------------------------------------------------------------
-// 6. Ciclo de Vida do Organismo
-// -------------------------------------------------------------
-async function iniciarOrganismo() {
-  await Memoria.init();
-  await Loader.autodiscovery();
+        // --- MODELO DE DADOS: ESQUEMA DE CAMPOS DO BANCO DE DADOS (MOCK) ---
+        // Adiciona fieldId único para referências orgânicas, key para acesso no objeto, label para display.
+        const USER_DB_FIELDS = [
+            { fieldId: 'USR-NAME', key: 'fullName', label: 'Nome Completo', type: 'text', placeholder: 'Ex: Maria da Silva', required: true, formSection: 'Pessoal' },
+            { fieldId: 'USR-BIRTH', key: 'birthDate', label: 'Data de Nascimento', type: 'date', placeholder: 'DD/MM/AAAA', required: true, formSection: 'Pessoal' },
+            { fieldId: 'USR-ADDR', key: 'address', label: 'Endereço Principal', type: 'text', placeholder: 'Rua, número, bairro', required: false, formSection: 'Contato' },
+            { fieldId: 'USR-PHONE', key: 'phone', label: 'Telefone de Contato', type: 'tel', placeholder: '(99) 99999-9999', required: false, formSection: 'Contato' },
+        ];
+        
+        // NOVO MOCK DE DETALHES COMPLETO: Garante que todos os campos da estrutura USER_DB_FIELDS estejam presentes
+        const MAIN_USER_DETAIL_MOCK = {
+            fullName: "Usuário Principal (Admin)",
+            birthDate: "1985-10-20", // MOCK DATE ADICIONADA para consistência
+            address: "Rua Principal, 1000, Centro",
+            phone: "11 98765-4321",
+        };
 
-  // Registrar células nativas caso ainda não estejam disponíveis
-  for (const celula of CelulasNativas) {
-    if (!Loader.mapa[celula.nome]) {
-      await Loader.registrar(celula);
-    }
-  }
 
-  Narrador.ouvir((evento) => {
-    if (evento.tipo === "celula.expressar") Loader.expressar(evento.nome);
-  });
+        // Dados simulados do usuário principal. É null se a primeira inserção NUNCA foi feita.
+        let MAIN_USER_DETAIL_DATA = null;
+        
+        // Rota interna para o formulário detalhado de dados
+        const DATA_FORM_ROUTE = 'main_user_data_form';
+        // Rota interna para o formulário de cadastro de novo usuário (pós-setup)
+        const NEW_USER_REGISTER_ROUTE = 'new_user_register';
 
-  PainelGenoma.inicializar();
-  Narrador.emitir({ tipo: "celula.expressar", nome: "sistema.page.family" });
 
-  Renderer.expressar(`
-    <h1>PWAO – Genoma V4.3</h1>
-    <p>Organismo iniciado com autodiscovery aprimorado. Célula padrão sendo carregada...</p>
-  `);
-}
+        // =========================================================================
+        // DADOS HIERÁRQUICOS: A lista completa de botões e sub-botões
+        // =========================================================================
+        const appTools = [
+            // --- TELA PRINCIPAL (parent: null) ---
+            { id: 1, title: "Dashboard", icon: "dashboard", destination: "dashboard", parent: null, isCategory: true, filePath: null }, 
+            { id: 2, title: "Usuários", icon: "group", destination: "users", parent: null, isCategory: true },
+            { id: 3, title: "Notificações", icon: "notifications_active", destination: "notifications", parent: null, isCategory: true },
+            { id: 4, title: "Configurações", icon: "settings", destination: "settings", parent: null, isCategory: true },
+            
+            // CATEGORIAS (FILHAS DO DASHBOARD)
+            { id: 5, title: "Educação", icon: "school", destination: "education", parent: "dashboard", isCategory: true },
+            { id: 6, title: "Saúde", icon: "local_hospital", destination: "health", parent: "dashboard", isCategory: true },
+            { id: 7, title: "Finanças", icon: "attach_money", destination: "finance", parent: "dashboard", isCategory: true },
+            { id: 8, title: "Governo", icon: "account_balance", destination: "government", parent: "dashboard", isCategory: true },
+            { id: 9, title: "Trabalho", icon: "work", destination: "work", parent: "dashboard", isCategory: true },
+            { id: 10, title: "Lazer", icon: "local_activity", destination: "leisure", parent: "dashboard", isCategory: true },
+            { id: 11, title: "Notícias", icon: "feed", destination: "news", parent: "dashboard", isCategory: true },
+            { id: 12, title: "Assistente", icon: "smart_toy", destination: "assistant", parent: "dashboard", isCategory: true },
 
-iniciarOrganismo();
-</script>
+
+            // --- SUB-FERRAMENTAS (parent: 'settings') ---
+            { id: 41, title: "Acessibilidade", icon: "accessibility_new", destination: "accessibility_settings", parent: "settings", isCategory: false, filePath: "settings/accessibility/index.html" },
+            { id: 42, title: "Info do Sistema", icon: "info", destination: "system_info", parent: "settings", isCategory: false, filePath: "settings/info/index.html" },
+
+
+            // --- SUB-FERRAMENTAS (parent: 'notifications') ---
+            { id: 31, title: "Visualizar Lista", icon: "list_alt", destination: "notif_list", parent: "notifications", isCategory: false, filePath: null }, 
+            { id: 32, title: "Configurar Canais", icon: "tune", destination: "notif_config", parent: "notifications", isCategory: false, filePath: null },
+
+            // --- SUB-FERRAMENTAS (parent: 'users') ---
+            // Mover Gerenciar Cadastro de volta para 'users' e definir como Categoria (Grid Button Style)
+            { id: 22, title: "Gerenciar Cadastro", icon: "manage_accounts", destination: "user_list", parent: "users", isCategory: true, filePath: null }, 
+            { id: 23, title: "Conexões", icon: "group_add", destination: "connections", parent: "users", isCategory: true, filePath: null }, 
+            
+            // --- SUB-FERRAMENTAS (parent: 'connections') ---
+            { id: 231, title: "Lista de Conexões", icon: "list_alt", destination: "connection_list", parent: "connections", isCategory: false, filePath: null }, 
+            { id: 9999, title: "Adicionar Nova Conexão", icon: "add_link", destination: "add_connection", parent: "connections", isCategory: false, filePath: "users/connections/add/index.html" },
+            
+            // --- OUTRAS SUB-FERRAMENTAS (usadas para simulação de módulos) ---
+            { id: 81, title: "Legislação Local", icon: "gavel", destination: "local_law", parent: "government", isCategory: false, filePath: "government/law/index.html" },
+            { id: 104, title: "Cadastrar Aluno", icon: "person_add", destination: "student_register", parent: "education", isCategory: false, filePath: "educacao/aluno/cadastro/index.html" },
+            { id: 201, title: "Agendar Consulta", icon: "calendar_month", destination: "schedule_appointment", parent: "health", isCategory: false, filePath: "saude/agendamento/index.html" },
+        ];
+
+        // =========================================================================
+        // FUNÇÕES AUXILIARES DE COMPONENTES FIXOS (BOTÕES FLUTUANTES)
+        // =========================================================================
+
+        /**
+         * Gera o HTML para o botão flutuante de Voltar (canto superior esquerdo).
+         */
+        function getFloatingBackButtonHTML() {
+            if (currentViewId === 'welcome') return '';
+            
+            return `
+                <button id="top-back-button" class="fixed top-4 left-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg text-gray-700 hover:bg-gray-100 transition duration-150 border border-gray-200">
+                    <span class="material-symbols-outlined text-2xl" title="Voltar">chevron_left</span>
+                </button>
+            `;
+        }
+
+        /**
+         * Gera o HTML para o botão flutuante de Notificações (canto superior direito).
+         */
+        function getFloatingNotificationButtonHTML() {
+            if (currentViewId === 'welcome') return '';
+            
+            const notificationCount = getNotificationCount();
+            let badgeHTML = '';
+            let iconClass = 'text-gray-700';
+
+            if (notificationCount > 0) {
+                badgeHTML = `<div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none transform translate-x-1/4 -translate-y-1/4 shadow-md z-40">${notificationCount}</div>`;
+                iconClass = 'text-red-600'; 
+            }
+            
+            return `
+                <button id="top-notification-button" class="fixed top-4 right-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg hover:bg-gray-100 transition duration-150 border border-gray-200">
+                    ${badgeHTML}
+                    <span class="material-symbols-outlined text-2xl ${iconClass}" title="Notificações">notifications</span>
+                </button>
+            `;
+        }
+
+
+        // =========================================================================
+        // FUNÇÕES DE ALERTA E MODAIS
+        // =========================================================================
+        
+        /**
+         * Exibe uma caixa de mensagem customizada (simula alerta/confirmação).
+         */
+        function showCustomMessage(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-55 p-4';
+            messageBox.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-2xl text-center max-w-xs">
+                    <p class="text-gray-800 font-semibold mb-4">${message}</p>
+                    <button id="close-msg" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300">Entendido</button>
+                </div>
+            `;
+            document.body.appendChild(messageBox);
+            document.getElementById('close-msg').addEventListener('click', () => {
+                document.body.removeChild(messageBox);
+            });
+        }
+
+        // =========================================================================
+        // SIMULAÇÃO DE CONTEÚDO PADRONIZADO (PARA TELAS DE DETALHE/FORMULÁRIO)
+        // =========================================================================
+        
+        /**
+         * Gera o HTML para o erro 404 padronizado.
+         */
+        function get404View(viewId) {
+            const topBackButtonHTML = getFloatingBackButtonHTML();
+            const topNotificationButtonHTML = getFloatingNotificationButtonHTML();
+            return `
+                ${topBackButtonHTML}
+                ${topNotificationButtonHTML}
+                <div class="min-h-screen p-4 pb-24 pt-16 flex items-center justify-center"> 
+                    <div class="max-w-md w-full text-center bg-white p-8 rounded-xl shadow-2xl border border-red-200">
+                        <span class="material-symbols-outlined text-9xl text-red-500 mb-4 mx-auto">
+                            cloud_off
+                        </span>
+                        <h2 class="text-4xl font-extrabold text-red-700 mb-2">ERRO 404</h2>
+                        <p class="text-gray-700 mb-4 font-semibold">Conteúdo não encontrado ou em fase de implantação.</p>
+                        <p class="text-sm text-gray-500 break-words">A rota '${viewId}' não está mapeada para uma view implementada.</p>
+                        <button id="nav-to-toolbox" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300">
+                            Voltar ao Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Simula o carregamento do conteúdo de um arquivo index.html (ou gera fallback/404).
+         * NOTE: Conteúdo simplificado para manter o padrão visual.
+         */
+        function getSimulatedContent(tool) {
+            const filePath = tool.filePath;
+            let fileContent = null;
+            let fileTitle = tool.title;
+            
+            // Fallback imediato para falta de filePath
+            if (!filePath) {
+                 return { title: `ERRO DE DADOS`, contentHTML: `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Caminho do arquivo não definido (filePath).</p></div>` };
+            }
+
+            // SIMULAÇÃO: Detalhes do Usuário (Simplificado)
+            if (filePath.startsWith('user_detail_')) {
+                const userId = parseInt(filePath.split('_')[2]);
+                const user = REGISTERED_USERS.find(u => u.id === userId);
+                
+                if (!user) {
+                    fileTitle = `Usuário Não Encontrado`;
+                    fileContent = `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Usuário com ID ${userId} não encontrado.</p></div>`;
+                } else {
+                    fileTitle = `Detalhes de ${user.name}`;
+                    fileContent = `
+                        <div class="p-6 space-y-4 text-center">
+                            <span class="material-symbols-outlined text-7xl text-blue-500 mx-auto mb-3">
+                                ${user.icon}
+                            </span>
+                            <p class="text-xl font-bold text-gray-800">${user.name}</p>
+                            <p class="text-md text-gray-600 font-medium">${user.role}</p>
+                            <ul class="text-left bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
+                                <li class="font-medium text-gray-700">E-mail: <span class="text-gray-900 font-semibold">${user.email}</span></li>
+                                <li class="font-medium text-gray-700">ID: <span class="text-gray-900">${user.id}</span></li>
+                            </ul>
+                            <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">
+                                Editar Permissões
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+            
+            // SIMULAÇÃO: Detalhes da Conexão (Simplificado)
+            else if (filePath.startsWith('connection_detail_')) {
+                const connectionId = parseInt(filePath.split('_')[2]);
+                const connection = NETWORK_CONNECTIONS.find(c => c.id === connectionId);
+                
+                if (!connection) {
+                    fileTitle = `Conexão Não Encontrada`;
+                    fileContent = `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Conexão com ID ${connectionId} não encontrada.</p></div>`;
+                } else {
+                    fileTitle = `Detalhes de ${connection.name}`;
+                    const statusTextClass = connection.status === 'Ativo' ? 'text-green-600' : 'text-gray-500';
+                    fileContent = `
+                        <div class="p-6 space-y-4 text-center">
+                            <span class="material-symbols-outlined text-7xl text-purple-500 mx-auto mb-3">
+                                ${connection.icon}
+                            </span>
+                            <p class="text-xl font-bold text-gray-800">${connection.name}</p>
+                            <p class="text-md text-gray-600 font-medium">${connection.role}</p>
+                            <ul class="text-left bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
+                                <li class="font-medium text-gray-700">Status: <span class="${statusTextClass} font-semibold">${connection.status}</span></li>
+                                <li class="font-medium text-gray-700">ID: <span class="text-gray-900">${connection.id}</span></li>
+                            </ul>
+                            <button class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">
+                                Remover Conexão
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+
+            // SIMULAÇÃO: Adicionar Nova Conexão (Simplificado)
+            else if (filePath === 'users/connections/add/index.html') {
+                 fileTitle = `Adicionar Nova Conexão`;
+                 fileContent = `
+                    <div class="p-6 space-y-6">
+                        <p class="text-xl font-bold text-purple-600 text-center">Buscar e Convidar Usuário</p>
+                        <form class="space-y-4">
+                            <input type="text" placeholder="ID de Usuário ou E-mail" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" />
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition duration-300">
+                                Enviar Convite
+                            </button>
+                        </form>
+                    </div>
+                `;
+            }
+            
+            // SIMULAÇÃO: Conteúdo Genérico para Módulos em Desenvolvimento
+            else {
+                // Conteúdo genérico/404 para caminhos não essenciais
+                fileTitle = `Módulo: ${tool.title}`;
+                fileContent = `
+                    <div class="p-8 text-center bg-gray-50 rounded-xl border border-gray-200 space-y-4">
+                        <span class="material-symbols-outlined text-6xl text-orange-500 mx-auto">construction</span>
+                        <p class="text-lg font-bold text-gray-800">Módulo em Desenvolvimento</p>
+                        <p class="text-sm text-gray-600">O conteúdo para a ferramenta "${tool.title}" está em fase de implantação.</p>
+                    </div>
+                `;
+            }
+            
+            // Retorna apenas título e conteúdo. O wrapper do card é adicionado em renderView.
+            return { title: fileTitle, contentHTML: fileContent };
+        }
+
+        // =========================================================================
+        // FUNÇÕES AUXILIARES DE COMPONENTES DE LISTA
+        // =========================================================================
+        
+        /**
+         * Define a string HTML para um único botão/ferramenta (Estilo Flowbite Card).
+         */
+        function createToolButtonHTML(tool) {
+            let notificationBadge = '';
+            
+            if (tool.id === 3) { 
+                const count = getNotificationCount();
+                if (count > 0) {
+                    notificationBadge = `
+                        <div class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md z-40">
+                            ${count}
+                        </div>
+                    `;
+                }
+            }
+            
+            const ctaText = tool.isCategory ? 'Selecionar' : 'Abrir';
+
+            return `
+                <button data-tool-id="${tool.id}" 
+                    class="tool-button w-full h-40 relative flex flex-col items-center justify-center 
+                           bg-white rounded-xl border border-gray-200 
+                           shadow-xl transition duration-300 ease-in-out 
+                           hover:bg-blue-50 hover:border-blue-500 hover:shadow-2xl 
+                           focus:ring-4 focus:ring-blue-300 focus:outline-none p-4 cursor-pointer">
+                    
+                    ${notificationBadge}
+                    
+                    <span class="material-symbols-outlined text-4xl text-blue-600 mb-3">
+                        ${tool.icon}
+                    </span>
+                    
+                    <span class="text-lg font-bold text-gray-800 text-center">${tool.title}</span>
+                    <span class="text-xs text-blue-500 mt-1 uppercase tracking-wider">${ctaText}</span>
+                </button>
+            `;
+        }
+        
+        /**
+         * Helper para gerar botões para a lista de conexões (usada em getConnectionListView).
+         */
+        function createConnectionButtonHTML(connection) {
+            const statusBadge = connection.status === 'Ativo' ? `
+                <div class="flex flex-col items-end">
+                    <span class="text-xs text-green-600 font-semibold mt-1">Ativo</span>
+                </div>
+            ` : `
+                <div class="flex flex-col items-end">
+                    <span class="text-xs text-gray-500 font-semibold mt-1">Inativo</span>
+                </div>
+            `;
+
+            return `
+                <button data-tool-destination="${connection.destination}" 
+                    class="connection-list-button w-full flex items-center space-x-4 p-4 text-left 
+                           bg-white rounded-xl border border-gray-200 shadow-md 
+                           hover:bg-purple-50 transition duration-150">
+                    <span class="material-symbols-outlined text-3xl text-purple-600">${connection.icon}</span>
+                    <div class="flex-grow">
+                        <p class="font-bold text-gray-800 truncate">${connection.name}</p>
+                        <p class="text-xs text-gray-500">${connection.role}</p>
+                    </div>
+                    ${statusBadge}
+                    <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+                </button>
+            `;
+        }
+
+        /**
+         * FERRAMENTA GLOBAL: Define a string HTML para um único botão/item na lista de usuários (Estilo Grid Card).
+         * Este é um cartão mais compacto, ideal para uso em grades de navegação.
+         * @param {object} user - Objeto do usuário com id, name, role e icon.
+         * @returns {string} HTML do botão de item de lista.
+         */
+        function createUserGridButtonHTML(user) {
+            return `
+                <button data-tool-id="user_detail_${user.id}" 
+                    class="user-list-button w-full h-36 relative flex flex-col items-center justify-center 
+                           bg-white rounded-xl border border-gray-200 
+                           shadow-md transition duration-300 ease-in-out 
+                           hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg 
+                           focus:ring-4 focus:ring-blue-300 focus:outline-none p-3 cursor-pointer text-center">
+                    
+                    <span class="material-symbols-outlined text-4xl text-blue-600 mb-2">
+                        ${user.icon}
+                    </span>
+                    
+                    <span class="text-md font-bold text-gray-800 truncate w-full px-1">${user.name}</span>
+                    <span class="text-xs text-blue-500 mt-0.5 uppercase tracking-wider">${user.role}</span>
+                </button>
+            `;
+        }
+
+
+        // =========================================================================
+        // FUNÇÃO DE RENDERIZAÇÃO CENTRALIZADA (Wrapper Padrão)
+        // =========================================================================
+
+        /**
+         * Renderiza o layout padrão de Navegação ou Detalhe/Formulário.
+         * Envolve o conteúdo com botões flutuantes, título e container responsivo.
+         * @param {string} title - Título da tela.
+         * @param {string} contentHTML - O HTML do conteúdo principal.
+         * @param {boolean} isDetailOrForm - Se deve usar largura menor (max-w-lg) e envolver o conteúdo em um card branco.
+         * @returns {string} HTML completo da view padronizada.
+         */
+        function renderStandardView(title, contentHTML, isDetailOrForm) {
+            const topBackButtonHTML = getFloatingBackButtonHTML();
+            const topNotificationButtonHTML = getFloatingNotificationButtonHTML();
+
+            // Usamos max-w-lg para Form/Detail e max-w-4xl (grid) para navegação/listas
+            const maxWidthClass = isDetailOrForm ? 'max-w-lg' : 'max-w-4xl';
+            
+            // Se for Detail/Form, adiciona o wrapper de card interno
+            const finalContent = isDetailOrForm
+                ? `<div class="bg-white rounded-xl shadow-2xl p-0">${contentHTML}</div>`
+                : contentHTML; // Listas e grids já são responsáveis por seus wrappers/espaçamento
+            
+            return `
+                ${topBackButtonHTML}
+                ${topNotificationButtonHTML}
+                <div class="min-h-screen p-4 pb-24 pt-16 ${maxWidthClass} mx-auto"> 
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">${title}</h2>
+                    ${finalContent}
+                </div>
+            `;
+        }
+
+
+        // =========================================================================
+        // VIEWS TIPO 1: INICIAL (Única)
+        // =========================================================================
+
+        /**
+         * Template da Tela de Boas-Vindas.
+         */
+        function getWelcomeView() {
+            navigationHistory.length = 0; 
+            return `
+                <div class="min-h-screen flex flex-col items-center justify-center p-4">
+                    <div class="bg-white p-8 sm:p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition duration-500 hover:scale-[1.02]">
+                        <span class="material-symbols-outlined text-6xl text-blue-600 mb-4 mx-auto">
+                            rocket_launch
+                        </span>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-Vindo!</h1>
+                        <p class="text-gray-500 mb-6">
+                            Aplicativo simulado com minimalismo e padronização.
+                        </p>
+                        <button id="start-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">
+                            Começar Agora
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // =========================================================================
+        // VIEWS TIPO 2: NAVEGAÇÃO (Grid de Cartões)
+        // =========================================================================
+
+        /**
+         * Template da Tela de Navegação (Menu Principal, Dashboard, Usuários, Conexões).
+         * @returns {object} { title, contentHTML }
+         */
+        function getNavigationView(parentId) {
+            
+            let title = parentId === null ? "Início" : "Minhas Ferramentas e Áreas"; 
+            
+            if (parentId) {
+                const parentTool = appTools.find(tool => tool.destination === parentId);
+                title = parentTool ? parentTool.title : "Sub-Ferramentas";
+            }
+
+            const filteredTools = appTools.filter(tool => tool.parent === parentId);
+            const buttonsHTML = filteredTools.map(tool => createToolButtonHTML(tool)).join('');
+        
+            const contentHTML = `
+                <!-- CONTAINER DOS BOTÕES (Grid Padrão) -->
+                <div id="tool-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-auto">
+                    ${buttonsHTML}
+                </div>
+            `;
+            
+            return { title, contentHTML };
+        }
+
+        // =========================================================================
+        // VIEWS TIPO 3: LISTA
+        // =========================================================================
+
+        /**
+         * Template da tela de Lista de Usuários Cadastrados.
+         * @returns {object} { title, contentHTML }
+         */
+        function getUserListView() {
+            const isInitialSetup = !hasRegisteredUsers();
+            
+            if (isInitialSetup) {
+                // MODO: Configuração Inicial Obrigatória -> BOTÃO "Adicionar Dados"
+                const contentHTML = `
+                    <div class="max-w-xs mx-auto text-center"> 
+                        <div class="p-6 space-y-4 bg-white rounded-xl shadow-xl border border-gray-200 mb-8">
+                            <p class="text-md font-bold text-gray-700">Nenhum dado inicial encontrado.</p>
+                            <p class="text-gray-600 text-sm">Insira os dados do usuário principal para liberar o sistema.</p>
+                        </div>
+                        
+                        <button onclick="renderView('${DATA_FORM_ROUTE}')" 
+                            class="w-full h-40 flex flex-col items-center justify-center 
+                                    bg-green-600 text-white rounded-xl shadow-lg 
+                                    hover:bg-green-700 transition duration-150">
+                            <span class="material-symbols-outlined text-6xl">add</span>
+                            <span class="text-xl font-semibold mt-2">Adicionar Dados</span>
+                        </button>
+                    </div>
+                `;
+                return { title: 'Gerenciar Usuários', contentHTML };
+            }
+            
+            // MODO: Sistema Operacional (Lista de Usuários + Opção de Adicionar Novo)
+            // Usa a ferramenta global de item de lista (createUserGridButtonHTML)
+            let userGridHTML = REGISTERED_USERS.map(user => createUserGridButtonHTML(user)).join('');
+
+
+            const addNewUserButton = `
+                <button onclick="renderView('${NEW_USER_REGISTER_ROUTE}')" 
+                    class="w-full h-16 flex items-center justify-center space-x-2 p-4 text-center 
+                           bg-blue-600 text-white rounded-xl shadow-lg 
+                           hover:bg-blue-700 transition duration-150">
+                    <span class="material-symbols-outlined text-2xl">person_add</span>
+                    <span class="font-semibold">Adicionar Novo Usuário</span>
+                </button>
+            `;
+
+            // Estrutura de navegação (ampla) com Grid para os usuários
+            const contentHTML = `
+                <div class="space-y-6"> 
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-700 text-left">Usuários Cadastrados (${REGISTERED_USERS.length})</h3>
+                        <!-- Mantém o botão Adicionar em um local proeminente -->
+                        <div class="w-1/2 md:w-1/4">
+                            ${addNewUserButton}
+                        </div>
+                    </div>
+                    
+                    <!-- GRID CONTAINER: Usa grid responsivo para cartões de usuário -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        ${userGridHTML}
+                    </div>
+                </div>
+            `;
+            
+            // Retorna como layout de navegação (isDetailOrForm = false)
+            return { title: 'Gerenciar Usuários', contentHTML };
+        }
+        
+        /**
+         * Template da tela de Lista de Conexões.
+         * @returns {object} { title, contentHTML }
+         */
+        function getConnectionListView() {
+             const title = "Lista de Conexões"; 
+             const addTool = appTools.find(t => t.destination === 'add_connection');
+
+             const addNewConnectionButton = `
+                 <button data-tool-id="${addTool.id}" 
+                     class="tool-button w-full h-20 flex items-center justify-center space-x-2 p-4 text-center 
+                            bg-purple-600 text-white rounded-xl shadow-lg 
+                            hover:bg-purple-700 transition duration-150 mt-4">
+                     <span class="material-symbols-outlined text-2xl">add_link</span>
+                     <span class="font-semibold">${addTool.title}</span>
+                 </button>
+             `;
+            
+             let connectionsListHTML = '';
+             
+             if (NETWORK_CONNECTIONS.length > 0) {
+                 // Usa o componente de botão de conexão que é mais estreito, adequado para lista vertical
+                 connectionsListHTML = NETWORK_CONNECTIONS.map(conn => createConnectionButtonHTML(conn)).join('');
+                 
+                 connectionsListHTML = `
+                    <h3 class="text-xl font-bold text-gray-700 mb-4 text-left">Conexões Ativas/Inativas (${NETWORK_CONNECTIONS.length})</h3>
+                    <div class="space-y-3 mb-4">
+                        ${connectionsListHTML}
+                    </div>
+                    ${addNewConnectionButton}
+                 `;
+
+             } else {
+                 connectionsListHTML = `
+                     <div class="bg-gray-50 rounded-xl border border-gray-200 text-center space-y-4 py-8"> 
+                         <span class="material-symbols-outlined text-6xl text-gray-400 mx-auto">handshake</span>
+                         <p class="text-lg font-semibold text-gray-700">Nenhuma conexão ativa encontrada.</p>
+                         <p class="text-sm text-gray-500">Clique abaixo para buscar e convidar usuários.</p>
+                         <div>
+                             ${addNewConnectionButton}
+                         </div>
+                     </div>
+                 `;
+             }
+
+             // Removido o wrapper p-6 interno para layout de navegação amplo
+             return { title, contentHTML: `<div class="space-y-6">${connectionsListHTML}</div>` };
+        }
+
+        /**
+         * Template da Tela de Lista de Notificações.
+         * @returns {object} { title, contentHTML }
+         */
+        function getNotificationListView() {
+            const notifications = fetchNotifications();
+            let notificationListHTML = '';
+
+            if (notifications.length === 0) {
+                // Manter este estilo sem wrapper p-6 pois é uma lista wide
+                notificationListHTML = `
+                    <div class="p-8 text-center text-gray-500 bg-white rounded-xl shadow-lg mt-8">
+                        <span class="material-symbols-outlined text-6xl mx-auto mb-4">notifications_off</span>
+                        <p class="text-lg font-semibold">Nenhuma notificação nova.</p>
+                        <p class="text-sm">Verifique novamente mais tarde.</p>
+                    </div>
+                `;
+            } else {
+                // Renderiza a lista de notificações como BOTÕES/PRÉVIAS
+                notificationListHTML = notifications.map(notif => `
+                    <button data-notif-id="${notif.id}" class="notification-item-button w-full flex items-center space-x-4 p-4 text-left bg-white rounded-xl shadow-lg hover:bg-gray-100 transition duration-150 border-l-4 border-${notif.color}-500">
+                        <span class="material-symbols-outlined text-3xl text-${notif.color}-600">
+                            ${notif.icon}
+                        </span>
+                        <div class="flex-grow">
+                            <p class="font-bold text-gray-800">${notif.title}</p>
+                            <p class="text-sm text-gray-600">${notif.message.substring(0, 70)}...</p>
+                            <p class="text-xs text-gray-400 mt-1">${notif.time}</p>
+                        </div>
+                        <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+                    </button>
+                `).join('');
+                
+                notificationListHTML = `
+                    <div class="space-y-4 p-0 max-w-4xl mx-auto">
+                        ${notificationListHTML}
+                    </div>
+                `;
+            }
+
+            return { title: 'Lista de Notificações', contentHTML: notificationListHTML };
+        }
+        
+        /**
+         * Template da Tela de Configuração de Canais de Notificação.
+         * Renderiza APENAS as categorias do Dashboard (Gerenciamento por Módulo).
+         * @returns {object} { title, contentHTML }
+         */
+        function getNotificationConfigView() {
+            // Filtra APENAS os filhos diretos do dashboard (Gerenciamento por Módulo)
+            const dashboardCategories = appTools.filter(tool => tool.parent === 'dashboard' && tool.isCategory);
+
+            // Único grupo de display
+            const displayGroup = { 
+                title: 'Gerenciamento por Módulo', 
+                tools: dashboardCategories 
+            };
+
+            let settingsHTML = '';
+            let groupItemsHTML = '';
+            
+            // Loop para renderizar os filhos (que agora são os canais principais)
+            displayGroup.tools.forEach(tool => {
+                const id = tool.destination;
+                // Para simplificar, tratamos todos os filhos do Dashboard como 'canais'
+                const isActive = notificationChannels[id] === true; 
+                
+                // Sem o Master Toggle, renderizamos apenas o controle do canal
+                groupItemsHTML += `
+                    <div class="flex items-center justify-between py-3 px-4 bg-white rounded-xl shadow-md border border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <span class="material-symbols-outlined text-xl text-gray-600">${tool.icon}</span>
+                            <p class="font-medium text-gray-800">${tool.title}</p>
+                        </div>
+                        
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" data-channel="${id}" class="sr-only peer toggle-switch child-toggle" ${isActive ? 'checked' : ''}>
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                `;
+            });
+
+            settingsHTML = `
+                <div class="space-y-3">
+                    <h3 class="text-2xl font-bold text-gray-900">${displayGroup.title}</h3>
+                    <p class="text-sm text-gray-600 mb-6">Ative ou desative as notificações Push/App para cada módulo principal do sistema.</p>
+                    <div class="space-y-4">
+                        ${groupItemsHTML}
+                    </div>
+                </div>
+            `;
+            
+            const contentHTML = `
+                <div id="channel-settings-list" class="space-y-6">
+                    ${settingsHTML}
+                </div>
+                <p class="mt-8 text-xs text-gray-400 text-center">As alterações são salvas automaticamente (Simulação).</p>
+            `;
+
+            return { title: 'Configuração de Canais', contentHTML };
+        }
+
+        // =========================================================================
+        // VIEWS TIPO 3: DETALHE / FORMULÁRIO
+        // =========================================================================
+
+        /**
+         * Template da Tela de Detalhes da Notificação.
+         * @returns {object} { title, contentHTML }
+         */
+        function getNotificationDetailView(notifId) {
+            const notif = ALL_NOTIFICATIONS.find(n => n.id === notifId);
+            
+            if (!notif) {
+                return null; 
+            }
+
+            const isSetupRequired = (notif.id === 999);
+            
+            const detailContent = `
+                <div class="p-6 sm:p-10 space-y-6 border-t-8 border-${notif.color}-500 transition duration-300">
+                    
+                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <h1 class="text-2xl font-extrabold text-${notif.color}-700">${notif.title}</h1>
+                        <span class="text-xs font-semibold text-gray-500 uppercase">${notif.category}</span>
+                    </div>
+
+                    <div class="text-gray-800 space-y-4">
+                        <p class="text-lg leading-relaxed whitespace-pre-wrap">${notif.message}</p>
+                        <p class="text-sm text-gray-500">Recebido: ${notif.time}</p>
+                    </div>
+
+                    ${isSetupRequired ? `
+                        <div class="border-t border-red-300 pt-4 mt-6">
+                            <p class="text-sm font-semibold text-red-600 mb-3">PRÓXIMOS PASSOS OBRIGATÓRIOS:</p>
+                            <button onclick="renderView('users')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center">
+                                <span class="material-symbols-outlined mr-2">person_add</span> Acessar Painel de Usuários para Cadastro
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            return { title: 'Detalhes da Notificação', contentHTML: detailContent };
+        }
+
+        /**
+         * Template da Tela de Formulário para Cadastro de Novo Usuário (pós-setup).
+         * @returns {object} { title, contentHTML }
+         */
+        function getNewUserRegistrationFormContent() {
+            const fileTitle = `Cadastrar Novo Usuário`;
+            const fileContent = `
+                <div class="p-6 space-y-6">
+                    <p class="text-xl font-bold text-blue-600 text-center">Definir Tipo e Credenciais</p>
+                    
+                    <form id="new-user-registration-form" class="space-y-4">
+                        <select class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500">
+                            <option value="" disabled selected>Selecionar Tipo de Usuário...</option>
+                            <option value="comum">Usuário Comum</option>
+                            <option value="professor">Professor</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                        
+                        <input type="text" placeholder="Nome Completo" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                        <input type="email" placeholder="E-mail" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                        <input type="password" placeholder="Senha" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                        
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300">
+                            Salvar Novo Usuário
+                        </button>
+                    </form>
+                </div>
+            `;
+            return { title: fileTitle, contentHTML: fileContent };
+        }
+
+
+        /**
+         * Template da Tela de Formulário/Detalhe de Dados do Usuário Principal.
+         * Renderiza dinamicamente os campos do modelo USER_DB_FIELDS.
+         * @returns {object} { title, contentHTML }
+         */
+        function getUserDataFormView() {
+            const dataExists = MAIN_USER_DETAIL_DATA !== null;
+            const currentData = dataExists ? MAIN_USER_DETAIL_DATA : {};
+            
+            let currentSection = '';
+            
+            let formFieldsHTML = USER_DB_FIELDS.map(field => {
+                const currentValue = currentData[field.key] || '';
+                const inputType = field.type;
+                const placeholder = currentValue ? '' : field.placeholder;
+                const requiredAttr = field.required ? 'required' : '';
+
+                let sectionHeader = '';
+                if (field.formSection && field.formSection !== currentSection) {
+                    currentSection = field.formSection;
+                    // Adiciona um cabeçalho de seção
+                    sectionHeader = `<h3 class="text-lg font-bold text-blue-700 border-b border-blue-200 pb-1 mt-4">${currentSection}</h3>`;
+                }
+                
+                // Para campos de data, o placeholder não funciona bem, mas o valor é crucial
+                const displayValue = inputType === 'date' ? currentValue : currentValue;
+
+                return `
+                    ${sectionHeader}
+                    <div class="space-y-1 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <label for="${field.fieldId}" class="block text-sm font-medium text-gray-700">
+                            ${field.label} ${field.required ? '<span class="text-red-500">*</span>' : ''}
+                        </label>
+                        <input type="${inputType}" id="${field.fieldId}" name="${field.key}" 
+                               placeholder="${placeholder}" 
+                               value="${displayValue}" ${requiredAttr}
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                        
+                        <!-- Rastreamento de Campo para Localização Orgânica -->
+                        <span class="text-xs text-gray-500 block pt-1">
+                            <span class="font-semibold">ID Único:</span> ${field.fieldId} / 
+                            <span class="font-semibold">Chave de Dados:</span> ${field.key}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            const title = dataExists ? "Editar Dados do Usuário Principal" : "Inserção Inicial de Dados";
+            const buttonText = dataExists ? "Salvar Alterações" : "Confirmar Primeira Inserção";
+
+            const contentHTML = `
+                <div class="p-6 space-y-6">
+                    <p class="text-xl font-bold text-blue-600 text-center">${title}</p>
+                    <form id="main-user-data-form" class="space-y-4">
+                        <div class="p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm text-center mb-4 border border-yellow-200">
+                            <p>O formulário abaixo é gerado dinamicamente a partir de um modelo estruturado (USER_DB_FIELDS).</p>
+                        </div>
+                        
+                        ${formFieldsHTML}
+                        
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300 mt-6">
+                            ${buttonText}
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            return { title: "Dados do Usuário", contentHTML };
+        }
+        
+        // =========================================================================
+        // NAVEGAÇÃO E LÓGICA DO APP
+        // =========================================================================
+
+        /**
+         * Simula a navegação e renderização de componentes injetando novo HTML.
+         */
+        function renderView(newViewId, isBack = false) {
+            
+            // 1. Gerenciamento de Histórico (Apenas para navegação para frente)
+            if (!isBack && currentViewId !== newViewId) {
+                if (currentViewId !== 'welcome') {
+                     navigationHistory.push(currentViewId);
+                } else if (newViewId === 'toolbox') {
+                    navigationHistory.push('welcome');
+                }
+            }
+            
+            currentViewId = newViewId; // Atualiza a tela atual
+
+            // Variáveis de saída
+            let viewHTML = '';
+            let viewData = null;
+            let isDetailOrForm = false; // Define se a view será restrita e embrulhada em um card (max-w-lg)
+            const parts = newViewId.split('_');
+
+            // --- ROTA TIPO 1: INICIAL (Welcome) ---
+            if (newViewId === 'welcome') {
+                viewHTML = getWelcomeView();
+                appRoot.innerHTML = viewHTML;
+                attachListeners();
+                return;
+            } 
+            
+            // --- ROTA TIPO 2: NAVEGAÇÃO (Grids de Categorias) ---
+            else if (newViewId === 'toolbox' || appTools.some(tool => tool.destination === newViewId && tool.isCategory)) {
+                // Inclui Dashboard, Usuários, Conexões, Configurações etc. (Layout amplo de navegação)
+                viewData = getNavigationView(newViewId === 'toolbox' ? null : newViewId);
+                isDetailOrForm = false;
+            } 
+            
+            // --- ROTA TIPO 2: LISTAS ESPECÍFICAS (Layout de Navegação Amplo) ---
+            else if (newViewId === 'user_list') {
+                 // Destino do novo botão "Gerenciar Usuários"
+                 viewData = getUserListView();
+                 // Reverter para layout de navegação amplo (Grid/Lista)
+                 isDetailOrForm = false; 
+            } else if (newViewId === 'connection_list') {
+                 viewData = getConnectionListView();
+                 // Reverter para layout de navegação amplo (Lista)
+                 isDetailOrForm = false; 
+            } else if (newViewId === 'notif_list') {
+                 viewData = getNotificationListView();
+                 isDetailOrForm = false; // Lista de notificação permanece ampla por conter muitos itens.
+            } else if (newViewId === 'notif_config') {
+                 viewData = getNotificationConfigView();
+                 isDetailOrForm = false; // Configurações permanece ampla
+            } 
+            
+            // --- ROTA TIPO 3: FORMULÁRIO / DETALHE ---
+            else if (newViewId === DATA_FORM_ROUTE || newViewId === NEW_USER_REGISTER_ROUTE || (newViewId.startsWith('notification_detail_') && parts.length === 3)) {
+                // Formulários e Detalhes usam layout restrito com cartão
+                if (newViewId === DATA_FORM_ROUTE) viewData = getUserDataFormView();
+                else if (newViewId === NEW_USER_REGISTER_ROUTE) viewData = getNewUserRegistrationFormContent();
+                else viewData = getNotificationDetailView(parseInt(parts[2]));
+                
+                isDetailOrForm = true;
+            } else {
+                // ROTA: Conteúdo Estático (Detalhe de Usuário/Conexão, Módulos Genéricos, ou Rota Dinâmica de Usuário)
+                const isDetailRoute = (parts[0] === 'user' && parts[1] === 'detail') || (parts[0] === 'connection' && parts[1] === 'detail');
+                const tool = appTools.find(t => t.destination === newViewId) || (isDetailRoute ? { filePath: newViewId, title: 'Detalhes' } : null);
+                 
+                if (tool && tool.filePath !== null) {
+                    viewData = getSimulatedContent(tool);
+                    isDetailOrForm = true; // Conteúdo estático/detalhe de módulo usa layout restrito
+                 }
+            }
+
+            // 3. Renderização Final
+            if (viewData && viewData.contentHTML) {
+                // Renderiza a view usando o wrapper padronizado
+                viewHTML = renderStandardView(viewData.title, viewData.contentHTML, isDetailOrForm);
+            } else {
+                // FALLBACK 404: Se a rota não for mapeada ou o dado não for encontrado (ex: notif detail inexistente)
+                viewHTML = get404View(newViewId);
+            }
+
+            // 4. Injeta HTML e anexa Listeners
+            appRoot.innerHTML = viewHTML;
+            attachListeners();
+        }
+
+        /**
+         * Anexa os Event Listeners aos elementos dinâmicos após a renderização.
+         */
+        function attachListeners() {
+            // Listener para o botão de iniciar (somente na welcome view)
+            const startButton = document.getElementById('start-button');
+            if (startButton) {
+                startButton.addEventListener('click', () => {
+                    renderView('toolbox');
+                });
+            }
+            
+            // Listener para o botão flutuante "Voltar"
+            const topBackButton = document.getElementById('top-back-button');
+            if (topBackButton) {
+                // A navegação usa o histórico se ele existir, ou volta para 'welcome' se for a última tela.
+                topBackButton.addEventListener('click', () => {
+                    const previousViewId = navigationHistory.pop();
+                    if (previousViewId) {
+                        renderView(previousViewId, true);
+                    } else {
+                        renderView('welcome');
+                    }
+                });
+            }
+            
+            // Listener para o botão flutuante de Notificações (top-right)
+            const topNotificationButton = document.getElementById('top-notification-button');
+            if (topNotificationButton) {
+                topNotificationButton.addEventListener('click', () => {
+                    renderView('notif_list');
+                });
+            }
+
+            // Listener para o botão 404 (navegação para dashboard)
+            const navToToolboxButton = document.getElementById('nav-to-toolbox');
+            if (navToToolboxButton) {
+                navToToolboxButton.addEventListener('click', () => {
+                    renderView('toolbox');
+                });
+            }
+
+
+            // Listener para os botões das ferramentas (em qualquer tela)
+            const toolButtons = document.querySelectorAll('.tool-button');
+            toolButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const toolId = event.currentTarget.getAttribute('data-tool-id');
+                    const tool = appTools.find(t => t.id == toolId);
+                    
+                    if (tool) {
+                        renderView(tool.destination);
+                    }
+                });
+            });
+
+            // Listener para os botões de lista de conexões
+            const connectionListButtons = document.querySelectorAll('.connection-list-button');
+            connectionListButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const destination = event.currentTarget.getAttribute('data-tool-destination');
+                    renderView(destination); 
+                });
+            });
+
+
+            // Listener para os botões da lista de usuários 
+            const userListButtons = document.querySelectorAll('.user-list-button');
+            userListButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const destination = event.currentTarget.getAttribute('data-tool-id');
+                    renderView(destination); 
+                });
+            });
+            
+            // Listener para o formulário de Cadastro de Novo Usuário (pós-setup)
+            const newRegistrationForm = document.getElementById('new-user-registration-form');
+            if (newRegistrationForm) {
+                newRegistrationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Simula a coleta de dados
+                    const form = e.target;
+                    const name = form.querySelector('input[placeholder="Nome Completo"]').value || 'Novo Usuário';
+                    const type = form.querySelector('select').value || 'comum';
+                    
+                    // Simula adição de novo usuário (incrementando ID)
+                    const newId = Math.max(...REGISTERED_USERS.map(u => u.id)) + 1;
+                    
+                    REGISTERED_USERS.push({
+                        id: newId,
+                        name: name,
+                        role: type === 'admin' ? 'Administrador' : (type === 'professor' ? 'Professor' : 'Usuário Comum'),
+                        icon: type === 'admin' ? 'badge' : 'person',
+                        email: name.toLowerCase().replace(/\s/g, '.') + '@app.com'
+                    });
+                    
+                    showCustomMessage(`Novo usuário "${name}" cadastrado com sucesso!`);
+                    renderView('user_list');
+                });
+            }
+
+            // Listener para o Formulário de Dados do Usuário Principal (SETUP/EDIÇÃO)
+            const mainUserDataForm = document.getElementById('main-user-data-form');
+            if (mainUserDataForm) {
+                mainUserDataForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(e.target);
+                    const newDetails = {};
+                    
+                    // Coleta e simula a persistência dos dados
+                    USER_DB_FIELDS.forEach(field => {
+                        // Usa field.key para pegar o valor do FormData
+                        newDetails[field.key] = formData.get(field.key);
+                    });
+                    
+                    
+                    // Se for a primeira inserção (cadastro inicial), carrega a lista de mock users
+                    if (!hasRegisteredUsers()) {
+                         // A lógica aqui não será mais executada na primeira vez
+                         // porque REGISTERED_USERS já está preenchido no início do script.
+                         // Deixamos como fallback caso a lista fosse esvaziada.
+                         REGISTERED_USERS = [...INITIAL_MOCK_USERS]; 
+                         
+                         // Garante que o MAIN_USER_DETAIL_DATA seja um merge:
+                         MAIN_USER_DETAIL_DATA = { 
+                            ...MAIN_USER_DETAIL_MOCK, // Dados base (incluindo birthDate)
+                            ...newDetails // Sobrescreve com input real do usuário
+                         };
+                         
+                         showCustomMessage('Dados e Usuário Principal registrados com sucesso! O sistema está ativo.');
+                         renderView('users'); // Volta para a tela de usuários
+                    } else {
+                         // Edição: Apenas atualiza com os dados do formulário
+                         MAIN_USER_DETAIL_DATA = newDetails;
+                         showCustomMessage('Dados do usuário principal atualizados com sucesso!');
+                         // Apenas recarrega a view para mostrar os dados atualizados
+                         renderView(DATA_FORM_ROUTE, true); 
+                    }
+                });
+            }
+
+
+            // Listener para os botões de prévia das notificações na tela de lista
+            const notificationItemButtons = document.querySelectorAll('.notification-item-button');
+            notificationItemButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const notifId = e.currentTarget.getAttribute('data-notif-id');
+                    renderView('notification_detail_' + notifId);
+                });
+            });
+
+            // --- Lógica Master/Child para Configuração de Canais ---
+            // Simplificada para lidar apenas com toggles de módulos, sem mestres hierárquicos
+
+            const channelSwitches = document.querySelectorAll('.toggle-switch');
+            channelSwitches.forEach(channelSwitch => {
+                channelSwitch.addEventListener('change', (e) => {
+                    const channelId = e.target.getAttribute('data-channel');
+                    const newState = e.target.checked;
+                    
+                    notificationChannels[channelId] = newState;
+
+                    const status = newState ? 'ATIVADO' : 'DESATIVADO';
+                    const tool = appTools.find(t => t.destination === channelId);
+                    const channelName = tool ? tool.title : channelId;
+                    showCustomMessage(`Notificações para ${channelName} foram ${status}.`);
+                });
+            });
+        }
+        
+        // =========================================================================
+        // INICIALIZAÇÃO
+        // =========================================================================
+        
+        // Renderiza a tela inicial ao carregar o aplicativo
+        renderView('welcome')
+
+    </script>
+
 </body>
 </html>
