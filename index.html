@@ -1,1234 +1,395 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <!-- Essencial para que a visualização seja responsiva em dispositivos móveis -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Mobile: Navegação Multi-Nível</title>
-    <!-- Carregamento do Tailwind CSS para classes utilitárias -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Conexão com Google Material Symbols para ícones modernos -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    
-    <style>
-        /* Estilização base para o corpo da página */
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f3f4f6;
-        }
-        /* Estilos globais para os ícones Material Symbols */
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 48; /* Define o tamanho óptico para ser grande e impactante */
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>App Mobile: Navegação Multi-Nível</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+<style>
+body{font-family:'Inter',sans-serif;margin:0;padding:0;background-color:#f3f4f6}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 48}
+form input[type="text"],form input[type="date"],form input[type="number"],form input[type="tel"],form input[type="email"],form input[type="password"],form select,form textarea{border-radius:0.5rem;transition:border-color 0.2s,box-shadow 0.2s}
+form input:focus,form select:focus,form textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.3)}
+.tool-button{transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275)}
+.tool-button:hover{transform:scale(1.02)}
+</style>
 </head>
 <body>
-
-    <!-- CONTAINER ÚNICO: Simula o componente raiz do App. Todo o conteúdo será injetado aqui. -->
-    <div id="app-root" class="min-h-screen">
-        <!-- Conteúdo injetado via JavaScript -->
-    </div>
-
-    <script>
-        const appRoot = document.getElementById('app-root');
-
-        // --- Variáveis de Estado de Navegação ---
-        const navigationHistory = []; // Tracks previous view IDs (used for 'back')
-        let currentViewId = 'welcome'; // Tracks the currently displayed view ID
-
-        // =========================================================================
-        // SIMULAÇÃO DE DADOS E ESTADO
-        // =========================================================================
-        
-        /**
-         * Lista de usuários fictícios que serão carregados na primeira inserção de dados.
-         * O ID 1001 é sempre o Usuário Principal.
-         */
-        const INITIAL_MOCK_USERS = [
-            { id: 1001, name: "Usuário Principal (Admin)", role: "Administrador", icon: "badge", email: "admin@app.com" },
-            { id: 1002, name: "Prof. Ana Souza", role: "Professor", icon: "person", email: "ana.souza@app.com" },
-            { id: 1003, name: "Estudante Marcos", role: "Estudante", icon: "school", email: "marcos@app.com" },
-        ];
-
-        // Simulação de Usuários Cadastrados: Agora, pré-carregamos os mocks para testar a renderização da lista.
-        let REGISTERED_USERS = [...INITIAL_MOCK_USERS]; 
-        
-        /**
-         * Simula a checagem se há algum usuário principal já cadastrado no sistema.
-         */
-        function hasRegisteredUsers() {
-            // Se fosse um sistema real, checaríamos a contagem na base de dados.
-            return REGISTERED_USERS.length > 0; 
-        }
-
-        // Simulação de Conexões de Rede (separada dos usuários cadastrados)
-        const NETWORK_CONNECTIONS = [
-             { id: 2001, name: "Joana Silva", role: "Gestora Educacional", status: "Ativo", icon: "person", destination: "connection_detail_2001" }, 
-             { id: 2002, name: "Ricardo Mendes", role: "Suporte Financeiro", status: "Inativo", icon: "person", destination: "connection_detail_2000" },
-             { id: 2003, name: "Equipe de TI", role: "Administrador de Sistema", status: "Ativo", icon: "admin_panel_settings", destination: "connection_detail_2003" },
-        ];
-        
-        /**
-         * Lista completa de todas as notificações possíveis no sistema.
-         */
-        const ALL_NOTIFICATIONS = [
-            { 
-                id: 999, 
-                title: "CONFIGURAÇÃO NECESSÁRIA", 
-                message: "Por favor, cadastre o Usuário Principal para liberar o acesso total ao sistema. Acesse 'Usuários > Gerenciar Cadastro'.", 
-                time: "AGORA", 
-                icon: "manage_accounts", 
-                color: "red", 
-                category: "SETUP" 
-            },
-            { id: 1, title: "Nova Avaliação", message: "A avaliação de Matemática do 9º ano foi liberada e deve ser concluída até sexta-feira.", time: "5 minutos atrás", icon: "assignment", color: "blue", category: "Educação" },
-            { id: 2, title: "Novo Acesso", message: "O professor João Silva foi cadastrado e agora tem acesso ao módulo de gestão de turmas.", time: "1 hora atrás", icon: "person_check", color: "green", category: "Usuários" },
-            { id: 3, title: "Manutenção Agendada", message: "O sistema passará por uma manutenção programada na próxima quarta-feira.", time: "Ontem", icon: "warning", color: "yellow", category: "Sistema" },
-        ];
-
-
-        /**
-         * Simula a busca de dados de notificação de um backend.
-         */
-        function fetchNotifications() {
-            if (!hasRegisteredUsers()) {
-                // Se nenhum usuário foi cadastrado, retorna APENAS a notificação de setup.
-                return [ALL_NOTIFICATIONS.find(n => n.id === 999)]; 
-            }
-            
-            // Se o usuário principal já está cadastrado, retorna as notificações normais (filtrando o setup).
-            return ALL_NOTIFICATIONS.filter(n => n.id !== 999);
-        }
-
-        /**
-         * Retorna a contagem atual de notificações.
-         */
-        function getNotificationCount() {
-            return fetchNotifications().length;
-        }
-        
-        // Simulação do estado de ativação dos canais de notificação (para a nova tela de Configuração)
-        let notificationChannels = {
-            'dashboard': true, 'users': true, 'notifications': true, 'settings': true,
-            'government': true, 'education': true, 'health': false, 'finance': false,
-            'work': true, 'leisure': true, 'news': true, 'assistant': true,
-            'accessibility_settings': true, 'system_info': true, 'notif_list': true,
-            'notif_config': true, 'user_register': true, 'connections': true,
-            'student_register': true, 'courses_list': true, 'assessments_page': true,
-            'library_access': true, 'schedule_appointment': true, 'my_appointments': true,
-            'history': true, 'statement': true, 'transfers': true, 'local_law': true, 
-            'task_manager': true, 'reports': true, 'booking': true, 'events': true,
-            'local_news': true, 'global_updates': true, 'ai_chat': true, 'quick_actions': true,
-        };
-
-        // --- MODELO DE DADOS: ESQUEMA DE CAMPOS DO BANCO DE DADOS (MOCK) ---
-        // Adiciona fieldId único para referências orgânicas, key para acesso no objeto, label para display.
-        const USER_DB_FIELDS = [
-            { fieldId: 'USR-NAME', key: 'fullName', label: 'Nome Completo', type: 'text', placeholder: 'Ex: Maria da Silva', required: true, formSection: 'Pessoal' },
-            { fieldId: 'USR-BIRTH', key: 'birthDate', label: 'Data de Nascimento', type: 'date', placeholder: 'DD/MM/AAAA', required: true, formSection: 'Pessoal' },
-            { fieldId: 'USR-ADDR', key: 'address', label: 'Endereço Principal', type: 'text', placeholder: 'Rua, número, bairro', required: false, formSection: 'Contato' },
-            { fieldId: 'USR-PHONE', key: 'phone', label: 'Telefone de Contato', type: 'tel', placeholder: '(99) 99999-9999', required: false, formSection: 'Contato' },
-        ];
-        
-        // NOVO MOCK DE DETALHES COMPLETO: Garante que todos os campos da estrutura USER_DB_FIELDS estejam presentes
-        const MAIN_USER_DETAIL_MOCK = {
-            fullName: "Usuário Principal (Admin)",
-            birthDate: "1985-10-20", // MOCK DATE ADICIONADA para consistência
-            address: "Rua Principal, 1000, Centro",
-            phone: "11 98765-4321",
-        };
-
-
-        // Dados simulados do usuário principal. É null se a primeira inserção NUNCA foi feita.
-        let MAIN_USER_DETAIL_DATA = null;
-        
-        // Rota interna para o formulário detalhado de dados
-        const DATA_FORM_ROUTE = 'main_user_data_form';
-        // Rota interna para o formulário de cadastro de novo usuário (pós-setup)
-        const NEW_USER_REGISTER_ROUTE = 'new_user_register';
-
-
-        // =========================================================================
-        // DADOS HIERÁRQUICOS: A lista completa de botões e sub-botões
-        // =========================================================================
-        const appTools = [
-            // --- TELA PRINCIPAL (parent: null) ---
-            { id: 1, title: "Dashboard", icon: "dashboard", destination: "dashboard", parent: null, isCategory: true, filePath: null }, 
-            { id: 2, title: "Usuários", icon: "group", destination: "users", parent: null, isCategory: true },
-            { id: 3, title: "Notificações", icon: "notifications_active", destination: "notifications", parent: null, isCategory: true },
-            { id: 4, title: "Configurações", icon: "settings", destination: "settings", parent: null, isCategory: true },
-            
-            // CATEGORIAS (FILHAS DO DASHBOARD)
-            { id: 5, title: "Educação", icon: "school", destination: "education", parent: "dashboard", isCategory: true },
-            { id: 6, title: "Saúde", icon: "local_hospital", destination: "health", parent: "dashboard", isCategory: true },
-            { id: 7, title: "Finanças", icon: "attach_money", destination: "finance", parent: "dashboard", isCategory: true },
-            { id: 8, title: "Governo", icon: "account_balance", destination: "government", parent: "dashboard", isCategory: true },
-            { id: 9, title: "Trabalho", icon: "work", destination: "work", parent: "dashboard", isCategory: true },
-            { id: 10, title: "Lazer", icon: "local_activity", destination: "leisure", parent: "dashboard", isCategory: true },
-            { id: 11, title: "Notícias", icon: "feed", destination: "news", parent: "dashboard", isCategory: true },
-            { id: 12, title: "Assistente", icon: "smart_toy", destination: "assistant", parent: "dashboard", isCategory: true },
-
-
-            // --- SUB-FERRAMENTAS (parent: 'settings') ---
-            { id: 41, title: "Acessibilidade", icon: "accessibility_new", destination: "accessibility_settings", parent: "settings", isCategory: false, filePath: "settings/accessibility/index.html" },
-            { id: 42, title: "Info do Sistema", icon: "info", destination: "system_info", parent: "settings", isCategory: false, filePath: "settings/info/index.html" },
-
-
-            // --- SUB-FERRAMENTAS (parent: 'notifications') ---
-            { id: 31, title: "Visualizar Lista", icon: "list_alt", destination: "notif_list", parent: "notifications", isCategory: false, filePath: null }, 
-            { id: 32, title: "Configurar Canais", icon: "tune", destination: "notif_config", parent: "notifications", isCategory: false, filePath: null },
-
-            // --- SUB-FERRAMENTAS (parent: 'users') ---
-            // Mover Gerenciar Cadastro de volta para 'users' e definir como Categoria (Grid Button Style)
-            { id: 22, title: "Gerenciar Cadastro", icon: "manage_accounts", destination: "user_list", parent: "users", isCategory: true, filePath: null }, 
-            { id: 23, title: "Conexões", icon: "group_add", destination: "connections", parent: "users", isCategory: true, filePath: null }, 
-            
-            // --- SUB-FERRAMENTAS (parent: 'connections') ---
-            { id: 231, title: "Lista de Conexões", icon: "list_alt", destination: "connection_list", parent: "connections", isCategory: false, filePath: null }, 
-            { id: 9999, title: "Adicionar Nova Conexão", icon: "add_link", destination: "add_connection", parent: "connections", isCategory: false, filePath: "users/connections/add/index.html" },
-            
-            // --- OUTRAS SUB-FERRAMENTAS (usadas para simulação de módulos) ---
-            { id: 81, title: "Legislação Local", icon: "gavel", destination: "local_law", parent: "government", isCategory: false, filePath: "government/law/index.html" },
-            { id: 104, title: "Cadastrar Aluno", icon: "person_add", destination: "student_register", parent: "education", isCategory: false, filePath: "educacao/aluno/cadastro/index.html" },
-            { id: 201, title: "Agendar Consulta", icon: "calendar_month", destination: "schedule_appointment", parent: "health", isCategory: false, filePath: "saude/agendamento/index.html" },
-        ];
-
-        // =========================================================================
-        // FUNÇÕES AUXILIARES DE COMPONENTES FIXOS (BOTÕES FLUTUANTES)
-        // =========================================================================
-
-        /**
-         * Gera o HTML para o botão flutuante de Voltar (canto superior esquerdo).
-         */
-        function getFloatingBackButtonHTML() {
-            if (currentViewId === 'welcome') return '';
-            
-            return `
-                <button id="top-back-button" class="fixed top-4 left-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg text-gray-700 hover:bg-gray-100 transition duration-150 border border-gray-200">
-                    <span class="material-symbols-outlined text-2xl" title="Voltar">chevron_left</span>
-                </button>
-            `;
-        }
-
-        /**
-         * Gera o HTML para o botão flutuante de Notificações (canto superior direito).
-         */
-        function getFloatingNotificationButtonHTML() {
-            if (currentViewId === 'welcome') return '';
-            
-            const notificationCount = getNotificationCount();
-            let badgeHTML = '';
-            let iconClass = 'text-gray-700';
-
-            if (notificationCount > 0) {
-                badgeHTML = `<div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none transform translate-x-1/4 -translate-y-1/4 shadow-md z-40">${notificationCount}</div>`;
-                iconClass = 'text-red-600'; 
-            }
-            
-            return `
-                <button id="top-notification-button" class="fixed top-4 right-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg hover:bg-gray-100 transition duration-150 border border-gray-200">
-                    ${badgeHTML}
-                    <span class="material-symbols-outlined text-2xl ${iconClass}" title="Notificações">notifications</span>
-                </button>
-            `;
-        }
-
-
-        // =========================================================================
-        // FUNÇÕES DE ALERTA E MODAIS
-        // =========================================================================
-        
-        /**
-         * Exibe uma caixa de mensagem customizada (simula alerta/confirmação).
-         */
-        function showCustomMessage(message) {
-            const messageBox = document.createElement('div');
-            messageBox.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-55 p-4';
-            messageBox.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-2xl text-center max-w-xs">
-                    <p class="text-gray-800 font-semibold mb-4">${message}</p>
-                    <button id="close-msg" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300">Entendido</button>
-                </div>
-            `;
-            document.body.appendChild(messageBox);
-            document.getElementById('close-msg').addEventListener('click', () => {
-                document.body.removeChild(messageBox);
-            });
-        }
-
-        // =========================================================================
-        // SIMULAÇÃO DE CONTEÚDO PADRONIZADO (PARA TELAS DE DETALHE/FORMULÁRIO)
-        // =========================================================================
-        
-        /**
-         * Gera o HTML para o erro 404 padronizado.
-         */
-        function get404View(viewId) {
-            const topBackButtonHTML = getFloatingBackButtonHTML();
-            const topNotificationButtonHTML = getFloatingNotificationButtonHTML();
-            return `
-                ${topBackButtonHTML}
-                ${topNotificationButtonHTML}
-                <div class="min-h-screen p-4 pb-24 pt-16 flex items-center justify-center"> 
-                    <div class="max-w-md w-full text-center bg-white p-8 rounded-xl shadow-2xl border border-red-200">
-                        <span class="material-symbols-outlined text-9xl text-red-500 mb-4 mx-auto">
-                            cloud_off
-                        </span>
-                        <h2 class="text-4xl font-extrabold text-red-700 mb-2">ERRO 404</h2>
-                        <p class="text-gray-700 mb-4 font-semibold">Conteúdo não encontrado ou em fase de implantação.</p>
-                        <p class="text-sm text-gray-500 break-words">A rota '${viewId}' não está mapeada para uma view implementada.</p>
-                        <button id="nav-to-toolbox" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-                            Voltar ao Dashboard
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Simula o carregamento do conteúdo de um arquivo index.html (ou gera fallback/404).
-         * NOTE: Conteúdo simplificado para manter o padrão visual.
-         */
-        function getSimulatedContent(tool) {
-            const filePath = tool.filePath;
-            let fileContent = null;
-            let fileTitle = tool.title;
-            
-            // Fallback imediato para falta de filePath
-            if (!filePath) {
-                 return { title: `ERRO DE DADOS`, contentHTML: `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Caminho do arquivo não definido (filePath).</p></div>` };
-            }
-
-            // SIMULAÇÃO: Detalhes do Usuário (Simplificado)
-            if (filePath.startsWith('user_detail_')) {
-                const userId = parseInt(filePath.split('_')[2]);
-                const user = REGISTERED_USERS.find(u => u.id === userId);
-                
-                if (!user) {
-                    fileTitle = `Usuário Não Encontrado`;
-                    fileContent = `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Usuário com ID ${userId} não encontrado.</p></div>`;
-                } else {
-                    fileTitle = `Detalhes de ${user.name}`;
-                    fileContent = `
-                        <div class="p-6 space-y-4 text-center">
-                            <span class="material-symbols-outlined text-7xl text-blue-500 mx-auto mb-3">
-                                ${user.icon}
-                            </span>
-                            <p class="text-xl font-bold text-gray-800">${user.name}</p>
-                            <p class="text-md text-gray-600 font-medium">${user.role}</p>
-                            <ul class="text-left bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
-                                <li class="font-medium text-gray-700">E-mail: <span class="text-gray-900 font-semibold">${user.email}</span></li>
-                                <li class="font-medium text-gray-700">ID: <span class="text-gray-900">${user.id}</span></li>
-                            </ul>
-                            <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">
-                                Editar Permissões
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-            
-            // SIMULAÇÃO: Detalhes da Conexão (Simplificado)
-            else if (filePath.startsWith('connection_detail_')) {
-                const connectionId = parseInt(filePath.split('_')[2]);
-                const connection = NETWORK_CONNECTIONS.find(c => c.id === connectionId);
-                
-                if (!connection) {
-                    fileTitle = `Conexão Não Encontrada`;
-                    fileContent = `<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Conexão com ID ${connectionId} não encontrada.</p></div>`;
-                } else {
-                    fileTitle = `Detalhes de ${connection.name}`;
-                    const statusTextClass = connection.status === 'Ativo' ? 'text-green-600' : 'text-gray-500';
-                    fileContent = `
-                        <div class="p-6 space-y-4 text-center">
-                            <span class="material-symbols-outlined text-7xl text-purple-500 mx-auto mb-3">
-                                ${connection.icon}
-                            </span>
-                            <p class="text-xl font-bold text-gray-800">${connection.name}</p>
-                            <p class="text-md text-gray-600 font-medium">${connection.role}</p>
-                            <ul class="text-left bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
-                                <li class="font-medium text-gray-700">Status: <span class="${statusTextClass} font-semibold">${connection.status}</span></li>
-                                <li class="font-medium text-gray-700">ID: <span class="text-gray-900">${connection.id}</span></li>
-                            </ul>
-                            <button class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">
-                                Remover Conexão
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-
-
-            // SIMULAÇÃO: Adicionar Nova Conexão (Simplificado)
-            else if (filePath === 'users/connections/add/index.html') {
-                 fileTitle = `Adicionar Nova Conexão`;
-                 fileContent = `
-                    <div class="p-6 space-y-6">
-                        <p class="text-xl font-bold text-purple-600 text-center">Buscar e Convidar Usuário</p>
-                        <form class="space-y-4">
-                            <input type="text" placeholder="ID de Usuário ou E-mail" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" />
-                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-                                Enviar Convite
-                            </button>
-                        </form>
-                    </div>
-                `;
-            }
-            
-            // SIMULAÇÃO: Conteúdo Genérico para Módulos em Desenvolvimento
-            else {
-                // Conteúdo genérico/404 para caminhos não essenciais
-                fileTitle = `Módulo: ${tool.title}`;
-                fileContent = `
-                    <div class="p-8 text-center bg-gray-50 rounded-xl border border-gray-200 space-y-4">
-                        <span class="material-symbols-outlined text-6xl text-orange-500 mx-auto">construction</span>
-                        <p class="text-lg font-bold text-gray-800">Módulo em Desenvolvimento</p>
-                        <p class="text-sm text-gray-600">O conteúdo para a ferramenta "${tool.title}" está em fase de implantação.</p>
-                    </div>
-                `;
-            }
-            
-            // Retorna apenas título e conteúdo. O wrapper do card é adicionado em renderView.
-            return { title: fileTitle, contentHTML: fileContent };
-        }
-
-        // =========================================================================
-        // FUNÇÕES AUXILIARES DE COMPONENTES DE LISTA
-        // =========================================================================
-        
-        /**
-         * Define a string HTML para um único botão/ferramenta (Estilo Flowbite Card).
-         */
-        function createToolButtonHTML(tool) {
-            let notificationBadge = '';
-            
-            if (tool.id === 3) { 
-                const count = getNotificationCount();
-                if (count > 0) {
-                    notificationBadge = `
-                        <div class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md z-40">
-                            ${count}
-                        </div>
-                    `;
-                }
-            }
-            
-            const ctaText = tool.isCategory ? 'Selecionar' : 'Abrir';
-
-            return `
-                <button data-tool-id="${tool.id}" 
-                    class="tool-button w-full h-40 relative flex flex-col items-center justify-center 
-                           bg-white rounded-xl border border-gray-200 
-                           shadow-xl transition duration-300 ease-in-out 
-                           hover:bg-blue-50 hover:border-blue-500 hover:shadow-2xl 
-                           focus:ring-4 focus:ring-blue-300 focus:outline-none p-4 cursor-pointer">
-                    
-                    ${notificationBadge}
-                    
-                    <span class="material-symbols-outlined text-4xl text-blue-600 mb-3">
-                        ${tool.icon}
-                    </span>
-                    
-                    <span class="text-lg font-bold text-gray-800 text-center">${tool.title}</span>
-                    <span class="text-xs text-blue-500 mt-1 uppercase tracking-wider">${ctaText}</span>
-                </button>
-            `;
-        }
-        
-        /**
-         * Helper para gerar botões para a lista de conexões (usada em getConnectionListView).
-         */
-        function createConnectionButtonHTML(connection) {
-            const statusBadge = connection.status === 'Ativo' ? `
-                <div class="flex flex-col items-end">
-                    <span class="text-xs text-green-600 font-semibold mt-1">Ativo</span>
-                </div>
-            ` : `
-                <div class="flex flex-col items-end">
-                    <span class="text-xs text-gray-500 font-semibold mt-1">Inativo</span>
-                </div>
-            `;
-
-            return `
-                <button data-tool-destination="${connection.destination}" 
-                    class="connection-list-button w-full flex items-center space-x-4 p-4 text-left 
-                           bg-white rounded-xl border border-gray-200 shadow-md 
-                           hover:bg-purple-50 transition duration-150">
-                    <span class="material-symbols-outlined text-3xl text-purple-600">${connection.icon}</span>
-                    <div class="flex-grow">
-                        <p class="font-bold text-gray-800 truncate">${connection.name}</p>
-                        <p class="text-xs text-gray-500">${connection.role}</p>
-                    </div>
-                    ${statusBadge}
-                    <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                </button>
-            `;
-        }
-
-        /**
-         * FERRAMENTA GLOBAL: Define a string HTML para um único botão/item na lista de usuários (Estilo Grid Card).
-         * Este é um cartão mais compacto, ideal para uso em grades de navegação.
-         * @param {object} user - Objeto do usuário com id, name, role e icon.
-         * @returns {string} HTML do botão de item de lista.
-         */
-        function createUserGridButtonHTML(user) {
-            return `
-                <button data-tool-id="user_detail_${user.id}" 
-                    class="user-list-button w-full h-36 relative flex flex-col items-center justify-center 
-                           bg-white rounded-xl border border-gray-200 
-                           shadow-md transition duration-300 ease-in-out 
-                           hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg 
-                           focus:ring-4 focus:ring-blue-300 focus:outline-none p-3 cursor-pointer text-center">
-                    
-                    <span class="material-symbols-outlined text-4xl text-blue-600 mb-2">
-                        ${user.icon}
-                    </span>
-                    
-                    <span class="text-md font-bold text-gray-800 truncate w-full px-1">${user.name}</span>
-                    <span class="text-xs text-blue-500 mt-0.5 uppercase tracking-wider">${user.role}</span>
-                </button>
-            `;
-        }
-
-
-        // =========================================================================
-        // FUNÇÃO DE RENDERIZAÇÃO CENTRALIZADA (Wrapper Padrão)
-        // =========================================================================
-
-        /**
-         * Renderiza o layout padrão de Navegação ou Detalhe/Formulário.
-         * Envolve o conteúdo com botões flutuantes, título e container responsivo.
-         * @param {string} title - Título da tela.
-         * @param {string} contentHTML - O HTML do conteúdo principal.
-         * @param {boolean} isDetailOrForm - Se deve usar largura menor (max-w-lg) e envolver o conteúdo em um card branco.
-         * @returns {string} HTML completo da view padronizada.
-         */
-        function renderStandardView(title, contentHTML, isDetailOrForm) {
-            const topBackButtonHTML = getFloatingBackButtonHTML();
-            const topNotificationButtonHTML = getFloatingNotificationButtonHTML();
-
-            // Usamos max-w-lg para Form/Detail e max-w-4xl (grid) para navegação/listas
-            const maxWidthClass = isDetailOrForm ? 'max-w-lg' : 'max-w-4xl';
-            
-            // Se for Detail/Form, adiciona o wrapper de card interno
-            const finalContent = isDetailOrForm
-                ? `<div class="bg-white rounded-xl shadow-2xl p-0">${contentHTML}</div>`
-                : contentHTML; // Listas e grids já são responsáveis por seus wrappers/espaçamento
-            
-            return `
-                ${topBackButtonHTML}
-                ${topNotificationButtonHTML}
-                <div class="min-h-screen p-4 pb-24 pt-16 ${maxWidthClass} mx-auto"> 
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">${title}</h2>
-                    ${finalContent}
-                </div>
-            `;
-        }
-
-
-        // =========================================================================
-        // VIEWS TIPO 1: INICIAL (Única)
-        // =========================================================================
-
-        /**
-         * Template da Tela de Boas-Vindas.
-         */
-        function getWelcomeView() {
-            navigationHistory.length = 0; 
-            return `
-                <div class="min-h-screen flex flex-col items-center justify-center p-4">
-                    <div class="bg-white p-8 sm:p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition duration-500 hover:scale-[1.02]">
-                        <span class="material-symbols-outlined text-6xl text-blue-600 mb-4 mx-auto">
-                            rocket_launch
-                        </span>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-Vindo!</h1>
-                        <p class="text-gray-500 mb-6">
-                            Aplicativo simulado com minimalismo e padronização.
-                        </p>
-                        <button id="start-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">
-                            Começar Agora
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // =========================================================================
-        // VIEWS TIPO 2: NAVEGAÇÃO (Grid de Cartões)
-        // =========================================================================
-
-        /**
-         * Template da Tela de Navegação (Menu Principal, Dashboard, Usuários, Conexões).
-         * @returns {object} { title, contentHTML }
-         */
-        function getNavigationView(parentId) {
-            
-            let title = parentId === null ? "Início" : "Minhas Ferramentas e Áreas"; 
-            
-            if (parentId) {
-                const parentTool = appTools.find(tool => tool.destination === parentId);
-                title = parentTool ? parentTool.title : "Sub-Ferramentas";
-            }
-
-            const filteredTools = appTools.filter(tool => tool.parent === parentId);
-            const buttonsHTML = filteredTools.map(tool => createToolButtonHTML(tool)).join('');
-        
-            const contentHTML = `
-                <!-- CONTAINER DOS BOTÕES (Grid Padrão) -->
-                <div id="tool-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-auto">
-                    ${buttonsHTML}
-                </div>
-            `;
-            
-            return { title, contentHTML };
-        }
-
-        // =========================================================================
-        // VIEWS TIPO 3: LISTA
-        // =========================================================================
-
-        /**
-         * Template da tela de Lista de Usuários Cadastrados.
-         * @returns {object} { title, contentHTML }
-         */
-        function getUserListView() {
-            const isInitialSetup = !hasRegisteredUsers();
-            
-            if (isInitialSetup) {
-                // MODO: Configuração Inicial Obrigatória -> BOTÃO "Adicionar Dados"
-                const contentHTML = `
-                    <div class="max-w-xs mx-auto text-center"> 
-                        <div class="p-6 space-y-4 bg-white rounded-xl shadow-xl border border-gray-200 mb-8">
-                            <p class="text-md font-bold text-gray-700">Nenhum dado inicial encontrado.</p>
-                            <p class="text-gray-600 text-sm">Insira os dados do usuário principal para liberar o sistema.</p>
-                        </div>
-                        
-                        <button onclick="renderView('${DATA_FORM_ROUTE}')" 
-                            class="w-full h-40 flex flex-col items-center justify-center 
-                                    bg-green-600 text-white rounded-xl shadow-lg 
-                                    hover:bg-green-700 transition duration-150">
-                            <span class="material-symbols-outlined text-6xl">add</span>
-                            <span class="text-xl font-semibold mt-2">Adicionar Dados</span>
-                        </button>
-                    </div>
-                `;
-                return { title: 'Gerenciar Usuários', contentHTML };
-            }
-            
-            // MODO: Sistema Operacional (Lista de Usuários + Opção de Adicionar Novo)
-            // Usa a ferramenta global de item de lista (createUserGridButtonHTML)
-            let userGridHTML = REGISTERED_USERS.map(user => createUserGridButtonHTML(user)).join('');
-
-
-            const addNewUserButton = `
-                <button onclick="renderView('${NEW_USER_REGISTER_ROUTE}')" 
-                    class="w-full h-16 flex items-center justify-center space-x-2 p-4 text-center 
-                           bg-blue-600 text-white rounded-xl shadow-lg 
-                           hover:bg-blue-700 transition duration-150">
-                    <span class="material-symbols-outlined text-2xl">person_add</span>
-                    <span class="font-semibold">Adicionar Novo Usuário</span>
-                </button>
-            `;
-
-            // Estrutura de navegação (ampla) com Grid para os usuários
-            const contentHTML = `
-                <div class="space-y-6"> 
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-700 text-left">Usuários Cadastrados (${REGISTERED_USERS.length})</h3>
-                        <!-- Mantém o botão Adicionar em um local proeminente -->
-                        <div class="w-1/2 md:w-1/4">
-                            ${addNewUserButton}
-                        </div>
-                    </div>
-                    
-                    <!-- GRID CONTAINER: Usa grid responsivo para cartões de usuário -->
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        ${userGridHTML}
-                    </div>
-                </div>
-            `;
-            
-            // Retorna como layout de navegação (isDetailOrForm = false)
-            return { title: 'Gerenciar Usuários', contentHTML };
-        }
-        
-        /**
-         * Template da tela de Lista de Conexões.
-         * @returns {object} { title, contentHTML }
-         */
-        function getConnectionListView() {
-             const title = "Lista de Conexões"; 
-             const addTool = appTools.find(t => t.destination === 'add_connection');
-
-             const addNewConnectionButton = `
-                 <button data-tool-id="${addTool.id}" 
-                     class="tool-button w-full h-20 flex items-center justify-center space-x-2 p-4 text-center 
-                            bg-purple-600 text-white rounded-xl shadow-lg 
-                            hover:bg-purple-700 transition duration-150 mt-4">
-                     <span class="material-symbols-outlined text-2xl">add_link</span>
-                     <span class="font-semibold">${addTool.title}</span>
-                 </button>
-             `;
-            
-             let connectionsListHTML = '';
-             
-             if (NETWORK_CONNECTIONS.length > 0) {
-                 // Usa o componente de botão de conexão que é mais estreito, adequado para lista vertical
-                 connectionsListHTML = NETWORK_CONNECTIONS.map(conn => createConnectionButtonHTML(conn)).join('');
-                 
-                 connectionsListHTML = `
-                    <h3 class="text-xl font-bold text-gray-700 mb-4 text-left">Conexões Ativas/Inativas (${NETWORK_CONNECTIONS.length})</h3>
-                    <div class="space-y-3 mb-4">
-                        ${connectionsListHTML}
-                    </div>
-                    ${addNewConnectionButton}
-                 `;
-
-             } else {
-                 connectionsListHTML = `
-                     <div class="bg-gray-50 rounded-xl border border-gray-200 text-center space-y-4 py-8"> 
-                         <span class="material-symbols-outlined text-6xl text-gray-400 mx-auto">handshake</span>
-                         <p class="text-lg font-semibold text-gray-700">Nenhuma conexão ativa encontrada.</p>
-                         <p class="text-sm text-gray-500">Clique abaixo para buscar e convidar usuários.</p>
-                         <div>
-                             ${addNewConnectionButton}
-                         </div>
-                     </div>
-                 `;
-             }
-
-             // Removido o wrapper p-6 interno para layout de navegação amplo
-             return { title, contentHTML: `<div class="space-y-6">${connectionsListHTML}</div>` };
-        }
-
-        /**
-         * Template da Tela de Lista de Notificações.
-         * @returns {object} { title, contentHTML }
-         */
-        function getNotificationListView() {
-            const notifications = fetchNotifications();
-            let notificationListHTML = '';
-
-            if (notifications.length === 0) {
-                // Manter este estilo sem wrapper p-6 pois é uma lista wide
-                notificationListHTML = `
-                    <div class="p-8 text-center text-gray-500 bg-white rounded-xl shadow-lg mt-8">
-                        <span class="material-symbols-outlined text-6xl mx-auto mb-4">notifications_off</span>
-                        <p class="text-lg font-semibold">Nenhuma notificação nova.</p>
-                        <p class="text-sm">Verifique novamente mais tarde.</p>
-                    </div>
-                `;
-            } else {
-                // Renderiza a lista de notificações como BOTÕES/PRÉVIAS
-                notificationListHTML = notifications.map(notif => `
-                    <button data-notif-id="${notif.id}" class="notification-item-button w-full flex items-center space-x-4 p-4 text-left bg-white rounded-xl shadow-lg hover:bg-gray-100 transition duration-150 border-l-4 border-${notif.color}-500">
-                        <span class="material-symbols-outlined text-3xl text-${notif.color}-600">
-                            ${notif.icon}
-                        </span>
-                        <div class="flex-grow">
-                            <p class="font-bold text-gray-800">${notif.title}</p>
-                            <p class="text-sm text-gray-600">${notif.message.substring(0, 70)}...</p>
-                            <p class="text-xs text-gray-400 mt-1">${notif.time}</p>
-                        </div>
-                        <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                    </button>
-                `).join('');
-                
-                notificationListHTML = `
-                    <div class="space-y-4 p-0 max-w-4xl mx-auto">
-                        ${notificationListHTML}
-                    </div>
-                `;
-            }
-
-            return { title: 'Lista de Notificações', contentHTML: notificationListHTML };
-        }
-        
-        /**
-         * Template da Tela de Configuração de Canais de Notificação.
-         * Renderiza APENAS as categorias do Dashboard (Gerenciamento por Módulo).
-         * @returns {object} { title, contentHTML }
-         */
-        function getNotificationConfigView() {
-            // Filtra APENAS os filhos diretos do dashboard (Gerenciamento por Módulo)
-            const dashboardCategories = appTools.filter(tool => tool.parent === 'dashboard' && tool.isCategory);
-
-            // Único grupo de display
-            const displayGroup = { 
-                title: 'Gerenciamento por Módulo', 
-                tools: dashboardCategories 
-            };
-
-            let settingsHTML = '';
-            let groupItemsHTML = '';
-            
-            // Loop para renderizar os filhos (que agora são os canais principais)
-            displayGroup.tools.forEach(tool => {
-                const id = tool.destination;
-                // Para simplificar, tratamos todos os filhos do Dashboard como 'canais'
-                const isActive = notificationChannels[id] === true; 
-                
-                // Sem o Master Toggle, renderizamos apenas o controle do canal
-                groupItemsHTML += `
-                    <div class="flex items-center justify-between py-3 px-4 bg-white rounded-xl shadow-md border border-gray-200">
-                        <div class="flex items-center space-x-3">
-                            <span class="material-symbols-outlined text-xl text-gray-600">${tool.icon}</span>
-                            <p class="font-medium text-gray-800">${tool.title}</p>
-                        </div>
-                        
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" data-channel="${id}" class="sr-only peer toggle-switch child-toggle" ${isActive ? 'checked' : ''}>
-                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                    </div>
-                `;
-            });
-
-            settingsHTML = `
-                <div class="space-y-3">
-                    <h3 class="text-2xl font-bold text-gray-900">${displayGroup.title}</h3>
-                    <p class="text-sm text-gray-600 mb-6">Ative ou desative as notificações Push/App para cada módulo principal do sistema.</p>
-                    <div class="space-y-4">
-                        ${groupItemsHTML}
-                    </div>
-                </div>
-            `;
-            
-            const contentHTML = `
-                <div id="channel-settings-list" class="space-y-6">
-                    ${settingsHTML}
-                </div>
-                <p class="mt-8 text-xs text-gray-400 text-center">As alterações são salvas automaticamente (Simulação).</p>
-            `;
-
-            return { title: 'Configuração de Canais', contentHTML };
-        }
-
-        // =========================================================================
-        // VIEWS TIPO 3: DETALHE / FORMULÁRIO
-        // =========================================================================
-
-        /**
-         * Template da Tela de Detalhes da Notificação.
-         * @returns {object} { title, contentHTML }
-         */
-        function getNotificationDetailView(notifId) {
-            const notif = ALL_NOTIFICATIONS.find(n => n.id === notifId);
-            
-            if (!notif) {
-                return null; 
-            }
-
-            const isSetupRequired = (notif.id === 999);
-            
-            const detailContent = `
-                <div class="p-6 sm:p-10 space-y-6 border-t-8 border-${notif.color}-500 transition duration-300">
-                    
-                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
-                        <h1 class="text-2xl font-extrabold text-${notif.color}-700">${notif.title}</h1>
-                        <span class="text-xs font-semibold text-gray-500 uppercase">${notif.category}</span>
-                    </div>
-
-                    <div class="text-gray-800 space-y-4">
-                        <p class="text-lg leading-relaxed whitespace-pre-wrap">${notif.message}</p>
-                        <p class="text-sm text-gray-500">Recebido: ${notif.time}</p>
-                    </div>
-
-                    ${isSetupRequired ? `
-                        <div class="border-t border-red-300 pt-4 mt-6">
-                            <p class="text-sm font-semibold text-red-600 mb-3">PRÓXIMOS PASSOS OBRIGATÓRIOS:</p>
-                            <button onclick="renderView('users')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center">
-                                <span class="material-symbols-outlined mr-2">person_add</span> Acessar Painel de Usuários para Cadastro
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            
-            return { title: 'Detalhes da Notificação', contentHTML: detailContent };
-        }
-
-        /**
-         * Template da Tela de Formulário para Cadastro de Novo Usuário (pós-setup).
-         * @returns {object} { title, contentHTML }
-         */
-        function getNewUserRegistrationFormContent() {
-            const fileTitle = `Cadastrar Novo Usuário`;
-            const fileContent = `
-                <div class="p-6 space-y-6">
-                    <p class="text-xl font-bold text-blue-600 text-center">Definir Tipo e Credenciais</p>
-                    
-                    <form id="new-user-registration-form" class="space-y-4">
-                        <select class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500">
-                            <option value="" disabled selected>Selecionar Tipo de Usuário...</option>
-                            <option value="comum">Usuário Comum</option>
-                            <option value="professor">Professor</option>
-                            <option value="admin">Administrador</option>
-                        </select>
-                        
-                        <input type="text" placeholder="Nome Completo" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
-                        <input type="email" placeholder="E-mail" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
-                        <input type="password" placeholder="Senha" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
-                        
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-                            Salvar Novo Usuário
-                        </button>
-                    </form>
-                </div>
-            `;
-            return { title: fileTitle, contentHTML: fileContent };
-        }
-
-
-        /**
-         * Template da Tela de Formulário/Detalhe de Dados do Usuário Principal.
-         * Renderiza dinamicamente os campos do modelo USER_DB_FIELDS.
-         * @returns {object} { title, contentHTML }
-         */
-        function getUserDataFormView() {
-            const dataExists = MAIN_USER_DETAIL_DATA !== null;
-            const currentData = dataExists ? MAIN_USER_DETAIL_DATA : {};
-            
-            let currentSection = '';
-            
-            let formFieldsHTML = USER_DB_FIELDS.map(field => {
-                const currentValue = currentData[field.key] || '';
-                const inputType = field.type;
-                const placeholder = currentValue ? '' : field.placeholder;
-                const requiredAttr = field.required ? 'required' : '';
-
-                let sectionHeader = '';
-                if (field.formSection && field.formSection !== currentSection) {
-                    currentSection = field.formSection;
-                    // Adiciona um cabeçalho de seção
-                    sectionHeader = `<h3 class="text-lg font-bold text-blue-700 border-b border-blue-200 pb-1 mt-4">${currentSection}</h3>`;
-                }
-                
-                // Para campos de data, o placeholder não funciona bem, mas o valor é crucial
-                const displayValue = inputType === 'date' ? currentValue : currentValue;
-
-                return `
-                    ${sectionHeader}
-                    <div class="space-y-1 p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <label for="${field.fieldId}" class="block text-sm font-medium text-gray-700">
-                            ${field.label} ${field.required ? '<span class="text-red-500">*</span>' : ''}
-                        </label>
-                        <input type="${inputType}" id="${field.fieldId}" name="${field.key}" 
-                               placeholder="${placeholder}" 
-                               value="${displayValue}" ${requiredAttr}
-                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" />
-                        
-                        <!-- Rastreamento de Campo para Localização Orgânica -->
-                        <span class="text-xs text-gray-500 block pt-1">
-                            <span class="font-semibold">ID Único:</span> ${field.fieldId} / 
-                            <span class="font-semibold">Chave de Dados:</span> ${field.key}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-
-            const title = dataExists ? "Editar Dados do Usuário Principal" : "Inserção Inicial de Dados";
-            const buttonText = dataExists ? "Salvar Alterações" : "Confirmar Primeira Inserção";
-
-            const contentHTML = `
-                <div class="p-6 space-y-6">
-                    <p class="text-xl font-bold text-blue-600 text-center">${title}</p>
-                    <form id="main-user-data-form" class="space-y-4">
-                        <div class="p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm text-center mb-4 border border-yellow-200">
-                            <p>O formulário abaixo é gerado dinamicamente a partir de um modelo estruturado (USER_DB_FIELDS).</p>
-                        </div>
-                        
-                        ${formFieldsHTML}
-                        
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300 mt-6">
-                            ${buttonText}
-                        </button>
-                    </form>
-                </div>
-            `;
-
-            return { title: "Dados do Usuário", contentHTML };
-        }
-        
-        // =========================================================================
-        // NAVEGAÇÃO E LÓGICA DO APP
-        // =========================================================================
-
-        /**
-         * Simula a navegação e renderização de componentes injetando novo HTML.
-         */
-        function renderView(newViewId, isBack = false) {
-            
-            // 1. Gerenciamento de Histórico (Apenas para navegação para frente)
-            if (!isBack && currentViewId !== newViewId) {
-                if (currentViewId !== 'welcome') {
-                     navigationHistory.push(currentViewId);
-                } else if (newViewId === 'toolbox') {
-                    navigationHistory.push('welcome');
-                }
-            }
-            
-            currentViewId = newViewId; // Atualiza a tela atual
-
-            // Variáveis de saída
-            let viewHTML = '';
-            let viewData = null;
-            let isDetailOrForm = false; // Define se a view será restrita e embrulhada em um card (max-w-lg)
-            const parts = newViewId.split('_');
-
-            // --- ROTA TIPO 1: INICIAL (Welcome) ---
-            if (newViewId === 'welcome') {
-                viewHTML = getWelcomeView();
-                appRoot.innerHTML = viewHTML;
-                attachListeners();
-                return;
-            } 
-            
-            // --- ROTA TIPO 2: NAVEGAÇÃO (Grids de Categorias) ---
-            else if (newViewId === 'toolbox' || appTools.some(tool => tool.destination === newViewId && tool.isCategory)) {
-                // Inclui Dashboard, Usuários, Conexões, Configurações etc. (Layout amplo de navegação)
-                viewData = getNavigationView(newViewId === 'toolbox' ? null : newViewId);
-                isDetailOrForm = false;
-            } 
-            
-            // --- ROTA TIPO 2: LISTAS ESPECÍFICAS (Layout de Navegação Amplo) ---
-            else if (newViewId === 'user_list') {
-                 // Destino do novo botão "Gerenciar Usuários"
-                 viewData = getUserListView();
-                 // Reverter para layout de navegação amplo (Grid/Lista)
-                 isDetailOrForm = false; 
-            } else if (newViewId === 'connection_list') {
-                 viewData = getConnectionListView();
-                 // Reverter para layout de navegação amplo (Lista)
-                 isDetailOrForm = false; 
-            } else if (newViewId === 'notif_list') {
-                 viewData = getNotificationListView();
-                 isDetailOrForm = false; // Lista de notificação permanece ampla por conter muitos itens.
-            } else if (newViewId === 'notif_config') {
-                 viewData = getNotificationConfigView();
-                 isDetailOrForm = false; // Configurações permanece ampla
-            } 
-            
-            // --- ROTA TIPO 3: FORMULÁRIO / DETALHE ---
-            else if (newViewId === DATA_FORM_ROUTE || newViewId === NEW_USER_REGISTER_ROUTE || (newViewId.startsWith('notification_detail_') && parts.length === 3)) {
-                // Formulários e Detalhes usam layout restrito com cartão
-                if (newViewId === DATA_FORM_ROUTE) viewData = getUserDataFormView();
-                else if (newViewId === NEW_USER_REGISTER_ROUTE) viewData = getNewUserRegistrationFormContent();
-                else viewData = getNotificationDetailView(parseInt(parts[2]));
-                
-                isDetailOrForm = true;
-            } else {
-                // ROTA: Conteúdo Estático (Detalhe de Usuário/Conexão, Módulos Genéricos, ou Rota Dinâmica de Usuário)
-                const isDetailRoute = (parts[0] === 'user' && parts[1] === 'detail') || (parts[0] === 'connection' && parts[1] === 'detail');
-                const tool = appTools.find(t => t.destination === newViewId) || (isDetailRoute ? { filePath: newViewId, title: 'Detalhes' } : null);
-                 
-                if (tool && tool.filePath !== null) {
-                    viewData = getSimulatedContent(tool);
-                    isDetailOrForm = true; // Conteúdo estático/detalhe de módulo usa layout restrito
-                 }
-            }
-
-            // 3. Renderização Final
-            if (viewData && viewData.contentHTML) {
-                // Renderiza a view usando o wrapper padronizado
-                viewHTML = renderStandardView(viewData.title, viewData.contentHTML, isDetailOrForm);
-            } else {
-                // FALLBACK 404: Se a rota não for mapeada ou o dado não for encontrado (ex: notif detail inexistente)
-                viewHTML = get404View(newViewId);
-            }
-
-            // 4. Injeta HTML e anexa Listeners
-            appRoot.innerHTML = viewHTML;
-            attachListeners();
-        }
-
-        /**
-         * Anexa os Event Listeners aos elementos dinâmicos após a renderização.
-         */
-        function attachListeners() {
-            // Listener para o botão de iniciar (somente na welcome view)
-            const startButton = document.getElementById('start-button');
-            if (startButton) {
-                startButton.addEventListener('click', () => {
-                    renderView('toolbox');
-                });
-            }
-            
-            // Listener para o botão flutuante "Voltar"
-            const topBackButton = document.getElementById('top-back-button');
-            if (topBackButton) {
-                // A navegação usa o histórico se ele existir, ou volta para 'welcome' se for a última tela.
-                topBackButton.addEventListener('click', () => {
-                    const previousViewId = navigationHistory.pop();
-                    if (previousViewId) {
-                        renderView(previousViewId, true);
-                    } else {
-                        renderView('welcome');
-                    }
-                });
-            }
-            
-            // Listener para o botão flutuante de Notificações (top-right)
-            const topNotificationButton = document.getElementById('top-notification-button');
-            if (topNotificationButton) {
-                topNotificationButton.addEventListener('click', () => {
-                    renderView('notif_list');
-                });
-            }
-
-            // Listener para o botão 404 (navegação para dashboard)
-            const navToToolboxButton = document.getElementById('nav-to-toolbox');
-            if (navToToolboxButton) {
-                navToToolboxButton.addEventListener('click', () => {
-                    renderView('toolbox');
-                });
-            }
-
-
-            // Listener para os botões das ferramentas (em qualquer tela)
-            const toolButtons = document.querySelectorAll('.tool-button');
-            toolButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const toolId = event.currentTarget.getAttribute('data-tool-id');
-                    const tool = appTools.find(t => t.id == toolId);
-                    
-                    if (tool) {
-                        renderView(tool.destination);
-                    }
-                });
-            });
-
-            // Listener para os botões de lista de conexões
-            const connectionListButtons = document.querySelectorAll('.connection-list-button');
-            connectionListButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const destination = event.currentTarget.getAttribute('data-tool-destination');
-                    renderView(destination); 
-                });
-            });
-
-
-            // Listener para os botões da lista de usuários 
-            const userListButtons = document.querySelectorAll('.user-list-button');
-            userListButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const destination = event.currentTarget.getAttribute('data-tool-id');
-                    renderView(destination); 
-                });
-            });
-            
-            // Listener para o formulário de Cadastro de Novo Usuário (pós-setup)
-            const newRegistrationForm = document.getElementById('new-user-registration-form');
-            if (newRegistrationForm) {
-                newRegistrationForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Simula a coleta de dados
-                    const form = e.target;
-                    const name = form.querySelector('input[placeholder="Nome Completo"]').value || 'Novo Usuário';
-                    const type = form.querySelector('select').value || 'comum';
-                    
-                    // Simula adição de novo usuário (incrementando ID)
-                    const newId = Math.max(...REGISTERED_USERS.map(u => u.id)) + 1;
-                    
-                    REGISTERED_USERS.push({
-                        id: newId,
-                        name: name,
-                        role: type === 'admin' ? 'Administrador' : (type === 'professor' ? 'Professor' : 'Usuário Comum'),
-                        icon: type === 'admin' ? 'badge' : 'person',
-                        email: name.toLowerCase().replace(/\s/g, '.') + '@app.com'
-                    });
-                    
-                    showCustomMessage(`Novo usuário "${name}" cadastrado com sucesso!`);
-                    renderView('user_list');
-                });
-            }
-
-            // Listener para o Formulário de Dados do Usuário Principal (SETUP/EDIÇÃO)
-            const mainUserDataForm = document.getElementById('main-user-data-form');
-            if (mainUserDataForm) {
-                mainUserDataForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(e.target);
-                    const newDetails = {};
-                    
-                    // Coleta e simula a persistência dos dados
-                    USER_DB_FIELDS.forEach(field => {
-                        // Usa field.key para pegar o valor do FormData
-                        newDetails[field.key] = formData.get(field.key);
-                    });
-                    
-                    
-                    // Se for a primeira inserção (cadastro inicial), carrega a lista de mock users
-                    if (!hasRegisteredUsers()) {
-                         // A lógica aqui não será mais executada na primeira vez
-                         // porque REGISTERED_USERS já está preenchido no início do script.
-                         // Deixamos como fallback caso a lista fosse esvaziada.
-                         REGISTERED_USERS = [...INITIAL_MOCK_USERS]; 
-                         
-                         // Garante que o MAIN_USER_DETAIL_DATA seja um merge:
-                         MAIN_USER_DETAIL_DATA = { 
-                            ...MAIN_USER_DETAIL_MOCK, // Dados base (incluindo birthDate)
-                            ...newDetails // Sobrescreve com input real do usuário
-                         };
-                         
-                         showCustomMessage('Dados e Usuário Principal registrados com sucesso! O sistema está ativo.');
-                         renderView('users'); // Volta para a tela de usuários
-                    } else {
-                         // Edição: Apenas atualiza com os dados do formulário
-                         MAIN_USER_DETAIL_DATA = newDetails;
-                         showCustomMessage('Dados do usuário principal atualizados com sucesso!');
-                         // Apenas recarrega a view para mostrar os dados atualizados
-                         renderView(DATA_FORM_ROUTE, true); 
-                    }
-                });
-            }
-
-
-            // Listener para os botões de prévia das notificações na tela de lista
-            const notificationItemButtons = document.querySelectorAll('.notification-item-button');
-            notificationItemButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const notifId = e.currentTarget.getAttribute('data-notif-id');
-                    renderView('notification_detail_' + notifId);
-                });
-            });
-
-            // --- Lógica Master/Child para Configuração de Canais ---
-            // Simplificada para lidar apenas com toggles de módulos, sem mestres hierárquicos
-
-            const channelSwitches = document.querySelectorAll('.toggle-switch');
-            channelSwitches.forEach(channelSwitch => {
-                channelSwitch.addEventListener('change', (e) => {
-                    const channelId = e.target.getAttribute('data-channel');
-                    const newState = e.target.checked;
-                    
-                    notificationChannels[channelId] = newState;
-
-                    const status = newState ? 'ATIVADO' : 'DESATIVADO';
-                    const tool = appTools.find(t => t.destination === channelId);
-                    const channelName = tool ? tool.title : channelId;
-                    showCustomMessage(`Notificações para ${channelName} foram ${status}.`);
-                });
-            });
-        }
-        
-        // =========================================================================
-        // INICIALIZAÇÃO
-        // =========================================================================
-        
-        // Renderiza a tela inicial ao carregar o aplicativo
-        renderView('welcome')
-
-    </script>
-
+<div id="app-root" class="min-h-screen"></div>
+<script>
+const appRoot=document.getElementById('app-root');
+const navigationHistory=[];
+let currentViewId='initial_welcome';
+const ROUTE_USER_PROFILE='current_user_profile';
+const createDataPlaceholder=(nav=[],form=[],list=[],detail=[],html=[],js=[],alert=[])=>({navigator_data:nav,form_data:form,list_data:list,detail_data:detail,html_data:html,js_data:js,alert_data:alert,});
+const GLOBAL_INFO={description:"Metadados globais unificados.",version:"9.4",last_update:"2025-12-12"};
+const GLOBALS=[
+{gId:'DAT-MET-001',group:'DATA',category:'Metadados',type:'number',key:'internalId',details:{label:'ID Interno',placeholder:'Ex: 1001',exampleValue:1001,required:true,formSection:'Metadados Registro',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-002',group:'DATA',category:'Metadados',type:'text',key:'systemUniqueId',details:{label:'ID Único do Sistema',placeholder:'Ex: 12345-ABC',exampleValue:'MODELO-000',required:true,formSection:'Metadados Registro',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-003',group:'DATA',category:'Metadados',type:'number',key:'toolUniqueId',details:{label:'ID da Ferramenta',placeholder:'Ex: 1',exampleValue:1,required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-004',group:'DATA',category:'Metadados',type:'text',key:'toolTitle',details:{label:'Título da Ferramenta',placeholder:'Ex: Dashboard',exampleValue:'Dashboard',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-005',group:'DATA',category:'Metadados',type:'text',key:'toolDestination',details:{label:'Destino',placeholder:'Ex: dashboard',exampleValue:'dashboard',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-006',group:'DATA',category:'Metadados',type:'text',key:'toolParent',details:{label:'ID do Pai',placeholder:'Ex: dashboard',exampleValue:'dashboard',required:false,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-007',group:'DATA',category:'Metadados',type:'text',key:'toolIcon',details:{label:'Ícone Material',placeholder:'Ex: dashboard',exampleValue:'dashboard',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-008',group:'DATA',category:'Metadados',type:'text',key:'toolFilePath',details:{label:'Caminho do Arquivo',placeholder:'Ex: settings/info/index.html',exampleValue:'settings/info/index.html',required:false,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-MET-009',group:'DATA',category:'Metadados',type:'text',key:'toolPanelType',details:{label:'Tipo de Painel',placeholder:'Ex: navigator/detail/form/list',exampleValue:'navigator',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-PRO-001',group:'DATA',category:'Produto',type:'text',key:'productName',details:{label:'Nome do Produto',placeholder:'Ex: Café Especial',exampleValue:'Café Brasileiro',required:true,formSection:'Informações Básicas',isForm:true,listKey:'PRODUCT_FORM'}},
+{gId:'DAT-PRO-002',group:'DATA',category:'Produto',type:'number',key:'price',details:{label:'Preço (R$)',placeholder:'Ex: 25.99',exampleValue:19.90,required:true,formSection:'Informações de Venda',isForm:true,listKey:'PRODUCT_FORM'}},
+{gId:'DAT-PRO-003',group:'DATA',category:'Produto',type:'number',key:'stock',details:{label:'Estoque Mínimo',placeholder:'Ex: 10',exampleValue:5,required:true,formSection:'Informações de Venda',isForm:true,listKey:'PRODUCT_FORM'}},
+{gId:'DAT-PRO-004',group:'DATA',category:'Produto',type:'textarea',key:'description',details:{label:'Descrição',placeholder:'Detalhes do produto...',exampleValue:'Mistura 100% arábica, torra média, ideal para expresso.',required:false,formSection:'Informações Adicionais',isForm:true,listKey:'PRODUCT_FORM'}},
+{gId:'DAT-PUR-001',group:'DATA',category:'Pedido',type:'text',key:'vendorName',details:{label:'Fornecedor',placeholder:'Ex: Distribuidora Alfa',exampleValue:'Distribuidora Beta',required:true,formSection:'Dados Principais',isForm:true,listKey:'PURCHASE_ORDER_FORM'}},
+{gId:'DAT-PUR-002',group:'DATA',category:'Pedido',type:'date',key:'orderDate',details:{label:'Data do Pedido',placeholder:'DD/MM/AAAA',exampleValue:'2025-12-01',required:true,formSection:'Dados Principais',isForm:true,listKey:'PURCHASE_ORDER_FORM'}},
+{gId:'DAT-PUR-003',group:'DATA',category:'Pedido',type:'number',key:'totalValue',details:{label:'Valor Total Estimado',placeholder:'Ex: 5000.00',exampleValue:1250.50,required:false,formSection:'Financeiro',isForm:true,listKey:'PURCHASE_ORDER_FORM'}},
+{gId:'DAT-USR-001',group:'DATA',category:'Usuário',type:'text',key:'fullName',details:{label:'Nome Completo',placeholder:'Ex: Maria da Silva',exampleValue:'Maria da Silva',required:true,formSection:'Pessoal',isForm:true,listKey:'MAIN_USER_FORM'}},
+{gId:'DAT-USR-002',group:'DATA',category:'Usuário',type:'date',key:'birthDate',details:{label:'Data de Nascimento',placeholder:'DD/MM/AAAA',exampleValue:'1985-10-20',required:true,formSection:'Pessoal',isForm:true,listKey:'MAIN_USER_FORM'}},
+{gId:'DAT-USR-003',group:'DATA',category:'Usuário',type:'text',key:'address',details:{label:'Endereço Principal',placeholder:'Rua, número, bairro',exampleValue:'Rua Principal,1000, Centro',required:false,formSection:'Contato',isForm:true,listKey:'MAIN_USER_FORM'}},
+{gId:'DAT-USR-004',group:'DATA',category:'Usuário',type:'tel',key:'phone',details:{label:'Telefone de Contato',placeholder:'(99) 99999-9999',exampleValue:'11 98765-4321',required:false,formSection:'Contato',isForm:true,listKey:'MAIN_USER_FORM'}},
+{gId:'STY-BTN-001',group:'STYLE',category:'Botão',type:'BACK',key:'BACK_BUTTON',details:{classes:"fixed top-4 left-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg text-gray-700 hover:bg-gray-100 transition duration-150 border border-gray-200"}},
+{gId:'STY-BTN-003',group:'STYLE',category:'Botão',type:'BADGE',key:'NOTIFICATION_BADGE',details:{classes:"absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none transform translate-x-1/4 -translate-y-1/4 shadow-md z-40"}},
+{gId:'STY-BTN-004',group:'STYLE',category:'Botão',type:'BASE',key:'DEFAULT_BUTTON_BASE',details:{classes:"tool-button w-full h-40 relative flex flex-col items-center justify-center rounded-xl p-4 cursor-pointer"}},
+{gId:'STY-BTN-005',group:'STYLE',category:'Botão',type:'DEFAULT',key:'DEFAULT_BUTTON_STYLE',details:{classes:"bg-white border border-gray-200 shadow-xl hover:bg-blue-50 hover:border-blue-500 hover:shadow-2xl focus:ring-4 focus:ring-blue-300"}},
+{gId:'STY-BTN-006',group:'STYLE',category:'Botão',type:'LIST',key:'LIST_BUTTON_STYLE',details:{classes:"bg-white rounded-xl border border-gray-200 shadow-md hover:bg-gray-50 transition duration-150"}},
+{gId:'STY-BTN-002',group:'STYLE',category:'Botão',type:'NOTIFICATION',key:'NOTIFICATION_BUTTON',details:{classes:"fixed top-4 right-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg hover:bg-gray-100 transition duration-150 border border-gray-200"}},
+{gId:'STY-DST-003',group:'STYLE',category:'Destino',type:'PROFILE_CARD',key:ROUTE_USER_PROFILE,details:{elementKey:'CARD_CLASS',classes:"bg-white border-gray-200 border text-gray-900 shadow-xl"}},
+{gId:'STY-DST-001',group:'STYLE',category:'Destino',type:'NEWS_BUTTON',key:'news',details:{elementKey:'BUTTON_STYLE',classes:"bg-yellow-50 border-1 border-yellow-300 shadow-md hover:bg-yellow-100 hover:shadow-lg focus:ring-yellow-200"}},
+{gId:'STY-DST-002',group:'STYLE',category:'Destino',type:'NEWS_ICON',key:'news',details:{elementKey:'ICON_CLASSES',classes:"text-amber-600"}},
+{gId:'STY-FOR-002',group:'STYLE',category:'Formulário',type:'INPUT',key:'GENERIC_INPUT_CLASSES',details:{classes:"w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"}},
+{gId:'STY-FOR-001',group:'STYLE',category:'Formulário',type:'SUBMIT',key:'SUBMIT_BUTTON',details:{classes:"w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300 mt-6 shadow-md"}},
+{gId:'STY-LAY-002',group:'STYLE',category:'Layout',type:'ICON',key:'DEFAULT_ICON_COLOR',details:{classes:"text-blue-600"}},
+{gId:'STY-LAY-001',group:'STYLE',category:'Layout',type:'WRAPPER',key:'MAIN_WRAPPER',details:{classes:"bg-white rounded-xl shadow-2xl p-6 sm:p-8 space-y-4"}},
+{gId:'VIE-ASS-001',group:'VIEW',category:'Assistente',type:"navigator",key:"assistant",details:{title:"Assistente",icon:"smart_toy",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-CFG-002',group:'VIEW',category:'Configuração',type:"detail",key:"accessibility_settings",details:{title:"Acessibilidade",icon:"accessibility_new",parent:"settings",filePath:"settings/accessibility/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER","ACTION_BUTTONS"])}},
+{gId:'VIE-CFG-001',group:'VIEW',category:'Configuração',type:"navigator",key:"settings",details:{title:"Configurações",icon:"settings",parent:"welcome",filePath:null,data:createDataPlaceholder(["accessibility_settings","system_info"])}},
+{gId:'VIE-CFG-003',group:'VIEW',category:'Configuração',type:"detail",key:"system_info",details:{title:"Info do Sistema",icon:"info",parent:"settings",filePath:"settings/info/index.html",data:createDataPlaceholder([],[],[],["HEADER_INFO","DETAIL_FIELDS","SYSTEM_METRICS"])}},
+{gId:'VIE-CON-002',group:'VIEW',category:'Conexão',type:"form",key:"add_connection",details:{title:"Adicionar Nova Conexão",icon:"add_link",parent:"connections",filePath:"users/connections/add/index.html",data:createDataPlaceholder([],["CONN-ID-INPUT","CONN-EMAIL-INPUT"])}},
+{gId:'VIE-CON-001',group:'VIEW',category:'Conexão',type:"list",key:"connection_list",details:{title:"Lista de Conexões",icon:"list_alt",parent:"connections",filePath:null,data:createDataPlaceholder([],[],["CONN_NAME","CONN_ROLE","CONN_STATUS"])}},
+{gId:'VIE-DSH-001',group:'VIEW',category:'Dashboard',type:"navigator",key:"dashboard",details:{title:"Dashboard",icon:"dashboard",parent:"welcome",filePath:null,data:createDataPlaceholder(["registries","education","health","finance","government","work","leisure","news","assistant"])}},
+{gId:'VIE-EDU-002',group:'VIEW',category:'Educação',type:"form",key:"student_register",details:{title:"Cadastrar Aluno",icon:"person_add",parent:"education",filePath:"educacao/aluno/cadastro/index.html",data:createDataPlaceholder([],["STUDENT-NAME","STUDENT-ID"])}},
+{gId:'VIE-EDU-001',group:'VIEW',category:'Educação',type:"navigator",key:"education",details:{title:"Educação",icon:"school",parent:"dashboard",filePath:null,data:createDataPlaceholder(["student_register"])}},
+{gId:'VIE-FIN-001',group:'VIEW',category:'Finanças',type:"navigator",key:"finance",details:{title:"Finanças",icon:"attach_money",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-FOR-001',group:'VIEW',category:'Formulários',type:"form-dynamic",key:"render_form:PRODUCT_FORM",details:{title:"Cadastro de Produto",icon:"inventory_2",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PRO-001","DAT-PRO-002","DAT-PRO-003","DAT-PRO-004"])}},
+{gId:'VIE-FOR-002',group:'VIEW',category:'Formulários',type:"form-dynamic",key:"render_form:PURCHASE_ORDER_FORM",details:{title:"Novo Pedido de Compra",icon:"shopping_cart",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PUR-001","DAT-PUR-002","DAT-PUR-003"])}},
+{gId:'VIE-GOV-001',group:'VIEW',category:'Governo',type:"navigator",key:"government",details:{title:"Governo",icon:"account_balance",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-GOV-002',group:'VIEW',category:'Governo',type:"detail",key:"local_law",details:{title:"Legislação Local",icon:"gavel",parent:"government",filePath:"government/law/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER"])}},
+{gId:'VIE-LAZ-001',group:'VIEW',category:'Lazer',type:"navigator",key:"leisure",details:{title:"Lazer",icon:"local_activity",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-NEW-001',group:'VIEW',category:'Notícias',type:"navigator",key:"news",details:{title:"Notícias",icon:"feed",parent:"dashboard",filePath:null,data:createDataPlaceholder(["news_feed_1","news_feed_2","news_feed_3"])}},
+{gId:'VIE-NEW-002',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_1",details:{title:"Notícia 1: IA na Produção",icon:"article",parent:"news",filePath:"news/1.html",data:createDataPlaceholder()}},
+{gId:'VIE-NEW-003',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_2",details:{title:"Notícia 2: Mercado Global",icon:"public",parent:"news",filePath:"news/2.html",data:createDataPlaceholder()}},
+{gId:'VIE-NEW-004',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_3",details:{title:"Notícia 3: Criptoativos",icon:"currency_bitcoin",parent:"news",filePath:"news/3.html",data:createDataPlaceholder()}},
+{gId:'VIE-NOT-001',group:'VIEW',category:'Notificação',type:"navigator",key:"notifications",details:{title:"Notificações",icon:"notifications_active",parent:"welcome",filePath:null,data:createDataPlaceholder(["notif_list","notif_config"])}},
+{gId:'VIE-NOT-002',group:'VIEW',category:'Notificação',type:"list",key:"notif_list",details:{title:"Visualizar Lista",icon:"list_alt",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["TITLE","MESSAGE_PREVIEW","TIME","ICON"])}},
+{gId:'VIE-NOT-003',group:'VIEW',category:'Notificação',type:"list",key:"notif_config",details:{title:"Configurar Canais",icon:"tune",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["CHANNEL_NAME","TOGGLE_SWITCH"])}},
+{gId:'VIE-REG-001',group:'VIEW',category:'Cadastro',type:"navigator",key:"registries",details:{title:"Acessar Cadastros",icon:"create_new_folder",parent:"dashboard",filePath:null,data:createDataPlaceholder(["render_form:PRODUCT_FORM","render_form:PURCHASE_ORDER_FORM"])}},
+{gId:'VIE-ROOT-001',group:'VIEW',category:'Raiz',type:"navigator",key:"welcome",details:{title:"Menu Principal",icon:"home",parent:null,filePath:null,data:createDataPlaceholder(["dashboard","users","notifications","settings"])}},
+{gId:'VIE-SAU-001',group:'VIEW',category:'Saúde',type:"navigator",key:"health",details:{title:"Saúde",icon:"local_hospital",parent:"dashboard",filePath:null,data:createDataPlaceholder(["schedule_appointment"])}},
+{gId:'VIE-SAU-002',group:'VIEW',category:'Saúde',type:"form",key:"schedule_appointment",details:{title:"Agendar Consulta",icon:"calendar_month",parent:"health",filePath:"saude/agendamento/index.html",data:createDataPlaceholder([],["APPOINTMENT-DATE","APPOINTMENT-TIME"])}},
+{gId:'VIE-TRB-001',group:'VIEW',category:'Trabalho',type:"navigator",key:"work",details:{title:"Trabalho",icon:"work",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-USR-004',group:'VIEW',category:'Usuário',type:"navigator",key:"connections",details:{title:"Conexões",icon:"group_add",parent:"users",filePath:null,data:createDataPlaceholder(["connection_list","add_connection"])}},
+{gId:'VIE-USR-002',group:'VIEW',category:'Usuário',type:"detail",key:ROUTE_USER_PROFILE,details:{title:"Meu Perfil",icon:"person",parent:"users",filePath:null,data:createDataPlaceholder([],[],[],["USER_HEADER","CONTACT_FIELDS","ACTION_EDIT"])}},
+{gId:'VIE-USR-005',group:'VIEW',category:'Usuário',type:"form-dynamic",key:"render_form:MAIN_USER_FORM",details:{title:"Editar/Cadastrar Dados Pessoais",icon:"edit",parent:ROUTE_USER_PROFILE,filePath:null,data:createDataPlaceholder([],["DAT-USR-001","DAT-USR-002","DAT-USR-003","DAT-USR-004"])}},
+{gId:'VIE-USR-006',group:'VIEW',category:'Usuário',type:"form-user-new",key:"new_user_register_form",details:{title:"Criar Novo Usuário",icon:"person_add",parent:"user_list",filePath:null,data:createDataPlaceholder([],["FORM-NEW-USER-SIMULATED"])}},
+{gId:'VIE-USR-003',group:'VIEW',category:'Usuário',type:"list",key:"user_list",details:{title:"Gerenciar Cadastro",icon:"manage_accounts",parent:"users",filePath:null,data:createDataPlaceholder([],[],["USER_CARD","ROLE","ACTION_DETAIL"])}},
+{gId:'VIE-USR-001',group:'VIEW',category:'Usuário',type:"navigator",key:"users",details:{title:"Usuários",icon:"group",parent:"welcome",filePath:null,data:createDataPlaceholder([ROUTE_USER_PROFILE,"user_list","connections"])}}
+];
+const DATA_FIELDS_SET=GLOBALS.filter(item=>item.group==='DATA');
+const STYLES_RAW_SET=GLOBALS.filter(item=>item.group==='STYLE');
+const VIEWS_SET=GLOBALS.filter(item=>item.group==='VIEW');
+const STYLE_MAP={};
+const DESTINATION_STYLE_MAP={};
+STYLES_RAW_SET.forEach(style=>{
+STYLE_MAP[style.gId]=style.details.classes;
+if(style.category==='Destino'){
+const destinationKey=style.key;
+const elementKey=style.details.elementKey;
+if(!DESTINATION_STYLE_MAP[destinationKey])DESTINATION_STYLE_MAP[destinationKey]={};
+DESTINATION_STYLE_MAP[destinationKey][elementKey]=style.details.classes
+}
+if(style.category==='Layout'||style.category==='Botão'||style.category==='Formulário')STYLE_MAP[style.key]=style.details.classes
+});
+const CFG_SHEET_ID_PH='SHEET_MASTER';
+const ROUTE_ERROR_CONNECTION='connection_error_405';
+let REGISTERED_USERS=[];
+let MAIN_USER_DETAIL_DATA=null;
+let notificationChannels={};
+VIEWS_SET.forEach(tool=>{notificationChannels[tool.key]=false});
+async function fetchSheetData(sheetId){
+console.warn(`Tentativa de carregar dados da Planilha Google (Secret: ${sheetId})...`);
+return new Promise((_,reject)=>{setTimeout(()=>reject(new Error(`O Secret ${sheetId} (ID da planilha) não pode ser acessado no ambiente de simulação.`)),500)})
+}
+function hasRegisteredUsers(){return REGISTERED_USERS.length>0}
+function findDataFieldByKey(key){return DATA_FIELDS_SET.find(field=>field.key===key)}
+function findDataFieldByGId(gId){return DATA_FIELDS_SET.find(field=>field.gId===gId)}
+function getDataExampleValue(gId){const field=findDataFieldByGId(gId);return field?field.details.exampleValue:null}
+function generateDefaultUserData(){
+const defaultData={};
+DATA_FIELDS_SET.filter(field=>field.details.listKey==='MAIN_USER_FORM').forEach(field=>{defaultData[field.key]=field.details.exampleValue||'(Não Informado)'});
+defaultData.id=getDataExampleValue('DAT-MET-001')||0;
+defaultData.name=defaultData.fullName||'Usuário Fictício (Modelo)';
+defaultData.role='Visitante (Não Cadastrado)';
+defaultData.icon='person_off';
+defaultData.systemId=getDataExampleValue('DAT-MET-002')||'MODELO-000';
+return defaultData
+}
+function getUserData(){
+if(hasRegisteredUsers()&&MAIN_USER_DETAIL_DATA){return{data:{...REGISTERED_USERS[0],...MAIN_USER_DETAIL_DATA},isFictional:false}}
+else{return{data:generateDefaultUserData(),isFictional:true}}
+}
+function getSetupNotification(){return{id:999,title:"CONFIGURAÇÃO NECESSÁRIA",message:"Por favor, cadastre o Usuário Principal para liberar o acesso total ao sistema. Acesse 'Usuários > Meu Perfil' para iniciar o cadastro.",time:"AGORA",icon:"manage_accounts",color:"red",category:"SETUP"}}
+function fetchNotifications(){return hasRegisteredUsers()?[]:[getSetupNotification()]}
+function getNotificationCount(){return fetchNotifications().length}
+function generateFormHTML(gIdSequence,initialData={}){
+let formHTML='';let currentSection='';
+const fields=gIdSequence.map(gId=>DATA_FIELDS_SET.find(f=>f.gId===gId)).filter(f=>f&&f.details.isForm);
+fields.forEach(field=>{
+const details=field.details;
+const currentValue=initialData[field.key]!==undefined?initialData[field.key]:(details.exampleValue||'');
+const inputType=field.type;
+const placeholder=details.placeholder;
+const requiredAttr=details.required?'required':'';
+let sectionHeader='';
+if(details.formSection&&details.formSection!==currentSection){currentSection=details.formSection;sectionHeader=`<h3 class="text-lg font-bold text-blue-700 border-b border-blue-200 pb-1 mt-4">${currentSection}</h3>`}
+const inputClasses=STYLE_MAP['STY-FOR-002'];
+let inputField;
+if(inputType==='textarea')inputField=`<textarea id="${field.gId}" name="${field.key}" placeholder="${placeholder}" ${requiredAttr} rows="4" class="${inputClasses}">${currentValue}</textarea>`;
+else{const displayValue=(inputType==='number'||inputType==='date')?currentValue:currentValue;inputField=`<input type="${inputType}" id="${field.gId}" name="${field.key}" placeholder="${placeholder}" value="${displayValue}" ${requiredAttr} class="${inputClasses}" />`}
+formHTML+=`${sectionHeader}<div class="space-y-1 p-0 mt-3"><label for="${field.gId}" class="block text-sm font-medium text-gray-700">${details.label} ${details.required?'<span class="text-red-500">*</span>':''}</label>${inputField}<span class="text-xs text-gray-500 block pt-1"><span class="font-semibold">ID Global:</span> ${field.gId} / <span class="font-semibold">Chave:</span> ${field.key}<span class="font-semibold">Categoria:</span> ${field.category}</span></div>`
+});
+return formHTML
+}
+function getNavigationView(tool){
+const title=tool.details.title;
+const navigationTargets=tool.details.data?.navigator_data||[];
+const filteredTools=navigationTargets.map(targetDest=>VIEWS_SET.find(t=>t.key===targetDest)).filter(t=>t);
+const buttonsHTML=filteredTools.map(t=>createToolButtonHTML(t,tool.key)).join('');
+const contentHTML=`<div id="tool-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-auto">${buttonsHTML}</div>`;
+return{title,contentHTML}
+}
+async function getListView(tool){
+const destination=tool.key;
+const title=tool.details.title;
+let listContentHTML='';let messageHTML='';
+const mainWrapperClasses=STYLE_MAP['MAIN_WRAPPER'];
+if(destination==='user_list'){
+const isInitialSetup=!hasRegisteredUsers();
+if(isInitialSetup){
+const editTool=VIEWS_SET.find(t=>t.key==='render_form:MAIN_USER_FORM');
+listContentHTML=`<div class="max-w-xs mx-auto text-center"><div class="${mainWrapperClasses} p-6 space-y-4 mb-8"><p class="text-md font-bold text-gray-700">Nenhum dado inicial encontrado.</p><p class="text-gray-600 text-sm">Insira os dados do usuário principal para liberar o sistema.</p></div><button onclick="renderView('${editTool.key}')" class="w-full h-40 flex flex-col items-center justify-center bg-green-600 text-white rounded-xl shadow-lg hover:bg-green-700 transition duration-150"><span class="material-symbols-outlined text-6xl">add</span><span class="text-xl font-semibold mt-2">Adicionar Dados</span></button></div>`
+}else{
+const newUserTool=VIEWS_SET.find(t=>t.key==='new_user_register_form');
+let userGridHTML=REGISTERED_USERS.map(user=>createUserGridButtonHTML(user)).join('');
+const addNewUserButton=newUserTool?`<button onclick="renderView('${newUserTool.key}')" class="w-full h-16 flex items-center justify-center space-x-2 p-4 text-center bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition duration-150"><span class="material-symbols-outlined text-2xl">person_add</span><span class="font-semibold">${newUserTool.details.title}</span></button>`:'';
+listContentHTML=`<div class="space-y-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-700 text-left">Usuários Cadastrados (${REGISTERED_USERS.length})</h3><div class="w-1/2 md:w-1/4">${addNewUserButton}</div></div><div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${userGridHTML}</div></div>`
+}
+}
+else if(destination==='connection_list'){
+let connectionsToDisplay=[];let failedToLoad=false;
+try{
+const apiResponse=await fetchSheetData(CFG_SHEET_ID_PH);
+connectionsToDisplay=apiResponse.connections||[];
+if(connectionsToDisplay.length>0)messageHTML=`<div class="p-3 bg-green-100 text-green-800 rounded-lg text-sm text-center mb-4 border border-green-300"><span class="material-symbols-outlined text-base align-middle mr-1">check_circle</span>Dados reais de conexões carregados via API (Simulação).</div>`
+}catch(error){
+failedToLoad=true;connectionsToDisplay=[];
+messageHTML=`<div class="p-3 bg-red-100 text-red-800 rounded-lg text-sm text-center mb-4 border border-red-300"><span class="material-symbols-outlined text-base align-middle mr-1">error</span>Falha ao carregar dados da API. Exibindo estado vazio. <p class="text-xs mt-1">Detalhes: ${error.message}</p></div>`
+}
+const addTool=VIEWS_SET.find(t=>t.key==='add_connection');
+if(connectionsToDisplay.length>0){
+listContentHTML=connectionsToDisplay.map(conn=>createConnectionButtonHTML(conn)).join('');
+listContentHTML=`<div class="space-y-4">${listContentHTML}</div>`
+}else{
+const statusMessage=failedToLoad?'Não foi possível carregar as conexões.':'Nenhuma conexão ativa encontrada.';
+listContentHTML=`<div class="bg-gray-50 rounded-xl border border-gray-200 text-center space-y-4 py-8"><span class="material-symbols-outlined text-6xl text-gray-400 mx-auto">${failedToLoad?'warning':'handshake'}</span><p class="text-lg font-semibold text-gray-700">${statusMessage}</p><p class="text-sm text-gray-500">Adicione uma nova conexão usando o botão abaixo.</p></div>`
+}
+const addNewConnectionButton=addTool?`<button data-tool-destination="${addTool.key}" class="tool-button w-full h-20 flex items-center justify-center space-x-2 p-4 text-center bg-purple-600 text-white rounded-xl shadow-lg hover:bg-purple-700 transition duration-150 mt-4"><span class="material-symbols-outlined text-2xl">add_link</span><span class="font-semibold">${addTool.details.title}</span></button>`:'';
+const contentHTML=`<div class="space-y-6">${messageHTML}${listContentHTML}${addNewConnectionButton}</div>`;
+return{title,contentHTML}
+}
+else if(destination==='notif_list'){
+const notifications=fetchNotifications();
+if(notifications.length===0)listContentHTML=`<div class="p-8 text-center text-gray-500 bg-white rounded-xl shadow-lg mt-8"><span class="material-symbols-outlined text-6xl mx-auto mb-4">notifications_off</span><p class="text-lg font-semibold">Nenhuma notificação nova.</p><p class="text-sm">Verifique novamente mais tarde.</p></div>`;
+else listContentHTML=`<div class="space-y-4 p-0 max-w-4xl mx-auto">${notifications.map(notif=>`<button data-notif-id="${notif.id}" class="notification-item-button w-full flex items-center space-x-4 p-4 text-left bg-white rounded-xl shadow-lg hover:bg-gray-100 transition duration-150 border-l-4 border-${notif.color}-500"><span class="material-symbols-outlined text-3xl text-${notif.color}-600">${notif.icon}</span><div class="flex-grow"><p class="font-bold text-gray-800">${notif.title}</p><p class="text-sm text-gray-600">${notif.message.substring(0,70)}...</p><p class="text-xs text-gray-400 mt-1">${notif.time}</p></div><span class="material-symbols-outlined text-gray-400">chevron_right</span></button>`).join('')}</div>`
+}
+else if(destination==='notif_config'){
+const dashboardCategories=VIEWS_SET.filter(t=>t.details.parent==='dashboard'&&t.type==='navigator');
+let groupItemsHTML='';
+dashboardCategories.forEach(t=>{
+const id=t.key;const isActive=notificationChannels[id]===true;
+groupItemsHTML+=`<div class="flex items-center justify-between py-3 px-4 bg-white rounded-xl shadow-md border border-gray-200"><div class="flex items-center space-x-3"><span class="material-symbols-outlined text-xl text-gray-600">${t.details.icon}</span><p class="font-medium text-gray-800">${t.details.title}</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" data-channel="${id}" class="sr-only peer toggle-switch child-toggle" ${isActive?'checked':''}><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>`
+});
+listContentHTML=`<div class="space-y-3"><h3 class="text-2xl font-bold text-gray-900">Gerenciamento por Módulo</h3><p class="text-sm text-gray-600 mb-6">Ative ou desative as notificações Push/App para cada módulo principal do sistema.</p><div class="space-y-4">${groupItemsHTML}</div></div><p class="mt-8 text-xs text-gray-400 text-center">As alterações são salvas automaticamente (Simulação).</p>`
+}
+const contentHTML=`<div class="space-y-6">${messageHTML}${listContentHTML}</div>`;
+return{title,contentHTML}
+}
+async function getDynamicFormView(tool){
+const title=tool.details.title;const destination=tool.key;
+const listKey=destination.split(':')[1];
+const fieldIdSequence=tool.details.data?.form_data;
+if(!fieldIdSequence||fieldIdSequence.length===0)return{title:`Erro de Configuração`,contentHTML:`<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Sequência de campos (form_data) não definida na View para ${listKey}.</p></div>`};
+let initialData={};let formSourceMessage='';
+if(listKey==='MAIN_USER_FORM'){
+const{data}=getUserData();
+initialData=hasRegisteredUsers()?MAIN_USER_DETAIL_DATA:data;
+const buttonText=hasRegisteredUsers()?"Edição":"Cadastro Inicial";
+formSourceMessage=`<div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-sm text-center mb-4 border border-blue-200"><p>Modo: ${buttonText}. O formulário é gerado dinamicamente a partir da estrutura de metadados (DATA_FIELDS_SET).</p></div>`
+}
+else{
+let fallbackNeeded=false;
+try{
+await fetchSheetData(CFG_SHEET_ID_PH);
+formSourceMessage=`<div class="p-3 bg-green-100 text-green-800 rounded-lg text-sm text-center mb-4 border border-green-300"><span class="material-symbols-outlined text-base align-middle mr-1">check_circle</span>Dados carregados da Planilha Google (Simulação). Formulário pronto para nova entrada.</div>`
+}catch(error){fallbackNeeded=true}
+if(fallbackNeeded){
+DATA_FIELDS_SET.filter(field=>field.details.listKey===listKey&&field.details.isForm).forEach(field=>{initialData[field.key]=field.details.exampleValue});
+formSourceMessage=`<div class="p-3 bg-red-100 text-red-800 rounded-lg text-sm text-center mb-4 border border-red-300"><span class="material-symbols-outlined text-base align-middle mr-1">warning</span>**ERRO 406: Falha ao carregar dados.** Preenchendo com o Modelo de Exemplo (DATA_FIELDS_SET).</div>`
+}
+}
+const formFieldsHTML=generateFormHTML(fieldIdSequence,initialData);
+const contentHTML=`<div class="p-6 space-y-6"><p class="text-xl font-bold text-gray-800 text-center border-b border-gray-200 pb-2">${title}</p>${formSourceMessage}<form id="dynamic-form-${listKey}" class="space-y-4">${formFieldsHTML}<button type="submit" class="${STYLE_MAP['SUBMIT_BUTTON']}">Salvar Dados</button></form></div>`;
+return{title:title,contentHTML}
+}
+function getDetailOrFormView(tool){
+const destination=tool.key;
+if(destination.startsWith('notification_detail_')){
+const notifId=parseInt(destination.split('_')[2]);
+let notif=notifId===999?getSetupNotification():null;
+if(!notif)return getSimulatedContent(tool);
+const isSetupRequired=(notif.id===999);
+const detailContent=`<div class="p-6 sm:p-10 space-y-6 border-t-8 border-${notif.color}-500 transition duration-300"><div class="flex justify-between items-center pb-4 border-b border-gray-100"><h1 class="text-2xl font-extrabold text-${notif.color}-700">${notif.title}</h1><span class="text-xs font-semibold text-gray-500 uppercase">${notif.category}</span></div><div class="text-gray-800 space-y-4"><p class="text-lg leading-relaxed whitespace-pre-wrap">${notif.message}</p><p class="text-sm text-gray-500">Recebido: ${notif.time}</p></div>${isSetupRequired?`<div class="border-t border-red-300 pt-4 mt-6"><p class="text-sm font-semibold text-red-600 mb-3">PRÓXIMOS PASSOS OBRIGATÓRIOS:</p><button onclick="renderView('users')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center"><span class="material-symbols-outlined mr-2">person_add</span> Acessar Painel de Usuários para Cadastro</button></div>`:''}</div>`;
+return{title:'Detalhes da Notificação',contentHTML:detailContent}
+}
+else if(destination===ROUTE_USER_PROFILE)return getCurrentUserProfileView();
+else if(destination==='new_user_register_form')return getNewUserRegistrationFormContent(tool);
+else return getSimulatedContent(tool)
+}
+function goBackInHistory(){const previousViewId=navigationHistory.pop();previousViewId?renderView(previousViewId,true):renderView('welcome')}
+async function renderView(newViewId,isBack=false,errorDetails=null){
+if(newViewId===ROUTE_ERROR_CONNECTION&&errorDetails)return;
+if(!isBack&&currentViewId!==newViewId){
+if(currentViewId!=='welcome'&&currentViewId!=='initial_welcome')navigationHistory.push(currentViewId);
+else if(currentViewId==='welcome')navigationHistory.push(currentViewId)
+}
+currentViewId=newViewId;
+let viewHTML='';let viewData=null;let isDetailOrForm=false;
+let currentTool=VIEWS_SET.find(tool=>tool.key===newViewId);
+if(newViewId==='initial_welcome')viewHTML=getWelcomeView();
+else if(currentTool){
+const panelType=currentTool.type;
+if(panelType==='navigator'){isDetailOrForm=false;viewData=getNavigationView(currentTool)}
+else if(panelType==='list'){isDetailOrForm=false;viewData=await getListView(currentTool)}
+else if(panelType==='form-dynamic'){isDetailOrForm=true;viewData=await getDynamicFormView(currentTool)}
+else if(panelType==='detail'||panelType==='form'||panelType==='form-user-new'){isDetailOrForm=true;viewData=getDetailOrFormView(currentTool)}
+}
+else if(newViewId.startsWith('user_detail_')||newViewId.startsWith('connection_detail_')||newViewId.startsWith('notification_detail_')){
+isDetailOrForm=true;
+if(newViewId.startsWith('notification_detail_')){currentTool={key:newViewId,type:'detail',details:{title:'Detalhes da Notificação',filePath:null}};viewData=getDetailOrFormView(currentTool)}
+else{currentTool={key:newViewId,type:'detail',details:{title:'Detalhes Dinâmicos',filePath:newViewId}};viewData=getSimulatedContent(currentTool)}
+}
+if(newViewId!=='initial_welcome'){
+if(viewData&&viewData.contentHTML)viewHTML=renderStandardView(viewData.title,viewData.contentHTML,isDetailOrForm,currentTool);
+else viewHTML=get404View(newViewId)
+}
+appRoot.innerHTML=viewHTML;
+attachListeners()
+}
+function getFloatingBackButtonHTML(){
+if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
+const buttonClasses=STYLE_MAP['BACK_BUTTON'];
+return`<button id="top-back-button" class="${buttonClasses}"><span class="material-symbols-outlined text-2xl" title="Voltar">chevron_left</span></button>`
+}
+function getFloatingNotificationButtonHTML(){
+if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
+const notificationCount=getNotificationCount();
+let badgeHTML='';let iconClass='text-gray-700';
+const buttonClasses=STYLE_MAP['NOTIFICATION_BUTTON'];const badgeClasses=STYLE_MAP['NOTIFICATION_BADGE'];
+if(notificationCount>0){badgeHTML=`<div class="${badgeClasses}">${notificationCount}</div>`;iconClass='text-red-600'}
+return`<button id="top-notification-button" class="${buttonClasses}">${badgeHTML}<span class="material-symbols-outlined text-2xl ${iconClass}" title="Notificações">notifications</span></button>`
+}
+function showCustomMessage(message){
+const messageBox=document.createElement('div');
+messageBox.className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-55 p-4';
+messageBox.innerHTML=`<div class="bg-white p-6 rounded-lg shadow-2xl text-center max-w-xs"><p class="text-gray-800 font-semibold mb-4">${message}</p><button id="close-msg" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300">Entendido</button></div>`;
+document.body.appendChild(messageBox);
+document.getElementById('close-msg').addEventListener('click',()=>{document.body.removeChild(messageBox)})
+}
+function get404View(viewId){
+const topBackButtonHTML=getFloatingBackButtonHTML();const topNotificationButtonHTML=getFloatingNotificationButtonHTML();
+return`${topBackButtonHTML}${topNotificationButtonHTML}<div class="min-h-screen p-4 pb-24 pt-16 flex items-center justify-center"> <div class="max-w-md w-full text-center bg-white p-8 rounded-xl shadow-2xl border border-red-200"><span class="material-symbols-outlined text-9xl text-red-500 mb-4 mx-auto">cloud_off</span><h2 class="text-4xl font-extrabold text-red-700 mb-2">ERRO 404</h2><p class="text-gray-700 mb-4 font-semibold">Conteúdo não encontrado ou em fase de implantação.</p><p class="text-sm text-gray-500 break-words">A rota '${viewId}' não está mapeada para uma view implementada.</p><button id="nav-to-toolbox" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300">Voltar ao Menu Principal</button></div></div>`
+}
+function getSimulatedContent(tool){
+const filePath=tool.details.filePath;let fileContent=null;let fileTitle=tool.details.title;
+if(!filePath)return{title:`ERRO DE DADOS`,contentHTML:`<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Caminho do arquivo não definido (filePath).</p></div>`};
+if(filePath.startsWith('user_detail_')){
+const userId=parseInt(filePath.split('_')[2]);const user=REGISTERED_USERS.find(u=>u.id===userId);
+if(!user){fileTitle=`Usuário Não Encontrado`;fileContent=`<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Usuário com ID ${userId} não encontrado.</p></div>`}
+else{fileTitle=`Detalhes de ${user.name}`;const iconColorClass=STYLE_MAP['DEFAULT_ICON_COLOR'];fileContent=`<div class="p-6 space-y-4 text-center"><span class="material-symbols-outlined text-7xl ${iconColorClass} mx-auto mb-3">${user.icon}</span><p class="text-xl font-bold text-gray-800">${user.name}</p><p class="text-md text-gray-600 font-medium">${user.role}</p><ul class="text-left bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200"><li class="font-medium text-gray-700">E-mail: <span class="text-gray-900 font-semibold">${user.email}</span></li><li class="font-medium text-gray-700">ID: <span class="text-gray-900">${user.id}</span></li></ul><button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">Editar Permissões</button></div>`}
+}
+else if(filePath.startsWith('connection_detail_')){
+const connectionId=parseInt(filePath.split('_')[2]);fileTitle=`Detalhes da Conexão (Simulação)`;fileContent=`<div class="p-8 text-center bg-gray-50 rounded-xl border border-gray-200 space-y-4"><span class="material-symbols-outlined text-6xl text-purple-500 mx-auto">handshake</span><p class="text-lg font-bold text-gray-800">Detalhes da Conexão Simulado</p><p class="text-sm text-gray-600">O dado de conexão (ID: ${connectionId}) não está mais disponível no banco de dados local. Exibindo placeholder.</p><button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl transition duration-300 mt-4">Gerenciar Configurações</button></div>`
+}
+else{fileTitle=`Módulo: ${tool.details.title}`;fileContent=`<div class="p-8 text-center bg-gray-50 rounded-xl border border-gray-200 space-y-4"><span class="material-symbols-outlined text-6xl text-orange-500 mx-auto">construction</span><p class="text-lg font-bold text-gray-800">Módulo em Desenvolvimento</p><p class="text-sm text-gray-600">O conteúdo para a ferramenta "${tool.details.title}" está em fase de implantação (Path: ${filePath}).</p></div>`}
+return{title:fileTitle,contentHTML:fileContent}
+}
+function renderStandardView(title,contentHTML,isDetailOrForm,currentTool){
+const topBackButtonHTML=getFloatingBackButtonHTML();const topNotificationButtonHTML=getFloatingNotificationButtonHTML();
+const maxWidthClass=isDetailOrForm?'max-w-lg':'max-w-4xl';let finalContent=contentHTML;
+if(isDetailOrForm){const wrapperClasses=STYLE_MAP['MAIN_WRAPPER'];finalContent=`<div class="${wrapperClasses}">${contentHTML}</div>`}
+return`${topBackButtonHTML}${topNotificationButtonHTML}<div class="min-h-screen p-4 pb-24 pt-16 ${maxWidthClass} mx-auto"><h2 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">${title}</h2>${finalContent}</div>`
+}
+function getWelcomeView(){return`<div class="min-h-screen flex flex-col items-center justify-center p-4"><div class="bg-white p-8 sm:p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition duration-500 hover:scale-[1.02]"><span class="material-symbols-outlined text-6xl text-blue-600 mb-4 mx-auto">rocket_launch</span><h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-Vindo!</h1><p class="text-gray-500 mb-6">Seja bem-vindo(a)! Escolha uma opção para continuar.</p><div class="space-y-3 mb-6"><button id="login-button" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition duration-300">Login (Em Breve)</button><button id="register-button" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition duration-300">Cadastrar (Em Breve)</button></div><div class="h-px bg-gray-200 w-full mb-6"></div><button id="access-demo-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">Acessar Demo (Menu Principal)</button></div></div>`}
+function createToolButtonHTML(tool,currentViewKey){
+let notificationBadge='';
+if(tool.key==='notifications'){const count=getNotificationCount();const badgeClasses=STYLE_MAP['NOTIFICATION_BADGE'];if(count>0)notificationBadge=`<div class="${badgeClasses}">${count}</div>`}
+const actionText=tool.type==='navigator'?'Selecionar':'Abrir';const panelTypeLabel=tool.type?tool.type.toUpperCase():'N/A';
+const destinationStyles=DESTINATION_STYLE_MAP[currentViewKey]||{};
+const buttonBase=STYLE_MAP['DEFAULT_BUTTON_BASE'];const buttonClasses=destinationStyles.BUTTON_STYLE||STYLE_MAP['DEFAULT_BUTTON_STYLE'];const iconColorClasses=destinationStyles.ICON_CLASSES||STYLE_MAP['DEFAULT_ICON_COLOR'];
+return`<button data-tool-destination="${tool.key}" class="${buttonBase} ${buttonClasses}">${notificationBadge}<span class="material-symbols-outlined text-4xl ${iconColorClasses} mb-2">${tool.details.icon}</span><span class="text-lg font-bold text-gray-800 text-center">${tool.details.title}</span><span class="text-xs text-blue-500 mt-1 uppercase tracking-wider">${panelTypeLabel} (${actionText})</span></button>`
+}
+function createConnectionButtonHTML(connection){
+const statusBadge=connection.status==='Ativo'?`<div class="flex flex-col items-end"><span class="text-xs text-green-600 font-semibold mt-1">Ativo</span></div>`:`<div class="flex flex-col items-end"><span class="text-xs text-gray-500 font-semibold mt-1">Inativo</span></div>`;
+const listButtonClasses=STYLE_MAP['LIST_BUTTON_STYLE'];
+return`<button data-tool-destination="${connection.destination}" class="connection-list-button w-full flex items-center space-x-4 p-4 text-left ${listButtonClasses}"><span class="material-symbols-outlined text-3xl text-purple-600">${connection.icon||'link'}</span><div class="flex-grow"><p class="font-bold text-gray-800 truncate">${connection.name}</p><p class="text-xs text-gray-500">${connection.role}</p></div>${statusBadge}<span class="material-symbols-outlined text-gray-400">chevron_right</span></button>`
+}
+function createUserGridButtonHTML(user){
+const panelTypeLabel='DETAIL';
+return`<button data-tool-id="user_detail_${user.id}" class="user-list-button w-full h-36 relative flex flex-col items-center justify-center bg-white rounded-xl border border-gray-200 shadow-md transition duration-300 ease-in-out hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg focus:ring-4 focus:ring-blue-300 focus:outline-none p-3 cursor-pointer text-center"><span class="material-symbols-outlined text-4xl text-blue-600 mb-2">${user.icon}</span><span class="text-md font-bold text-gray-800 truncate w-full px-1">${user.name}</span><span class="text-xs text-gray-500 mt-0.5">ID Interno: ${user.id}</span><span class="text-xs text-blue-500 mt-0.5 uppercase tracking-wider">${panelTypeLabel} (ABRIR)</span></button>`
+}
+function getCurrentUserProfileView(){
+const{data,isFictional}=getUserData();
+const title=isFictional?'Perfil Fictício (Modelo)':`Detalhes de ${data.fullName||data.name}`;
+const profileStyles=DESTINATION_STYLE_MAP[ROUTE_USER_PROFILE]||{};const cardClass=profileStyles.CARD_CLASS||STYLE_MAP['MAIN_WRAPPER'];const iconColorClass=isFictional?'text-gray-500':STYLE_MAP['DEFAULT_ICON_COLOR'];const headerColorClass='text-gray-800';const dividerClass='border-gray-200';const submitButtonClass=STYLE_MAP['SUBMIT_BUTTON'];
+let detailItemsHTML='';let currentSection='';
+const profileFields=DATA_FIELDS_SET.filter(field=>field.details.listKey==='MAIN_USER_FORM');
+profileFields.forEach(field=>{
+const details=field.details;const value=data[field.key]||'(Não Informado)';let sectionHeader='';
+if(details.formSection&&details.formSection!==currentSection){currentSection=details.formSection;sectionHeader=`<h3 class="text-lg font-bold ${headerColorClass} border-b ${dividerClass} pb-1 mt-6">${currentSection}</h3>`}
+detailItemsHTML+=`${sectionHeader}<div class="flex justify-between items-center py-2 border-b border-gray-100"><span class="font-semibold text-sm text-gray-600">${details.label}:</span><span class="text-sm ${value==='(Não Informado)'?'italic text-gray-400':'font-medium text-gray-800'}">${value}</span></div>`
+});
+const editTool=VIEWS_SET.find(t=>t.key==='render_form:MAIN_USER_FORM');
+const registerButton=isFictional?`<div class="mt-8 pt-4 border-t border-red-300"><p class="text-sm font-semibold text-red-600 mb-3 text-center">Modo de demonstração: Cadastre para ativar o perfil real.</p><button onclick="renderView('${editTool.key}')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center shadow-lg"><span class="material-symbols-outlined mr-2">person_add</span> Cadastrar Dados Reais</button></div>`:`<button onclick="renderView('${editTool.key}')" class="${submitButtonClass} w-full bg-indigo-600 hover:bg-indigo-700 mt-8"><span class="material-symbols-outlined mr-2">edit</span> Editar Meus Dados</button>`;
+const contentHTML=`<div class="p-6 sm:p-8 rounded-xl space-y-4"><div class="text-center pb-4 border-b ${dividerClass}"><span class="material-symbols-outlined text-7xl ${iconColorClass} mx-auto mb-2">${data.icon}</span><p class="text-2xl font-bold">${data.name}</p><p class="text-md text-gray-600">${data.role}</p><p class="text-xs text-gray-500 font-mono mt-2">ID Único: ${data.systemId||'(N/A)'}</p></div><div class="space-y-2">${detailItemsHTML}</div>${registerButton}</div>`;
+return{title,contentHTML}
+}
+function getNewUserRegistrationFormContent(tool){
+const fileTitle=tool.details.title;const submitButtonClass=STYLE_MAP['SUBMIT_BUTTON'];const inputClasses=STYLE_MAP['GENERIC_INPUT_CLASSES'];
+const fileContent=`<div class="p-6 space-y-6"><p class="text-xl font-bold text-gray-800 text-center border-b border-gray-200 pb-2">Definir Tipo e Credenciais</p><form id="new-user-registration-form" class="space-y-4"><p class="text-sm text-gray-500 text-center">Este formulário simula a criação de um novo usuário para o sistema (Admin/Professor/Comum).</p><div class="space-y-1 mt-3"><label class="block text-sm font-medium text-gray-700">Tipo de Usuário</label><select class="${inputClasses} bg-white"><option value="" disabled selected>Selecionar Tipo de Usuário...</option><option value="comum">Usuário Comum</option><option value="professor">Professor</option><option value="admin">Administrador</option></select></div><div class="space-y-1 mt-3"><label class="block text-sm font-medium text-gray-700">Nome Completo</label><input type="text" placeholder="Nome Completo" class="${inputClasses}" /></div><div class="space-y-1 mt-3"><label class="block text-sm font-medium text-gray-700">E-mail</label><input type="email" placeholder="E-mail" class="${inputClasses}" /></div><div class="space-y-1 mt-3"><label class="block text-sm font-medium text-gray-700">Senha</label><input type="password" placeholder="Senha" class="${inputClasses}" /></div><button type="submit" class="${submitButtonClass}">Salvar Novo Usuário</button></form></div>`;
+return{title:fileTitle,contentHTML:fileContent}
+}
+function attachListeners(){
+const accessDemoButton=document.getElementById('access-demo-button');if(accessDemoButton)accessDemoButton.addEventListener('click',()=>renderView('welcome'));
+const loginButton=document.getElementById('login-button');if(loginButton)loginButton.addEventListener('click',()=>showCustomMessage('A funcionalidade de Login será implementada em uma próxima iteração.'));
+const registerButton=document.getElementById('register-button');if(registerButton)registerButton.addEventListener('click',()=>showCustomMessage('A funcionalidade de Cadastro será implementada em uma próxima iteração.'));
+const topBackButton=document.getElementById('top-back-button');if(topBackButton)topBackButton.addEventListener('click',()=>goBackInHistory());
+const topNotificationButton=document.getElementById('top-notification-button');if(topNotificationButton)topNotificationButton.addEventListener('click',()=>renderView('notif_list'));
+const navToToolboxButton=document.getElementById('nav-to-toolbox');if(navToToolboxButton)navToToolboxButton.addEventListener('click',()=>renderView('welcome'));
+const toolButtons=document.querySelectorAll('.tool-button');toolButtons.forEach(button=>{button.addEventListener('click',(event)=>{const toolDestination=event.currentTarget.getAttribute('data-tool-destination');if(toolDestination)renderView(toolDestination)})});
+const connectionListButtons=document.querySelectorAll('.connection-list-button');connectionListButtons.forEach(button=>{button.addEventListener('click',(event)=>{const destination=event.currentTarget.getAttribute('data-tool-destination');renderView(destination)})});
+const userListButtons=document.querySelectorAll('.user-list-button');userListButtons.forEach(button=>{button.addEventListener('click',(event)=>{const destination=event.currentTarget.getAttribute('data-tool-id');renderView(destination)})});
+const newRegistrationForm=document.getElementById('new-user-registration-form');if(newRegistrationForm){newRegistrationForm.addEventListener('submit',function(e){e.preventDefault();const form=e.target;const name=form.querySelector('input[placeholder="Nome Completo"]').value||'Novo Usuário';const type=form.querySelector('select').value||'comum';const newId=(REGISTERED_USERS.length>0?Math.max(...REGISTERED_USERS.map(u=>u.id)):1000)+1;REGISTERED_USERS.push({id:newId,name:name,role:type==='admin'?'Administrador':(type==='professor'?'Professor':'Usuário Comum'),icon:type==='admin'?'badge':'person',email:name.toLowerCase().replace(/\s/g,'.')+'@app.com'});showCustomMessage(`Novo usuário "${name}" cadastrado com sucesso!`);renderView('user_list')})}
+const dynamicForms=document.querySelectorAll('form[id^="dynamic-form-"]');dynamicForms.forEach(form=>{form.addEventListener('submit',function(e){e.preventDefault();const listKey=e.target.id.split('-')[2];const formData=new FormData(e.target);const newDetails={};formData.forEach((value,key)=>{newDetails[key]=value});if(listKey==='MAIN_USER_FORM'){if(!hasRegisteredUsers()){const mainUserName=newDetails.fullName||'Usuário Principal';const systemIdValue=`USR-1001-${Math.random().toString(36).substring(2,6).toUpperCase()}`;REGISTERED_USERS.push({id:1001,name:mainUserName,systemId:systemIdValue,role:'Administrador',icon:'badge',email:mainUserName.toLowerCase().replace(/\s/g,'.')+'@app.com'});MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados e Usuário Principal registrados com sucesso! O sistema está ativo.');renderView('users')}else{MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados do usuário principal atualizados com sucesso!');renderView(ROUTE_USER_PROFILE,true)}}else{console.log(`Dados Coletados do Formulário Dinâmico (${listKey}):`,newDetails);showCustomMessage(`Dados do formulário de ${listKey} salvos com sucesso (Simulação): ${JSON.stringify(newDetails)}`)}})});
+const notificationItemButtons=document.querySelectorAll('.notification-item-button');notificationItemButtons.forEach(button=>{button.addEventListener('click',(e)=>{const notifId=e.currentTarget.getAttribute('data-notif-id');renderView('notification_detail_'+notifId)})});
+const channelSwitches=document.querySelectorAll('.toggle-switch');channelSwitches.forEach(channelSwitch=>{channelSwitch.addEventListener('change',(e)=>{const channelId=e.target.getAttribute('data-channel');const newState=e.target.checked;notificationChannels[channelId]=newState;const status=newState?'ATIVADO':'DESATIVADO';const tool=VIEWS_SET.find(t=>t.key===channelId);const channelName=tool?tool.details.title:channelId;showCustomMessage(`Notificações para ${channelName} foram ${status}.`)})})}
+renderView('initial_welcome')
+</script>
 </body>
 </html>
