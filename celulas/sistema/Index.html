@@ -136,6 +136,29 @@
 
 <body>
 
+  <script>
+    (function registrarManifestoAtual() {
+      const manifesto = {
+        nome: "sistema.appfamily",
+        caminho: "celulas/sistema/Index.html",
+        orgao: "sistema",
+        versao: "1.0.0",
+        descricao: "App Família – modelo completo convertido para PWAO"
+      };
+
+      function tentarRegistrar() {
+        const registrador = window.PWAO_RegistrarCelula || (window.parent && window.parent.PWAO_RegistrarCelula);
+        if (typeof registrador === "function") {
+          registrador(manifesto);
+          return;
+        }
+        setTimeout(tentarRegistrar, 80);
+      }
+
+      tentarRegistrar();
+    })();
+  </script>
+
   <header class="app-header">
     <div class="header-btn" data-cell="menu">
       <span class="material-icons">menu</span>
@@ -174,34 +197,16 @@
   </footer>
 
   <script>
-    
-    (function registrarAdmin() {
-      function tentar() {
-        if (window.PWAO_RegistrarCelula) {
-          window.PWAO_RegistrarCelula({
-            nome: "sistema.admin",
-            caminho: "./celulas/sistema/pages/family/index.html",
-            orgao: "sistema",
-            versao: "1.0.0",
-            descricao: "Célula administrativa e de tokens OPP"
-          });
-          return;
-        }
-        setTimeout(tentar, 60);
-      }
-      tentar();
-    })();
-
     const produtosGoverno = [
       {
         nome: "governo.produtos.recibo-diarias",
-        caminho: "./celulas/governo/produtos/recibo-diarias.js",
+        caminho: "../governo/produtos/recibo-diarias.js",
         descricao: "Recibo de diárias e prestação de contas",
         titulo: "Recibo de Diárias"
       },
       {
         nome: "governo.produtos.recibo-diarias.organico",
-        caminho: "./celulas/governo/produtos/recibo-diarias-organico.html",
+        caminho: "../governo/produtos/recibo-diarias-organico.html",
         descricao: "Versão orgânica e simplificada do recibo de diárias",
         titulo: "Recibo Orgânico"
       }

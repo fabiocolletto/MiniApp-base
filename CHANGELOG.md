@@ -18,6 +18,18 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.4.0] – Genoma reescrito para modelo App Família
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Novo Genoma converte o HTML completo do App Família em célula `sistema.appfamily`, com autodiscovery orgânico e stage baseado em iframe para preservar CSS/JS originais.
+- Memória Orgânica simplificada ativa autodiscovery e atualiza contadores em tempo real sempre que um manifesto é registrado.
+
+#### Changed
+- Interface do Genoma redesenhada com status claros do Narrador, memória e OPP, destacando a célula modelo disponível para expressão.
+
+---
+
 # 🧬 [V4.3.12] – Stage híbrido para células JS
 ### **Status: Atual (Genoma V4.3.3)**
 
