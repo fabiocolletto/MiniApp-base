@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>App Mobile: Navegação Multi-Nível</title>
+<title>App Mobile: Server-Driven UI (Gestão Completa)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
 <style>
@@ -13,6 +13,25 @@ form input[type="text"],form input[type="date"],form input[type="number"],form i
 form input:focus,form select:focus,form textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.3)}
 .tool-button{transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275)}
 .tool-button:hover{transform:scale(1.02)}
+/* Remove setas do input number */
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {-webkit-appearance: none;margin: 0;}
+/* Animação suave para entrada de lista */
+.fade-in-up {animation: fadeInUp 0.4s ease-out forwards;}
+@keyframes fadeInUp {from {opacity: 0;transform: translateY(10px);}to {opacity: 1;transform: translateY(0);}}
+.clickable-card:active { transform: scale(0.98); background-color: #f9fafb; }
+/* Estilos para Barras de Progresso Animadas */
+.bar-fill { transition: width 1s ease-in-out; }
+/* Destaque para item sendo editado */
+.editing-highlight { border: 2px solid #3b82f6; background-color: #eff6ff; }
+/* Estilo Planilha Minimalista (Clean Sheet) */
+.sheet-table { width: 100%; border-collapse: collapse; }
+.sheet-table th { text-align: left; font-size: 0.75rem; color: #6b7280; font-weight: 600; text-transform: uppercase; padding: 8px 4px; border-bottom: 2px solid #e5e7eb; }
+.sheet-table td { border-bottom: 1px solid #f3f4f6; padding: 0; }
+.sheet-input { width: 100%; padding: 12px 4px; border: none; background: transparent; font-size: 0.9rem; color: #1f2937; outline: none; transition: background 0.2s; border-radius: 4px; }
+.sheet-input:focus { background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.sheet-select { width: 100%; padding: 12px 4px; border: none; background: transparent; font-size: 0.9rem; color: #1f2937; outline: none; -webkit-appearance: none; cursor: pointer; }
+.sheet-select:focus { background-color: #ffffff; }
+.sheet-row:hover { background-color: #f9fafb; }
 </style>
 </head>
 <body>
@@ -23,7 +42,7 @@ const navigationHistory=[];
 let currentViewId='initial_welcome';
 const ROUTE_USER_PROFILE='current_user_profile';
 const createDataPlaceholder=(nav=[],form=[],list=[],detail=[],html=[],js=[],alert=[])=>({navigator_data:nav,form_data:form,list_data:list,detail_data:detail,html_data:html,js_data:js,alert_data:alert,});
-const GLOBAL_INFO={description:"Metadados globais unificados.",version:"9.4",last_update:"2025-12-12"};
+const GLOBAL_INFO={description:"Metadados globais otimizados (Versão Gestão Completa + Recorrência Minimalista + Correção).",version:"11.9",last_update:"2025-12-12"};
 const GLOBALS=[
 {gId:'DAT-MET-001',group:'DATA',category:'Metadados',type:'number',key:'internalId',details:{label:'ID Interno',placeholder:'Ex: 1001',exampleValue:1001,required:true,formSection:'Metadados Registro',isForm:false,listKey:'META'}},
 {gId:'DAT-MET-002',group:'DATA',category:'Metadados',type:'text',key:'systemUniqueId',details:{label:'ID Único do Sistema',placeholder:'Ex: 12345-ABC',exampleValue:'MODELO-000',required:true,formSection:'Metadados Registro',isForm:false,listKey:'META'}},
@@ -34,6 +53,11 @@ const GLOBALS=[
 {gId:'DAT-MET-007',group:'DATA',category:'Metadados',type:'text',key:'toolIcon',details:{label:'Ícone Material',placeholder:'Ex: dashboard',exampleValue:'dashboard',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
 {gId:'DAT-MET-008',group:'DATA',category:'Metadados',type:'text',key:'toolFilePath',details:{label:'Caminho do Arquivo',placeholder:'Ex: settings/info/index.html',exampleValue:'settings/info/index.html',required:false,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
 {gId:'DAT-MET-009',group:'DATA',category:'Metadados',type:'text',key:'toolPanelType',details:{label:'Tipo de Painel',placeholder:'Ex: navigator/detail/form/list',exampleValue:'navigator',required:true,formSection:'Metadados Ferramenta',isForm:false,listKey:'META'}},
+{gId:'DAT-EXP-001',group:'DATA',category:'Despesa',type:'text',key:'expenseTitle',details:{label:'Descrição',placeholder:'Ex: Mercado, Uber, Almoço',exampleValue:'Compras da Semana',required:true,formSection:'O que foi gasto?',isForm:true,listKey:'PERSONAL_EXPENSE_FORM'}},
+{gId:'DAT-EXP-002',group:'DATA',category:'Despesa',type:'number',key:'expenseValue',details:{label:'Valor (R$)',placeholder:'0,00',exampleValue:150.50,required:true,formSection:'O que foi gasto?',isForm:true,listKey:'PERSONAL_EXPENSE_FORM'}},
+{gId:'DAT-EXP-003',group:'DATA',category:'Despesa',type:'date',key:'expenseDate',details:{label:'Data',placeholder:'DD/MM/AAAA',exampleValue:'2025-12-12',required:true,formSection:'Detalhes',isForm:true,listKey:'PERSONAL_EXPENSE_FORM'}},
+{gId:'DAT-REC-001',group:'DATA',category:'Recorrencia',type:'number',key:'dueDay',details:{label:'Dia do Vencimento (1-31)',placeholder:'Ex: 10',exampleValue:5,required:true,formSection:'Recorrência',isForm:true,listKey:'RECURRING_FORM'}},
+{gId:'DAT-EXP-004',group:'DATA',category:'Despesa',type:'select',key:'expenseCategory',details:{label:'Categoria',options:['Alimentação','Moradia','Transporte','Saúde','Lazer','Educação','Assinaturas','Outros'],exampleValue:'Alimentação',required:true,formSection:'Detalhes',isForm:true,listKey:'PERSONAL_EXPENSE_FORM'}},
 {gId:'DAT-PRO-001',group:'DATA',category:'Produto',type:'text',key:'productName',details:{label:'Nome do Produto',placeholder:'Ex: Café Especial',exampleValue:'Café Brasileiro',required:true,formSection:'Informações Básicas',isForm:true,listKey:'PRODUCT_FORM'}},
 {gId:'DAT-PRO-002',group:'DATA',category:'Produto',type:'number',key:'price',details:{label:'Preço (R$)',placeholder:'Ex: 25.99',exampleValue:19.90,required:true,formSection:'Informações de Venda',isForm:true,listKey:'PRODUCT_FORM'}},
 {gId:'DAT-PRO-003',group:'DATA',category:'Produto',type:'number',key:'stock',details:{label:'Estoque Mínimo',placeholder:'Ex: 10',exampleValue:5,required:true,formSection:'Informações de Venda',isForm:true,listKey:'PRODUCT_FORM'}},
@@ -51,46 +75,48 @@ const GLOBALS=[
 {gId:'STY-BTN-005',group:'STYLE',category:'Botão',type:'DEFAULT',key:'DEFAULT_BUTTON_STYLE',details:{classes:"bg-white border border-gray-200 shadow-xl hover:bg-blue-50 hover:border-blue-500 hover:shadow-2xl focus:ring-4 focus:ring-blue-300"}},
 {gId:'STY-BTN-006',group:'STYLE',category:'Botão',type:'LIST',key:'LIST_BUTTON_STYLE',details:{classes:"bg-white rounded-xl border border-gray-200 shadow-md hover:bg-gray-50 transition duration-150"}},
 {gId:'STY-BTN-002',group:'STYLE',category:'Botão',type:'NOTIFICATION',key:'NOTIFICATION_BUTTON',details:{classes:"fixed top-4 right-4 z-30 bg-white h-10 w-10 flex items-center justify-center rounded-full shadow-lg hover:bg-gray-100 transition duration-150 border border-gray-200"}},
-{gId:'STY-DST-003',group:'STYLE',category:'Destino',type:'PROFILE_CARD',key:ROUTE_USER_PROFILE,details:{elementKey:'CARD_CLASS',classes:"bg-white border-gray-200 border text-gray-900 shadow-xl"}},
 {gId:'STY-DST-001',group:'STYLE',category:'Destino',type:'NEWS_BUTTON',key:'news',details:{elementKey:'BUTTON_STYLE',classes:"bg-yellow-50 border-1 border-yellow-300 shadow-md hover:bg-yellow-100 hover:shadow-lg focus:ring-yellow-200"}},
 {gId:'STY-DST-002',group:'STYLE',category:'Destino',type:'NEWS_ICON',key:'news',details:{elementKey:'ICON_CLASSES',classes:"text-amber-600"}},
-{gId:'STY-FOR-002',group:'STYLE',category:'Formulário',type:'INPUT',key:'GENERIC_INPUT_CLASSES',details:{classes:"w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"}},
-{gId:'STY-FOR-001',group:'STYLE',category:'Formulário',type:'SUBMIT',key:'SUBMIT_BUTTON',details:{classes:"w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition duration-300 mt-6 shadow-md"}},
+{gId:'STY-FOR-002',group:'STYLE',category:'Formulário',type:'INPUT',key:'GENERIC_INPUT_CLASSES',details:{classes:"w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 bg-white focus:bg-white transition-colors shadow-sm"}},
+{gId:'STY-FOR-001',group:'STYLE',category:'Formulário',type:'SUBMIT',key:'SUBMIT_BUTTON',details:{classes:"w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition duration-300 mt-6 shadow-lg transform active:scale-[0.98]"}},
 {gId:'STY-LAY-002',group:'STYLE',category:'Layout',type:'ICON',key:'DEFAULT_ICON_COLOR',details:{classes:"text-blue-600"}},
 {gId:'STY-LAY-001',group:'STYLE',category:'Layout',type:'WRAPPER',key:'MAIN_WRAPPER',details:{classes:"bg-white rounded-xl shadow-2xl p-6 sm:p-8 space-y-4"}},
-{gId:'VIE-ASS-001',group:'VIEW',category:'Assistente',type:"navigator",key:"assistant",details:{title:"Assistente",icon:"smart_toy",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
-{gId:'VIE-CFG-002',group:'VIEW',category:'Configuração',type:"detail",key:"accessibility_settings",details:{title:"Acessibilidade",icon:"accessibility_new",parent:"settings",filePath:"settings/accessibility/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER","ACTION_BUTTONS"])}},
-{gId:'VIE-CFG-001',group:'VIEW',category:'Configuração',type:"navigator",key:"settings",details:{title:"Configurações",icon:"settings",parent:"welcome",filePath:null,data:createDataPlaceholder(["accessibility_settings","system_info"])}},
-{gId:'VIE-CFG-003',group:'VIEW',category:'Configuração',type:"detail",key:"system_info",details:{title:"Info do Sistema",icon:"info",parent:"settings",filePath:"settings/info/index.html",data:createDataPlaceholder([],[],[],["HEADER_INFO","DETAIL_FIELDS","SYSTEM_METRICS"])}},
-{gId:'VIE-CON-002',group:'VIEW',category:'Conexão',type:"form",key:"add_connection",details:{title:"Adicionar Nova Conexão",icon:"add_link",parent:"connections",filePath:"users/connections/add/index.html",data:createDataPlaceholder([],["CONN-ID-INPUT","CONN-EMAIL-INPUT"])}},
-{gId:'VIE-CON-001',group:'VIEW',category:'Conexão',type:"list",key:"connection_list",details:{title:"Lista de Conexões",icon:"list_alt",parent:"connections",filePath:null,data:createDataPlaceholder([],[],["CONN_NAME","CONN_ROLE","CONN_STATUS"])}},
-{gId:'VIE-DSH-001',group:'VIEW',category:'Dashboard',type:"navigator",key:"dashboard",details:{title:"Dashboard",icon:"dashboard",parent:"welcome",filePath:null,data:createDataPlaceholder(["registries","education","health","finance","government","work","leisure","news","assistant"])}},
-{gId:'VIE-EDU-002',group:'VIEW',category:'Educação',type:"form",key:"student_register",details:{title:"Cadastrar Aluno",icon:"person_add",parent:"education",filePath:"educacao/aluno/cadastro/index.html",data:createDataPlaceholder([],["STUDENT-NAME","STUDENT-ID"])}},
-{gId:'VIE-EDU-001',group:'VIEW',category:'Educação',type:"navigator",key:"education",details:{title:"Educação",icon:"school",parent:"dashboard",filePath:null,data:createDataPlaceholder(["student_register"])}},
-{gId:'VIE-FIN-001',group:'VIEW',category:'Finanças',type:"navigator",key:"finance",details:{title:"Finanças",icon:"attach_money",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
-{gId:'VIE-FOR-001',group:'VIEW',category:'Formulários',type:"form-dynamic",key:"render_form:PRODUCT_FORM",details:{title:"Cadastro de Produto",icon:"inventory_2",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PRO-001","DAT-PRO-002","DAT-PRO-003","DAT-PRO-004"])}},
-{gId:'VIE-FOR-002',group:'VIEW',category:'Formulários',type:"form-dynamic",key:"render_form:PURCHASE_ORDER_FORM",details:{title:"Novo Pedido de Compra",icon:"shopping_cart",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PUR-001","DAT-PUR-002","DAT-PUR-003"])}},
-{gId:'VIE-GOV-001',group:'VIEW',category:'Governo',type:"navigator",key:"government",details:{title:"Governo",icon:"account_balance",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
-{gId:'VIE-GOV-002',group:'VIEW',category:'Governo',type:"detail",key:"local_law",details:{title:"Legislação Local",icon:"gavel",parent:"government",filePath:"government/law/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER"])}},
-{gId:'VIE-LAZ-001',group:'VIEW',category:'Lazer',type:"navigator",key:"leisure",details:{title:"Lazer",icon:"local_activity",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
-{gId:'VIE-NEW-001',group:'VIEW',category:'Notícias',type:"navigator",key:"news",details:{title:"Notícias",icon:"feed",parent:"dashboard",filePath:null,data:createDataPlaceholder(["news_feed_1","news_feed_2","news_feed_3"])}},
-{gId:'VIE-NEW-002',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_1",details:{title:"Notícia 1: IA na Produção",icon:"article",parent:"news",filePath:"news/1.html",data:createDataPlaceholder()}},
-{gId:'VIE-NEW-003',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_2",details:{title:"Notícia 2: Mercado Global",icon:"public",parent:"news",filePath:"news/2.html",data:createDataPlaceholder()}},
-{gId:'VIE-NEW-004',group:'VIEW',category:'Notícias',type:"detail",key:"news_feed_3",details:{title:"Notícia 3: Criptoativos",icon:"currency_bitcoin",parent:"news",filePath:"news/3.html",data:createDataPlaceholder()}},
-{gId:'VIE-NOT-001',group:'VIEW',category:'Notificação',type:"navigator",key:"notifications",details:{title:"Notificações",icon:"notifications_active",parent:"welcome",filePath:null,data:createDataPlaceholder(["notif_list","notif_config"])}},
-{gId:'VIE-NOT-002',group:'VIEW',category:'Notificação',type:"list",key:"notif_list",details:{title:"Visualizar Lista",icon:"list_alt",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["TITLE","MESSAGE_PREVIEW","TIME","ICON"])}},
-{gId:'VIE-NOT-003',group:'VIEW',category:'Notificação',type:"list",key:"notif_config",details:{title:"Configurar Canais",icon:"tune",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["CHANNEL_NAME","TOGGLE_SWITCH"])}},
-{gId:'VIE-REG-001',group:'VIEW',category:'Cadastro',type:"navigator",key:"registries",details:{title:"Acessar Cadastros",icon:"create_new_folder",parent:"dashboard",filePath:null,data:createDataPlaceholder(["render_form:PRODUCT_FORM","render_form:PURCHASE_ORDER_FORM"])}},
-{gId:'VIE-ROOT-001',group:'VIEW',category:'Raiz',type:"navigator",key:"welcome",details:{title:"Menu Principal",icon:"home",parent:null,filePath:null,data:createDataPlaceholder(["dashboard","users","notifications","settings"])}},
-{gId:'VIE-SAU-001',group:'VIEW',category:'Saúde',type:"navigator",key:"health",details:{title:"Saúde",icon:"local_hospital",parent:"dashboard",filePath:null,data:createDataPlaceholder(["schedule_appointment"])}},
-{gId:'VIE-SAU-002',group:'VIEW',category:'Saúde',type:"form",key:"schedule_appointment",details:{title:"Agendar Consulta",icon:"calendar_month",parent:"health",filePath:"saude/agendamento/index.html",data:createDataPlaceholder([],["APPOINTMENT-DATE","APPOINTMENT-TIME"])}},
-{gId:'VIE-TRB-001',group:'VIEW',category:'Trabalho',type:"navigator",key:"work",details:{title:"Trabalho",icon:"work",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
-{gId:'VIE-USR-004',group:'VIEW',category:'Usuário',type:"navigator",key:"connections",details:{title:"Conexões",icon:"group_add",parent:"users",filePath:null,data:createDataPlaceholder(["connection_list","add_connection"])}},
-{gId:'VIE-USR-002',group:'VIEW',category:'Usuário',type:"detail",key:ROUTE_USER_PROFILE,details:{title:"Meu Perfil",icon:"person",parent:"users",filePath:null,data:createDataPlaceholder([],[],[],["USER_HEADER","CONTACT_FIELDS","ACTION_EDIT"])}},
-{gId:'VIE-USR-005',group:'VIEW',category:'Usuário',type:"form-dynamic",key:"render_form:MAIN_USER_FORM",details:{title:"Editar/Cadastrar Dados Pessoais",icon:"edit",parent:ROUTE_USER_PROFILE,filePath:null,data:createDataPlaceholder([],["DAT-USR-001","DAT-USR-002","DAT-USR-003","DAT-USR-004"])}},
-{gId:'VIE-USR-006',group:'VIEW',category:'Usuário',type:"form-user-new",key:"new_user_register_form",details:{title:"Criar Novo Usuário",icon:"person_add",parent:"user_list",filePath:null,data:createDataPlaceholder([],["FORM-NEW-USER-SIMULATED"])}},
-{gId:'VIE-USR-003',group:'VIEW',category:'Usuário',type:"list",key:"user_list",details:{title:"Gerenciar Cadastro",icon:"manage_accounts",parent:"users",filePath:null,data:createDataPlaceholder([],[],["USER_CARD","ROLE","ACTION_DETAIL"])}},
-{gId:'VIE-USR-001',group:'VIEW',category:'Usuário',type:"navigator",key:"users",details:{title:"Usuários",icon:"group",parent:"welcome",filePath:null,data:createDataPlaceholder([ROUTE_USER_PROFILE,"user_list","connections"])}}
+{gId:'VIE-ASS-001',group:'VIEW',category:'Navegador',type:"AI_CHAT",key:"assistant",details:{title:"Assistente",icon:"smart_toy",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-CFG-002',group:'VIEW',category:'Detalhe',type:"SETTINGS_TOGGLES",key:"accessibility_settings",details:{title:"Acessibilidade",icon:"accessibility_new",parent:"settings",filePath:"settings/accessibility/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER","ACTION_BUTTONS"])}},
+{gId:'VIE-CFG-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"settings",details:{title:"Configurações",icon:"settings",parent:"welcome",filePath:null,data:createDataPlaceholder(["accessibility_settings","system_info"])}},
+{gId:'VIE-CFG-003',group:'VIEW',category:'Detalhe',type:"READ_ONLY",key:"system_info",details:{title:"Info do Sistema",icon:"info",parent:"settings",filePath:"settings/info/index.html",data:createDataPlaceholder([],[],[],["HEADER_INFO","DETAIL_FIELDS","SYSTEM_METRICS"])}},
+{gId:'VIE-CON-002',group:'VIEW',category:'Formulário',type:"MANUAL_INPUT",key:"add_connection",details:{title:"Adicionar Nova Conexão",icon:"add_link",parent:"connections",filePath:"users/connections/add/index.html",data:createDataPlaceholder([],["CONN-ID-INPUT","CONN-EMAIL-INPUT"])}},
+{gId:'VIE-CON-001',group:'VIEW',category:'Lista',type:"GRID_VIEW",key:"connection_list",details:{title:"Lista de Conexões",icon:"list_alt",parent:"connections",filePath:null,data:createDataPlaceholder([],[],["CONN_NAME","CONN_ROLE","CONN_STATUS"])}},
+{gId:'VIE-DSH-001',group:'VIEW',category:'Navegador',type:"MAIN_DASHBOARD",key:"dashboard",details:{title:"Dashboard",icon:"dashboard",parent:"welcome",filePath:null,data:createDataPlaceholder(["registries","education","health","finance","government","work","leisure","news","assistant"])}},
+{gId:'VIE-EDU-002',group:'VIEW',category:'Formulário',type:"MANUAL_INPUT",key:"student_register",details:{title:"Cadastrar Aluno",icon:"person_add",parent:"education",filePath:"educacao/aluno/cadastro/index.html",data:createDataPlaceholder([],["STUDENT-NAME","STUDENT-ID"])}},
+{gId:'VIE-EDU-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"education",details:{title:"Educação",icon:"school",parent:"dashboard",filePath:null,data:createDataPlaceholder(["student_register"])}},
+{gId:'VIE-FIN-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"finance",details:{title:"Minhas Finanças",icon:"attach_money",parent:"dashboard",filePath:null,data:createDataPlaceholder(["render_form:PERSONAL_EXPENSE_FORM", "expense_statement", "recurring_expenses"])}},
+{gId:'VIE-FIN-002',group:'VIEW',category:'Formulário',type:"DYNAMIC_FORM",key:"render_form:PERSONAL_EXPENSE_FORM",details:{title:"Gerenciador de Despesas",icon:"receipt_long",parent:"finance",filePath:null,data:createDataPlaceholder([],["DAT-EXP-001","DAT-EXP-002","DAT-EXP-003","DAT-EXP-004"])}},
+{gId:'VIE-FIN-003',group:'VIEW',category:'Lista',type:"EXPENSE_STATEMENT",key:"expense_statement",details:{title:"Extrato Analítico",icon:"analytics",parent:"finance",filePath:null,data:createDataPlaceholder()}},
+{gId:'VIE-FIN-004',group:'VIEW',category:'Formulário',type:"RECURRING_MANAGER",key:"recurring_expenses",details:{title:"Despesas Recorrentes",icon:"table_view",parent:"finance",filePath:null,data:createDataPlaceholder([],["DAT-EXP-001","DAT-EXP-002","DAT-REC-001","DAT-EXP-004"])}},
+{gId:'VIE-FOR-001',group:'VIEW',category:'Formulário',type:"DYNAMIC_FORM",key:"render_form:PRODUCT_FORM",details:{title:"Cadastro de Produto",icon:"inventory_2",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PRO-001","DAT-PRO-002","DAT-PRO-003","DAT-PRO-004"])}},
+{gId:'VIE-FOR-002',group:'VIEW',category:'Formulário',type:"DYNAMIC_FORM",key:"render_form:PURCHASE_ORDER_FORM",details:{title:"Novo Pedido de Compra",icon:"shopping_cart",parent:"registries",filePath:null,data:createDataPlaceholder([],["DAT-PUR-001","DAT-PUR-002","DAT-PUR-003"])}},
+{gId:'VIE-GOV-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"government",details:{title:"Governo",icon:"account_balance",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-GOV-002',group:'VIEW',category:'Detalhe',type:"TEXT_CONTENT",key:"local_law",details:{title:"Legislação Local",icon:"gavel",parent:"government",filePath:"government/law/index.html",data:createDataPlaceholder([],[],[],["CONTENT_LOADER"])}},
+{gId:'VIE-LAZ-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"leisure",details:{title:"Lazer",icon:"local_activity",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-NEW-001',group:'VIEW',category:'Navegador',type:"FEED_MENU",key:"news",details:{title:"Notícias",icon:"feed",parent:"dashboard",filePath:null,data:createDataPlaceholder(["news_feed_1","news_feed_2","news_feed_3"])}},
+{gId:'VIE-NEW-002',group:'VIEW',category:'Detalhe',type:"ARTICLE",key:"news_feed_1",details:{title:"Notícia 1: IA na Produção",icon:"article",parent:"news",filePath:"news/1.html",data:createDataPlaceholder()}},
+{gId:'VIE-NEW-003',group:'VIEW',category:'Detalhe',type:"ARTICLE",key:"news_feed_2",details:{title:"Notícia 2: Mercado Global",icon:"public",parent:"news",filePath:"news/2.html",data:createDataPlaceholder()}},
+{gId:'VIE-NEW-004',group:'VIEW',category:'Detalhe',type:"ARTICLE",key:"news_feed_3",details:{title:"Notícia 3: Criptoativos",icon:"currency_bitcoin",parent:"news",filePath:"news/3.html",data:createDataPlaceholder()}},
+{gId:'VIE-NOT-001',group:'VIEW',category:'Navegador',type:"TAB_MENU",key:"notifications",details:{title:"Notificações",icon:"notifications_active",parent:"welcome",filePath:null,data:createDataPlaceholder(["notif_list","notif_config"])}},
+{gId:'VIE-NOT-002',group:'VIEW',category:'Lista',type:"VERTICAL_LIST",key:"notif_list",details:{title:"Visualizar Lista",icon:"list_alt",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["TITLE","MESSAGE_PREVIEW","TIME","ICON"])}},
+{gId:'VIE-NOT-003',group:'VIEW',category:'Lista',type:"TOGGLE_LIST",key:"notif_config",details:{title:"Configurar Canais",icon:"tune",parent:"notifications",filePath:null,data:createDataPlaceholder([],[],["CHANNEL_NAME","TOGGLE_SWITCH"])}},
+{gId:'VIE-REG-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"registries",details:{title:"Acessar Cadastros",icon:"create_new_folder",parent:"dashboard",filePath:null,data:createDataPlaceholder(["render_form:PRODUCT_FORM","render_form:PURCHASE_ORDER_FORM"])}},
+{gId:'VIE-ROOT-001',group:'VIEW',category:'Navegador',type:"ROOT_MENU",key:"welcome",details:{title:"Menu Principal",icon:"home",parent:null,filePath:null,data:createDataPlaceholder(["dashboard","users","notifications","settings"])}},
+{gId:'VIE-SAU-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"health",details:{title:"Saúde",icon:"local_hospital",parent:"dashboard",filePath:null,data:createDataPlaceholder(["schedule_appointment"])}},
+{gId:'VIE-SAU-002',group:'VIEW',category:'Formulário',type:"DATE_PICKER",key:"schedule_appointment",details:{title:"Agendar Consulta",icon:"calendar_month",parent:"health",filePath:"saude/agendamento/index.html",data:createDataPlaceholder([],["APPOINTMENT-DATE","APPOINTMENT-TIME"])}},
+{gId:'VIE-TRB-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"work",details:{title:"Trabalho",icon:"work",parent:"dashboard",filePath:null,data:createDataPlaceholder([])}},
+{gId:'VIE-USR-004',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"connections",details:{title:"Conexões",icon:"group_add",parent:"users",filePath:null,data:createDataPlaceholder(["connection_list","add_connection"])}},
+{gId:'VIE-USR-002',group:'VIEW',category:'Detalhe',type:"PROFILE_VIEW",key:ROUTE_USER_PROFILE,details:{title:"Meu Perfil",icon:"person",parent:"users",filePath:null,data:createDataPlaceholder([],[],[],[{t:'h'},{t:'r',l:'Nome',k:'fullName'},{t:'r',l:'Nascimento',k:'birthDate'},{t:'r',l:'Endereço',k:'address'},{t:'r',l:'Telefone',k:'phone'},{t:'r',l:'ID',k:'systemId'},{t:'b',l:'Editar Dados',a:'render_form:MAIN_USER_FORM'}])}},
+{gId:'VIE-USR-005',group:'VIEW',category:'Formulário',type:"DYNAMIC_EDIT",key:"render_form:MAIN_USER_FORM",details:{title:"Editar/Cadastrar Dados Pessoais",icon:"edit",parent:ROUTE_USER_PROFILE,filePath:null,data:createDataPlaceholder([],["DAT-USR-001","DAT-USR-002","DAT-USR-003","DAT-USR-004"])}},
+{gId:'VIE-USR-006',group:'VIEW',category:'Formulário',type:"CUSTOM_REGISTER",key:"new_user_register_form",details:{title:"Criar Novo Usuário",icon:"person_add",parent:"user_list",filePath:null,data:createDataPlaceholder([],["FORM-NEW-USER-SIMULATED"])}},
+{gId:'VIE-USR-003',group:'VIEW',category:'Lista',type:"CARD_GRID",key:"user_list",details:{title:"Gerenciar Cadastro",icon:"manage_accounts",parent:"users",filePath:null,data:createDataPlaceholder([],[],["USER_CARD","ROLE","ACTION_DETAIL"])}},
+{gId:'VIE-USR-001',group:'VIEW',category:'Navegador',type:"SUB_MENU",key:"users",details:{title:"Usuários",icon:"group",parent:"welcome",filePath:null,data:createDataPlaceholder([ROUTE_USER_PROFILE,"user_list","connections"])}}
 ];
 const DATA_FIELDS_SET=GLOBALS.filter(item=>item.group==='DATA');
 const STYLES_RAW_SET=GLOBALS.filter(item=>item.group==='STYLE');
@@ -110,8 +136,19 @@ if(style.category==='Layout'||style.category==='Botão'||style.category==='Formu
 const CFG_SHEET_ID_PH='SHEET_MASTER';
 const ROUTE_ERROR_CONNECTION='connection_error_405';
 let REGISTERED_USERS=[];
+let TEMP_TRANSACTIONS=[]; // Armazena despesas locais (variável temporária/constante solicitada)
+let RECURRING_TEMPLATES=[
+    {id: 1, expenseTitle: 'Aluguel', expenseValue: 2500.00, dueDay: 5, expenseCategory: 'Moradia'},
+    {id: 2, expenseTitle: 'Internet', expenseValue: 120.90, dueDay: 10, expenseCategory: 'Assinaturas'}
+]; 
 let MAIN_USER_DETAIL_DATA=null;
 let notificationChannels={};
+// Controle de Estado do Formulário de Despesas
+let FORM_EDIT_BUFFER = null; // Buffer para edição (Item completo)
+let IS_EDITING = false; // Flag para saber se estamos editando ou criando
+// Filtros Financeiros Globais
+let FINANCE_FILTERS = { startDate: '', endDate: '', category: '' };
+
 VIEWS_SET.forEach(tool=>{notificationChannels[tool.key]=false});
 async function fetchSheetData(sheetId){
 console.warn(`Tentativa de carregar dados da Planilha Google (Secret: ${sheetId})...`);
@@ -138,22 +175,29 @@ else{return{data:generateDefaultUserData(),isFictional:true}}
 function getSetupNotification(){return{id:999,title:"CONFIGURAÇÃO NECESSÁRIA",message:"Por favor, cadastre o Usuário Principal para liberar o acesso total ao sistema. Acesse 'Usuários > Meu Perfil' para iniciar o cadastro.",time:"AGORA",icon:"manage_accounts",color:"red",category:"SETUP"}}
 function fetchNotifications(){return hasRegisteredUsers()?[]:[getSetupNotification()]}
 function getNotificationCount(){return fetchNotifications().length}
-function generateFormHTML(gIdSequence,initialData={}){
+function generateFormHTML(gIdSequence,initialData={}, showHeaders=true){
 let formHTML='';let currentSection='';
 const fields=gIdSequence.map(gId=>DATA_FIELDS_SET.find(f=>f.gId===gId)).filter(f=>f&&f.details.isForm);
 fields.forEach(field=>{
 const details=field.details;
 const currentValue=initialData[field.key]!==undefined?initialData[field.key]:(details.exampleValue||'');
 const inputType=field.type;
-const placeholder=details.placeholder;
+const placeholder=details.placeholder||'';
 const requiredAttr=details.required?'required':'';
 let sectionHeader='';
-if(details.formSection&&details.formSection!==currentSection){currentSection=details.formSection;sectionHeader=`<h3 class="text-lg font-bold text-blue-700 border-b border-blue-200 pb-1 mt-4">${currentSection}</h3>`}
+if(showHeaders && details.formSection&&details.formSection!==currentSection){
+currentSection=details.formSection;
+sectionHeader=`<h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-6 mb-2 ml-1">${currentSection}</h3>`
+}
 const inputClasses=STYLE_MAP['STY-FOR-002'];
 let inputField;
-if(inputType==='textarea')inputField=`<textarea id="${field.gId}" name="${field.key}" placeholder="${placeholder}" ${requiredAttr} rows="4" class="${inputClasses}">${currentValue}</textarea>`;
+if(inputType==='textarea')inputField=`<textarea id="${field.gId}" name="${field.key}" placeholder="${placeholder}" ${requiredAttr} rows="3" class="${inputClasses}">${currentValue}</textarea>`;
+else if(inputType==='select'){
+const optionsHTML=(details.options||[]).map(opt=>`<option value="${opt}" ${opt===currentValue?'selected':''}>${opt}</option>`).join('');
+inputField=`<select id="${field.gId}" name="${field.key}" ${requiredAttr} class="${inputClasses} bg-white cursor-pointer"><option value="" disabled ${!currentValue?'selected':''}>Selecione...</option>${optionsHTML}</select>`
+}
 else{const displayValue=(inputType==='number'||inputType==='date')?currentValue:currentValue;inputField=`<input type="${inputType}" id="${field.gId}" name="${field.key}" placeholder="${placeholder}" value="${displayValue}" ${requiredAttr} class="${inputClasses}" />`}
-formHTML+=`${sectionHeader}<div class="space-y-1 p-0 mt-3"><label for="${field.gId}" class="block text-sm font-medium text-gray-700">${details.label} ${details.required?'<span class="text-red-500">*</span>':''}</label>${inputField}<span class="text-xs text-gray-500 block pt-1"><span class="font-semibold">ID Global:</span> ${field.gId} / <span class="font-semibold">Chave:</span> ${field.key}<span class="font-semibold">Categoria:</span> ${field.category}</span></div>`
+formHTML+=`${sectionHeader}<div class="mb-3"><label for="${field.gId}" class="block text-sm font-medium text-gray-700 mb-1 ml-1">${details.label} ${details.required?'<span class="text-red-500">*</span>':''}</label>${inputField}</div>`
 });
 return formHTML
 }
@@ -165,12 +209,167 @@ const buttonsHTML=filteredTools.map(t=>createToolButtonHTML(t,tool.key)).join(''
 const contentHTML=`<div id="tool-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-auto">${buttonsHTML}</div>`;
 return{title,contentHTML}
 }
+
+// ================= CHART HELPERS =================
+function getCategoryColor(category){
+    const colors = {
+        'Alimentação': '#f97316', // orange-500
+        'Moradia': '#3b82f6', // blue-500
+        'Transporte': '#64748b', // slate-500
+        'Saúde': '#ef4444', // red-500
+        'Lazer': '#eab308', // yellow-500
+        'Educação': '#a855f7', // purple-500
+        'Assinaturas': '#6366f1', // indigo-500
+        'Outros': '#22c55e' // green-500
+    };
+    return colors[category] || '#9ca3af';
+}
+
 async function getListView(tool){
 const destination=tool.key;
 const title=tool.details.title;
 let listContentHTML='';let messageHTML='';
 const mainWrapperClasses=STYLE_MAP['MAIN_WRAPPER'];
-if(destination==='user_list'){
+if(destination==='expense_statement'){ 
+    // === FILTERING LOGIC ===
+    let filteredTransactions = TEMP_TRANSACTIONS;
+
+    if(FINANCE_FILTERS.startDate) {
+        filteredTransactions = filteredTransactions.filter(t => t.expenseDate >= FINANCE_FILTERS.startDate);
+    }
+    if(FINANCE_FILTERS.endDate) {
+        filteredTransactions = filteredTransactions.filter(t => t.expenseDate <= FINANCE_FILTERS.endDate);
+    }
+    if(FINANCE_FILTERS.category) {
+        filteredTransactions = filteredTransactions.filter(t => t.expenseCategory === FINANCE_FILTERS.category);
+    }
+
+    // === DATA PROCESSING ===
+    const total = filteredTransactions.reduce((acc, curr) => acc + parseFloat(curr.expenseValue), 0);
+    const categoryStats = {};
+    filteredTransactions.forEach(item => {
+        const val = parseFloat(item.expenseValue);
+        categoryStats[item.expenseCategory] = (categoryStats[item.expenseCategory] || 0) + val;
+    });
+
+    let topCategory = '-';
+    let topValue = 0;
+    Object.entries(categoryStats).forEach(([cat, val]) => {
+        if(val > topValue) { topValue = val; topCategory = cat; }
+    });
+
+    // === HTML COMPONENTS ===
+
+    // 1. FILTERS HTML
+    const availableCategories = ['Alimentação','Moradia','Transporte','Saúde','Lazer','Educação','Assinaturas','Outros'];
+    const categoryOptions = availableCategories.map(c => `<option value="${c}" ${FINANCE_FILTERS.category === c ? 'selected' : ''}>${c}</option>`).join('');
+
+    const filtersHTML = `
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">filter_alt</span> Filtros
+                </h4>
+                <button id="btn-clear-filters" class="text-xs text-blue-600 font-semibold hover:underline">Limpar</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1 font-medium">De</label>
+                    <input type="date" id="filter-start-date" class="w-full text-sm border border-gray-300 rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-200 outline-none" value="${FINANCE_FILTERS.startDate}">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1 font-medium">Até</label>
+                    <input type="date" id="filter-end-date" class="w-full text-sm border border-gray-300 rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-200 outline-none" value="${FINANCE_FILTERS.endDate}">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs text-gray-500 block mb-1 font-medium">Categoria</label>
+                <select id="filter-category" class="w-full text-sm border border-gray-300 rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-200 outline-none">
+                    <option value="">Todas as Categorias</option>
+                    ${categoryOptions}
+                </select>
+            </div>
+        </div>
+    `;
+
+    // 2. BAR CHART HTML
+    let chartHTML = '';
+    if(total > 0) {
+        const sortedCats = Object.entries(categoryStats).sort((a,b) => b[1] - a[1]);
+        const maxVal = sortedCats[0][1];
+        
+        const bars = sortedCats.map(([cat, val]) => {
+            const pct = (val / maxVal) * 100; // Relative to max value for visual scaling
+            const realPct = (val / total) * 100; // Real percentage of total
+            const color = getCategoryColor(cat);
+            return `
+                <div class="mb-3 last:mb-0">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="font-medium text-gray-700">${cat}</span>
+                        <span class="font-bold text-gray-900">R$ ${val.toFixed(2)} (${Math.round(realPct)}%)</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="h-2.5 rounded-full bar-fill" style="width: ${pct}%; background-color: ${color}"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        chartHTML = `
+            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm mb-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">bar_chart</span> Distribuição
+                </h3>
+                <div class="space-y-1">
+                    ${bars}
+                </div>
+            </div>
+        `;
+    } else {
+        chartHTML = `<div class="text-center py-6 bg-white rounded-xl border border-gray-100 mb-6"><p class="text-gray-400 text-sm">Sem dados para exibir no gráfico.</p></div>`;
+    }
+
+    // 3. LIST HTML
+    let expensesListHTML = '';
+    if(filteredTransactions.length === 0){
+        const emptyMsg = TEMP_TRANSACTIONS.length > 0 ? "Nenhum registro encontrado com estes filtros." : "Nenhum registro encontrado nesta sessão.";
+        expensesListHTML = `<div class="text-center py-12 bg-white rounded-lg border border-gray-200 border-dashed"><span class="material-symbols-outlined text-4xl text-gray-300">receipt_long</span><p class="text-gray-500 mt-2 text-sm">${emptyMsg}</p></div>`;
+    } else {
+        const items = [...filteredTransactions].reverse().map(item => {
+             const catColor = getCategoryColor(item.expenseCategory);
+             return `<div class="flex justify-between items-center p-4 bg-white border-l-4 border-gray-100 rounded-r-lg shadow-sm mb-2" style="border-left-color: ${catColor}">
+                <div class="flex flex-col"><span class="font-bold text-gray-800">${item.expenseTitle}</span><span class="text-xs text-gray-500">${item.expenseDate} - ${item.expenseCategory}</span></div>
+                <span class="font-bold text-gray-800">- R$ ${parseFloat(item.expenseValue).toFixed(2)}</span>
+            </div>`
+        }).join('');
+        expensesListHTML = `<div class="space-y-1 mb-4 overflow-y-auto">${items}</div>`;
+    }
+
+    // 4. TOTALIZERS
+    const totalizersHTML = `
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-4 rounded-xl text-white shadow-lg">
+                <p class="text-xs font-medium opacity-80 mb-1">Total Filtrado</p>
+                <p class="text-xl font-bold">R$ ${total.toFixed(2)}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-xs font-medium text-gray-500 mb-1">Maior Gasto</p>
+                <p class="text-sm font-bold text-gray-800 truncate">${topCategory}</p>
+                <p class="text-xs text-gray-400 mt-1">R$ ${topValue.toFixed(2)}</p>
+            </div>
+        </div>
+    `;
+
+    // CHANGED: Removed the main wrapper card logic for a cleaner UI
+    listContentHTML = `<div class="w-full space-y-4">
+        ${filtersHTML}
+        ${totalizersHTML}
+        ${chartHTML}
+        <h3 class="text-lg font-bold text-gray-800 pb-1 mt-4 px-1">Histórico (${filteredTransactions.length})</h3>
+        ${expensesListHTML}
+    </div>`;
+}
+else if(destination==='user_list'){
 const isInitialSetup=!hasRegisteredUsers();
 if(isInitialSetup){
 const editTool=VIEWS_SET.find(t=>t.key==='render_form:MAIN_USER_FORM');
@@ -210,7 +409,7 @@ if(notifications.length===0)listContentHTML=`<div class="p-8 text-center text-gr
 else listContentHTML=`<div class="space-y-4 p-0 max-w-4xl mx-auto">${notifications.map(notif=>`<button data-notif-id="${notif.id}" class="notification-item-button w-full flex items-center space-x-4 p-4 text-left bg-white rounded-xl shadow-lg hover:bg-gray-100 transition duration-150 border-l-4 border-${notif.color}-500"><span class="material-symbols-outlined text-3xl text-${notif.color}-600">${notif.icon}</span><div class="flex-grow"><p class="font-bold text-gray-800">${notif.title}</p><p class="text-sm text-gray-600">${notif.message.substring(0,70)}...</p><p class="text-xs text-gray-400 mt-1">${notif.time}</p></div><span class="material-symbols-outlined text-gray-400">chevron_right</span></button>`).join('')}</div>`
 }
 else if(destination==='notif_config'){
-const dashboardCategories=VIEWS_SET.filter(t=>t.details.parent==='dashboard'&&t.type==='navigator');
+const dashboardCategories=VIEWS_SET.filter(t=>t.details.parent==='dashboard'&&t.type==='SUB_MENU');
 let groupItemsHTML='';
 dashboardCategories.forEach(t=>{
 const id=t.key;const isActive=notificationChannels[id]===true;
@@ -223,7 +422,7 @@ return{title,contentHTML}
 }
 async function getDynamicFormView(tool){
 const title=tool.details.title;const destination=tool.key;
-const listKey=destination.split(':')[1];
+const listKey=destination.split(':')[1] || destination; // Handle normal keys too
 const fieldIdSequence=tool.details.data?.form_data;
 if(!fieldIdSequence||fieldIdSequence.length===0)return{title:`Erro de Configuração`,contentHTML:`<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Sequência de campos (form_data) não definida na View para ${listKey}.</p></div>`};
 let initialData={};let formSourceMessage='';
@@ -232,6 +431,120 @@ const{data}=getUserData();
 initialData=hasRegisteredUsers()?MAIN_USER_DETAIL_DATA:data;
 const buttonText=hasRegisteredUsers()?"Edição":"Cadastro Inicial";
 formSourceMessage=`<div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-sm text-center mb-4 border border-blue-200"><p>Modo: ${buttonText}. O formulário é gerado dinamicamente a partir da estrutura de metadados (DATA_FIELDS_SET).</p></div>`
+}
+else if(listKey==='PERSONAL_EXPENSE_FORM'){
+    formSourceMessage = ''; 
+    DATA_FIELDS_SET.filter(field=>field.details.listKey===listKey).forEach(field=>{initialData[field.key]=''}); 
+
+    // USE FORM_EDIT_BUFFER if available (for editing logic)
+    if(FORM_EDIT_BUFFER) {
+        initialData = FORM_EDIT_BUFFER;
+    }
+
+    // === UNIFIED VIEW: FORM + LIST ===
+    // 1. Render List at the bottom
+    let expenseListHTML = '';
+    if(TEMP_TRANSACTIONS.length === 0){
+        expenseListHTML = `<div class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200 border-dashed mt-6"><p class="text-gray-400 text-sm">Nenhuma despesa adicionada hoje.</p></div>`;
+    } else {
+        const items = [...TEMP_TRANSACTIONS].reverse().map(item => {
+            const isEditingThis = FORM_EDIT_BUFFER && FORM_EDIT_BUFFER.tempId === item.tempId;
+            const highlightClass = isEditingThis ? 'editing-highlight' : '';
+            return `<div onclick="handleExpenseClick(${item.tempId})" class="clickable-card flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm mb-2 fade-in-up cursor-pointer hover:bg-gray-50 transition-colors ${highlightClass}">
+                <div class="flex flex-col">
+                    <span class="font-bold text-gray-800">${item.expenseTitle}</span>
+                    <span class="text-xs text-gray-500">${item.expenseDate} - ${item.expenseCategory}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="font-bold text-red-600 mr-2">- R$ ${parseFloat(item.expenseValue).toFixed(2)}</span>
+                    <span class="material-symbols-outlined text-gray-400 text-sm">more_vert</span>
+                </div>
+            </div>`;
+        }).join('');
+        expenseListHTML = `<div class="mt-8 border-t border-gray-200 pt-4"><h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Lançamentos Recentes</h3><div class="max-h-80 overflow-y-auto space-y-2">${items}</div></div>`;
+    }
+
+    // 2. Render Form
+    const formFieldsHTML=generateFormHTML(fieldIdSequence,initialData, false);
+    
+    // Logic for Buttons
+    let buttonsHTML = '';
+    if (IS_EDITING) {
+        buttonsHTML = `
+            <div class="flex gap-3">
+                <button type="button" onclick="cancelEdit()" class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-4 rounded-xl transition duration-300">Cancelar</button>
+                <button type="submit" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition duration-300 shadow-lg">Salvar Alterações</button>
+            </div>
+        `;
+        formSourceMessage = `<div class="p-2 bg-blue-50 text-blue-700 text-xs font-bold text-center rounded mb-2 border border-blue-100">EDITANDO ITEM</div>`;
+    } else {
+        buttonsHTML = `<button type="submit" class="${STYLE_MAP['SUBMIT_BUTTON']}">Adicionar Despesa</button>`;
+    }
+
+    const contentHTML=`
+        <div class="p-4 sm:p-6 bg-white rounded-xl shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-xl font-bold text-gray-800">${IS_EDITING ? 'Editar Despesa' : 'Nova Despesa'}</p>
+                <button onclick="renderView('finance')" class="text-xs font-semibold text-blue-600 hover:underline">Voltar ao Menu</button>
+            </div>
+            ${formSourceMessage}
+            <form id="dynamic-form-${listKey}" class="space-y-4 fade-in-up">
+                ${formFieldsHTML}
+                ${buttonsHTML}
+            </form>
+            ${expenseListHTML}
+        </div>
+    `;
+    return {title: title, contentHTML};
+}
+else if(tool.type === 'RECURRING_MANAGER') {
+    // === RECURRING EXPENSES MANAGER (MINIMAL SPREADSHEET MODE) ===
+    
+    // 1. Build Spreadsheet Table Body
+    const rows = RECURRING_TEMPLATES.map((item, index) => {
+        const cats = ['Alimentação','Moradia','Transporte','Saúde','Lazer','Educação','Assinaturas','Outros'];
+        const catOptions = cats.map(c => `<option value="${c}" ${c===item.expenseCategory?'selected':''}>${c}</option>`).join('');
+        
+        return `<tr class="sheet-row">
+            <td><input type="text" class="sheet-input" value="${item.expenseTitle}" onchange="updateRecurringTemplate(${index}, 'expenseTitle', this.value)"></td>
+            <td><input type="number" class="sheet-input" value="${item.expenseValue}" onchange="updateRecurringTemplate(${index}, 'expenseValue', this.value)"></td>
+            <td><input type="number" class="sheet-input" value="${item.dueDay}" onchange="updateRecurringTemplate(${index}, 'dueDay', this.value)"></td>
+            <td><select class="sheet-select" onchange="updateRecurringTemplate(${index}, 'expenseCategory', this.value)">${catOptions}</select></td>
+            <td class="text-center">
+                <button onclick="deleteRecurringTemplate(${index})" class="text-red-400 hover:text-red-600 p-2"><span class="material-symbols-outlined text-sm">close</span></button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    const contentHTML=`
+        <div class="w-full">
+            <table class="w-full text-left border-collapse sheet-table">
+                <thead>
+                    <tr class="border-b-2 border-gray-200">
+                        <th class="py-2 px-1 text-gray-500 font-semibold text-xs uppercase tracking-wider">Descrição</th>
+                        <th class="py-2 px-1 text-gray-500 font-semibold text-xs uppercase tracking-wider w-24">Valor</th>
+                        <th class="py-2 px-1 text-gray-500 font-semibold text-xs uppercase tracking-wider w-16">Dia</th>
+                        <th class="py-2 px-1 text-gray-500 font-semibold text-xs uppercase tracking-wider w-32">Categoria</th>
+                        <th class="w-8"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    ${rows}
+                </tbody>
+            </table>
+
+            <div class="flex items-center justify-between mt-4">
+                 <button onclick="addRecurringRow()" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 transition-colors p-2 rounded hover:bg-blue-50">
+                    <span class="material-symbols-outlined text-lg">add</span> Adicionar Item
+                </button>
+                <button onclick="processRecurringExpenses()" class="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-1 transition-colors p-2 rounded hover:bg-green-50">
+                    <span class="material-symbols-outlined text-lg">done_all</span> Lançar
+                </button>
+            </div>
+        </div>
+    `;
+    // Retornando título vazio para não renderizar o H2 no container padrão
+    return {title: '', contentHTML};
 }
 else{
 let fallbackNeeded=false;
@@ -245,8 +558,18 @@ formSourceMessage=`<div class="p-3 bg-red-100 text-red-800 rounded-lg text-sm te
 }
 }
 const formFieldsHTML=generateFormHTML(fieldIdSequence,initialData);
-const contentHTML=`<div class="p-6 space-y-6"><p class="text-xl font-bold text-gray-800 text-center border-b border-gray-200 pb-2">${title}</p>${formSourceMessage}<form id="dynamic-form-${listKey}" class="space-y-4">${formFieldsHTML}<button type="submit" class="${STYLE_MAP['SUBMIT_BUTTON']}">Salvar Dados</button></form></div>`;
+const submitLabel = listKey==='PERSONAL_EXPENSE_FORM' ? "Adicionar Despesa" : "Salvar Dados";
+const contentHTML=`<div class="p-6 space-y-6"><p class="text-2xl font-bold text-gray-800 pb-2">${title}</p>${formSourceMessage}<form id="dynamic-form-${listKey}" class="space-y-4">${formFieldsHTML}<button type="submit" class="${STYLE_MAP['SUBMIT_BUTTON']}">${submitLabel}</button></form></div>`;
 return{title:title,contentHTML}
+}
+function renderDynamicComponents(components){
+const {data}=getUserData();
+return components.map(c=>{
+if(c.t==='h') return `<div class="text-center pb-4 border-b border-gray-200"><span class="material-symbols-outlined text-7xl text-blue-600 mx-auto mb-2">${data.icon}</span><p class="text-2xl font-bold">${data.name}</p><p class="text-md text-gray-600">${data.role}</p></div>`;
+if(c.t==='r') return `<div class="flex justify-between items-center py-2 border-b border-gray-100"><span class="font-semibold text-sm text-gray-600">${c.l}:</span><span class="text-sm font-medium text-gray-800">${data[c.k]||'-'}</span></div>`;
+if(c.t==='b') return `<button onclick="renderView('${c.a}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300 mt-6 shadow-md">${c.l}</button>`;
+return '';
+}).join('');
 }
 function getDetailOrFormView(tool){
 const destination=tool.key;
@@ -258,13 +581,103 @@ const isSetupRequired=(notif.id===999);
 const detailContent=`<div class="p-6 sm:p-10 space-y-6 border-t-8 border-${notif.color}-500 transition duration-300"><div class="flex justify-between items-center pb-4 border-b border-gray-100"><h1 class="text-2xl font-extrabold text-${notif.color}-700">${notif.title}</h1><span class="text-xs font-semibold text-gray-500 uppercase">${notif.category}</span></div><div class="text-gray-800 space-y-4"><p class="text-lg leading-relaxed whitespace-pre-wrap">${notif.message}</p><p class="text-sm text-gray-500">Recebido: ${notif.time}</p></div>${isSetupRequired?`<div class="border-t border-red-300 pt-4 mt-6"><p class="text-sm font-semibold text-red-600 mb-3">PRÓXIMOS PASSOS OBRIGATÓRIOS:</p><button onclick="renderView('users')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center"><span class="material-symbols-outlined mr-2">person_add</span> Acessar Painel de Usuários para Cadastro</button></div>`:''}</div>`;
 return{title:'Detalhes da Notificação',contentHTML:detailContent}
 }
-else if(destination===ROUTE_USER_PROFILE)return getCurrentUserProfileView();
+else if(destination===ROUTE_USER_PROFILE){
+const components=tool.details.data.detail_data;
+const contentHTML=`<div class="p-6 sm:p-8 rounded-xl space-y-4">${renderDynamicComponents(components)}</div>`;
+return {title: tool.details.title, contentHTML};
+}
 else if(destination==='new_user_register_form')return getNewUserRegistrationFormContent(tool);
 else return getSimulatedContent(tool)
 }
 function goBackInHistory(){const previousViewId=navigationHistory.pop();previousViewId?renderView(previousViewId,true):renderView('welcome')}
+function syncExpenses(){
+    if(TEMP_TRANSACTIONS.length > 0){
+        console.log(`[SYNC] Sincronizando ${TEMP_TRANSACTIONS.length} despesas com o servidor...`);
+        showCustomMessage(`Backup Realizado! ${TEMP_TRANSACTIONS.length} novas despesas foram salvas no servidor com sucesso.`);
+    }
+}
+// Função Auxiliar para reiniciar o input de despesa
+function triggerNewExpenseInput(){
+    FORM_EDIT_BUFFER = null; 
+    IS_EDITING = false;
+    renderView('render_form:PERSONAL_EXPENSE_FORM');
+}
+
+function cancelEdit(){
+    triggerNewExpenseInput();
+}
+
+// === NEW EXCEL-STYLE FUNCTIONS ===
+
+function updateRecurringTemplate(index, field, value) {
+    if (RECURRING_TEMPLATES[index]) {
+        RECURRING_TEMPLATES[index][field] = value;
+        // Optional: Show subtle toast or save indicator? For now, silent save.
+        console.log(`Updated [${index}] ${field} to ${value}`);
+    }
+}
+
+function addRecurringRow() {
+    RECURRING_TEMPLATES.push({
+        id: Date.now(),
+        expenseTitle: '',
+        expenseValue: '',
+        dueDay: '',
+        expenseCategory: 'Outros'
+    });
+    renderView('recurring_expenses');
+}
+
+function deleteRecurringTemplate(index){
+    RECURRING_TEMPLATES.splice(index, 1);
+    renderView('recurring_expenses');
+}
+
+function processRecurringExpenses(){
+    if(RECURRING_TEMPLATES.length === 0) {
+        showCustomMessage("Nenhum modelo para processar.");
+        return;
+    }
+    
+    // Check for valid data
+    const invalidItems = RECURRING_TEMPLATES.filter(i => !i.expenseTitle || !i.expenseValue);
+    if(invalidItems.length > 0) {
+        showCustomMessage("Atenção: Preencha a Descrição e Valor de todas as linhas antes de lançar.");
+        return;
+    }
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    let count = 0;
+    RECURRING_TEMPLATES.forEach(template => {
+        const day = (template.dueDay || 1).toString().padStart(2, '0');
+        const month = currentMonth.toString().padStart(2, '0');
+        const generatedDate = `${currentYear}-${month}-${day}`;
+        
+        TEMP_TRANSACTIONS.push({
+            tempId: Date.now() + Math.random(),
+            expenseTitle: template.expenseTitle,
+            expenseValue: parseFloat(template.expenseValue) || 0,
+            expenseCategory: template.expenseCategory,
+            expenseDate: generatedDate
+        });
+        count++;
+    });
+    
+    showCustomMessage(`${count} despesas foram geradas para ${currentMonth}/${currentYear}! Confira no Extrato.`);
+    renderView('expense_statement');
+}
+
 async function renderView(newViewId,isBack=false,errorDetails=null){
 if(newViewId===ROUTE_ERROR_CONNECTION&&errorDetails)return;
+// Lógica de Sync ao sair do módulo financeiro
+if((currentViewId==='finance'||currentViewId==='render_form:PERSONAL_EXPENSE_FORM'||currentViewId==='expense_statement') && 
+   (newViewId !== 'finance' && newViewId !== 'render_form:PERSONAL_EXPENSE_FORM' && newViewId !== 'expense_statement')){
+    syncExpenses();
+}
+
 if(!isBack&&currentViewId!==newViewId){
 if(currentViewId!=='welcome'&&currentViewId!=='initial_welcome')navigationHistory.push(currentViewId);
 else if(currentViewId==='welcome')navigationHistory.push(currentViewId)
@@ -274,11 +687,15 @@ let viewHTML='';let viewData=null;let isDetailOrForm=false;
 let currentTool=VIEWS_SET.find(tool=>tool.key===newViewId);
 if(newViewId==='initial_welcome')viewHTML=getWelcomeView();
 else if(currentTool){
-const panelType=currentTool.type;
-if(panelType==='navigator'){isDetailOrForm=false;viewData=getNavigationView(currentTool)}
-else if(panelType==='list'){isDetailOrForm=false;viewData=await getListView(currentTool)}
-else if(panelType==='form-dynamic'){isDetailOrForm=true;viewData=await getDynamicFormView(currentTool)}
-else if(panelType==='detail'||panelType==='form'||panelType==='form-user-new'){isDetailOrForm=true;viewData=getDetailOrFormView(currentTool)}
+const cat=currentTool.category;const typ=currentTool.type;
+if(cat==='Navegador'){isDetailOrForm=false;viewData=getNavigationView(currentTool)}
+else if(cat==='Lista'){isDetailOrForm=false;viewData=await getListView(currentTool)} 
+else if(cat==='Formulário'){
+    if(typ==='DYNAMIC_FORM'||typ==='DYNAMIC_EDIT'){isDetailOrForm=true;viewData=await getDynamicFormView(currentTool)}
+    else if(typ==='RECURRING_MANAGER'){isDetailOrForm=true;viewData=await getDynamicFormView(currentTool)}
+    else{isDetailOrForm=true;viewData=getDetailOrFormView(currentTool)}
+}
+else if(cat==='Detalhe'){isDetailOrForm=true;viewData=getDetailOrFormView(currentTool)}
 }
 else if(newViewId.startsWith('user_detail_')||newViewId.startsWith('connection_detail_')||newViewId.startsWith('notification_detail_')){
 isDetailOrForm=true;
@@ -292,30 +709,35 @@ else viewHTML=get404View(newViewId)
 appRoot.innerHTML=viewHTML;
 attachListeners()
 }
+
 function getFloatingBackButtonHTML(){
-if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
-const buttonClasses=STYLE_MAP['BACK_BUTTON'];
-return`<button id="top-back-button" class="${buttonClasses}"><span class="material-symbols-outlined text-2xl" title="Voltar">chevron_left</span></button>`
+    if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
+    const buttonClasses=STYLE_MAP['BACK_BUTTON'];
+    return`<button id="top-back-button" class="${buttonClasses}"><span class="material-symbols-outlined text-2xl" title="Voltar">chevron_left</span></button>`
 }
+
 function getFloatingNotificationButtonHTML(){
-if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
-const notificationCount=getNotificationCount();
-let badgeHTML='';let iconClass='text-gray-700';
-const buttonClasses=STYLE_MAP['NOTIFICATION_BUTTON'];const badgeClasses=STYLE_MAP['NOTIFICATION_BADGE'];
-if(notificationCount>0){badgeHTML=`<div class="${badgeClasses}">${notificationCount}</div>`;iconClass='text-red-600'}
-return`<button id="top-notification-button" class="${buttonClasses}">${badgeHTML}<span class="material-symbols-outlined text-2xl ${iconClass}" title="Notificações">notifications</span></button>`
+    if(currentViewId==='welcome'||currentViewId==='initial_welcome')return'';
+    const notificationCount=getNotificationCount();
+    let badgeHTML='';let iconClass='text-gray-700';
+    const buttonClasses=STYLE_MAP['NOTIFICATION_BUTTON'];const badgeClasses=STYLE_MAP['NOTIFICATION_BADGE'];
+    if(notificationCount>0){badgeHTML=`<div class="${badgeClasses}">${notificationCount}</div>`;iconClass='text-red-600'}
+    return`<button id="top-notification-button" class="${buttonClasses}">${badgeHTML}<span class="material-symbols-outlined text-2xl ${iconClass}" title="Notificações">notifications</span></button>`
 }
-function showCustomMessage(message){
-const messageBox=document.createElement('div');
-messageBox.className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-55 p-4';
-messageBox.innerHTML=`<div class="bg-white p-6 rounded-lg shadow-2xl text-center max-w-xs"><p class="text-gray-800 font-semibold mb-4">${message}</p><button id="close-msg" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300">Entendido</button></div>`;
-document.body.appendChild(messageBox);
-document.getElementById('close-msg').addEventListener('click',()=>{document.body.removeChild(messageBox)})
-}
+
 function get404View(viewId){
 const topBackButtonHTML=getFloatingBackButtonHTML();const topNotificationButtonHTML=getFloatingNotificationButtonHTML();
 return`${topBackButtonHTML}${topNotificationButtonHTML}<div class="min-h-screen p-4 pb-24 pt-16 flex items-center justify-center"> <div class="max-w-md w-full text-center bg-white p-8 rounded-xl shadow-2xl border border-red-200"><span class="material-symbols-outlined text-9xl text-red-500 mb-4 mx-auto">cloud_off</span><h2 class="text-4xl font-extrabold text-red-700 mb-2">ERRO 404</h2><p class="text-gray-700 mb-4 font-semibold">Conteúdo não encontrado ou em fase de implantação.</p><p class="text-sm text-gray-500 break-words">A rota '${viewId}' não está mapeada para uma view implementada.</p><button id="nav-to-toolbox" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300">Voltar ao Menu Principal</button></div></div>`
 }
+
+function showCustomMessage(message){
+const messageBox=document.createElement('div');
+messageBox.className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-55 p-4 fade-in-up';
+messageBox.innerHTML=`<div class="bg-white p-6 rounded-lg shadow-2xl text-center max-w-xs"><p class="text-gray-800 font-semibold mb-4">${message}</p><button id="close-msg" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300">Entendido</button></div>`;
+document.body.appendChild(messageBox);
+document.getElementById('close-msg').addEventListener('click',()=>{document.body.removeChild(messageBox)})
+}
+
 function getSimulatedContent(tool){
 const filePath=tool.details.filePath;let fileContent=null;let fileTitle=tool.details.title;
 if(!filePath)return{title:`ERRO DE DADOS`,contentHTML:`<div class="p-6 text-center"><p class="text-red-500 font-semibold mb-2">Caminho do arquivo não definido (filePath).</p></div>`};
@@ -330,17 +752,39 @@ const connectionId=parseInt(filePath.split('_')[2]);fileTitle=`Detalhes da Conex
 else{fileTitle=`Módulo: ${tool.details.title}`;fileContent=`<div class="p-8 text-center bg-gray-50 rounded-xl border border-gray-200 space-y-4"><span class="material-symbols-outlined text-6xl text-orange-500 mx-auto">construction</span><p class="text-lg font-bold text-gray-800">Módulo em Desenvolvimento</p><p class="text-sm text-gray-600">O conteúdo para a ferramenta "${tool.details.title}" está em fase de implantação (Path: ${filePath}).</p></div>`}
 return{title:fileTitle,contentHTML:fileContent}
 }
+
 function renderStandardView(title,contentHTML,isDetailOrForm,currentTool){
-const topBackButtonHTML=getFloatingBackButtonHTML();const topNotificationButtonHTML=getFloatingNotificationButtonHTML();
-const maxWidthClass=isDetailOrForm?'max-w-lg':'max-w-4xl';let finalContent=contentHTML;
-if(isDetailOrForm){const wrapperClasses=STYLE_MAP['MAIN_WRAPPER'];finalContent=`<div class="${wrapperClasses}">${contentHTML}</div>`}
-return`${topBackButtonHTML}${topNotificationButtonHTML}<div class="min-h-screen p-4 pb-24 pt-16 ${maxWidthClass} mx-auto"><h2 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">${title}</h2>${finalContent}</div>`
+    // REINSERIDO: Garante que as funções de botão flutuante existam e sejam chamadas
+    let topBackButtonHTML = getFloatingBackButtonHTML();
+    const topNotificationButtonHTML = getFloatingNotificationButtonHTML();
+    
+    // Condicional específica: Ocultar botão de voltar na tela de Despesas Recorrentes (clean mode)
+    if(currentTool && currentTool.key === 'recurring_expenses') {
+        topBackButtonHTML = '';
+    }
+
+    const maxWidthClass=isDetailOrForm?'max-w-lg':'max-w-4xl';let finalContent=contentHTML;
+
+    if(isDetailOrForm){
+        let wrapperClasses = STYLE_MAP['MAIN_WRAPPER'];
+        // SPECIAL CONDITION: TRANSPARENT EXPENSE FORM AND RECURRING TABLE
+        if(currentTool && (currentTool.key === 'render_form:PERSONAL_EXPENSE_FORM' || currentTool.key === 'recurring_expenses')) {
+            wrapperClasses = "w-full space-y-4";
+        }
+        finalContent=`<div class="${wrapperClasses}">${contentHTML}</div>`;
+    }
+
+    // CONDITIONAL TITLE RENDERING: If title is empty, don't show the H2 tag
+    const titleHTML = title ? `<h2 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">${title}</h2>` : '';
+
+    return`${topBackButtonHTML}${topNotificationButtonHTML}<div class="min-h-screen p-4 pb-24 pt-16 ${maxWidthClass} mx-auto">${titleHTML}${finalContent}</div>`
 }
+
 function getWelcomeView(){return`<div class="min-h-screen flex flex-col items-center justify-center p-4"><div class="bg-white p-8 sm:p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition duration-500 hover:scale-[1.02]"><span class="material-symbols-outlined text-6xl text-blue-600 mb-4 mx-auto">rocket_launch</span><h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-Vindo!</h1><p class="text-gray-500 mb-6">Seja bem-vindo(a)! Escolha uma opção para continuar.</p><div class="space-y-3 mb-6"><button id="login-button" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition duration-300">Login (Em Breve)</button><button id="register-button" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition duration-300">Cadastrar (Em Breve)</button></div><div class="h-px bg-gray-200 w-full mb-6"></div><button id="access-demo-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">Acessar Demo (Menu Principal)</button></div></div>`}
 function createToolButtonHTML(tool,currentViewKey){
 let notificationBadge='';
 if(tool.key==='notifications'){const count=getNotificationCount();const badgeClasses=STYLE_MAP['NOTIFICATION_BADGE'];if(count>0)notificationBadge=`<div class="${badgeClasses}">${count}</div>`}
-const actionText=tool.type==='navigator'?'Selecionar':'Abrir';const panelTypeLabel=tool.type?tool.type.toUpperCase():'N/A';
+const actionText=tool.type==='SUB_MENU'?'Selecionar':'Abrir';const panelTypeLabel=tool.type?tool.type.toUpperCase():'N/A';
 const destinationStyles=DESTINATION_STYLE_MAP[currentViewKey]||{};
 const buttonBase=STYLE_MAP['DEFAULT_BUTTON_BASE'];const buttonClasses=destinationStyles.BUTTON_STYLE||STYLE_MAP['DEFAULT_BUTTON_STYLE'];const iconColorClasses=destinationStyles.ICON_CLASSES||STYLE_MAP['DEFAULT_ICON_COLOR'];
 return`<button data-tool-destination="${tool.key}" class="${buttonBase} ${buttonClasses}">${notificationBadge}<span class="material-symbols-outlined text-4xl ${iconColorClasses} mb-2">${tool.details.icon}</span><span class="text-lg font-bold text-gray-800 text-center">${tool.details.title}</span><span class="text-xs text-blue-500 mt-1 uppercase tracking-wider">${panelTypeLabel} (${actionText})</span></button>`
@@ -353,22 +797,6 @@ return`<button data-tool-destination="${connection.destination}" class="connecti
 function createUserGridButtonHTML(user){
 const panelTypeLabel='DETAIL';
 return`<button data-tool-id="user_detail_${user.id}" class="user-list-button w-full h-36 relative flex flex-col items-center justify-center bg-white rounded-xl border border-gray-200 shadow-md transition duration-300 ease-in-out hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg focus:ring-4 focus:ring-blue-300 focus:outline-none p-3 cursor-pointer text-center"><span class="material-symbols-outlined text-4xl text-blue-600 mb-2">${user.icon}</span><span class="text-md font-bold text-gray-800 truncate w-full px-1">${user.name}</span><span class="text-xs text-gray-500 mt-0.5">ID Interno: ${user.id}</span><span class="text-xs text-blue-500 mt-0.5 uppercase tracking-wider">${panelTypeLabel} (ABRIR)</span></button>`
-}
-function getCurrentUserProfileView(){
-const{data,isFictional}=getUserData();
-const title=isFictional?'Perfil Fictício (Modelo)':`Detalhes de ${data.fullName||data.name}`;
-const profileStyles=DESTINATION_STYLE_MAP[ROUTE_USER_PROFILE]||{};const cardClass=profileStyles.CARD_CLASS||STYLE_MAP['MAIN_WRAPPER'];const iconColorClass=isFictional?'text-gray-500':STYLE_MAP['DEFAULT_ICON_COLOR'];const headerColorClass='text-gray-800';const dividerClass='border-gray-200';const submitButtonClass=STYLE_MAP['SUBMIT_BUTTON'];
-let detailItemsHTML='';let currentSection='';
-const profileFields=DATA_FIELDS_SET.filter(field=>field.details.listKey==='MAIN_USER_FORM');
-profileFields.forEach(field=>{
-const details=field.details;const value=data[field.key]||'(Não Informado)';let sectionHeader='';
-if(details.formSection&&details.formSection!==currentSection){currentSection=details.formSection;sectionHeader=`<h3 class="text-lg font-bold ${headerColorClass} border-b ${dividerClass} pb-1 mt-6">${currentSection}</h3>`}
-detailItemsHTML+=`${sectionHeader}<div class="flex justify-between items-center py-2 border-b border-gray-100"><span class="font-semibold text-sm text-gray-600">${details.label}:</span><span class="text-sm ${value==='(Não Informado)'?'italic text-gray-400':'font-medium text-gray-800'}">${value}</span></div>`
-});
-const editTool=VIEWS_SET.find(t=>t.key==='render_form:MAIN_USER_FORM');
-const registerButton=isFictional?`<div class="mt-8 pt-4 border-t border-red-300"><p class="text-sm font-semibold text-red-600 mb-3 text-center">Modo de demonstração: Cadastre para ativar o perfil real.</p><button onclick="renderView('${editTool.key}')" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition duration-300 flex items-center justify-center shadow-lg"><span class="material-symbols-outlined mr-2">person_add</span> Cadastrar Dados Reais</button></div>`:`<button onclick="renderView('${editTool.key}')" class="${submitButtonClass} w-full bg-indigo-600 hover:bg-indigo-700 mt-8"><span class="material-symbols-outlined mr-2">edit</span> Editar Meus Dados</button>`;
-const contentHTML=`<div class="p-6 sm:p-8 rounded-xl space-y-4"><div class="text-center pb-4 border-b ${dividerClass}"><span class="material-symbols-outlined text-7xl ${iconColorClass} mx-auto mb-2">${data.icon}</span><p class="text-2xl font-bold">${data.name}</p><p class="text-md text-gray-600">${data.role}</p><p class="text-xs text-gray-500 font-mono mt-2">ID Único: ${data.systemId||'(N/A)'}</p></div><div class="space-y-2">${detailItemsHTML}</div>${registerButton}</div>`;
-return{title,contentHTML}
 }
 function getNewUserRegistrationFormContent(tool){
 const fileTitle=tool.details.title;const submitButtonClass=STYLE_MAP['SUBMIT_BUTTON'];const inputClasses=STYLE_MAP['GENERIC_INPUT_CLASSES'];
@@ -386,9 +814,129 @@ const toolButtons=document.querySelectorAll('.tool-button');toolButtons.forEach(
 const connectionListButtons=document.querySelectorAll('.connection-list-button');connectionListButtons.forEach(button=>{button.addEventListener('click',(event)=>{const destination=event.currentTarget.getAttribute('data-tool-destination');renderView(destination)})});
 const userListButtons=document.querySelectorAll('.user-list-button');userListButtons.forEach(button=>{button.addEventListener('click',(event)=>{const destination=event.currentTarget.getAttribute('data-tool-id');renderView(destination)})});
 const newRegistrationForm=document.getElementById('new-user-registration-form');if(newRegistrationForm){newRegistrationForm.addEventListener('submit',function(e){e.preventDefault();const form=e.target;const name=form.querySelector('input[placeholder="Nome Completo"]').value||'Novo Usuário';const type=form.querySelector('select').value||'comum';const newId=(REGISTERED_USERS.length>0?Math.max(...REGISTERED_USERS.map(u=>u.id)):1000)+1;REGISTERED_USERS.push({id:newId,name:name,role:type==='admin'?'Administrador':(type==='professor'?'Professor':'Usuário Comum'),icon:type==='admin'?'badge':'person',email:name.toLowerCase().replace(/\s/g,'.')+'@app.com'});showCustomMessage(`Novo usuário "${name}" cadastrado com sucesso!`);renderView('user_list')})}
-const dynamicForms=document.querySelectorAll('form[id^="dynamic-form-"]');dynamicForms.forEach(form=>{form.addEventListener('submit',function(e){e.preventDefault();const listKey=e.target.id.split('-')[2];const formData=new FormData(e.target);const newDetails={};formData.forEach((value,key)=>{newDetails[key]=value});if(listKey==='MAIN_USER_FORM'){if(!hasRegisteredUsers()){const mainUserName=newDetails.fullName||'Usuário Principal';const systemIdValue=`USR-1001-${Math.random().toString(36).substring(2,6).toUpperCase()}`;REGISTERED_USERS.push({id:1001,name:mainUserName,systemId:systemIdValue,role:'Administrador',icon:'badge',email:mainUserName.toLowerCase().replace(/\s/g,'.')+'@app.com'});MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados e Usuário Principal registrados com sucesso! O sistema está ativo.');renderView('users')}else{MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados do usuário principal atualizados com sucesso!');renderView(ROUTE_USER_PROFILE,true)}}else{console.log(`Dados Coletados do Formulário Dinâmico (${listKey}):`,newDetails);showCustomMessage(`Dados do formulário de ${listKey} salvos com sucesso (Simulação): ${JSON.stringify(newDetails)}`)}})});
+const dynamicForms=document.querySelectorAll('form[id^="dynamic-form-"]');dynamicForms.forEach(form=>{form.addEventListener('submit',function(e){e.preventDefault();const listKey=e.target.id.split('-')[2] || e.target.id.split('-')[2]; // Robustness
+const formData=new FormData(e.target);const newDetails={};formData.forEach((value,key)=>{newDetails[key]=value});
+if(listKey==='MAIN_USER_FORM'){if(!hasRegisteredUsers()){const mainUserName=newDetails.fullName||'Usuário Principal';const systemIdValue=`USR-1001-${Math.random().toString(36).substring(2,6).toUpperCase()}`;REGISTERED_USERS.push({id:1001,name:mainUserName,systemId:systemIdValue,role:'Administrador',icon:'badge',email:mainUserName.toLowerCase().replace(/\s/g,'.')+'@app.com'});MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados e Usuário Principal registrados com sucesso! O sistema está ativo.');renderView('users')}else{MAIN_USER_DETAIL_DATA=newDetails;showCustomMessage('Dados do usuário principal atualizados com sucesso!');renderView(ROUTE_USER_PROFILE,true)}}
+else if(listKey==='PERSONAL_EXPENSE_FORM'){
+    // Lógica Específica para Adição de Despesa Pessoal (FLUXO UNIFICADO)
+    if (IS_EDITING && FORM_EDIT_BUFFER) {
+        // ATUALIZAÇÃO: Busca pelo ID original e substitui
+        const index = TEMP_TRANSACTIONS.findIndex(t => t.tempId === FORM_EDIT_BUFFER.tempId);
+        if (index > -1) {
+            TEMP_TRANSACTIONS[index] = { 
+                ...newDetails, 
+                tempId: FORM_EDIT_BUFFER.tempId 
+            };
+            showCustomMessage("Despesa atualizada com sucesso!");
+        }
+    } else {
+        // INSERÇÃO: Cria novo ID
+        const tempId = Date.now(); 
+        const expenseData = {
+            tempId: tempId,
+            ...newDetails
+        };
+        TEMP_TRANSACTIONS.push(expenseData);
+        showCustomMessage("Despesa adicionada com sucesso!");
+    }
+    
+    // Limpa estado de edição e recarrega a mesma tela (Single Page Management)
+    cancelEdit(); 
+}
+else if(listKey==='RECURRING_FORM'){
+    // Lógica Específica para Adição de Recorrência
+    RECURRING_TEMPLATES.push({
+        ...newDetails,
+        id: Date.now()
+    });
+    showCustomMessage("Modelo de recorrência salvo com sucesso!");
+    renderView('recurring_expenses');
+}
+else{console.log(`Dados Coletados do Formulário Dinâmico (${listKey}):`,newDetails);showCustomMessage(`Dados do formulário de ${listKey} salvos com sucesso (Simulação): ${JSON.stringify(newDetails)}`)}})});
 const notificationItemButtons=document.querySelectorAll('.notification-item-button');notificationItemButtons.forEach(button=>{button.addEventListener('click',(e)=>{const notifId=e.currentTarget.getAttribute('data-notif-id');renderView('notification_detail_'+notifId)})});
-const channelSwitches=document.querySelectorAll('.toggle-switch');channelSwitches.forEach(channelSwitch=>{channelSwitch.addEventListener('change',(e)=>{const channelId=e.target.getAttribute('data-channel');const newState=e.target.checked;notificationChannels[channelId]=newState;const status=newState?'ATIVADO':'DESATIVADO';const tool=VIEWS_SET.find(t=>t.key===channelId);const channelName=tool?tool.details.title:channelId;showCustomMessage(`Notificações para ${channelName} foram ${status}.`)})})}
+const channelSwitches=document.querySelectorAll('.toggle-switch');channelSwitches.forEach(channelSwitch=>{channelSwitch.addEventListener('change',(e)=>{const channelId=e.target.getAttribute('data-channel');const newState=e.target.checked;notificationChannels[channelId]=newState;const status=newState?'ATIVADO':'DESATIVADO';const tool=VIEWS_SET.find(t=>t.key===channelId);const channelName=tool?tool.details.title:channelId;showCustomMessage(`Notificações para ${channelName} foram ${status}.`)})});
+
+// Listeners dos Filtros (Novo)
+const filterStartDate = document.getElementById('filter-start-date');
+if(filterStartDate) filterStartDate.addEventListener('change', (e) => { FINANCE_FILTERS.startDate = e.target.value; renderView('expense_statement'); });
+const filterEndDate = document.getElementById('filter-end-date');
+if(filterEndDate) filterEndDate.addEventListener('change', (e) => { FINANCE_FILTERS.endDate = e.target.value; renderView('expense_statement'); });
+const filterCategory = document.getElementById('filter-category');
+if(filterCategory) filterCategory.addEventListener('change', (e) => { FINANCE_FILTERS.category = e.target.value; renderView('expense_statement'); });
+const clearFiltersBtn = document.getElementById('btn-clear-filters');
+if(clearFiltersBtn) clearFiltersBtn.addEventListener('click', () => { FINANCE_FILTERS = { startDate: '', endDate: '', category: '' }; renderView('expense_statement'); });
+
+// Funções para manipulação de despesas (Editar/Excluir) - REINSERIDO para corrigir o erro "handleExpenseClick is not defined"
+window.handleExpenseClick = function(tempId){
+    // Cria um Modal simples
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-60 flex items-end sm:items-center justify-center z-50 fade-in-up';
+    modal.innerHTML = `
+        <div class="bg-white w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6 pb-8 sm:pb-6 shadow-2xl">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Gerenciar Item</h3>
+            <p class="text-gray-500 text-sm mb-6">O que você deseja fazer com este registro?</p>
+            <div class="space-y-3">
+                <button id="btn-edit" class="w-full bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold py-3.5 rounded-xl border border-blue-200 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">edit</span> Editar Informações
+                </button>
+                <button id="btn-duplicate" class="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold py-3.5 rounded-xl border border-indigo-200 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">content_copy</span> Duplicar
+                </button>
+                <button id="btn-delete" class="w-full bg-red-50 text-red-700 hover:bg-red-100 font-bold py-3.5 rounded-xl border border-red-200 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">delete</span> Excluir Registro
+                </button>
+                <button id="btn-cancel" class="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold py-3.5 rounded-xl mt-2">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-edit').onclick = () => { document.body.removeChild(modal); editExpense(tempId); };
+    document.getElementById('btn-duplicate').onclick = () => { document.body.removeChild(modal); duplicateExpense(tempId); };
+    document.getElementById('btn-delete').onclick = () => { document.body.removeChild(modal); deleteExpense(tempId); };
+    document.getElementById('btn-cancel').onclick = () => { document.body.removeChild(modal); };
+}
+
+window.editExpense = function(tempId){
+    const item = TEMP_TRANSACTIONS.find(i => i.tempId === tempId);
+    if(item){
+        FORM_EDIT_BUFFER = {...item}; // Copia dados para o buffer
+        IS_EDITING = true;
+        renderView('render_form:PERSONAL_EXPENSE_FORM');
+        // Rolar suavemente para o topo do formulário
+        document.querySelector('h2')?.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+window.duplicateExpense = function(tempId){
+    const item = TEMP_TRANSACTIONS.find(i => i.tempId === tempId);
+    if(item){
+        FORM_EDIT_BUFFER = {...item, tempId: null}; // Copia dados mas sem ID (novo item)
+        IS_EDITING = false; // Não é edição, é criação baseada em cópia
+        renderView('render_form:PERSONAL_EXPENSE_FORM');
+        document.querySelector('h2')?.scrollIntoView({ behavior: 'smooth' });
+        showCustomMessage("Dados duplicados! Revise e clique em 'Adicionar'.");
+    }
+}
+
+window.deleteExpense = function(tempId){
+    const itemIndex = TEMP_TRANSACTIONS.findIndex(i => i.tempId === tempId);
+    if(itemIndex > -1){
+        TEMP_TRANSACTIONS.splice(itemIndex, 1);
+        // Se estivéssemos editando este item, cancela a edição
+        if (FORM_EDIT_BUFFER && FORM_EDIT_BUFFER.tempId === tempId) {
+            cancelEdit();
+        } else {
+            renderView('render_form:PERSONAL_EXPENSE_FORM'); 
+        }
+        showCustomMessage("Registro excluído.");
+    }
+}
+
+}
 renderView('initial_welcome')
 </script>
 </body>
