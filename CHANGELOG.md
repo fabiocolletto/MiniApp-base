@@ -18,6 +18,14 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.4.1] – Botão de instalação do OPP no Genoma
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Botão dedicado na tela inicial para disparar a instalação do pacote OPP (PWA) e instruções guiadas quando o prompt nativo não estiver disponível.
+
+---
+
 # 🧬 [V4.4.0] – Genoma reescrito para modelo App Família
 ### **Status: Atual (Genoma V4.4.0)**
 
