@@ -21,6 +21,9 @@
   <title>PWAO</title>
   <meta name="theme-color" content="#0f172a" />
 
+  <!-- Material Symbols (ícones do header) -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
   <style>
     * { box-sizing: border-box; }
 
@@ -36,6 +39,19 @@
     #app {
       min-height: 100vh;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* centraliza tudo horizontalmente */
+    }
+
+    /* Container central único para header, stage e footer */
+    .app-shell {
+      width: 100%;
+      max-width: 1200px; /* largura padrão desktop */
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
     header {
@@ -60,9 +76,33 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 14px;
-      padding: 8px 10px;
-      border-radius: 8px;
+      padding: 0;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .material-symbols-outlined {
+      font-size: 22px;
+      line-height: 1;
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
     }
 
     header button:active { transform: scale(0.96); }
@@ -71,14 +111,16 @@
 
     main#stage {
       padding: 24px;
-      max-width: 1200px;
-      margin: 0 auto;
+      /* largura agora vem exclusivamente do .app-shell */
+      width: 100%;
+      margin: 0;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
+      align-items: stretch; /* garante mesma altura visual */
     }
 
     @media (min-width: 768px) {
@@ -90,6 +132,7 @@
     }
 
     .card {
+      width: 100%; /* garante padronização em todas as telas */
       aspect-ratio: 1 / 1;
       padding: 16px;
       border-radius: 12px;
@@ -148,8 +191,29 @@
     }
 
     .tone-finance { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
+
+    /* Subtons Finanças */
+    .finance-income { background:#ecfdf5; border-color:#6ee7b7; color:#047857; }
+    .finance-expense { background:#fef2f2; border-color:#fca5a5; color:#b91c1c; }
+    .finance-report { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
     .tone-education { background:#fffbeb; color:#b45309; border-color:#fde68a; }
+
+    /* Subtons Educação */
+    .edu-study { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+    .edu-exam { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
+    .edu-task { background:#f0fdf4; border-color:#86efac; color:#166534; }
+    .edu-agenda { background:#fdf2f8; border-color:#fbcfe8; color:#9d174d; }
+    .edu-contest { background:#f5f3ff; border-color:#c4b5fd; color:#5b21b6; }
+    .edu-sim { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
     .tone-health { background:#ecfeff; color:#0f766e; border-color:#99f6e4; }
+
+    /* Subtons Saúde */
+    .health-record { background:#f0fdf4; border-color:#86efac; color:#166534; }
+    .health-appointment { background:#ecfeff; border-color:#67e8f9; color:#155e75; }
+    .health-meds { background:#fefce8; border-color:#fde68a; color:#854d0e; }
+    .health-vaccine { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+    .health-exam { background:#faf5ff; border-color:#d8b4fe; color:#6b21a8; }
+    .health-reminder { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
     .tone-settings { background:#f1f5f9; color:#334155; border-color:#e2e8f0; }
 
     .loading, .error {
@@ -166,6 +230,9 @@
       display: grid;
       gap: 12px;
       text-align: left;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .field label {
@@ -200,15 +267,20 @@
 <body>
 
   <div id="app">
-    <header>
-      <button id="btn-back" aria-label="Voltar">◀</button>
+    <div class="app-shell">
+    <header class="app-header">
+      <button id="btn-back" class="icon-btn" aria-label="Voltar">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
       <div class="title" id="header-title">PWAO</div>
-      <button id="btn-user" aria-label="Painel do Usuário">Usuário</button>
+      <button id="btn-user" class="icon-btn" aria-label="Painel do Usuário">
+        <span class="material-symbols-outlined">account_circle</span>
+      </button>
     </header>
 
     <main id="stage"></main>
     <footer id="footer"></footer>
-  </div>
+    </div>
 
   <script>
   (function () {
@@ -235,9 +307,25 @@
       if (HEADER_TITLE) HEADER_TITLE.textContent = title || 'PWAO';
     }
 
+    function updateBackVisibility() {
+      if (!BTN_BACK) return;
+      BTN_BACK.style.visibility = HISTORY.length ? 'visible' : 'hidden';
+    }
+
+    function goBack() {
+      const prev = HISTORY.pop();
+      if (!prev) {
+        updateBackVisibility();
+        return;
+      }
+      // Voltar não empilha histórico
+      CURRENT_SCREEN = null;
+      navigate(prev, { pushHistory: false });
+    }
+
     function renderFooter(buttons = []) {
       // Reservado (hoje oculto)
-      FOOTER.innerHTML = buttons.map(btn =>
+      FOOTER.innerHTML = (buttons || []).map(btn =>
         `<button data-screen="${btn.screen || ''}" data-celula="${btn.celula || ''}">${btn.label}</button>`
       ).join('');
     }
@@ -249,7 +337,6 @@
       const mem = new Map();
 
       function open() {
-        // Sempre "abre" (mesmo que seja só fallback)
         if (!('indexedDB' in window)) {
           console.warn('IndexedDB indisponível neste ambiente. Usando memória volátil.');
           db = null;
@@ -334,6 +421,25 @@
     };
 
     /* ========================== EXPRESSÃO DE CÉLULAS ========================== */
+    async function fetchWithFallback(cell) {
+      async function tryFetch(url) {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('fetch-failed');
+        return res.text();
+      }
+
+      try {
+        return await tryFetch(cell.caminho);
+      } catch (e) {
+        if (cell.fallback) {
+          try {
+            return await tryFetch(cell.fallback);
+          } catch (_) {}
+        }
+        throw new Error('all-fetch-failed');
+      }
+    }
+
     async function expressarCelula(nome) {
       const cell = await Memory.getCell(nome);
       if (!cell) {
@@ -342,16 +448,113 @@
       }
 
       try {
-        const res = await fetch(cell.caminho, { cache: 'no-store' });
-        if (!res.ok) throw new Error('fetch-failed');
-        const html = await res.text();
+        const html = await fetchWithFallback(cell);
         renderStage(html);
       } catch (e) {
-        renderStage(`<div class="error">Falha ao carregar célula: <b>${nome}</b></div>`);
+        renderStage(`<div class="error">Falha ao carregar célula: <b>${nome}</b><br><small>${cell.caminho}</small></div>`);
       }
     }
 
     Narrador.on('celula.expressar', (e) => expressarCelula(e.nome));
+
+    /* ========================== DATA_SCREENS (telas geradas) ========================== */('celula.expressar', (e) => expressarCelula(e.nome));
+
+    /* ========================== DATA_SCREENS (telas geradas) ========================== */
+    const DATA_SCREENS = {
+      'finance.income.single': {
+        title: 'Receita Avulsa',
+        fields: [
+          { name: 'descricao', label: 'Descrição', type: 'text', required: true, placeholder: 'Ex: Bico, venda, reembolso' },
+          { name: 'valor', label: 'Valor', type: 'number', required: true, placeholder: 'Ex: 150.00' },
+          { name: 'data', label: 'Data', type: 'date', required: true }
+        ]
+      },
+      'finance.income.recurring': {
+        title: 'Receita Recorrente',
+        fields: [
+          { name: 'descricao', label: 'Descrição', type: 'text', required: true, placeholder: 'Ex: Salário, aluguel' },
+          { name: 'valor', label: 'Valor', type: 'number', required: true, placeholder: 'Ex: 2500.00' },
+          { name: 'dia', label: 'Dia do mês', type: 'number', required: true, placeholder: 'Ex: 5' }
+        ]
+      },
+      'finance.expense.single': {
+        title: 'Despesa Avulsa',
+        fields: [
+          { name: 'descricao', label: 'Descrição', type: 'text', required: true, placeholder: 'Ex: Mercado, farmácia' },
+          { name: 'valor', label: 'Valor', type: 'number', required: true, placeholder: 'Ex: 80.00' },
+          { name: 'data', label: 'Data', type: 'date', required: true }
+        ]
+      },
+      'finance.expense.recurring': {
+        title: 'Despesa Recorrente',
+        fields: [
+          { name: 'descricao', label: 'Descrição', type: 'text', required: true, placeholder: 'Ex: Internet, escola' },
+          { name: 'valor', label: 'Valor', type: 'number', required: true, placeholder: 'Ex: 120.00' },
+          { name: 'dia', label: 'Dia do mês', type: 'number', required: true, placeholder: 'Ex: 10' }
+        ]
+      }
+    };
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function renderDataForm(spec, routeKey) {
+      const fields = (spec.fields || []).map((f) => {
+        const id = `f_${routeKey}_${f.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const required = f.required ? 'required' : '';
+        const placeholder = f.placeholder ? `placeholder="${escapeHtml(f.placeholder)}"` : '';
+        const value = f.value ? `value="${escapeHtml(f.value)}"` : '';
+
+        return `
+          <div class="field">
+            <label for="${id}">${escapeHtml(f.label || f.name)}</label>
+            <input id="${id}" name="${escapeHtml(f.name)}" type="${escapeHtml(f.type || 'text')}" ${required} ${placeholder} ${value} />
+          </div>
+        `;
+      }).join('');
+
+      renderStage(`
+        <div>
+          <div style="text-align:center; font-weight:700; margin-bottom:8px;">${escapeHtml(spec.title || 'Cadastro')}</div>
+          <div style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:16px;">Tela gerada pelo Genoma (data.*). Persistência ainda em implantação.</div>
+          <form class="form" id="data-form">
+            ${fields}
+            <button class="primary" type="submit">Salvar</button>
+          </form>
+        </div>
+      `);
+
+      const form = document.getElementById('data-form');
+      if (!form) return;
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const payload = Object.fromEntries(fd.entries());
+
+        console.log('[data.* submit]', routeKey, payload);
+        renderStage(`<div class="loading">Salvo (mock). Próximo: enviar para célula de persistência.</div>`);
+      });
+    }
+
+    function ScreenFactory(target) {
+      if (!target.startsWith('data.')) return false;
+
+      const routeKey = target.replace(/^data\./, '');
+      const spec = DATA_SCREENS[routeKey];
+
+      if (!spec) {
+        setHeaderTitle('Cadastro');
+        renderStage(`<div class="error">Tela data não registrada: <b>${escapeHtml(routeKey)}</b></div>`);
+        return true;
+      }
+
+      setHeaderTitle(spec.title);
+      renderDataForm(spec, routeKey);
+      return true;
+    }
 
     /* ========================== TELAS NATIVAS (v1) ========================== */
     const SCREENS = {
@@ -359,6 +562,8 @@
         welcome:   { title: 'Bem-vindo' },
         dashboard: { title: 'Dashboard' },
         finance:   { title: 'Finanças' },
+        education: { title: 'Educação' },
+        health:    { title: 'Saúde' },
         alerts:    { title: 'Alertas' },
         settings:  { title: 'Configurações' },
         offline:   { title: 'Offline' },
@@ -405,34 +610,97 @@
         `);
       },
 
-      // Painel de área: Finanças (6 botões)
       finance() {
         setHeaderTitle(SCREENS._meta.finance.title);
         renderStage(`
           <div class="grid">
-            <button class="card" data-action="render" data-target="data.finance.income.single">
+            <button class="card finance-income" data-action="render" data-target="data.finance.income.single">
               <div class="icon">➕</div>
               <div>Receitas Avulsas</div>
             </button>
-            <button class="card" data-action="render" data-target="data.finance.income.recurring">
+            <button class="card finance-income" data-action="render" data-target="data.finance.income.recurring">
               <div class="icon">🔁</div>
               <div>Receitas Recorrentes</div>
             </button>
-            <button class="card" data-action="render" data-target="data.finance.expense.single">
+            <button class="card finance-expense" data-action="render" data-target="data.finance.expense.single">
               <div class="icon">➖</div>
               <div>Despesas Avulsas</div>
             </button>
-            <button class="card" data-action="render" data-target="data.finance.expense.recurring">
+            <button class="card finance-expense" data-action="render" data-target="data.finance.expense.recurring">
               <div class="icon">🔁</div>
               <div>Despesas Recorrentes</div>
             </button>
-            <button class="card" data-action="render" data-target="finance.reports">
+            <button class="card finance-report" data-action="render" data-target="finance.reports">
               <div class="icon">📈</div>
               <div>Relatórios</div>
             </button>
             <button class="card" data-action="render" data-target="finance.settings">
               <div class="icon">⚙️</div>
               <div>Ajustes</div>
+            </button>
+          </div>
+        `);
+      },
+
+      education() {
+        setHeaderTitle(SCREENS._meta.education.title);
+        renderStage(`
+          <div class="grid">
+            <button class="card edu-study" data-action="render" data-target="education.study">
+              <div class="icon">📚</div>
+              <div>Estudos do Dia</div>
+            </button>
+            <button class="card edu-exam" data-action="render" data-target="education.exam">
+              <div class="icon">📝</div>
+              <div>Provas & Avaliações</div>
+            </button>
+            <button class="card edu-contest" data-action="render" data-target="education.contest">
+              <div class="icon">🏆</div>
+              <div>Concursos</div>
+            </button>
+            <button class="card edu-agenda" data-action="render" data-target="education.agenda">
+              <div class="icon">📅</div>
+              <div>Agenda Escolar</div>
+            </button>
+            <button class="card edu-task" data-action="render" data-target="education.tasks">
+              <div class="icon">✅</div>
+              <div>Tarefas de Casa</div>
+            </button>
+            <button class="card edu-sim" data-action="render" data-target="education.simulations">
+              <div class="icon">⏱️</div>
+              <div>Simulados</div>
+            </button>
+          </div>
+        `);
+      },
+
+      health() {
+        setHeaderTitle(SCREENS._meta.health.title);
+        renderStage(`
+          <div class="grid">
+            <button class="card health-record" data-action="render" data-target="health.records">
+              <div class="icon">📋</div>
+              <div>Histórico Médico</div>
+            </button>
+            <button class="card health-appointment" data-action="render" data-target="health.appointments">
+              <div class="icon">🩺</div>
+              <div>Consultas</div>
+            </button>
+            <button class="card health-meds" data-action="render" data-target="health.meds">
+              <div class="icon">💊</div>
+              <div>Medicamentos</div>
+            </button>
+            <button class="card health-vaccine" data-action="render" data-target="health.vaccines">
+              <div class="icon">💉</div>
+              <div>Vacinas</div>
+            </button>
+            <button class="card health-exam" data-action="render" data-target="health.exams">
+              <div class="icon">🧪</div>
+              <div>Exames</div>
+            </button>
+            <button class="card health-reminder" data-action="render" data-target="health.reminders">
+              <div class="icon">⏰</div>
+              <div>Lembretes</div>
             </button>
           </div>
         `);
@@ -466,150 +734,60 @@
       }
     };
 
-    /* ========================== NAVEGAÇÃO (v1) ========================== */
-    function navigate(screen) {
-      if (SCREENS._meta && SCREENS._meta[screen]?.title) {
-        setHeaderTitle(SCREENS._meta[screen].title);
-      }
-
-      if (CURRENT_SCREEN && screen !== CURRENT_SCREEN) {
-        HISTORY.push(CURRENT_SCREEN);
-      }
-
-      CURRENT_SCREEN = screen;
-
-      if (typeof SCREENS[screen] === 'function') {
-        SCREENS[screen]();
-      } else {
-        renderStage(`<div class="error">Tela não registrada: <b>${screen}</b></div>`);
-      }
-    }
-
-    function goBack() {
-      const prev = HISTORY.pop();
-      if (prev && typeof SCREENS[prev] === 'function') {
-        CURRENT_SCREEN = prev;
-        SCREENS[prev]();
-      }
-    }
-
-    BTN_BACK.addEventListener('click', goBack);
-
-    BTN_USER.addEventListener('click', () => {
-      // Atalho global do header
-      Narrador.emitir({ tipo: 'celula.expressar', nome: 'sistema.user-profile' });
-    });
-
-    /* ========================== SCREEN FACTORY (data.*) ========================== */
-    // Pergunta de comportamento (precisa da tua confirmação):
-    // Ao abrir uma tela data.*, você quer:
-    //  A) salvar rascunho local imediatamente, ou
-    //  B) só salvar no submit?
-    // (Hoje deixei como B: apenas renderizar o formulário.)
-
-    const DATA_SCREENS = {
-      // chave = "domain.type.mode" (sem o prefixo data.)
-      'finance.income.single': {
-        title: 'Nova Receita Avulsa',
-        fields: [
-          { name: 'descricao', label: 'Descrição', type: 'text', required: true },
-          { name: 'valor', label: 'Valor', type: 'number', required: true },
-          { name: 'data', label: 'Data', type: 'date', required: true }
-        ]
-      },
-      'finance.income.recurring': {
-        title: 'Nova Receita Recorrente',
-        fields: [
-          { name: 'descricao', label: 'Descrição', type: 'text', required: true },
-          { name: 'valor', label: 'Valor', type: 'number', required: true },
-          { name: 'frequencia', label: 'Frequência', type: 'select', options: ['Mensal', 'Semanal', 'Anual'], required: true },
-          { name: 'inicio', label: 'Início', type: 'date', required: true }
-        ]
-      },
-      'finance.expense.single': {
-        title: 'Nova Despesa Avulsa',
-        fields: [
-          { name: 'descricao', label: 'Descrição', type: 'text', required: true },
-          { name: 'valor', label: 'Valor', type: 'number', required: true },
-          { name: 'data', label: 'Data', type: 'date', required: true }
-        ]
-      },
-      'finance.expense.recurring': {
-        title: 'Nova Despesa Recorrente',
-        fields: [
-          { name: 'descricao', label: 'Descrição', type: 'text', required: true },
-          { name: 'valor', label: 'Valor', type: 'number', required: true },
-          { name: 'frequencia', label: 'Frequência', type: 'select', options: ['Mensal', 'Semanal', 'Anual'], required: true },
-          { name: 'inicio', label: 'Início', type: 'date', required: true }
-        ]
-      }
-    };
-
-    function renderDataForm(spec, routeKey) {
-      const fieldsHtml = (spec.fields || []).map((f) => {
-        const req = f.required ? 'required' : '';
-        if (f.type === 'select') {
-          const opts = (f.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
-          return `
-            <div class="field">
-              <label for="${f.name}">${f.label}</label>
-              <select id="${f.name}" name="${f.name}" ${req}>
-                <option value="">Selecione…</option>
-                ${opts}
-              </select>
-            </div>
-          `;
-        }
-
-        const inputType = f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text');
-        return `
-          <div class="field">
-            <label for="${f.name}">${f.label}</label>
-            <input id="${f.name}" name="${f.name}" type="${inputType}" ${req} />
-          </div>
-        `;
-      }).join('');
-
+    /* ========================== ERRO PREVISTO (Educação) ========================== */
+    function renderEducationPlanned() {
+      setHeaderTitle('Educação');
       renderStage(`
-        <div class="welcome-box">
-          <h1 style="font-size:22px; margin: 8px 0;">${spec.title}</h1>
-          <p style="margin: 0 0 14px 0;">Tela gerada pelo Genoma • <span style="color:#64748b">${routeKey}</span></p>
-          <form id="data-form" class="form">
-            ${fieldsHtml}
-            <button class="primary" type="submit">Salvar</button>
-          </form>
+        <div class="welcome">
+          <div class="welcome-box">
+            <div class="icon" style="font-size:40px; margin-bottom:12px;">🚧</div>
+            <h1>Em implantação</h1>
+            <p>Este recurso educacional está previsto no sistema e será disponibilizado em breve.</p>
+            <button id="btn-back-education">Voltar ao painel Educação</button>
+          </div>
         </div>
       `);
 
-      const form = document.getElementById('data-form');
-      if (!form) return;
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(form);
-        const payload = Object.fromEntries(fd.entries());
-
-        // Aqui você decide o destino real (célula de persistência)
-        // Por enquanto, apenas demonstra o contrato.
-        console.log('[data.* submit]', routeKey, payload);
-        renderStage(`<div class="loading">Salvo (mock). Próximo: enviar para célula de persistência.</div>`);
-      });
+      const backBtn = document.getElementById('btn-back-education');
+      if (backBtn) backBtn.onclick = () => navigate('education');
     }
 
-    function ScreenFactory(target) {
-      if (!target.startsWith('data.')) return false;
-
-      const routeKey = target.replace(/^data\./, '');
-      const spec = DATA_SCREENS[routeKey];
-
-      if (!spec) {
-        setHeaderTitle('Cadastro');
-        renderStage(`<div class="error">Tela data não registrada: <b>${routeKey}</b></div>`);
-        return true;
+    /* ========================== NAVEGAÇÃO (v1) ========================== */
+    function navigate(screen, opts = { pushHistory: true }) {
+      // Histórico
+      if (opts.pushHistory !== false) {
+        if (CURRENT_SCREEN && screen !== CURRENT_SCREEN) {
+          HISTORY.push(CURRENT_SCREEN);
+        }
       }
 
-      setHeaderTitle(spec.title);
-      renderDataForm(spec, routeKey);
-      return true;
+      // Tela nativa
+      if (typeof SCREENS[screen] === 'function') {
+        CURRENT_SCREEN = screen;
+        SCREENS[screen]();
+        updateBackVisibility();
+        return;
+      }
+
+      // Erro previsto: Educação (apenas education.*)
+      if (typeof screen === 'string' && screen.startsWith('education.')) {
+        CURRENT_SCREEN = 'education';
+        renderEducationPlanned();
+        updateBackVisibility();
+        return;
+      }
+
+      // Tela data.*
+      if (typeof screen === 'string' && ScreenFactory(screen)) {
+        CURRENT_SCREEN = screen;
+        updateBackVisibility();
+        return;
+      }
+
+      // Qualquer outra coisa vira célula (expressar)
+      CURRENT_SCREEN = screen;
+      Narrador.emitir({ tipo: 'celula.expressar', nome: screen });
+      updateBackVisibility();
     }
 
     /* ========================== CLIQUES (renderizador) ========================== */
@@ -627,11 +805,27 @@
       }
 
       // 2) Tela gerada pelo Genoma
-      if (ScreenFactory(target)) return;
+      if (ScreenFactory(target)) {
+        CURRENT_SCREEN = target;
+        updateBackVisibility();
+        return;
+      }
 
-      // 3) Célula
+      // 3) Erro previsto (Educação)
+      if (target.startsWith('education.')) {
+        navigate(target);
+        return;
+      }
+
+      // 4) Célula
+      CURRENT_SCREEN = target;
       Narrador.emitir({ tipo: 'celula.expressar', nome: target });
+      updateBackVisibility();
     });
+
+    // Header
+    if (BTN_BACK) BTN_BACK.addEventListener('click', goBack);
+    if (BTN_USER) BTN_USER.addEventListener('click', () => Narrador.emitir({ tipo: 'celula.expressar', nome: 'sistema.user-profile' }));
 
     // Footer reservado
     FOOTER.addEventListener('click', (e) => {
@@ -654,6 +848,8 @@
       console.assert(typeof SCREENS.welcome === 'function', 'Tela welcome deve existir');
       console.assert(typeof SCREENS.dashboard === 'function', 'Tela dashboard deve existir');
       console.assert(typeof SCREENS.finance === 'function', 'Tela finance deve existir');
+      console.assert(typeof SCREENS.education === 'function', 'Tela education deve existir');
+      console.assert(typeof SCREENS.health === 'function', 'Tela health deve existir');
       console.assert(HEADER_TITLE && HEADER_TITLE.textContent.length >= 0, 'Header title deve existir');
 
       setHeaderTitle('Teste');
@@ -663,11 +859,17 @@
       console.assert(ScreenFactory('data.finance.income.single') === true, 'ScreenFactory deve reconhecer data.*');
       console.assert(ScreenFactory('finance.income.single') === false, 'ScreenFactory não deve reconhecer sem prefixo');
 
+      // Teste: erro previsto educação
+      navigate('education.study');
+      console.assert((HEADER_TITLE.textContent || '').includes('Educação'), 'Fallback educação deve manter título Educação');
+
       console.log('OK: smoke tests');
       console.groupEnd();
 
       // Volta para um estado previsível após os testes
-      navigate('welcome');
+      navigate('welcome', { pushHistory: false });
+      HISTORY.length = 0;
+      updateBackVisibility();
     }
 
     /* ========================== BOOT ========================== */
@@ -677,10 +879,52 @@
       await Memory.open();
 
       // Registro mínimo de células essenciais do sistema
+      // Registro da célula de perfil do usuário com fallback jsDelivr
+      const USER_PROFILE_LOCAL = './products/system/user-profile/index.html';
+      const USER_PROFILE_CDN = 'https://cdn.jsdelivr.net/gh/fabiocolletto/pwao@main/products/system/user-profile/index.html';
+
       await window.PWAO_RegistrarCelula({
         nome: 'sistema.user-profile',
-        caminho: './products/system/user-profile/index.html',
+        caminho: USER_PROFILE_LOCAL,
+        fallback: USER_PROFILE_CDN,
         descricao: 'Painel de cadastro do usuário'
+      });
+
+      // Células – Saúde da Família (arquivos podem ser implantados depois)
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.records',
+        caminho: './products/health/records/index.html',
+        descricao: 'Histórico médico da família'
+      });
+
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.meds',
+        caminho: './products/health/meds/index.html',
+        descricao: 'Controle de medicamentos'
+      });
+
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.appointments',
+        caminho: './products/health/appointments/index.html',
+        descricao: 'Consultas médicas'
+      });
+
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.vaccines',
+        caminho: './products/health/vaccines/index.html',
+        descricao: 'Carteira de vacinação'
+      });
+
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.exams',
+        caminho: './products/health/exams/index.html',
+        descricao: 'Exames e laudos'
+      });
+
+      await window.PWAO_RegistrarCelula({
+        nome: 'health.reminders',
+        caminho: './products/health/reminders/index.html',
+        descricao: 'Lembretes de saúde'
       });
 
       runTests();
