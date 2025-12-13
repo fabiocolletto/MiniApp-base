@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWAO – UI Render Engine</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; }
+
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    @media (max-width: 640px) {
+      .desktop-only { display: none; }
+      .mobile-only { display: block; }
+    }
+
+    /* ===== TABLE (DESKTOP) ===== */
+    .table-wrapper { overflow-x: auto; }
+    table { border-collapse: collapse; min-width: 760px; table-layout: auto; }
+    th, td { padding: .4rem .5rem; font-size: .8rem; white-space: nowrap; }
+
+    /* ===== CARDS (MOBILE) ===== */
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: .9rem;
+      padding: .75rem .9rem;
+      background: #fff;
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .75rem;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: .95rem;
+      line-height: 1.15;
+      margin-top: .05rem;
+    }
+    .card-meta {
+      font-size: .8rem;
+      color: #64748b;
+      margin-top: .25rem;
+      line-height: 1.2;
+    }
+    .card-desc {
+      font-size: .75rem;
+      color: #64748b;
+      margin-top: .25rem;
+      line-height: 1.3;
+    }
+    .card-actions {
+      display: flex;
+      gap: .15rem;
+      flex-shrink: 0;
+      align-items: center;
+      margin-top: .05rem;
+    }
+
+    /* ===== ICON BUTTONS ===== */
+    .icon-btn { padding: .25rem; border-radius: .5rem; }
+    .icon-btn:hover { background: #f1f5f9; }
+
+    /* ===== FORM ===== */
+    .input { border: 1px solid #e5e7eb; border-radius: .6rem; padding: .6rem .7rem; width: 100%; background: #fff; }
+    .help { font-size: .75rem; color: #64748b; }
+  </style>
+</head>
+<body class="bg-white text-slate-800 min-h-screen">
+
+<div id="app-root"></div>
+
+<script>
+/* ================= CORE STATE ================= */
+let CURRENT_CONTRACT = null;
+const HISTORY_STACK = [];
+const VIEW_REGISTRY = {};
+
+let FINANCE_DATA = [
+  { id: 1, category: 'Moradia', sub: 'Aluguel', value: 2500.5, day: '5', desc: 'Apartamento' },
+  { id: 2, category: 'Alimentação', sub: 'Mercado', value: 800.2, day: '10', desc: '' }
+];
+
+let EDITING_ID = null; // null | number | 'new'
+const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+/* ================= UTILS ================= */
+function $(id) { return document.getElementById(id); }
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/* ================= RENDER ENGINE ================= */
+function renderEngine(viewId, isBack = false) {
+  const contract = VIEW_REGISTRY[viewId];
+  if (!contract) throw new Error('Contrato inexistente: ' + viewId);
+
+  if (CURRENT_CONTRACT && !isBack) HISTORY_STACK.push(CURRENT_CONTRACT.identity.viewId);
+
+  const renderer = contract.classification.category === 'navigator'
+    ? NavigatorRenderer
+    : FinanceRenderer;
+
+  $('app-root').innerHTML = applyLayout(renderer.render(contract), contract);
+  attachBehavior();
+  CURRENT_CONTRACT = contract;
+}
+
+/* ================= NAVIGATOR ================= */
+const NavigatorRenderer = {
+  render(contract) {
+    const nav = contract.payload?.navigation || [];
+    return `<div class="grid grid-cols-2 gap-4">
+      ${nav.map(v => {
+        const t = VIEW_REGISTRY[v];
+        return `<button data-view="${v}" class="p-6 bg-slate-50 rounded-xl flex flex-col items-center active:scale-[0.99]">
+          <span class="material-symbols-outlined text-3xl">${escapeHtml(t.identity.icon)}</span>
+          <span class="mt-2 text-sm">${escapeHtml(t.identity.title)}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+  }
+};
+
+/* ================= FINANCE LIST (DESKTOP TABLE + MOBILE CARDS) ================= */
+const FinanceRenderer = {
+  render(contract) {
+    return `<div class="space-y-5">
+      ${EDITING_ID !== null ? renderForm() : ''}
+
+      <div class="desktop-only">
+        ${renderTable()}
+      </div>
+
+      <div class="mobile-only space-y-3">
+        ${renderMobileCards()}
+      </div>
+
+      ${renderAddButton(contract)}
+    </div>`;
+  }
+};
+
+function renderMobileCards() {
+  if (!FINANCE_DATA.length) {
+    return `<div class="text-sm text-slate-500">Nenhum item cadastrado</div>`;
+  }
+
+  return FINANCE_DATA.map(i => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${escapeHtml(i.category)} · ${escapeHtml(i.sub)}</div>
+          <div class="card-meta">${brl.format(Number(i.value || 0))} · Dia ${escapeHtml(i.day)}</div>
+        </div>
+        <div class="card-actions">
+          <button aria-label="Editar" data-edit="${i.id}" class="icon-btn text-blue-600">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button aria-label="Excluir" data-delete="${i.id}" class="icon-btn text-red-500">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+      ${i.desc ? `<div class="card-desc">${escapeHtml(i.desc)}</div>` : ''}
+    </div>`
+  ).join('');
+}
+
+function renderTable() {
+  if (!FINANCE_DATA.length) {
+    return `<div class="text-sm text-slate-500">Nenhum item cadastrado</div>`;
+  }
+
+  return `<div class="table-wrapper border rounded-lg">
+    <table class="w-full">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="text-left">Categoria</th>
+          <th class="text-left">Subcategoria</th>
+          <th class="text-right">Valor</th>
+          <th class="text-center">Dia</th>
+          <th class="text-right"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${FINANCE_DATA.map(i => `
+          <tr class="border-t">
+            <td>${escapeHtml(i.category)}</td>
+            <td>${escapeHtml(i.sub)}</td>
+            <td class="text-right">${brl.format(Number(i.value || 0))}</td>
+            <td class="text-center">${escapeHtml(i.day)}</td>
+            <td class="text-right">
+              <button aria-label="Editar" data-edit="${i.id}" class="icon-btn text-blue-600"><span class="material-symbols-outlined">edit</span></button>
+              <button aria-label="Excluir" data-delete="${i.id}" class="icon-btn text-red-500"><span class="material-symbols-outlined">delete</span></button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderAddButton(contract) {
+  // título específico por tela, mantendo simples por enquanto
+  const label = contract.identity.viewId === 'finance_expense_recurring' ? 'Adicionar despesa' : 'Adicionar item';
+  return `<button id="add-new" class="bg-indigo-600 text-white px-4 py-2 rounded-lg active:scale-[0.99]">${label}</button>`;
+}
+
+function renderForm() {
+  const isNew = EDITING_ID === 'new';
+  const item = isNew
+    ? { category: '', sub: '', value: '', day: '', desc: '' }
+    : (FINANCE_DATA.find(i => i.id === EDITING_ID) || { category: '', sub: '', value: '', day: '', desc: '' });
+
+  return `<div class="border rounded-xl p-4 bg-slate-50 space-y-3">
+    <div class="text-sm font-semibold">${isNew ? 'Nova despesa' : 'Editar despesa'}</div>
+
+    <div>
+      <div class="help">Categoria</div>
+      <input class="input" id="f-category" placeholder="Ex: Moradia" value="${escapeHtml(item.category)}" />
+    </div>
+
+    <div>
+      <div class="help">Subcategoria</div>
+      <input class="input" id="f-sub" placeholder="Ex: Aluguel" value="${escapeHtml(item.sub)}" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <div class="help">Valor</div>
+        <input class="input" id="f-value" inputmode="decimal" placeholder="0,00" value="${escapeHtml(item.value)}" />
+      </div>
+      <div>
+        <div class="help">Dia</div>
+        <input class="input" id="f-day" inputmode="numeric" placeholder="5" value="${escapeHtml(item.day)}" />
+      </div>
+    </div>
+
+    <div>
+      <div class="help">Descrição (opcional)</div>
+      <textarea class="input" id="f-desc" rows="2" placeholder="Detalhes">${escapeHtml(item.desc)}</textarea>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-1">
+      <button id="save" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg">Salvar</button>
+      <button id="cancel" class="text-slate-600">Cancelar</button>
+    </div>
+  </div>`;
+}
+
+/* ================= BEHAVIOR ================= */
+function attachBehavior() {
+  // navegação
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.onclick = () => renderEngine(b.dataset.view);
+  });
+
+  // editar
+  document.querySelectorAll('[data-edit]').forEach(b => {
+    b.onclick = () => {
+      EDITING_ID = Number(b.dataset.edit);
+      renderEngine(CURRENT_CONTRACT.identity.viewId);
+    };
+  });
+
+  // excluir
+  document.querySelectorAll('[data-delete]').forEach(b => {
+    b.onclick = () => {
+      const id = Number(b.dataset.delete);
+      FINANCE_DATA = FINANCE_DATA.filter(i => i.id !== id);
+      if (EDITING_ID === id) EDITING_ID = null;
+      renderEngine(CURRENT_CONTRACT.identity.viewId);
+    };
+  });
+
+  // novo
+  const add = $('add-new');
+  if (add) {
+    add.onclick = () => {
+      EDITING_ID = 'new';
+      renderEngine(CURRENT_CONTRACT.identity.viewId);
+    };
+  }
+
+  // cancelar
+  const cancel = $('cancel');
+  if (cancel) {
+    cancel.onclick = () => {
+      EDITING_ID = null;
+      renderEngine(CURRENT_CONTRACT.identity.viewId);
+    };
+  }
+
+  // salvar (FIX: não usar variáveis inválidas como f-category)
+  const save = $('save');
+  if (save) {
+    save.onclick = () => {
+      const category = $('f-category')?.value?.trim() || '';
+      const sub = $('f-sub')?.value?.trim() || '';
+      const rawValue = ($('f-value')?.value || '').toString();
+      const value = Number(rawValue.replaceAll('.', '').replaceAll(',', '.')) || 0;
+      const day = ($('f-day')?.value || '').toString().trim();
+      const desc = ($('f-desc')?.value || '').toString().trim();
+
+      // validação mínima (sem travar demais)
+      if (!category || !sub) {
+        alert('Preencha Categoria e Subcategoria.');
+        return;
+      }
+
+      const data = { category, sub, value, day, desc };
+
+      if (EDITING_ID === 'new') {
+        data.id = Date.now();
+        FINANCE_DATA.push(data);
+      } else {
+        const target = FINANCE_DATA.find(i => i.id === EDITING_ID);
+        if (target) Object.assign(target, data);
+      }
+
+      EDITING_ID = null;
+      renderEngine(CURRENT_CONTRACT.identity.viewId);
+    };
+  }
+}
+
+/* ================= LAYOUT ================= */
+function applyLayout(html, contract) {
+  // por ora, layout simples (sem botão voltar flutuante)
+  return `<div class="p-6 max-w-3xl mx-auto">
+    <h2 class="text-xl mb-4">${escapeHtml(contract.identity.title)}</h2>
+    ${html}
+  </div>`;
+}
+
+/* ================= CONTRACTS ================= */
+VIEW_REGISTRY.finance = {
+  identity: { viewId: 'finance', title: 'Finanças', icon: 'attach_money' },
+  classification: { category: 'navigator' },
+  payload: { navigation: ['finance_expense_recurring'] }
+};
+
+VIEW_REGISTRY.finance_expense_recurring = {
+  identity: { viewId: 'finance_expense_recurring', title: 'Despesas Recorrentes', icon: 'autorenew' },
+  classification: { category: 'list-finance' }
+};
+
+/* ================= TESTS (BÁSICOS) =================
+   Nota: como é HTML único, os testes rodam no console.
+*/
+(function runTests(){
+  try {
+    console.assert(!!VIEW_REGISTRY.finance, 'Teste: contrato finance existe');
+    console.assert(Array.isArray(VIEW_REGISTRY.finance.payload.navigation), 'Teste: finance.navigation é array');
+
+    const before = FINANCE_DATA.length;
+    FINANCE_DATA.push({ id: 999, category: 'Teste', sub: 'Item', value: 1, day: '1', desc: '' });
+    console.assert(FINANCE_DATA.length === before + 1, 'Teste: adiciona item');
+    FINANCE_DATA = FINANCE_DATA.filter(i => i.id !== 999);
+    console.assert(FINANCE_DATA.length === before, 'Teste: remove item');
+
+    console.log('[PWAO] Testes básicos OK');
+  } catch (e) {
+    console.warn('[PWAO] Falha nos testes básicos:', e);
+  }
+})();
+
+renderEngine('finance');
+</script>
+</body>
+</html>
