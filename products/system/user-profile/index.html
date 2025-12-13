@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil do Usuário</title>
+
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    main {
+      padding: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .col {
+      flex: 1 1 200px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:active { opacity: .9; }
+  </style>
+</head>
+<body>
+
+<header>
+  Perfil do Usuário
+</header>
+
+<main>
+
+  <div class="card">
+    <h2>Dados Básicos</h2>
+
+    <div class="row">
+      <div class="col">
+        <label>Nome</label>
+        <input id="name" placeholder="Seu nome" />
+      </div>
+      <div class="col">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="email@exemplo.com" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label>Data de nascimento</label>
+        <input id="birth" type="date" />
+      </div>
+      <div class="col">
+        <label>Telefone</label>
+        <input id="phone" placeholder="(00) 00000-0000" />
+      </div>
+    </div>
+
+  </div>
+
+  <button onclick="saveUser()">Salvar dados</button>
+
+</main>
+
+<script type="module">
+  import { DataOrchestrator } from '../../../src/tools/data-orchestrator.js';
+
+  function saveUser() {
+    const payload = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      birth: document.getElementById('birth').value,
+      phone: document.getElementById('phone').value
+    };
+
+    DataOrchestrator.dispatch({
+      action: 'update',
+      collection: 'user',
+      payload
+    });
+
+    alert('Dados salvos com sucesso');
+  }
+
+  window.saveUser = saveUser;
+</script>
+
+</body>
+</html>
+
