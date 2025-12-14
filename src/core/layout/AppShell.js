@@ -22,7 +22,7 @@ export function mount(root, Orchestrator, GENOMA) {
       </main>
 
       <footer id="pwao-footer" style="height:52px;background:#ffffff;border-top:1px solid #e5e5e5;display:flex;align-items:center;justify-content:center;font-size:13px;color:#777;">
-        Opp 5Horas – PWAO
+        OPP 5Horas – PWAO
       </footer>
     </div>
   `;

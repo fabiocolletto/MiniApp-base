@@ -191,17 +191,15 @@ Mais detalhes em `SECURITY.md`.
 Leia primeiro:
 - AGENT.md
 - ARCHITECTURE.md
-- CONTRIBUTING.md
+- SECURITY.md
+- CREDITS.md
 
-Depois siga o fluxo de PR descrito no `CONTRIBUTING.md`.
+Depois siga o fluxo de PR descrito em `ARCHITECTURE.md` e registre as mudanças no `CHANGELOG.md`.
 
 ---
 
 # 🧭 9. Roadmap
-Veja o documento `ROADMAP.md` para próximos passos:
-- Genoma V4.3
-- Células do sistema (auth, admin)
-- Evolução orgânica automatizada
+Consulte o `CHANGELOG.md` e o `ARCHITECTURE.md` para acompanhar próximos passos e a evolução planejada do Genoma.
 
 ---
 
