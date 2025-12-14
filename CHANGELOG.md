@@ -16,6 +16,18 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.13] – Salvamento local validado e resiliente
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Validação de nome, e-mail e telefone com feedback visual no painel do usuário.
+- Indicação do modo de armazenamento (IndexedDB ou fallback localStorage) e horário da última gravação local, mantendo clareza para o usuário.
+
+#### Security
+- Persistência do usuário agora preserva `createdAt/updatedAt` e usa fallback seguro para localStorage quando o IndexedDB falhar, mantendo os dados no dispositivo sem perda.
+
+----
+
 # 🧬 [V4.4.12] – Tabela editável no cadastro do usuário
 ### **Status: Atual (Genoma V4.4.0)**
 
