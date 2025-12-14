@@ -20,6 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PWAO</title>
   <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="opp/manifest.webmanifest" />
 
   <!-- Material Symbols (ícones do header) -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
@@ -353,6 +354,29 @@
       if (CURRENT_SCREEN === 'welcome' && typeof SCREENS?.welcome === 'function') {
         SCREENS.welcome();
       }
+    }
+
+    registrarServiceWorkerOPP();
+
+    function registrarServiceWorkerOPP() {
+      if (!('serviceWorker' in navigator)) {
+        installAvailable = false;
+        installMessage = 'Instalação não é suportada neste navegador.';
+        return;
+      }
+
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('opp/service-worker.js')
+          .then((registration) => {
+            console.log('[OPP] Service worker registrado', registration.scope);
+          })
+          .catch((error) => {
+            console.warn('[OPP] Falha ao registrar o service worker do OPP', error);
+            installAvailable = false;
+            installMessage = 'Não foi possível preparar o modo offline. Verifique a conexão ou permissões do navegador.';
+            renderWelcomeIfActive();
+          });
+      });
     }
 
     async function solicitarInstalacaoOPP() {
