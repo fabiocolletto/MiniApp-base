@@ -196,17 +196,6 @@
       cursor: pointer;
     }
 
-    .welcome-secondary {
-      border-color: #111827;
-      color: #111827;
-    }
-
-    .welcome-hint {
-      margin: 0;
-      font-size: 13px;
-      color: #6b7280;
-    }
-
     .tone-finance { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
 
     /* Subtons Finanças */
@@ -314,10 +303,6 @@
     /* ========================== ESTADO ========================== */
     let CURRENT_SCREEN = null;
     const HISTORY = [];
-    let deferredInstallPrompt = null;
-    let installMessage = '';
-    let installAvailable = false;
-    let serviceWorkerSupported = true;
 
     /* ========================== RENDER ========================== */
     function renderStage(html) {
@@ -349,65 +334,6 @@
       FOOTER.innerHTML = (buttons || []).map(btn =>
         `<button data-screen="${btn.screen || ''}" data-celula="${btn.celula || ''}">${btn.label}</button>`
       ).join('');
-    }
-
-    function renderWelcomeIfActive() {
-      if (CURRENT_SCREEN === 'welcome' && typeof SCREENS?.welcome === 'function') {
-        SCREENS.welcome();
-      }
-    }
-
-    registrarServiceWorkerOPP();
-
-    function registrarServiceWorkerOPP() {
-      if (!('serviceWorker' in navigator) || !navigator.serviceWorker) {
-        serviceWorkerSupported = false;
-        installAvailable = false;
-        installMessage = 'Instalação não é suportada neste navegador.';
-        renderWelcomeIfActive();
-        return;
-      }
-
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('opp/service-worker.js')
-          .then((registration) => {
-            console.log('[OPP] Service worker registrado', registration.scope);
-          })
-          .catch((error) => {
-            console.warn('[OPP] Falha ao registrar o service worker do OPP', error);
-            installAvailable = false;
-            installMessage = 'Não foi possível preparar o modo offline. Verifique a conexão ou permissões do navegador.';
-            renderWelcomeIfActive();
-          });
-      });
-    }
-
-    async function solicitarInstalacaoOPP() {
-      if (!serviceWorkerSupported) {
-        installMessage = 'Instalação não é suportada neste navegador.';
-        renderWelcomeIfActive();
-        return;
-      }
-
-      if (deferredInstallPrompt) {
-        installMessage = 'Abrindo diálogo de instalação…';
-        renderWelcomeIfActive();
-
-        deferredInstallPrompt.prompt();
-        const { outcome } = await deferredInstallPrompt.userChoice;
-
-        installMessage = outcome === 'accepted'
-          ? 'Instalação iniciada. Confirme pelo navegador para adicionar à tela inicial.'
-          : 'Instalação cancelada. Você pode tentar novamente pelo menu do navegador.';
-
-        installAvailable = false;
-        deferredInstallPrompt = null;
-        renderWelcomeIfActive();
-        return;
-      }
-
-      installMessage = 'No Android, use o menu do navegador e escolha "Adicionar à tela inicial". No iOS, toque em "Compartilhar → Adicionar à Tela de Início".';
-      renderWelcomeIfActive();
     }
 
     /* ========================== MEMÓRIA (IndexedDB + fallback) ========================== */
@@ -653,10 +579,6 @@
       welcome() {
         setHeaderTitle(SCREENS._meta.welcome.title);
 
-        const hint = installMessage || (installAvailable
-          ? 'Disponível para adicionar à tela inicial.'
-          : 'Se o aviso não aparecer, use o menu do navegador para instalar.');
-
         renderStage(`
           <div class="welcome">
             <div class="welcome-box">
@@ -665,17 +587,12 @@
               <p>Seu painel inteligente começa aqui</p>
               <div class="welcome-actions">
                 <button id="btn-start">Entrar</button>
-                <button id="btn-install" class="welcome-secondary">Instalar app</button>
-                <p class="welcome-hint">${escapeHtml(hint)}</p>
               </div>
             </div>
           </div>
         `);
         const btnStart = document.getElementById('btn-start');
         if (btnStart) btnStart.onclick = () => navigate('dashboard');
-
-        const btnInstall = document.getElementById('btn-install');
-        if (btnInstall) btnInstall.onclick = solicitarInstalacaoOPP;
       },
 
       dashboard() {
@@ -825,22 +742,6 @@
         renderStage('<div class="error">Ocorreu um erro inesperado.</div>');
       }
     };
-
-    // Sinalização de instalação do OPP (PWA)
-    window.addEventListener('beforeinstallprompt', (event) => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-      installAvailable = true;
-      installMessage = 'Pronto para instalar no dispositivo.';
-      renderWelcomeIfActive();
-    });
-
-    window.addEventListener('appinstalled', () => {
-      installAvailable = false;
-      deferredInstallPrompt = null;
-      installMessage = 'Aplicativo instalado! Abra pela tela inicial do dispositivo.';
-      renderWelcomeIfActive();
-    });
 
     /* ========================== ERRO PREVISTO (Educação) ========================== */
     function renderEducationPlanned() {
