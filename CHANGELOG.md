@@ -1,6 +1,6 @@
 # CHANGELOG.md – Histórico de Versões do PWAO
 
-Este documento registra todas as mudanças estruturais, evolutivas e funcionais do **PWAO (Progressive Web App Orgânico)**.  
+Este documento registra todas as mudanças estruturais, evolutivas e funcionais do **PWAO (Progressive Web App Orgânico)**.
 O objetivo é garantir rastreabilidade completa do organismo ao longo do tempo.
 
 ---
@@ -16,7 +16,41 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
----
+
+# 🧬 [V4.4.8] – Documentação alinhada e cobertura de instalação sem SW
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Changed
+- README atualizado para apontar apenas para documentos existentes (AGENT, ARCHITECTURE, SECURITY e CREDITS), evitando links quebrados de contribuição e roadmap.
+
+#### Added
+- Caso de teste Playwright que simula navegadores sem suporte a `serviceWorker`, garantindo mensagem de indisponibilidade e ausência de chamadas ao prompt de instalação.
+
+----
+
+# 🧬 [V4.4.7] – Aviso de instalação para navegadores sem service worker
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Fixed
+- Re-renderização da tela inicial ao detectar falta de suporte a `serviceWorker`, exibindo o aviso correto de indisponibilidade de instalação.
+
+----
+
+# 🧬 [V4.4.6] – Correção do rodapé do AppShell
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Fixed
+- Rodapé do AppShell atualizado para exibir a sigla correta do pacote instalável, alterando "Opp" para **OPP**.
+
+----
+
+# 🧬 [V4.4.5] – Levantamento de pendências de revisão
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Documento `reports/revisao-base-codigo.md` listando tarefas sugeridas para corrigir typo de interface, bug de mensagem de instalação, acertos de documentação e melhoria de cobertura de testes.
+
+----
 
 # 🧬 [V4.4.4] – Testes do botão de instalação do OPP
 ### **Status: Atual (Genoma V4.4.0)**

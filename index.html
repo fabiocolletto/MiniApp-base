@@ -317,6 +317,7 @@
     let deferredInstallPrompt = null;
     let installMessage = '';
     let installAvailable = false;
+    let serviceWorkerSupported = true;
 
     /* ========================== RENDER ========================== */
     function renderStage(html) {
@@ -359,9 +360,11 @@
     registrarServiceWorkerOPP();
 
     function registrarServiceWorkerOPP() {
-      if (!('serviceWorker' in navigator)) {
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker) {
+        serviceWorkerSupported = false;
         installAvailable = false;
         installMessage = 'Instalação não é suportada neste navegador.';
+        renderWelcomeIfActive();
         return;
       }
 
@@ -380,6 +383,12 @@
     }
 
     async function solicitarInstalacaoOPP() {
+      if (!serviceWorkerSupported) {
+        installMessage = 'Instalação não é suportada neste navegador.';
+        renderWelcomeIfActive();
+        return;
+      }
+
       if (deferredInstallPrompt) {
         installMessage = 'Abrindo diálogo de instalação…';
         renderWelcomeIfActive();

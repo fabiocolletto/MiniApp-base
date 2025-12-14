@@ -58,4 +58,40 @@ test.describe('Botão "Instalar app"', () => {
 
     await context.close();
   });
+
+  test('informa indisponibilidade quando service worker não é suportado', async ({ browser }) => {
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      viewport: { width: 1280, height: 720 }
+    });
+
+    await context.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, 'serviceWorker', {
+        get() { return undefined; },
+        configurable: true
+      });
+
+      window.__promptCalled = false;
+      window.addEventListener('beforeinstallprompt', (event) => {
+        if (typeof event.prompt === 'function') {
+          window.__promptCalled = true;
+        }
+      });
+    });
+
+    const page = await context.newPage();
+    await page.goto(BASE_URL);
+
+    await page.waitForSelector('#btn-install');
+
+    const hint = page.locator('.welcome-hint');
+    await expect(hint).toContainText('Instalação não é suportada neste navegador.');
+
+    await page.click('#btn-install');
+
+    const promptCalled = await page.evaluate(() => window.__promptCalled);
+    expect(promptCalled).toBe(false);
+
+    await context.close();
+  });
 });
