@@ -272,23 +272,68 @@ import { DataOrchestrator } from '../tools/data-orchestrator.js';
             recordId
           });
 
-          const savedCollection = DataOrchestrator.getCollection(routeKey);
-          const snapshot = Array.isArray(savedCollection)
-            ? savedCollection.find((item) => item.id === recordId)
-            : saved;
-
           const persistedCollection = await DataOrchestrator.getPersistedCollection(routeKey);
           const persistedSnapshot = Array.isArray(persistedCollection)
             ? persistedCollection.find((item) => item.id === recordId)
             : persistedCollection;
 
+          const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+          const valorFormatado = payload.valor ? currency.format(Number(payload.valor)) : '—';
+          const dataFormatada = payload.data
+            ? new Date(payload.data).toLocaleDateString('pt-BR')
+            : (payload.dia ? `Todo dia ${payload.dia}` : 'Sem data');
+          const descricao = payload.descricao || payload.description || 'Sem descrição';
+
           renderStage(`
-            <div class="loading">
-              Dados salvos com sucesso em <b>${escapeHtml(routeKey)}</b>.
-              ${snapshot ? `<pre style="text-align:left; background:#f8fafc; padding:12px; border-radius:10px;">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>` : ''}
-              ${persistedSnapshot ? `<pre style="text-align:left; background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">${escapeHtml(JSON.stringify(persistedSnapshot, null, 2))}</pre>` : ''}
+            <div style="padding:16px; display:flex; justify-content:center;">
+              <div style="background:#ffffff; border-radius:14px; padding:20px; width:100%; max-width:420px; box-shadow:0 10px 25px rgba(0,0,0,0.08);">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                  <div style="font-size:26px;">✅</div>
+                  <div>
+                    <div style="font-weight:700; font-size:18px;">Receita registrada!</div>
+                    <div style="color:#6b7280; font-size:13px;">Guardamos suas informações com segurança.</div>
+                  </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:18px;">💸</span>
+                    <div>
+                      <div style="font-size:12px; color:#6b7280;">Valor</div>
+                      <div style="font-weight:700; font-size:16px;">${escapeHtml(valorFormatado)}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:18px;">📅</span>
+                    <div>
+                      <div style="font-size:12px; color:#6b7280;">Data</div>
+                      <div style="font-weight:600; font-size:14px;">${escapeHtml(dataFormatada)}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:18px;">📝</span>
+                    <div>
+                      <div style="font-size:12px; color:#6b7280;">Descrição</div>
+                      <div style="font-size:14px;">${escapeHtml(descricao)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                ${persistedSnapshot ? `<pre style="margin-top:12px; background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0; font-size:12px; overflow:auto;">${escapeHtml(JSON.stringify(persistedSnapshot, null, 2))}</pre>` : ''}
+
+                <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+                  <button id="btn-add-another" class="primary" style="padding:12px 14px;">Adicionar outra receita</button>
+                  <button id="btn-back-finance" style="padding:12px 14px; background:#e5e7eb; border:none; border-radius:10px; font-weight:600;">Voltar para Finanças</button>
+                </div>
+              </div>
             </div>
           `);
+
+          const addAnother = document.getElementById('btn-add-another');
+          const backFinance = document.getElementById('btn-back-finance');
+
+          if (addAnother) addAnother.onclick = () => renderDataForm(spec, routeKey);
+          if (backFinance) backFinance.onclick = () => navigate('finance');
         } catch (err) {
           console.error('[data.* submit] erro', err);
           renderStage('<div class="error">Falha ao salvar os dados. Tente novamente.</div>');
