@@ -18,6 +18,18 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.4.2] – OPP instalável e offline no Android
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Manifesto dedicado em `/opp/manifest.webmanifest` com ícones e configuração standalone para habilitar instalação direta.
+- Registro automático do service worker do OPP ao carregar o Genoma, preparando o cache offline-first.
+
+#### Fixed
+- Botão "Instalar app" volta a abrir o prompt nativo no Android em vez de exibir apenas a mensagem de instruções manuais.
+
+---
+
 # 🧬 [V4.4.1] – Botão de instalação do OPP no Genoma
 ### **Status: Atual (Genoma V4.4.0)**
 
