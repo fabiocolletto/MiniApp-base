@@ -131,6 +131,28 @@ O PWAO funciona perfeitamente no GitHub Pages:
 - O Genoma será carregado automaticamente
 - O OPP ativará instalação e cache offline
 
+### **Guia rápido de UX para instalar o OPP**
+Para facilitar a instalação pelos usuários finais, siga este fluxo dentro das suas células ou do Genoma:
+
+1. **Detecte disponibilidade do prompt nativo** – observe o evento `beforeinstallprompt` no carregamento e mostre um botão “Instalar app” somente quando ele existir.
+2. **Explique o benefício imediato** – no botão ou tooltip, destaque que o OPP funciona offline, abre em tela cheia e guarda progresso localmente.
+3. **Use instruções claras por plataforma**:
+   - **Android/Chrome**: acione `prompt()` do evento capturado e, em fallback, mostre a ação “Adicionar à tela inicial” (menu ⋮ → Adicionar à tela inicial).
+   - **iOS/Safari**: indique o fluxo do menu de compartilhamento → “Adicionar à Tela de Início”.
+   - **Desktop (Chromium/Edge)**: peça para clicar no ícone de instalação da barra de endereços ou use `beforeinstallprompt.prompt()` quando disponível.
+4. **Valide que o OPP está pronto** – antes de pedir a instalação, confirme que o service worker `/opp/service-worker.js` está ativo e que os assets principais foram armazenados em cache (útil para evitar instalações com offline incompleto).
+5. **Mantenha um checklist visual** – apresente um pequeno card com o status: HTTPS/localhost ✅, manifest ✅, service worker ✅, cache inicial ✅. Isso reduz fricção e cria confiança.
+6. **Ofereça reentrada** – se o usuário dispensar o prompt, grave a decisão na Memória Orgânica e reexiba o convite apenas após nova sessão ou uma ação explícita (por exemplo, abrir o menu “Instalar”).
+
+Este guia garante uma experiência consistente mesmo em navegadores que não exibem o prompt nativo, mantendo o OPP instalável e bem comunicado.
+
+### Testes automatizados do botão “Instalar app”
+- Rode `npm test` para validar a experiência de instalação em um navegador Chromium headless.
+- Os testes simulam:
+  - **Android/Chromium**: emissão do `beforeinstallprompt` e clique no botão disparando `prompt()` com feedback de instalação iniciada.
+  - **iOS/Safari**: ausência de prompt nativo com exibição das instruções manuais (“Compartilhar → Adicionar à Tela de Início”).
+- O Playwright inicia um `python3 -m http.server` localmente para garantir que o service worker e o manifest sejam servidos no mesmo host utilizado em produção.
+
 ---
 
 # 🛠️ 6. Desenvolvimento

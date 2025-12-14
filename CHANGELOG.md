@@ -18,6 +18,23 @@ Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam *
 
 ---
 
+# 🧬 [V4.4.4] – Testes do botão de instalação do OPP
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Suite Playwright que simula Android/Chromium e iOS/Safari para validar o botão “Instalar app”, cobrindo tanto o fluxo com `beforeinstallprompt` quanto as instruções manuais.
+- Script `npm test` com servidor local automático para servir o Genoma, manifest e service worker durante a bateria de testes.
+
+----
+
+# 🧬 [V4.4.3] – Guia de UX para instalação do OPP
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Guia rápido no README para orientar quando solicitar o prompt nativo, quais instruções oferecer por plataforma e como validar que o OPP está pronto antes de pedir a instalação.
+
+---
+
 # 🧬 [V4.4.2] – OPP instalável e offline no Android
 ### **Status: Atual (Genoma V4.4.0)**
 
