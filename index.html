@@ -547,6 +547,15 @@
           { name: 'valor', label: 'Valor', type: 'number', required: true, placeholder: 'Ex: 120.00' },
           { name: 'dia', label: 'Dia do mês', type: 'number', required: true, placeholder: 'Ex: 10' }
         ]
+      },
+      'user.profile': {
+        title: 'Perfil do Usuário',
+        fields: [
+          { name: 'name', label: 'Nome completo', type: 'text', required: true, placeholder: 'Seu nome' },
+          { name: 'email', label: 'E-mail', type: 'email', required: true, placeholder: 'email@exemplo.com' },
+          { name: 'birth', label: 'Data de nascimento', type: 'date' },
+          { name: 'phone', label: 'Telefone', type: 'tel', placeholder: '(00) 00000-0000' }
+        ]
       }
     };
 
@@ -773,7 +782,7 @@
         setHeaderTitle(SCREENS._meta.settings.title);
         renderStage(`
           <div class="grid">
-            <button class="card" data-action="render" data-target="sistema.user-profile">
+            <button class="card" data-action="render" data-target="data.user.profile">
               <div class="icon">👤</div>
               <div>Perfil do Usuário</div>
             </button>
@@ -885,7 +894,7 @@
 
     // Header
     if (BTN_BACK) BTN_BACK.addEventListener('click', goBack);
-    if (BTN_USER) BTN_USER.addEventListener('click', () => Narrador.emitir({ tipo: 'celula.expressar', nome: 'sistema.user-profile' }));
+    if (BTN_USER) BTN_USER.addEventListener('click', () => navigate('data.user.profile'));
 
     // Footer reservado
     if (FOOTER) {
@@ -941,17 +950,6 @@
       await Memory.open();
 
       // Registro mínimo de células essenciais do sistema
-      // Registro da célula de perfil do usuário com fallback jsDelivr
-      const USER_PROFILE_LOCAL = './products/system/user-profile/index.html';
-      const USER_PROFILE_CDN = 'https://cdn.jsdelivr.net/gh/fabiocolletto/pwao@main/products/system/user-profile/index.html';
-
-      await window.PWAO_RegistrarCelula({
-        nome: 'sistema.user-profile',
-        caminho: USER_PROFILE_LOCAL,
-        fallback: USER_PROFILE_CDN,
-        descricao: 'Painel de cadastro do usuário'
-      });
-
       // Células – Saúde da Família (arquivos podem ser implantados depois)
       await window.PWAO_RegistrarCelula({
         nome: 'health.records',

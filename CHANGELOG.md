@@ -16,6 +16,15 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.11] – Cadastro do usuário via ScreenFactory
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Changed
+- Tela de Perfil do Usuário migrada para o sistema de geração (`data.user.profile`), renderizando no stage com título atualizado no header.
+- Ícone do usuário e atalho em Configurações agora navegam para a tela gerada, dispensando o registro da célula dedicada.
+
+----
+
 # 🧬 [V4.4.10] – Renderer montando AppShell visual
 ### **Status: Atual (Genoma V4.4.0)**
 
