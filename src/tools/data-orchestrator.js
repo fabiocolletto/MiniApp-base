@@ -51,6 +51,7 @@ export const DataOrchestrator = {
 
   SCHEMA_VERSION: 1,
   initialized: false,
+  initPromise: null,
 
   store: {
     meta: {
@@ -63,7 +64,7 @@ export const DataOrchestrator = {
       firstSeenAt: null,
       lastSeenAt: null
     },
-    user: {},
+    user: { profile: [] },
     finance: {
       expense: { single: [], recurring: [] },
       income: { single: [], recurring: [] }
@@ -74,12 +75,18 @@ export const DataOrchestrator = {
 
   async init() {
     if (this.initialized) return;
+    if (this.initPromise) return this.initPromise;
 
-    const loaded = await StorageEngine.load();
-    if (loaded) this.migrate(loaded);
+    this.initPromise = (async () => {
+      const loaded = await StorageEngine.load();
+      if (loaded) this.migrate(loaded);
 
-    this.initDevice();
-    this.initialized = true;
+      this.store.meta.createdAt ||= Date.now();
+      this.initDevice();
+      this.initialized = true;
+    })();
+
+    return this.initPromise;
   },
 
   initDevice() {
@@ -100,45 +107,80 @@ export const DataOrchestrator = {
       oldStore.device ||= { deviceId: null, firstSeenAt: null, lastSeenAt: null };
     }
 
+    oldStore.user ||= {};
+    oldStore.user.profile ||= [];
+
     oldStore.meta.schemaVersion = this.SCHEMA_VERSION;
     this.store = oldStore;
   },
 
-  persist() {
+  async persist() {
     this.store.meta.updatedAt = Date.now();
-    StorageEngine.save(this.store);
+    await StorageEngine.save(this.store);
   },
 
-  dispatch({ action, collection, payload, recordId, meta }) {
-    this.apply(action, collection, payload, recordId);
-    this.persist();
+  resolveCollection(collection, { createIfMissing = false } = {}) {
+    const path = collection.split('.');
+    let target = this.store;
+
+    for (let i = 0; i < path.length; i++) {
+      const key = path[i];
+
+      if (target[key] === undefined) {
+        if (!createIfMissing) return undefined;
+        target[key] = i === path.length - 1 ? [] : {};
+      }
+
+      target = target[key];
+    }
+
+    return target;
+  },
+
+  getCollection(collection) {
+    return this.resolveCollection(collection, { createIfMissing: false });
+  },
+
+  async getPersistedCollection(collection) {
+    const stored = await StorageEngine.load();
+    const source = stored || this.store;
+    return collection.split('.').reduce((acc, key) => acc?.[key], source);
+  },
+
+  async dispatch({ action, collection, payload, recordId, meta }) {
+    await this.init();
+    const result = this.apply(action, collection, payload, recordId, meta);
+    await this.persist();
+    return result;
   },
 
   apply(action, collection, payload, recordId) {
-    const path = collection.split('.');
-    let target = this.store;
-    path.forEach(p => target = target[p]);
+    const target = this.resolveCollection(collection, { createIfMissing: action === 'create' });
 
-    if (!Array.isArray(target)) return;
+    if (!Array.isArray(target)) return null;
 
     if (action === 'create') {
-      target.push({ id: Date.now(), ...payload });
+      const id = recordId || crypto.randomUUID();
+      const entry = { id, ...payload };
+      target.push(entry);
+      return entry;
     }
 
     if (action === 'update') {
       const item = target.find(i => i.id === recordId);
       if (item) Object.assign(item, payload);
+      return item || null;
     }
 
     if (action === 'delete') {
       const index = target.findIndex(i => i.id === recordId);
       if (index > -1) target.splice(index, 1);
+      return index > -1;
     }
+
+    return null;
   }
 };
-
-// Inicialização automática
-DataOrchestrator.init();
 
 /* =============================
    CONTRATO DE USO
