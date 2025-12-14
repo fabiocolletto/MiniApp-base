@@ -16,6 +16,17 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.10] – Renderer montando AppShell visual
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Renderer dedicado (`src/core/renderer.js`) que monta o AppShell e exibe erros de forma consistente ao trocar o conteúdo do palco.
+
+#### Changed
+- AppShell remodelado para usar a moldura padrão do Genoma (header, stage e footer) com menu lateral estilizado.
+- Genoma passa a montar o AppShell via Renderer antes de renderizar telas ou células, reaproveitando os estilos base e mantendo o título e o palco estáveis.
+
+----
 
 # 🧬 [V4.4.9] – Remoção do fluxo de instalação do OPP
 ### **Status: Atual (Genoma V4.4.0)**
