@@ -16,6 +16,17 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.14] – Genoma modular com persistência data.*
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Script ES module dedicado (`src/genoma/genoma.js`) para a lógica do Genoma, importando o DataOrchestrator e habilitando persistência real nas telas `data.*` com feedback imediato do registro salvo.
+- Exibição do snapshot armazenado em Dexie/localStorage após o envio do formulário, confirmando o estado persistido do dispositivo.
+
+#### Changed
+- DataOrchestrator passa a inicializar uma única vez no boot do Genoma e a gerar IDs determinísticos para novos registros, criando coleções ausentes quando necessário.
+- Boot do Genoma migra do script inline no `index.html` para um módulo externo, mantendo o registro automático das células essenciais.
+
 # 🧬 [V4.4.13] – Salvamento local validado e resiliente
 ### **Status: Atual (Genoma V4.4.0)**
 
