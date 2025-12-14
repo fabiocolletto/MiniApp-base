@@ -1,70 +1,365 @@
-<!-- ===== DESPESAS RECORRENTES ===== -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Célula Finanças – Painel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<section class="space-y-5">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
-  <!-- ===== BOTÃO ADICIONAR ===== -->
-  <button
-    class="bg-indigo-600 text-white px-4 py-2 rounded-lg active:scale-[0.99]"
-  >
-    Adicionar despesa recorrente
-  </button>
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div id="celula-root" class="max-w-xl mx-auto p-6 space-y-6"></div>
 
-  <!-- ===== DESKTOP: TABELA ===== -->
-  <div class="desktop-only border rounded-lg overflow-x-auto">
-    <table class="w-full min-w-[720px] border-collapse text-sm">
-      <thead class="bg-slate-50">
-        <tr>
-          <th class="text-left px-3 py-2">Categoria</th>
-          <th class="text-left px-3 py-2">Subcategoria</th>
-          <th class="text-right px-3 py-2">Valor</th>
-          <th class="text-center px-3 py-2">Dia</th>
-          <th class="text-right px-3 py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="border-t">
-          <td class="px-3 py-2">Moradia</td>
-          <td class="px-3 py-2">Aluguel</td>
-          <td class="px-3 py-2 text-right">R$ 2.500,50</td>
-          <td class="px-3 py-2 text-center">05</td>
-          <td class="px-3 py-2 text-right space-x-1">
-            <button class="icon-btn text-blue-600">
-              <span class="material-symbols-outlined">edit</span>
-            </button>
-            <button class="icon-btn text-red-500">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <script>
+    window.PWAO_RegistrarCelula?.({
+      nome: "financas.painel",
+      caminho: "celulas/financas/painel/index.html",
+      orgao: "financas",
+      versao: "1.1.4",
+      descricao: "Painel financeiro pessoal com categorias, subcategorias e edição/exclusão"
+    });
 
-  <!-- ===== MOBILE: CARDS ===== -->
-  <div class="mobile-only space-y-3">
+    const CATEGORIAS = {
+      receita: {
+        Salário: ["Mensal", "13º", "Férias"],
+        Freelance: ["Projeto", "Hora extra"],
+        Investimentos: ["Dividendos", "Rendimentos"]
+      },
+      despesa: {
+        Moradia: ["Aluguel", "Condomínio", "Energia", "Água"],
+        Alimentação: ["Supermercado", "Restaurante", "Delivery"],
+        Transporte: ["Combustível", "Transporte público", "Manutenção"],
+        Lazer: ["Streaming", "Viagem", "Eventos"]
+      }
+    };
 
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Moradia · Aluguel</div>
-          <div class="card-meta">R$ 2.500,50 · Dia 05</div>
+    const DB_NAME = "pwao_financas";
+    const DB_VERSION = 1;
+    let db;
+
+    const state = {
+      movimentos: [],
+      resumo: { saldo: 0, receitas: 0, despesas: 0 }
+    };
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+          const db2 = e.target.result;
+          if (!db2.objectStoreNames.contains("movimentos")) {
+            const store = db2.createObjectStore("movimentos", { keyPath: "id" });
+            store.createIndex("tipo", "tipo", { unique: false });
+            store.createIndex("data", "data", { unique: false });
+            store.createIndex("categoria", "categoria", { unique: false });
+            store.createIndex("subcategoria", "subcategoria", { unique: false });
+          }
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function salvarMovimento(mov) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("movimentos", "readwrite");
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore("movimentos").put(mov);
+      });
+    }
+
+    function excluirMovimento(id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("movimentos", "readwrite");
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore("movimentos").delete(id);
+      });
+    }
+
+    function listarMovimentos() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("movimentos", "readonly");
+        const req = tx.objectStore("movimentos").getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function recalcularResumo() {
+      let receitas = 0;
+      let despesas = 0;
+      state.movimentos.forEach(m => {
+        if (m.tipo === "receita") receitas += Number(m.valor) || 0;
+        if (m.tipo === "despesa") despesas += Number(m.valor) || 0;
+      });
+      state.resumo.receitas = receitas;
+      state.resumo.despesas = despesas;
+      state.resumo.saldo = receitas - despesas;
+    }
+
+    function card(titulo, valor, icon, color) {
+      const cores = {
+        indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
+        emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        red: "bg-red-50 text-red-700 border-red-200"
+      };
+      return `
+        <div class="border rounded-xl p-4 ${cores[color]}">
+          <div class="flex items-center gap-2 text-sm font-medium">
+            <span class="material-symbols-outlined text-base">${icon}</span>${titulo}
+          </div>
+          <div class="text-xl font-semibold mt-1">R$ ${Number(valor).toFixed(2)}</div>
+        </div>`;
+    }
+
+    function renderUltimos() {
+      if (!state.movimentos.length) {
+        return `<p class="text-sm text-slate-400">Nenhum lançamento ainda</p>`;
+      }
+
+      return [...state.movimentos]
+        .sort((a, b) => (b.data || 0) - (a.data || 0))
+        .slice(0, 5)
+        .map(m => {
+          const desc = escapeHtml(m.descricao || '-');
+          const cat = escapeHtml(m.categoria || '-');
+          const sub = escapeHtml(m.subcategoria || '-');
+          const cor = m.tipo === 'receita' ? 'text-emerald-600' : 'text-red-600';
+          const sinal = m.tipo === 'receita' ? '+' : '-';
+
+          return `
+            <div class="bg-white border rounded-xl p-3 flex justify-between items-center gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium truncate">${desc}</p>
+                <p class="text-xs text-slate-500 truncate">${cat} · ${sub}</p>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <div class="text-sm font-semibold ${cor}">
+                  ${sinal} R$ ${Number(m.valor).toFixed(2)}
+                </div>
+                <button data-edit-id="${m.id}" class="p-2 rounded hover:bg-slate-100" title="Editar">
+                  <span class="material-symbols-outlined text-base">edit</span>
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function render() {
+      const root = document.getElementById("celula-root");
+      root.innerHTML = `
+        <header class="space-y-1">
+          <h1 class="text-2xl font-semibold">Finanças</h1>
+          <p class="text-sm text-slate-500">Dados salvos localmente</p>
+        </header>
+
+        <section class="grid grid-cols-3 gap-3">
+          ${card("Saldo", state.resumo.saldo, "account_balance_wallet", "indigo")}
+          ${card("Receitas", state.resumo.receitas, "add_circle", "emerald")}
+          ${card("Despesas", state.resumo.despesas, "remove_circle", "red")}
+        </section>
+
+        <button id="btn-add" class="bg-indigo-600 text-white rounded-xl p-4 flex items-center justify-center gap-2 w-full">
+          <span class="material-symbols-outlined">add</span>
+          Adicionar lançamento
+        </button>
+
+        <section class="mt-6 space-y-3">
+          <h2 class="text-sm font-semibold text-slate-600">Últimos lançamentos</h2>
+          <div id="ultimos-wrap" class="space-y-3"></div>
+        </section>
+      `;
+
+      document.getElementById('btn-add').onclick = escolherTipo;
+      document.getElementById('ultimos-wrap').innerHTML = renderUltimos();
+      document.querySelectorAll('[data-edit-id]').forEach(btn => {
+        btn.onclick = () => abrirEdicao(btn.dataset.editId);
+      });
+    }
+
+    function abrirEdicao(id) {
+      const mov = state.movimentos.find(m => m.id === id);
+      if (!mov) return;
+      abrirFormulario(mov.tipo, mov);
+    }
+
+    function escolherTipo() {
+      const root = document.getElementById("celula-root");
+      root.innerHTML = `
+        <header class="space-y-1">
+          <h2 class="text-xl font-semibold">Adicionar lançamento</h2>
+          <p class="text-sm text-slate-500">Escolha o tipo</p>
+        </header>
+        <div class="space-y-3">
+          <button id="btn-tipo-receita" class="w-full bg-emerald-600 text-white rounded-xl p-4">Receita</button>
+          <button id="btn-tipo-despesa" class="w-full bg-red-600 text-white rounded-xl p-4">Despesa</button>
+          <button id="btn-cancelar" class="w-full border rounded-xl p-4">Cancelar</button>
         </div>
+      `;
 
-        <div class="card-actions">
-          <button class="icon-btn text-blue-600">
-            <span class="material-symbols-outlined">edit</span>
-          </button>
-          <button class="icon-btn text-red-500">
-            <span class="material-symbols-outlined">delete</span>
-          </button>
-        </div>
-      </div>
+      document.getElementById('btn-tipo-receita').onclick = () => abrirFormulario('receita');
+      document.getElementById('btn-tipo-despesa').onclick = () => abrirFormulario('despesa');
+      document.getElementById('btn-cancelar').onclick = render;
+    }
 
-      <div class="card-desc">
-        Apartamento
-      </div>
-    </div>
+    function confirmarExclusao(id) {
+      const mov = state.movimentos.find(m => m.id === id);
+      if (!mov) return;
 
-  </div>
+      const ok = confirm(`Excluir este lançamento?\n\n${mov.descricao || ''}\nR$ ${Number(mov.valor).toFixed(2)}`);
+      if (!ok) return;
 
-</section>
+      (async () => {
+        if (!db) db = await openDB();
+        await excluirMovimento(id);
+        await carregar();
+      })();
+    }
+
+    function abrirFormulario(tipo, existente = null) {
+      const root = document.getElementById("celula-root");
+      const isEdit = !!existente;
+
+      const categorias = Object.keys(CATEGORIAS[tipo]);
+      let categoriaSel = (existente?.categoria && CATEGORIAS[tipo][existente.categoria])
+        ? existente.categoria
+        : categorias[0];
+
+      let subcategoriaSel = (existente?.subcategoria && CATEGORIAS[tipo][categoriaSel].includes(existente.subcategoria))
+        ? existente.subcategoria
+        : CATEGORIAS[tipo][categoriaSel][0];
+
+      root.innerHTML = `
+        <header class="space-y-1">
+          <h2 class="text-xl font-semibold">${isEdit ? 'Editar' : 'Nova'} ${tipo}</h2>
+          <p class="text-sm text-slate-500">${isEdit ? 'Você pode corrigir os campos' : 'Preencha os dados'}</p>
+        </header>
+
+        <form id="form-mov" class="space-y-4">
+          <div>
+            <label class="text-sm font-medium">Categoria</label>
+            <div class="flex flex-wrap gap-2 mt-1">
+              ${categorias.map(c => {
+                const active = c === categoriaSel;
+                const label = escapeHtml(c);
+                return `<button type="button" data-cat="${label}" class="cat-btn px-3 py-1 rounded-full border ${active ? 'bg-indigo-600 text-white' : ''}">${label}</button>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium">Subcategoria</label>
+            <div id="subcats" class="flex flex-wrap gap-2 mt-1"></div>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium">Valor</label>
+            <input name="valor" type="number" step="0.01" required class="w-full border rounded-lg p-3" value="${isEdit ? String(existente.valor ?? '') : ''}" />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium">Descrição</label>
+            <input name="descricao" type="text" class="w-full border rounded-lg p-3" value="${isEdit ? escapeHtml(existente.descricao || '') : ''}" />
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <button type="submit" class="w-full bg-indigo-600 text-white rounded-lg p-3">Salvar</button>
+            ${isEdit ? `<button id="btn-excluir-form" type="button" class="w-full border border-red-200 text-red-600 rounded-lg p-3 hover:bg-red-50">Excluir</button>` : ``}
+            <button id="btn-cancelar-form" type="button" class="w-full border rounded-lg p-3">Cancelar</button>
+          </div>
+        </form>
+      `;
+
+      function renderSubcats() {
+        const wrap = document.getElementById('subcats');
+        wrap.innerHTML = CATEGORIAS[tipo][categoriaSel].map(s => {
+          const active = s === subcategoriaSel;
+          const label = escapeHtml(s);
+          return `<button type="button" data-sub="${label}" class="sub-btn px-3 py-1 rounded-full border ${active ? 'bg-indigo-500 text-white' : ''}">${label}</button>`;
+        }).join('');
+
+        wrap.querySelectorAll('.sub-btn').forEach(btn => {
+          btn.onclick = () => { subcategoriaSel = btn.dataset.sub; renderSubcats(); };
+        });
+      }
+
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.onclick = () => {
+          categoriaSel = btn.dataset.cat;
+          subcategoriaSel = CATEGORIAS[tipo][categoriaSel][0];
+          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+          btn.classList.add('bg-indigo-600', 'text-white');
+          renderSubcats();
+        };
+      });
+
+      renderSubcats();
+
+      document.getElementById('btn-cancelar-form').onclick = render;
+
+      if (isEdit) {
+        document.getElementById('btn-excluir-form').onclick = () => confirmarExclusao(existente.id);
+      }
+
+      document.getElementById('form-mov').onsubmit = async (e) => {
+        e.preventDefault();
+
+        const valor = parseFloat(e.target.valor.value);
+        if (Number.isNaN(valor)) return;
+
+        const mov = {
+          id: isEdit ? existente.id : crypto.randomUUID(),
+          tipo,
+          categoria: categoriaSel,
+          subcategoria: subcategoriaSel,
+          valor,
+          descricao: e.target.descricao.value,
+          data: isEdit ? existente.data : Date.now()
+        };
+
+        await salvarMovimento(mov);
+        await carregar();
+      };
+    }
+
+    function runTests() {
+      console.group('financas.painel – tests');
+      console.assert(typeof escapeHtml === 'function', 'escapeHtml existe');
+      console.assert(escapeHtml('<b>') === '&lt;b&gt;', 'escapeHtml escapa');
+      console.assert(typeof excluirMovimento === 'function', 'excluirMovimento existe');
+      console.assert(typeof confirmarExclusao === 'function', 'confirmarExclusao existe');
+      console.assert(Object.keys(CATEGORIAS.receita).length > 0, 'categorias receita');
+      console.assert(Object.keys(CATEGORIAS.despesa).length > 0, 'categorias despesa');
+      console.groupEnd();
+    }
+
+    async function carregar() {
+      if (!db) db = await openDB();
+      state.movimentos = await listarMovimentos();
+      recalcularResumo();
+      render();
+    }
+
+    runTests();
+    carregar();
+  </script>
+</body>
+</html>
