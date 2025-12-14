@@ -165,6 +165,74 @@ function ScreenOrchestrator({
           </button>
         </form>
 
+        {/* Tabela de dados existentes */}
+        <div className="bg-white rounded shadow p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold">Tabela de dados do usuário</h3>
+              <p className="text-xs text-gray-600">Edite direto na tabela e salve para persistir no Dexie.</p>
+            </div>
+            {userLoaded ? (
+              <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">dados carregados</span>
+            ) : (
+              <span className="text-xs text-gray-500">sincronizando…</span>
+            )}
+          </div>
+
+          <div className="overflow-x-auto border rounded">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 text-left">
+                <tr>
+                  <th className="px-3 py-2 font-semibold text-gray-700 border-b">Campo</th>
+                  <th className="px-3 py-2 font-semibold text-gray-700 border-b">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="odd:bg-white even:bg-gray-50">
+                  <td className="px-3 py-2 border-b align-middle">Nome completo</td>
+                  <td className="px-3 py-2 border-b">
+                    <input
+                      type="text"
+                      value={userData.name}
+                      onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                      className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-400"
+                      placeholder="Digite seu nome"
+                    />
+                  </td>
+                </tr>
+                <tr className="odd:bg-white even:bg-gray-50">
+                  <td className="px-3 py-2 border-b align-middle">E-mail</td>
+                  <td className="px-3 py-2 border-b">
+                    <input
+                      type="email"
+                      value={userData.email}
+                      onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                      className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-400"
+                      placeholder="seuemail@exemplo.com"
+                    />
+                  </td>
+                </tr>
+                <tr className="odd:bg-white even:bg-gray-50">
+                  <td className="px-3 py-2 border-b align-middle">Telefone</td>
+                  <td className="px-3 py-2 border-b">
+                    <input
+                      type="tel"
+                      value={userData.phone}
+                      onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                      className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-400"
+                      placeholder="(11) 99999-9999"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="text-right text-xs text-gray-600">
+            Última atualização local: {userLoaded ? "pronta para edição" : "aguardando dados"}
+          </div>
+        </div>
+
         {/* Biometria */}
         <div className="space-y-3">
           <button

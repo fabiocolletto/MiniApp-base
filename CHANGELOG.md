@@ -16,6 +16,14 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.12] – Tabela editável no cadastro do usuário
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Seção em tabela na tela de cadastro exibindo campos geridos pela tela, preenchida com dados existentes e permitindo edição direta.
+
+----
+
 # 🧬 [V4.4.11] – Cadastro do usuário via ScreenFactory
 ### **Status: Atual (Genoma V4.4.0)**
 
