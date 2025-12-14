@@ -17,6 +17,15 @@ Este projeto segue o padrão semântico adaptado para organismos:
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
 
+# 🧬 [V4.4.9] – Remoção do fluxo de instalação do OPP
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Removed
+- Botão "Instalar app" e mensagens associadas na tela inicial, eliminando instruções de instalação do pacote.
+- Registro automático do service worker e prompts de instalação do OPP, mantendo o Genoma livre de chamadas de instalação.
+
+----
+
 # 🧬 [V4.4.8] – Documentação alinhada e cobertura de instalação sem SW
 ### **Status: Atual (Genoma V4.4.0)**
 
