@@ -16,6 +16,17 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.20] – Perfil solicitado ao detectar ID sem nome
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Detecção de dispositivos com ID registrado, mas perfil sem nome, exibindo aviso fixo no rodapé e abrindo a tela de cadastro.
+- Registro automático da célula `sistema.perfil`, dedicada a coletar nome, papel e data de nascimento do usuário.
+
+#### Changed
+- DataOrchestrator passa a oferecer utilitários para ler e salvar o perfil principal, criando ou atualizando registros de forma segura.
+- Genoma passa a carregar o módulo local `src/genoma.js`, e o Dexie é empacotado no repositório para garantir inicialização offline e permitir testes automatizados do fluxo de perfil.
+
 # 🧬 [V4.4.19] – Boas-vindas na primeira visita
 ### **Status: Atual (Genoma V4.4.0)**
 
