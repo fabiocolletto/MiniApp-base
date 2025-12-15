@@ -16,6 +16,12 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.15] – Registro imediato da célula Home
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Fixed
+- Registro da célula Home no carregamento inicial, garantindo descoberta automática pelo CORE e exibição correta no organismo.
+
 # 🧬 [V4.4.14] – Genoma modular com persistência data.*
 ### **Status: Atual (Genoma V4.4.0)**
 
