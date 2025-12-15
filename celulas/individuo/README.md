@@ -1,1 +1,0 @@
-Nesta pasta, vamos controlar tudo o que seja reliferente. Ao indivíduo, a pessoa que realmente está usando o sistema e seus dados, suas conexões, tudo que for referente. A dados sobre o usuário e preferências. Enfim. Tudo que possa personalizar a sua experiência deve estar contido aqui nesses campos e pastas
