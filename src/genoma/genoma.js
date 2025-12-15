@@ -39,6 +39,8 @@ await window.PWAO_RegistrarCelula({nome:'finance',caminho:'./celulas/financeiro/
 await window.PWAO_RegistrarCelula({nome:'education',caminho:'./celulas/educacao/index.html'});
 await window.PWAO_RegistrarCelula({nome:'health',caminho:'./celulas/saude/index.html'});
 await window.PWAO_RegistrarCelula({nome:'settings',caminho:'./celulas/configuracoes/index.html'});
+await window.PWAO_RegistrarCelula({nome:'sistema.appfamily',caminho:'./celulas/sistema/Index.html'});
+navigate('sistema.appfamily',{pushHistory:false});
 notify('Bem-vindo ao 5 Horas 👋',3000);
 })();
 })();

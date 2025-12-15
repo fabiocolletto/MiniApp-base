@@ -16,6 +16,12 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.16] – Expressão inicial da célula Sistema
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Registro e renderização automáticos da célula `sistema.appfamily` assim que o organismo inicia, exibindo seu conteúdo no stage por padrão.
+
 # 🧬 [V4.4.15] – Registro imediato da célula Home
 ### **Status: Atual (Genoma V4.4.0)**
 
