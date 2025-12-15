@@ -16,6 +16,22 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 💸 [financas.painel 1.1.6] – Manifesto com caminho correto
+### **Status: Célula ativa**
+
+#### Fixed
+- Corrige o caminho registrado no manifesto da célula Financeiro para apontar para `celulas/financeiro/index.html`.
+
+# 💸 [financas.painel 1.1.5] – Tela inicial mais acolhedora
+### **Status: Célula ativa**
+
+#### Changed
+- Tela inicial da célula Financeiro redesenhada com hero em gradiente, pílula de dados locais e saldo em destaque.
+- Cartões de resumo ajustados para ícones de tendência e bloco de lançamentos recentes com cartões elevados e estado vazio guiado.
+
+#### Added
+- Atalhos rápidos para criar receita ou despesa diretamente do cabeçalho e CTA auxiliar junto à lista de lançamentos.
+
 # 🧬 [V4.4.20] – Perfil solicitado ao detectar ID sem nome
 ### **Status: Atual (Genoma V4.4.0)**
 
