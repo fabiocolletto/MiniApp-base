@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfil do Usuário</title>
+  <title>5Horas | Perfil do usuário</title>
 
   <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -151,5 +151,24 @@
 </script>
 
 </body>
+   <!-- Placeholder do registrador da célula -->
+  <script>
+    (function registrar() {
+      function tentar() {
+        if (window.PWAO_RegistrarCelula) {
+          window.PWAO_RegistrarCelula({
+            nome: "sistema.user",
+            caminho: "/celulas/sistema/info_usuario.html",
+            orgao: "sistema",
+            versao: "1.0.0",
+            descricao: "Painel de dados do usuário"
+          });
+          return;
+        }
+        setTimeout(tentar, 60);
+      }
+      tentar();
+    })();
+  </script>
 </html>
 
