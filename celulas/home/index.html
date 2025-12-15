@@ -106,6 +106,15 @@ CÉLULA HOME – ASA
 (function(){
   'use strict';
 
+  const registrarCelula = window.PWAO_RegistrarCelula || (window.parent && window.parent.PWAO_RegistrarCelula);
+  registrarCelula?.({
+    nome: "home",
+    caminho: "celulas/home/index.html",
+    orgao: "home",
+    versao: "1.0.0",
+    descricao: "Tela inicial"
+  });
+
   const root=document.querySelector('[data-cell="home"]');
   if(!root)return;
 
