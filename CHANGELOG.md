@@ -16,6 +16,22 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.19] – Boas-vindas na primeira visita
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Added
+- Fluxo de onboarding que detecta ausência de dados locais e exibe tela de boas-vindas com o CTA "Entrar anônimo".
+
+#### Changed
+- Genoma agora registra e navega para a célula Home após preparar o banco local, garantindo header, footer e cards visíveis já no primeiro acesso.
+- DataOrchestrator identifica instalações novas e semeia dados padrão para criar o modelo inicial do banco.
+
+# 🧬 [V4.4.18] – Remoção do tools.js legado do Genoma
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Removed
+- Arquivo `genoma/tools.js` removido por estar sem uso e depender de React e Dexie fora do ecossistema do Genoma.
+
 # 🧬 [V4.4.17] – Contêiner de anúncios invisível sem conteúdo
 ### **Status: Atual (Genoma V4.4.0)**
 

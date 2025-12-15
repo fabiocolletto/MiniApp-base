@@ -44,6 +44,46 @@ const StorageEngine = {
   }
 };
 
+const DEFAULT_DATA = {
+  user: {
+    profile: [
+      {
+        id: 'profile-anon',
+        name: 'Convidado',
+        role: 'anonymous'
+      }
+    ]
+  },
+  finance: {
+    income: {
+      single: [
+        {
+          id: 'income-sample',
+          value: 500,
+          category: 'Receita inicial',
+          description: 'Exemplo de entrada',
+          createdAt: null
+        }
+      ],
+      recurring: []
+    },
+    expense: {
+      single: [
+        {
+          id: 'expense-sample',
+          value: 120,
+          category: 'Alimentação',
+          description: 'Exemplo de saída',
+          createdAt: null
+        }
+      ],
+      recurring: []
+    }
+  },
+  education: {},
+  health: {}
+};
+
 /* =============================
    DATA ORCHESTRATOR
    ============================= */
@@ -52,6 +92,7 @@ export const DataOrchestrator = {
   SCHEMA_VERSION: 1,
   initialized: false,
   initPromise: null,
+  isFreshInstall: false,
 
   store: {
     meta: {
@@ -73,20 +114,32 @@ export const DataOrchestrator = {
     education: {}
   },
 
-  async init() {
+  async init({ seedIfFresh = false } = {}) {
     if (this.initialized) return;
     if (this.initPromise) return this.initPromise;
 
     this.initPromise = (async () => {
       const loaded = await StorageEngine.load();
+      this.isFreshInstall = !loaded;
       if (loaded) this.migrate(loaded);
 
       this.store.meta.createdAt ||= Date.now();
       this.initDevice();
+
+      if (seedIfFresh && this.isFreshInstall) {
+        this.seedDefaults();
+        await this.persist();
+      }
+
       this.initialized = true;
     })();
 
     return this.initPromise;
+  },
+
+  async hasLocalData() {
+    const stored = await StorageEngine.load();
+    return !!stored;
   },
 
   initDevice() {
@@ -112,6 +165,36 @@ export const DataOrchestrator = {
 
     oldStore.meta.schemaVersion = this.SCHEMA_VERSION;
     this.store = oldStore;
+  },
+
+  seedDefaults() {
+    const now = Date.now();
+
+    if (!this.store.meta.createdAt) this.store.meta.createdAt = now;
+    this.store.meta.updatedAt ||= now;
+
+    if (!this.store.device.firstSeenAt) this.store.device.firstSeenAt = now;
+
+    if (!this.store.user.profile?.length) {
+      this.store.user.profile = DEFAULT_DATA.user.profile.map(entry => ({
+        ...entry,
+        createdAt: now
+      }));
+    }
+
+    if (!this.store.finance.income.single.length) {
+      this.store.finance.income.single = DEFAULT_DATA.finance.income.single.map(entry => ({
+        ...entry,
+        createdAt: entry.createdAt || now
+      }));
+    }
+
+    if (!this.store.finance.expense.single.length) {
+      this.store.finance.expense.single = DEFAULT_DATA.finance.expense.single.map(entry => ({
+        ...entry,
+        createdAt: entry.createdAt || now
+      }));
+    }
   },
 
   async persist() {
