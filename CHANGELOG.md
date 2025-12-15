@@ -16,6 +16,12 @@ Este projeto segue o padrão semântico adaptado para organismos:
 
 Cada versão do Genoma possui identificação **Vx.y**, enquanto células usam **semver (1.0.0)**.
 
+# 🧬 [V4.4.17] – Contêiner de anúncios invisível sem conteúdo
+### **Status: Atual (Genoma V4.4.0)**
+
+#### Fixed
+- Rodapé do Genoma (contêiner de anúncios) agora fica oculto quando não há conteúdo para exibir, reaparecendo apenas enquanto mensagens ou anúncios estiverem ativos.
+
 # 🧬 [V4.4.16] – Expressão inicial da célula Sistema
 ### **Status: Atual (Genoma V4.4.0)**
 

@@ -13,7 +13,9 @@ const HISTORY=[];
 
 function updateBackVisibility(){if(!BTN_BACK)return;BTN_BACK.style.visibility=HISTORY.length?'visible':'hidden';}
 
-function notify(msg,ttl=3000){if(!FOOTER)return;FOOTER.textContent=msg;if(ttl>0){setTimeout(()=>{if(FOOTER.textContent===msg)FOOTER.textContent='';},ttl);}}
+function toggleFooterVisibility(hasContent){if(!FOOTER)return;FOOTER.classList.toggle('visible',!!hasContent);}
+
+function notify(msg,ttl=3000){if(!FOOTER)return;FOOTER.textContent=msg;toggleFooterVisibility(!!msg);if(ttl>0){setTimeout(()=>{if(FOOTER.textContent===msg){FOOTER.textContent='';toggleFooterVisibility(false);}},ttl);}}
 
 function goBack(){const prev=HISTORY.pop();if(!prev){updateBackVisibility();return;}CURRENT_SCREEN=null;navigate(prev,{pushHistory:false});}
 
