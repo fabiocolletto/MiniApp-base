@@ -1,341 +1,81 @@
 <!DOCTYPE html>
-<!--
-  PWAO – GENOMA v2 (PALCO GLOBAL com NAVEGAÇÃO v1)
-  -------------------------------------------------
-  Arquivo: /index.html (raiz do repositório)
-
-  • Palco global (Stage)
-  • Navegação nativa no estilo do Genoma v1 (welcome → dashboard → ...)
-  • Conexão com células via renderizador (evento celula.expressar)
-  • ScreenFactory: telas geradas pelo Genoma via prefixo data.*
-
-  IMPORTANTE
-  • Sem regra de negócio
-  • Sem dependência de frameworks
-  • Células vivem dentro do Stage
--->
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWAO</title>
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="manifest" href="opp/manifest.webmanifest" />
-
-  <!-- Material Symbols (ícones do header) -->
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-
-  <style>
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      font-family: Inter, system-ui, sans-serif;
-      background: #ffffff;
-      color: #1f2937;
-    }
-
-    #app {
-      min-height: 100vh;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center; /* centraliza tudo horizontalmente */
-    }
-
-    /* Container central único para header, stage e footer */
-    .app-shell {
-      width: 100%;
-      max-width: 1200px; /* largura padrão desktop */
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      z-index: 40;
-    }
-
-    header .header-left,
-    header .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    header .title {
-      font-weight: 600;
-      font-size: 15px;
-    }
-
-    header button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-
-    .icon-btn:hover {
-      background: #f1f5f9;
-    }
-
-    .material-symbols-outlined {
-      font-size: 22px;
-      line-height: 1;
-      font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24;
-    }
-
-    header button:active { transform: scale(0.96); }
-
-    footer { display: none; }
-
-    main#stage,
-    main#pwao-stage,
-    .stage {
-      padding: 24px;
-      /* largura agora vem exclusivamente do .app-shell */
-      width: 100%;
-      margin: 0;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      align-items: stretch; /* garante mesma altura visual */
-    }
-
-    @media (min-width: 768px) {
-      .grid { grid-template-columns: repeat(4, 1fr); }
-    }
-
-    @media (min-width: 1280px) {
-      .grid { grid-template-columns: repeat(6, 1fr); }
-    }
-
-    .card {
-      width: 100%; /* garante padronização em todas as telas */
-      aspect-ratio: 1 / 1;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      text-align: center;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 600;
-      background: #fff;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-
-    .card:active { transform: scale(0.99); }
-
-    .card .icon { font-size: 36px; line-height: 1; }
-
-    .welcome {
-      min-height: calc(100vh - 56px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .welcome-box {
-      max-width: 360px;
-      width: 100%;
-      text-align: center;
-      margin: 0 auto;
-    }
-
-    .welcome-box h1 {
-      font-size: 28px;
-      margin: 0 0 8px 0;
-    }
-
-    .welcome-box p {
-      color: #6b7280;
-      margin: 0 0 24px 0;
-    }
-
-    .welcome-actions {
-      display: grid;
-      gap: 10px;
-    }
-
-    .welcome-box button {
-      width: 100%;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #4f46e5;
-      background: #ffffff;
-      color: #4f46e5;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .tone-finance { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
-
-    /* Subtons Finanças */
-    .finance-income { background:#ecfdf5; border-color:#6ee7b7; color:#047857; }
-    .finance-expense { background:#fef2f2; border-color:#fca5a5; color:#b91c1c; }
-    .finance-report { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
-    .tone-education { background:#fffbeb; color:#b45309; border-color:#fde68a; }
-
-    /* Subtons Educação */
-    .edu-study { background:#fffbeb; border-color:#fde68a; color:#92400e; }
-    .edu-exam { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
-    .edu-task { background:#f0fdf4; border-color:#86efac; color:#166534; }
-    .edu-agenda { background:#fdf2f8; border-color:#fbcfe8; color:#9d174d; }
-    .edu-contest { background:#f5f3ff; border-color:#c4b5fd; color:#5b21b6; }
-    .edu-sim { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
-    .tone-health { background:#ecfeff; color:#0f766e; border-color:#99f6e4; }
-
-    /* Subtons Saúde */
-    .health-record { background:#f0fdf4; border-color:#86efac; color:#166534; }
-    .health-appointment { background:#ecfeff; border-color:#67e8f9; color:#155e75; }
-    .health-meds { background:#fefce8; border-color:#fde68a; color:#854d0e; }
-    .health-vaccine { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
-    .health-exam { background:#faf5ff; border-color:#d8b4fe; color:#6b21a8; }
-    .health-reminder { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
-    .tone-settings { background:#f1f5f9; color:#334155; border-color:#e2e8f0; }
-
-    .loading, .error {
-      padding: 24px;
-      text-align: center;
-      font-size: 14px;
-      color: #475569;
-    }
-
-    .error { color: #991b1b; }
-
-    .form {
-      margin-top: 12px;
-      display: grid;
-      gap: 12px;
-      text-align: left;
-      max-width: 560px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: #475569;
-      margin-bottom: 6px;
-    }
-
-    .field input, .field select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      font: inherit;
-    }
-
-    .primary {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #111827;
-      background: #111827;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .primary:active { transform: scale(0.99); }
-
-    /* Menu lateral do AppShell */
-    #pwao-menu-panel {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 260px;
-      height: 100vh;
-      background: #ffffff;
-      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
-      transform: translateX(-280px);
-      transition: transform 0.25s ease;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      z-index: 100;
-    }
-
-    #pwao-menu-panel.open { transform: translateX(0); }
-
-    #pwao-menu-panel .menu-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    #pwao-menu-panel .menu-title {
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    #pwao-menu-panel .menu-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    #pwao-menu-panel .menu-item {
-      padding: 12px;
-      background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      font-size: 15px;
-      text-align: left;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    #pwao-menu-panel .menu-item:hover { background: #eef2ff; }
-    #pwao-menu-panel .menu-item:active { transform: scale(0.99); }
-  </style>
-</head>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APP 5 Horas - Genoma</title>
+<meta name="theme-color" content="#0f172a"/>
+<link rel="manifest" href="opp/manifest.webmanifest"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100vh;font-family:Inter,system-ui,sans-serif;background:#ffffff;color:#1f2937}
+#app{min-height:100vh;position:relative;display:flex;flex-direction:column;align-items:center}
+.app-shell{width:100%;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh}
+header{position:sticky;top:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#ffffff;border-bottom:1px solid #e5e7eb;z-index:40}
+header .header-left,header .header-right{display:flex;align-items:center;gap:8px}
+header .title{font-weight:600;font-size:15px}
+header button{background:none;border:none;cursor:pointer;padding:0}
+.icon-btn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer}
+.icon-btn:hover{background:#f1f5f9}
+.material-symbols-outlined{font-size:22px;line-height:1;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+header button:active{transform:scale(0.96)}
+footer{display:none}
+main#stage,main#pwao-stage,.stage{padding:24px;width:100%;margin:0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
+@media(min-width:768px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1280px){.grid{grid-template-columns:repeat(6,1fr)}}
+.card{width:100%;aspect-ratio:1/1;padding:16px;border-radius:12px;border:1px solid #e5e7eb;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:600;background:#fff;appearance:none;-webkit-appearance:none}
+.card:active{transform:scale(0.99)}
+.card .icon{font-size:36px;line-height:1}
+.welcome{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:24px}
+.welcome-box{max-width:360px;width:100%;text-align:center;margin:0 auto}
+.welcome-box h1{font-size:28px;margin:0 0 8px 0}
+.welcome-box p{color:#6b7280;margin:0 0 24px 0}
+.welcome-actions{display:grid;gap:10px}
+.welcome-box button{width:100%;padding:16px;border-radius:12px;border:1px solid #4f46e5;background:#ffffff;color:#4f46e5;font-weight:600;cursor:pointer}
+.tone-finance{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
+.finance-income{background:#ecfdf5;border-color:#6ee7b7;color:#047857}
+.finance-expense{background:#fef2f2;border-color:#fca5a5;color:#b91c1c}
+.finance-report{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.tone-education{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.edu-study{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.edu-exam{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.edu-task{background:#f0fdf4;border-color:#86efac;color:#166534}
+.edu-agenda{background:#fdf2f8;border-color:#fbcfe8;color:#9d174d}
+.edu-contest{background:#f5f3ff;border-color:#c4b5fd;color:#5b21b6}
+.edu-sim{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.tone-health{background:#ecfeff;color:#0f766e;border-color:#99f6e4}
+.health-record{background:#f0fdf4;border-color:#86efac;color:#166534}
+.health-appointment{background:#ecfeff;border-color:#67e8f9;color:#155e75}
+.health-meds{background:#fefce8;border-color:#fde68a;color:#854d0e}
+.health-vaccine{background:#eff6ff;border-color:#93c5fd;color:#1e40af}
+.health-exam{background:#faf5ff;border-color:#d8b4fe;color:#6b21a8}
+.health-reminder{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.tone-settings{background:#f1f5f9;color:#334155;border-color:#e2e8f0}
+.loading,.error{padding:24px;text-align:center;font-size:14px;color:#475569}
+.error{color:#991b1b}
+.form{margin-top:12px;display:grid;gap:12px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto}
+.field label{display:block;font-size:12px;color:#475569;margin-bottom:6px}
+.field input,.field select{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font:inherit}
+.primary{width:100%;padding:14px;border-radius:12px;border:1px solid #111827;background:#111827;color:#fff;font-weight:700;cursor:pointer}
+.primary:active{transform:scale(0.99)}
+#pwao-menu-panel{position:fixed;top:0;left:0;width:260px;height:100vh;background:#ffffff;box-shadow:2px 0 12px rgba(0,0,0,0.1);transform:translateX(-280px);transition:transform 0.25s ease;padding:16px;display:flex;flex-direction:column;gap:12px;z-index:100}
+#pwao-menu-panel.open{transform:translateX(0)}
+#pwao-menu-panel .menu-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid #e5e7eb}
+#pwao-menu-panel .menu-title{font-weight:700;font-size:16px}
+#pwao-menu-panel .menu-list{display:grid;gap:10px}
+#pwao-menu-panel .menu-item{padding:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;font-size:15px;text-align:left;cursor:pointer;transition:0.2s}
+#pwao-menu-panel .menu-item:hover{background:#eef2ff}
+#pwao-menu-panel .menu-item:active{transform:scale(0.99)}
+</style></head>
 <body>
-
-  <div id="app"></div>
-
-  <script type="module" src="./src/genoma/genoma.js"></script>
-
-</body>
-</html>
+<div id="app"></div>
+<script>
+(function(){
+const localSrc='./src/genoma/genoma.js';
+const cdnSrc='https://cdn.jsdelivr.net/gh/fabiocolletto/pwao@main/src/genoma/genoma.js';
+function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.type='module';s.src=src;s.onload=()=>resolve(src);s.onerror=()=>reject(src);document.body.appendChild(s);});}
+load(localSrc).catch(()=>load(cdnSrc));
+})();
+</script>
+</body></html>
