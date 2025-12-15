@@ -1,5 +1,5 @@
-import{DataOrchestrator}from'../tools/data-orchestrator.js';
-import{fetchWithFallback}from'../core/fetchWithFallback.js';
+import{DataOrchestrator}from'./tools/data-orchestrator.js';
+import{fetchWithFallback}from'./core/fetchWithFallback.js';
 
 (function(){'use strict';
 
