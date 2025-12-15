@@ -2,7 +2,7 @@
 // DataOrchestrator unificado com camada de persistência (Dexie + fallback)
 // Este arquivo é o ÚNICO ponto de entrada, manutenção e persistência de dados do app
 
-import Dexie from 'https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.mjs';
+import Dexie from '../vendor/dexie.mjs';
 
 /* =============================
    STORAGE ENGINE (interna)
@@ -25,7 +25,9 @@ const StorageEngine = {
     try {
       this.init();
       const row = await this.db.store.get('main');
-      return row?.value || null;
+      if (row?.value) return row.value;
+      const raw = localStorage.getItem('pwao_store');
+      return raw ? JSON.parse(raw) : null;
     } catch (e) {
       console.warn('[StorageEngine] Falha Dexie, tentando localStorage', e);
       const raw = localStorage.getItem('pwao_store');
@@ -135,6 +137,35 @@ export const DataOrchestrator = {
     })();
 
     return this.initPromise;
+  },
+
+  getPrimaryProfile() {
+    return this.store?.user?.profile?.[0] || null;
+  },
+
+  isProfileMissingName() {
+    const profile = this.getPrimaryProfile();
+    return !!profile?.id && (!profile?.name || profile.name.trim() === '');
+  },
+
+  async upsertProfile({ recordId, data } = {}) {
+    await this.init();
+
+    const profiles = this.resolveCollection('user.profile', { createIfMissing: true });
+    const now = Date.now();
+    const id = recordId || profiles[0]?.id || this.store.device?.deviceId || crypto.randomUUID();
+    const existing = profiles.find((entry) => entry.id === id) || profiles[0];
+
+    if (existing) {
+      Object.assign(existing, data, { id, updatedAt: now });
+      await this.persist();
+      return existing;
+    }
+
+    const entry = { id, createdAt: now, ...data };
+    profiles.unshift(entry);
+    await this.persist();
+    return entry;
   },
 
   async hasLocalData() {
