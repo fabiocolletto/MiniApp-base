@@ -33,7 +33,7 @@ footer.visible{display:flex;}
 <script>
 (function(){
 const localSrc='./src/genoma.js';
-const cdnSrc='https://cdn.jsdelivr.net/gh/fabiocolletto/pwao@main/src/genoma/genoma.js';
+const cdnSrc='https://cdn.jsdelivr.net/gh/fabiocolletto/pwao@main/src/genoma.js';
 function load(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.type='module';s.src=src;s.onload=()=>res();s.onerror=()=>rej();document.body.appendChild(s);});}
 load(localSrc).catch(()=>load(cdnSrc));
 })();
