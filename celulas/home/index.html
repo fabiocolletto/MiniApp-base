@@ -5,126 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Home</title>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-
 <style>
 :root{
-  /* PALETA DA CÉLULA (LOCAL) */
   --cell-bg:#ffffff;
-  --cell-card-bg:#ffffff;
   --cell-border:#e5e7eb;
   --cell-title:#0f172a;
   --cell-text:#374151;
   --cell-muted:#6b7280;
-
-  /* FALLBACKS (evita variáveis indefinidas) */
   --cell-accent:#2563eb;
-  --cell-soft:rgba(37,99,235,.06);
-
-  /* CORES POR ÁREA */
-  --finance-accent:#2563eb;      /* azul – financeiro */
-  --education-accent:#7c3aed;    /* roxo – educação */
-  --health-accent:#16a34a;       /* verde – saúde */
-  --settings-accent:#64748b;     /* cinza – configurações */
 }
 
+body{margin:0;background:var(--cell-bg);color:var(--cell-text);font-family:Inter,system-ui,sans-serif;}
 
-/*
-CÉLULA HOME – ASA
-- Não usar body, html, header, footer, #app, #stage
-- Estilos apenas locais
-*/
+.cell-root{width:100%;max-width:960px;margin:0 auto;padding:8px 12px 32px;display:flex;flex-direction:column;gap:16px;}
 
-.cell-root{width:100%;max-width:960px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:20px;color:var(--cell-text)}
-.cell-header{font-size:20px;font-weight:600;text-align:center;color:var(--cell-title)}
+.cell-card{border:1px solid var(--cell-border);border-radius:16px;padding:16px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.05);}
+.cell-card h1{margin:0 0 8px;font-size:22px;color:var(--cell-title);} 
+.cell-card p{margin:0;color:var(--cell-text);line-height:1.5;}
 
-.cell-grid{display:grid;grid-template-columns:1fr;gap:16px;justify-content:center}
+.cell-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
 
-@media (min-width:640px){
-  .cell-grid{
-    grid-template-columns:repeat(2,220px);
-    grid-template-rows:repeat(2,220px);
-    gap:20px;
-  }
-}
+.cell-pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--cell-border);background:#f8fafc;color:var(--cell-text);font-size:14px;}
+.cell-pill .material-symbols-outlined{color:var(--cell-accent);} 
 
-
-.cell-card{box-sizing:border-box;width:220px;height:220px;border:1px solid var(--cell-accent);border-radius:16px;padding:12px;background:var(--cell-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease}
-.cell-card-icon{font-size:44px}
-.cell-card-title{font-weight:500;font-size:14px;color:var(--cell-title);text-align:center}
-
-.cell-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
-
-/* VARIAÇÕES POR CÉLULA */
-.cell-card[data-target="finance"]{--cell-accent:var(--finance-accent);--cell-soft:rgba(37,99,235,.08)}
-.cell-card[data-target="education"]{--cell-accent:var(--education-accent);--cell-soft:rgba(124,58,237,.08)}
-.cell-card[data-target="health"]{--cell-accent:var(--health-accent);--cell-soft:rgba(22,163,74,.08)}
-.cell-card[data-target="settings"]{--cell-accent:var(--settings-accent);--cell-soft:rgba(100,116,139,.08)}
-
-
-
-.cell-card-icon{color:var(--cell-accent)}
-.cell-card:hover{background-color:var(--cell-soft);box-shadow:0 4px 12px rgba(0,0,0,.08)}
-
+.cell-note{margin:0;color:var(--cell-muted);font-size:14px;}
 </style>
-
 </head>
 <body>
-
 <div class="cell-root" data-cell="home" data-title="Início">
+  <section class="cell-card">
+    <h1>Genoma v1.2 ativo</h1>
+    <p>O orquestrador está pronto para servir as células fixas com navegação centralizada e carregamento seguro.</p>
+  </section>
 
-  <div class="cell-grid">
-
-    <div class="cell-card" data-action="render" data-target="finance">
-      <span class="material-symbols-outlined cell-card-icon">account_balance</span>
-      <div class="cell-card-title">Financeiro</div>
-      
+  <section class="cell-card">
+    <h1>Estado do organismo</h1>
+    <div class="cell-grid">
+      <div class="cell-pill"><span class="material-symbols-outlined">storage</span><span>Memória orgânica inicializada</span></div>
+      <div class="cell-pill"><span class="material-symbols-outlined">playlist_add_check</span><span>Células registradas dinamicamente</span></div>
+      <div class="cell-pill"><span class="material-symbols-outlined">travel_explore</span><span>Navegação controlada pelo Genoma</span></div>
     </div>
-
-    <div class="cell-card" data-action="render" data-target="education">
-      <span class="material-symbols-outlined cell-card-icon">school</span>
-      <div class="cell-card-title">Educação</div>
-      
-    </div>
-
-    <div class="cell-card" data-action="render" data-target="health">
-      <span class="material-symbols-outlined cell-card-icon">health_and_safety</span>
-      <div class="cell-card-title">Saúde</div>
-      
-    </div>
-
-    <div class="cell-card" data-action="render" data-target="settings">
-      <span class="material-symbols-outlined cell-card-icon">settings</span>
-      <div class="cell-card-title">Configurações</div>
-      
-    </div>
-
-  </div>
-
+    <p class="cell-note">Células legadas foram removidas para manter apenas a arquitetura aprovada.</p>
+  </section>
 </div>
-
 <script>
 (function(){
   'use strict';
-
   const registrarCelula = window.PWAO_RegistrarCelula || (window.parent && window.parent.PWAO_RegistrarCelula);
   registrarCelula?.({
     nome: "home",
     caminho: "celulas/home/index.html",
     orgao: "home",
-    versao: "1.0.0",
-    descricao: "Tela inicial"
+    versao: "1.1.0",
+    descricao: "Tela inicial do Genoma"
   });
-
-  const root=document.querySelector('[data-cell="home"]');
-  if(!root)return;
-
-  function init(){
-    // Home não mantém estado persistente
-  }
-
-  init();
 })();
 </script>
-
 </body>
 </html>
