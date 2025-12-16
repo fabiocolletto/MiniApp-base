@@ -40,7 +40,11 @@ if(BTN_BACK)BTN_BACK.addEventListener('click',goBack);
 
 function buildWelcome(){if(!STAGE)return;const html=`<style>.welcome{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 112px);}.welcome__card{max-width:520px;margin:0 auto;padding:28px;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.06);background:#fff;display:flex;flex-direction:column;gap:14px;font-size:15px;}.welcome__card h1{margin:0;font-size:22px;}.welcome__card p{margin:0;color:#475569;line-height:1.4;}.welcome__cta{display:flex;gap:12px;align-items:center;}.welcome__card button{border:none;background:#0f172a;color:#fff;font-weight:600;padding:12px 16px;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.12);} .welcome__card button:disabled{opacity:.7;cursor:wait;}</style><section class="welcome"><div class="welcome__card"><h1>Bem-vindo ao 5 Horas</h1><p>Comece com um espaço seguro no seu dispositivo. Nenhum dado pessoal é necessário.</p><div class="welcome__cta"><button id="btn-start-anon">Entrar anônimo</button><span class="welcome__hint">Carregaremos dados padrão e exibiremos a Home.</span></div></div></section>`;STAGE.innerHTML=html;HEADER_TITLE&&(HEADER_TITLE.textContent='Boas-vindas');BTN_BACK&&(BTN_BACK.style.visibility='hidden');const btn=document.getElementById('btn-start-anon');btn?.addEventListener('click',async()=>{btn.disabled=true;btn.textContent='Preparando seu app...';await startOrganism({seedFresh:true});});}
 
-async function registrarCelulasPadrao(){await window.PWAO_RegistrarCelula({nome:'home',caminho:'./celulas/home/index.html'});await window.PWAO_RegistrarCelula({nome:'finance',caminho:'./celulas/financeiro/index.html'});await window.PWAO_RegistrarCelula({nome:'education',caminho:'./celulas/educacao/index.html'});await window.PWAO_RegistrarCelula({nome:'sistema.perfil',caminho:'./celulas/sistema/perfil_usuario.html'});}
+async function registrarCelulasPadrao()
+{await window.PWAO_RegistrarCelula({nome:'home',caminho:'./celulas/home/index.html'});
+ await window.PWAO_RegistrarCelula({nome:'finance',caminho:'./celulas/financeiro/index.html'});
+ await window.PWAO_RegistrarCelula({nome:'education',caminho:'./celulas/educacao/index.html'});
+ await window.PWAO_RegistrarCelula({nome:'sistema.perfil',caminho:'./celulas/sistema/perfil_usuario.html'});}
 
 function hasProfileGate(){const profile=DataOrchestrator.getPrimaryProfile();const hasDeviceId=!!DataOrchestrator.store?.device?.deviceId;return DataOrchestrator.isProfileMissingName()||(!profile&&hasDeviceId);}
 
